@@ -210,13 +210,65 @@ export default function SalesStartPage({
     currentPaymentType === "dinheiro"
       ? Math.max(0, currentCashGivenValue - currentPaymentAmountValue)
       : 0;
+
+  const currentCoversRemaining = useMemo(() => {
+    if (remainingToPay <= 0.001) return false;
+    return (
+      currentPaymentAmountValue > 0 &&
+      Math.abs(currentPaymentAmountValue - remainingToPay) <= 0.01 &&
+      (currentPaymentType !== "dinheiro" || currentCashGivenValue >= currentPaymentAmountValue - 0.009)
+    );
+  }, [
+    remainingToPay,
+    currentPaymentAmountValue,
+    currentPaymentType,
+    currentCashGivenValue,
+  ]);
+
+  const canConfirmPayment = useMemo(() => {
+    if (cart.length === 0) return false;
+    if (payments.length === 0) {
+      if (currentPaymentAmountValue < subtotal - 0.009) return false;
+      if (currentPaymentType === "dinheiro" && currentCashGivenValue < subtotal - 0.009) return false;
+      return true;
+    }
+    if (remainingToPay <= 0.001) return true;
+    return currentCoversRemaining;
+  }, [
+    cart.length,
+    payments.length,
+    remainingToPay,
+    currentCoversRemaining,
+    currentPaymentAmountValue,
+    currentCashGivenValue,
+    currentPaymentType,
+    subtotal,
+  ]);
+
+  const effectiveTotalPaid = useMemo(() => {
+    if (payments.length === 0) {
+      return Math.min(subtotal, currentPaymentAmountValue);
+    }
+    if (remainingToPay <= 0.001) return totalPaid;
+    return totalPaid + Math.min(remainingToPay, currentPaymentAmountValue);
+  }, [payments.length, subtotal, currentPaymentAmountValue, remainingToPay, totalPaid]);
+
+  const effectiveRemainingToPay = useMemo(() => {
+    return Math.max(0, subtotal - effectiveTotalPaid);
+  }, [subtotal, effectiveTotalPaid]);
+
   const totalChangeValue = useMemo(() => {
     const fromList = payments.reduce((sum, item) => sum + (item.changeAmount ?? 0), 0);
-    if (payments.length === 0 && currentPaymentType === "dinheiro") {
-      return Math.max(0, currentCashGivenValue - subtotal);
+    if (currentPaymentType === "dinheiro") {
+      if (payments.length === 0) {
+        return Math.max(0, currentCashGivenValue - subtotal);
+      }
+      if (remainingToPay > 0.001) {
+        return fromList + Math.max(0, currentCashGivenValue - currentPaymentAmountValue);
+      }
     }
     return fromList;
-  }, [payments, currentPaymentType, currentCashGivenValue, subtotal]);
+  }, [payments, currentPaymentType, currentCashGivenValue, currentPaymentAmountValue, remainingToPay, subtotal]);
 
   const activeProductName =
     cart.length > 0 ? cart[cart.length - 1].name : selectedProduct?.name ?? "";
@@ -634,6 +686,24 @@ export default function SalesStartPage({
         },
       ];
     } else {
+      const currentAmountVal = parseMoneyBr(currentPaymentAmount || "0");
+      if (remainingToPay > 0.001 && Math.abs(currentAmountVal - remainingToPay) <= 0.01) {
+        const cashGivenVal =
+          currentPaymentType === "dinheiro" ? parseMoneyBr(currentCashGiven || "0") : currentAmountVal;
+        if (currentPaymentType === "dinheiro" && cashGivenVal < currentAmountVal - 0.009) {
+          Toast.error("Valor recebido em dinheiro é menor que o valor desta parcela.");
+          return;
+        }
+        const changeVal = currentPaymentType === "dinheiro" ? Math.max(0, cashGivenVal - currentAmountVal) : 0;
+        finalPayments.push({
+          id: `pay-${Date.now()}`,
+          paymentType: currentPaymentType,
+          amount: currentAmountVal,
+          cashGiven: cashGivenVal,
+          changeAmount: changeVal,
+        });
+      }
+
       const totalPaidVal = finalPayments.reduce((sum, p) => sum + p.amount, 0);
       if (Math.abs(totalPaidVal - subtotal) > 0.01) {
         Toast.error(
@@ -1232,12 +1302,12 @@ export default function SalesStartPage({
                 </div>
                 <div>
                   <span className="block text-[11px] text-text-secondary">Total Informado</span>
-                  <span className="font-semibold text-text-primary">R$ {formatMoneyBr(totalPaid)}</span>
+                  <span className="font-semibold text-text-primary">R$ {formatMoneyBr(effectiveTotalPaid)}</span>
                 </div>
                 <div>
                   <span className="block text-[11px] text-text-secondary">Saldo Restante</span>
-                  <span className={`font-bold ${remainingToPay <= 0.001 ? "text-success" : "text-amber-500"}`}>
-                    R$ {formatMoneyBr(remainingToPay)}
+                  <span className={`font-bold ${effectiveRemainingToPay <= 0.001 ? "text-success" : "text-amber-500"}`}>
+                    R$ {formatMoneyBr(effectiveRemainingToPay)}
                   </span>
                 </div>
                 <div>
@@ -1293,8 +1363,14 @@ export default function SalesStartPage({
                     <span className="text-xs font-semibold text-text-secondary uppercase">
                       {payments.length > 0 ? "Adicionar outra forma" : "Forma de pagamento"}
                     </span>
-                    <span className="text-xs font-medium text-amber-500">
-                      Faltam: R$ {formatMoneyBr(remainingToPay)}
+                    <span
+                      className={`text-xs font-medium ${
+                        effectiveRemainingToPay <= 0.001 ? "text-success font-semibold" : "text-amber-500"
+                      }`}
+                    >
+                      {effectiveRemainingToPay <= 0.001
+                        ? "✓ Saldo quitado"
+                        : `Faltam: R$ ${formatMoneyBr(effectiveRemainingToPay)}`}
                     </span>
                   </div>
 
@@ -1323,6 +1399,16 @@ export default function SalesStartPage({
                         inputMode="numeric"
                         pattern="[0-9,.]*"
                         onBeforeInput={preventNonDigitBeforeInput}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            if (canConfirmPayment) {
+                              void confirmPayment();
+                            } else {
+                              handleAddPayment();
+                            }
+                          }
+                        }}
                         onChange={(event) => {
                           const val = maskMoneyBr(event.target.value);
                           setCurrentPaymentAmount(val);
@@ -1346,6 +1432,16 @@ export default function SalesStartPage({
                           pattern="[0-9,.]*"
                           onBeforeInput={preventNonDigitBeforeInput}
                           onPaste={pasteCurrentCashGiven}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              if (canConfirmPayment) {
+                                void confirmPayment();
+                              } else {
+                                handleAddPayment();
+                              }
+                            }
+                          }}
                           onChange={(event) => setCurrentCashGiven(maskMoneyBr(event.target.value))}
                           className="input-field w-full"
                           placeholder="0,00"
@@ -1365,7 +1461,7 @@ export default function SalesStartPage({
                     onClick={handleAddPayment}
                     className="btn-secondary w-full py-2 text-xs font-semibold flex items-center justify-center gap-1.5"
                   >
-                    <Plus size={14} /> Adicionar forma de pagamento
+                    <Plus size={14} /> Adicionar à lista de parcelas
                   </button>
                 </div>
               )}
@@ -1379,7 +1475,7 @@ export default function SalesStartPage({
                 type="button"
                 onClick={confirmPayment}
                 className="btn-success"
-                disabled={remainingToPay > 0.001 && payments.length > 0}
+                disabled={!canConfirmPayment}
               >
                 Confirmar Venda
               </button>
