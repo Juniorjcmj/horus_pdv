@@ -24,6 +24,11 @@ public static class HorusDatabaseInitializer
         @"^\s*GO\s*;?\s*$",
         RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled);
 
+    // Comentário de bloco (/* ... */, non-greedy, multilinha) ou de linha (-- até o fim da linha).
+    private static readonly Regex SqlComment = new(
+        @"/\*.*?\*/|--[^\r\n]*",
+        RegexOptions.Singleline | RegexOptions.Compiled);
+
     public static async Task InitializeAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
@@ -70,13 +75,58 @@ public static class HorusDatabaseInitializer
             .Where(batch => !string.IsNullOrWhiteSpace(batch))
             .ToList();
 
-        foreach (var batch in batches)
+        // BEGIN/COMMIT TRANSACTION em T-SQL não pode ficar aberto entre dois lotes (GO)
+        // separados nesta conexão: com MultipleActiveResultSets=True na connection string,
+        // o SQL Server recusa (erro 3997, "A transaction that was started in a MARS batch
+        // is still active at the end of the batch") porque cada ExecuteNonQueryAsync aqui é
+        // um lote isolado do ponto de vista do MARS. Em vez de enviar o texto BEGIN/COMMIT
+        // TRANSACTION como SQL, controla-se a mesma transação pelo SqlTransaction do ADO.NET,
+        // que sabe manter o estado entre vários comandos na mesma conexão.
+        SqlTransaction? transaction = null;
+        try
         {
-            await using var command = new SqlCommand(batch, sqlConnection)
+            foreach (var batch in batches)
             {
-                CommandTimeout = 180
-            };
-            await command.ExecuteNonQueryAsync();
+                // Remove comentários de bloco e de linha antes de checar se o lote inteiro
+                // é só um BEGIN/COMMIT TRANSACTION — os scripts costumam ter um bloco de
+                // comentário explicativo logo antes desses comandos, no mesmo lote (GO).
+                var normalized = SqlComment.Replace(batch, string.Empty).Trim().TrimEnd(';');
+
+                if (string.Equals(normalized, "BEGIN TRANSACTION", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(normalized, "BEGIN TRAN", StringComparison.OrdinalIgnoreCase))
+                {
+                    transaction = (SqlTransaction)await sqlConnection.BeginTransactionAsync();
+                    continue;
+                }
+
+                if (string.Equals(normalized, "COMMIT TRANSACTION", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(normalized, "COMMIT TRAN", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(normalized, "COMMIT", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (transaction is not null)
+                    {
+                        await transaction.CommitAsync();
+                        await transaction.DisposeAsync();
+                        transaction = null;
+                    }
+                    continue;
+                }
+
+                await using var command = new SqlCommand(batch, sqlConnection, transaction)
+                {
+                    CommandTimeout = 180
+                };
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+        catch
+        {
+            if (transaction is not null)
+            {
+                await transaction.RollbackAsync();
+                await transaction.DisposeAsync();
+            }
+            throw;
         }
 
         logger.LogInformation("Script SQL {RelativePath} executado com sucesso.", relativePath);

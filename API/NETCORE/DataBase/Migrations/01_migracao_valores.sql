@@ -85,6 +85,7 @@ GO
 /* ------------------------------------------------------------------------- */
 
 BEGIN TRANSACTION;
+GO
 
 /* --- Vendas.TotalAmount ------------------------------------------------- */
 ALTER TABLE Vendas ADD TotalAmount_new DECIMAL(18, 2) NULL;
