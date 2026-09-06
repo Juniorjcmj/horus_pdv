@@ -20,6 +20,22 @@ export type ProductDto = {
   productUnitPrice: string;
   productSalePrice: string;
   totalPriceOnProduct: string;
+
+  // Dados fiscais (NFC-e modelo 65)
+  ncm: string;
+  cest: string | null;
+  cfop: string;
+  origemMercadoria: number;
+  unidadeComercial: string;
+  unidadeTributavel: string;
+  gtin: string;
+  csosnIcms: string | null;
+  cstIcms: string | null;
+  aliquotaIcms: string;
+  cstPis: string;
+  cstCofins: string;
+  cstIbsCbs: string | null;
+  cClassTrib: string | null;
 };
 
 export type ProductPayload = Omit<ProductDto, "id">;

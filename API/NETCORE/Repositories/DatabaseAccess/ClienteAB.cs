@@ -10,11 +10,16 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public class ClienteAB(Connection connection)
 {
+    private const string Columns = """
+        Id, CustomerName, Document, BirthDate, Age, Cep, City, State, Address, Neighborhood,
+        StreetComplement, Number, ReferencePoint, Telephone, Cellphone, Email,
+        IndIeDest, InscricaoEstadual, CodigoMunicipioIbge
+        """;
+
     public async Task<List<ClienteAD>> ListarAsync(string companyId)
     {
-        const string sql = """
-            SELECT Id, CustomerName, Document, BirthDate, Age, Cep, City, State, Address, Neighborhood,
-                   StreetComplement, Number, ReferencePoint, Telephone, Cellphone, Email
+        var sql = $"""
+            SELECT {Columns}
             FROM Clientes
             WHERE CompanyId = @CompanyId
             ORDER BY CustomerName;
@@ -33,11 +38,29 @@ public class ClienteAB(Connection connection)
         return rows;
     }
 
+    /// <summary>Usada pelo módulo fiscal (DocumentoFiscalAB) para resolver o destinatário por CPF/CNPJ.</summary>
+    public async Task<ClienteAD?> ObterPorDocumentoAsync(string companyId, string document)
+    {
+        var digits = new string(document.Where(char.IsDigit).ToArray());
+        var sql = $"""
+            SELECT {Columns}
+            FROM Clientes
+            WHERE CompanyId = @CompanyId
+              AND REPLACE(REPLACE(REPLACE(Document, '.', ''), '-', ''), '/', '') = @Document;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Document", digits);
+        await using var reader = await command.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? Map(reader) : null;
+    }
+
     public async Task<ClienteAD?> ObterAsync(string companyId, string id)
     {
-        const string sql = """
-            SELECT Id, CustomerName, Document, BirthDate, Age, Cep, City, State, Address, Neighborhood,
-                   StreetComplement, Number, ReferencePoint, Telephone, Cellphone, Email
+        var sql = $"""
+            SELECT {Columns}
             FROM Clientes
             WHERE Id = @Id AND CompanyId = @CompanyId;
             """;
@@ -70,17 +93,22 @@ public class ClienteAB(Connection connection)
                        ReferencePoint = @ReferencePoint,
                        Telephone = @Telephone,
                        Cellphone = @Cellphone,
-                       Email = @Email
+                       Email = @Email,
+                       IndIeDest = @IndIeDest,
+                       InscricaoEstadual = @InscricaoEstadual,
+                       CodigoMunicipioIbge = @CodigoMunicipioIbge
                  WHERE Id = @Id AND CompanyId = @CompanyId;
             END
             ELSE
             BEGIN
                 INSERT INTO Clientes
                     (Id, CompanyId, CustomerName, Document, BirthDate, Age, Cep, City, State, Address, Neighborhood,
-                     StreetComplement, Number, ReferencePoint, Telephone, Cellphone, Email)
+                     StreetComplement, Number, ReferencePoint, Telephone, Cellphone, Email,
+                     IndIeDest, InscricaoEstadual, CodigoMunicipioIbge)
                 VALUES
                     (@Id, @CompanyId, @CustomerName, @Document, @BirthDate, @Age, @Cep, @City, @State, @Address, @Neighborhood,
-                     @StreetComplement, @Number, @ReferencePoint, @Telephone, @Cellphone, @Email);
+                     @StreetComplement, @Number, @ReferencePoint, @Telephone, @Cellphone, @Email,
+                     @IndIeDest, @InscricaoEstadual, @CodigoMunicipioIbge);
             END;
             """;
 
@@ -119,6 +147,9 @@ public class ClienteAB(Connection connection)
         command.Parameters.AddWithValue("@Telephone", customer.Telephone);
         command.Parameters.AddWithValue("@Cellphone", customer.Cellphone);
         command.Parameters.AddWithValue("@Email", customer.Email);
+        command.Parameters.AddWithValue("@IndIeDest", customer.IndIeDest);
+        command.Parameters.AddWithValue("@InscricaoEstadual", (object?)customer.InscricaoEstadual ?? DBNull.Value);
+        command.Parameters.AddWithValue("@CodigoMunicipioIbge", (object?)customer.CodigoMunicipioIbge ?? DBNull.Value);
     }
 
     private static ClienteAD Map(SqlDataReader source) => new()
@@ -138,12 +169,27 @@ public class ClienteAB(Connection connection)
         ReferencePoint = ReadString(source, "ReferencePoint"),
         Telephone = ReadString(source, "Telephone"),
         Cellphone = ReadString(source, "Cellphone"),
-        Email = ReadString(source, "Email")
+        Email = ReadString(source, "Email"),
+        IndIeDest = (byte)ReadInt(source, "IndIeDest"),
+        InscricaoEstadual = ReadNullableString(source, "InscricaoEstadual"),
+        CodigoMunicipioIbge = ReadNullableString(source, "CodigoMunicipioIbge")
     };
 
     private static string ReadString(SqlDataReader reader, string name)
     {
         var ordinal = reader.GetOrdinal(name);
         return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+    }
+
+    private static string? ReadNullableString(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);
+    }
+
+    private static int ReadInt(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? 0 : Convert.ToInt32(reader.GetValue(ordinal));
     }
 }

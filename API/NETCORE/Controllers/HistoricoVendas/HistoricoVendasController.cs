@@ -14,7 +14,11 @@ namespace HORUSPDV_API.Controllers.HistoricoVendas;
 
 [ApiController]
 [Route("api/[controller]")]
-public class HistoricoVendasController(HistoricoVendasAB historicoVendasAB, HorusCaixaService caixaService) : ControllerBase
+public class HistoricoVendasController(
+    HistoricoVendasAB historicoVendasAB,
+    HorusCaixaService caixaService,
+    DocumentoFiscalAB documentoFiscalAB,
+    ILogger<HistoricoVendasController> logger) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Listar()
@@ -45,11 +49,26 @@ public class HistoricoVendasController(HistoricoVendasAB historicoVendasAB, Horu
         {
             caixaService.EnsureVendaPermitida(currentUser.CompanyId);
             var result = await historicoVendasAB.RegistrarAsync(currentUser.CompanyId, request);
+
+            // A nota fiscal é enfileirada fora da transação da venda — a venda já está
+            // confirmada e liberada para o caixa; a emissão em si acontece em segundo plano
+            // pelo NfceOutboxWorker. Falha aqui não pode derrubar uma venda já registrada.
+            var fiscalQueued = true;
+            try
+            {
+                await documentoFiscalAB.EnfileirarAsync(currentUser.CompanyId, result.VendaId);
+            }
+            catch (Exception ex)
+            {
+                fiscalQueued = false;
+                logger.LogError(ex, "Falha ao enfileirar NFC-e da venda {VendaId}.", result.VendaId);
+            }
+
             return StatusCode(StatusCodes.Status201Created, new ApiResponse<object>
             {
                 Success = true,
                 Message = "Venda registrada com sucesso.",
-                Data = new { saleNumber = result.SaleNumber, rows = result.Rows }
+                Data = new { saleNumber = result.SaleNumber, rows = result.Rows, fiscalQueued }
             });
         }
         catch (InvalidOperationException ex)

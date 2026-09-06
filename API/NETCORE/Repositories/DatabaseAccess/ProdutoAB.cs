@@ -1,6 +1,7 @@
 /**
  * Arquivo: API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs
- * Objetivo: concentra comandos SQL e persistência de cadastro, estoque e manutenção de produtos.
+ * Objetivo: concentra comandos SQL e persistência de cadastro, estoque, manutenção e dados
+ *           fiscais de produtos.
  * Entradas esperadas: recebe conexão configurada, parâmetros normalizados e executa leitura/escrita no SQL Server.
  */
 using HORUSPDV_API.Repositories.DataAccess;
@@ -10,11 +11,17 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public class ProdutoAB(Connection connection)
 {
+    private const string Columns = """
+        Id, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier,
+        ProductDescription, ProductQnt, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
+        Ncm, Cest, Cfop, OrigemMercadoria, UnidadeComercial, UnidadeTributavel, Gtin,
+        CsosnIcms, CstIcms, AliquotaIcms, CstPis, CstCofins, CstIbsCbs, CClassTrib
+        """;
+
     public async Task<List<ProdutoAD>> ListarAsync(string companyId)
     {
-        const string sql = """
-            SELECT Id, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier,
-                   ProductDescription, ProductQnt, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct
+        var sql = $"""
+            SELECT {Columns}
             FROM Produtos
             WHERE CompanyId = @CompanyId
             ORDER BY ProductName;
@@ -35,9 +42,8 @@ public class ProdutoAB(Connection connection)
 
     public async Task<ProdutoAD?> ObterAsync(string companyId, string id)
     {
-        const string sql = """
-            SELECT Id, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier,
-                   ProductDescription, ProductQnt, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct
+        var sql = $"""
+            SELECT {Columns}
             FROM Produtos
             WHERE Id = @Id AND CompanyId = @CompanyId;
             """;
@@ -46,6 +52,23 @@ public class ProdutoAB(Connection connection)
         await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Id", id);
+        await using var reader = await command.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? Map(reader) : null;
+    }
+
+    /// <summary>Usada pelo módulo fiscal (DocumentoFiscalAB) para montar o item da NFC-e.</summary>
+    public async Task<ProdutoAD?> ObterPorCodigoAsync(string companyId, string productCode)
+    {
+        var sql = $"""
+            SELECT {Columns}
+            FROM Produtos
+            WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@ProductCode", productCode);
         await using var reader = await command.ExecuteReaderAsync();
         return await reader.ReadAsync() ? Map(reader) : null;
     }
@@ -67,17 +90,35 @@ public class ProdutoAB(Connection connection)
                        ProductQnt = @ProductQnt,
                        ProductUnitPrice = @ProductUnitPrice,
                        ProductSalePrice = @ProductSalePrice,
-                       TotalPriceOnProduct = @TotalPriceOnProduct
+                       TotalPriceOnProduct = @TotalPriceOnProduct,
+                       Ncm = @Ncm,
+                       Cest = @Cest,
+                       Cfop = @Cfop,
+                       OrigemMercadoria = @OrigemMercadoria,
+                       UnidadeComercial = @UnidadeComercial,
+                       UnidadeTributavel = @UnidadeTributavel,
+                       Gtin = @Gtin,
+                       CsosnIcms = @CsosnIcms,
+                       CstIcms = @CstIcms,
+                       AliquotaIcms = @AliquotaIcms,
+                       CstPis = @CstPis,
+                       CstCofins = @CstCofins,
+                       CstIbsCbs = @CstIbsCbs,
+                       CClassTrib = @CClassTrib
                  WHERE Id = @Id AND CompanyId = @CompanyId;
             END
             ELSE
             BEGIN
                 INSERT INTO Produtos
                     (Id, CompanyId, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier, SupplierId,
-                     ProductDescription, ProductQnt, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct)
+                     ProductDescription, ProductQnt, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
+                     Ncm, Cest, Cfop, OrigemMercadoria, UnidadeComercial, UnidadeTributavel, Gtin,
+                     CsosnIcms, CstIcms, AliquotaIcms, CstPis, CstCofins, CstIbsCbs, CClassTrib)
                 VALUES
                     (@Id, @CompanyId, @ProductImageUrl, @ProductImageName, @ProductName, @ProductCode, @ProductSupplier, @SupplierId,
-                     @ProductDescription, @ProductQnt, @ProductUnitPrice, @ProductSalePrice, @TotalPriceOnProduct);
+                     @ProductDescription, @ProductQnt, @ProductUnitPrice, @ProductSalePrice, @TotalPriceOnProduct,
+                     @Ncm, @Cest, @Cfop, @OrigemMercadoria, @UnidadeComercial, @UnidadeTributavel, @Gtin,
+                     @CsosnIcms, @CstIcms, @AliquotaIcms, @CstPis, @CstCofins, @CstIbsCbs, @CClassTrib);
             END;
             """;
 
@@ -98,7 +139,7 @@ public class ProdutoAB(Connection connection)
         return await command.ExecuteNonQueryAsync() > 0;
     }
 
-    public async Task BaixarEstoqueAsync(IEnumerable<(string ProductCode, int Quantity)> items)
+    public async Task BaixarEstoqueAsync(IEnumerable<(string ProductCode, decimal Quantity)> items)
     {
         var groupedItems = items
             .GroupBy(item => item.ProductCode.Trim(), StringComparer.OrdinalIgnoreCase)
@@ -135,8 +176,8 @@ public class ProdutoAB(Connection connection)
 
                 var productId = ReadString(reader, "Id");
                 var productName = ReadString(reader, "ProductName");
-                var currentStock = ParseInt(ReadString(reader, "ProductQnt"));
-                var unitPrice = ReadString(reader, "ProductUnitPrice");
+                var currentStock = reader.GetDecimal(reader.GetOrdinal("ProductQnt"));
+                var unitPrice = reader.GetDecimal(reader.GetOrdinal("ProductUnitPrice"));
                 await reader.CloseAsync();
 
                 if (currentStock < item.Quantity)
@@ -155,8 +196,8 @@ public class ProdutoAB(Connection connection)
                     """,
                     db,
                     transaction);
-                update.Parameters.AddWithValue("@ProductQnt", nextStock.ToString());
-                update.Parameters.AddWithValue("@TotalPriceOnProduct", CalculateTotal(unitPrice, nextStock));
+                update.Parameters.AddWithValue("@ProductQnt", nextStock);
+                update.Parameters.AddWithValue("@TotalPriceOnProduct", unitPrice * nextStock);
                 update.Parameters.AddWithValue("@Id", productId);
                 await update.ExecuteNonQueryAsync();
             }
@@ -200,6 +241,20 @@ public class ProdutoAB(Connection connection)
         command.Parameters.AddWithValue("@ProductUnitPrice", product.ProductUnitPrice);
         command.Parameters.AddWithValue("@ProductSalePrice", product.ProductSalePrice);
         command.Parameters.AddWithValue("@TotalPriceOnProduct", product.TotalPriceOnProduct);
+        command.Parameters.AddWithValue("@Ncm", product.Ncm);
+        command.Parameters.AddWithValue("@Cest", (object?)product.Cest ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Cfop", product.Cfop);
+        command.Parameters.AddWithValue("@OrigemMercadoria", product.OrigemMercadoria);
+        command.Parameters.AddWithValue("@UnidadeComercial", product.UnidadeComercial);
+        command.Parameters.AddWithValue("@UnidadeTributavel", product.UnidadeTributavel);
+        command.Parameters.AddWithValue("@Gtin", product.Gtin);
+        command.Parameters.AddWithValue("@CsosnIcms", (object?)product.CsosnIcms ?? DBNull.Value);
+        command.Parameters.AddWithValue("@CstIcms", (object?)product.CstIcms ?? DBNull.Value);
+        command.Parameters.AddWithValue("@AliquotaIcms", product.AliquotaIcms);
+        command.Parameters.AddWithValue("@CstPis", product.CstPis);
+        command.Parameters.AddWithValue("@CstCofins", product.CstCofins);
+        command.Parameters.AddWithValue("@CstIbsCbs", (object?)product.CstIbsCbs ?? DBNull.Value);
+        command.Parameters.AddWithValue("@CClassTrib", (object?)product.CClassTrib ?? DBNull.Value);
     }
 
     private static ProdutoAD Map(SqlDataReader source) => new()
@@ -211,33 +266,47 @@ public class ProdutoAB(Connection connection)
         ProductCode = ReadString(source, "ProductCode"),
         ProductSupplier = ReadString(source, "ProductSupplier"),
         ProductDescription = ReadString(source, "ProductDescription"),
-        ProductQnt = ReadString(source, "ProductQnt"),
-        ProductUnitPrice = ReadString(source, "ProductUnitPrice"),
-        ProductSalePrice = ReadString(source, "ProductSalePrice"),
-        TotalPriceOnProduct = ReadString(source, "TotalPriceOnProduct")
+        ProductQnt = ReadDecimal(source, "ProductQnt"),
+        ProductUnitPrice = ReadDecimal(source, "ProductUnitPrice"),
+        ProductSalePrice = ReadDecimal(source, "ProductSalePrice"),
+        TotalPriceOnProduct = ReadDecimal(source, "TotalPriceOnProduct"),
+        Ncm = ReadString(source, "Ncm"),
+        Cest = ReadNullableString(source, "Cest"),
+        Cfop = ReadString(source, "Cfop"),
+        OrigemMercadoria = (byte)ReadInt(source, "OrigemMercadoria"),
+        UnidadeComercial = ReadString(source, "UnidadeComercial"),
+        UnidadeTributavel = ReadString(source, "UnidadeTributavel"),
+        Gtin = ReadString(source, "Gtin"),
+        CsosnIcms = ReadNullableString(source, "CsosnIcms"),
+        CstIcms = ReadNullableString(source, "CstIcms"),
+        AliquotaIcms = ReadDecimal(source, "AliquotaIcms"),
+        CstPis = ReadString(source, "CstPis"),
+        CstCofins = ReadString(source, "CstCofins"),
+        CstIbsCbs = ReadNullableString(source, "CstIbsCbs"),
+        CClassTrib = ReadNullableString(source, "CClassTrib")
     };
 
     private static string ReadString(SqlDataReader reader, string name)
     {
         var ordinal = reader.GetOrdinal(name);
-        return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+        return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal).Trim();
     }
 
-    private static int ParseInt(string value)
-        => int.TryParse(value, out var parsed) ? parsed : 0;
-
-    private static string CalculateTotal(string unitPrice, int quantity)
+    private static string? ReadNullableString(SqlDataReader reader, string name)
     {
-        var normalized = unitPrice.Replace(".", "").Replace(",", ".");
-        if (!decimal.TryParse(
-                normalized,
-                System.Globalization.NumberStyles.Number,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out var parsed))
-        {
-            return "0,00";
-        }
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal).Trim();
+    }
 
-        return (parsed * quantity).ToString("N2", new System.Globalization.CultureInfo("pt-BR"));
+    private static decimal ReadDecimal(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? 0m : reader.GetDecimal(ordinal);
+    }
+
+    private static int ReadInt(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? 0 : Convert.ToInt32(reader.GetValue(ordinal));
     }
 }

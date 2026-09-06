@@ -46,6 +46,27 @@ const UF_OPTIONS = [
 
 const UF_SELECT_OPTIONS = UF_OPTIONS.map((option) => ({ value: option, label: option }));
 
+const CRT_OPTIONS = [
+  { value: 1, label: "1 - Simples Nacional" },
+  { value: 2, label: "2 - Simples Nacional, excesso de sublimite" },
+  { value: 3, label: "3 - Regime Normal" },
+  { value: 4, label: "4 - MEI" },
+];
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      // O input type="file" lê como data URL ("data:application/x-pkcs12;base64,AAAA...");
+      // só a parte depois da vírgula interessa para o backend.
+      resolve(result.split(",").pop() ?? "");
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function MyCompanyPage() {
   const { maskCep, maskCnpj, maskPhoneBr, onlyDigits } = useInputMasks();
 
@@ -79,6 +100,25 @@ export default function MyCompanyPage() {
   const [cepLookupError, setCepLookupError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Dados fiscais (emitente NFC-e modelo 65)
+  const [crt, setCrt] = useState(1);
+  const [cnaeFiscal, setCnaeFiscal] = useState("");
+  const [codigoMunicipioIbge, setCodigoMunicipioIbge] = useState("3304557");
+  const [ambienteFiscal, setAmbienteFiscal] = useState(2);
+  const [cscId, setCscId] = useState("");
+  const [csc, setCsc] = useState("");
+  const [cscHasValue, setCscHasValue] = useState(false);
+  const [certificadoPfxBase64, setCertificadoPfxBase64] = useState("");
+  const [certificadoSenha, setCertificadoSenha] = useState("");
+  const [certificadoFileName, setCertificadoFileName] = useState("");
+  const [certificadoHasValue, setCertificadoHasValue] = useState(false);
+  const [certificadoThumbprint, setCertificadoThumbprint] = useState("");
+  const [certificadoValidoAte, setCertificadoValidoAte] = useState<string | null>(null);
+  const [respTecCnpj, setRespTecCnpj] = useState("");
+  const [respTecContato, setRespTecContato] = useState("");
+  const [respTecEmail, setRespTecEmail] = useState("");
+  const [respTecFone, setRespTecFone] = useState("");
+
   useEffect(() => {
     companyService
       .get()
@@ -110,11 +150,38 @@ export default function MyCompanyPage() {
         setEmailSmtpFromEmail(data.emailSmtpFromEmail || data.email || "");
         setEmailSmtpFromName(data.emailSmtpFromName || data.fantasyName || "Hórus PDV");
         setEmailSmtpReplyTo(data.emailSmtpReplyTo || "");
+        setCrt(data.crt || 1);
+        setCnaeFiscal(data.cnaeFiscal || "");
+        setCodigoMunicipioIbge(data.codigoMunicipioIbge || "3304557");
+        setAmbienteFiscal(data.ambienteFiscal || 2);
+        setCscId(data.cscId || "");
+        setCsc("");
+        setCscHasValue(Boolean(data.cscHasValue));
+        setCertificadoPfxBase64("");
+        setCertificadoSenha("");
+        setCertificadoFileName("");
+        setCertificadoHasValue(Boolean(data.certificadoHasValue));
+        setCertificadoThumbprint(data.certificadoThumbprint || "");
+        setCertificadoValidoAte(data.certificadoValidoAte);
+        setRespTecCnpj(data.respTecCnpj || "");
+        setRespTecContato(data.respTecContato || "");
+        setRespTecEmail(data.respTecEmail || "");
+        setRespTecFone(data.respTecFone || "");
       })
       .catch(() => {
         Toast.error("Não foi possível carregar dados da empresa.");
       });
   }, []);
+
+  const handleCertificateFile = async (file: File | null) => {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".pfx") && !file.name.toLowerCase().endsWith(".p12")) {
+      Toast.error("Selecione um arquivo de certificado .pfx ou .p12.");
+      return;
+    }
+    setCertificadoPfxBase64(await fileToBase64(file));
+    setCertificadoFileName(file.name);
+  };
 
   const handleCepLookup = async () => {
     const rawCep = sanitizeCep(cep);
@@ -194,6 +261,11 @@ export default function MyCompanyPage() {
       }
     }
 
+    if (certificadoPfxBase64 && !certificadoSenha.trim()) {
+      Toast.error("Informe a senha do certificado digital enviado.");
+      return;
+    }
+
     setSaving(true);
     try {
       const data = await companyService.update({
@@ -223,6 +295,23 @@ export default function MyCompanyPage() {
         emailSmtpFromEmail,
         emailSmtpFromName,
         emailSmtpReplyTo,
+        crt,
+        cnaeFiscal,
+        codigoMunicipioIbge,
+        codigoUfIbge: 33,
+        ambienteFiscal,
+        cscId,
+        csc,
+        cscHasValue,
+        certificadoPfxBase64,
+        certificadoSenha,
+        certificadoHasValue,
+        certificadoThumbprint,
+        certificadoValidoAte,
+        respTecCnpj,
+        respTecContato,
+        respTecEmail,
+        respTecFone,
       });
 
       if (data) {
@@ -252,6 +341,23 @@ export default function MyCompanyPage() {
         setEmailSmtpFromEmail(data.emailSmtpFromEmail || data.email || "");
         setEmailSmtpFromName(data.emailSmtpFromName || data.fantasyName || "Hórus PDV");
         setEmailSmtpReplyTo(data.emailSmtpReplyTo || "");
+        setCrt(data.crt || 1);
+        setCnaeFiscal(data.cnaeFiscal || "");
+        setCodigoMunicipioIbge(data.codigoMunicipioIbge || "3304557");
+        setAmbienteFiscal(data.ambienteFiscal || 2);
+        setCscId(data.cscId || "");
+        setCsc("");
+        setCscHasValue(Boolean(data.cscHasValue));
+        setCertificadoPfxBase64("");
+        setCertificadoSenha("");
+        setCertificadoFileName("");
+        setCertificadoHasValue(Boolean(data.certificadoHasValue));
+        setCertificadoThumbprint(data.certificadoThumbprint || "");
+        setCertificadoValidoAte(data.certificadoValidoAte);
+        setRespTecCnpj(data.respTecCnpj || "");
+        setRespTecContato(data.respTecContato || "");
+        setRespTecEmail(data.respTecEmail || "");
+        setRespTecFone(data.respTecFone || "");
       }
       Toast.success("Dados da empresa salvos com sucesso.");
     } catch (error) {
@@ -623,6 +729,194 @@ export default function MyCompanyPage() {
               className="btn-primary"
             >
               Salvar configuração de e-mail
+            </LoadingButton>
+          </div>
+        </form>
+      </section>
+
+      <section className="card rounded-2xl p-4 md:p-5">
+        <div className="mb-4 border-b border-border/70 pb-4">
+          <h2 className="text-base font-semibold text-text-primary">Dados fiscais (NFC-e)</h2>
+          <p className="mt-1 text-sm text-text-secondary">
+            Emitente usado para assinar e transmitir a NFC-e à SEFAZ-RJ/SVRS. Comece em
+            homologação — a razão social do destinatário é substituída automaticamente pela
+            frase exigida pela SEFAZ nesse ambiente.
+          </p>
+        </div>
+
+        <form className="grid gap-4 md:grid-cols-12">
+          <label className="block md:col-span-4">
+            <span className="mb-1.5 block text-sm text-text-secondary">Regime tributário (CRT)</span>
+            <select
+              className="input-field w-full"
+              value={crt}
+              onChange={(event) => setCrt(Number(event.target.value))}
+            >
+              {CRT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block md:col-span-4">
+            <span className="mb-1.5 block text-sm text-text-secondary">Ambiente</span>
+            <select
+              className="input-field w-full"
+              value={ambienteFiscal}
+              onChange={(event) => setAmbienteFiscal(Number(event.target.value))}
+            >
+              <option value={2}>Homologação (testes, sem valor fiscal)</option>
+              <option value={1}>Produção</option>
+            </select>
+          </label>
+
+          <label className="block md:col-span-4">
+            <span className="mb-1.5 block text-sm text-text-secondary">CNAE fiscal</span>
+            <input
+              className="input-field w-full"
+              value={cnaeFiscal}
+              onChange={(event) => setCnaeFiscal(onlyDigits(event.target.value).slice(0, 7))}
+              placeholder="0000000"
+            />
+          </label>
+
+          <label className="block md:col-span-4">
+            <span className="mb-1.5 block text-sm text-text-secondary">
+              Código do município (IBGE)
+            </span>
+            <input
+              className="input-field w-full"
+              value={codigoMunicipioIbge}
+              onChange={(event) => setCodigoMunicipioIbge(onlyDigits(event.target.value).slice(0, 7))}
+              placeholder="3304557"
+            />
+          </label>
+
+          <label className="block md:col-span-4">
+            <span className="mb-1.5 block text-sm text-text-secondary">CSC id</span>
+            <input
+              className="input-field w-full"
+              value={cscId}
+              onChange={(event) => setCscId(event.target.value.trim())}
+              placeholder="000001"
+            />
+          </label>
+
+          <label className="block md:col-span-4">
+            <span className="mb-1.5 block text-sm text-text-secondary">CSC (token do QR Code)</span>
+            <input
+              className="input-field w-full"
+              type="password"
+              value={csc}
+              onChange={(event) => setCsc(event.target.value.trim())}
+              placeholder={cscHasValue ? "CSC já configurado. Preencha apenas para trocar." : "CSC obtido no portal da SEFAZ-RJ"}
+            />
+          </label>
+
+          <div className="md:col-span-12">
+            <span className="mb-1.5 block text-sm text-text-secondary">
+              Certificado digital A1 (.pfx)
+            </span>
+            <div className="flex flex-col gap-3 rounded-xl border border-dashed border-border-secondary bg-bg-primary/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm text-text-secondary">
+                {certificadoHasValue ? (
+                  <>
+                    <p className="font-semibold text-text-primary">Certificado configurado</p>
+                    {certificadoThumbprint ? <p>Thumbprint: {certificadoThumbprint}</p> : null}
+                    {certificadoValidoAte ? (
+                      <p>Válido até: {new Date(certificadoValidoAte).toLocaleDateString("pt-BR")}</p>
+                    ) : null}
+                  </>
+                ) : (
+                  <p>Nenhum certificado enviado ainda. Sem certificado, a NFC-e não é emitida.</p>
+                )}
+                {certificadoFileName ? (
+                  <p className="mt-1 text-accent">Novo arquivo selecionado: {certificadoFileName}</p>
+                ) : null}
+              </div>
+              <label className="btn-outline-secondary cursor-pointer text-center">
+                Selecionar arquivo .pfx
+                <input
+                  type="file"
+                  accept=".pfx,.p12"
+                  className="hidden"
+                  onChange={(event) => handleCertificateFile(event.target.files?.[0] ?? null)}
+                />
+              </label>
+            </div>
+          </div>
+
+          <label className="block md:col-span-4">
+            <span className="mb-1.5 block text-sm text-text-secondary">Senha do certificado</span>
+            <input
+              className="input-field w-full"
+              type="password"
+              value={certificadoSenha}
+              onChange={(event) => setCertificadoSenha(event.target.value)}
+              placeholder="Obrigatória ao enviar novo certificado"
+              disabled={!certificadoPfxBase64}
+            />
+          </label>
+
+          <label className="block md:col-span-4">
+            <span className="mb-1.5 block text-sm text-text-secondary">
+              CNPJ do responsável técnico
+            </span>
+            <input
+              className="input-field w-full"
+              value={respTecCnpj}
+              onChange={(event) => setRespTecCnpj(onlyDigits(event.target.value).slice(0, 14))}
+              placeholder="Opcional"
+            />
+          </label>
+
+          <label className="block md:col-span-4">
+            <span className="mb-1.5 block text-sm text-text-secondary">
+              Contato do responsável técnico
+            </span>
+            <input
+              className="input-field w-full"
+              value={respTecContato}
+              onChange={(event) => setRespTecContato(event.target.value)}
+              placeholder="Opcional"
+            />
+          </label>
+
+          <label className="block md:col-span-6">
+            <span className="mb-1.5 block text-sm text-text-secondary">
+              E-mail do responsável técnico
+            </span>
+            <input
+              className="input-field w-full"
+              value={respTecEmail}
+              onChange={(event) => setRespTecEmail(event.target.value)}
+              placeholder="Opcional"
+            />
+          </label>
+
+          <label className="block md:col-span-6">
+            <span className="mb-1.5 block text-sm text-text-secondary">
+              Telefone do responsável técnico
+            </span>
+            <input
+              className="input-field w-full"
+              value={respTecFone}
+              onChange={(event) => setRespTecFone(maskPhoneBr(event.target.value))}
+              placeholder="Opcional"
+            />
+          </label>
+
+          <div className="flex justify-end md:col-span-12">
+            <LoadingButton
+              type="button"
+              onClick={saveCompany}
+              isLoading={saving}
+              loadingLabel="Salvando..."
+              className="btn-primary"
+            >
+              Salvar dados fiscais
             </LoadingButton>
           </div>
         </form>

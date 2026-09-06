@@ -4,8 +4,9 @@
  * Entradas esperadas: não recebe props; processa filtro textual e renderiza dados vindos da API.
  */
 
-import { FileText, Search } from "lucide-react";
+import { FileText, QrCode, RefreshCw, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import DanfePreviewModal from "@/components/Admin/DanfePreviewModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import ReceiptPreviewModal, { type SaleReceipt } from "@/components/Admin/ReceiptPreviewModal";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
@@ -14,6 +15,14 @@ import { Toast } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import PageLayout from "@/layout/PageLayout";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
+import {
+  FISCAL_STATUS,
+  fiscalService,
+  fiscalStatusBadgeClass,
+  fiscalStatusLabel,
+  type FiscalDocumentDetailDto,
+  type FiscalDocumentDto,
+} from "@/services/api/fiscalService";
 import { salesHistoryService, type SaleHistoryDto } from "@/services/api/salesHistoryService";
 import { getStoredAuthUser } from "@/utils/authStorage";
 
@@ -56,10 +65,22 @@ export default function SalesHistoryPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [printingSaleNumbers, setPrintingSaleNumbers] = useState<Set<string>>(() => new Set());
   const [receiptPreview, setReceiptPreview] = useState<SaleReceipt | null>(null);
+  const [fiscalBySale, setFiscalBySale] = useState<Map<string, FiscalDocumentDto>>(new Map());
+  const [danfePreview, setDanfePreview] = useState<FiscalDocumentDetailDto | null>(null);
+  const [loadingDanfeSaleNumber, setLoadingDanfeSaleNumber] = useState<string | null>(null);
+  const [reemitindoIds, setReemitindoIds] = useState<Set<string>>(() => new Set());
+
+  const loadFiscalStatus = () => {
+    fiscalService
+      .list()
+      .then((rows) => setFiscalBySale(new Map(rows.map((row) => [row.saleNumber, row]))))
+      .catch(() => setFiscalBySale(new Map()));
+  };
 
   useEffect(() => {
     salesHistoryService.list().then(setSalesHistory).catch(() => setSalesHistory([]));
     companyService.get().then((data) => setCompany(data ?? null)).catch(() => setCompany(null));
+    loadFiscalStatus();
   }, []);
 
   const filteredSales = useMemo(() => {
@@ -153,6 +174,37 @@ export default function SalesHistoryPage() {
     }
   };
 
+  const openDanfe = async (saleNumber: string) => {
+    setLoadingDanfeSaleNumber(saleNumber);
+    try {
+      const detail = await fiscalService.getBySaleNumber(saleNumber);
+      if (!detail) {
+        Toast.error("NFC-e ainda não foi enfileirada para esta venda.");
+        return;
+      }
+      setDanfePreview(detail);
+    } finally {
+      setLoadingDanfeSaleNumber(null);
+    }
+  };
+
+  const reemitirNfce = async (fiscal: FiscalDocumentDto) => {
+    setReemitindoIds((current) => new Set(current).add(fiscal.id));
+    try {
+      await fiscalService.reemitir(fiscal.id);
+      Toast.success("NFC-e reenfileirada para nova tentativa de emissão.");
+      loadFiscalStatus();
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Erro ao reenfileirar NFC-e.");
+    } finally {
+      setReemitindoIds((current) => {
+        const next = new Set(current);
+        next.delete(fiscal.id);
+        return next;
+      });
+    }
+  };
+
   return (
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
@@ -192,11 +244,14 @@ export default function SalesHistoryPage() {
                 <th className="w-[10%] px-3 py-3 text-right">Vl. Unit.</th>
                 <th className="w-[9%] px-3 py-3 text-right">Vl. Total</th>
                 <th className="w-[9%] px-3 py-3">Data</th>
+                <th className="w-[8%] px-3 py-3">Fiscal</th>
                 <th className="w-[4%] px-3 py-3 text-center">Ações</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedSales.map((sale) => (
+              {paginatedSales.map((sale) => {
+                const fiscal = fiscalBySale.get(sale.saleNumber);
+                return (
                 <tr key={`${sale.saleNumber}-${sale.productCode}`} className="border-t border-border-primary">
                   <td className="px-3 py-3 font-semibold text-text-primary">{sale.saleNumber}</td>
                   <td className="px-3 py-3">
@@ -228,6 +283,18 @@ export default function SalesHistoryPage() {
                       {splitSaleDate(sale.saleDate).time}
                     </span>
                   </td>
+                  <td className="px-3 py-3">
+                    {fiscal ? (
+                      <span
+                        className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${fiscalStatusBadgeClass(fiscal.status)}`}
+                        title={fiscal.motivoStatus || undefined}
+                      >
+                        {fiscalStatusLabel(fiscal.status)}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-text-tertiary">—</span>
+                    )}
+                  </td>
                   <td className="px-3 py-3 text-center">
                     <RowActionsMenu
                       items={[
@@ -239,11 +306,32 @@ export default function SalesHistoryPage() {
                           loadingLabel: "Preparando...",
                           onClick: () => openPrintPreview(sale),
                         },
+                        {
+                          key: "danfe",
+                          label: "Ver DANFE",
+                          icon: <QrCode size={13} />,
+                          disabled: !fiscal,
+                          loading: loadingDanfeSaleNumber === sale.saleNumber,
+                          loadingLabel: "Carregando...",
+                          onClick: () => openDanfe(sale.saleNumber),
+                        },
+                        ...(fiscal && fiscal.status === FISCAL_STATUS.Rejeitado
+                          ? [
+                              {
+                                key: "reemitir",
+                                label: "Reemitir NFC-e",
+                                icon: <RefreshCw size={13} />,
+                                loading: reemitindoIds.has(fiscal.id),
+                                loadingLabel: "Reenfileirando...",
+                                onClick: () => reemitirNfce(fiscal),
+                              },
+                            ]
+                          : []),
                       ]}
                     />
                   </td>
                 </tr>
-              ))}
+              );})}
             </tbody>
           </table>
         </div>
@@ -266,6 +354,14 @@ export default function SalesHistoryPage() {
           receipt={receiptPreview}
           formatMoney={formatMoneyBr}
           onClose={() => setReceiptPreview(null)}
+        />
+      ) : null}
+
+      {danfePreview ? (
+        <DanfePreviewModal
+          detail={danfePreview}
+          companyName={company?.fantasyName || company?.corporateName || "Hórus PDV"}
+          onClose={() => setDanfePreview(null)}
         />
       ) : null}
     </PageLayout>

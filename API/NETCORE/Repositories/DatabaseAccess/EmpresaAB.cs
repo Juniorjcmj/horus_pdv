@@ -1,8 +1,15 @@
 /**
  * Arquivo: API/NETCORE/Repositories/DatabaseAccess/EmpresaAB.cs
- * Objetivo: concentra comandos SQL e persistência de dados cadastrais e configurações da empresa.
+ * Objetivo: concentra comandos SQL e persistência de dados cadastrais, configurações e dados
+ *           fiscais (emitente NFC-e) da empresa.
  * Entradas esperadas: recebe conexão configurada, parâmetros normalizados e executa leitura/escrita no SQL Server.
+ *
+ * CSC, senha do certificado e o próprio certificado (.pfx, como base64) seguem o mesmo padrão
+ * já usado para EmailSmtpPassword: cifrados em repouso via HorusSecretProtector, e uma string
+ * vazia recebida no request significa "manter o valor já salvo" (nunca apaga sem intenção).
  */
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using HORUSPDV_API.Repositories.DataAccess;
 using HORUSPDV_API.Services.Security;
 using Microsoft.Data.SqlClient;
@@ -11,22 +18,30 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public class EmpresaAB(Connection connection, HorusSecretProtector secretProtector)
 {
+    private const string Columns = """
+        FantasyName, CorporateName, Cnpj, StateRegistration, Website, Email, SacPhone,
+        Phone, Mobile, Cep, Address, Number, Neighborhood, City, Uf, Complement,
+        EmailSmtpEnabled, EmailSmtpHost, EmailSmtpPort, EmailSmtpEnableSsl, EmailSmtpUser,
+        EmailSmtpPassword, EmailSmtpFromEmail, EmailSmtpFromName, EmailSmtpReplyTo,
+        Crt, CnaeFiscal, CodigoMunicipioIbge, CodigoUfIbge, AmbienteFiscal,
+        CscId, CscCifrado, CertificadoPfxCifrado, CertificadoSenhaCifrada,
+        CertificadoThumbprint, CertificadoValidoAte, RespTecCnpj, RespTecContato,
+        RespTecEmail, RespTecFone
+        """;
+
     public Task<EmpresaAD?> ObterPrincipalAsync()
         => ObterAsync("empresa-principal");
 
     public async Task<EmpresaAD?> ObterAsync(string companyId)
     {
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(
-            """
-            SELECT FantasyName, CorporateName, Cnpj, StateRegistration, Website, Email, SacPhone,
-                   Phone, Mobile, Cep, Address, Number, Neighborhood, City, Uf, Complement,
-                   EmailSmtpEnabled, EmailSmtpHost, EmailSmtpPort, EmailSmtpEnableSsl, EmailSmtpUser,
-                   EmailSmtpPassword, EmailSmtpFromEmail, EmailSmtpFromName, EmailSmtpReplyTo
+        var sql = $"""
+            SELECT {Columns}
             FROM Empresas
             WHERE Id = @Id;
-            """,
-            db);
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@Id", companyId);
         await using var reader = await command.ExecuteReaderAsync();
         return await reader.ReadAsync() ? Map(reader) : null;
@@ -37,9 +52,33 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
 
     public async Task<EmpresaAD> SalvarAsync(string companyId, EmpresaAD empresa)
     {
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(
-            """
+        // Certificado novo enviado nesta chamada -> valida e recalcula thumbprint/validade.
+        // Nenhum certificado enviado -> mantém os quatro campos derivados como estão no banco
+        // (a mesma condição de "string vazia" decide isso no SQL abaixo).
+        if (!string.IsNullOrWhiteSpace(empresa.CertificadoPfxBase64))
+        {
+            if (string.IsNullOrWhiteSpace(empresa.CertificadoSenha))
+            {
+                throw new InvalidOperationException("Informe a senha do certificado digital.");
+            }
+
+            try
+            {
+                var pfxBytes = Convert.FromBase64String(empresa.CertificadoPfxBase64);
+                using var certificate = new X509Certificate2(
+                    pfxBytes,
+                    empresa.CertificadoSenha,
+                    X509KeyStorageFlags.EphemeralKeySet | X509KeyStorageFlags.Exportable);
+                empresa.CertificadoThumbprint = certificate.Thumbprint;
+                empresa.CertificadoValidoAte = new DateTimeOffset(certificate.NotAfter.ToUniversalTime(), TimeSpan.Zero);
+            }
+            catch (Exception ex) when (ex is CryptographicException or FormatException)
+            {
+                throw new InvalidOperationException("Certificado digital ou senha inválidos.");
+            }
+        }
+
+        const string sql = """
             IF EXISTS (SELECT 1 FROM Empresas WHERE Id = @Id)
             BEGIN
                 UPDATE Empresas
@@ -70,7 +109,22 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
                        END,
                        EmailSmtpFromEmail = @EmailSmtpFromEmail,
                        EmailSmtpFromName = @EmailSmtpFromName,
-                       EmailSmtpReplyTo = @EmailSmtpReplyTo
+                       EmailSmtpReplyTo = @EmailSmtpReplyTo,
+                       Crt = @Crt,
+                       CnaeFiscal = @CnaeFiscal,
+                       CodigoMunicipioIbge = @CodigoMunicipioIbge,
+                       CodigoUfIbge = @CodigoUfIbge,
+                       AmbienteFiscal = @AmbienteFiscal,
+                       CscId = CASE WHEN @CscId = N'' THEN CscId ELSE @CscId END,
+                       CscCifrado = CASE WHEN @CscCifrado = N'' THEN CscCifrado ELSE @CscCifrado END,
+                       CertificadoPfxCifrado = CASE WHEN @CertificadoPfxCifrado = N'' THEN CertificadoPfxCifrado ELSE @CertificadoPfxCifrado END,
+                       CertificadoSenhaCifrada = CASE WHEN @CertificadoPfxCifrado = N'' THEN CertificadoSenhaCifrada ELSE @CertificadoSenhaCifrada END,
+                       CertificadoThumbprint = CASE WHEN @CertificadoPfxCifrado = N'' THEN CertificadoThumbprint ELSE @CertificadoThumbprint END,
+                       CertificadoValidoAte = CASE WHEN @CertificadoPfxCifrado = N'' THEN CertificadoValidoAte ELSE @CertificadoValidoAte END,
+                       RespTecCnpj = @RespTecCnpj,
+                       RespTecContato = @RespTecContato,
+                       RespTecEmail = @RespTecEmail,
+                       RespTecFone = @RespTecFone
                  WHERE Id = @Id;
             END
             ELSE
@@ -79,15 +133,25 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
                     (Id, FantasyName, CorporateName, Cnpj, StateRegistration, Website, Email, SacPhone,
                      Phone, Mobile, Cep, Address, Number, Neighborhood, City, Uf, Complement,
                      EmailSmtpEnabled, EmailSmtpHost, EmailSmtpPort, EmailSmtpEnableSsl, EmailSmtpUser,
-                     EmailSmtpPassword, EmailSmtpFromEmail, EmailSmtpFromName, EmailSmtpReplyTo)
+                     EmailSmtpPassword, EmailSmtpFromEmail, EmailSmtpFromName, EmailSmtpReplyTo,
+                     Crt, CnaeFiscal, CodigoMunicipioIbge, CodigoUfIbge, AmbienteFiscal,
+                     CscId, CscCifrado, CertificadoPfxCifrado, CertificadoSenhaCifrada,
+                     CertificadoThumbprint, CertificadoValidoAte, RespTecCnpj, RespTecContato,
+                     RespTecEmail, RespTecFone)
                 VALUES
                     (@Id, @FantasyName, @CorporateName, @Cnpj, @StateRegistration, @Website,
                      @Email, @SacPhone, @Phone, @Mobile, @Cep, @Address, @Number, @Neighborhood, @City, @Uf, @Complement,
                      @EmailSmtpEnabled, @EmailSmtpHost, @EmailSmtpPort, @EmailSmtpEnableSsl, @EmailSmtpUser,
-                     @EmailSmtpPassword, @EmailSmtpFromEmail, @EmailSmtpFromName, @EmailSmtpReplyTo);
+                     @EmailSmtpPassword, @EmailSmtpFromEmail, @EmailSmtpFromName, @EmailSmtpReplyTo,
+                     @Crt, @CnaeFiscal, @CodigoMunicipioIbge, @CodigoUfIbge, @AmbienteFiscal,
+                     @CscId, @CscCifrado, @CertificadoPfxCifrado, @CertificadoSenhaCifrada,
+                     @CertificadoThumbprint, @CertificadoValidoAte, @RespTecCnpj, @RespTecContato,
+                     @RespTecEmail, @RespTecFone);
             END;
-            """,
-            db);
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@Id", companyId);
         AddParameters(command, empresa);
         await command.ExecuteNonQueryAsync();
@@ -125,6 +189,32 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
         command.Parameters.AddWithValue("@EmailSmtpFromEmail", source.EmailSmtpFromEmail.Trim());
         command.Parameters.AddWithValue("@EmailSmtpFromName", source.EmailSmtpFromName.Trim());
         command.Parameters.AddWithValue("@EmailSmtpReplyTo", source.EmailSmtpReplyTo.Trim());
+
+        command.Parameters.AddWithValue("@Crt", source.Crt);
+        command.Parameters.AddWithValue("@CnaeFiscal", source.CnaeFiscal.Trim());
+        command.Parameters.AddWithValue("@CodigoMunicipioIbge", source.CodigoMunicipioIbge.Trim());
+        command.Parameters.AddWithValue("@CodigoUfIbge", source.CodigoUfIbge);
+        command.Parameters.AddWithValue("@AmbienteFiscal", source.AmbienteFiscal);
+        command.Parameters.AddWithValue("@CscId", source.CscId.Trim());
+        command.Parameters.AddWithValue(
+            "@CscCifrado",
+            string.IsNullOrWhiteSpace(source.Csc) ? string.Empty : secretProtector.Protect(source.Csc));
+        command.Parameters.AddWithValue(
+            "@CertificadoPfxCifrado",
+            string.IsNullOrWhiteSpace(source.CertificadoPfxBase64) ? string.Empty : secretProtector.Protect(source.CertificadoPfxBase64));
+        command.Parameters.AddWithValue(
+            "@CertificadoSenhaCifrada",
+            string.IsNullOrWhiteSpace(source.CertificadoSenha) ? string.Empty : secretProtector.Protect(source.CertificadoSenha));
+        command.Parameters.AddWithValue(
+            "@CertificadoThumbprint",
+            string.IsNullOrWhiteSpace(source.CertificadoThumbprint) ? (object)DBNull.Value : source.CertificadoThumbprint);
+        command.Parameters.AddWithValue(
+            "@CertificadoValidoAte",
+            source.CertificadoValidoAte.HasValue ? source.CertificadoValidoAte.Value : (object)DBNull.Value);
+        command.Parameters.AddWithValue("@RespTecCnpj", source.RespTecCnpj.Trim());
+        command.Parameters.AddWithValue("@RespTecContato", source.RespTecContato.Trim());
+        command.Parameters.AddWithValue("@RespTecEmail", source.RespTecEmail.Trim());
+        command.Parameters.AddWithValue("@RespTecFone", source.RespTecFone.Trim());
     }
 
     private EmpresaAD Map(SqlDataReader source) => new()
@@ -153,7 +243,23 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
         EmailSmtpPassword = UnprotectSecret(ReadString(source, "EmailSmtpPassword")),
         EmailSmtpFromEmail = ReadString(source, "EmailSmtpFromEmail"),
         EmailSmtpFromName = ReadString(source, "EmailSmtpFromName"),
-        EmailSmtpReplyTo = ReadString(source, "EmailSmtpReplyTo")
+        EmailSmtpReplyTo = ReadString(source, "EmailSmtpReplyTo"),
+
+        Crt = (byte)ReadInt(source, "Crt"),
+        CnaeFiscal = ReadString(source, "CnaeFiscal"),
+        CodigoMunicipioIbge = ReadString(source, "CodigoMunicipioIbge"),
+        CodigoUfIbge = (byte)ReadInt(source, "CodigoUfIbge"),
+        AmbienteFiscal = (byte)ReadInt(source, "AmbienteFiscal"),
+        CscId = ReadString(source, "CscId"),
+        Csc = UnprotectSecret(ReadString(source, "CscCifrado")),
+        CertificadoPfxBase64 = UnprotectSecret(ReadString(source, "CertificadoPfxCifrado")),
+        CertificadoSenha = UnprotectSecret(ReadString(source, "CertificadoSenhaCifrada")),
+        CertificadoThumbprint = ReadString(source, "CertificadoThumbprint"),
+        CertificadoValidoAte = ReadNullableDateTimeOffset(source, "CertificadoValidoAte"),
+        RespTecCnpj = ReadString(source, "RespTecCnpj"),
+        RespTecContato = ReadString(source, "RespTecContato"),
+        RespTecEmail = ReadString(source, "RespTecEmail"),
+        RespTecFone = ReadString(source, "RespTecFone")
     };
 
     private static string ReadString(SqlDataReader reader, string name)
@@ -171,7 +277,13 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
     private static int ReadInt(SqlDataReader reader, string name)
     {
         var ordinal = reader.GetOrdinal(name);
-        return reader.IsDBNull(ordinal) ? 0 : reader.GetInt32(ordinal);
+        return reader.IsDBNull(ordinal) ? 0 : Convert.ToInt32(reader.GetValue(ordinal));
+    }
+
+    private static DateTimeOffset? ReadNullableDateTimeOffset(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? null : reader.GetDateTimeOffset(ordinal);
     }
 
     private string UnprotectSecret(string value)

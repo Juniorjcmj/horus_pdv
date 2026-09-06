@@ -23,4 +23,10 @@ public class ClienteAD
     public string Telephone { get; set; } = string.Empty;
     public string Cellphone { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+
+    // Dados fiscais do destinatário (usados quando a venda leva CPF/CNPJ na NFC-e)
+    /// <summary>1 contribuinte ICMS, 2 isento, 9 não contribuinte.</summary>
+    public byte IndIeDest { get; set; } = 9;
+    public string? InscricaoEstadual { get; set; }
+    public string? CodigoMunicipioIbge { get; set; }
 }

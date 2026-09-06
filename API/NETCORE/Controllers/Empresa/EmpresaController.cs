@@ -71,13 +71,25 @@ public class EmpresaController(EmpresaAB empresaAB) : ControllerBase
             }
         }
 
-        var saved = await empresaAB.SalvarAsync(currentUser.CompanyId, ToDataAccess(request));
-        return Ok(new ApiResponse<EmpresaRequest>
+        if (request.Crt is < 1 or > 4)
         {
-            Success = true,
-            Message = "Dados da empresa atualizados com sucesso.",
-            Data = ToRequest(saved)
-        });
+            return BadRequest(new ApiResponse<EmpresaRequest> { Success = false, Message = "Regime tributario (CRT) invalido." });
+        }
+
+        try
+        {
+            var saved = await empresaAB.SalvarAsync(currentUser.CompanyId, ToDataAccess(request));
+            return Ok(new ApiResponse<EmpresaRequest>
+            {
+                Success = true,
+                Message = "Dados da empresa atualizados com sucesso.",
+                Data = ToRequest(saved)
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<EmpresaRequest> { Success = false, Message = ex.Message });
+        }
     }
 
     private static EmpresaAD ToDataAccess(EmpresaRequest source) => new()
@@ -106,7 +118,20 @@ public class EmpresaController(EmpresaAB empresaAB) : ControllerBase
         EmailSmtpPassword = source.EmailSmtpPassword,
         EmailSmtpFromEmail = source.EmailSmtpFromEmail,
         EmailSmtpFromName = source.EmailSmtpFromName,
-        EmailSmtpReplyTo = source.EmailSmtpReplyTo
+        EmailSmtpReplyTo = source.EmailSmtpReplyTo,
+        Crt = source.Crt,
+        CnaeFiscal = source.CnaeFiscal,
+        CodigoMunicipioIbge = source.CodigoMunicipioIbge,
+        CodigoUfIbge = source.CodigoUfIbge,
+        AmbienteFiscal = source.AmbienteFiscal,
+        CscId = source.CscId,
+        Csc = source.Csc,
+        CertificadoPfxBase64 = source.CertificadoPfxBase64,
+        CertificadoSenha = source.CertificadoSenha,
+        RespTecCnpj = source.RespTecCnpj,
+        RespTecContato = source.RespTecContato,
+        RespTecEmail = source.RespTecEmail,
+        RespTecFone = source.RespTecFone
     };
 
     private static EmpresaRequest ToRequest(EmpresaAD source) => new()
@@ -136,7 +161,24 @@ public class EmpresaController(EmpresaAB empresaAB) : ControllerBase
         EmailSmtpHasPassword = !string.IsNullOrWhiteSpace(source.EmailSmtpPassword),
         EmailSmtpFromEmail = source.EmailSmtpFromEmail,
         EmailSmtpFromName = source.EmailSmtpFromName,
-        EmailSmtpReplyTo = source.EmailSmtpReplyTo
+        EmailSmtpReplyTo = source.EmailSmtpReplyTo,
+        Crt = source.Crt,
+        CnaeFiscal = source.CnaeFiscal,
+        CodigoMunicipioIbge = source.CodigoMunicipioIbge,
+        CodigoUfIbge = source.CodigoUfIbge,
+        AmbienteFiscal = source.AmbienteFiscal,
+        CscId = source.CscId,
+        Csc = string.Empty,
+        CscHasValue = !string.IsNullOrWhiteSpace(source.Csc),
+        CertificadoPfxBase64 = string.Empty,
+        CertificadoSenha = string.Empty,
+        CertificadoHasValue = !string.IsNullOrWhiteSpace(source.CertificadoPfxBase64),
+        CertificadoThumbprint = source.CertificadoThumbprint,
+        CertificadoValidoAte = source.CertificadoValidoAte?.ToString("o"),
+        RespTecCnpj = source.RespTecCnpj,
+        RespTecContato = source.RespTecContato,
+        RespTecEmail = source.RespTecEmail,
+        RespTecFone = source.RespTecFone
     };
 
     private static string ValidateEmailConfiguration(EmpresaRequest request, bool hasExistingPassword)

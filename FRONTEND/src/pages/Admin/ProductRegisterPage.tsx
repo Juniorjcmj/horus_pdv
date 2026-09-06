@@ -33,11 +33,32 @@ type Product = {
   productUnitPrice: string;
   productSalePrice: string;
   totalPriceOnProduct: string;
+
+  // Dados fiscais (NFC-e modelo 65)
+  ncm: string;
+  cest: string | null;
+  cfop: string;
+  origemMercadoria: number;
+  unidadeComercial: string;
+  unidadeTributavel: string;
+  gtin: string;
+  csosnIcms: string | null;
+  cstIcms: string | null;
+  aliquotaIcms: string;
+  cstPis: string;
+  cstCofins: string;
+  cstIbsCbs: string | null;
+  cClassTrib: string | null;
 };
 
 type ProductFormData = Omit<Product, "id">;
 
 type QuickSupplierDraft = SupplierPayload;
+
+// Produtos vendidos por peso/volume aceitam estoque e venda fracionados (ex.: 12,500 kg).
+function isFractionableUnit(unit: string) {
+  return unit.trim().toUpperCase() !== "UN";
+}
 
 const EMPTY_FORM: ProductFormData = {
   productImageUrl: "",
@@ -50,6 +71,20 @@ const EMPTY_FORM: ProductFormData = {
   productUnitPrice: "",
   productSalePrice: "",
   totalPriceOnProduct: "",
+  ncm: "",
+  cest: "",
+  cfop: "5102",
+  origemMercadoria: 0,
+  unidadeComercial: "UN",
+  unidadeTributavel: "UN",
+  gtin: "SEM GTIN",
+  csosnIcms: "102",
+  cstIcms: "",
+  aliquotaIcms: "0,00",
+  cstPis: "07",
+  cstCofins: "07",
+  cstIbsCbs: null,
+  cClassTrib: null,
 };
 
 const EMPTY_SUPPLIER_DRAFT: QuickSupplierDraft = {
@@ -103,7 +138,9 @@ function ProductFormDrawer({
     parseMoneyBr,
     formatMoneyBr,
     sanitizeIntegerInput,
+    sanitizeDecimalInput,
   } = useInputMasks();
+  const quantityIsFractionable = isFractionableUnit(value.unidadeComercial);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
   const [supplierModalOpen, setSupplierModalOpen] = useState(false);
@@ -117,10 +154,17 @@ function ProductFormDrawer({
     fieldValue: ProductFormData[K],
   ) => {
     const next = { ...value, [key]: fieldValue };
-    const quantity = Number(next.productQnt || 0);
+    const quantity = parseMoneyBr(next.productQnt || "0");
     const unitPrice = parseMoneyBr(next.productUnitPrice);
     next.totalPriceOnProduct = quantity > 0 ? formatMoneyBr(quantity * unitPrice) : "";
     onChange(next);
+  };
+
+  const setQuantityField = (rawValue: string) => {
+    const sanitized = quantityIsFractionable
+      ? sanitizeDecimalInput(rawValue, 4).replace(".", ",")
+      : sanitizeIntegerInput(rawValue).slice(0, 8);
+    setField("productQnt", sanitized);
   };
 
   const applyImage = (file: File | null) => {
@@ -392,16 +436,14 @@ function ProductFormDrawer({
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
-                  Quantidade do Produto *
+                  Quantidade do Produto {quantityIsFractionable ? `(${value.unidadeComercial})` : ""} *
                 </span>
                 <input
                   value={value.productQnt}
-                  inputMode="numeric"
-                  onChange={(event) =>
-                    setField("productQnt", sanitizeIntegerInput(event.target.value).slice(0, 8))
-                  }
+                  inputMode="decimal"
+                  onChange={(event) => setQuantityField(event.target.value)}
                   className="input-field w-full"
-                  placeholder="Quantidade"
+                  placeholder={quantityIsFractionable ? "0,000" : "Quantidade"}
                 />
               </label>
               <label className="block">
@@ -446,6 +488,144 @@ function ProductFormDrawer({
                 />
               </label>
             </div>
+          </section>
+
+          <section className="card rounded-2xl p-4">
+            <h4 className="text-sm font-semibold text-text-secondary">Dados fiscais (NFC-e)</h4>
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">NCM</span>
+                <input
+                  value={value.ncm}
+                  onChange={(event) =>
+                    setField("ncm", sanitizeIntegerInput(event.target.value).slice(0, 8))
+                  }
+                  className="input-field w-full"
+                  placeholder="00000000"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">CFOP</span>
+                <input
+                  value={value.cfop}
+                  onChange={(event) =>
+                    setField("cfop", sanitizeIntegerInput(event.target.value).slice(0, 4))
+                  }
+                  className="input-field w-full"
+                  placeholder="5102"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">CEST</span>
+                <input
+                  value={value.cest ?? ""}
+                  onChange={(event) =>
+                    setField("cest", sanitizeIntegerInput(event.target.value).slice(0, 7) || null)
+                  }
+                  className="input-field w-full"
+                  placeholder="Só produtos com ST"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Origem da mercadoria</span>
+                <select
+                  value={value.origemMercadoria}
+                  onChange={(event) => setField("origemMercadoria", Number(event.target.value))}
+                  className="input-field w-full"
+                >
+                  <option value={0}>0 - Nacional</option>
+                  <option value={1}>1 - Estrangeira (importação direta)</option>
+                  <option value={2}>2 - Estrangeira (mercado interno)</option>
+                  <option value={3}>3 - Nacional, +40% importado</option>
+                  <option value={4}>4 - Nacional, produção conforme processos produtivos básicos</option>
+                  <option value={5}>5 - Nacional, ≤40% importado</option>
+                  <option value={6}>6 - Estrangeira (importação direta, sem similar nacional)</option>
+                  <option value={7}>7 - Estrangeira (mercado interno, sem similar nacional)</option>
+                  <option value={8}>8 - Nacional, +70% importado</option>
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Unidade comercial</span>
+                <input
+                  value={value.unidadeComercial}
+                  onChange={(event) => setField("unidadeComercial", event.target.value.toUpperCase().slice(0, 6))}
+                  className="input-field w-full"
+                  placeholder="UN, KG, LT..."
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Unidade tributável</span>
+                <input
+                  value={value.unidadeTributavel}
+                  onChange={(event) => setField("unidadeTributavel", event.target.value.toUpperCase().slice(0, 6))}
+                  className="input-field w-full"
+                  placeholder="UN, KG, LT..."
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">GTIN / código de barras</span>
+                <input
+                  value={value.gtin}
+                  onChange={(event) => setField("gtin", event.target.value || "SEM GTIN")}
+                  className="input-field w-full"
+                  placeholder="SEM GTIN"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">CSOSN (Simples/MEI)</span>
+                <input
+                  value={value.csosnIcms ?? ""}
+                  onChange={(event) => setField("csosnIcms", event.target.value.trim() || null)}
+                  className="input-field w-full"
+                  placeholder="Ex.: 102, 500"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">CST ICMS (Regime Normal)</span>
+                <input
+                  value={value.cstIcms ?? ""}
+                  onChange={(event) => setField("cstIcms", event.target.value.trim() || null)}
+                  className="input-field w-full"
+                  placeholder="Ex.: 00, 60"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Alíquota ICMS (%)</span>
+                <input
+                  value={value.aliquotaIcms}
+                  inputMode="decimal"
+                  onChange={(event) => setField("aliquotaIcms", maskMoneyBr(event.target.value))}
+                  className="input-field w-full"
+                  placeholder="0,00"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">CST PIS</span>
+                <input
+                  value={value.cstPis}
+                  onChange={(event) =>
+                    setField("cstPis", sanitizeIntegerInput(event.target.value).slice(0, 2).padStart(2, "0"))
+                  }
+                  className="input-field w-full"
+                  placeholder="07"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">CST COFINS</span>
+                <input
+                  value={value.cstCofins}
+                  onChange={(event) =>
+                    setField("cstCofins", sanitizeIntegerInput(event.target.value).slice(0, 2).padStart(2, "0"))
+                  }
+                  className="input-field w-full"
+                  placeholder="07"
+                />
+              </label>
+            </div>
+            <p className="mt-3 text-xs text-text-secondary">
+              Preencha CSOSN quando a empresa for Simples/MEI ou CST ICMS quando for Regime
+              Normal — o emissor fiscal usa o que estiver preenchido no cadastro da empresa.
+            </p>
           </section>
         </div>
 
@@ -574,6 +754,7 @@ function ProductFormDrawer({
 }
 
 export default function ProductRegisterPage() {
+  const { parseMoneyBr } = useInputMasks();
   const statusDialog = useStatusDialog();
   const [products, setProducts] = useState<Product[]>([]);
   const [supplierOptions, setSupplierOptions] = useState<string[]>([]);
@@ -794,7 +975,7 @@ export default function ProductRegisterPage() {
       return false;
     }
 
-    if (Number(form.productQnt) < 1) {
+    if (parseMoneyBr(form.productQnt) <= 0) {
       Toast.error("A quantidade do produto deve ser maior que 0.");
       return false;
     }

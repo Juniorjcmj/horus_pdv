@@ -28,6 +28,7 @@ import ReceiptPreviewModal, {
 import { companyService, type CompanyDto } from "@/services/api/companyService";
 import { productService } from "@/services/api/productService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
+import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
 
 type SalesStartPageProps = {
@@ -43,7 +44,19 @@ type Product = {
   stock: number;
   salePrice: number;
   imageUrl?: string;
+  unit: string;
 };
+
+// Produtos vendidos por peso/volume aceitam quantidade fracionada na NFC-e (ex.: 0,452 kg).
+// "UN" (unidade) continua com o stepper inteiro de sempre.
+function isFractionableUnit(unit: string) {
+  return unit.trim().toUpperCase() !== "UN";
+}
+
+// Formata quantidade pt-BR sem casas decimais desnecessárias (10 -> "10", 0.452 -> "0,452").
+function formatQuantityDisplay(value: number) {
+  return value.toFixed(4).replace(/0+$/, "").replace(/\.$/, "").replace(".", ",") || "0";
+}
 
 type CartItem = {
   id: string;
@@ -100,7 +113,8 @@ export default function SalesStartPage({
   standalone = false,
   operatorName = "Operador",
 }: SalesStartPageProps) {
-  const { formatMoneyBr, maskMoneyBr, parseMoneyBr, sanitizeIntegerInput } = useInputMasks();
+  const { formatMoneyBr, maskMoneyBr, parseMoneyBr, sanitizeIntegerInput, sanitizeDecimalInput } =
+    useInputMasks();
   const statusDialog = useStatusDialog();
   const productInputRef = useRef<HTMLInputElement | null>(null);
   const qtyInputRef = useRef<HTMLInputElement | null>(null);
@@ -136,11 +150,14 @@ export default function SalesStartPage({
     [products, selectedProductId],
   );
 
+  const quantityUnit = selectedProduct?.unit ?? "UN";
+  const quantityIsFractionable = isFractionableUnit(quantityUnit);
+
   const quantity = useMemo(() => {
     const parsed = Number(quantityInput);
-    if (!Number.isFinite(parsed) || parsed < 1) return 1;
-    return Math.floor(parsed);
-  }, [quantityInput]);
+    if (!Number.isFinite(parsed) || parsed <= 0) return quantityIsFractionable ? 0 : 1;
+    return quantityIsFractionable ? parsed : Math.floor(parsed);
+  }, [quantityInput, quantityIsFractionable]);
 
   const filteredProducts = useMemo(() => {
     const normalized = productSearch.trim().toLowerCase();
@@ -181,9 +198,10 @@ export default function SalesStartPage({
         id: item.id,
         name: item.productName,
         code: item.productCode,
-        stock: Number(item.productQnt || 0),
+        stock: parseMoneyBr(item.productQnt || "0"),
         salePrice: parseMoneyBr(item.productSalePrice || "0"),
         imageUrl: item.productImageUrl,
+        unit: item.unidadeComercial || "UN",
       })),
     );
   }, [parseMoneyBr]);
@@ -285,6 +303,47 @@ export default function SalesStartPage({
     qtyInputRef.current?.focus();
   };
 
+  // Compartilhada entre "adicionar item" manual e a leitura de código de barras de balança
+  // (peso variável) — ambos os fluxos acabam no mesmo carrinho, com a mesma checagem de estoque.
+  const addProductToCart = useCallback((product: Product, quantityToAdd: number) => {
+    if (quantityToAdd <= 0) {
+      Toast.error("Informe uma quantidade maior que zero.");
+      return false;
+    }
+    if (quantityToAdd > product.stock) {
+      Toast.error(`Estoque insuficiente. Disponível: ${formatQuantityDisplay(product.stock)}.`);
+      return false;
+    }
+
+    let added = true;
+    setCart((current) => {
+      const existing = current.find((item) => item.id === product.id);
+      if (!existing) {
+        return [
+          ...current,
+          {
+            id: product.id,
+            code: product.code,
+            name: product.name,
+            quantity: quantityToAdd,
+            unitPrice: product.salePrice,
+          },
+        ];
+      }
+      const nextQuantity = existing.quantity + quantityToAdd;
+      if (nextQuantity > product.stock) {
+        Toast.error(`Estoque insuficiente para ${product.name}.`);
+        added = false;
+        return current;
+      }
+      return current.map((item) =>
+        item.id === product.id ? { ...item, quantity: nextQuantity } : item,
+      );
+    });
+
+    return added;
+  }, []);
+
   const addItem = useCallback(() => {
     const matchedFromSearch =
       selectedProduct ??
@@ -299,41 +358,43 @@ export default function SalesStartPage({
       Toast.error("Selecione um produto.");
       return;
     }
-    if (quantity > matchedFromSearch.stock) {
-      Toast.error(`Estoque insuficiente. Disponível: ${matchedFromSearch.stock}.`);
-      return;
-    }
 
-    setCart((current) => {
-      const existing = current.find((item) => item.id === matchedFromSearch.id);
-      if (!existing) {
-        return [
-          ...current,
-          {
-            id: matchedFromSearch.id,
-            code: matchedFromSearch.code,
-            name: matchedFromSearch.name,
-            quantity,
-            unitPrice: matchedFromSearch.salePrice,
-          },
-        ];
-      }
-      const nextQuantity = existing.quantity + quantity;
-      if (nextQuantity > matchedFromSearch.stock) {
-        Toast.error(`Estoque insuficiente para ${matchedFromSearch.name}.`);
-        return current;
-      }
-      return current.map((item) =>
-        item.id === matchedFromSearch.id ? { ...item, quantity: nextQuantity } : item,
-      );
-    });
+    if (!addProductToCart(matchedFromSearch, quantity)) return;
 
     setSelectedProductId("");
     setProductSearch("");
     setShowProductOptions(false);
     setQuantityInput("1");
     productInputRef.current?.focus();
-  }, [filteredProducts, productSearch, quantity, selectedProduct]);
+  }, [addProductToCart, filteredProducts, productSearch, quantity, selectedProduct]);
+
+  // Leitura de etiqueta de balança (código de barras EAN-13 de peso variável): decodifica o
+  // PLU + peso e adiciona direto ao carrinho, sem passar pelos campos de quantidade manual.
+  const addFromBalancaBarcode = useCallback(
+    (code: string) => {
+      const decoded = parseBalancaBarcode(code);
+      if (!decoded) return false;
+
+      const product =
+        products.find((item) => item.code === decoded.productCode) ??
+        products.find((item) => Number(item.code) === Number(decoded.productCode));
+
+      if (!product) {
+        Toast.error(`Produto com código de balança "${decoded.productCode}" não encontrado.`);
+        return true; // era um código de balança válido — não deve cair na busca de texto
+      }
+
+      if (addProductToCart(product, decoded.weightKg)) {
+        Toast.success(`${product.name} — ${formatQuantityDisplay(decoded.weightKg)} kg adicionado.`);
+        setProductSearch("");
+        setSelectedProductId("");
+        setShowProductOptions(false);
+        productInputRef.current?.focus();
+      }
+      return true;
+    },
+    [addProductToCart, products],
+  );
 
   const removeItem = (id: string) => {
     setCart((current) => current.filter((item) => item.id !== id));
@@ -562,6 +623,11 @@ export default function SalesStartPage({
                   }}
                   onBlur={() => window.setTimeout(() => setShowProductOptions(false), 120)}
                   onKeyDown={(event) => {
+                    if (event.key === "Enter" && addFromBalancaBarcode(productSearch)) {
+                      event.preventDefault();
+                      return;
+                    }
+
                     if (!showProductOptions) return;
 
                     if (event.key === "ArrowDown") {
@@ -623,18 +689,25 @@ export default function SalesStartPage({
             </label>
 
             <label className="mb-2 block">
-              <span className="mb-1 block text-xs font-semibold uppercase">Quantidade (volume):</span>
+              <span className="mb-1 block text-xs font-semibold uppercase">
+                Quantidade{quantityIsFractionable ? ` (${quantityUnit.toLowerCase()})` : " (volume)"}:
+              </span>
               <input
                 ref={qtyInputRef}
                 value={quantityInput}
-                inputMode="numeric"
-                pattern="[0-9]*"
+                inputMode="decimal"
                 onFocus={(event) => event.target.select()}
                 onChange={(event) =>
-                  setQuantityInput(sanitizeIntegerInput(event.target.value).slice(0, 4))
+                  setQuantityInput(
+                    quantityIsFractionable
+                      ? sanitizeDecimalInput(event.target.value, 4).slice(0, 9)
+                      : sanitizeIntegerInput(event.target.value).slice(0, 4),
+                  )
                 }
                 onBlur={() => {
-                  if (!quantityInput || Number(quantityInput) < 1) setQuantityInput("1");
+                  if (!quantityInput || Number(quantityInput) <= 0) {
+                    setQuantityInput(quantityIsFractionable ? "0" : "1");
+                  }
                 }}
                 className="input-field h-10 w-full text-lg font-semibold"
               />

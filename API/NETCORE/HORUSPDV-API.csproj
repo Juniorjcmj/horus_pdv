@@ -11,10 +11,17 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.5" />
+        <!-- Emissão NFC-e (fork ativo, LGPL, mantém compatibilidade com o extinto DFe.NET/Zeus).
+             Fixe a versão exata em produção — atualizar é o que traz Nota Técnica nova, deve ser
+             decisão consciente com homologação antes, nunca um dotnet restore distraído. -->
+        <PackageReference Include="Hercules.NET.NFe.NFCe" Version="2026.8.31.*" />
+        <PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.*" />
     </ItemGroup>
 
     <ItemGroup>
         <Content Include="DataBase\Resumo.sql" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="DataBase\Migrations\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
+        <Content Include="DataBase\Schemas\**\*.xsd" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

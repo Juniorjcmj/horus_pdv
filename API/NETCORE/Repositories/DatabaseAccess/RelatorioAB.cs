@@ -209,13 +209,13 @@ public class RelatorioAB(Connection connection)
                 ReadString(reader, "CustomerName"),
                 ReadString(reader, "CustomerCpf"),
                 NormalizePaymentType(ReadString(reader, "PaymentType")),
-                ParseMoney(ReadString(reader, "TotalAmount")),
+                ReadDecimal(reader, "TotalAmount"),
                 reader.GetDateTimeOffset(reader.GetOrdinal("SaleDate")),
                 ReadString(reader, "ProductCode"),
                 ReadString(reader, "ProductName"),
-                ReadInt(reader, "Quantity"),
-                ParseMoney(ReadString(reader, "UnitPrice")),
-                ParseMoney(ReadString(reader, "ItemTotal"))));
+                ReadDecimal(reader, "Quantity"),
+                ReadDecimal(reader, "UnitPrice"),
+                ReadDecimal(reader, "ItemTotal")));
         }
 
         return rows;
@@ -241,9 +241,9 @@ public class RelatorioAB(Connection connection)
                 ReadString(reader, "ProductCode"),
                 ReadString(reader, "ProductName"),
                 ReadString(reader, "ProductSupplier"),
-                ParseInt(ReadString(reader, "ProductQnt")),
-                ParseMoney(ReadString(reader, "ProductUnitPrice")),
-                ParseMoney(ReadString(reader, "ProductSalePrice"))));
+                ReadDecimal(reader, "ProductQnt"),
+                ReadDecimal(reader, "ProductUnitPrice"),
+                ReadDecimal(reader, "ProductSalePrice")));
         }
 
         return rows;
@@ -268,8 +268,8 @@ public class RelatorioAB(Connection connection)
             rows.Add(new ReportCashRow(
                 reader.GetDateTimeOffset(reader.GetOrdinal("OpenedAt")),
                 reader.IsDBNull(reader.GetOrdinal("ClosedAt")) ? null : reader.GetDateTimeOffset(reader.GetOrdinal("ClosedAt")),
-                ParseMoney(ReadString(reader, "OpeningAmount")),
-                ParseMoney(ReadString(reader, "ClosingAmount")),
+                ReadDecimal(reader, "OpeningAmount"),
+                ReadDecimal(reader, "ClosingAmount"),
                 ReadString(reader, "OperatorName")));
         }
 
@@ -342,21 +342,10 @@ public class RelatorioAB(Connection connection)
         return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
     }
 
-    private static int ReadInt(SqlDataReader reader, string name)
+    private static decimal ReadDecimal(SqlDataReader reader, string name)
     {
         var ordinal = reader.GetOrdinal(name);
-        return reader.IsDBNull(ordinal) ? 0 : reader.GetInt32(ordinal);
-    }
-
-    private static int ParseInt(string value)
-        => int.TryParse(value, out var parsed) ? parsed : 0;
-
-    private static decimal ParseMoney(string value)
-    {
-        var normalized = value.Trim().Replace("R$", "", StringComparison.OrdinalIgnoreCase).Replace(".", "").Replace(",", ".");
-        return decimal.TryParse(normalized, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
-            ? parsed
-            : 0;
+        return reader.IsDBNull(ordinal) ? 0m : reader.GetDecimal(ordinal);
     }
 
     private static string FormatMoney(decimal value)
@@ -424,7 +413,7 @@ public class RelatorioAB(Connection connection)
         DateTimeOffset SaleDate,
         string ProductCode,
         string ProductName,
-        int Quantity,
+        decimal Quantity,
         decimal UnitPrice,
         decimal ItemTotal);
 
@@ -432,7 +421,7 @@ public class RelatorioAB(Connection connection)
         string Code,
         string Name,
         string Supplier,
-        int Quantity,
+        decimal Quantity,
         decimal UnitPrice,
         decimal SalePrice);
 

@@ -35,6 +35,25 @@ export type CompanyDto = {
   emailSmtpFromEmail: string;
   emailSmtpFromName: string;
   emailSmtpReplyTo: string;
+
+  // Dados fiscais (emitente NFC-e modelo 65)
+  crt: number;
+  cnaeFiscal: string;
+  codigoMunicipioIbge: string;
+  codigoUfIbge: number;
+  ambienteFiscal: number;
+  cscId: string;
+  csc: string;
+  cscHasValue: boolean;
+  certificadoPfxBase64: string;
+  certificadoSenha: string;
+  certificadoHasValue: boolean;
+  certificadoThumbprint: string;
+  certificadoValidoAte: string | null;
+  respTecCnpj: string;
+  respTecContato: string;
+  respTecEmail: string;
+  respTecFone: string;
 };
 
 export const companyService = {

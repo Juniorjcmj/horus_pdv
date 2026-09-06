@@ -7,6 +7,7 @@ using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Repositories.DataAccess;
 using HORUSPDV_API.Repositories.DatabaseAccess;
 using HORUSPDV_API.Services.Security;
+using HORUSPDV_API.Services.Shared;
 
 namespace HORUSPDV_API.Services.Caixa;
 
@@ -37,7 +38,7 @@ public class HorusCaixaService(CaixaAB caixaAB)
                 $"cx-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
                 currentUser.CompanyId,
                 now,
-                NormalizeMoney(request.OpeningAmount),
+                HorusMoneyFormat.ParseDecimal(request.OpeningAmount),
                 currentUser.Id,
                 currentUser.Name)
             .GetAwaiter()
@@ -58,7 +59,7 @@ public class HorusCaixaService(CaixaAB caixaAB)
                 openSession.Id,
                 currentUser.CompanyId,
                 now,
-                NormalizeMoney(request.ClosingAmount),
+                HorusMoneyFormat.ParseDecimal(request.ClosingAmount),
                 currentUser.Id,
                 currentUser.Name,
                 request.Note.Trim())
@@ -128,19 +129,13 @@ public class HorusCaixaService(CaixaAB caixaAB)
             Status = closedAt is null ? "Aberto" : "Fechado",
             OpenedAt = source.OpenedAt.ToString("o"),
             ClosedAt = closedAt?.ToString("o"),
-            OpeningAmount = source.OpeningAmount,
-            ClosingAmount = source.ClosingAmount,
+            OpeningAmount = HorusMoneyFormat.Format(source.OpeningAmount),
+            ClosingAmount = HorusMoneyFormat.Format(source.ClosingAmount),
             OperatorName = source.OperatorName,
             ClosedByName = source.ClosedByName,
             Note = source.Note,
             ElapsedMinutes = Math.Max(0, (int)Math.Floor(elapsed.TotalMinutes))
         };
-    }
-
-    private static string NormalizeMoney(string value)
-    {
-        var trimmed = value.Trim();
-        return string.IsNullOrWhiteSpace(trimmed) ? "0,00" : trimmed;
     }
 }
 

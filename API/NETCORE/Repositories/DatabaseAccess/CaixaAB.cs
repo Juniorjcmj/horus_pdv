@@ -39,7 +39,7 @@ public class CaixaAB(Connection connection)
         string id,
         string companyId,
         DateTimeOffset openedAt,
-        string openingAmount,
+        decimal openingAmount,
         string operatorId,
         string operatorName)
     {
@@ -49,7 +49,7 @@ public class CaixaAB(Connection connection)
             INSERT INTO CaixaSessoes
                 (Id, CompanyId, OpenedAt, OpeningAmount, ClosingAmount, OperatorId, OperatorName, ClosedById, ClosedByName, Note)
             VALUES
-                (@Id, @CompanyId, @OpenedAt, @OpeningAmount, N'0,00', @OperatorId, @OperatorName, N'', N'', N'');
+                (@Id, @CompanyId, @OpenedAt, @OpeningAmount, 0, @OperatorId, @OperatorName, N'', N'', N'');
             """,
             db);
         command.Parameters.AddWithValue("@Id", id);
@@ -65,7 +65,7 @@ public class CaixaAB(Connection connection)
         string id,
         string companyId,
         DateTimeOffset closedAt,
-        string closingAmount,
+        decimal closingAmount,
         string closedById,
         string closedByName,
         string note)
@@ -99,8 +99,8 @@ public class CaixaAB(Connection connection)
         ClosedAt = reader.IsDBNull(reader.GetOrdinal("ClosedAt"))
             ? null
             : reader.GetDateTimeOffset(reader.GetOrdinal("ClosedAt")),
-        OpeningAmount = ReadString(reader, "OpeningAmount"),
-        ClosingAmount = ReadString(reader, "ClosingAmount"),
+        OpeningAmount = reader.GetDecimal(reader.GetOrdinal("OpeningAmount")),
+        ClosingAmount = reader.GetDecimal(reader.GetOrdinal("ClosingAmount")),
         OperatorName = ReadString(reader, "OperatorName"),
         ClosedByName = ReadString(reader, "ClosedByName"),
         Note = ReadString(reader, "Note")

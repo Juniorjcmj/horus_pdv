@@ -9,6 +9,7 @@ using HORUSPDV_API.Repositories.DatabaseAccess;
 using HORUSPDV_API.Services.Caixa;
 using HORUSPDV_API.Services.Clientes;
 using HORUSPDV_API.Services.Email;
+using HORUSPDV_API.Services.Fiscal;
 using HORUSPDV_API.Services.Fornecedores;
 using HORUSPDV_API.Services.Produtos;
 using HORUSPDV_API.Services.Security;
@@ -56,6 +57,12 @@ builder.Services.AddHttpClient<HorusRecaptchaService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IFornecedorService, FornecedorService>();
+
+// Módulo fiscal (NFC-e modelo 65) — ver API/NETCORE/DataBase/README-FISCAL.md
+builder.Services.AddScoped<IFiscalProvider, ZeusFiscalProvider>();
+builder.Services.AddScoped<DocumentoFiscalAB>();
+builder.Services.AddScoped<EmitenteFiscalStore>();
+builder.Services.AddHostedService<NfceOutboxWorker>();
 
 var app = builder.Build();
 

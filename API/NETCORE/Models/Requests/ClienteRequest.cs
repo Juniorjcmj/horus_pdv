@@ -22,4 +22,9 @@ public class ClienteRequest
     public string Telephone { get; set; } = string.Empty;
     public string Cellphone { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+
+    // Dados fiscais do destinatário (usados quando a venda leva CPF/CNPJ na NFC-e)
+    public byte IndIeDest { get; set; } = 9;
+    public string? InscricaoEstadual { get; set; }
+    public string? CodigoMunicipioIbge { get; set; }
 }

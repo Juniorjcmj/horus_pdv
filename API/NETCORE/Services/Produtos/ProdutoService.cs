@@ -1,12 +1,14 @@
 /**
  * Arquivo: API/NETCORE/Services/Produtos/ProdutoService.cs
- * Objetivo: centraliza regras de negócio de cadastro, estoque e manutenção de produtos antes do acesso ao banco ou resposta HTTP.
+ * Objetivo: centraliza regras de negócio de cadastro, estoque, manutenção e dados fiscais de
+ *           produtos antes do acesso ao banco ou resposta HTTP.
  * Entradas esperadas: recebe requisições já validadas pelos controladores e aplica consistência operacional do domínio.
  */
 using HORUSPDV_API.Models.Produtos;
 using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Repositories.DataAccess;
 using HORUSPDV_API.Repositories.DatabaseAccess;
+using HORUSPDV_API.Services.Shared;
 
 namespace HORUSPDV_API.Services.Produtos;
 
@@ -56,17 +58,17 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
             throw new InvalidOperationException("Fornecedor do produto e obrigatorio.");
         }
 
-        if (!int.TryParse(request.ProductQnt, out var quantity) || quantity <= 0)
+        if (HorusMoneyFormat.ParseDecimal(request.ProductQnt) <= 0)
         {
             throw new InvalidOperationException("Quantidade do produto deve ser maior que zero.");
         }
 
-        if (ParseMoney(request.ProductUnitPrice) <= 0)
+        if (HorusMoneyFormat.ParseDecimal(request.ProductUnitPrice) <= 0)
         {
             throw new InvalidOperationException("Preco de custo deve ser maior que zero.");
         }
 
-        if (ParseMoney(request.ProductSalePrice) <= 0)
+        if (HorusMoneyFormat.ParseDecimal(request.ProductSalePrice) <= 0)
         {
             throw new InvalidOperationException("Preco de venda deve ser maior que zero.");
         }
@@ -102,10 +104,24 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         ProductCode = request.ProductCode.Trim(),
         ProductSupplier = request.ProductSupplier.Trim(),
         ProductDescription = request.ProductDescription.Trim(),
-        ProductQnt = request.ProductQnt,
-        ProductUnitPrice = request.ProductUnitPrice,
-        ProductSalePrice = request.ProductSalePrice,
-        TotalPriceOnProduct = request.TotalPriceOnProduct
+        ProductQnt = HorusMoneyFormat.ParseDecimal(request.ProductQnt),
+        ProductUnitPrice = HorusMoneyFormat.ParseDecimal(request.ProductUnitPrice),
+        ProductSalePrice = HorusMoneyFormat.ParseDecimal(request.ProductSalePrice),
+        TotalPriceOnProduct = HorusMoneyFormat.ParseDecimal(request.TotalPriceOnProduct),
+        Ncm = string.IsNullOrWhiteSpace(request.Ncm) ? "00000000" : request.Ncm.Trim(),
+        Cest = string.IsNullOrWhiteSpace(request.Cest) ? null : request.Cest.Trim(),
+        Cfop = string.IsNullOrWhiteSpace(request.Cfop) ? "5102" : request.Cfop.Trim(),
+        OrigemMercadoria = request.OrigemMercadoria,
+        UnidadeComercial = string.IsNullOrWhiteSpace(request.UnidadeComercial) ? "UN" : request.UnidadeComercial.Trim().ToUpperInvariant(),
+        UnidadeTributavel = string.IsNullOrWhiteSpace(request.UnidadeTributavel) ? "UN" : request.UnidadeTributavel.Trim().ToUpperInvariant(),
+        Gtin = string.IsNullOrWhiteSpace(request.Gtin) ? "SEM GTIN" : request.Gtin.Trim(),
+        CsosnIcms = string.IsNullOrWhiteSpace(request.CsosnIcms) ? null : request.CsosnIcms.Trim(),
+        CstIcms = string.IsNullOrWhiteSpace(request.CstIcms) ? null : request.CstIcms.Trim(),
+        AliquotaIcms = HorusMoneyFormat.ParseDecimal(request.AliquotaIcms),
+        CstPis = string.IsNullOrWhiteSpace(request.CstPis) ? "07" : request.CstPis.Trim(),
+        CstCofins = string.IsNullOrWhiteSpace(request.CstCofins) ? "07" : request.CstCofins.Trim(),
+        CstIbsCbs = string.IsNullOrWhiteSpace(request.CstIbsCbs) ? null : request.CstIbsCbs.Trim(),
+        CClassTrib = string.IsNullOrWhiteSpace(request.CClassTrib) ? null : request.CClassTrib.Trim()
     };
 
     private static ProdutoModel ToModel(ProdutoAD source) => new()
@@ -117,21 +133,23 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         ProductCode = source.ProductCode,
         ProductSupplier = source.ProductSupplier,
         ProductDescription = source.ProductDescription,
-        ProductQnt = source.ProductQnt,
-        ProductUnitPrice = source.ProductUnitPrice,
-        ProductSalePrice = source.ProductSalePrice,
-        TotalPriceOnProduct = source.TotalPriceOnProduct
+        ProductQnt = HorusMoneyFormat.FormatQuantity(source.ProductQnt),
+        ProductUnitPrice = HorusMoneyFormat.Format(source.ProductUnitPrice),
+        ProductSalePrice = HorusMoneyFormat.Format(source.ProductSalePrice),
+        TotalPriceOnProduct = HorusMoneyFormat.Format(source.TotalPriceOnProduct),
+        Ncm = source.Ncm,
+        Cest = source.Cest,
+        Cfop = source.Cfop,
+        OrigemMercadoria = source.OrigemMercadoria,
+        UnidadeComercial = source.UnidadeComercial,
+        UnidadeTributavel = source.UnidadeTributavel,
+        Gtin = source.Gtin,
+        CsosnIcms = source.CsosnIcms,
+        CstIcms = source.CstIcms,
+        AliquotaIcms = HorusMoneyFormat.Format(source.AliquotaIcms),
+        CstPis = source.CstPis,
+        CstCofins = source.CstCofins,
+        CstIbsCbs = source.CstIbsCbs,
+        CClassTrib = source.CClassTrib
     };
-
-    private static decimal ParseMoney(string value)
-    {
-        var normalized = value.Trim().Replace(".", "").Replace(",", ".");
-        return decimal.TryParse(
-            normalized,
-            System.Globalization.NumberStyles.Number,
-            System.Globalization.CultureInfo.InvariantCulture,
-            out var parsed)
-            ? parsed
-            : 0;
-    }
 }
