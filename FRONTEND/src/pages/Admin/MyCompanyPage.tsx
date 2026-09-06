@@ -799,9 +799,13 @@ export default function MyCompanyPage() {
             <input
               className="input-field w-full"
               value={cscId}
-              onChange={(event) => setCscId(event.target.value.trim())}
+              onChange={(event) => setCscId(onlyDigits(event.target.value).slice(0, 6))}
               placeholder="000001"
+              maxLength={6}
             />
+            <span className="mt-1 block text-xs text-text-secondary">
+              Só números, até 6 dígitos — é o "Id do token" do portal da SEFAZ-RJ, não o CSC em si.
+            </span>
           </label>
 
           <label className="block md:col-span-4">

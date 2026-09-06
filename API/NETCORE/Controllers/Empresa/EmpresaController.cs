@@ -76,6 +76,16 @@ public class EmpresaController(EmpresaAB empresaAB) : ControllerBase
             return BadRequest(new ApiResponse<EmpresaRequest> { Success = false, Message = "Regime tributario (CRT) invalido." });
         }
 
+        var cscId = request.CscId?.Trim() ?? string.Empty;
+        if (cscId.Length > 6 || !cscId.All(char.IsDigit))
+        {
+            return BadRequest(new ApiResponse<EmpresaRequest>
+            {
+                Success = false,
+                Message = "CSC id deve ter só numeros, ate 6 digitos (e o \"Id do token\" do portal da SEFAZ-RJ)."
+            });
+        }
+
         try
         {
             var saved = await empresaAB.SalvarAsync(currentUser.CompanyId, ToDataAccess(request));
