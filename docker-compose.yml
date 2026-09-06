@@ -5,10 +5,12 @@
 # Entradas esperadas: variáveis de ambiente definidas no Portainer (Stacks > Environment
 #           variables) ou num .env ao lado deste arquivo — ver .env.stack.example.
 #
-# depends_on com "condition: service_healthy" só é respeitado em endpoints Standalone do
-# Portainer (docker compose puro). Em Swarm, a condição é ignorada — o "restart: unless-stopped"
-# cobre esse caso: se a API subir antes do SQL Server estar pronto, ela derruba e o Docker
-# reinicia sozinho até conseguir conectar.
+# depends_on é só uma lista simples (sem "condition: service_healthy") porque o Portainer em
+# modo Swarm ("docker stack deploy") rejeita a sintaxe estendida de depends_on — só é aceita
+# em endpoints Standalone (docker compose puro). O healthcheck do pdv-sqlserver abaixo continua
+# útil para inspeção manual, mas não bloqueia a ordem de start. Isso é coberto pelo
+# "restart: unless-stopped": se a API subir antes do SQL Server estar pronto, ela derruba e o
+# Docker reinicia sozinho até conseguir conectar.
 
 networks:
   OrionNet:
@@ -44,8 +46,7 @@ services:
     image: "ghcr.io/${GHCR_NAMESPACE:?defina GHCR_NAMESPACE no ambiente do stack, ex. seu-usuario-do-github}/horus-pdv-api:${IMAGE_TAG:-latest}"
     restart: unless-stopped
     depends_on:
-      pdv-sqlserver:
-        condition: service_healthy
+      - pdv-sqlserver
     environment:
       ConnectionStrings__HorusPdv: "Server=pdv-sqlserver,1433;Database=HorusPdv;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=True"
       Auth__JwtSecret: "${JWT_SECRET:?defina JWT_SECRET no ambiente do stack (string aleatória longa)}"
