@@ -69,6 +69,9 @@ public sealed class NfceOutboxWorker(
                 var emitente = await emitentes.ObterAsync(doc.CompanyId, ct);
                 if (emitente is null)
                 {
+                    logger.LogWarning(
+                        "NFC-e do documento {Id} (venda {VendaId}) não transmitida: Empresa sem certificado digital A1 (.pfx) ou CSC configurado em Minha Empresa.",
+                        doc.Id, doc.VendaId);
                     await documentos.MarcarErroAsync(
                         doc.Id, "Empresa sem certificado ou CSC configurado.", proximaTentativa: null, ct);
                     continue;
