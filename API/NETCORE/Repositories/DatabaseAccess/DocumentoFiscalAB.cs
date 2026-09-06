@@ -151,6 +151,24 @@ public class DocumentoFiscalAB(
         var destinatario = await MontarDestinatarioAsync(doc.CompanyId, primeira.CustomerCpf, primeira.CustomerName);
         var totalAmount = HorusMoneyFormat.ParseDecimal(primeira.TotalAmount);
 
+        var pagamentosCadastrados = await historicoVendasAB.ObterPagamentosVendaAsync(doc.CompanyId, doc.VendaId);
+        List<PagamentoFiscal> pagamentosFiscais;
+        decimal valorTrocoTotal = 0;
+
+        if (pagamentosCadastrados.Count > 0)
+        {
+            pagamentosFiscais = pagamentosCadastrados.Select(p => new PagamentoFiscal
+            {
+                Tipo = MapearFormaPagamento(p.PaymentType),
+                Valor = p.Amount
+            }).ToList();
+            valorTrocoTotal = pagamentosCadastrados.Sum(p => p.ChangeAmount);
+        }
+        else
+        {
+            pagamentosFiscais = [new PagamentoFiscal { Tipo = MapearFormaPagamento(primeira.PaymentType), Valor = totalAmount }];
+        }
+
         return new EmissaoNfceRequest
         {
             Emitente = emitente,
@@ -161,8 +179,8 @@ public class DocumentoFiscalAB(
             JustificativaContingencia = doc.JustContingencia,
             Destinatario = destinatario,
             Itens = itens,
-            Pagamentos = [new PagamentoFiscal { Tipo = MapearFormaPagamento(primeira.PaymentType), Valor = totalAmount }],
-            ValorTroco = 0
+            Pagamentos = pagamentosFiscais,
+            ValorTroco = valorTrocoTotal
         };
     }
 

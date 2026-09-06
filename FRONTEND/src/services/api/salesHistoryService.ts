@@ -23,6 +23,13 @@ export type SaleHistoryDto = {
   saleDate: string;
 };
 
+export type SalePaymentDto = {
+  paymentType: string;
+  amount: number;
+  cashGiven?: number;
+  changeAmount?: number;
+};
+
 export type RegisterSalePayload = {
   customerName: string;
   customerCpf: string;
@@ -34,6 +41,7 @@ export type RegisterSalePayload = {
     productName: string;
     quantity: number;
   }>;
+  payments?: SalePaymentDto[];
 };
 
 export const salesHistoryService = {

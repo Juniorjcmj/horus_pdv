@@ -18,4 +18,10 @@ public class CaixaSessionAD
     public string OperatorName { get; set; } = string.Empty;
     public string ClosedByName { get; set; } = string.Empty;
     public string Note { get; set; } = string.Empty;
+
+    /// <summary>Dinheiro esperado no fechamento (abertura + vendas em dinheiro + reforços - sangrias). Null enquanto o caixa está aberto.</summary>
+    public decimal? ExpectedCashAmount { get; set; }
+    /// <summary>ClosingAmount - ExpectedCashAmount. Positivo = sobra, negativo = falta.</summary>
+    public decimal? DifferenceAmount { get; set; }
+    public string? DifferenceReason { get; set; }
 }

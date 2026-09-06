@@ -17,6 +17,15 @@ public class VendaRequest
     public string TotalAmount { get; set; } = string.Empty;
     public string OperatorName { get; set; } = string.Empty;
     public List<VendaItemRequest> Items { get; set; } = [];
+    public List<VendaPagamentoRequest> Payments { get; set; } = [];
+}
+
+public class VendaPagamentoRequest
+{
+    public string PaymentType { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public decimal CashGiven { get; set; }
+    public decimal ChangeAmount { get; set; }
 }
 
 public class VendaItemRequest

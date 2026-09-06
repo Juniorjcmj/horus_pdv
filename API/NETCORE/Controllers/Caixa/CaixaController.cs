@@ -76,4 +76,27 @@ public class CaixaController(HorusCaixaService caixaService) : ControllerBase
             return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
         }
     }
+
+    [HttpPost("movimento")]
+    public IActionResult Movimento([FromBody] RegistrarMovimentoCaixaRequest request)
+    {
+        if (HttpContext.Items["CurrentUser"] is not AuthenticatedUser currentUser)
+        {
+            return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+        }
+
+        try
+        {
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Movimento de caixa registrado com sucesso.",
+                Data = caixaService.RegistrarMovimento(request, currentUser)
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
+    }
 }

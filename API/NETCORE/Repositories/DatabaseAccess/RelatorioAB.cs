@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
-public class RelatorioAB(Connection connection)
+public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
 {
     private static readonly CultureInfo PtBr = new("pt-BR");
 
@@ -25,6 +25,7 @@ public class RelatorioAB(Connection connection)
             "compras-fornecedor" => await GerarComprasFornecedorAsync(companyId),
             "movimento-estoque" => await GerarMovimentoEstoqueAsync(companyId),
             "desempenho-caixa" => await GerarDesempenhoCaixaAsync(companyId, filters),
+            "log-atividades" => await GerarLogAtividadesAsync(companyId, filters),
             _ => throw new InvalidOperationException("Relatório não encontrado.")
         };
 

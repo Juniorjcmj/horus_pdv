@@ -46,6 +46,7 @@ builder.Services.AddScoped<HistoricoVendasAB>();
 builder.Services.AddScoped<PedidoAB>();
 builder.Services.AddScoped<ModuloMercadoAB>();
 builder.Services.AddScoped<CaixaAB>();
+builder.Services.AddScoped<AuditLogAB>();
 builder.Services.AddScoped<HomeAB>();
 builder.Services.AddScoped<RelatorioAB>();
 builder.Services.AddScoped<HorusCaixaService>();

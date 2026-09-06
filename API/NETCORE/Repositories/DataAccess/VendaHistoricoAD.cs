@@ -32,4 +32,5 @@ public class VendaRegistroResultadoAD
     public string SaleNumber { get; set; } = string.Empty;
     public string VendaId { get; set; } = string.Empty;
     public List<VendaHistoricoAD> Rows { get; set; } = [];
+    public List<VendaPagamentoAD> Payments { get; set; } = [];
 }

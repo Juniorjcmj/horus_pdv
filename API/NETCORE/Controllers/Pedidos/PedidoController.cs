@@ -98,7 +98,7 @@ public class PedidoController(
 
         try
         {
-            caixaService.EnsureVendaPermitida(currentUser.CompanyId);
+            caixaService.EnsureVendaPermitida(currentUser);
 
             var pedido = await pedidoAB.ObterPorNumeroAsync(currentUser.CompanyId, orderNumber);
             if (pedido is null)
@@ -116,7 +116,7 @@ public class PedidoController(
 
             var paymentType = string.IsNullOrWhiteSpace(request.PaymentType) ? "-" : request.PaymentType.Trim();
             var result = await historicoVendasAB.RegistrarComPrecosFixosAsync(
-                currentUser.CompanyId, pedido.CustomerName, pedido.CustomerCpf, paymentType, currentUser.Name, pedido.Itens);
+                currentUser.CompanyId, pedido.CustomerName, pedido.CustomerCpf, paymentType, currentUser.Name, pedido.Itens, request.Payments);
 
             await pedidoAB.MarcarFinalizadoAsync(currentUser.CompanyId, pedido.Id, result.VendaId);
 

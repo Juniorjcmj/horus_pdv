@@ -29,6 +29,14 @@ export type SaleReceiptItem = {
   total: number;
 };
 
+export type ReceiptPaymentItem = {
+  paymentType: string;
+  paymentLabel: string;
+  amount: number;
+  cashGiven?: number;
+  changeAmount?: number;
+};
+
 export type SaleReceipt = {
   saleNumber: string;
   issuedAt: string;
@@ -42,6 +50,7 @@ export type SaleReceipt = {
   cashGiven: number;
   change: number;
   items: SaleReceiptItem[];
+  payments?: ReceiptPaymentItem[];
 };
 
 function formatReceiptDate(value: string) {
@@ -140,12 +149,23 @@ function buildReceiptPrintHtml(receipt: SaleReceipt, formatMoney: (value: number
       <div class="divider"></div>
       <section>
         <div class="line bold"><span>TOTAL</span><span>R$ ${formatMoney(receipt.subtotal)}</span></div>
-        <div class="line"><span>Pagamento</span><span>${escapeHtml(receipt.paymentLabel || "-")}</span></div>
         ${
-          receipt.paymentType === "dinheiro"
-            ? `<div class="line"><span>Valor recebido</span><span>R$ ${formatMoney(receipt.cashGiven)}</span></div>
-               <div class="line"><span>Troco</span><span>R$ ${formatMoney(receipt.change)}</span></div>`
-            : ""
+          receipt.payments && receipt.payments.length > 1
+            ? receipt.payments
+                .map(
+                  (p) => `<div class="line"><span>${escapeHtml(p.paymentLabel)}</span><span>R$ ${formatMoney(p.amount)}</span></div>`
+                )
+                .join("") +
+              (receipt.change > 0
+                ? `<div class="line bold"><span>Troco</span><span>R$ ${formatMoney(receipt.change)}</span></div>`
+                : "")
+            : `<div class="line"><span>Pagamento</span><span>${escapeHtml(receipt.paymentLabel || "-")}</span></div>
+               ${
+                 receipt.paymentType === "dinheiro"
+                   ? `<div class="line"><span>Valor recebido</span><span>R$ ${formatMoney(receipt.cashGiven)}</span></div>
+                      <div class="line"><span>Troco</span><span>R$ ${formatMoney(receipt.change)}</span></div>`
+                   : ""
+               }`
         }
       </section>
       <div class="divider"></div>
@@ -260,22 +280,42 @@ export default function ReceiptPreviewModal({
                   <span>TOTAL</span>
                   <span>R$ {formatMoney(receipt.subtotal)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Pagamento</span>
-                  <span>{receipt.paymentLabel}</span>
-                </div>
-                {receipt.paymentType === "dinheiro" ? (
+                {receipt.payments && receipt.payments.length > 1 ? (
+                  <>
+                    <div className="pt-1 text-xs font-semibold text-slate-400">Formas de pagamento:</div>
+                    {receipt.payments.map((p, idx) => (
+                      <div key={idx} className="flex justify-between pl-2 text-xs">
+                        <span>{p.paymentLabel}</span>
+                        <span>R$ {formatMoney(p.amount)}</span>
+                      </div>
+                    ))}
+                    {receipt.change > 0 ? (
+                      <div className="flex justify-between font-semibold text-emerald-400">
+                        <span>Troco</span>
+                        <span>R$ {formatMoney(receipt.change)}</span>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
                   <>
                     <div className="flex justify-between">
-                      <span>Valor recebido</span>
-                      <span>R$ {formatMoney(receipt.cashGiven)}</span>
+                      <span>Pagamento</span>
+                      <span>{receipt.paymentLabel}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Troco</span>
-                      <span>R$ {formatMoney(receipt.change)}</span>
-                    </div>
+                    {receipt.paymentType === "dinheiro" ? (
+                      <>
+                        <div className="flex justify-between">
+                          <span>Valor recebido</span>
+                          <span>R$ {formatMoney(receipt.cashGiven)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Troco</span>
+                          <span>R$ {formatMoney(receipt.change)}</span>
+                        </div>
+                      </>
+                    ) : null}
                   </>
-                ) : null}
+                )}
               </div>
 
               <div className="my-3 border-t border-dashed border-slate-500" />

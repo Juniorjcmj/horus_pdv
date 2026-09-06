@@ -15,4 +15,5 @@ public class CriarPedidoRequest
 public class FinalizarPedidoRequest
 {
     public string PaymentType { get; set; } = string.Empty;
+    public List<VendaPagamentoRequest> Payments { get; set; } = [];
 }

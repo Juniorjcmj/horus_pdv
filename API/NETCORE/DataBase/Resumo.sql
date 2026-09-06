@@ -256,6 +256,57 @@ BEGIN
     ALTER TABLE CaixaSessoes ADD CompanyId NVARCHAR(40) NOT NULL CONSTRAINT DF_CaixaSessoes_CompanyId DEFAULT N'empresa-principal';
 END;
 
+-- Fechamento com conferência: valor de dinheiro esperado (calculado a partir das vendas +
+-- reforços - sangrias do turno), diferença em relação ao valor contado pelo operador, e a
+-- justificativa (obrigatória quando há qualquer diferença — ver HorusCaixaService.Fechar).
+IF COL_LENGTH(N'CaixaSessoes', N'ExpectedCashAmount') IS NULL
+    ALTER TABLE CaixaSessoes ADD ExpectedCashAmount DECIMAL(18, 2) NULL;
+IF COL_LENGTH(N'CaixaSessoes', N'DifferenceAmount') IS NULL
+    ALTER TABLE CaixaSessoes ADD DifferenceAmount DECIMAL(18, 2) NULL;
+IF COL_LENGTH(N'CaixaSessoes', N'DifferenceReason') IS NULL
+    ALTER TABLE CaixaSessoes ADD DifferenceReason NVARCHAR(500) NULL;
+
+-- Sangria (retirada) e reforço (suprimento) de dinheiro durante o turno — sem isso, toda saída
+-- de caixa no meio do dia vira "diferença" sem explicação no fechamento.
+IF OBJECT_ID(N'CaixaMovimentos', N'U') IS NULL
+BEGIN
+    CREATE TABLE CaixaMovimentos
+    (
+        Id NVARCHAR(40) NOT NULL CONSTRAINT PK_CaixaMovimentos PRIMARY KEY,
+        CompanyId NVARCHAR(40) NOT NULL,
+        CaixaSessaoId NVARCHAR(40) NOT NULL,
+        Tipo TINYINT NOT NULL, -- 1 = Reforço, 2 = Sangria
+        Valor DECIMAL(18, 2) NOT NULL,
+        Motivo NVARCHAR(300) NOT NULL CONSTRAINT DF_CaixaMovimentos_Motivo DEFAULT N'',
+        CreatedAt DATETIMEOFFSET NOT NULL CONSTRAINT DF_CaixaMovimentos_CreatedAt DEFAULT SYSDATETIMEOFFSET(),
+        OperatorId NVARCHAR(40) NOT NULL,
+        OperatorName NVARCHAR(180) NOT NULL CONSTRAINT DF_CaixaMovimentos_OperatorName DEFAULT N'',
+        CONSTRAINT FK_CaixaMovimentos_CaixaSessoes FOREIGN KEY (CaixaSessaoId) REFERENCES CaixaSessoes (Id)
+    );
+    CREATE INDEX IX_CaixaMovimentos_Sessao ON CaixaMovimentos (CaixaSessaoId);
+END;
+
+-- Trilha de auditoria genérica, append-only (nunca UPDATE/DELETE) — usada hoje pelo módulo de
+-- caixa (abertura, fechamento, sangria, reforço, venda bloqueada); outras partes do sistema
+-- podem gravar aqui mais pra frente sem precisar de tabela nova.
+IF OBJECT_ID(N'AuditLog', N'U') IS NULL
+BEGIN
+    CREATE TABLE AuditLog
+    (
+        Id BIGINT IDENTITY (1, 1) NOT NULL CONSTRAINT PK_AuditLog PRIMARY KEY,
+        CompanyId NVARCHAR(40) NOT NULL,
+        OccurredAt DATETIMEOFFSET NOT NULL CONSTRAINT DF_AuditLog_OccurredAt DEFAULT SYSDATETIMEOFFSET(),
+        UserId NVARCHAR(40) NOT NULL CONSTRAINT DF_AuditLog_UserId DEFAULT N'',
+        UserName NVARCHAR(180) NOT NULL CONSTRAINT DF_AuditLog_UserName DEFAULT N'',
+        EventType NVARCHAR(60) NOT NULL,
+        EntityType NVARCHAR(60) NULL,
+        EntityId NVARCHAR(80) NULL,
+        Description NVARCHAR(500) NOT NULL CONSTRAINT DF_AuditLog_Description DEFAULT N'',
+        Ip NVARCHAR(64) NULL
+    );
+    CREATE INDEX IX_AuditLog_Company_OccurredAt ON AuditLog (CompanyId, OccurredAt DESC);
+END;
+
 IF OBJECT_ID(N'Vendas', N'U') IS NULL
 BEGIN
     CREATE TABLE Vendas
@@ -331,6 +382,25 @@ UPDATE i
         DECIMAL(18, 2),
         REPLACE(REPLACE(REPLACE(LTRIM(RTRIM(i.UnitPrice)), N'R$', N''), N'.', N''), N',', N'.')
    ) IS NOT NULL;
+
+IF OBJECT_ID(N'VendaPagamentos', N'U') IS NULL
+BEGIN
+    CREATE TABLE VendaPagamentos
+    (
+        Id           NVARCHAR(40)   NOT NULL CONSTRAINT PK_VendaPagamentos PRIMARY KEY,
+        CompanyId    NVARCHAR(40)   NOT NULL,
+        VendaId      NVARCHAR(40)   NOT NULL,
+        PaymentType  NVARCHAR(30)   NOT NULL,
+        Amount       DECIMAL(18, 2) NOT NULL,
+        CashGiven    DECIMAL(18, 2) NOT NULL CONSTRAINT DF_VendaPagamentos_CashGiven DEFAULT 0,
+        ChangeAmount DECIMAL(18, 2) NOT NULL CONSTRAINT DF_VendaPagamentos_ChangeAmount DEFAULT 0,
+        CreatedAt    DATETIMEOFFSET NOT NULL CONSTRAINT DF_VendaPagamentos_CreatedAt DEFAULT SYSDATETIMEOFFSET(),
+        CONSTRAINT FK_VendaPagamentos_Vendas FOREIGN KEY (VendaId) REFERENCES Vendas (Id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IX_VendaPagamentos_Company_Venda ON VendaPagamentos (CompanyId, VendaId);
+    CREATE INDEX IX_VendaPagamentos_Company_Payment ON VendaPagamentos (CompanyId, PaymentType);
+END;
 
 IF OBJECT_ID(N'Pedidos', N'U') IS NULL
 BEGIN

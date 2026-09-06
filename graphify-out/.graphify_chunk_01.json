@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {"id": "_claude_claude_graphify_skill", "label": "Graphify Skill - Claude Code knowledge graph generation skill", "file_type": "document", "source_file": "E:\\PROJETOPDV\\horus_pdv\\.claude\\skills\\graphify\\SKILL.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "_claude_claude_project_config", "label": "Claude Project Config - Horus PDV Claude Code project instructions", "file_type": "document", "source_file": "E:\\PROJETOPDV\\horus_pdv\\.claude\\CLAUDE.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "_codex_skills_graphify_skill", "label": "Graphify Skill (Codex) - Knowledge graph generation skill for Codex", "file_type": "document", "source_file": "E:\\PROJETOPDV\\horus_pdv\\.codex\\skills\\graphify\\SKILL.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}
+  ],
+  "edges": [
+    {"source": "_claude_claude_project_config", "target": "_claude_claude_graphify_skill", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "E:\\PROJETOPDV\\horus_pdv\\.claude\\CLAUDE.md", "source_location": null, "weight": 1.0},
+    {"source": "_claude_claude_graphify_skill", "target": "_codex_skills_graphify_skill", "relation": "semantically_similar_to", "confidence": "INFERRED", "confidence_score": 0.95, "source_file": "E:\\PROJETOPDV\\horus_pdv\\.claude\\skills\\graphify\\SKILL.md", "source_location": null, "weight": 1.0}
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

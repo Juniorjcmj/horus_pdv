@@ -4,7 +4,7 @@
  * Entradas esperadas: recebe flag opcional de modo standalone para ajustar comportamento da aba PDV.
  */
 
-import { Image as ImageIcon, Printer, Search, Trash2, X } from "lucide-react";
+import { Image as ImageIcon, Plus, Printer, Search, Trash2, X } from "lucide-react";
 import {
   type ClipboardEvent,
   type FormEvent,
@@ -110,6 +110,14 @@ function formatCashElapsed(minutes?: number) {
   return `${hours}h ${String(remainingMinutes).padStart(2, "0")}min`;
 }
 
+type SplitPayment = {
+  id: string;
+  paymentType: PaymentType;
+  amount: number;
+  cashGiven?: number;
+  changeAmount?: number;
+};
+
 export default function SalesStartPage({
   standalone = false,
   operatorName = "Operador",
@@ -139,18 +147,20 @@ export default function SalesStartPage({
   const cartLocked = activePedido !== null;
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [paymentType, setPaymentType] = useState<PaymentType>("dinheiro");
+  const [payments, setPayments] = useState<SplitPayment[]>([]);
+  const [currentPaymentType, setCurrentPaymentType] = useState<PaymentType>("dinheiro");
+  const [currentPaymentAmount, setCurrentPaymentAmount] = useState("");
+  const [currentCashGiven, setCurrentCashGiven] = useState("");
   const [cpfNota, setCpfNota] = useState("");
-  const [cashGiven, setCashGiven] = useState("");
   const [lastReceipt, setLastReceipt] = useState<SaleReceipt | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<SaleReceipt | null>(null);
   const [printPreviewEnabled, setPrintPreviewEnabled] = useState(() =>
     getPrintPreviewEnabled(),
   );
 
-  const pasteCashGiven = (event: ClipboardEvent<HTMLInputElement>) => {
+  const pasteCurrentCashGiven = (event: ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault();
-    setCashGiven(maskMoneyBr(event.clipboardData.getData("text")));
+    setCurrentCashGiven(maskMoneyBr(event.clipboardData.getData("text")));
   };
 
   const selectedProduct = useMemo(
@@ -186,8 +196,27 @@ export default function SalesStartPage({
     [cart],
   );
 
-  const cashGivenValue = parseMoneyBr(cashGiven || "0");
-  const changeValue = paymentType === "dinheiro" ? Math.max(0, cashGivenValue - subtotal) : 0;
+  const totalPaid = useMemo(
+    () => payments.reduce((sum, item) => sum + item.amount, 0),
+    [payments],
+  );
+  const remainingToPay = useMemo(
+    () => Math.max(0, subtotal - totalPaid),
+    [subtotal, totalPaid],
+  );
+  const currentPaymentAmountValue = parseMoneyBr(currentPaymentAmount || "0");
+  const currentCashGivenValue = parseMoneyBr(currentCashGiven || "0");
+  const currentChangeValue =
+    currentPaymentType === "dinheiro"
+      ? Math.max(0, currentCashGivenValue - currentPaymentAmountValue)
+      : 0;
+  const totalChangeValue = useMemo(() => {
+    const fromList = payments.reduce((sum, item) => sum + (item.changeAmount ?? 0), 0);
+    if (payments.length === 0 && currentPaymentType === "dinheiro") {
+      return Math.max(0, currentCashGivenValue - subtotal);
+    }
+    return fromList;
+  }, [payments, currentPaymentType, currentCashGivenValue, subtotal]);
 
   const activeProductName =
     cart.length > 0 ? cart[cart.length - 1].name : selectedProduct?.name ?? "";
@@ -494,7 +523,7 @@ export default function SalesStartPage({
     setCart([]);
     setActivePedido(null);
     setCpfNota("");
-    setCashGiven("");
+    setCurrentCashGiven("");
     setCheckoutOpen(false);
     Toast.info(activePedido ? "Pedido solto do caixa." : "Venda cancelada.");
   }, [activePedido, cart.length, statusDialog]);
@@ -518,15 +547,100 @@ export default function SalesStartPage({
       return;
     }
 
-    setPaymentType("dinheiro");
-    setCashGiven(formatMoneyBr(subtotal));
+    setPayments([]);
+    setCurrentPaymentType("dinheiro");
+    setCurrentPaymentAmount(formatMoneyBr(subtotal));
+    setCurrentCashGiven(formatMoneyBr(subtotal));
     setCheckoutOpen(true);
   }, [cart.length, formatMoneyBr, loadCashStatus, subtotal]);
 
-  const confirmPayment = async () => {
-    if (paymentType === "dinheiro" && cashGivenValue < subtotal) {
-      Toast.error("Valor recebido menor que total.");
+  const handleAddPayment = () => {
+    const amountVal = parseMoneyBr(currentPaymentAmount || "0");
+    if (amountVal <= 0) {
+      Toast.error("Informe um valor maior que zero para o pagamento.");
       return;
+    }
+
+    if (amountVal > remainingToPay + 0.009) {
+      Toast.error(
+        `Valor de R$ ${formatMoneyBr(amountVal)} excede o saldo restante de R$ ${formatMoneyBr(remainingToPay)}.`,
+      );
+      return;
+    }
+
+    const cashGivenVal =
+      currentPaymentType === "dinheiro" ? parseMoneyBr(currentCashGiven || "0") : amountVal;
+    if (currentPaymentType === "dinheiro" && cashGivenVal < amountVal) {
+      Toast.error("Valor recebido em dinheiro é menor que o valor desta parcela.");
+      return;
+    }
+
+    const changeVal = currentPaymentType === "dinheiro" ? Math.max(0, cashGivenVal - amountVal) : 0;
+
+    const newPayment: SplitPayment = {
+      id: `pay-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      paymentType: currentPaymentType,
+      amount: amountVal,
+      cashGiven: cashGivenVal,
+      changeAmount: changeVal,
+    };
+
+    const nextPayments = [...payments, newPayment];
+    setPayments(nextPayments);
+
+    const nextRemaining = Math.max(
+      0,
+      subtotal - nextPayments.reduce((sum, p) => sum + p.amount, 0),
+    );
+    setCurrentPaymentAmount(formatMoneyBr(nextRemaining));
+    setCurrentCashGiven(formatMoneyBr(nextRemaining));
+  };
+
+  const handleRemovePayment = (id: string) => {
+    const nextPayments = payments.filter((p) => p.id !== id);
+    setPayments(nextPayments);
+    const nextRemaining = Math.max(
+      0,
+      subtotal - nextPayments.reduce((sum, p) => sum + p.amount, 0),
+    );
+    setCurrentPaymentAmount(formatMoneyBr(nextRemaining));
+    setCurrentCashGiven(formatMoneyBr(nextRemaining));
+  };
+
+  const confirmPayment = async () => {
+    let finalPayments: SplitPayment[] = [...payments];
+
+    // Se nenhuma parcela foi adicionada manualmente à lista, usamos a forma corrente (1 clique ágil)
+    if (finalPayments.length === 0) {
+      const amountVal = parseMoneyBr(currentPaymentAmount || "0");
+      if (amountVal < subtotal - 0.009) {
+        Toast.error("Adicione os pagamentos para cobrir o total da venda.");
+        return;
+      }
+      const cashGivenVal =
+        currentPaymentType === "dinheiro" ? parseMoneyBr(currentCashGiven || "0") : subtotal;
+      if (currentPaymentType === "dinheiro" && cashGivenVal < subtotal) {
+        Toast.error("Valor recebido em dinheiro menor que o total da venda.");
+        return;
+      }
+      const changeVal = currentPaymentType === "dinheiro" ? Math.max(0, cashGivenVal - subtotal) : 0;
+      finalPayments = [
+        {
+          id: `pay-${Date.now()}`,
+          paymentType: currentPaymentType,
+          amount: subtotal,
+          cashGiven: cashGivenVal,
+          changeAmount: changeVal,
+        },
+      ];
+    } else {
+      const totalPaidVal = finalPayments.reduce((sum, p) => sum + p.amount, 0);
+      if (Math.abs(totalPaidVal - subtotal) > 0.01) {
+        Toast.error(
+          `Faltam R$ ${formatMoneyBr(Math.max(0, subtotal - totalPaidVal))} para liquidar a venda.`,
+        );
+        return;
+      }
     }
 
     try {
@@ -538,12 +652,24 @@ export default function SalesStartPage({
         return;
       }
 
+      const primaryPaymentType =
+        finalPayments.length === 1 ? finalPayments[0].paymentType : "Múltiplo";
+      const totalCashGiven = finalPayments.reduce((sum, p) => sum + (p.cashGiven ?? p.amount), 0);
+      const totalChange = finalPayments.reduce((sum, p) => sum + (p.changeAmount ?? 0), 0);
+
+      const payloadPayments = finalPayments.map((p) => ({
+        paymentType: p.paymentType,
+        amount: p.amount,
+        cashGiven: p.cashGiven,
+        changeAmount: p.changeAmount,
+      }));
+
       const result = activePedido
-        ? await pedidoService.finalize(activePedido.orderNumber, paymentType)
+        ? await pedidoService.finalize(activePedido.orderNumber, primaryPaymentType, payloadPayments)
         : await salesHistoryService.register({
             customerName: "Consumidor",
             customerCpf: cpfNota || "-",
-            paymentType,
+            paymentType: primaryPaymentType,
             totalAmount: formatMoneyBr(subtotal),
             operatorName,
             items: cart.map((item) => ({
@@ -551,7 +677,9 @@ export default function SalesStartPage({
               productName: item.name,
               quantity: item.quantity,
             })),
+            payments: payloadPayments,
           });
+
       const receipt: SaleReceipt = {
         saleNumber: result?.saleNumber || `PDV-${Date.now()}`,
         issuedAt: new Date().toISOString(),
@@ -570,15 +698,25 @@ export default function SalesStartPage({
             }
           : null,
         customerCpf: cpfNota || "-",
-        paymentType,
-        paymentLabel: getPaymentLabel(paymentType),
+        paymentType: finalPayments.length === 1 ? finalPayments[0].paymentType : "dinheiro",
+        paymentLabel:
+          finalPayments.length === 1
+            ? getPaymentLabel(finalPayments[0].paymentType)
+            : `Múltiplos (${finalPayments.map((p) => getPaymentLabel(p.paymentType)).join(" + ")})`,
         operatorName,
         subtotal,
-        cashGiven: paymentType === "dinheiro" ? cashGivenValue : subtotal,
-        change: paymentType === "dinheiro" ? changeValue : 0,
+        cashGiven: totalCashGiven,
+        change: totalChange,
         items: cart.map((item) => ({
           ...item,
           total: item.quantity * item.unitPrice,
+        })),
+        payments: finalPayments.map((p) => ({
+          paymentType: p.paymentType,
+          paymentLabel: getPaymentLabel(p.paymentType),
+          amount: p.amount,
+          cashGiven: p.cashGiven,
+          changeAmount: p.changeAmount,
         })),
       };
 
@@ -600,9 +738,11 @@ export default function SalesStartPage({
     setProductSearch("");
     setShowProductOptions(false);
     setQuantityInput("1");
-    setPaymentType("dinheiro");
+    setPayments([]);
+    setCurrentPaymentType("dinheiro");
+    setCurrentPaymentAmount("");
+    setCurrentCashGiven("");
     setCpfNota("");
-    setCashGiven("");
     window.setTimeout(() => productInputRef.current?.focus(), 0);
   };
 
@@ -1084,53 +1224,164 @@ export default function SalesStartPage({
                 />
               </label>
 
-              <SearchableSelectField
-                label="Forma de pagamento"
-                value={paymentType}
-                options={PAYMENT_OPTIONS}
-                onChange={(nextValue) => setPaymentType(nextValue as PaymentType)}
-                getOptionValue={(option) => option.value}
-                getOptionLabel={(option) => option.label}
-                placeholder="Selecione a forma de pagamento"
-                emptyMessage="Forma de pagamento não encontrada."
-              />
+              {/* Painel de Resumo dos Valores */}
+              <div className="grid grid-cols-2 gap-2 rounded-xl border border-border-primary bg-bg-primary p-3 text-xs sm:grid-cols-4 sm:text-sm">
+                <div>
+                  <span className="block text-[11px] text-text-secondary">Total da Venda</span>
+                  <span className="font-bold text-text-primary">R$ {formatMoneyBr(subtotal)}</span>
+                </div>
+                <div>
+                  <span className="block text-[11px] text-text-secondary">Total Informado</span>
+                  <span className="font-semibold text-text-primary">R$ {formatMoneyBr(totalPaid)}</span>
+                </div>
+                <div>
+                  <span className="block text-[11px] text-text-secondary">Saldo Restante</span>
+                  <span className={`font-bold ${remainingToPay <= 0.001 ? "text-success" : "text-amber-500"}`}>
+                    R$ {formatMoneyBr(remainingToPay)}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-[11px] text-text-secondary">Troco Total</span>
+                  <span className="font-semibold text-success">R$ {formatMoneyBr(totalChangeValue)}</span>
+                </div>
+              </div>
 
-              {paymentType === "dinheiro" && (
-                <label className="block">
-                  <span className="mb-1.5 block text-sm text-text-secondary">Valor recebido</span>
-                  <input
-                    value={cashGiven}
-                    inputMode="numeric"
-                    pattern="[0-9,.]*"
-                    onBeforeInput={preventNonDigitBeforeInput}
-                    onPaste={pasteCashGiven}
-                    onChange={(event) => setCashGiven(maskMoneyBr(event.target.value))}
-                    className="input-field w-full"
-                    placeholder="0,00"
-                  />
-                </label>
+              {/* Lista de Pagamentos já inseridos */}
+              {payments.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold text-text-secondary uppercase">
+                    <span>Pagamentos Adicionados ({payments.length})</span>
+                    <span className="text-text-tertiary">
+                      R$ {formatMoneyBr(totalPaid)} de R$ {formatMoneyBr(subtotal)}
+                    </span>
+                  </div>
+                  <div className="max-h-36 overflow-y-auto space-y-1.5 rounded-xl border border-border-primary bg-bg-primary/40 p-2">
+                    {payments.map((p, idx) => (
+                      <div
+                        key={p.id}
+                        className="flex items-center justify-between rounded-lg border border-border-primary bg-bg-light px-3 py-2 text-xs"
+                      >
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                          <span className="font-semibold text-text-primary">
+                            {idx + 1}. {getPaymentLabel(p.paymentType)}:
+                          </span>
+                          <span className="font-bold text-success">R$ {formatMoneyBr(p.amount)}</span>
+                          {p.paymentType === "dinheiro" && p.changeAmount && p.changeAmount > 0 ? (
+                            <span className="text-[11px] text-text-secondary">
+                              (Recebido: R$ {formatMoneyBr(p.cashGiven ?? p.amount)} | Troco: R$ {formatMoneyBr(p.changeAmount)})
+                            </span>
+                          ) : null}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePayment(p.id)}
+                          className="rounded p-1 text-danger hover:bg-danger/10 transition"
+                          title="Remover esta parcela"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
 
-              <div className="rounded-xl border border-border-primary bg-bg-primary p-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-text-secondary">Total</span>
-                  <span className="font-semibold text-text-primary">R$ {formatMoneyBr(subtotal)}</span>
-                </div>
-                {paymentType === "dinheiro" && (
-                  <div className="mt-1 flex items-center justify-between">
-                    <span className="text-text-secondary">Troco</span>
-                    <span className="font-semibold text-success">R$ {formatMoneyBr(changeValue)}</span>
+              {/* Formulário para adicionar pagamento (exibido enquanto houver saldo restante ou lista vazia) */}
+              {remainingToPay > 0.001 && (
+                <div className="rounded-xl border border-border-primary bg-bg-primary/30 p-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-text-secondary uppercase">
+                      {payments.length > 0 ? "Adicionar outra forma" : "Forma de pagamento"}
+                    </span>
+                    <span className="text-xs font-medium text-amber-500">
+                      Faltam: R$ {formatMoneyBr(remainingToPay)}
+                    </span>
                   </div>
-                )}
-              </div>
+
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <SearchableSelectField
+                      label="Forma"
+                      value={currentPaymentType}
+                      options={PAYMENT_OPTIONS}
+                      onChange={(nextValue) => {
+                        const tipo = nextValue as PaymentType;
+                        setCurrentPaymentType(tipo);
+                        if (tipo === "dinheiro") {
+                          setCurrentCashGiven(currentPaymentAmount);
+                        }
+                      }}
+                      getOptionValue={(option) => option.value}
+                      getOptionLabel={(option) => option.label}
+                      placeholder="Selecione a forma"
+                      emptyMessage="Forma de pagamento não encontrada."
+                    />
+
+                    <label className="block">
+                      <span className="mb-1.5 block text-sm text-text-secondary">Valor a pagar (R$)</span>
+                      <input
+                        value={currentPaymentAmount}
+                        inputMode="numeric"
+                        pattern="[0-9,.]*"
+                        onBeforeInput={preventNonDigitBeforeInput}
+                        onChange={(event) => {
+                          const val = maskMoneyBr(event.target.value);
+                          setCurrentPaymentAmount(val);
+                          if (currentPaymentType === "dinheiro") {
+                            setCurrentCashGiven(val);
+                          }
+                        }}
+                        className="input-field w-full"
+                        placeholder="0,00"
+                      />
+                    </label>
+                  </div>
+
+                  {currentPaymentType === "dinheiro" && (
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <label className="block">
+                        <span className="mb-1.5 block text-sm text-text-secondary">Valor entregue em dinheiro</span>
+                        <input
+                          value={currentCashGiven}
+                          inputMode="numeric"
+                          pattern="[0-9,.]*"
+                          onBeforeInput={preventNonDigitBeforeInput}
+                          onPaste={pasteCurrentCashGiven}
+                          onChange={(event) => setCurrentCashGiven(maskMoneyBr(event.target.value))}
+                          className="input-field w-full"
+                          placeholder="0,00"
+                        />
+                      </label>
+                      <div className="flex flex-col justify-end">
+                        <span className="mb-1.5 block text-sm text-text-secondary">Troco desta parcela</span>
+                        <div className="flex h-10 items-center rounded-xl border border-border-primary bg-bg-primary px-3 text-sm font-semibold text-success">
+                          R$ {formatMoneyBr(currentChangeValue)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleAddPayment}
+                    className="btn-secondary w-full py-2 text-xs font-semibold flex items-center justify-center gap-1.5"
+                  >
+                    <Plus size={14} /> Adicionar forma de pagamento
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <button type="button" onClick={() => setCheckoutOpen(false)} className="btn-cancel">
                 Voltar
               </button>
-              <button type="button" onClick={confirmPayment} className="btn-success">
-                Confirmar
+              <button
+                type="button"
+                onClick={confirmPayment}
+                className="btn-success"
+                disabled={remainingToPay > 0.001 && payments.length > 0}
+              >
+                Confirmar Venda
               </button>
             </div>
           </div>

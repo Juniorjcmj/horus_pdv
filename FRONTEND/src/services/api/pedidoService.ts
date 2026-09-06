@@ -4,6 +4,7 @@
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
 import { apiRequest } from "./apiClient";
+import type { SalePaymentDto } from "./salesHistoryService";
 
 const PEDIDO_API_URL = import.meta.env.VITE_PEDIDO_API_URL ?? "http://localhost:5260/api/Pedido";
 
@@ -54,12 +55,12 @@ export const pedidoService = {
       return null;
     }
   },
-  async finalize(orderNumber: string, paymentType: string) {
+  async finalize(orderNumber: string, paymentType: string, payments?: SalePaymentDto[]) {
     const response = await apiRequest<{ saleNumber: string; fiscalQueued: boolean }>(
       `${PEDIDO_API_URL}/${orderNumber}/finalizar`,
-      { method: "POST", body: JSON.stringify({ paymentType }) },
+      { method: "POST", body: JSON.stringify({ paymentType, payments: payments ?? [] }) },
     );
-    return response.data ?? null;
+    return response.data;
   },
   async cancel(orderNumber: string) {
     await apiRequest<object>(`${PEDIDO_API_URL}/${orderNumber}/cancelar`, { method: "POST" });

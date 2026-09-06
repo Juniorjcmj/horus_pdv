@@ -81,11 +81,24 @@ public class HistoricoVendasAB(Connection connection)
             var paymentType = string.IsNullOrWhiteSpace(request.PaymentType) ? "-" : request.PaymentType.Trim();
             var totalAmount = HorusMoneyFormat.ParseDecimal(request.TotalAmount);
             var operatorName = string.IsNullOrWhiteSpace(request.OperatorName) ? "Operador" : request.OperatorName.Trim();
+
+            var payments = request.Payments ?? [];
+            if (payments.Count > 0)
+            {
+                var sumPayments = payments.Sum(p => Math.Round(p.Amount, 2, MidpointRounding.AwayFromZero));
+                if (Math.Abs(sumPayments - totalAmount) > 0.01m)
+                {
+                    throw new InvalidOperationException(
+                        $"A soma dos pagamentos (R$ {sumPayments:N2}) não confere com o total da venda (R$ {totalAmount:N2}).");
+                }
+                paymentType = payments.Count == 1 ? payments[0].PaymentType : "Múltiplo";
+            }
+
             // A venda e a baixa de estoque compartilham a mesma transação para evitar histórico sem estoque atualizado.
             var saleItems = await BaixarEstoqueAsync(db, transaction, companyId, request.Items);
 
             var result = await InserirVendaAsync(
-                db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems);
+                db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, payments);
 
             await transaction.CommitAsync();
             return result;
@@ -108,7 +121,8 @@ public class HistoricoVendasAB(Connection connection)
         string customerCpf,
         string paymentType,
         string operatorName,
-        List<PedidoItemAD> pedidoItens)
+        List<PedidoItemAD> pedidoItens,
+        List<VendaPagamentoRequest>? payments = null)
     {
         await using var db = await connection.OpenConnectionAsync();
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
@@ -118,8 +132,20 @@ public class HistoricoVendasAB(Connection connection)
             var saleItems = await BaixarEstoqueComPrecoFixoAsync(db, transaction, companyId, pedidoItens);
             var totalAmount = saleItems.Sum(item => Math.Round(item.UnitPrice * item.Quantity, 2, MidpointRounding.AwayFromZero));
 
+            var pagamentos = payments ?? [];
+            if (pagamentos.Count > 0)
+            {
+                var sumPayments = pagamentos.Sum(p => Math.Round(p.Amount, 2, MidpointRounding.AwayFromZero));
+                if (Math.Abs(sumPayments - totalAmount) > 0.01m)
+                {
+                    throw new InvalidOperationException(
+                        $"A soma dos pagamentos (R$ {sumPayments:N2}) não confere com o total da venda (R$ {totalAmount:N2}).");
+                }
+                paymentType = pagamentos.Count == 1 ? pagamentos[0].PaymentType : "Múltiplo";
+            }
+
             var result = await InserirVendaAsync(
-                db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems);
+                db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, pagamentos);
 
             await transaction.CommitAsync();
             return result;
@@ -140,7 +166,8 @@ public class HistoricoVendasAB(Connection connection)
         string paymentType,
         decimal totalAmount,
         string operatorName,
-        List<VendaItemRecord> saleItems)
+        List<VendaItemRecord> saleItems,
+        List<VendaPagamentoRequest>? payments)
     {
         var saleNumber = await NextSaleNumberAsync(db, transaction);
         var now = DateTimeOffset.Now;
@@ -166,6 +193,83 @@ public class HistoricoVendasAB(Connection connection)
             saleCommand.Parameters.AddWithValue("@OperatorName", operatorName);
             saleCommand.Parameters.AddWithValue("@SaleDate", now);
             await saleCommand.ExecuteNonQueryAsync();
+        }
+
+        var pagamentosAD = new List<VendaPagamentoAD>();
+        if (payments is not null && payments.Count > 0)
+        {
+            for (var pIndex = 0; pIndex < payments.Count; pIndex++)
+            {
+                var p = payments[pIndex];
+                var pagId = $"{saleId}-pag-{pIndex + 1:000}";
+                var tipo = string.IsNullOrWhiteSpace(p.PaymentType) ? "dinheiro" : p.PaymentType.Trim();
+                var cashGiven = p.CashGiven > 0 ? p.CashGiven : p.Amount;
+                await using var pagCommand = new SqlCommand(
+                    """
+                    INSERT INTO VendaPagamentos
+                        (Id, CompanyId, VendaId, PaymentType, Amount, CashGiven, ChangeAmount, CreatedAt)
+                    VALUES
+                        (@Id, @CompanyId, @VendaId, @PaymentType, @Amount, @CashGiven, @ChangeAmount, @CreatedAt);
+                    """,
+                    db,
+                    transaction);
+                pagCommand.Parameters.AddWithValue("@Id", pagId);
+                pagCommand.Parameters.AddWithValue("@CompanyId", companyId);
+                pagCommand.Parameters.AddWithValue("@VendaId", saleId);
+                pagCommand.Parameters.AddWithValue("@PaymentType", tipo);
+                pagCommand.Parameters.AddWithValue("@Amount", p.Amount);
+                pagCommand.Parameters.AddWithValue("@CashGiven", cashGiven);
+                pagCommand.Parameters.AddWithValue("@ChangeAmount", p.ChangeAmount);
+                pagCommand.Parameters.AddWithValue("@CreatedAt", now);
+                await pagCommand.ExecuteNonQueryAsync();
+
+                pagamentosAD.Add(new VendaPagamentoAD
+                {
+                    Id = pagId,
+                    CompanyId = companyId,
+                    VendaId = saleId,
+                    PaymentType = tipo,
+                    Amount = p.Amount,
+                    CashGiven = cashGiven,
+                    ChangeAmount = p.ChangeAmount,
+                    CreatedAt = now
+                });
+            }
+        }
+        else
+        {
+            var pagId = $"{saleId}-pag-001";
+            var tipo = string.IsNullOrWhiteSpace(paymentType) || paymentType == "-" ? "dinheiro" : paymentType;
+            await using var pagCommand = new SqlCommand(
+                """
+                INSERT INTO VendaPagamentos
+                    (Id, CompanyId, VendaId, PaymentType, Amount, CashGiven, ChangeAmount, CreatedAt)
+                VALUES
+                    (@Id, @CompanyId, @VendaId, @PaymentType, @Amount, @CashGiven, @ChangeAmount, @CreatedAt);
+                """,
+                db,
+                transaction);
+            pagCommand.Parameters.AddWithValue("@Id", pagId);
+            pagCommand.Parameters.AddWithValue("@CompanyId", companyId);
+            pagCommand.Parameters.AddWithValue("@VendaId", saleId);
+            pagCommand.Parameters.AddWithValue("@PaymentType", tipo);
+            pagCommand.Parameters.AddWithValue("@Amount", totalAmount);
+            pagCommand.Parameters.AddWithValue("@CashGiven", totalAmount);
+            pagCommand.Parameters.AddWithValue("@ChangeAmount", 0m);
+            pagCommand.Parameters.AddWithValue("@CreatedAt", now);
+            await pagCommand.ExecuteNonQueryAsync();
+
+            pagamentosAD.Add(new VendaPagamentoAD
+            {
+                Id = pagId,
+                CompanyId = companyId,
+                VendaId = saleId,
+                PaymentType = tipo,
+                Amount = totalAmount,
+                CashGiven = totalAmount,
+                ChangeAmount = 0m,
+                CreatedAt = now
+            });
         }
 
         var rows = new List<VendaHistoricoAD>();
@@ -209,7 +313,7 @@ public class HistoricoVendasAB(Connection connection)
             });
         }
 
-        return new VendaRegistroResultadoAD { SaleNumber = saleNumber, VendaId = saleId, Rows = rows };
+        return new VendaRegistroResultadoAD { SaleNumber = saleNumber, VendaId = saleId, Rows = rows, Payments = pagamentosAD };
     }
 
     private static async Task<string> NextSaleNumberAsync(SqlConnection db, SqlTransaction transaction)
@@ -389,6 +493,39 @@ public class HistoricoVendasAB(Connection connection)
     {
         var ordinal = reader.GetOrdinal(name);
         return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+    }
+
+    public async Task<List<VendaPagamentoAD>> ObterPagamentosVendaAsync(string companyId, string vendaId)
+    {
+        const string sql = """
+            SELECT Id, CompanyId, VendaId, PaymentType, Amount, CashGiven, ChangeAmount, CreatedAt
+            FROM VendaPagamentos
+            WHERE CompanyId = @CompanyId AND VendaId = @VendaId
+            ORDER BY CreatedAt ASC, Id ASC;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@VendaId", vendaId);
+        await using var reader = await command.ExecuteReaderAsync();
+        var list = new List<VendaPagamentoAD>();
+        while (await reader.ReadAsync())
+        {
+            list.Add(new VendaPagamentoAD
+            {
+                Id = ReadString(reader, "Id"),
+                CompanyId = ReadString(reader, "CompanyId"),
+                VendaId = ReadString(reader, "VendaId"),
+                PaymentType = ReadString(reader, "PaymentType"),
+                Amount = reader.GetDecimal(reader.GetOrdinal("Amount")),
+                CashGiven = reader.GetDecimal(reader.GetOrdinal("CashGiven")),
+                ChangeAmount = reader.GetDecimal(reader.GetOrdinal("ChangeAmount")),
+                CreatedAt = reader.GetDateTimeOffset(reader.GetOrdinal("CreatedAt"))
+            });
+        }
+
+        return list;
     }
 
     private sealed class VendaItemRecord

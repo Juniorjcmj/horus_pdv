@@ -47,7 +47,7 @@ public class HistoricoVendasController(
 
         try
         {
-            caixaService.EnsureVendaPermitida(currentUser.CompanyId);
+            caixaService.EnsureVendaPermitida(currentUser);
             var result = await historicoVendasAB.RegistrarAsync(currentUser.CompanyId, request);
 
             // A nota fiscal é enfileirada fora da transação da venda — a venda já está
