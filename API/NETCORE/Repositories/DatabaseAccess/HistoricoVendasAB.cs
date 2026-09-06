@@ -76,9 +76,6 @@ public class HistoricoVendasAB(Connection connection)
 
         try
         {
-            var saleNumber = await NextSaleNumberAsync(db, transaction);
-            var now = DateTimeOffset.Now;
-            var saleId = $"sale-{saleNumber}";
             var customerName = string.IsNullOrWhiteSpace(request.CustomerName) ? "Consumidor" : request.CustomerName.Trim();
             var customerCpf = string.IsNullOrWhiteSpace(request.CustomerCpf) ? "-" : request.CustomerCpf.Trim();
             var paymentType = string.IsNullOrWhiteSpace(request.PaymentType) ? "-" : request.PaymentType.Trim();
@@ -87,77 +84,132 @@ public class HistoricoVendasAB(Connection connection)
             // A venda e a baixa de estoque compartilham a mesma transação para evitar histórico sem estoque atualizado.
             var saleItems = await BaixarEstoqueAsync(db, transaction, companyId, request.Items);
 
-            await using (var saleCommand = new SqlCommand(
-                             """
-                             INSERT INTO Vendas
-                                 (Id, CompanyId, SaleNumber, CustomerName, CustomerCpf, PaymentType, TotalAmount, OperatorName, SaleDate)
-                             VALUES
-                                 (@Id, @CompanyId, @SaleNumber, @CustomerName, @CustomerCpf, @PaymentType, @TotalAmount, @OperatorName, @SaleDate);
-                             """,
-                             db,
-                             transaction))
-            {
-                saleCommand.Parameters.AddWithValue("@Id", saleId);
-                saleCommand.Parameters.AddWithValue("@CompanyId", companyId);
-                saleCommand.Parameters.AddWithValue("@SaleNumber", saleNumber);
-                saleCommand.Parameters.AddWithValue("@CustomerName", customerName);
-                saleCommand.Parameters.AddWithValue("@CustomerCpf", customerCpf);
-                saleCommand.Parameters.AddWithValue("@PaymentType", paymentType);
-                saleCommand.Parameters.AddWithValue("@TotalAmount", totalAmount);
-                saleCommand.Parameters.AddWithValue("@OperatorName", operatorName);
-                saleCommand.Parameters.AddWithValue("@SaleDate", now);
-                await saleCommand.ExecuteNonQueryAsync();
-            }
-
-            var rows = new List<VendaHistoricoAD>();
-            for (var index = 0; index < saleItems.Count; index += 1)
-            {
-                var item = saleItems[index];
-                var itemId = $"{saleId}-item-{index + 1:000}";
-                var itemTotal = Math.Round(item.UnitPrice * item.Quantity, 2, MidpointRounding.AwayFromZero);
-                await using var itemCommand = new SqlCommand(
-                    """
-                    INSERT INTO VendaItens
-                        (Id, VendaId, ProductCode, ProductName, Quantity, UnitPrice, ItemTotal)
-                    VALUES
-                        (@Id, @VendaId, @ProductCode, @ProductName, @Quantity, @UnitPrice, @ItemTotal);
-                    """,
-                    db,
-                    transaction);
-                itemCommand.Parameters.AddWithValue("@Id", itemId);
-                itemCommand.Parameters.AddWithValue("@VendaId", saleId);
-                itemCommand.Parameters.AddWithValue("@ProductCode", item.ProductCode);
-                itemCommand.Parameters.AddWithValue("@ProductName", item.ProductName);
-                itemCommand.Parameters.AddWithValue("@Quantity", item.Quantity);
-                itemCommand.Parameters.AddWithValue("@UnitPrice", item.UnitPrice);
-                itemCommand.Parameters.AddWithValue("@ItemTotal", itemTotal);
-                await itemCommand.ExecuteNonQueryAsync();
-
-                rows.Add(new VendaHistoricoAD
-                {
-                    SaleNumber = saleNumber,
-                    CustomerName = customerName,
-                    CustomerCpf = customerCpf,
-                    PaymentType = paymentType,
-                    TotalAmount = HorusMoneyFormat.Format(totalAmount),
-                    OperatorName = operatorName,
-                    ProductCode = item.ProductCode,
-                    ProductName = item.ProductName,
-                    Quantity = item.Quantity,
-                    UnitPrice = HorusMoneyFormat.Format(item.UnitPrice),
-                    ItemTotal = HorusMoneyFormat.Format(itemTotal),
-                    SaleDate = now.LocalDateTime.ToString("dd/MM/yyyy HH:mm:ss")
-                });
-            }
+            var result = await InserirVendaAsync(
+                db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems);
 
             await transaction.CommitAsync();
-            return new VendaRegistroResultadoAD { SaleNumber = saleNumber, VendaId = saleId, Rows = rows };
+            return result;
         }
         catch
         {
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Finaliza no caixa um pedido montado antes pelo vendedor (ver PedidoAB) — cobra
+    /// exatamente o preço "congelado" no pedido, não o preço corrente do produto. O estoque só
+    /// é checado e baixado agora, na finalização (o pedido em si não reserva nada).
+    /// </summary>
+    public async Task<VendaRegistroResultadoAD> RegistrarComPrecosFixosAsync(
+        string companyId,
+        string customerName,
+        string customerCpf,
+        string paymentType,
+        string operatorName,
+        List<PedidoItemAD> pedidoItens)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+
+        try
+        {
+            var saleItems = await BaixarEstoqueComPrecoFixoAsync(db, transaction, companyId, pedidoItens);
+            var totalAmount = saleItems.Sum(item => Math.Round(item.UnitPrice * item.Quantity, 2, MidpointRounding.AwayFromZero));
+
+            var result = await InserirVendaAsync(
+                db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems);
+
+            await transaction.CommitAsync();
+            return result;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    private static async Task<VendaRegistroResultadoAD> InserirVendaAsync(
+        SqlConnection db,
+        SqlTransaction transaction,
+        string companyId,
+        string customerName,
+        string customerCpf,
+        string paymentType,
+        decimal totalAmount,
+        string operatorName,
+        List<VendaItemRecord> saleItems)
+    {
+        var saleNumber = await NextSaleNumberAsync(db, transaction);
+        var now = DateTimeOffset.Now;
+        var saleId = $"sale-{saleNumber}";
+
+        await using (var saleCommand = new SqlCommand(
+                         """
+                         INSERT INTO Vendas
+                             (Id, CompanyId, SaleNumber, CustomerName, CustomerCpf, PaymentType, TotalAmount, OperatorName, SaleDate)
+                         VALUES
+                             (@Id, @CompanyId, @SaleNumber, @CustomerName, @CustomerCpf, @PaymentType, @TotalAmount, @OperatorName, @SaleDate);
+                         """,
+                         db,
+                         transaction))
+        {
+            saleCommand.Parameters.AddWithValue("@Id", saleId);
+            saleCommand.Parameters.AddWithValue("@CompanyId", companyId);
+            saleCommand.Parameters.AddWithValue("@SaleNumber", saleNumber);
+            saleCommand.Parameters.AddWithValue("@CustomerName", customerName);
+            saleCommand.Parameters.AddWithValue("@CustomerCpf", customerCpf);
+            saleCommand.Parameters.AddWithValue("@PaymentType", paymentType);
+            saleCommand.Parameters.AddWithValue("@TotalAmount", totalAmount);
+            saleCommand.Parameters.AddWithValue("@OperatorName", operatorName);
+            saleCommand.Parameters.AddWithValue("@SaleDate", now);
+            await saleCommand.ExecuteNonQueryAsync();
+        }
+
+        var rows = new List<VendaHistoricoAD>();
+        for (var index = 0; index < saleItems.Count; index += 1)
+        {
+            var item = saleItems[index];
+            var itemId = $"{saleId}-item-{index + 1:000}";
+            var itemTotal = Math.Round(item.UnitPrice * item.Quantity, 2, MidpointRounding.AwayFromZero);
+            await using var itemCommand = new SqlCommand(
+                """
+                INSERT INTO VendaItens
+                    (Id, VendaId, ProductCode, ProductName, Quantity, UnitPrice, ItemTotal)
+                VALUES
+                    (@Id, @VendaId, @ProductCode, @ProductName, @Quantity, @UnitPrice, @ItemTotal);
+                """,
+                db,
+                transaction);
+            itemCommand.Parameters.AddWithValue("@Id", itemId);
+            itemCommand.Parameters.AddWithValue("@VendaId", saleId);
+            itemCommand.Parameters.AddWithValue("@ProductCode", item.ProductCode);
+            itemCommand.Parameters.AddWithValue("@ProductName", item.ProductName);
+            itemCommand.Parameters.AddWithValue("@Quantity", item.Quantity);
+            itemCommand.Parameters.AddWithValue("@UnitPrice", item.UnitPrice);
+            itemCommand.Parameters.AddWithValue("@ItemTotal", itemTotal);
+            await itemCommand.ExecuteNonQueryAsync();
+
+            rows.Add(new VendaHistoricoAD
+            {
+                SaleNumber = saleNumber,
+                CustomerName = customerName,
+                CustomerCpf = customerCpf,
+                PaymentType = paymentType,
+                TotalAmount = HorusMoneyFormat.Format(totalAmount),
+                OperatorName = operatorName,
+                ProductCode = item.ProductCode,
+                ProductName = item.ProductName,
+                Quantity = item.Quantity,
+                UnitPrice = HorusMoneyFormat.Format(item.UnitPrice),
+                ItemTotal = HorusMoneyFormat.Format(itemTotal),
+                SaleDate = now.LocalDateTime.ToString("dd/MM/yyyy HH:mm:ss")
+            });
+        }
+
+        return new VendaRegistroResultadoAD { SaleNumber = saleNumber, VendaId = saleId, Rows = rows };
     }
 
     private static async Task<string> NextSaleNumberAsync(SqlConnection db, SqlTransaction transaction)
@@ -234,6 +286,82 @@ public class HistoricoVendasAB(Connection connection)
                 transaction);
             update.Parameters.AddWithValue("@ProductQnt", nextStock);
             update.Parameters.AddWithValue("@TotalPriceOnProduct", unitPrice * nextStock);
+            update.Parameters.AddWithValue("@Id", productId);
+            await update.ExecuteNonQueryAsync();
+        }
+
+        return groupedItems;
+    }
+
+    /// <summary>
+    /// Mesma checagem/baixa de estoque de <see cref="BaixarEstoqueAsync"/>, mas usa o preço já
+    /// congelado no pedido em vez de reconsultar ProductSalePrice/ProductUnitPrice — é assim
+    /// que o caixa cobra exatamente o valor combinado com o vendedor.
+    /// </summary>
+    private static async Task<List<VendaItemRecord>> BaixarEstoqueComPrecoFixoAsync(
+        SqlConnection db,
+        SqlTransaction transaction,
+        string companyId,
+        IEnumerable<PedidoItemAD> pedidoItens)
+    {
+        var groupedItems = pedidoItens
+            .GroupBy(item => item.ProductCode.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(group => new VendaItemRecord
+            {
+                ProductCode = group.Key,
+                ProductName = group.First().ProductName.Trim(),
+                UnitPrice = group.First().UnitPrice,
+                Quantity = group.Sum(item => item.Quantity)
+            })
+            .ToList();
+
+        foreach (var item in groupedItems)
+        {
+            if (item.Quantity <= 0)
+            {
+                throw new InvalidOperationException("Quantidade do pedido deve ser maior que zero.");
+            }
+
+            await using var select = new SqlCommand(
+                """
+                SELECT Id, ProductName, ProductQnt, ProductUnitPrice
+                FROM Produtos WITH (UPDLOCK, ROWLOCK)
+                WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;
+                """,
+                db,
+                transaction);
+            select.Parameters.AddWithValue("@ProductCode", item.ProductCode);
+            select.Parameters.AddWithValue("@CompanyId", companyId);
+            await using var reader = await select.ExecuteReaderAsync();
+            if (!await reader.ReadAsync())
+            {
+                throw new InvalidOperationException($"Produto {item.ProductCode} não encontrado.");
+            }
+
+            var productId = ReadString(reader, "Id");
+            item.ProductName = ReadString(reader, "ProductName");
+            var currentStock = reader.GetDecimal(reader.GetOrdinal("ProductQnt"));
+            var costUnitPrice = reader.GetDecimal(reader.GetOrdinal("ProductUnitPrice"));
+            await reader.CloseAsync();
+
+            if (currentStock < item.Quantity)
+            {
+                throw new InvalidOperationException(
+                    $"Estoque insuficiente para {item.ProductName}. Disponível: {HorusMoneyFormat.FormatQuantity(currentStock)}.");
+            }
+
+            var nextStock = currentStock - item.Quantity;
+            await using var update = new SqlCommand(
+                """
+                UPDATE Produtos
+                   SET ProductQnt = @ProductQnt,
+                       TotalPriceOnProduct = @TotalPriceOnProduct
+                 WHERE Id = @Id;
+                """,
+                db,
+                transaction);
+            update.Parameters.AddWithValue("@ProductQnt", nextStock);
+            update.Parameters.AddWithValue("@TotalPriceOnProduct", costUnitPrice * nextStock);
             update.Parameters.AddWithValue("@Id", productId);
             await update.ExecuteNonQueryAsync();
         }

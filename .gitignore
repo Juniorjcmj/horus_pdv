@@ -1,6 +1,10 @@
 # Ignore environment variables
 horuspdv-app/hpdv/backend/.env
 
+# Stack de deploy (Portainer) — segredos reais nunca são versionados, só o .env.stack.example
+/.env
+/.env.stack
+
 # Dependencies
 node_modules/
 

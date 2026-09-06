@@ -324,6 +324,48 @@ UPDATE i
         REPLACE(REPLACE(REPLACE(LTRIM(RTRIM(i.UnitPrice)), N'R$', N''), N'.', N''), N',', N'.')
    ) IS NOT NULL;
 
+IF OBJECT_ID(N'Pedidos', N'U') IS NULL
+BEGIN
+    CREATE TABLE Pedidos
+    (
+        Id NVARCHAR(40) NOT NULL CONSTRAINT PK_Pedidos PRIMARY KEY,
+        CompanyId NVARCHAR(40) NOT NULL CONSTRAINT DF_Pedidos_CompanyId DEFAULT N'empresa-principal',
+        OrderNumber NVARCHAR(20) NOT NULL,
+        CustomerName NVARCHAR(180) NOT NULL CONSTRAINT DF_Pedidos_CustomerName DEFAULT N'Consumidor',
+        CustomerCpf NVARCHAR(30) NOT NULL CONSTRAINT DF_Pedidos_CustomerCpf DEFAULT N'-',
+        SellerId NVARCHAR(40) NOT NULL,
+        SellerName NVARCHAR(180) NOT NULL CONSTRAINT DF_Pedidos_SellerName DEFAULT N'',
+        -- 0 aberto | 1 finalizado (virou Venda) | 2 cancelado
+        Status TINYINT NOT NULL CONSTRAINT DF_Pedidos_Status DEFAULT 0,
+        VendaId NVARCHAR(40) NULL,
+        CreatedAt DATETIMEOFFSET NOT NULL CONSTRAINT DF_Pedidos_CreatedAt DEFAULT SYSDATETIMEOFFSET(),
+        FinalizedAt DATETIMEOFFSET NULL,
+        CanceledAt DATETIMEOFFSET NULL,
+        Note NVARCHAR(500) NOT NULL CONSTRAINT DF_Pedidos_Note DEFAULT N'',
+        CONSTRAINT UQ_Pedidos_Company_OrderNumber UNIQUE (CompanyId, OrderNumber),
+        CONSTRAINT FK_Pedidos_Vendas FOREIGN KEY (VendaId) REFERENCES Vendas (Id)
+    );
+    CREATE INDEX IX_Pedidos_Company_Status ON Pedidos (CompanyId, Status, CreatedAt DESC);
+END;
+
+IF OBJECT_ID(N'PedidoItens', N'U') IS NULL
+BEGIN
+    CREATE TABLE PedidoItens
+    (
+        Id NVARCHAR(40) NOT NULL CONSTRAINT PK_PedidoItens PRIMARY KEY,
+        PedidoId NVARCHAR(40) NOT NULL,
+        ProductCode NVARCHAR(80) NOT NULL,
+        ProductName NVARCHAR(180) NOT NULL,
+        -- Preço "congelado" no momento do pedido (orçamento) — a finalização no caixa cobra
+        -- esse valor, não o preço corrente do produto.
+        Quantity DECIMAL(15, 4) NOT NULL CONSTRAINT DF_PedidoItens_Quantity DEFAULT 0,
+        UnitPrice DECIMAL(15, 4) NOT NULL CONSTRAINT DF_PedidoItens_UnitPrice DEFAULT 0,
+        ItemTotal DECIMAL(18, 2) NOT NULL CONSTRAINT DF_PedidoItens_ItemTotal DEFAULT 0,
+        CONSTRAINT FK_PedidoItens_Pedidos FOREIGN KEY (PedidoId) REFERENCES Pedidos (Id) ON DELETE CASCADE
+    );
+    CREATE INDEX IX_PedidoItens_PedidoId ON PedidoItens (PedidoId);
+END;
+
 IF OBJECT_ID(N'ModulosMercado', N'U') IS NULL
 BEGIN
     CREATE TABLE ModulosMercado

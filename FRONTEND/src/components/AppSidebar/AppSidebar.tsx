@@ -7,6 +7,7 @@ import {
   Building2,
   BadgeDollarSign,
   ChevronRight,
+  ClipboardList,
   CreditCard,
   FileText,
   History,
@@ -37,6 +38,7 @@ export type PageKey =
   | "historico-vendas"
   | "relatorios"
   | "vendas"
+  | "pedidos"
   | "fiscal"
   | "pagamentos"
   | "estoque"
@@ -242,6 +244,13 @@ export default function AppSidebar({
               active={activePage === "vendas"}
               collapsed={collapsed}
               onClick={onOpenSalesInNewTab}
+            />
+            <SidebarItem
+              icon={<ClipboardList size={20} />}
+              label="Novo Pedido"
+              active={activePage === "pedidos"}
+              collapsed={collapsed}
+              onClick={() => handleChangePage("pedidos")}
             />
           </div>
 

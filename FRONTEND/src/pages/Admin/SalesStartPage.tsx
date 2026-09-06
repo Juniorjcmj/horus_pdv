@@ -26,6 +26,7 @@ import ReceiptPreviewModal, {
   type SaleReceipt,
 } from "@/components/Admin/ReceiptPreviewModal";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
+import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { productService } from "@/services/api/productService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
@@ -129,6 +130,13 @@ export default function SalesStartPage({
   const [highlightedProductIndex, setHighlightedProductIndex] = useState(0);
   const [quantityInput, setQuantityInput] = useState("1");
   const [cart, setCart] = useState<CartItem[]>([]);
+
+  // Pedido montado pelo vendedor (ver NovoPedidoPage) e localizado aqui pelo número — o
+  // carrinho fica travado (preço e itens vêm congelados do pedido) até finalizar ou soltar.
+  const [activePedido, setActivePedido] = useState<PedidoDto | null>(null);
+  const [pedidoNumberInput, setPedidoNumberInput] = useState("");
+  const [loadingPedido, setLoadingPedido] = useState(false);
+  const cartLocked = activePedido !== null;
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [paymentType, setPaymentType] = useState<PaymentType>("dinheiro");
@@ -345,6 +353,11 @@ export default function SalesStartPage({
   }, []);
 
   const addItem = useCallback(() => {
+    if (cartLocked) {
+      Toast.error("Este carrinho veio de um pedido — solte o pedido para adicionar itens à mão.");
+      return;
+    }
+
     const matchedFromSearch =
       selectedProduct ??
       filteredProducts.find(
@@ -366,7 +379,7 @@ export default function SalesStartPage({
     setShowProductOptions(false);
     setQuantityInput("1");
     productInputRef.current?.focus();
-  }, [addProductToCart, filteredProducts, productSearch, quantity, selectedProduct]);
+  }, [addProductToCart, cartLocked, filteredProducts, productSearch, quantity, selectedProduct]);
 
   // Leitura de etiqueta de balança (código de barras EAN-13 de peso variável): decodifica o
   // PLU + peso e adiciona direto ao carrinho, sem passar pelos campos de quantidade manual.
@@ -374,6 +387,10 @@ export default function SalesStartPage({
     (code: string) => {
       const decoded = parseBalancaBarcode(code);
       if (!decoded) return false;
+      if (cartLocked) {
+        Toast.error("Este carrinho veio de um pedido — solte o pedido para adicionar itens à mão.");
+        return true;
+      }
 
       const product =
         products.find((item) => item.code === decoded.productCode) ??
@@ -393,11 +410,62 @@ export default function SalesStartPage({
       }
       return true;
     },
-    [addProductToCart, products],
+    [addProductToCart, cartLocked, products],
   );
 
   const removeItem = (id: string) => {
+    if (cartLocked) {
+      Toast.error("Este carrinho veio de um pedido — solte o pedido para remover itens.");
+      return;
+    }
     setCart((current) => current.filter((item) => item.id !== id));
+  };
+
+  const loadPedido = async () => {
+    const orderNumber = pedidoNumberInput.trim();
+    if (!orderNumber) {
+      Toast.error("Informe o número do pedido.");
+      return;
+    }
+
+    setLoadingPedido(true);
+    try {
+      const pedido = await pedidoService.getByOrderNumber(orderNumber);
+      if (!pedido) {
+        Toast.error(`Pedido ${orderNumber} não encontrado.`);
+        return;
+      }
+      if (pedido.status !== "aberto") {
+        Toast.error(
+          pedido.status === "finalizado" ? "Este pedido já foi pago." : "Este pedido foi cancelado.",
+        );
+        return;
+      }
+
+      setCart(
+        pedido.itens.map((item) => ({
+          id: item.productCode,
+          code: item.productCode,
+          name: item.productName,
+          quantity: item.quantity,
+          unitPrice: parseMoneyBr(item.unitPrice),
+        })),
+      );
+      setCpfNota(pedido.customerCpf === "-" ? "" : pedido.customerCpf);
+      setActivePedido(pedido);
+      setPedidoNumberInput("");
+      Toast.success(`Pedido ${pedido.orderNumber} carregado — ${pedido.customerName}.`);
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Erro ao buscar pedido.");
+    } finally {
+      setLoadingPedido(false);
+    }
+  };
+
+  const clearPedido = () => {
+    setActivePedido(null);
+    setCart([]);
+    setCpfNota("");
   };
 
   const saveLastReceipt = (receipt: SaleReceipt) => {
@@ -419,14 +487,17 @@ export default function SalesStartPage({
 
   const cancelSale = useCallback(async () => {
     if (cart.length === 0) return;
-    const confirmed = await statusDialog.confirm("Cancelar venda atual?");
+    const confirmed = await statusDialog.confirm(
+      activePedido ? `Soltar o pedido ${activePedido.orderNumber} sem pagar?` : "Cancelar venda atual?",
+    );
     if (!confirmed) return;
     setCart([]);
+    setActivePedido(null);
     setCpfNota("");
     setCashGiven("");
     setCheckoutOpen(false);
-    Toast.info("Venda cancelada.");
-  }, [cart.length, statusDialog]);
+    Toast.info(activePedido ? "Pedido solto do caixa." : "Venda cancelada.");
+  }, [activePedido, cart.length, statusDialog]);
 
   const openPayment = useCallback(async () => {
     if (cart.length === 0) {
@@ -467,18 +538,20 @@ export default function SalesStartPage({
         return;
       }
 
-      const result = await salesHistoryService.register({
-        customerName: "Consumidor",
-        customerCpf: cpfNota || "-",
-        paymentType,
-        totalAmount: formatMoneyBr(subtotal),
-        operatorName,
-        items: cart.map((item) => ({
-          productCode: item.code,
-          productName: item.name,
-          quantity: item.quantity,
-        })),
-      });
+      const result = activePedido
+        ? await pedidoService.finalize(activePedido.orderNumber, paymentType)
+        : await salesHistoryService.register({
+            customerName: "Consumidor",
+            customerCpf: cpfNota || "-",
+            paymentType,
+            totalAmount: formatMoneyBr(subtotal),
+            operatorName,
+            items: cart.map((item) => ({
+              productCode: item.code,
+              productName: item.name,
+              quantity: item.quantity,
+            })),
+          });
       const receipt: SaleReceipt = {
         saleNumber: result?.saleNumber || `PDV-${Date.now()}`,
         issuedAt: new Date().toISOString(),
@@ -522,6 +595,7 @@ export default function SalesStartPage({
     }
 
     setCart([]);
+    setActivePedido(null);
     setSelectedProductId("");
     setProductSearch("");
     setShowProductOptions(false);
@@ -599,6 +673,46 @@ export default function SalesStartPage({
 
         <main className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="shrink-0 border-b border-border-primary bg-bg-gray-theme p-3.5 text-text-primary lg:overflow-y-auto lg:border-b-0 lg:border-r">
+            {activePedido ? (
+              <div className="mb-3 rounded-xl border border-accent/30 bg-accent/10 p-3 text-xs">
+                <p className="font-semibold text-text-primary">
+                  Pedido {activePedido.orderNumber} — {activePedido.customerName}
+                </p>
+                <p className="mt-0.5 text-text-secondary">Itens travados: vieram do pedido do vendedor.</p>
+                <button
+                  type="button"
+                  onClick={clearPedido}
+                  className="btn-cancel mt-2 h-8 w-full text-xs"
+                >
+                  Soltar pedido
+                </button>
+              </div>
+            ) : (
+              <div className="mb-3 flex gap-2">
+                <input
+                  value={pedidoNumberInput}
+                  onChange={(event) => setPedidoNumberInput(event.target.value.replace(/\D/g, ""))}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void loadPedido();
+                    }
+                  }}
+                  placeholder="Nº do pedido"
+                  inputMode="numeric"
+                  className="input-field h-9 flex-1 text-xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => void loadPedido()}
+                  disabled={loadingPedido}
+                  className="btn-outline-secondary h-9 shrink-0 px-3 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loadingPedido ? "..." : "Buscar"}
+                </button>
+              </div>
+            )}
+
             <label className="mb-2 block">
               <span className="mb-1 block text-xs font-semibold uppercase">Produto:</span>
               <div className="relative">
@@ -734,7 +848,8 @@ export default function SalesStartPage({
             <button
               type="button"
               onClick={addItem}
-              className="btn-success h-10 w-full rounded-xl"
+              disabled={cartLocked}
+              className="btn-success h-10 w-full rounded-xl disabled:cursor-not-allowed disabled:opacity-40"
             >
               ADICIONAR ITEM (ENTER)
             </button>
@@ -818,7 +933,8 @@ export default function SalesStartPage({
                               <button
                                 type="button"
                                 onClick={() => removeItem(item.id)}
-                                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-white"
+                                disabled={cartLocked}
+                                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-white disabled:cursor-not-allowed disabled:opacity-40"
                                 aria-label={`Remover ${item.name}`}
                               >
                                 <Trash2 size={12} />
@@ -874,7 +990,8 @@ export default function SalesStartPage({
                                 <button
                                   type="button"
                                   onClick={() => removeItem(item.id)}
-                                  className="inline-flex h-7 w-7 items-center justify-center rounded-sm bg-primary text-white"
+                                  disabled={cartLocked}
+                                  className="inline-flex h-7 w-7 items-center justify-center rounded-sm bg-primary text-white disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                   <Trash2 size={12} />
                                 </button>

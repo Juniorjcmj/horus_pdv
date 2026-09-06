@@ -1,0 +1,91 @@
+# Arquivo: docker-compose.yml
+# Objetivo: stack de produção do Hórus PDV para deploy via Portainer, atrás do Traefik já
+#           existente na rede "OrionNet". As imagens são publicadas pelo GitHub Actions em
+#           ghcr.io (ver .github/workflows/docker-publish.yml) — este arquivo só consome.
+# Entradas esperadas: variáveis de ambiente definidas no Portainer (Stacks > Environment
+#           variables) ou num .env ao lado deste arquivo — ver .env.stack.example.
+#
+# depends_on com "condition: service_healthy" só é respeitado em endpoints Standalone do
+# Portainer (docker compose puro). Em Swarm, a condição é ignorada — o "restart: unless-stopped"
+# cobre esse caso: se a API subir antes do SQL Server estar pronto, ela derruba e o Docker
+# reinicia sozinho até conseguir conectar.
+
+networks:
+  OrionNet:
+    external: true
+
+volumes:
+  horus-pdv-mssql-data:
+
+services:
+  pdv-sqlserver:
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:?defina MSSQL_SA_PASSWORD no ambiente do stack}"
+    volumes:
+      - "horus-pdv-mssql-data:/var/opt/mssql"
+    networks:
+      - OrionNet
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  pdv-api:
+    image: "ghcr.io/${GHCR_NAMESPACE:?defina GHCR_NAMESPACE no ambiente do stack, ex. seu-usuario-do-github}/horus-pdv-api:${IMAGE_TAG:-latest}"
+    restart: unless-stopped
+    depends_on:
+      pdv-sqlserver:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__HorusPdv: "Server=pdv-sqlserver,1433;Database=HorusPdv;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=True"
+      Auth__JwtSecret: "${JWT_SECRET:?defina JWT_SECRET no ambiente do stack (string aleatória longa)}"
+      Security__EncryptionKey: "${ENCRYPTION_KEY:?defina ENCRYPTION_KEY no ambiente do stack — string aleatória longa e ESTÁVEL, nunca troque depois de configurar CSC ou certificado}"
+      Security__CorsOrigins: "https://pdv.wootchat.com.br"
+      Security__TrustForwardedHeaders: "true"
+      Email__FrontendBaseUrl: "https://pdv.wootchat.com.br"
+      Email__Enabled: "${EMAIL_ENABLED:-false}"
+      Email__Host: "${EMAIL_HOST:-smtp-mail.outlook.com}"
+      Email__Port: "${EMAIL_PORT:-587}"
+      Email__EnableSsl: "${EMAIL_ENABLE_SSL:-true}"
+      Email__User: "${EMAIL_USER:-}"
+      Email__Password: "${EMAIL_PASSWORD:-}"
+      Email__FromEmail: "${EMAIL_FROM:-}"
+      Email__FromName: "Hórus PDV"
+      Recaptcha__Enabled: "${RECAPTCHA_ENABLED:-false}"
+      Recaptcha__SecretKey: "${RECAPTCHA_SECRET_KEY:-}"
+    networks:
+      - OrionNet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pdv-api.rule=Host(`api.pdv.wootchat.com.br`)"
+      - "traefik.http.routers.pdv-api.entrypoints=websecure"
+      - "traefik.http.routers.pdv-api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.pdv-api.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.pdv-api-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.pdv-api.middlewares=pdv-api-headers"
+
+  pdv-frontend:
+    image: "ghcr.io/${GHCR_NAMESPACE:?defina GHCR_NAMESPACE no ambiente do stack, ex. seu-usuario-do-github}/horus-pdv-frontend:${IMAGE_TAG:-latest}"
+    restart: unless-stopped
+    depends_on:
+      - pdv-api
+    networks:
+      - OrionNet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pdv.rule=Host(`pdv.wootchat.com.br`)"
+      - "traefik.http.routers.pdv.entrypoints=websecure"
+      - "traefik.http.routers.pdv.tls.certresolver=letsencrypt"
+      - "traefik.http.services.pdv.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.pdv-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.pdv.middlewares=pdv-headers"

@@ -36,6 +36,7 @@ const ProductRegisterPage = lazy(
 );
 const SalesHistoryPage = lazy(() => import("@/pages/Admin/SalesHistoryPage"));
 const SalesStartPage = lazy(() => import("@/pages/Admin/SalesStartPage"));
+const NovoPedidoPage = lazy(() => import("@/pages/Admin/NovoPedidoPage"));
 const ReportsPage = lazy(() => import("@/pages/Admin/ReportsPage"));
 const UserAccountsPage = lazy(() => import("@/pages/Admin/UserAccountsPage"));
 const FiscalPage = lazy(() => import("@/pages/Admin/FiscalPage"));
@@ -116,6 +117,7 @@ export default function App() {
       "historico-vendas",
       "relatorios",
       "vendas",
+      "pedidos",
       "fiscal",
       "pagamentos",
       "estoque",
@@ -194,6 +196,7 @@ export default function App() {
     "historico-vendas": "Histórico de Vendas",
     relatorios: "Relatórios",
     vendas: "Iniciar Vendas",
+    pedidos: "Novo Pedido",
     fiscal: "Fiscal NFC-e / NF-e",
     pagamentos: "Pagamentos Integrados",
     estoque: "Estoque e Inventário",
@@ -242,6 +245,8 @@ export default function App() {
         return OmnichannelPage;
       case "vendas":
         return SalesStartPage;
+      case "pedidos":
+        return NovoPedidoPage;
       case "conta-de-usuario":
         return UserAccountsPage;
       case "minha-empresa":
