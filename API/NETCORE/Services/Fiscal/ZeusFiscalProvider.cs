@@ -27,7 +27,9 @@ using NFe.Classes.Informacoes;
 using NFe.Classes.Informacoes.Detalhe;
 using NFe.Classes.Informacoes.Detalhe.Tributacao;
 using NFe.Classes.Informacoes.Detalhe.Tributacao.Estadual;
+using NFe.Classes.Informacoes.Detalhe.Tributacao.Estadual.Tipos;
 using NFe.Classes.Informacoes.Detalhe.Tributacao.Federal;
+using NFe.Classes.Informacoes.Detalhe.Tributacao.Federal.Tipos;
 using NFe.Classes.Informacoes.Destinatario;
 using NFe.Classes.Informacoes.Emitente;
 using NFe.Classes.Informacoes.Identificacao;
@@ -35,10 +37,12 @@ using NFe.Classes.Informacoes.Identificacao.Tipos;
 using NFe.Classes.Informacoes.Pagamento;
 using NFe.Classes.Informacoes.Total;
 using NFe.Classes.Informacoes.Transporte;
+using NFe.Classes.Servicos.Tipos;
 using NFe.Servicos;
 using NFe.Utils;
 using NFe.Utils.InformacoesSuplementares;
 using NFe.Utils.NFe;
+using Shared.NFe.Classes.Informacoes.InfRespTec;
 
 namespace HORUSPDV_API.Services.Fiscal;
 
@@ -80,7 +84,7 @@ public sealed class ZeusFiscalProvider(
                 cfg.Certificado);
             nfe.infNFeSupl.urlChave = ObterUrlConsultaChave(emitente.Ambiente);
 
-            if (cfg.IsValidaSchemas)
+            if (cfg.ValidarSchemas)
             {
                 nfe.Valida(cfg);
             }
@@ -91,11 +95,11 @@ public sealed class ZeusFiscalProvider(
             using var servico = new ServicosNFe(cfg, certificado);
             var retorno = servico.NFeAutorizacao(
                 idLote: 1,
-                indSinc: IndSinc.Sincrono,
+                indSinc: IndicadorSincronizacao.Sincrono,
                 nFes: [nfe],
                 compactarMensagem: true);
 
-            var protNfe = retorno.ProtNFe;
+            var protNfe = retorno.Retorno?.protNFe;
             var cStat = protNfe?.infProt?.cStat ?? retorno.Retorno?.cStat ?? 0;
             var xMotivo = protNfe?.infProt?.xMotivo ?? retorno.Retorno?.xMotivo ?? "Sem retorno da SEFAZ.";
 
@@ -109,10 +113,12 @@ public sealed class ZeusFiscalProvider(
                     CodigoStatus = cStat,
                     MotivoStatus = xMotivo,
                     ChaveAcesso = protNfe?.infProt?.chNFe ?? chave,
-                    Protocolo = protNfe?.infProt?.nProt,
+                    Protocolo = protNfe?.infProt?.nProt.ToString(),
                     DhAutorizacao = protNfe?.infProt?.dhRecbto,
                     XmlAssinado = xmlAssinado,
-                    XmlProtocolado = retorno.NfeProcResult?.ObterXmlString()
+                    // Não há um "nfeProc" pronto na API desta versão da lib — guardamos a
+                    // resposta completa da SEFAZ (RetornoCompletoStr) como registro de auditoria.
+                    XmlProtocolado = retorno.RetornoCompletoStr
                 };
             }
 
@@ -193,7 +199,7 @@ public sealed class ZeusFiscalProvider(
                     MotivoStatus = infEvento?.xMotivo ?? "Sem retorno da SEFAZ.",
                     ChaveAcesso = request.ChaveAcesso,
                     Protocolo = infEvento?.nProt,
-                    XmlProtocolado = retorno.ProcEventoNFe?.FirstOrDefault()?.ObterXmlString()
+                    XmlProtocolado = retorno.RetornoCompletoStr
                 };
             }
             catch (Exception ex)
@@ -285,9 +291,9 @@ public sealed class ZeusFiscalProvider(
                 : TipoEmissao.teNormal,
             DefineVersaoServicosAutomaticamente = true,
             DiretorioSchemas = DiretorioSchemas,
-            IsValidaSchemas = schemasDisponiveis,
+            ValidarSchemas = schemasDisponiveis,
             TimeOut = 30000,
-            IsSalvarXml = false,          // persistimos no banco, não em disco
+            SalvarXmlServicos = false,          // persistimos no banco, não em disco
             Certificado = new ConfiguracaoCertificado
             {
                 TipoCertificado = TipoCertificado.A1ByteArray,
@@ -351,7 +357,7 @@ public sealed class ZeusFiscalProvider(
 
         if (request.TipoEmissao == TipoEmissaoFiscal.ContingenciaOffline)
         {
-            ide.dhCont = request.DhContingencia?.DateTime;
+            ide.dhCont = request.DhContingencia ?? DateTimeOffset.Now;
             ide.xJust = request.JustificativaContingencia;
         }
 
@@ -375,14 +381,14 @@ public sealed class ZeusFiscalProvider(
                 CEP = e.Cep,
                 cPais = 1058,
                 xPais = "BRASIL",
-                fone = string.IsNullOrWhiteSpace(e.Fone) ? null : e.Fone
+                fone = ParseFoneNumerico(e.Fone)
             }
         };
 
         dest? dest = null;
         if (request.Destinatario is { CpfCnpj.Length: > 0 } d)
         {
-            dest = new dest
+            dest = new dest(VersaoServico.Versao400)
             {
                 indIEDest = (indIEDest)d.IndIeDest,
                 xNome = d.Nome
@@ -423,7 +429,7 @@ public sealed class ZeusFiscalProvider(
             }
         };
 
-        var pag = new pag
+        var pagamento = new pag
         {
             detPag = request.Pagamentos.Select(p => new detPag
             {
@@ -431,9 +437,9 @@ public sealed class ZeusFiscalProvider(
                 vPag = p.Valor,
                 card = string.IsNullOrWhiteSpace(p.CnpjCredenciadora) ? null : new card
                 {
-                    tpIntegra = TipoIntegracaoPagamento.tipIntegradoAutomacao,
+                    tpIntegra = TipoIntegracaoPagamento.TipIntegradoAutomacao,
                     CNPJ = p.CnpjCredenciadora,
-                    tBand = p.BandeiraCartao,
+                    tBand = MapearBandeira(p.BandeiraCartao),
                     cAut = p.AutorizacaoTef
                 }
             }).ToList(),
@@ -449,7 +455,7 @@ public sealed class ZeusFiscalProvider(
             det = detalhes,
             total = total,
             transp = new transp { modFrete = ModalidadeFrete.mfSemFrete },
-            pag = pag,
+            pag = [pagamento],
             infRespTec = string.IsNullOrWhiteSpace(e.RespTecCnpj) ? null : new infRespTec
             {
                 CNPJ = e.RespTecCnpj,
@@ -471,7 +477,7 @@ public sealed class ZeusFiscalProvider(
             xProd = item.Descricao,
             NCM = item.Ncm,
             CEST = item.Cest,
-            CFOP = item.Cfop,
+            CFOP = int.Parse(item.Cfop, Inv),
             uCom = item.UnidadeComercial,
             qCom = item.Quantidade,
             vUnCom = item.ValorUnitario,
@@ -497,7 +503,7 @@ public sealed class ZeusFiscalProvider(
             {
                 TipoPIS = new PISOutr
                 {
-                    CST = item.CstPis,
+                    CST = Enum.Parse<CSTPIS>("pis" + item.CstPis),
                     vBC = 0,
                     pPIS = 0,
                     vPIS = 0
@@ -507,7 +513,7 @@ public sealed class ZeusFiscalProvider(
             {
                 TipoCOFINS = new COFINSOutr
                 {
-                    CST = item.CstCofins,
+                    CST = Enum.Parse<CSTCOFINS>("cofins" + item.CstCofins),
                     vBC = 0,
                     pCOFINS = 0,
                     vCOFINS = 0
@@ -515,13 +521,15 @@ public sealed class ZeusFiscalProvider(
             }
         };
 
-        // NT 2025.002 — grupo UB. Só preenche quando o cadastro traz a classificação;
-        // se ficar nulo, as regras de validação de IBS/CBS não são executadas.
-        if (!string.IsNullOrWhiteSpace(item.CClassTrib))
+        // NT 2025.002 — grupo UB. Só preenche quando o cadastro traz a classificação
+        // completa (CST + cClassTrib); sem os dois, as regras de validação de IBS/CBS
+        // não são executadas e o grupo fica de fora do XML.
+        var cstIbsCbs = TryParseCstIbsCbs(item.CstIbsCbs);
+        if (!string.IsNullOrWhiteSpace(item.CClassTrib) && cstIbsCbs is not null)
         {
             imposto.IBSCBS = new IBSCBS
             {
-                CST = item.CstIbsCbs,
+                CST = cstIbsCbs.Value,
                 cClassTrib = item.CClassTrib,
                 gIBSCBS = new gIBSCBS
                 {
@@ -546,17 +554,17 @@ public sealed class ZeusFiscalProvider(
         "102" or "103" or "300" or "400" => new ICMSSN102
         {
             orig = (OrigemMercadoria)item.Origem,
-            CSOSN = item.Csosn
+            CSOSN = Enum.Parse<Csosnicms>("Csosn" + item.Csosn)
         },
         "500" => new ICMSSN500
         {
             orig = (OrigemMercadoria)item.Origem,
-            CSOSN = "500"
+            CSOSN = Csosnicms.Csosn500
         },
         _ => new ICMSSN102
         {
             orig = (OrigemMercadoria)item.Origem,
-            CSOSN = "102"
+            CSOSN = Csosnicms.Csosn102
         }
     };
 
@@ -571,10 +579,50 @@ public sealed class ZeusFiscalProvider(
         {
             orig = (OrigemMercadoria)item.Origem,
             CST = Csticms.Cst00,
-            modBC = DeterminacaoBaseIcms.dbiValorOperacao,
+            modBC = DeterminacaoBaseIcms.DbiValorOperacao,
             vBC = item.ValorTotal,
             pICMS = item.AliquotaIcms,
             vICMS = Math.Round(item.ValorTotal * item.AliquotaIcms / 100m, 2)
         }
     };
+
+    /// <summary>Telefone do emitente é numérico na lib (Int64?) — extrai só os dígitos.</summary>
+    private static long? ParseFoneNumerico(string? fone)
+    {
+        if (string.IsNullOrWhiteSpace(fone)) return null;
+        var digits = new string(fone.Where(char.IsDigit).ToArray());
+        return long.TryParse(digits, out var numero) ? numero : null;
+    }
+
+    /// <summary>
+    /// Mapeia o texto livre de bandeira (vindo do TEF/adquirente) para o enum da lib.
+    /// Sem correspondência reconhecida, cai em "Outros" — não bloqueia a emissão por causa
+    /// de uma bandeira nova/atípica.
+    /// </summary>
+    private static BandeiraCartao MapearBandeira(string? bandeira)
+    {
+        var normalizado = (bandeira ?? string.Empty).Trim().ToUpperInvariant();
+        return normalizado switch
+        {
+            var b when b.Contains("VISA") => BandeiraCartao.bcVisa,
+            var b when b.Contains("MASTER") => BandeiraCartao.bcMasterCard,
+            var b when b.Contains("AMEX") || b.Contains("AMERICAN") => BandeiraCartao.bcAmericanExpress,
+            var b when b.Contains("ELO") => BandeiraCartao.Elo,
+            var b when b.Contains("HIPER") => BandeiraCartao.Hipercard,
+            var b when b.Contains("DINERS") => BandeiraCartao.bcDinersClub,
+            var b when b.Contains("SOROCRED") => BandeiraCartao.bcSorocred,
+            _ => BandeiraCartao.bcOutros
+        };
+    }
+
+    /// <summary>
+    /// CClassTrib/CstIbsCbs ainda são opcionais (Simples/MEI não obrigados até 04/01/2027) —
+    /// se o cadastro trouxer um código que não bate com o enum da NT vigente, prefere deixar
+    /// nulo a travar a emissão do item inteiro.
+    /// </summary>
+    private static CSTIBSCBS? TryParseCstIbsCbs(string? cst)
+    {
+        if (string.IsNullOrWhiteSpace(cst)) return null;
+        return Enum.TryParse<CSTIBSCBS>("cst" + cst, out var parsed) ? parsed : null;
+    }
 }

@@ -516,7 +516,7 @@ public class DocumentoFiscalAB(
 }
 
 /// <summary>Linha da lista de documentos fiscais (tela Fiscal).</summary>
-public sealed record DocumentoFiscalResumo
+public record DocumentoFiscalResumo
 {
     public required string Id { get; init; }
     public required string SaleNumber { get; init; }
