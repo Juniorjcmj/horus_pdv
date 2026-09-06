@@ -33,6 +33,19 @@ public class FornecedorAB(Connection connection)
         return rows;
     }
 
+    /// <summary>
+    /// Usada pela importação de XML de NF-e para casar o emitente da nota com fornecedor já
+    /// cadastrado. Compara só dígitos porque o CNPJ é gravado com máscara (igual à checagem de
+    /// duplicidade em FornecedorService) — não dá pra comparar direto via SQL.
+    /// </summary>
+    public async Task<FornecedorAD?> ObterPorCnpjAsync(string companyId, string cnpj)
+    {
+        var digits = new string(cnpj.Where(char.IsDigit).ToArray());
+        var suppliers = await ListarAsync(companyId);
+        return suppliers.FirstOrDefault(item =>
+            string.Equals(new string(item.Cnpj.Where(char.IsDigit).ToArray()), digits, StringComparison.Ordinal));
+    }
+
     public async Task<FornecedorAD?> ObterAsync(string companyId, string id)
     {
         const string sql = """

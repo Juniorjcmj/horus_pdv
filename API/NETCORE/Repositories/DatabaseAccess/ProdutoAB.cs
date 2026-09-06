@@ -73,6 +73,90 @@ public class ProdutoAB(Connection connection)
         return await reader.ReadAsync() ? Map(reader) : null;
     }
 
+    /// <summary>Usada pela importação de XML de NF-e para casar item da nota com produto já cadastrado.</summary>
+    public async Task<ProdutoAD?> ObterPorGtinAsync(string companyId, string gtin)
+    {
+        if (string.IsNullOrWhiteSpace(gtin) || string.Equals(gtin, "SEM GTIN", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var sql = $"""
+            SELECT TOP 1 {Columns}
+            FROM Produtos
+            WHERE CompanyId = @CompanyId AND Gtin = @Gtin;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Gtin", gtin.Trim());
+        await using var reader = await command.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? Map(reader) : null;
+    }
+
+    /// <summary>
+    /// Entrada de estoque por importação de XML de NF-e: soma a quantidade recebida ao estoque
+    /// já existente e atualiza o preço de custo com o valor da nota (preço de venda não é mexido
+    /// aqui — permanece o que já estava cadastrado, a menos que o operador o edite à parte).
+    /// </summary>
+    public async Task<ProdutoAD> EntradaEstoqueAsync(string companyId, string productId, decimal quantidadeRecebida, decimal custoUnitario)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+        try
+        {
+            await using var select = new SqlCommand(
+                $"SELECT {Columns} FROM Produtos WITH (UPDLOCK, ROWLOCK) WHERE Id = @Id AND CompanyId = @CompanyId;",
+                db,
+                transaction);
+            select.Parameters.AddWithValue("@Id", productId);
+            select.Parameters.AddWithValue("@CompanyId", companyId);
+            ProdutoAD current;
+            await using (var reader = await select.ExecuteReaderAsync())
+            {
+                if (!await reader.ReadAsync())
+                {
+                    throw new InvalidOperationException($"Produto {productId} não encontrado.");
+                }
+
+                current = Map(reader);
+            }
+
+            var nextQuantity = current.ProductQnt + quantidadeRecebida;
+            var nextTotal = custoUnitario * nextQuantity;
+
+            await using var update = new SqlCommand(
+                """
+                UPDATE Produtos
+                   SET ProductQnt = @ProductQnt,
+                       ProductUnitPrice = @ProductUnitPrice,
+                       TotalPriceOnProduct = @TotalPriceOnProduct
+                 WHERE Id = @Id AND CompanyId = @CompanyId;
+                """,
+                db,
+                transaction);
+            update.Parameters.AddWithValue("@ProductQnt", nextQuantity);
+            update.Parameters.AddWithValue("@ProductUnitPrice", custoUnitario);
+            update.Parameters.AddWithValue("@TotalPriceOnProduct", nextTotal);
+            update.Parameters.AddWithValue("@Id", productId);
+            update.Parameters.AddWithValue("@CompanyId", companyId);
+            await update.ExecuteNonQueryAsync();
+
+            await transaction.CommitAsync();
+
+            current.ProductQnt = nextQuantity;
+            current.ProductUnitPrice = custoUnitario;
+            current.TotalPriceOnProduct = nextTotal;
+            return current;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
     public async Task<ProdutoAD> SalvarAsync(string companyId, ProdutoAD product)
     {
         var supplierId = await ResolveSupplierIdAsync(companyId, product.ProductSupplier);

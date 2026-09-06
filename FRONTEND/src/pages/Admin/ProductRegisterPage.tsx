@@ -4,8 +4,9 @@
  * Entradas esperadas: não recebe props; opera com estado local de lista e formulário de produto.
  */
 
-import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { FileUp, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { type ClipboardEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import NfeImportModal from "@/components/Admin/NfeImportModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
 import { SearchableSelectField } from "@/components/Form";
@@ -763,19 +764,23 @@ export default function ProductRegisterPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(() => new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [deletingProductIds, setDeletingProductIds] = useState<Set<string>>(() => new Set());
   const [form, setForm] = useState<ProductFormData>(EMPTY_FORM);
 
-  useEffect(() => {
+  const loadProducts = () => {
     productService
       .list()
       .then(setProducts)
       .catch(() => {
         Toast.error("Não foi possível carregar produtos da API.");
       });
+  };
+
+  const loadSuppliers = () => {
     supplierService
       .list()
       .then((items) =>
@@ -786,6 +791,11 @@ export default function ProductRegisterPage() {
         ),
       )
       .catch(() => setSupplierOptions([]));
+  };
+
+  useEffect(() => {
+    loadProducts();
+    loadSuppliers();
   }, []);
 
   const filteredProducts = useMemo(() => {
@@ -1024,12 +1034,32 @@ export default function ProductRegisterPage() {
         title="Cadastro de Produto"
         description="Cadastro e manutenção de produtos com os campos do sistema legado."
         action={
-          <button type="button" onClick={openCreateDrawer} className="btn-primary inline-flex items-center gap-2">
-            <Plus size={16} />
-            Novo produto
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setImportModalOpen(true)}
+              className="btn-secondary inline-flex items-center gap-2"
+            >
+              <FileUp size={16} />
+              Importar XML
+            </button>
+            <button type="button" onClick={openCreateDrawer} className="btn-primary inline-flex items-center gap-2">
+              <Plus size={16} />
+              Novo produto
+            </button>
+          </div>
         }
       />
+
+      {importModalOpen ? (
+        <NfeImportModal
+          onClose={() => setImportModalOpen(false)}
+          onImported={() => {
+            loadProducts();
+            loadSuppliers();
+          }}
+        />
+      ) : null}
 
       <section className="card p-4 md:p-5">
         <label className="relative mx-auto block w-full max-w-xl">

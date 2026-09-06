@@ -58,6 +58,7 @@ builder.Services.AddHttpClient<HorusRecaptchaService>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IFornecedorService, FornecedorService>();
+builder.Services.AddScoped<NfeImportService>();
 
 // Módulo fiscal (NFC-e modelo 65) — ver API/NETCORE/DataBase/README-FISCAL.md
 builder.Services.AddScoped<IFiscalProvider, ZeusFiscalProvider>();
