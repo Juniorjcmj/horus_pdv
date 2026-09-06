@@ -1,11 +1,27 @@
 /**
  * Arquivo: src/services/api/cashRegisterService.ts
- * Objetivo: encapsula chamadas HTTP de abertura, fechamento e status de caixa.
+ * Objetivo: encapsula chamadas HTTP de abertura, fechamento, sangria/reforço e status de caixa.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
 import { apiRequest } from "./apiClient";
 
 const CAIXA_API_URL = import.meta.env.VITE_CAIXA_API_URL ?? "http://localhost:5260/api/Caixa";
+
+export type CashMovementType = "Reforco" | "Sangria";
+
+export type CashMovementDto = {
+  id: string;
+  tipo: CashMovementType | string;
+  valor: string;
+  motivo: string;
+  createdAt: string;
+  operatorName: string;
+};
+
+export type PaymentBreakdownDto = {
+  paymentType: string;
+  total: string;
+};
 
 export type CashRegisterSessionDto = {
   id: string;
@@ -18,6 +34,11 @@ export type CashRegisterSessionDto = {
   closedByName: string;
   note: string;
   elapsedMinutes: number;
+  expectedCashAmount?: string | null;
+  differenceAmount?: string | null;
+  differenceReason?: string | null;
+  movimentos: CashMovementDto[];
+  paymentBreakdown?: PaymentBreakdownDto[] | null;
 };
 
 export type CashRegisterStatusDto = {
@@ -42,10 +63,17 @@ export const cashRegisterService = {
     });
     return response.data;
   },
-  async close(closingAmount: string, note = "") {
+  async close(closingAmount: string, note = "", differenceReason?: string) {
     const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/fechar`, {
       method: "POST",
-      body: JSON.stringify({ closingAmount, note }),
+      body: JSON.stringify({ closingAmount, note, differenceReason: differenceReason || null }),
+    });
+    return response.data;
+  },
+  async registrarMovimento(tipo: CashMovementType, valor: string, motivo: string) {
+    const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/movimento`, {
+      method: "POST",
+      body: JSON.stringify({ tipo, valor, motivo }),
     });
     return response.data;
   },

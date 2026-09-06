@@ -1,10 +1,28 @@
 /**
  * Arquivo: src/pages/Admin/CashRegisterPage.tsx
- * Objetivo: gerencia abertura, fechamento, histórico e bloqueios operacionais do caixa.
+ * Objetivo: gerencia abertura, fechamento com conferência, sangria/reforço, histórico e
+ *           bloqueios operacionais do caixa.
  * Entradas esperadas: não recebe props; carrega status via API e executa ações do operador autenticado.
+ *
+ * Conferência: o "dinheiro esperado" e a "diferença" são sempre calculados pelo servidor (a
+ * partir das vendas em dinheiro do turno + reforços - sangrias) — a tela só espelha esses
+ * valores e, quando há qualquer diferença, exige o motivo antes de deixar fechar.
  */
-import { Banknote, Clock3, LockKeyhole, RefreshCw, ShieldCheck, UnlockKeyhole } from "lucide-react";
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Banknote,
+  Clock3,
+  Eye,
+  LockKeyhole,
+  RefreshCw,
+  ShieldCheck,
+  UnlockKeyhole,
+  Wallet,
+} from "lucide-react";
 import { type ClipboardEvent, type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import CashClosingSummaryModal from "@/components/Admin/CashClosingSummaryModal";
+import CashMovementModal from "@/components/Admin/CashMovementModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import LoadingBar from "@/components/Loading/LoadingBar";
 import LoadingButton from "@/components/Loading/LoadingButton";
@@ -14,9 +32,22 @@ import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import PageLayout from "@/layout/PageLayout";
 import {
   cashRegisterService,
+  type CashMovementType,
   type CashRegisterSessionDto,
   type CashRegisterStatusDto,
 } from "@/services/api/cashRegisterService";
+import { companyService } from "@/services/api/companyService";
+
+const PAYMENT_LABELS: Record<string, string> = {
+  dinheiro: "Dinheiro",
+  pix: "PIX",
+  debito: "Cartão Débito",
+  credito: "Cartão Crédito",
+};
+
+function paymentLabel(paymentType: string) {
+  return PAYMENT_LABELS[paymentType.toLowerCase()] ?? paymentType;
+}
 
 function formatDateTime(value?: string | null) {
   if (!value) return "-";
@@ -46,8 +77,21 @@ function preventInvalidMoneyBeforeInput(event: FormEvent<HTMLInputElement>) {
   }
 }
 
-function SessionRow({ session }: { session: CashRegisterSessionDto }) {
+function hasNonZeroDifference(value?: string | null) {
+  if (!value) return false;
+  return value !== "0,00" && value !== "-0,00";
+}
+
+function SessionRow({
+  session,
+  onViewDetails,
+}: {
+  session: CashRegisterSessionDto;
+  onViewDetails: (session: CashRegisterSessionDto) => void;
+}) {
   const isOpen = session.status.toLowerCase() === "aberto";
+  const diferenca = session.differenceAmount;
+  const temDiferenca = hasNonZeroDifference(diferenca);
   return (
     <tr className="border-b border-border-primary">
       <td className="px-3 py-3">
@@ -70,19 +114,43 @@ function SessionRow({ session }: { session: CashRegisterSessionDto }) {
       <td className="px-3 py-3 text-right text-text-secondary">
         R$ {session.closingAmount || "0,00"}
       </td>
+      <td className="px-3 py-3 text-right">
+        {session.differenceAmount ? (
+          <span className={temDiferenca ? "font-semibold text-danger" : "text-text-tertiary"}>
+            R$ {session.differenceAmount}
+          </span>
+        ) : (
+          <span className="text-text-tertiary">-</span>
+        )}
+      </td>
+      <td className="px-3 py-3 text-right">
+        <button
+          type="button"
+          onClick={() => onViewDetails(session)}
+          className="inline-flex items-center gap-1 rounded-lg border border-border-secondary px-2.5 py-1 text-xs font-semibold text-text-secondary hover:bg-hover-light"
+        >
+          <Eye size={14} />
+          Detalhes
+        </button>
+      </td>
     </tr>
   );
 }
 
 export default function CashRegisterPage() {
-  const { maskMoneyBr } = useInputMasks();
+  const { maskMoneyBr, parseMoneyBr, formatMoneyBr } = useInputMasks();
   const statusDialog = useStatusDialog();
   const [cashStatus, setCashStatus] = useState<CashRegisterStatusDto | null>(null);
+  const [companyName, setCompanyName] = useState("Hórus PDV");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [openingAmount, setOpeningAmount] = useState("0,00");
   const [closingAmount, setClosingAmount] = useState("0,00");
   const [closingNote, setClosingNote] = useState("");
+  const [differenceReason, setDifferenceReason] = useState("");
+  const [movementModalType, setMovementModalType] = useState<CashMovementType | null>(null);
+  const [closingSummary, setClosingSummary] = useState<CashRegisterSessionDto | null>(null);
+  const [viewingSession, setViewingSession] = useState<CashRegisterSessionDto | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -103,10 +171,17 @@ export default function CashRegisterPage() {
     return historyRows.slice(start, start + itemsPerPage);
   }, [historyRows, itemsPerPage, safeCurrentPage]);
 
+  const expectedCash = currentSession?.expectedCashAmount || "0,00";
+  const difference = useMemo(
+    () => Math.round((parseMoneyBr(closingAmount) - parseMoneyBr(expectedCash)) * 100) / 100,
+    [closingAmount, expectedCash, parseMoneyBr],
+  );
+  const hasDifference = hasOpenSession && difference !== 0;
+
   const loadStatus = useCallback(async () => {
     const status = await cashRegisterService.status();
     setCashStatus(status ?? null);
-    setClosingAmount(status?.currentSession?.closingAmount || "0,00");
+    setClosingAmount(status?.currentSession?.expectedCashAmount || "0,00");
   }, []);
 
   useEffect(() => {
@@ -116,6 +191,14 @@ export default function CashRegisterPage() {
         Toast.error("Não foi possível carregar o status do caixa.");
       })
       .finally(() => setLoading(false));
+    companyService
+      .get()
+      .then((company) => {
+        if (company?.fantasyName) setCompanyName(company.fantasyName);
+      })
+      .catch(() => {
+        /* nome da empresa é só decorativo no resumo/impressão — sem empresa, mantém o padrão */
+      });
   }, [loadStatus]);
 
   const updateOpeningAmount = (value: string) => setOpeningAmount(maskMoneyBr(value));
@@ -145,19 +228,43 @@ export default function CashRegisterPage() {
   };
 
   const closeCashRegister = async () => {
+    if (hasDifference && differenceReason.trim().length < 3) {
+      Toast.error("Informe o motivo da diferença antes de fechar o caixa.");
+      return;
+    }
+
     const confirmed = await statusDialog.confirm("Fechar o caixa atual?");
     if (!confirmed) return;
 
     setSaving(true);
     try {
-      const status = await cashRegisterService.close(closingAmount, closingNote);
+      const status = await cashRegisterService.close(
+        closingAmount,
+        closingNote,
+        hasDifference ? differenceReason.trim() : undefined,
+      );
       setCashStatus(status ?? null);
       setClosingNote("");
+      setDifferenceReason("");
+      if (status?.lastSession) {
+        setClosingSummary(status.lastSession);
+      }
       Toast.success("Caixa fechado. Vendas bloqueadas até nova abertura.");
     } catch (error) {
       Toast.error(error instanceof Error ? error.message : "Não foi possível fechar o caixa.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const registerMovement = async (tipo: CashMovementType, valor: string, motivo: string) => {
+    try {
+      const status = await cashRegisterService.registrarMovimento(tipo, valor, motivo);
+      setCashStatus(status ?? null);
+      setMovementModalType(null);
+      Toast.success(tipo === "Sangria" ? "Sangria registrada." : "Reforço registrado.");
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Não foi possível registrar o movimento.");
     }
   };
 
@@ -185,7 +292,7 @@ export default function CashRegisterPage() {
     <PageLayout size="wide" className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
         title="Abertura e Fechamento de Caixa"
-        description="Controle operacional do caixa obrigatório para iniciar vendas no PDV."
+        description="Controle operacional do caixa, com conferência por forma de pagamento e trilha de auditoria."
         action={
           <button
             type="button"
@@ -225,6 +332,76 @@ export default function CashRegisterPage() {
         </div>
       </section>
 
+      {hasOpenSession ? (
+        <section className="grid gap-4 md:grid-cols-2">
+          <div className="card rounded-2xl p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-text-primary">
+                <Wallet size={16} />
+                <h3 className="text-sm font-semibold">Vendas por forma de pagamento</h3>
+              </div>
+            </div>
+            {currentSession.paymentBreakdown && currentSession.paymentBreakdown.length > 0 ? (
+              <div className="space-y-1.5 text-sm">
+                {currentSession.paymentBreakdown.map((item) => (
+                  <div key={item.paymentType} className="flex justify-between">
+                    <span className="text-text-secondary">{paymentLabel(item.paymentType)}</span>
+                    <span className="font-semibold text-text-primary">R$ {item.total}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-text-tertiary">Nenhuma venda registrada neste turno ainda.</p>
+            )}
+            <div className="mt-3 flex justify-between border-t border-border-primary pt-3 text-sm font-bold text-text-primary">
+              <span>Dinheiro esperado na gaveta</span>
+              <span>R$ {expectedCash}</span>
+            </div>
+          </div>
+
+          <div className="card rounded-2xl p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-text-primary">Sangrias e reforços</h3>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMovementModalType("Reforco")}
+                  className="inline-flex items-center gap-1 rounded-lg border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-semibold text-success hover:bg-success/20"
+                >
+                  <ArrowUpCircle size={14} />
+                  Reforço
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMovementModalType("Sangria")}
+                  className="inline-flex items-center gap-1 rounded-lg border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger hover:bg-danger/20"
+                >
+                  <ArrowDownCircle size={14} />
+                  Sangria
+                </button>
+              </div>
+            </div>
+            {currentSession.movimentos.length > 0 ? (
+              <div className="max-h-40 space-y-2 overflow-y-auto pr-1">
+                {currentSession.movimentos.map((item) => (
+                  <div key={item.id} className="flex items-start justify-between text-sm">
+                    <div>
+                      <span className={item.tipo === "Sangria" ? "font-semibold text-danger" : "font-semibold text-success"}>
+                        {item.tipo === "Sangria" ? "Sangria" : "Reforço"}
+                      </span>
+                      <p className="text-xs text-text-secondary">{item.motivo}</p>
+                    </div>
+                    <span className="font-semibold text-text-primary">R$ {item.valor}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-text-tertiary">Nenhuma movimentação neste turno.</p>
+            )}
+          </div>
+        </section>
+      ) : null}
+
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="card rounded-2xl p-4">
           <div className="mb-4 flex items-center gap-2 text-text-primary">
@@ -258,7 +435,9 @@ export default function CashRegisterPage() {
               </div>
 
               <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">Valor de fechamento</span>
+                <span className="mb-1.5 block text-sm text-text-secondary">
+                  Valor contado na gaveta (dinheiro)
+                </span>
                 <input
                   value={closingAmount}
                   inputMode="numeric"
@@ -269,7 +448,44 @@ export default function CashRegisterPage() {
                   className="input-field w-full"
                   placeholder="0,00"
                 />
+                <span className="mt-1 block text-xs text-text-secondary">
+                  Esperado: R$ {expectedCash} (fundo de troco + vendas em dinheiro + reforços - sangrias)
+                </span>
               </label>
+
+              <div
+                className={`rounded-xl border p-3 text-sm ${
+                  difference === 0
+                    ? "border-success/30 bg-success/10 text-success"
+                    : "border-danger/30 bg-danger/10 text-danger"
+                }`}
+              >
+                <div className="flex justify-between font-bold">
+                  <span>Diferença</span>
+                  <span>R$ {formatMoneyBr(difference)}</span>
+                </div>
+                <p className="mt-0.5 text-xs">
+                  {difference === 0
+                    ? "Confere com o esperado."
+                    : difference > 0
+                      ? "Sobra em relação ao esperado."
+                      : "Falta em relação ao esperado."}
+                </p>
+              </div>
+
+              {hasDifference ? (
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">
+                    Motivo da diferença *
+                  </span>
+                  <textarea
+                    value={differenceReason}
+                    onChange={(event) => setDifferenceReason(event.target.value)}
+                    className="input-field min-h-20 w-full resize-y"
+                    placeholder="Explique a sobra ou falta antes de fechar o caixa"
+                  />
+                </label>
+              ) : null}
 
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">Observação</span>
@@ -277,7 +493,7 @@ export default function CashRegisterPage() {
                   value={closingNote}
                   onChange={(event) => setClosingNote(event.target.value)}
                   className="input-field min-h-24 w-full resize-y"
-                  placeholder="Diferenças, sangria, conferência ou observação do fechamento"
+                  placeholder="Observação geral do fechamento (opcional)"
                 />
               </label>
 
@@ -286,7 +502,8 @@ export default function CashRegisterPage() {
                 onClick={closeCashRegister}
                 isLoading={saving}
                 loadingLabel="Fechando..."
-                className="btn-primary inline-flex w-full items-center justify-center gap-2 sm:w-auto"
+                disabled={hasDifference && differenceReason.trim().length < 3}
+                className="btn-primary inline-flex w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
               >
                 <LockKeyhole size={16} />
                 Fechar caixa
@@ -331,6 +548,7 @@ export default function CashRegisterPage() {
             <p>Venda só é confirmada se existir caixa aberto no dia.</p>
             <p>Caixa aberto por mais de 24 horas bloqueia novas vendas.</p>
             <p>Caixa vencido precisa ser fechado antes de uma nova abertura.</p>
+            <p>Qualquer diferença entre o esperado e o contado exige justificativa para fechar.</p>
           </div>
           <div className="mt-4 rounded-xl border border-border-primary bg-bg-primary p-3 text-sm">
             <div className="flex items-center gap-2 text-text-primary">
@@ -351,10 +569,10 @@ export default function CashRegisterPage() {
       <section className="card overflow-hidden rounded-2xl">
         <div className="border-b border-border-primary px-4 py-3">
           <h2 className="text-lg font-semibold text-text-primary">Histórico de caixa</h2>
-          <p className="text-sm text-text-secondary">Últimas aberturas e fechamentos em memória da API.</p>
+          <p className="text-sm text-text-secondary">Últimas aberturas e fechamentos, com diferença de conferência.</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-[860px] w-full text-sm">
+          <table className="min-w-[960px] w-full text-sm">
             <thead className="bg-bg-gray-theme text-xs uppercase text-text-secondary">
               <tr>
                 <th className="px-3 py-2 text-left">Status</th>
@@ -363,11 +581,13 @@ export default function CashRegisterPage() {
                 <th className="px-3 py-2 text-left">Operador</th>
                 <th className="px-3 py-2 text-right">Inicial</th>
                 <th className="px-3 py-2 text-right">Final</th>
+                <th className="px-3 py-2 text-right">Diferença</th>
+                <th className="px-3 py-2 text-right">Ações</th>
               </tr>
             </thead>
             <tbody>
               {paginatedHistoryRows.map((session) => (
-                <SessionRow key={session.id} session={session} />
+                <SessionRow key={session.id} session={session} onViewDetails={setViewingSession} />
               ))}
             </tbody>
           </table>
@@ -385,6 +605,30 @@ export default function CashRegisterPage() {
           />
         </div>
       </section>
+
+      {movementModalType ? (
+        <CashMovementModal
+          tipo={movementModalType}
+          onClose={() => setMovementModalType(null)}
+          onConfirm={(valor, motivo) => registerMovement(movementModalType, valor, motivo)}
+        />
+      ) : null}
+
+      {closingSummary ? (
+        <CashClosingSummaryModal
+          session={closingSummary}
+          companyName={companyName}
+          onClose={() => setClosingSummary(null)}
+        />
+      ) : null}
+
+      {viewingSession ? (
+        <CashClosingSummaryModal
+          session={viewingSession}
+          companyName={companyName}
+          onClose={() => setViewingSession(null)}
+        />
+      ) : null}
 
       {statusDialog.Dialog}
     </PageLayout>

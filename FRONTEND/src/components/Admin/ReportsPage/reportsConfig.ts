@@ -9,6 +9,7 @@ import {
   Boxes,
   FileChartColumnIncreasing,
   HandCoins,
+  History,
   PackageSearch,
   ShoppingCart,
   TrendingUp,
@@ -55,6 +56,15 @@ const paymentMethodOptions: ReportFilterOption[] = [
   { label: "PIX", value: "pix" },
   { label: "Cartão de Débito", value: "debit" },
   { label: "Cartão de Crédito", value: "credit" },
+];
+
+const auditEventTypeOptions: ReportFilterOption[] = [
+  { label: "Todos", value: "" },
+  { label: "Abertura de caixa", value: "CaixaAbertura" },
+  { label: "Fechamento de caixa", value: "CaixaFechamento" },
+  { label: "Reforço de caixa", value: "CaixaReforco" },
+  { label: "Sangria de caixa", value: "CaixaSangria" },
+  { label: "Venda bloqueada", value: "VendaBloqueada" },
 ];
 
 const categoryOptions: ReportFilterOption[] = [
@@ -155,6 +165,16 @@ export const reportCatalog: ReportDefinition[] = [
     filters: [
       ...periodFilters,
       { id: "paymentMethod", label: "Forma de pagamento", type: "select", options: paymentMethodOptions },
+    ],
+  },
+  {
+    id: "log-atividades",
+    title: "Log de Atividades",
+    description: "Trilha de auditoria: quem fez o quê e quando (caixa, sangria/reforço, vendas bloqueadas).",
+    icon: History,
+    filters: [
+      ...periodFilters,
+      { id: "eventType", label: "Tipo de evento", type: "select", options: auditEventTypeOptions },
     ],
   },
 ];

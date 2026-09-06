@@ -26,7 +26,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
     public CaixaStatusDto GetStatus(string companyId, DateTimeOffset? reference = null)
         => BuildStatus(companyId, reference ?? DateTimeOffset.Now);
 
-    public CaixaStatusDto Abrir(AbrirCaixaRequest request, AuthenticatedUser currentUser)
+    public CaixaStatusDto Abrir(AbrirCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
     {
         var now = DateTimeOffset.Now;
         var openSession = caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId).GetAwaiter().GetResult();
@@ -55,14 +55,15 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
                 AuditEventTypes.CaixaAbertura,
                 $"Abriu o caixa com {HorusMoneyFormat.Format(openingAmount)} de fundo de troco.",
                 entityType: "CaixaSessao",
-                entityId: sessionId)
+                entityId: sessionId,
+                ip: ip)
             .GetAwaiter()
             .GetResult();
 
         return BuildStatus(currentUser.CompanyId, now);
     }
 
-    public CaixaStatusDto RegistrarMovimento(RegistrarMovimentoCaixaRequest request, AuthenticatedUser currentUser)
+    public CaixaStatusDto RegistrarMovimento(RegistrarMovimentoCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
     {
         var now = DateTimeOffset.Now;
         var openSession = caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId).GetAwaiter().GetResult();
@@ -119,14 +120,15 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
                 eventType,
                 $"{acao} de {HorusMoneyFormat.Format(valor)} — {movimento.Motivo}",
                 entityType: "CaixaSessao",
-                entityId: openSession.Id)
+                entityId: openSession.Id,
+                ip: ip)
             .GetAwaiter()
             .GetResult();
 
         return BuildStatus(currentUser.CompanyId, now);
     }
 
-    public CaixaStatusDto Fechar(FecharCaixaRequest request, AuthenticatedUser currentUser)
+    public CaixaStatusDto Fechar(FecharCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
     {
         var now = DateTimeOffset.Now;
         var openSession = caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId).GetAwaiter().GetResult();
@@ -172,14 +174,15 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
                 AuditEventTypes.CaixaFechamento,
                 descricao,
                 entityType: "CaixaSessao",
-                entityId: openSession.Id)
+                entityId: openSession.Id,
+                ip: ip)
             .GetAwaiter()
             .GetResult();
 
         return BuildStatus(currentUser.CompanyId, now);
     }
 
-    public void EnsureVendaPermitida(AuthenticatedUser currentUser)
+    public void EnsureVendaPermitida(AuthenticatedUser currentUser, string? ip = null)
     {
         var status = BuildStatus(currentUser.CompanyId, DateTimeOffset.Now);
         if (status.CanSell) return;
@@ -189,7 +192,8 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
                 currentUser.Id,
                 currentUser.Name,
                 AuditEventTypes.VendaBloqueada,
-                $"Tentou vender com o caixa {status.State} — {status.BlockReason}")
+                $"Tentou vender com o caixa {status.State} — {status.BlockReason}",
+                ip: ip)
             .GetAwaiter()
             .GetResult();
 

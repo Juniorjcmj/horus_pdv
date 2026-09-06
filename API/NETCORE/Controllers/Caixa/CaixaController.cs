@@ -13,8 +13,10 @@ namespace HORUSPDV_API.Controllers.Caixa;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CaixaController(HorusCaixaService caixaService) : ControllerBase
+public class CaixaController(HorusCaixaService caixaService, HorusSecurityOptions securityOptions) : ControllerBase
 {
+    private string ResolveIp() => HorusClientIpResolver.Resolve(HttpContext, securityOptions);
+
     [HttpGet("status")]
     public IActionResult Status()
     {
@@ -45,7 +47,7 @@ public class CaixaController(HorusCaixaService caixaService) : ControllerBase
             {
                 Success = true,
                 Message = "Caixa aberto com sucesso.",
-                Data = caixaService.Abrir(request, currentUser)
+                Data = caixaService.Abrir(request, currentUser, ResolveIp())
             });
         }
         catch (InvalidOperationException ex)
@@ -68,7 +70,7 @@ public class CaixaController(HorusCaixaService caixaService) : ControllerBase
             {
                 Success = true,
                 Message = "Caixa fechado com sucesso.",
-                Data = caixaService.Fechar(request, currentUser)
+                Data = caixaService.Fechar(request, currentUser, ResolveIp())
             });
         }
         catch (InvalidOperationException ex)
@@ -91,7 +93,7 @@ public class CaixaController(HorusCaixaService caixaService) : ControllerBase
             {
                 Success = true,
                 Message = "Movimento de caixa registrado com sucesso.",
-                Data = caixaService.RegistrarMovimento(request, currentUser)
+                Data = caixaService.RegistrarMovimento(request, currentUser, ResolveIp())
             });
         }
         catch (InvalidOperationException ex)
