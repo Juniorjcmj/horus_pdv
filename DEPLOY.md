@@ -20,7 +20,7 @@ Portainer puxa as imagens novas e recria os containers
    ▼
 Traefik (já existente na rede OrionNet) expõe:
    - https://pdv.wootchat.com.br       → container pdv-frontend (nginx, build estático)
-   - https://api.pdv.wootchat.com.br   → container pdv-api (.NET, porta 8080)
+   - https://api-pdv.wootchat.com.br   → container pdv-api (.NET, porta 8080)
                                           → container pdv-sqlserver (SQL Server, sem acesso externo)
 ```
 
@@ -32,7 +32,7 @@ Aponte os dois hostnames para o IP do seu servidor Docker (mesmo IP que já reso
 resto do que está atrás do Traefik):
 
 - `pdv.wootchat.com.br` → A/AAAA para o servidor
-- `api.pdv.wootchat.com.br` → A/AAAA para o servidor
+- `api-pdv.wootchat.com.br` → A/AAAA para o servidor
 
 ## 2. GitHub — permitir o workflow publicar em ghcr.io
 
@@ -53,7 +53,7 @@ Settings → **Secrets and variables → Actions**:
 
 | Tipo     | Nome                          | Para quê |
 |----------|-------------------------------|----------|
-| Variable | `VITE_API_ORIGIN`              | Só se a API não for `https://api.pdv.wootchat.com.br` (esse já é o default no workflow). |
+| Variable | `VITE_API_ORIGIN`              | Só se a API não for `https://api-pdv.wootchat.com.br` (esse já é o default no workflow). |
 | Secret   | `RECAPTCHA_SITE_KEY`           | Site key pública do reCAPTCHA v3, se for usar. Vazio = reCAPTCHA desabilitado no frontend. |
 | Secret   | `PORTAINER_WEBHOOK_URL`        | Webhook de redeploy do Portainer (stack ou serviço da API) — ver passo 6. |
 | Secret   | `PORTAINER_WEBHOOK_URL_FRONTEND` | Um segundo webhook, só se sua versão do Portainer expõe um por serviço em vez de um por stack. |

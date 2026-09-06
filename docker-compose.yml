@@ -68,7 +68,7 @@ services:
       - OrionNet
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.pdv-api.rule=Host(`api.pdv.wootchat.com.br`)"
+      - "traefik.http.routers.pdv-api.rule=Host(`api-pdv.wootchat.com.br`)"
       - "traefik.http.routers.pdv-api.entrypoints=websecure"
       - "traefik.http.routers.pdv-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.pdv-api.loadbalancer.server.port=8080"

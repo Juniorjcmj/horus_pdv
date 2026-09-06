@@ -223,7 +223,7 @@ e pagar na mesma tela, pelo mesmo operador".
 
 Adicionado depois, para publicar esta stack em produção atrás do Traefik já existente
 (rede `OrionNet`, mesmo padrão de labels informado por você). Dois hostnames separados:
-`pdv.wootchat.com.br` (frontend) e `api.pdv.wootchat.com.br` (API) — decisão confirmada,
+`pdv.wootchat.com.br` (frontend) e `api-pdv.wootchat.com.br` (API) — decisão confirmada,
 já que só um bloco de labels tinha sido informado originalmente.
 
 - **Novo:** `API/NETCORE/Dockerfile` + `.dockerignore` — build multi-stage .NET 8,

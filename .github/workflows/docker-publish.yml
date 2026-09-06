@@ -4,7 +4,7 @@ name: Build e publicar imagens Docker
 # push em main, e dispara o webhook de redeploy do Portainer se ele estiver configurado.
 # Configuração necessária no repositório (Settings > Secrets and variables > Actions):
 #   Secrets:   PORTAINER_WEBHOOK_URL (opcional), RECAPTCHA_SITE_KEY (opcional)
-#   Variables: VITE_API_ORIGIN (opcional, default abaixo já aponta para api.pdv.wootchat.com.br)
+#   Variables: VITE_API_ORIGIN (opcional, default abaixo já aponta para api-pdv.wootchat.com.br)
 
 on:
   push:
@@ -86,7 +86,7 @@ jobs:
           file: ./FRONTEND/Dockerfile
           push: true
           build-args: |
-            VITE_API_ORIGIN=${{ vars.VITE_API_ORIGIN || 'https://api.pdv.wootchat.com.br' }}
+            VITE_API_ORIGIN=${{ vars.VITE_API_ORIGIN || 'https://api-pdv.wootchat.com.br' }}
             VITE_RECAPTCHA_SITE_KEY=${{ secrets.RECAPTCHA_SITE_KEY }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/horus-pdv-frontend:latest
