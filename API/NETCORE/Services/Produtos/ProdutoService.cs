@@ -108,6 +108,9 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         ProductUnitPrice = HorusMoneyFormat.ParseDecimal(request.ProductUnitPrice),
         ProductSalePrice = HorusMoneyFormat.ParseDecimal(request.ProductSalePrice),
         TotalPriceOnProduct = HorusMoneyFormat.ParseDecimal(request.TotalPriceOnProduct),
+        MargemDesejadaPercentual = string.IsNullOrWhiteSpace(request.MargemDesejadaPercentual)
+            ? null
+            : HorusMoneyFormat.ParseDecimal(request.MargemDesejadaPercentual),
         Ncm = string.IsNullOrWhiteSpace(request.Ncm) ? "00000000" : request.Ncm.Trim(),
         Cest = string.IsNullOrWhiteSpace(request.Cest) ? null : request.Cest.Trim(),
         Cfop = string.IsNullOrWhiteSpace(request.Cfop) ? "5102" : request.Cfop.Trim(),
@@ -137,6 +140,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         ProductUnitPrice = HorusMoneyFormat.Format(source.ProductUnitPrice),
         ProductSalePrice = HorusMoneyFormat.Format(source.ProductSalePrice),
         TotalPriceOnProduct = HorusMoneyFormat.Format(source.TotalPriceOnProduct),
+        MargemDesejadaPercentual = source.MargemDesejadaPercentual is { } margem ? HorusMoneyFormat.Format(margem) : null,
         Ncm = source.Ncm,
         Cest = source.Cest,
         Cfop = source.Cfop,

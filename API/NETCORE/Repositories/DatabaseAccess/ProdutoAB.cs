@@ -14,6 +14,7 @@ public class ProdutoAB(Connection connection)
     private const string Columns = """
         Id, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier,
         ProductDescription, ProductQnt, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
+        MargemDesejadaPercentual,
         Ncm, Cest, Cfop, OrigemMercadoria, UnidadeComercial, UnidadeTributavel, Gtin,
         CsosnIcms, CstIcms, AliquotaIcms, CstPis, CstCofins, CstIbsCbs, CClassTrib
         """;
@@ -126,11 +127,19 @@ public class ProdutoAB(Connection connection)
             var nextQuantity = current.ProductQnt + quantidadeRecebida;
             var nextTotal = custoUnitario * nextQuantity;
 
+            // Custo mudou sem passar pelo formulário manual — se o produto tem uma margem
+            // desejada configurada, o preço de venda é recalculado sozinho pra manter essa
+            // margem em vez de ficar defasado em cima do custo antigo.
+            var nextSalePrice = current.MargemDesejadaPercentual is { } margem
+                ? custoUnitario * (1 + margem / 100m)
+                : current.ProductSalePrice;
+
             await using var update = new SqlCommand(
                 """
                 UPDATE Produtos
                    SET ProductQnt = @ProductQnt,
                        ProductUnitPrice = @ProductUnitPrice,
+                       ProductSalePrice = @ProductSalePrice,
                        TotalPriceOnProduct = @TotalPriceOnProduct
                  WHERE Id = @Id AND CompanyId = @CompanyId;
                 """,
@@ -138,6 +147,7 @@ public class ProdutoAB(Connection connection)
                 transaction);
             update.Parameters.AddWithValue("@ProductQnt", nextQuantity);
             update.Parameters.AddWithValue("@ProductUnitPrice", custoUnitario);
+            update.Parameters.AddWithValue("@ProductSalePrice", nextSalePrice);
             update.Parameters.AddWithValue("@TotalPriceOnProduct", nextTotal);
             update.Parameters.AddWithValue("@Id", productId);
             update.Parameters.AddWithValue("@CompanyId", companyId);
@@ -147,6 +157,7 @@ public class ProdutoAB(Connection connection)
 
             current.ProductQnt = nextQuantity;
             current.ProductUnitPrice = custoUnitario;
+            current.ProductSalePrice = nextSalePrice;
             current.TotalPriceOnProduct = nextTotal;
             return current;
         }
@@ -175,6 +186,7 @@ public class ProdutoAB(Connection connection)
                        ProductUnitPrice = @ProductUnitPrice,
                        ProductSalePrice = @ProductSalePrice,
                        TotalPriceOnProduct = @TotalPriceOnProduct,
+                       MargemDesejadaPercentual = @MargemDesejadaPercentual,
                        Ncm = @Ncm,
                        Cest = @Cest,
                        Cfop = @Cfop,
@@ -196,11 +208,13 @@ public class ProdutoAB(Connection connection)
                 INSERT INTO Produtos
                     (Id, CompanyId, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier, SupplierId,
                      ProductDescription, ProductQnt, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
+                     MargemDesejadaPercentual,
                      Ncm, Cest, Cfop, OrigemMercadoria, UnidadeComercial, UnidadeTributavel, Gtin,
                      CsosnIcms, CstIcms, AliquotaIcms, CstPis, CstCofins, CstIbsCbs, CClassTrib)
                 VALUES
                     (@Id, @CompanyId, @ProductImageUrl, @ProductImageName, @ProductName, @ProductCode, @ProductSupplier, @SupplierId,
                      @ProductDescription, @ProductQnt, @ProductUnitPrice, @ProductSalePrice, @TotalPriceOnProduct,
+                     @MargemDesejadaPercentual,
                      @Ncm, @Cest, @Cfop, @OrigemMercadoria, @UnidadeComercial, @UnidadeTributavel, @Gtin,
                      @CsosnIcms, @CstIcms, @AliquotaIcms, @CstPis, @CstCofins, @CstIbsCbs, @CClassTrib);
             END;
@@ -325,6 +339,7 @@ public class ProdutoAB(Connection connection)
         command.Parameters.AddWithValue("@ProductUnitPrice", product.ProductUnitPrice);
         command.Parameters.AddWithValue("@ProductSalePrice", product.ProductSalePrice);
         command.Parameters.AddWithValue("@TotalPriceOnProduct", product.TotalPriceOnProduct);
+        command.Parameters.AddWithValue("@MargemDesejadaPercentual", (object?)product.MargemDesejadaPercentual ?? DBNull.Value);
         command.Parameters.AddWithValue("@Ncm", product.Ncm);
         command.Parameters.AddWithValue("@Cest", (object?)product.Cest ?? DBNull.Value);
         command.Parameters.AddWithValue("@Cfop", product.Cfop);
@@ -354,6 +369,7 @@ public class ProdutoAB(Connection connection)
         ProductUnitPrice = ReadDecimal(source, "ProductUnitPrice"),
         ProductSalePrice = ReadDecimal(source, "ProductSalePrice"),
         TotalPriceOnProduct = ReadDecimal(source, "TotalPriceOnProduct"),
+        MargemDesejadaPercentual = ReadNullableDecimal(source, "MargemDesejadaPercentual"),
         Ncm = ReadString(source, "Ncm"),
         Cest = ReadNullableString(source, "Cest"),
         Cfop = ReadString(source, "Cfop"),
@@ -386,6 +402,12 @@ public class ProdutoAB(Connection connection)
     {
         var ordinal = reader.GetOrdinal(name);
         return reader.IsDBNull(ordinal) ? 0m : reader.GetDecimal(ordinal);
+    }
+
+    private static decimal? ReadNullableDecimal(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? null : reader.GetDecimal(ordinal);
     }
 
     private static int ReadInt(SqlDataReader reader, string name)

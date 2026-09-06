@@ -19,6 +19,7 @@ public class ProdutoModel
     public string ProductUnitPrice { get; set; } = string.Empty;
     public string ProductSalePrice { get; set; } = string.Empty;
     public string TotalPriceOnProduct { get; set; } = string.Empty;
+    public string? MargemDesejadaPercentual { get; set; }
 
     // Dados fiscais (NFC-e modelo 65)
     public string Ncm { get; set; } = "00000000";

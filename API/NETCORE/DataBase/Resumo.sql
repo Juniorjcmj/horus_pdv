@@ -65,6 +65,14 @@ BEGIN
     ALTER TABLE Produtos ADD CompanyId NVARCHAR(40) NOT NULL CONSTRAINT DF_Produtos_CompanyId DEFAULT N'empresa-principal';
 END;
 
+-- % de lucro desejado sobre o custo, guardado por produto (NULL = nao configurado). Usado para
+-- recalcular o preco de venda sozinho quando o custo muda sem passar pelo formulario manual
+-- (ex.: entrada de estoque pela importacao de XML de NF-e) — ver ProdutoAB.EntradaEstoqueAsync.
+IF COL_LENGTH(N'Produtos', N'MargemDesejadaPercentual') IS NULL
+BEGIN
+    ALTER TABLE Produtos ADD MargemDesejadaPercentual DECIMAL(9, 4) NULL;
+END;
+
 IF OBJECT_ID(N'Clientes', N'U') IS NULL
 BEGIN
     CREATE TABLE Clientes

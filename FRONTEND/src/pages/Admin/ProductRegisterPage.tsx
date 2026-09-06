@@ -34,6 +34,7 @@ type Product = {
   productUnitPrice: string;
   productSalePrice: string;
   totalPriceOnProduct: string;
+  margemDesejadaPercentual: string | null;
 
   // Dados fiscais (NFC-e modelo 65)
   ncm: string;
@@ -72,6 +73,7 @@ const EMPTY_FORM: ProductFormData = {
   productUnitPrice: "",
   productSalePrice: "",
   totalPriceOnProduct: "",
+  margemDesejadaPercentual: "",
   ncm: "",
   cest: "",
   cfop: "5102",
@@ -158,6 +160,17 @@ function ProductFormDrawer({
     const quantity = parseMoneyBr(next.productQnt || "0");
     const unitPrice = parseMoneyBr(next.productUnitPrice);
     next.totalPriceOnProduct = quantity > 0 ? formatMoneyBr(quantity * unitPrice) : "";
+
+    // Custo ou margem desejada mudou: recalcula o preço de venda sozinho pra manter a margem
+    // configurada (ex.: custo R$10,00 + 30% = venda R$13,00). Preço de venda continua editável
+    // manualmente depois — só é recalculado quando um desses dois campos muda.
+    if (key === "productUnitPrice" || key === "margemDesejadaPercentual") {
+      const margin = next.margemDesejadaPercentual?.trim();
+      if (margin) {
+        next.productSalePrice = formatMoneyBr(unitPrice * (1 + parseMoneyBr(margin) / 100));
+      }
+    }
+
     onChange(next);
   };
 
@@ -184,7 +197,7 @@ function ProductFormDrawer({
   };
 
   const setMoneyField = (
-    key: "productUnitPrice" | "productSalePrice",
+    key: "productUnitPrice" | "productSalePrice" | "margemDesejadaPercentual",
     fieldValue: string,
   ) => {
     setField(key, maskMoneyBr(fieldValue));
@@ -192,7 +205,7 @@ function ProductFormDrawer({
 
   const pasteMoneyField = (
     event: ClipboardEvent<HTMLInputElement>,
-    key: "productUnitPrice" | "productSalePrice",
+    key: "productUnitPrice" | "productSalePrice" | "margemDesejadaPercentual",
   ) => {
     event.preventDefault();
     setMoneyField(key, event.clipboardData.getData("text"));
@@ -461,6 +474,25 @@ function ProductFormDrawer({
                   className="input-field w-full"
                   placeholder="0,00"
                 />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">
+                  Margem de lucro desejada (%)
+                </span>
+                <input
+                  value={value.margemDesejadaPercentual ?? ""}
+                  inputMode="numeric"
+                  pattern="[0-9,.]*"
+                  onBeforeInput={preventNonDigitBeforeInput}
+                  onPaste={(event) => pasteMoneyField(event, "margemDesejadaPercentual")}
+                  onChange={(event) => setMoneyField("margemDesejadaPercentual", event.target.value)}
+                  className="input-field w-full"
+                  placeholder="Ex.: 30,00"
+                />
+                <span className="mt-1 block text-xs text-text-secondary">
+                  Opcional. Calcula o preço de venda a partir do custo e recalcula sozinho quando o
+                  custo mudar (inclusive por importação de XML).
+                </span>
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">

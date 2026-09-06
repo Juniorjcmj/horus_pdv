@@ -79,6 +79,13 @@ public class NfeImportService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB)
                 ? await produtosAB.ObterPorGtinAsync(companyId, item.Gtin)
                 : null;
 
+            // Se o produto já existente tem margem desejada configurada, EntradaEstoqueAsync vai
+            // recalcular o preço de venda sozinho a partir do novo custo — a prévia já mostra esse
+            // valor projetado em vez do preço de venda atual, que ficaria defasado.
+            var precoVendaSugerido = existente?.MargemDesejadaPercentual is { } margemExistente
+                ? item.ValorUnitario * (1 + margemExistente / 100m)
+                : existente?.ProductSalePrice ?? item.ValorUnitario;
+
             itens.Add(new NfeImportItemPreview
             {
                 NumeroItem = item.NumeroItem,
@@ -92,7 +99,7 @@ public class NfeImportService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB)
                 UnidadeComercial = item.UnidadeComercial,
                 Quantidade = HorusMoneyFormat.FormatQuantity(item.Quantidade),
                 PrecoCusto = HorusMoneyFormat.Format(item.ValorUnitario),
-                PrecoVendaSugerido = HorusMoneyFormat.Format(existente?.ProductSalePrice ?? item.ValorUnitario),
+                PrecoVendaSugerido = HorusMoneyFormat.Format(precoVendaSugerido),
             });
         }
 

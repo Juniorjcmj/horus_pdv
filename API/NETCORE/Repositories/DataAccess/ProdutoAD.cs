@@ -24,6 +24,9 @@ public class ProdutoAD
     public decimal ProductSalePrice { get; set; }
     public decimal TotalPriceOnProduct { get; set; }
 
+    /// <summary>% de lucro desejado sobre o custo (ex.: 30 = 30%). Null = não configurado.</summary>
+    public decimal? MargemDesejadaPercentual { get; set; }
+
     // Dados fiscais (NFC-e modelo 65) — ver API/NETCORE/DataBase/Migrations/02_estrutura_fiscal.sql
     public string Ncm { get; set; } = "00000000";
     public string? Cest { get; set; }

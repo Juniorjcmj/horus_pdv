@@ -20,6 +20,7 @@ export type ProductDto = {
   productUnitPrice: string;
   productSalePrice: string;
   totalPriceOnProduct: string;
+  margemDesejadaPercentual: string | null;
 
   // Dados fiscais (NFC-e modelo 65)
   ncm: string;
