@@ -187,6 +187,36 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
             rows);
     }
 
+    private async Task<object> GerarLogAtividadesAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        var startDate = GetDate(filters, "startDate") ?? DateTimeOffset.Now.AddDays(-30).Date;
+        var endDate = (GetDate(filters, "endDate") ?? DateTimeOffset.Now.Date).AddDays(1);
+        var eventTypeFilter = GetString(filters, "eventType");
+
+        var logs = await auditLogAB.ListarAsync(companyId);
+        var rows = logs
+            .Where(item => item.OccurredAt >= startDate && item.OccurredAt < endDate)
+            .Where(item => string.IsNullOrWhiteSpace(eventTypeFilter) || string.Equals(item.EventType, eventTypeFilter, StringComparison.OrdinalIgnoreCase))
+            .Select(item => Row(
+                ("dataHora", item.OccurredAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")),
+                ("usuario", string.IsNullOrWhiteSpace(item.UserName) ? item.UserId : item.UserName),
+                ("evento", item.EventType),
+                ("entidade", string.IsNullOrWhiteSpace(item.EntityType) ? "-" : $"{item.EntityType} {item.EntityId}".Trim()),
+                ("descricao", item.Description),
+                ("ip", item.Ip ?? "-")))
+            .ToList();
+
+        return Result(
+            Columns(
+                ("dataHora", "Data/Hora"),
+                ("usuario", "Usuário"),
+                ("evento", "Evento"),
+                ("entidade", "Entidade"),
+                ("descricao", "Descrição"),
+                ("ip", "IP")),
+            rows);
+    }
+
     private async Task<List<ReportSaleRow>> ListarVendasAsync(string companyId)
     {
         const string sql = """
