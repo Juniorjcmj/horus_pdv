@@ -14,6 +14,7 @@ namespace HORUSPDV_API.Controllers.Fornecedores;
 
 [ApiController]
 [Route("api/[controller]")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
 public class FornecedorController(IFornecedorService fornecedorService) : ControllerBase
 {
     [HttpGet]

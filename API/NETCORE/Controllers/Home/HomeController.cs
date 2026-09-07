@@ -12,6 +12,7 @@ namespace HORUSPDV_API.Controllers.Home;
 
 [ApiController]
 [Route("api/[controller]")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
 public class HomeController(HomeAB homeAB) : ControllerBase
 {
     [HttpGet]

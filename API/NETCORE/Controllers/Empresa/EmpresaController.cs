@@ -14,7 +14,9 @@ namespace HORUSPDV_API.Controllers.Empresa;
 
 [ApiController]
 [Route("api/[controller]")]
-[HorusAuthorizeRoles("administrador")]
+// GET fica aberto a todo mundo autenticado (inclusive o perfil "caixa") porque o nome/CNPJ da
+// empresa é usado em recibos e no resumo de fechamento de caixa em qualquer papel — só a edição
+// (PUT, abaixo) é restrita a administrador.
 public class EmpresaController(EmpresaAB empresaAB) : ControllerBase
 {
     [HttpGet]
@@ -41,6 +43,7 @@ public class EmpresaController(EmpresaAB empresaAB) : ControllerBase
     }
 
     [HttpPut]
+    [HorusAuthorizeRoles("administrador")]
     public async Task<IActionResult> Atualizar([FromBody] EmpresaRequest request)
     {
         var currentUser = GetCurrentUser();

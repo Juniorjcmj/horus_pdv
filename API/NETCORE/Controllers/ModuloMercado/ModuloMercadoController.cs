@@ -15,6 +15,7 @@ namespace HORUSPDV_API.Controllers.ModuloMercado;
 
 [ApiController]
 [Route("api/[controller]")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
 public class ModuloMercadoController(ModuloMercadoAB moduloMercadoAB) : ControllerBase
 {
     [HttpGet("{id}")]

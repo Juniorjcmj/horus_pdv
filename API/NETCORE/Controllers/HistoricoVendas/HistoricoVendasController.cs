@@ -21,6 +21,7 @@ public class HistoricoVendasController(
     ILogger<HistoricoVendasController> logger) : ControllerBase
 {
     [HttpGet]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
     public async Task<IActionResult> Listar()
     {
         var currentUser = GetCurrentUser();

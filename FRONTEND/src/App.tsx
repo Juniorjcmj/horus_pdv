@@ -66,9 +66,16 @@ type CurrentUser = {
   name: string;
   email: string;
   phone: string;
+  role: string;
   permission: string;
   avatarUrl: string | null;
 };
+
+// Perfil "caixa": só frente de caixa (venda) e abertura/fechamento de caixa — sem acesso a
+// cadastros, relatórios, fiscal, pedidos ou configurações da empresa. A restrição de verdade é
+// sempre aplicada no backend (HorusAuthorizeRoles); isso aqui é só para não deixar a tela mostrar
+// menus/páginas que dariam 403 na hora de carregar os dados.
+const CAIXA_ROLE_ALLOWED_PAGES: PageKey[] = ["vendas", "caixa", "editar-perfil", "configuracoes"];
 
 type ThemeMode = "light" | "dark";
 type PublicAuthPage =
@@ -82,6 +89,7 @@ function formatRole(role: string) {
     administrador: "Administrador",
     gerente: "Gerente",
     atendente: "Atendente",
+    caixa: "Caixa",
     financeiro: "Financeiro",
   };
   return labels[role] ?? role;
@@ -93,6 +101,7 @@ function toCurrentUser(user: AuthenticatedUser): CurrentUser {
     name: user.name,
     email: user.email,
     phone: user.phone,
+    role: user.role,
     permission: formatRole(user.role),
     avatarUrl:
       typeof window !== "undefined"
@@ -142,6 +151,9 @@ export default function App() {
     if (new URLSearchParams(window.location.search).get("pdv") === "1") {
       return "vendas";
     }
+    const isCaixaRoleUser = getStoredAuthUser()?.role.toLowerCase() === "caixa";
+    if (isCaixaRoleUser) return "caixa";
+
     const savedPage = window.localStorage.getItem(ACTIVE_PAGE_STORAGE_KEY);
     return savedPage && isPageKey(savedPage) ? savedPage : "home";
   });
@@ -168,6 +180,7 @@ export default function App() {
       name: storedUser?.name || "",
       email: storedUser?.email || "",
       phone: storedUser?.phone || "",
+      role: storedUser?.role || "",
       permission: formatRole(storedUser?.role || ""),
       avatarUrl:
         typeof window !== "undefined"
@@ -418,7 +431,8 @@ export default function App() {
       setAuthSession(result.user, remember);
       setCurrentUser(toCurrentUser(result.user));
       setIsAuthenticated(true);
-      setActivePage(isStandalonePos ? "vendas" : "home");
+      const isCaixaRoleUser = result.user.role.toLowerCase() === "caixa";
+      setActivePage(isStandalonePos ? "vendas" : isCaixaRoleUser ? "caixa" : "home");
       return { success: true, message: "Login realizado com sucesso." };
     } catch (error) {
       return {
@@ -582,6 +596,18 @@ export default function App() {
     document.title = "Hórus PDV - PDV grátis e frente de caixa";
   }, [activePage, isStandalonePos]);
 
+  useEffect(() => {
+    // Rede de segurança: se o perfil for "caixa" e a página ativa não for uma das permitidas,
+    // volta pra "caixa" — a restrição de verdade é sempre no backend (HorusAuthorizeRoles), isso
+    // aqui só evita a tela tentar mostrar uma página que daria 403 ao carregar os dados.
+    if (!isAuthenticated || isStandalonePos) return;
+    const isCaixaRoleUser = currentUser.role.toLowerCase() === "caixa";
+    if (isCaixaRoleUser && !CAIXA_ROLE_ALLOWED_PAGES.includes(activePage)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActivePage("caixa");
+    }
+  }, [isAuthenticated, isStandalonePos, currentUser.role, activePage]);
+
   if (isCheckingAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg-primary text-text-secondary">
@@ -705,6 +731,7 @@ export default function App() {
         activePage={activePage}
         onChangePage={setActivePage}
         currentUserName={currentUser.name}
+        currentUserRole={currentUser.role}
         currentUserPermission={currentUser.permission}
         currentUserAvatarUrl={currentUser.avatarUrl}
         onOpenProfile={() => setActivePage("editar-perfil")}

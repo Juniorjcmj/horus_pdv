@@ -32,6 +32,7 @@ public class ProdutoController(IProdutoService produtoService) : ControllerBase
     }
 
     [HttpPost]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
     [ProducesResponseType(typeof(ApiResponse<ProdutoModel>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<ProdutoModel>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Criar([FromBody] ProdutoRequest request)
@@ -55,6 +56,7 @@ public class ProdutoController(IProdutoService produtoService) : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
     [ProducesResponseType(typeof(ApiResponse<ProdutoModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<ProdutoModel>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Atualizar(string id, [FromBody] ProdutoRequest request)
@@ -83,6 +85,7 @@ public class ProdutoController(IProdutoService produtoService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Excluir(string id)

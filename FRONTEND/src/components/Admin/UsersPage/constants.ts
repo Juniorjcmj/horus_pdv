@@ -9,6 +9,7 @@ export const ROLE_LABEL: Record<UserRole, string> = {
   administrador: "Administrador",
   gerente: "Gerente",
   atendente: "Atendente",
+  caixa: "Caixa",
   financeiro: "Financeiro",
 };
 

@@ -11,6 +11,8 @@ type UserMenuProps = {
   collapsed: boolean;
   currentUserName: string;
   currentUserPermission: string;
+  /** Perfil "caixa": esconde os atalhos de Minha Empresa/Detalhes da Licença (fora do escopo dele). */
+  hideCompanyLinks?: boolean;
   avatarUrl: string | null;
   onOpenProfile: () => void;
   onOpenSettings: () => void;
@@ -24,6 +26,7 @@ export default function UserMenu({
   collapsed,
   currentUserName,
   currentUserPermission,
+  hideCompanyLinks = false,
   avatarUrl,
   onOpenProfile,
   onOpenSettings,
@@ -164,31 +167,35 @@ export default function UserMenu({
                 Configurações
               </button>
 
-              <div className="my-1 border-t border-border-primary" />
+              {!hideCompanyLinks ? (
+                <>
+                  <div className="my-1 border-t border-border-primary" />
 
-              <button
-                type="button"
-                onClick={() => {
-                  onOpenCompany();
-                  setShowUserMenu(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-accent/10"
-              >
-                <Building2 size={16} />
-                Minha Empresa
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenCompany();
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-accent/10"
+                  >
+                    <Building2 size={16} />
+                    Minha Empresa
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  onOpenLicense();
-                  setShowUserMenu(false);
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-accent/10"
-              >
-                <WalletCards size={16} />
-                Detalhes da Licença
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenLicense();
+                      setShowUserMenu(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-accent/10"
+                  >
+                    <WalletCards size={16} />
+                    Detalhes da Licença
+                  </button>
+                </>
+              ) : null}
 
               <button
                 type="button"

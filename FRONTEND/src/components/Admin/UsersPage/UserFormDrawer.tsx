@@ -15,6 +15,7 @@ const ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
   { value: "administrador", label: "Administrador" },
   { value: "gerente", label: "Gerente" },
   { value: "atendente", label: "Atendente" },
+  { value: "caixa", label: "Caixa (só frente de caixa e abertura/fechamento)" },
   { value: "financeiro", label: "Financeiro" },
 ];
 

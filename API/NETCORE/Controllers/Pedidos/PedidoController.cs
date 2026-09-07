@@ -27,6 +27,7 @@ public class PedidoController(
     ILogger<PedidoController> logger) : ControllerBase
 {
     [HttpPost]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
     public async Task<IActionResult> Criar([FromBody] CriarPedidoRequest request)
     {
         var currentUser = GetCurrentUser();
@@ -56,6 +57,7 @@ public class PedidoController(
     }
 
     [HttpGet]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
     public async Task<IActionResult> ListarAbertos()
     {
         var currentUser = GetCurrentUser();
@@ -146,6 +148,7 @@ public class PedidoController(
     }
 
     [HttpPost("{orderNumber}/cancelar")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
     public async Task<IActionResult> Cancelar(string orderNumber)
     {
         var currentUser = GetCurrentUser();

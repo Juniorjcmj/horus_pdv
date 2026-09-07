@@ -14,6 +14,7 @@ namespace HORUSPDV_API.Controllers.Clientes;
 
 [ApiController]
 [Route("api/[controller]")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
 public class ClienteController(IClienteService clienteService) : ControllerBase
 {
     [HttpGet]

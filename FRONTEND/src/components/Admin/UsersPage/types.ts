@@ -3,7 +3,7 @@
  * Objetivo: centraliza tipos da tela de usuários administrativos.
   * Entradas esperadas: não recebe props; exporta contratos TypeScript da feature de usuários.
 */
-export type UserRole = "administrador" | "gerente" | "atendente" | "financeiro";
+export type UserRole = "administrador" | "gerente" | "atendente" | "caixa" | "financeiro";
 export type UserStatus = "ativo" | "inativo";
 
 export type AdminUser = {

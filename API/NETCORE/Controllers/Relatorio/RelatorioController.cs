@@ -13,6 +13,7 @@ namespace HORUSPDV_API.Controllers.Relatorio;
 
 [ApiController]
 [Route("api/[controller]")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
 public class RelatorioController(RelatorioAB relatorioAB) : ControllerBase
 {
     [HttpPost("Gerar")]

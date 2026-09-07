@@ -20,6 +20,7 @@ namespace HORUSPDV_API.Controllers.Fiscal;
 
 [ApiController]
 [Route("api/[controller]")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
 public class NfceController(
     DocumentoFiscalAB documentoFiscalAB,
     EmitenteFiscalStore emitenteFiscalStore,

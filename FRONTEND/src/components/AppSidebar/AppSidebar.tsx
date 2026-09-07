@@ -110,6 +110,7 @@ type AppSidebarProps = {
   activePage: PageKey;
   onChangePage: (page: PageKey) => void;
   currentUserName: string;
+  currentUserRole: string;
   currentUserPermission: string;
   currentUserAvatarUrl: string | null;
   onOpenProfile: () => void;
@@ -126,6 +127,7 @@ export default function AppSidebar({
   activePage,
   onChangePage,
   currentUserName,
+  currentUserRole,
   currentUserPermission,
   currentUserAvatarUrl,
   onOpenProfile,
@@ -135,6 +137,8 @@ export default function AppSidebar({
   mobileOpen,
   onCloseMobile,
 }: AppSidebarProps) {
+  const isCaixaRole = currentUserRole.toLowerCase() === "caixa";
+
   const handleChangePage = (page: PageKey) => {
     onChangePage(page);
     onCloseMobile();
@@ -178,166 +182,188 @@ export default function AppSidebar({
         </div>
 
         <nav className="flex-1 min-h-0 space-y-3 overflow-y-auto overflow-x-hidden px-2 py-3 text-sm font-medium">
-          <div className="space-y-2">
-            <SidebarSectionTitle label="Principal" collapsed={collapsed} />
+          {isCaixaRole ? (
+            <div className="space-y-2">
+              <SidebarSectionTitle label="Caixa" collapsed={collapsed} />
+              <SidebarItem
+                icon={<ShoppingCart size={20} />}
+                label="Iniciar Vendas"
+                active={activePage === "vendas"}
+                collapsed={collapsed}
+                onClick={onOpenSalesInNewTab}
+              />
+              <SidebarItem
+                icon={<Landmark size={20} />}
+                label="Abertura e Fechamento"
+                active={activePage === "caixa"}
+                collapsed={collapsed}
+                onClick={() => handleChangePage("caixa")}
+              />
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <SidebarSectionTitle label="Principal" collapsed={collapsed} />
 
-            <SidebarItem
-              icon={<House size={20} />}
-              label="Home"
-              active={activePage === "home"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("home")}
-            />
-          </div>
+                <SidebarItem
+                  icon={<House size={20} />}
+                  label="Home"
+                  active={activePage === "home"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("home")}
+                />
+              </div>
 
-          <div className="space-y-2">
-            <SidebarSectionTitle label="Cadastros" collapsed={collapsed} />
-            <SidebarItem
-              icon={<UserRoundPlus size={20} />}
-              label="Cliente"
-              active={activePage === "cadastro-cliente"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("cadastro-cliente")}
-            />
-            <SidebarItem
-              icon={<Truck size={20} />}
-              label="Fornecedor"
-              active={activePage === "cadastro-fornecedor"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("cadastro-fornecedor")}
-            />
-            <SidebarItem
-              icon={<Package size={20} />}
-              label="Produto"
-              active={activePage === "cadastro-produto"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("cadastro-produto")}
-            />
-            <SidebarItem
-              icon={<UserCog size={20} />}
-              label="Contas de Usuários"
-              active={activePage === "conta-de-usuario"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("conta-de-usuario")}
-            />
-          </div>
+              <div className="space-y-2">
+                <SidebarSectionTitle label="Cadastros" collapsed={collapsed} />
+                <SidebarItem
+                  icon={<UserRoundPlus size={20} />}
+                  label="Cliente"
+                  active={activePage === "cadastro-cliente"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("cadastro-cliente")}
+                />
+                <SidebarItem
+                  icon={<Truck size={20} />}
+                  label="Fornecedor"
+                  active={activePage === "cadastro-fornecedor"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("cadastro-fornecedor")}
+                />
+                <SidebarItem
+                  icon={<Package size={20} />}
+                  label="Produto"
+                  active={activePage === "cadastro-produto"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("cadastro-produto")}
+                />
+                <SidebarItem
+                  icon={<UserCog size={20} />}
+                  label="Contas de Usuários"
+                  active={activePage === "conta-de-usuario"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("conta-de-usuario")}
+                />
+              </div>
 
-          <div className="space-y-2">
-            <SidebarSectionTitle label="Operação" collapsed={collapsed} />
-            <SidebarItem
-              icon={<History size={20} />}
-              label="Histórico de Vendas"
-              active={activePage === "historico-vendas"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("historico-vendas")}
-            />
-            <SidebarItem
-              icon={<FileText size={20} />}
-              label="Relatórios"
-              active={activePage === "relatorios"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("relatorios")}
-            />
-            <SidebarItem
-              icon={<ShoppingCart size={20} />}
-              label="Iniciar Vendas"
-              active={activePage === "vendas"}
-              collapsed={collapsed}
-              onClick={onOpenSalesInNewTab}
-            />
-            <SidebarItem
-              icon={<ClipboardList size={20} />}
-              label="Novo Pedido"
-              active={activePage === "pedidos"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("pedidos")}
-            />
-          </div>
+              <div className="space-y-2">
+                <SidebarSectionTitle label="Operação" collapsed={collapsed} />
+                <SidebarItem
+                  icon={<History size={20} />}
+                  label="Histórico de Vendas"
+                  active={activePage === "historico-vendas"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("historico-vendas")}
+                />
+                <SidebarItem
+                  icon={<FileText size={20} />}
+                  label="Relatórios"
+                  active={activePage === "relatorios"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("relatorios")}
+                />
+                <SidebarItem
+                  icon={<ShoppingCart size={20} />}
+                  label="Iniciar Vendas"
+                  active={activePage === "vendas"}
+                  collapsed={collapsed}
+                  onClick={onOpenSalesInNewTab}
+                />
+                <SidebarItem
+                  icon={<ClipboardList size={20} />}
+                  label="Novo Pedido"
+                  active={activePage === "pedidos"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("pedidos")}
+                />
+              </div>
 
-          <div className="space-y-2">
-            <SidebarSectionTitle label="Gestão Avançada" collapsed={collapsed} />
-            <SidebarItem
-              icon={<Receipt size={20} />}
-              label="Fiscal NFC-e / NF-e"
-              active={activePage === "fiscal"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("fiscal")}
-            />
-            <SidebarItem
-              icon={<CreditCard size={20} />}
-              label="Pagamentos Integrados"
-              active={activePage === "pagamentos"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("pagamentos")}
-            />
-            <SidebarItem
-              icon={<PackageCheck size={20} />}
-              label="Estoque e Inventário"
-              active={activePage === "estoque"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("estoque")}
-            />
-            <SidebarItem
-              icon={<Landmark size={20} />}
-              label="Abertura e Fechamento"
-              active={activePage === "caixa"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("caixa")}
-            />
-            <SidebarItem
-              icon={<BadgeDollarSign size={20} />}
-              label="Compras e Reposição"
-              active={activePage === "compras"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("compras")}
-            />
-            <SidebarItem
-              icon={<Repeat2 size={20} />}
-              label="Trocas e Devoluções"
-              active={activePage === "devolucoes"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("devolucoes")}
-            />
-            <SidebarItem
-              icon={<UsersRound size={20} />}
-              label="CRM e Fidelidade"
-              active={activePage === "crm-fidelidade"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("crm-fidelidade")}
-            />
-            <SidebarItem
-              icon={<Store size={20} />}
-              label="Omnichannel"
-              active={activePage === "omnichannel"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("omnichannel")}
-            />
-          </div>
+              <div className="space-y-2">
+                <SidebarSectionTitle label="Gestão Avançada" collapsed={collapsed} />
+                <SidebarItem
+                  icon={<Receipt size={20} />}
+                  label="Fiscal NFC-e / NF-e"
+                  active={activePage === "fiscal"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("fiscal")}
+                />
+                <SidebarItem
+                  icon={<CreditCard size={20} />}
+                  label="Pagamentos Integrados"
+                  active={activePage === "pagamentos"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("pagamentos")}
+                />
+                <SidebarItem
+                  icon={<PackageCheck size={20} />}
+                  label="Estoque e Inventário"
+                  active={activePage === "estoque"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("estoque")}
+                />
+                <SidebarItem
+                  icon={<Landmark size={20} />}
+                  label="Abertura e Fechamento"
+                  active={activePage === "caixa"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("caixa")}
+                />
+                <SidebarItem
+                  icon={<BadgeDollarSign size={20} />}
+                  label="Compras e Reposição"
+                  active={activePage === "compras"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("compras")}
+                />
+                <SidebarItem
+                  icon={<Repeat2 size={20} />}
+                  label="Trocas e Devoluções"
+                  active={activePage === "devolucoes"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("devolucoes")}
+                />
+                <SidebarItem
+                  icon={<UsersRound size={20} />}
+                  label="CRM e Fidelidade"
+                  active={activePage === "crm-fidelidade"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("crm-fidelidade")}
+                />
+                <SidebarItem
+                  icon={<Store size={20} />}
+                  label="Omnichannel"
+                  active={activePage === "omnichannel"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("omnichannel")}
+                />
+              </div>
 
-          <div className="space-y-2">
-            <SidebarSectionTitle label="Sistema" collapsed={collapsed} />
-            <SidebarItem
-              icon={<Building2 size={20} />}
-              label="Minha Empresa"
-              active={activePage === "minha-empresa"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("minha-empresa")}
-            />
-            <SidebarItem
-              icon={<WalletCards size={20} />}
-              label="Detalhes da Licença"
-              active={activePage === "detalhe-licenca"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("detalhe-licenca")}
-            />
-            <SidebarItem
-              icon={<Info size={20} />}
-              label="Sobre PDV"
-              active={activePage === "sobre-pdv"}
-              collapsed={collapsed}
-              onClick={() => handleChangePage("sobre-pdv")}
-            />
-          </div>
+              <div className="space-y-2">
+                <SidebarSectionTitle label="Sistema" collapsed={collapsed} />
+                <SidebarItem
+                  icon={<Building2 size={20} />}
+                  label="Minha Empresa"
+                  active={activePage === "minha-empresa"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("minha-empresa")}
+                />
+                <SidebarItem
+                  icon={<WalletCards size={20} />}
+                  label="Detalhes da Licença"
+                  active={activePage === "detalhe-licenca"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("detalhe-licenca")}
+                />
+                <SidebarItem
+                  icon={<Info size={20} />}
+                  label="Sobre PDV"
+                  active={activePage === "sobre-pdv"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("sobre-pdv")}
+                />
+              </div>
+            </>
+          )}
         </nav>
       </div>
 
@@ -346,6 +372,7 @@ export default function AppSidebar({
           collapsed={collapsed}
           currentUserName={currentUserName}
           currentUserPermission={currentUserPermission}
+          hideCompanyLinks={isCaixaRole}
           avatarUrl={currentUserAvatarUrl}
           onOpenProfile={() => {
             onOpenProfile();
