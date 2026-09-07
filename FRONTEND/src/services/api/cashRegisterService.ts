@@ -30,7 +30,9 @@ export type CashRegisterSessionDto = {
   closedAt?: string | null;
   openingAmount: string;
   closingAmount: string;
+  operatorId: string;
   operatorName: string;
+  closedById: string;
   closedByName: string;
   note: string;
   elapsedMinutes: number;

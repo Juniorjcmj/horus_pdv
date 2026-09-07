@@ -23,8 +23,26 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
     private static readonly TimeSpan MaxOpenPeriod = TimeSpan.FromHours(24);
     private const string FormaPagamentoDinheiro = "dinheiro";
 
-    public CaixaStatusDto GetStatus(string companyId, DateTimeOffset? reference = null)
-        => BuildStatus(companyId, reference ?? DateTimeOffset.Now);
+    public CaixaStatusDto GetStatus(AuthenticatedUser currentUser, DateTimeOffset? reference = null)
+    {
+        var status = BuildStatus(currentUser.CompanyId, reference ?? DateTimeOffset.Now);
+        if (HorusRoles.IsGerenteOuAdmin(currentUser.Role))
+        {
+            return status;
+        }
+
+        // Atendente só vê o próprio turno no histórico — gerente/administrador vê de todo mundo.
+        bool PertenceAoUsuario(CaixaSessionDto session) =>
+            session.OperatorId == currentUser.Id || session.ClosedById == currentUser.Id;
+
+        status.History = status.History.Where(PertenceAoUsuario).ToList();
+        if (status.LastSession is not null && !PertenceAoUsuario(status.LastSession))
+        {
+            status.LastSession = null;
+        }
+
+        return status;
+    }
 
     public CaixaStatusDto Abrir(AbrirCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
     {
@@ -71,6 +89,8 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         {
             throw new InvalidOperationException("Não existe caixa aberto para lançar movimento.");
         }
+
+        EnsureResponsavelPeloCaixa(openSession, currentUser);
 
         if (!Enum.TryParse<TipoMovimentoCaixa>(request.Tipo, ignoreCase: true, out var tipo))
         {
@@ -137,6 +157,8 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             throw new InvalidOperationException("Não existe caixa aberto para fechamento.");
         }
 
+        EnsureResponsavelPeloCaixa(openSession, currentUser);
+
         var closingAmount = HorusMoneyFormat.ParseDecimal(request.ClosingAmount);
         var expectedCashAmount = ComputeExpectedCash(currentUser.CompanyId, openSession, now);
         var differenceAmount = Math.Round(closingAmount - expectedCashAmount, 2);
@@ -198,6 +220,21 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             .GetResult();
 
         throw new InvalidOperationException(status.BlockReason);
+    }
+
+    /// <summary>
+    /// Só quem abriu o caixa (ou um gerente/administrador, como cobertura) pode fechá-lo ou lançar
+    /// sangria/reforço nele — evita que outra atendente mexa por engano no turno de outra pessoa.
+    /// </summary>
+    private static void EnsureResponsavelPeloCaixa(CaixaSessionAD session, AuthenticatedUser currentUser)
+    {
+        if (session.OperatorId == currentUser.Id || HorusRoles.IsGerenteOuAdmin(currentUser.Role))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Esse caixa foi aberto por {session.OperatorName} — só ela ou um gerente/administrador podem mexer nele.");
     }
 
     /// <summary>Dinheiro esperado na gaveta agora: abertura + vendas em dinheiro do turno + reforços - sangrias.</summary>
@@ -299,7 +336,9 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             ClosedAt = closedAt?.ToString("o"),
             OpeningAmount = HorusMoneyFormat.Format(source.OpeningAmount),
             ClosingAmount = HorusMoneyFormat.Format(source.ClosingAmount),
+            OperatorId = source.OperatorId,
             OperatorName = source.OperatorName,
+            ClosedById = source.ClosedById,
             ClosedByName = source.ClosedByName,
             Note = source.Note,
             ElapsedMinutes = Math.Max(0, (int)Math.Floor(elapsed.TotalMinutes)),
@@ -331,7 +370,9 @@ public class CaixaSessionDto
     public string? ClosedAt { get; set; }
     public string OpeningAmount { get; set; } = "0,00";
     public string ClosingAmount { get; set; } = "0,00";
+    public string OperatorId { get; set; } = "";
     public string OperatorName { get; set; } = "";
+    public string ClosedById { get; set; } = "";
     public string ClosedByName { get; set; } = "";
     public string Note { get; set; } = "";
     public int ElapsedMinutes { get; set; }

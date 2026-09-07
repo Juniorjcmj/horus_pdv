@@ -15,7 +15,7 @@ public class CaixaAB(Connection connection)
         await using var db = await connection.OpenConnectionAsync();
         await using var command = new SqlCommand(
             """
-            SELECT Id, OpenedAt, ClosedAt, OpeningAmount, ClosingAmount, OperatorName, ClosedByName, Note,
+            SELECT Id, OpenedAt, ClosedAt, OpeningAmount, ClosingAmount, OperatorId, OperatorName, ClosedById, ClosedByName, Note,
                    ExpectedCashAmount, DifferenceAmount, DifferenceReason
             FROM CaixaSessoes
             WHERE CompanyId = @CompanyId
@@ -206,7 +206,9 @@ public class CaixaAB(Connection connection)
             : reader.GetDateTimeOffset(reader.GetOrdinal("ClosedAt")),
         OpeningAmount = reader.GetDecimal(reader.GetOrdinal("OpeningAmount")),
         ClosingAmount = reader.GetDecimal(reader.GetOrdinal("ClosingAmount")),
+        OperatorId = ReadString(reader, "OperatorId"),
         OperatorName = ReadString(reader, "OperatorName"),
+        ClosedById = ReadString(reader, "ClosedById"),
         ClosedByName = ReadString(reader, "ClosedByName"),
         Note = ReadString(reader, "Note"),
         ExpectedCashAmount = ReadNullableDecimal(reader, "ExpectedCashAmount"),

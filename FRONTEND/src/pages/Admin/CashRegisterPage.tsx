@@ -37,6 +37,9 @@ import {
   type CashRegisterStatusDto,
 } from "@/services/api/cashRegisterService";
 import { companyService } from "@/services/api/companyService";
+import { getStoredAuthUser } from "@/utils/authStorage";
+
+const MANAGER_ROLES = ["administrador", "gerente"];
 
 const PAYMENT_LABELS: Record<string, string> = {
   dinheiro: "Dinheiro",
@@ -157,6 +160,11 @@ export default function CashRegisterPage() {
   const currentSession = cashStatus?.currentSession ?? null;
   const canSell = cashStatus?.canSell === true;
   const hasOpenSession = currentSession !== null;
+
+  const loggedUser = useMemo(() => getStoredAuthUser(), []);
+  const isManager = loggedUser ? MANAGER_ROLES.includes(loggedUser.role.toLowerCase()) : false;
+  const isResponsavelPeloCaixa =
+    isManager || !currentSession || !loggedUser || currentSession.operatorId === loggedUser.id;
 
   const stateTone = useMemo(() => {
     if (canSell) return "border-success/30 bg-success/10 text-success";
@@ -327,6 +335,12 @@ export default function CashRegisterPage() {
                   {formatDateTime(currentSession.openedAt)}
                 </p>
               ) : null}
+              {currentSession && !isResponsavelPeloCaixa ? (
+                <p className="mt-1 text-sm font-semibold text-accent">
+                  Esse caixa foi aberto por {currentSession.operatorName} — só ela ou um gerente/administrador
+                  podem fechá-lo ou lançar sangria/reforço. Você ainda pode vender normalmente.
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
@@ -362,24 +376,26 @@ export default function CashRegisterPage() {
           <div className="card rounded-2xl p-4">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-text-primary">Sangrias e reforços</h3>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setMovementModalType("Reforco")}
-                  className="inline-flex items-center gap-1 rounded-lg border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-semibold text-success hover:bg-success/20"
-                >
-                  <ArrowUpCircle size={14} />
-                  Reforço
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMovementModalType("Sangria")}
-                  className="inline-flex items-center gap-1 rounded-lg border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger hover:bg-danger/20"
-                >
-                  <ArrowDownCircle size={14} />
-                  Sangria
-                </button>
-              </div>
+              {isResponsavelPeloCaixa ? (
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMovementModalType("Reforco")}
+                    className="inline-flex items-center gap-1 rounded-lg border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-semibold text-success hover:bg-success/20"
+                  >
+                    <ArrowUpCircle size={14} />
+                    Reforço
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMovementModalType("Sangria")}
+                    className="inline-flex items-center gap-1 rounded-lg border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger hover:bg-danger/20"
+                  >
+                    <ArrowDownCircle size={14} />
+                    Sangria
+                  </button>
+                </div>
+              ) : null}
             </div>
             {currentSession.movimentos.length > 0 ? (
               <div className="max-h-40 space-y-2 overflow-y-auto pr-1">
@@ -434,80 +450,89 @@ export default function CashRegisterPage() {
                 </div>
               </div>
 
-              <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">
-                  Valor contado na gaveta (dinheiro)
-                </span>
-                <input
-                  value={closingAmount}
-                  inputMode="numeric"
-                  pattern="[0-9,.]*"
-                  onBeforeInput={preventInvalidMoneyBeforeInput}
-                  onPaste={pasteClosingAmount}
-                  onChange={(event) => updateClosingAmount(event.target.value)}
-                  className="input-field w-full"
-                  placeholder="0,00"
-                />
-                <span className="mt-1 block text-xs text-text-secondary">
-                  Esperado: R$ {expectedCash} (fundo de troco + vendas em dinheiro + reforços - sangrias)
-                </span>
-              </label>
+              {isResponsavelPeloCaixa ? (
+                <>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm text-text-secondary">
+                      Valor contado na gaveta (dinheiro)
+                    </span>
+                    <input
+                      value={closingAmount}
+                      inputMode="numeric"
+                      pattern="[0-9,.]*"
+                      onBeforeInput={preventInvalidMoneyBeforeInput}
+                      onPaste={pasteClosingAmount}
+                      onChange={(event) => updateClosingAmount(event.target.value)}
+                      className="input-field w-full"
+                      placeholder="0,00"
+                    />
+                    <span className="mt-1 block text-xs text-text-secondary">
+                      Esperado: R$ {expectedCash} (fundo de troco + vendas em dinheiro + reforços - sangrias)
+                    </span>
+                  </label>
 
-              <div
-                className={`rounded-xl border p-3 text-sm ${
-                  difference === 0
-                    ? "border-success/30 bg-success/10 text-success"
-                    : "border-danger/30 bg-danger/10 text-danger"
-                }`}
-              >
-                <div className="flex justify-between font-bold">
-                  <span>Diferença</span>
-                  <span>R$ {formatMoneyBr(difference)}</span>
-                </div>
-                <p className="mt-0.5 text-xs">
-                  {difference === 0
-                    ? "Confere com o esperado."
-                    : difference > 0
-                      ? "Sobra em relação ao esperado."
-                      : "Falta em relação ao esperado."}
+                  <div
+                    className={`rounded-xl border p-3 text-sm ${
+                      difference === 0
+                        ? "border-success/30 bg-success/10 text-success"
+                        : "border-danger/30 bg-danger/10 text-danger"
+                    }`}
+                  >
+                    <div className="flex justify-between font-bold">
+                      <span>Diferença</span>
+                      <span>R$ {formatMoneyBr(difference)}</span>
+                    </div>
+                    <p className="mt-0.5 text-xs">
+                      {difference === 0
+                        ? "Confere com o esperado."
+                        : difference > 0
+                          ? "Sobra em relação ao esperado."
+                          : "Falta em relação ao esperado."}
+                    </p>
+                  </div>
+
+                  {hasDifference ? (
+                    <label className="block">
+                      <span className="mb-1.5 block text-sm text-text-secondary">
+                        Motivo da diferença *
+                      </span>
+                      <textarea
+                        value={differenceReason}
+                        onChange={(event) => setDifferenceReason(event.target.value)}
+                        className="input-field min-h-20 w-full resize-y"
+                        placeholder="Explique a sobra ou falta antes de fechar o caixa"
+                      />
+                    </label>
+                  ) : null}
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm text-text-secondary">Observação</span>
+                    <textarea
+                      value={closingNote}
+                      onChange={(event) => setClosingNote(event.target.value)}
+                      className="input-field min-h-24 w-full resize-y"
+                      placeholder="Observação geral do fechamento (opcional)"
+                    />
+                  </label>
+
+                  <LoadingButton
+                    type="button"
+                    onClick={closeCashRegister}
+                    isLoading={saving}
+                    loadingLabel="Fechando..."
+                    disabled={hasDifference && differenceReason.trim().length < 3}
+                    className="btn-primary inline-flex w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  >
+                    <LockKeyhole size={16} />
+                    Fechar caixa
+                  </LoadingButton>
+                </>
+              ) : (
+                <p className="rounded-xl border border-accent/30 bg-accent/10 p-3 text-sm text-accent">
+                  Só {currentSession.operatorName || "quem abriu este caixa"} ou um gerente/administrador podem
+                  fechá-lo. Você pode continuar vendendo normalmente.
                 </p>
-              </div>
-
-              {hasDifference ? (
-                <label className="block">
-                  <span className="mb-1.5 block text-sm text-text-secondary">
-                    Motivo da diferença *
-                  </span>
-                  <textarea
-                    value={differenceReason}
-                    onChange={(event) => setDifferenceReason(event.target.value)}
-                    className="input-field min-h-20 w-full resize-y"
-                    placeholder="Explique a sobra ou falta antes de fechar o caixa"
-                  />
-                </label>
-              ) : null}
-
-              <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">Observação</span>
-                <textarea
-                  value={closingNote}
-                  onChange={(event) => setClosingNote(event.target.value)}
-                  className="input-field min-h-24 w-full resize-y"
-                  placeholder="Observação geral do fechamento (opcional)"
-                />
-              </label>
-
-              <LoadingButton
-                type="button"
-                onClick={closeCashRegister}
-                isLoading={saving}
-                loadingLabel="Fechando..."
-                disabled={hasDifference && differenceReason.trim().length < 3}
-                className="btn-primary inline-flex w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-              >
-                <LockKeyhole size={16} />
-                Fechar caixa
-              </LoadingButton>
+              )}
             </div>
           ) : (
             <div className="space-y-4">

@@ -14,7 +14,12 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
 {
     private static readonly CultureInfo PtBr = new("pt-BR");
 
-    public async Task<object> GerarAsync(string companyId, string reportId, Dictionary<string, JsonElement> filters)
+    /// <summary>
+    /// <paramref name="restrictToUserId"/>: quando informado, restringe o relatório "log-atividades"
+    /// aos eventos daquele usuário (atendente só vê o próprio turno) — os outros relatórios ignoram.
+    /// </summary>
+    public async Task<object> GerarAsync(
+        string companyId, string reportId, Dictionary<string, JsonElement> filters, string? restrictToUserId = null)
         => reportId switch
         {
             "vendas-periodo" => await GerarVendasPeriodoAsync(companyId, filters),
@@ -25,7 +30,7 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
             "compras-fornecedor" => await GerarComprasFornecedorAsync(companyId),
             "movimento-estoque" => await GerarMovimentoEstoqueAsync(companyId),
             "desempenho-caixa" => await GerarDesempenhoCaixaAsync(companyId, filters),
-            "log-atividades" => await GerarLogAtividadesAsync(companyId, filters),
+            "log-atividades" => await GerarLogAtividadesAsync(companyId, filters, restrictToUserId),
             _ => throw new InvalidOperationException("Relatório não encontrado.")
         };
 
@@ -187,7 +192,7 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
             rows);
     }
 
-    private async Task<object> GerarLogAtividadesAsync(string companyId, Dictionary<string, JsonElement> filters)
+    private async Task<object> GerarLogAtividadesAsync(string companyId, Dictionary<string, JsonElement> filters, string? restrictToUserId)
     {
         var startDate = GetDate(filters, "startDate") ?? DateTimeOffset.Now.AddDays(-30).Date;
         var endDate = (GetDate(filters, "endDate") ?? DateTimeOffset.Now.Date).AddDays(1);
@@ -197,6 +202,7 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
         var rows = logs
             .Where(item => item.OccurredAt >= startDate && item.OccurredAt < endDate)
             .Where(item => string.IsNullOrWhiteSpace(eventTypeFilter) || string.Equals(item.EventType, eventTypeFilter, StringComparison.OrdinalIgnoreCase))
+            .Where(item => restrictToUserId is null || string.Equals(item.UserId, restrictToUserId, StringComparison.Ordinal))
             .Select(item => Row(
                 ("dataHora", item.OccurredAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")),
                 ("usuario", string.IsNullOrWhiteSpace(item.UserName) ? item.UserId : item.UserName),

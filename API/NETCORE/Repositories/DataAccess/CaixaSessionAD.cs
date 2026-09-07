@@ -15,7 +15,9 @@ public class CaixaSessionAD
     public DateTimeOffset? ClosedAt { get; set; }
     public decimal OpeningAmount { get; set; }
     public decimal ClosingAmount { get; set; }
+    public string OperatorId { get; set; } = string.Empty;
     public string OperatorName { get; set; } = string.Empty;
+    public string ClosedById { get; set; } = string.Empty;
     public string ClosedByName { get; set; } = string.Empty;
     public string Note { get; set; } = string.Empty;
 

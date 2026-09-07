@@ -29,7 +29,7 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
         {
             Success = true,
             Message = "Status do caixa obtido com sucesso.",
-            Data = caixaService.GetStatus(currentUser.CompanyId)
+            Data = caixaService.GetStatus(currentUser)
         });
     }
 

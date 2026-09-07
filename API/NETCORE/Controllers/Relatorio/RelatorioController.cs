@@ -25,11 +25,13 @@ public class RelatorioController(RelatorioAB relatorioAB) : ControllerBase
 
         try
         {
+            // Atendente só vê o próprio turno no log de atividades; gerente/administrador vê de todo mundo.
+            var restrictToUserId = HorusRoles.IsGerenteOuAdmin(currentUser.Role) ? null : currentUser.Id;
             return Ok(new ApiResponse<object>
             {
                 Success = true,
                 Message = "Relatório gerado com sucesso.",
-                Data = await relatorioAB.GerarAsync(currentUser.CompanyId, request.ReportId, request.Filters)
+                Data = await relatorioAB.GerarAsync(currentUser.CompanyId, request.ReportId, request.Filters, restrictToUserId)
             });
         }
         catch (InvalidOperationException ex)
