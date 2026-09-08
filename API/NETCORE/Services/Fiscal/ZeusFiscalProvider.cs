@@ -664,7 +664,7 @@ public sealed class ZeusFiscalProvider(
     /// Gera o cNF (Código Numérico) de 8 dígitos aleatórios para compor a Chave de Acesso.
     /// A SEFAZ exige que seja não-nulo, diferente de zero e diferente do nNF (rejeição 897).
     /// </summary>
-    private static int GerarCodigoNumerico(int nNF)
+    private static string GerarCodigoNumerico(int nNF)
     {
         int cnf;
         do
@@ -672,7 +672,7 @@ public sealed class ZeusFiscalProvider(
             cnf = Random.Shared.Next(10000000, 99999999);
         } while (cnf == nNF);
 
-        return cnf;
+        return cnf.ToString("D8");
     }
 
     /// <summary>

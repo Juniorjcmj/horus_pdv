@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs": {
-    "mtime": 1788893044.4642396,
-    "seen": 1788893233.6375096,
-    "ast_hash": "b5edab32c97b752377395aabd812abc1",
+    "mtime": 1788893503.5085938,
+    "seen": 1788893526.0917516,
+    "ast_hash": "3ebfe98305d16e0134da9eca81d2fd2f",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/FornecedorService.cs": {
