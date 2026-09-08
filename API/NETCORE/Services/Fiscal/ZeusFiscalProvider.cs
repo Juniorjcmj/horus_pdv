@@ -64,6 +64,23 @@ public sealed class ZeusFiscalProvider(
     private ResultadoFiscal Emitir(EmissaoNfceRequest request)
     {
         var emitente = request.Emitente;
+
+        if (string.IsNullOrWhiteSpace(emitente.InscricaoEstadual) ||
+            string.IsNullOrWhiteSpace(emitente.Logradouro) ||
+            string.IsNullOrWhiteSpace(emitente.Numero) ||
+            string.IsNullOrWhiteSpace(emitente.Bairro) ||
+            string.IsNullOrWhiteSpace(emitente.NomeMunicipio) ||
+            string.IsNullOrWhiteSpace(emitente.Cep))
+        {
+            return new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = 0,
+                MotivoStatus = "Dados cadastrais da empresa incompletos em Minha Empresa: preencha Inscrição Estadual e o Endereço completo (Logradouro, Número, Bairro, Cidade e CEP).",
+                Retentavel = false
+            };
+        }
+
         using var certificado = CarregarCertificado(emitente);
         var cfg = MontarConfiguracao(emitente, request.TipoEmissao);
 
@@ -148,6 +165,20 @@ public sealed class ZeusFiscalProvider(
                 ChaveAcesso = chave,
                 XmlAssinado = xmlAssinado,
                 Retentavel = EhRejeicaoTransitoria(cStat)
+            };
+        }
+        catch (NFe.Utils.Excecoes.ValidacaoSchemaException ex)
+        {
+            logger.LogWarning(
+                "NFC-e com erro de schema XML. Empresa {CompanyId} serie {Serie} numero {Numero}: {Motivo}",
+                emitente.CompanyId, request.Serie, request.NumeroNf, ex.Message);
+
+            return new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = 0,
+                MotivoStatus = "Erro de validação do XML contra o Schema da SEFAZ: " + ex.Message,
+                Retentavel = false
             };
         }
         catch (Exception ex)
@@ -365,10 +396,12 @@ public sealed class ZeusFiscalProvider(
         {
             CNPJ = e.Cnpj,
             xNome = e.RazaoSocial,
-            xFant = e.NomeFantasia,
+            xFant = string.IsNullOrWhiteSpace(e.NomeFantasia) ? null : e.NomeFantasia,
             IE = e.InscricaoEstadual,
             CRT = (CRT)e.Crt,
-            CNAE = e.Cnae,
+            // CNAE no schema NF-e só é válido se acompanhado da Inscrição Municipal (IM).
+            // Para varejo/NFC-e de mercadorias sem ISSQN, não deve ser gerado isolado.
+            CNAE = null,
             enderEmit = new enderEmit
             {
                 xLgr = e.Logradouro,
@@ -414,6 +447,8 @@ public sealed class ZeusFiscalProvider(
                 vFCP = 0,
                 vBCST = 0,
                 vST = 0,
+                vFCPST = 0,
+                vFCPSTRet = 0,
                 vProd = request.Itens.Sum(i => i.ValorTotal),
                 vFrete = 0,
                 vSeg = 0,
@@ -501,23 +536,11 @@ public sealed class ZeusFiscalProvider(
             },
             PIS = new PIS
             {
-                TipoPIS = new PISOutr
-                {
-                    CST = Enum.Parse<CSTPIS>("pis" + item.CstPis),
-                    vBC = 0,
-                    pPIS = 0,
-                    vPIS = 0
-                }
+                TipoPIS = MontarPis(item.CstPis)
             },
             COFINS = new COFINS
             {
-                TipoCOFINS = new COFINSOutr
-                {
-                    CST = Enum.Parse<CSTCOFINS>("cofins" + item.CstCofins),
-                    vBC = 0,
-                    pCOFINS = 0,
-                    vCOFINS = 0
-                }
+                TipoCOFINS = MontarCofins(item.CstCofins)
             }
         };
 
@@ -585,6 +608,48 @@ public sealed class ZeusFiscalProvider(
             vICMS = Math.Round(item.ValorTotal * item.AliquotaIcms / 100m, 2)
         }
     };
+
+    private static PISBasico MontarPis(string? cstPis)
+    {
+        var cst = string.IsNullOrWhiteSpace(cstPis) ? "49" : cstPis.Trim().PadLeft(2, '0');
+        var parsedCst = Enum.Parse<CSTPIS>("pis" + cst);
+
+        return cst switch
+        {
+            "04" or "05" or "06" or "07" or "08" or "09" => new PISNT
+            {
+                CST = parsedCst
+            },
+            _ => new PISOutr
+            {
+                CST = parsedCst,
+                vBC = 0,
+                pPIS = 0,
+                vPIS = 0
+            }
+        };
+    }
+
+    private static COFINSBasico MontarCofins(string? cstCofins)
+    {
+        var cst = string.IsNullOrWhiteSpace(cstCofins) ? "49" : cstCofins.Trim().PadLeft(2, '0');
+        var parsedCst = Enum.Parse<CSTCOFINS>("cofins" + cst);
+
+        return cst switch
+        {
+            "04" or "05" or "06" or "07" or "08" or "09" => new COFINSNT
+            {
+                CST = parsedCst
+            },
+            _ => new COFINSOutr
+            {
+                CST = parsedCst,
+                vBC = 0,
+                pCOFINS = 0,
+                vCOFINS = 0
+            }
+        };
+    }
 
     /// <summary>Telefone do emitente é numérico na lib (Int64?) — extrai só os dígitos.</summary>
     private static long? ParseFoneNumerico(string? fone)
