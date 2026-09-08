@@ -48,9 +48,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Empresa/EmpresaController.cs": {
-    "mtime": 1788791141.1100774,
-    "seen": 1788888974.3517778,
-    "ast_hash": "60c6d00487ee1df3cb5a94a10916287a",
+    "mtime": 1788894189.4919133,
+    "seen": 1788894387.2827227,
+    "ast_hash": "f2511dea6641200d883b3f91462522a3",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfceController.cs": {
@@ -222,9 +222,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/EmpresaRequest.cs": {
-    "mtime": 1788674928.99777,
-    "seen": 1788888974.3518388,
-    "ast_hash": "da63d01f27bea3969ca7e5c5816b3dd0",
+    "mtime": 1788894130.1571374,
+    "seen": 1788894387.2894592,
+    "ast_hash": "6f3a97a18812ea53fdbf58f0495cafbe",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ForgotPasswordRequest.cs": {
@@ -342,9 +342,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/EmpresaAD.cs": {
-    "mtime": 1788674814.458779,
-    "seen": 1788888974.3518887,
-    "ast_hash": "482811a73eb931ff26d2f2c5f183ee4a",
+    "mtime": 1788894120.7894785,
+    "seen": 1788894387.2942448,
+    "ast_hash": "348cf219c5af8ff649dd594910c38142",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/FornecedorAD.cs": {
@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1788893204.2871609,
-    "seen": 1788893233.6341002,
-    "ast_hash": "e1a50b95019bfb806158812dfd29cb22",
+    "mtime": 1788894248.1297164,
+    "seen": 1788894387.2967665,
+    "ast_hash": "31128d9f52c87303a2061ccd52cc0702",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -414,9 +414,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmpresaAB.cs": {
-    "mtime": 1788674911.108835,
-    "seen": 1788888974.3519108,
-    "ast_hash": "1e794945af369dba963073b8e2a9b045",
+    "mtime": 1788894176.6014347,
+    "seen": 1788894387.2973425,
+    "ast_hash": "c6834aa9d7333128cedeb95ffdadbaf0",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/FornecedorAB.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1788720491.5312374,
-    "seen": 1788888974.3519278,
-    "ast_hash": "2a8c9370c5b1b6df0b8a59624544e17a",
+    "mtime": 1788894109.7313175,
+    "seen": 1788894387.3002954,
+    "ast_hash": "9952e1ad6a2d0207e4ebf56613bc455f",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs": {
-    "mtime": 1788893503.5085938,
-    "seen": 1788893526.0917516,
-    "ast_hash": "3ebfe98305d16e0134da9eca81d2fd2f",
+    "mtime": 1788894092.8754313,
+    "seen": 1788894387.3032346,
+    "ast_hash": "c5b39720b23b975b47820c86ecfb5c59",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/FornecedorService.cs": {
@@ -1020,9 +1020,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/MyCompanyPage.tsx": {
-    "mtime": 1788703886.3215222,
-    "seen": 1788888974.3521378,
-    "ast_hash": "bbc33e985e48c0c7702b474907c1233e",
+    "mtime": 1788894327.16285,
+    "seen": 1788894387.3303277,
+    "ast_hash": "b855b24512c20eb4052c912fa153e427",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/NovoPedidoPage.tsx": {
@@ -1164,9 +1164,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/companyService.ts": {
-    "mtime": 1788675589.514292,
-    "seen": 1788888974.352224,
-    "ast_hash": "de0a9cb1ee795bac4d834f80b6e74a4e",
+    "mtime": 1788894259.9842668,
+    "seen": 1788894387.337357,
+    "ast_hash": "af68f1b8354279c2bc7cdab94a795a33",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/customerService.ts": {
