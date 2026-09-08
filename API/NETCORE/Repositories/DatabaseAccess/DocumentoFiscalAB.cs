@@ -269,6 +269,9 @@ public class DocumentoFiscalAB(
                    Tentativas = 0,
                    ProximaTentativaEm = NULL,
                    UltimoErro = NULL,
+                   ChaveAcesso = NULL,
+                   XmlAssinado = NULL,
+                   XmlProtocolado = NULL,
                    AtualizadoEm = SYSDATETIMEOFFSET()
              WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;
             """,
@@ -408,13 +411,36 @@ public class DocumentoFiscalAB(
         string id, int status, ResultadoFiscal resultado, CancellationToken ct, string extra)
     {
         await using var db = await connection.OpenConnectionAsync(ct);
+        try
+        {
+            await ExecutarAtualizarStatusAsync(db, id, status, resultado, ct, extra, persistirChave: true);
+        }
+        catch (SqlException ex) when (ex.Number is 2601 or 2627)
+        {
+            // Em caso de colisão com chave única legada (ex.: chave sem randomização gerada em ambiente anterior),
+            // salva o status, motivo e xml sem forçar a inserção da chave conflitante.
+            await ExecutarAtualizarStatusAsync(db, id, status, resultado, ct, extra, persistirChave: false);
+        }
+    }
+
+    private static async Task ExecutarAtualizarStatusAsync(
+        SqlConnection db, string id, int status, ResultadoFiscal resultado, CancellationToken ct, string extra, bool persistirChave)
+    {
+        var extraFinal = extra;
+        if (!persistirChave)
+        {
+            extraFinal = extraFinal.Replace("ChaveAcesso = @ChaveAcesso,", string.Empty)
+                                   .Replace("ChaveAcesso = @ChaveAcesso", string.Empty)
+                                   .Trim().TrimEnd(',');
+        }
+
         await using var command = new SqlCommand(
             $"""
              UPDATE DocumentosFiscais
                 SET Status = @Status,
                     CodigoStatus = @CodigoStatus,
                     MotivoStatus = @MotivoStatus,
-                    {extra},
+                    {extraFinal},
                     AtualizadoEm = SYSDATETIMEOFFSET()
               WHERE Id = @Id;
              """,

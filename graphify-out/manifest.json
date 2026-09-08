@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1788720683.4966538,
-    "seen": 1788888974.3519073,
-    "ast_hash": "a993697559c61ce5505db2efb025bb12",
+    "mtime": 1788893204.2871609,
+    "seen": 1788893233.6341002,
+    "ast_hash": "e1a50b95019bfb806158812dfd29cb22",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs": {
-    "mtime": 1788890439.2066596,
-    "seen": 1788890465.4843104,
-    "ast_hash": "123ec38e3c5f9ce3fcfd56cda5db7c3a",
+    "mtime": 1788893044.4642396,
+    "seen": 1788893233.6375096,
+    "ast_hash": "b5edab32c97b752377395aabd812abc1",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/FornecedorService.cs": {
