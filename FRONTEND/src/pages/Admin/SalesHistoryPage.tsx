@@ -4,9 +4,10 @@
  * Entradas esperadas: não recebe props; processa filtro textual e renderiza dados vindos da API.
  */
 
-import { FileText, QrCode, RefreshCw, Search } from "lucide-react";
+import { AlertCircle, AlertTriangle, FileText, QrCode, RefreshCw, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import DanfePreviewModal from "@/components/Admin/DanfePreviewModal";
+import FiscalErrorModal from "@/components/Admin/FiscalErrorModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import ReceiptPreviewModal, { type SaleReceipt } from "@/components/Admin/ReceiptPreviewModal";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
@@ -67,6 +68,7 @@ export default function SalesHistoryPage() {
   const [receiptPreview, setReceiptPreview] = useState<SaleReceipt | null>(null);
   const [fiscalBySale, setFiscalBySale] = useState<Map<string, FiscalDocumentDto>>(new Map());
   const [danfePreview, setDanfePreview] = useState<FiscalDocumentDetailDto | null>(null);
+  const [errorFiscalModal, setErrorFiscalModal] = useState<FiscalDocumentDto | null>(null);
   const [loadingDanfeSaleNumber, setLoadingDanfeSaleNumber] = useState<string | null>(null);
   const [reemitindoIds, setReemitindoIds] = useState<Set<string>>(() => new Set());
 
@@ -285,12 +287,23 @@ export default function SalesHistoryPage() {
                   </td>
                   <td className="px-3 py-3">
                     {fiscal ? (
-                      <span
-                        className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${fiscalStatusBadgeClass(fiscal.status)}`}
-                        title={fiscal.motivoStatus || undefined}
-                      >
-                        {fiscalStatusLabel(fiscal.status)}
-                      </span>
+                      fiscal.status === FISCAL_STATUS.Rejeitado || fiscal.motivoStatus ? (
+                        <button
+                          type="button"
+                          onClick={() => setErrorFiscalModal(fiscal)}
+                          className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold cursor-pointer transition-all hover:scale-105 ${fiscalStatusBadgeClass(fiscal.status)}`}
+                          title="Clique para ver o motivo do erro da SEFAZ"
+                        >
+                          <AlertCircle size={10} className="shrink-0" />
+                          {fiscalStatusLabel(fiscal.status)}
+                        </button>
+                      ) : (
+                        <span
+                          className={`inline-flex rounded-full px-2 py-1 text-[11px] font-semibold ${fiscalStatusBadgeClass(fiscal.status)}`}
+                        >
+                          {fiscalStatusLabel(fiscal.status)}
+                        </span>
+                      )
                     ) : (
                       <span className="text-xs text-text-tertiary">—</span>
                     )}
@@ -315,6 +328,16 @@ export default function SalesHistoryPage() {
                           loadingLabel: "Carregando...",
                           onClick: () => openDanfe(sale.saleNumber),
                         },
+                        ...(fiscal && (fiscal.status === FISCAL_STATUS.Rejeitado || fiscal.motivoStatus)
+                          ? [
+                              {
+                                key: "fiscalError",
+                                label: "Ver motivo do erro fiscal",
+                                icon: <AlertTriangle size={13} />,
+                                onClick: () => setErrorFiscalModal(fiscal),
+                              },
+                            ]
+                          : []),
                         ...(fiscal && fiscal.status === FISCAL_STATUS.Rejeitado
                           ? [
                               {
@@ -362,6 +385,18 @@ export default function SalesHistoryPage() {
           detail={danfePreview}
           companyName={company?.fantasyName || company?.corporateName || "Hórus PDV"}
           onClose={() => setDanfePreview(null)}
+        />
+      ) : null}
+
+      {errorFiscalModal ? (
+        <FiscalErrorModal
+          document={errorFiscalModal}
+          onClose={() => setErrorFiscalModal(null)}
+          onReemitir={async (doc) => {
+            await reemitirNfce(doc);
+            setErrorFiscalModal(null);
+          }}
+          isReemitindo={reemitindoIds.has(errorFiscalModal.id)}
         />
       ) : null}
     </PageLayout>

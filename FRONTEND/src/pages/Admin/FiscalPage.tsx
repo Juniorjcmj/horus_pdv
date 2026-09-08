@@ -4,9 +4,10 @@
  *           cancelamento e inutilização de numeração.
  * Entradas esperadas: não recebe props; opera com estado local e a API de fiscal/empresa.
  */
-import { QrCode, RefreshCw, RotateCcw, Search, XCircle } from "lucide-react";
+import { AlertCircle, AlertTriangle, QrCode, RefreshCw, RotateCcw, Search, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import DanfePreviewModal from "@/components/Admin/DanfePreviewModal";
+import FiscalErrorModal from "@/components/Admin/FiscalErrorModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
 import TablePagination from "@/components/Pagination/TablePagination";
@@ -60,6 +61,7 @@ export default function FiscalPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [busyIds, setBusyIds] = useState<Set<string>>(() => new Set());
   const [danfePreview, setDanfePreview] = useState<FiscalDocumentDetailDto | null>(null);
+  const [errorModalDoc, setErrorModalDoc] = useState<FiscalDocumentDto | null>(null);
 
   const [inutilizarSerie, setInutilizarSerie] = useState("1");
   const [inutilizarInicial, setInutilizarInicial] = useState("");
@@ -97,6 +99,11 @@ export default function FiscalPage() {
     const start = (safeCurrentPage - 1) * itemsPerPage;
     return filteredDocuments.slice(start, start + itemsPerPage);
   }, [filteredDocuments, itemsPerPage, safeCurrentPage]);
+
+  const rejectedCount = useMemo(
+    () => documents.filter((doc) => doc.status === FISCAL_STATUS.Rejeitado || doc.motivoStatus).length,
+    [documents],
+  );
 
   const setBusy = (id: string, busy: boolean) => {
     setBusyIds((current) => {
@@ -194,6 +201,20 @@ export default function FiscalPage() {
         </section>
       ) : null}
 
+      {rejectedCount > 0 ? (
+        <section className="card flex items-center gap-3 border border-primary/30 bg-primary/10 p-4 text-sm text-primary">
+          <AlertTriangle size={20} className="shrink-0 text-primary" />
+          <div>
+            <p className="font-semibold text-primary">
+              Atenção: Existem {rejectedCount} documento(s) fiscal(is) com rejeição ou erro.
+            </p>
+            <p className="text-xs text-text-secondary mt-0.5">
+              Clique no botão &quot;Rejeitado&quot; ou no menu de ações da linha para visualizar o motivo detalhado retornado pela SEFAZ e reenviar.
+            </p>
+          </div>
+        </section>
+      ) : null}
+
       <section className="card p-4 md:p-5">
         <label className="relative mx-auto block w-full max-w-xl">
           <Search
@@ -245,12 +266,23 @@ export default function FiscalPage() {
                     </span>
                   </td>
                   <td className="px-3 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${fiscalStatusBadgeClass(doc.status)}`}
-                      title={doc.motivoStatus || undefined}
-                    >
-                      {fiscalStatusLabel(doc.status)}
-                    </span>
+                    {doc.status === FISCAL_STATUS.Rejeitado || doc.motivoStatus ? (
+                      <button
+                        type="button"
+                        onClick={() => setErrorModalDoc(doc)}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all hover:scale-105 ${fiscalStatusBadgeClass(doc.status)}`}
+                        title="Clique para ver detalhes do erro da SEFAZ"
+                      >
+                        <AlertCircle size={12} className="shrink-0" />
+                        {fiscalStatusLabel(doc.status)}
+                      </button>
+                    ) : (
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${fiscalStatusBadgeClass(doc.status)}`}
+                      >
+                        {fiscalStatusLabel(doc.status)}
+                      </span>
+                    )}
                   </td>
                   <td className="px-3 py-3 whitespace-nowrap">{formatDate(doc.criadoEm)}</td>
                   <td className="px-3 py-3 text-center">
@@ -265,6 +297,16 @@ export default function FiscalPage() {
                           loadingLabel: "Carregando...",
                           onClick: () => openDanfe(doc),
                         },
+                        ...(doc.status === FISCAL_STATUS.Rejeitado || doc.motivoStatus
+                          ? [
+                              {
+                                key: "error",
+                                label: "Ver motivo do erro",
+                                icon: <AlertTriangle size={13} />,
+                                onClick: () => setErrorModalDoc(doc),
+                              },
+                            ]
+                          : []),
                         ...(doc.status === FISCAL_STATUS.Rejeitado
                           ? [
                               {
@@ -369,6 +411,19 @@ export default function FiscalPage() {
           onClose={() => setDanfePreview(null)}
         />
       ) : null}
+
+      {errorModalDoc ? (
+        <FiscalErrorModal
+          document={errorModalDoc}
+          onClose={() => setErrorModalDoc(null)}
+          onReemitir={async (doc) => {
+            await reemitir(doc);
+            setErrorModalDoc(null);
+          }}
+          isReemitindo={busyIds.has(errorModalDoc.id)}
+        />
+      ) : null}
+
       {PromptDialog}
     </PageLayout>
   );
