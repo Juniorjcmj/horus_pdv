@@ -23,7 +23,7 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
         Phone, Mobile, Cep, Address, Number, Neighborhood, City, Uf, Complement,
         EmailSmtpEnabled, EmailSmtpHost, EmailSmtpPort, EmailSmtpEnableSsl, EmailSmtpUser,
         EmailSmtpPassword, EmailSmtpFromEmail, EmailSmtpFromName, EmailSmtpReplyTo,
-        Crt, CnaeFiscal, CodigoMunicipioIbge, CodigoUfIbge, AmbienteFiscal,
+        Crt, CnaeFiscal, CodigoMunicipioIbge, CodigoUfIbge, AmbienteFiscal, SerieNfce,
         CscId, CscCifrado, CertificadoPfxCifrado, CertificadoSenhaCifrada,
         CertificadoThumbprint, CertificadoValidoAte, RespTecCnpj, RespTecContato,
         RespTecEmail, RespTecFone
@@ -115,6 +115,7 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
                        CodigoMunicipioIbge = @CodigoMunicipioIbge,
                        CodigoUfIbge = @CodigoUfIbge,
                        AmbienteFiscal = @AmbienteFiscal,
+                       SerieNfce = @SerieNfce,
                        CscId = CASE WHEN @CscId = N'' THEN CscId ELSE @CscId END,
                        CscCifrado = CASE WHEN @CscCifrado = N'' THEN CscCifrado ELSE @CscCifrado END,
                        CertificadoPfxCifrado = CASE WHEN @CertificadoPfxCifrado = N'' THEN CertificadoPfxCifrado ELSE @CertificadoPfxCifrado END,
@@ -134,7 +135,7 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
                      Phone, Mobile, Cep, Address, Number, Neighborhood, City, Uf, Complement,
                      EmailSmtpEnabled, EmailSmtpHost, EmailSmtpPort, EmailSmtpEnableSsl, EmailSmtpUser,
                      EmailSmtpPassword, EmailSmtpFromEmail, EmailSmtpFromName, EmailSmtpReplyTo,
-                     Crt, CnaeFiscal, CodigoMunicipioIbge, CodigoUfIbge, AmbienteFiscal,
+                     Crt, CnaeFiscal, CodigoMunicipioIbge, CodigoUfIbge, AmbienteFiscal, SerieNfce,
                      CscId, CscCifrado, CertificadoPfxCifrado, CertificadoSenhaCifrada,
                      CertificadoThumbprint, CertificadoValidoAte, RespTecCnpj, RespTecContato,
                      RespTecEmail, RespTecFone)
@@ -143,7 +144,7 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
                      @Email, @SacPhone, @Phone, @Mobile, @Cep, @Address, @Number, @Neighborhood, @City, @Uf, @Complement,
                      @EmailSmtpEnabled, @EmailSmtpHost, @EmailSmtpPort, @EmailSmtpEnableSsl, @EmailSmtpUser,
                      @EmailSmtpPassword, @EmailSmtpFromEmail, @EmailSmtpFromName, @EmailSmtpReplyTo,
-                     @Crt, @CnaeFiscal, @CodigoMunicipioIbge, @CodigoUfIbge, @AmbienteFiscal,
+                     @Crt, @CnaeFiscal, @CodigoMunicipioIbge, @CodigoUfIbge, @AmbienteFiscal, @SerieNfce,
                      @CscId, @CscCifrado, @CertificadoPfxCifrado, @CertificadoSenhaCifrada,
                      @CertificadoThumbprint, @CertificadoValidoAte, @RespTecCnpj, @RespTecContato,
                      @RespTecEmail, @RespTecFone);
@@ -195,6 +196,7 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
         command.Parameters.AddWithValue("@CodigoMunicipioIbge", source.CodigoMunicipioIbge.Trim());
         command.Parameters.AddWithValue("@CodigoUfIbge", source.CodigoUfIbge);
         command.Parameters.AddWithValue("@AmbienteFiscal", source.AmbienteFiscal);
+        command.Parameters.AddWithValue("@SerieNfce", source.SerieNfce);
         command.Parameters.AddWithValue("@CscId", source.CscId.Trim());
         command.Parameters.AddWithValue(
             "@CscCifrado",
@@ -250,6 +252,7 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
         CodigoMunicipioIbge = ReadString(source, "CodigoMunicipioIbge"),
         CodigoUfIbge = (byte)ReadInt(source, "CodigoUfIbge"),
         AmbienteFiscal = (byte)ReadInt(source, "AmbienteFiscal"),
+        SerieNfce = ReadInt(source, "SerieNfce") > 0 ? ReadInt(source, "SerieNfce") : 2,
         CscId = ReadString(source, "CscId"),
         Csc = UnprotectSecret(ReadString(source, "CscCifrado")),
         CertificadoPfxBase64 = UnprotectSecret(ReadString(source, "CertificadoPfxCifrado")),

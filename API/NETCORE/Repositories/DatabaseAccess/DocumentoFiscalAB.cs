@@ -21,10 +21,7 @@ public class DocumentoFiscalAB(
     ClienteAB clienteAB)
 {
     private const short ModeloNfce = 65;
-    // Série única por empresa nesta primeira etapa — série por terminal de caixa é um "ainda
-    // falta" conhecido (ver README-FISCAL.md): duas frentes de caixa emitindo ao mesmo tempo
-    // competem pela mesma fila de numeração aqui, mas o UPDLOCK/HOLDLOCK evita colisão de nNF.
-    private const int SeriePadrao = 1;
+    // Modelo 65 = NFC-e. A série fiscal é lida da configuração da empresa (Empresas.SerieNfce).
 
     /// <summary>
     /// Aloca o próximo número fiscal e enfileira a venda para emissão. Roda fora da transação
@@ -37,8 +34,8 @@ public class DocumentoFiscalAB(
 
         try
         {
-            var ambiente = await ObterAmbienteFiscalAsync(db, transaction, companyId, ct);
-            var numero = await AlocarProximoNumeroAsync(db, transaction, companyId, ModeloNfce, SeriePadrao, ambiente, ct);
+            var (ambiente, serie) = await ObterConfigFiscalAsync(db, transaction, companyId, ct);
+            var numero = await AlocarProximoNumeroAsync(db, transaction, companyId, ModeloNfce, serie, ambiente, ct);
             var id = $"doc-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
 
             await using (var insert = new SqlCommand(
@@ -55,7 +52,7 @@ public class DocumentoFiscalAB(
                 insert.Parameters.AddWithValue("@CompanyId", companyId);
                 insert.Parameters.AddWithValue("@VendaId", vendaId);
                 insert.Parameters.AddWithValue("@Modelo", ModeloNfce);
-                insert.Parameters.AddWithValue("@Serie", SeriePadrao);
+                insert.Parameters.AddWithValue("@Serie", serie);
                 insert.Parameters.AddWithValue("@NumeroNf", numero);
                 insert.Parameters.AddWithValue("@Ambiente", ambiente);
                 await insert.ExecuteNonQueryAsync(ct);
@@ -258,27 +255,86 @@ public class DocumentoFiscalAB(
         };
     }
 
-    /// <summary>Reenfileira um documento rejeitado definitivamente (o número fiscal é reaproveitado).</summary>
+    /// <summary>Reenfileira um documento rejeitado definitivamente. Se foi duplicidade (539) ou mudança de série, aloca nova numeração.</summary>
     public async Task<bool> ReemitirAsync(string companyId, string id)
     {
         await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(
-            """
-            UPDATE DocumentosFiscais
-               SET Status = 1,
-                   Tentativas = 0,
-                   ProximaTentativaEm = NULL,
-                   UltimoErro = NULL,
-                   ChaveAcesso = NULL,
-                   XmlAssinado = NULL,
-                   XmlProtocolado = NULL,
-                   AtualizadoEm = SYSDATETIMEOFFSET()
-             WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;
-            """,
-            db);
-        command.Parameters.AddWithValue("@Id", id);
-        command.Parameters.AddWithValue("@CompanyId", companyId);
-        return await command.ExecuteNonQueryAsync() > 0;
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+        try
+        {
+            int? codigoStatus;
+            int serieAtual;
+            await using (var checkCmd = new SqlCommand(
+                "SELECT CodigoStatus, Serie FROM DocumentosFiscais WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;",
+                db, transaction))
+            {
+                checkCmd.Parameters.AddWithValue("@Id", id);
+                checkCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                await using var reader = await checkCmd.ExecuteReaderAsync();
+                if (!await reader.ReadAsync()) return false;
+                codigoStatus = reader.IsDBNull(0) ? null : Convert.ToInt32(reader.GetValue(0));
+                serieAtual = Convert.ToInt32(reader.GetValue(1));
+            }
+
+            var (ambiente, serieConfigurada) = await ObterConfigFiscalAsync(db, transaction, companyId, default);
+
+            // Se a nota foi rejeitada por duplicidade (539) ou sua série for diferente da série ativa na empresa:
+            // aloca nova numeração na série ativa para permitir que a SEFAZ autorize sem erro de duplicidade.
+            var precisaNovaNumeracao = codigoStatus == 539 || serieAtual != serieConfigurada;
+
+            int? novoNumero = null;
+            if (precisaNovaNumeracao)
+            {
+                novoNumero = await AlocarProximoNumeroAsync(db, transaction, companyId, ModeloNfce, serieConfigurada, ambiente, default);
+            }
+
+            var sql = precisaNovaNumeracao
+                ? """
+                  UPDATE DocumentosFiscais
+                     SET Status = 1,
+                         Serie = @NovaSerie,
+                         NumeroNf = @NovoNumero,
+                         Tentativas = 0,
+                         ProximaTentativaEm = NULL,
+                         UltimoErro = NULL,
+                         ChaveAcesso = NULL,
+                         XmlAssinado = NULL,
+                         XmlProtocolado = NULL,
+                         AtualizadoEm = SYSDATETIMEOFFSET()
+                   WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;
+                  """
+                : """
+                  UPDATE DocumentosFiscais
+                     SET Status = 1,
+                         Tentativas = 0,
+                         ProximaTentativaEm = NULL,
+                         UltimoErro = NULL,
+                         ChaveAcesso = NULL,
+                         XmlAssinado = NULL,
+                         XmlProtocolado = NULL,
+                         AtualizadoEm = SYSDATETIMEOFFSET()
+                   WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;
+                  """;
+
+            await using (var updateCmd = new SqlCommand(sql, db, transaction))
+            {
+                updateCmd.Parameters.AddWithValue("@Id", id);
+                updateCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                if (precisaNovaNumeracao)
+                {
+                    updateCmd.Parameters.AddWithValue("@NovaSerie", serieConfigurada);
+                    updateCmd.Parameters.AddWithValue("@NovoNumero", novoNumero!.Value);
+                }
+                var rows = await updateCmd.ExecuteNonQueryAsync();
+                await transaction.CommitAsync();
+                return rows > 0;
+            }
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     /// <summary>Dados mínimos para montar um evento (cancelamento) sobre um documento autorizado.</summary>
@@ -457,14 +513,20 @@ public class DocumentoFiscalAB(
         await command.ExecuteNonQueryAsync(ct);
     }
 
-    private async Task<byte> ObterAmbienteFiscalAsync(
+    private async Task<(byte Ambiente, int Serie)> ObterConfigFiscalAsync(
         SqlConnection db, SqlTransaction transaction, string companyId, CancellationToken ct)
     {
         await using var command = new SqlCommand(
-            "SELECT AmbienteFiscal FROM Empresas WHERE Id = @CompanyId;", db, transaction);
+            "SELECT AmbienteFiscal, ISNULL(SerieNfce, 2) FROM Empresas WHERE Id = @CompanyId;", db, transaction);
         command.Parameters.AddWithValue("@CompanyId", companyId);
-        var result = await command.ExecuteScalarAsync(ct);
-        return result is null or DBNull ? (byte)2 : Convert.ToByte(result);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        if (await reader.ReadAsync(ct))
+        {
+            var amb = reader.IsDBNull(0) ? (byte)2 : reader.GetByte(0);
+            var serie = reader.IsDBNull(1) ? 2 : Convert.ToInt32(reader.GetValue(1));
+            return (amb, serie);
+        }
+        return (2, 2);
     }
 
     private static async Task<int> AlocarProximoNumeroAsync(

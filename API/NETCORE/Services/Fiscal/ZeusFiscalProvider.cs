@@ -467,17 +467,15 @@ public sealed class ZeusFiscalProvider(
 
         var pagamento = new pag
         {
-            detPag = request.Pagamentos.Select(p => new detPag
+            detPag = request.Pagamentos.Select(p =>
             {
-                tPag = (FormaPagamento)int.Parse(p.Tipo, Inv),
-                vPag = p.Valor,
-                card = string.IsNullOrWhiteSpace(p.CnpjCredenciadora) ? null : new card
+                var tPag = (FormaPagamento)int.Parse(p.Tipo, Inv);
+                return new detPag
                 {
-                    tpIntegra = TipoIntegracaoPagamento.TipIntegradoAutomacao,
-                    CNPJ = p.CnpjCredenciadora,
-                    tBand = MapearBandeira(p.BandeiraCartao),
-                    cAut = p.AutorizacaoTef
-                }
+                    tPag = tPag,
+                    vPag = p.Valor,
+                    card = MontarCard(p, tPag)
+                };
             }).ToList(),
             vTroco = request.ValorTroco > 0 ? request.ValorTroco : null
         };
@@ -705,5 +703,37 @@ public sealed class ZeusFiscalProvider(
     {
         if (string.IsNullOrWhiteSpace(cst)) return null;
         return Enum.TryParse<CSTIBSCBS>("cst" + cst, out var parsed) ? parsed : null;
+    }
+
+    /// <summary>
+    /// Tag card é obrigatória para pagamentos com cartão (crédito/débito) — rejeição SEFAZ 391.
+    /// Para POS avulso (sem TEF integrado), tpIntegra deve ser 2 (TipNaoIntegrado).
+    /// </summary>
+    private static card? MontarCard(PagamentoFiscal p, FormaPagamento tPag)
+    {
+        var ehCartao = tPag is FormaPagamento.fpCartaoCredito or FormaPagamento.fpCartaoDebito;
+        var temIntegracao = !string.IsNullOrWhiteSpace(p.CnpjCredenciadora);
+
+        if (!ehCartao && !temIntegracao)
+        {
+            return null;
+        }
+
+        if (temIntegracao)
+        {
+            return new card
+            {
+                tpIntegra = TipoIntegracaoPagamento.TipIntegradoAutomacao,
+                CNPJ = p.CnpjCredenciadora,
+                tBand = MapearBandeira(p.BandeiraCartao),
+                cAut = p.AutorizacaoTef
+            };
+        }
+
+        return new card
+        {
+            tpIntegra = TipoIntegracaoPagamento.TipNaoIntegrado,
+            tBand = string.IsNullOrWhiteSpace(p.BandeiraCartao) ? BandeiraCartao.bcOutros : MapearBandeira(p.BandeiraCartao)
+        };
     }
 }

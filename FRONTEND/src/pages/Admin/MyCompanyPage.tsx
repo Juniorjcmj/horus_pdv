@@ -105,6 +105,7 @@ export default function MyCompanyPage() {
   const [cnaeFiscal, setCnaeFiscal] = useState("");
   const [codigoMunicipioIbge, setCodigoMunicipioIbge] = useState("3304557");
   const [ambienteFiscal, setAmbienteFiscal] = useState(2);
+  const [serieNfce, setSerieNfce] = useState(2);
   const [cscId, setCscId] = useState("");
   const [csc, setCsc] = useState("");
   const [cscHasValue, setCscHasValue] = useState(false);
@@ -154,6 +155,7 @@ export default function MyCompanyPage() {
         setCnaeFiscal(data.cnaeFiscal || "");
         setCodigoMunicipioIbge(data.codigoMunicipioIbge || "3304557");
         setAmbienteFiscal(data.ambienteFiscal || 2);
+        setSerieNfce(data.serieNfce || 2);
         setCscId(data.cscId || "");
         setCsc("");
         setCscHasValue(Boolean(data.cscHasValue));
@@ -300,6 +302,7 @@ export default function MyCompanyPage() {
         codigoMunicipioIbge,
         codigoUfIbge: 33,
         ambienteFiscal,
+        serieNfce,
         cscId,
         csc,
         cscHasValue,
@@ -345,6 +348,7 @@ export default function MyCompanyPage() {
         setCnaeFiscal(data.cnaeFiscal || "");
         setCodigoMunicipioIbge(data.codigoMunicipioIbge || "3304557");
         setAmbienteFiscal(data.ambienteFiscal || 2);
+        setSerieNfce(data.serieNfce || 2);
         setCscId(data.cscId || "");
         setCsc("");
         setCscHasValue(Boolean(data.cscHasValue));
@@ -770,6 +774,22 @@ export default function MyCompanyPage() {
               <option value={2}>Homologação (testes, sem valor fiscal)</option>
               <option value={1}>Produção</option>
             </select>
+          </label>
+
+          <label className="block md:col-span-4">
+            <span className="mb-1.5 block text-sm text-text-secondary">Série da NFC-e</span>
+            <input
+              type="number"
+              min={1}
+              max={999}
+              className="input-field w-full"
+              value={serieNfce}
+              onChange={(event) => setSerieNfce(Math.max(1, Number(event.target.value) || 1))}
+              placeholder="2"
+            />
+            <span className="mt-1 block text-xs text-text-tertiary">
+              Padrão 2 (use uma série nova caso a 1 já tenha sido usada no passado).
+            </span>
           </label>
 
           <label className="block md:col-span-4">

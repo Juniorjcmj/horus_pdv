@@ -42,6 +42,7 @@ export type CompanyDto = {
   codigoMunicipioIbge: string;
   codigoUfIbge: number;
   ambienteFiscal: number;
+  serieNfce?: number;
   cscId: string;
   csc: string;
   cscHasValue: boolean;

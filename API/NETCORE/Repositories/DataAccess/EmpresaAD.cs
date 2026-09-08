@@ -45,6 +45,8 @@ public class EmpresaAD
     public byte CodigoUfIbge { get; set; } = 33;
     /// <summary>1 Produção, 2 Homologação.</summary>
     public byte AmbienteFiscal { get; set; } = 2;
+    /// <summary>Série da NFC-e (padrão 2 para evitar colisão com sistemas legados na série 1).</summary>
+    public int SerieNfce { get; set; } = 2;
     public string CscId { get; set; } = string.Empty;
     public string Csc { get; set; } = string.Empty;
     public string CertificadoPfxBase64 { get; set; } = string.Empty;

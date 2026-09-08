@@ -46,6 +46,7 @@ public class EmpresaRequest
     public string CodigoMunicipioIbge { get; set; } = "3304557";
     public byte CodigoUfIbge { get; set; } = 33;
     public byte AmbienteFiscal { get; set; } = 2;
+    public int SerieNfce { get; set; } = 2;
     public string CscId { get; set; } = string.Empty;
     public string Csc { get; set; } = string.Empty;
     public bool CscHasValue { get; set; }
