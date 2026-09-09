@@ -93,10 +93,16 @@ public sealed class ZeusFiscalProvider(
             nfe.Assina(cfg, certificado);
 
             nfe.infNFeSupl = new infNFeSupl();
+            // O cIdToken no QR-Code deve ter exatamente 6 dígitos com zeros à esquerda (spec NFC-e).
+            // Se o cadastro veio sem padding (ex: "1"), formata para "000001".
+            var cscIdPadded = int.TryParse(emitente.CscId, out var cscIdNum)
+                ? cscIdNum.ToString("D6")
+                : emitente.CscId.PadLeft(6, '0');
+
             nfe.infNFeSupl.qrCode = nfe.infNFeSupl.ObterUrlQrCode(
                 nfe,
                 VersaoQrCode.QrCodeVersao2,
-                emitente.CscId,
+                cscIdPadded,
                 emitente.Csc,
                 cfg.Certificado);
             nfe.infNFeSupl.urlChave = ObterUrlConsultaChave(emitente.Ambiente);
