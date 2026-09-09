@@ -94,6 +94,25 @@ public sealed class NfceOutboxWorker(
                         await documentos.MarcarDenegadoAsync(doc.Id, resultado, ct);
                         break;
 
+                    case StatusDocumentoFiscal.Rejeitado when resultado.CodigoStatus == 539:
+                        // Duplicidade de NF-e com chave diferente — o número já foi queimado
+                        // na SEFAZ. Renumera automaticamente e recoloca na fila.
+                        await documentos.MarcarRejeitadoAsync(doc.Id, resultado, ct);
+                        var renumerou = await documentos.ReemitirAsync(doc.CompanyId, doc.Id);
+                        if (renumerou)
+                        {
+                            logger.LogWarning(
+                                "NFC-e rejeitada por duplicidade (539). Documento {Id} renumerado automaticamente e reenfileirado.",
+                                doc.Id);
+                        }
+                        else
+                        {
+                            logger.LogError(
+                                "NFC-e rejeitada por duplicidade (539). Documento {Id} não pôde ser renumerado — requer intervenção manual.",
+                                doc.Id);
+                        }
+                        break;
+
                     case StatusDocumentoFiscal.Rejeitado when !resultado.Retentavel:
                         // Erro de conteúdo. Reenviar só gastaria numeração — vai para
                         // revisão manual e o número deve ser inutilizado depois.
