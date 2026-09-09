@@ -258,83 +258,96 @@ public class DocumentoFiscalAB(
     /// <summary>Reenfileira um documento rejeitado definitivamente. Se foi duplicidade (539) ou mudança de série, aloca nova numeração.</summary>
     public async Task<bool> ReemitirAsync(string companyId, string id)
     {
-        await using var db = await connection.OpenConnectionAsync();
-        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
-        try
+        const int MaxRetries = 5;
+
+        for (int attempt = 0; attempt < MaxRetries; attempt++)
         {
-            int? codigoStatus;
-            int serieAtual;
-            await using (var checkCmd = new SqlCommand(
-                "SELECT CodigoStatus, Serie FROM DocumentosFiscais WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;",
-                db, transaction))
+            await using var db = await connection.OpenConnectionAsync();
+            await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+            try
             {
-                checkCmd.Parameters.AddWithValue("@Id", id);
-                checkCmd.Parameters.AddWithValue("@CompanyId", companyId);
-                await using var reader = await checkCmd.ExecuteReaderAsync();
-                if (!await reader.ReadAsync()) return false;
-                codigoStatus = reader.IsDBNull(0) ? null : Convert.ToInt32(reader.GetValue(0));
-                serieAtual = Convert.ToInt32(reader.GetValue(1));
-            }
+                int? codigoStatus;
+                int serieAtual;
+                await using (var checkCmd = new SqlCommand(
+                    "SELECT CodigoStatus, Serie FROM DocumentosFiscais WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;",
+                    db, transaction))
+                {
+                    checkCmd.Parameters.AddWithValue("@Id", id);
+                    checkCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                    await using var reader = await checkCmd.ExecuteReaderAsync();
+                    if (!await reader.ReadAsync()) return false;
+                    codigoStatus = reader.IsDBNull(0) ? null : Convert.ToInt32(reader.GetValue(0));
+                    serieAtual = Convert.ToInt32(reader.GetValue(1));
+                }
 
-            var (ambiente, serieConfigurada) = await ObterConfigFiscalAsync(db, transaction, companyId, default);
+                var (ambiente, serieConfigurada) = await ObterConfigFiscalAsync(db, transaction, companyId, default);
 
-            // Se a nota foi rejeitada por duplicidade (539) ou sua série for diferente da série ativa na empresa:
-            // aloca nova numeração na série ativa para permitir que a SEFAZ autorize sem erro de duplicidade.
-            var precisaNovaNumeracao = codigoStatus == 539 || serieAtual != serieConfigurada;
+                // Se a nota foi rejeitada por duplicidade (539) ou sua série for diferente da série ativa na empresa:
+                // aloca nova numeração na série ativa para permitir que a SEFAZ autorize sem erro de duplicidade.
+                var precisaNovaNumeracao = codigoStatus == 539 || serieAtual != serieConfigurada;
 
-            int? novoNumero = null;
-            if (precisaNovaNumeracao)
-            {
-                novoNumero = await AlocarProximoNumeroAsync(db, transaction, companyId, ModeloNfce, serieConfigurada, ambiente, default);
-            }
-
-            var sql = precisaNovaNumeracao
-                ? """
-                  UPDATE DocumentosFiscais
-                     SET Status = 1,
-                         Serie = @NovaSerie,
-                         NumeroNf = @NovoNumero,
-                         Tentativas = 0,
-                         ProximaTentativaEm = NULL,
-                         UltimoErro = NULL,
-                         ChaveAcesso = NULL,
-                         XmlAssinado = NULL,
-                         XmlProtocolado = NULL,
-                         AtualizadoEm = SYSDATETIMEOFFSET()
-                   WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;
-                  """
-                : """
-                  UPDATE DocumentosFiscais
-                     SET Status = 1,
-                         Tentativas = 0,
-                         ProximaTentativaEm = NULL,
-                         UltimoErro = NULL,
-                         ChaveAcesso = NULL,
-                         XmlAssinado = NULL,
-                         XmlProtocolado = NULL,
-                         AtualizadoEm = SYSDATETIMEOFFSET()
-                   WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;
-                  """;
-
-            await using (var updateCmd = new SqlCommand(sql, db, transaction))
-            {
-                updateCmd.Parameters.AddWithValue("@Id", id);
-                updateCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                int? novoNumero = null;
                 if (precisaNovaNumeracao)
                 {
-                    updateCmd.Parameters.AddWithValue("@NovaSerie", serieConfigurada);
-                    updateCmd.Parameters.AddWithValue("@NovoNumero", novoNumero!.Value);
+                    novoNumero = await AlocarProximoNumeroAsync(db, transaction, companyId, ModeloNfce, serieConfigurada, ambiente, default);
                 }
-                var rows = await updateCmd.ExecuteNonQueryAsync();
-                await transaction.CommitAsync();
-                return rows > 0;
+
+                var sql = precisaNovaNumeracao
+                    ? """
+                      UPDATE DocumentosFiscais
+                         SET Status = 1,
+                             Serie = @NovaSerie,
+                             NumeroNf = @NovoNumero,
+                             Tentativas = 0,
+                             ProximaTentativaEm = NULL,
+                             UltimoErro = NULL,
+                             ChaveAcesso = NULL,
+                             XmlAssinado = NULL,
+                             XmlProtocolado = NULL,
+                             AtualizadoEm = SYSDATETIMEOFFSET()
+                       WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;
+                      """
+                    : """
+                      UPDATE DocumentosFiscais
+                         SET Status = 1,
+                             Tentativas = 0,
+                             ProximaTentativaEm = NULL,
+                             UltimoErro = NULL,
+                             ChaveAcesso = NULL,
+                             XmlAssinado = NULL,
+                             XmlProtocolado = NULL,
+                             AtualizadoEm = SYSDATETIMEOFFSET()
+                       WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;
+                      """;
+
+                await using (var updateCmd = new SqlCommand(sql, db, transaction))
+                {
+                    updateCmd.Parameters.AddWithValue("@Id", id);
+                    updateCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                    if (precisaNovaNumeracao)
+                    {
+                        updateCmd.Parameters.AddWithValue("@NovaSerie", serieConfigurada);
+                        updateCmd.Parameters.AddWithValue("@NovoNumero", novoNumero!.Value);
+                    }
+                    var rows = await updateCmd.ExecuteNonQueryAsync();
+                    await transaction.CommitAsync();
+                    return rows > 0;
+                }
+            }
+            catch (SqlException ex) when (ex.Number == 2627 && attempt < MaxRetries - 1)
+            {
+                // Constraint UQ_DocFiscais_Numeracao — o número alocado já existe (sequência dessincronizada).
+                // Rollback e tenta novamente; AlocarProximoNumeroAsync avançará para o próximo número.
+                await transaction.RollbackAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
             }
         }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+
+        return false;
     }
 
     /// <summary>Dados mínimos para montar um evento (cancelamento) sobre um documento autorizado.</summary>

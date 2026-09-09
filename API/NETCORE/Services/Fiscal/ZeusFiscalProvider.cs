@@ -438,6 +438,10 @@ public sealed class ZeusFiscalProvider(
 
         var detalhes = request.Itens.Select(MontarItem).ToList();
 
+        // Em homologação a SEFAZ exige que o xProd do 1º item seja esta literal (rejeição 373)
+        if (e.Ambiente == 2 && detalhes.Count > 0)
+            detalhes[0].prod.xProd = "NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL";
+
         var total = new total
         {
             ICMSTot = new ICMSTot
