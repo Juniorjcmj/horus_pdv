@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfceController.cs": {
-    "mtime": 1788791094.929352,
-    "seen": 1788888974.35178,
-    "ast_hash": "1ed6dc89ff40a9facd880566e4f0c7d8",
+    "mtime": 1789165099.2579627,
+    "seen": 1789165382.3685324,
+    "ast_hash": "f319178900222a153ddf863e6f68fef1",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fornecedores/FornecedorController.cs": {
@@ -516,9 +516,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/NfceOutboxWorker.cs": {
-    "mtime": 1788923333.070117,
-    "seen": 1789164187.7368834,
-    "ast_hash": "d5cc3b13e9cd4811e60592cd354cea03",
+    "mtime": 1789165107.1999767,
+    "seen": 1789165382.3785768,
+    "ast_hash": "b5f1545feaa2a63c515805e430bad238",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs": {
@@ -714,9 +714,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReceiptPreviewModal.tsx": {
-    "mtime": 1789163703.474335,
-    "seen": 1789164187.740435,
-    "ast_hash": "ba17005b16181a56117531d520431e0a",
+    "mtime": 1789165316.488481,
+    "seen": 1789165382.3823507,
+    "ast_hash": "d8e157fc20efa13ab9b430f022a08b6f",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/ReportCardsGrid.tsx": {
@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1789163859.664494,
-    "seen": 1789164187.747347,
-    "ast_hash": "881ed1d319883a953fa54267c61d9da3",
+    "mtime": 1789165208.3769,
+    "seen": 1789165382.389924,
+    "ast_hash": "d1eddbaec975e2094a0defec6c10e5d2",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -2028,9 +2028,9 @@
     "semantic_hash": ""
   },
   "openspec/changes/imprimir-danfe-nfce-qrcode/tasks.md": {
-    "mtime": 1789163556.3796003,
-    "seen": 1789164187.7638981,
-    "ast_hash": "88b2c8ea7eb1bcfc7b07a864b00a62c9",
+    "mtime": 1789164202.972363,
+    "seen": 1789165382.4058154,
+    "ast_hash": "f570e756e48d69fd194be8110a9a878a",
     "semantic_hash": ""
   }
 }

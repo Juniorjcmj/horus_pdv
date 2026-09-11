@@ -4,9 +4,20 @@
  *           DANFE NFC-e oficial com QR Code (quando autorizada) quanto o cupom gerencial.
  * Entradas esperadas: recebe dados da venda, itens, empresa, dados fiscais (opcionais) e callbacks.
  */
-import { ExternalLink, Printer, QrCode, ReceiptText, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  AlertCircle,
+  ExternalLink,
+  Loader2,
+  Printer,
+  QrCode,
+  ReceiptText,
+  RefreshCw,
+  X,
+} from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import {
+  fiscalService,
   FISCAL_STATUS,
   fiscalStatusBadgeClass,
   fiscalStatusLabel,
@@ -204,11 +215,22 @@ export default function ReceiptPreviewModal({
   onClose: () => void;
   fiscalDetail?: FiscalDocumentDetailDto | null;
 }) {
-  const effectiveFiscal = fiscalDetail ?? receipt.fiscalDetail ?? null;
+  const initialFiscal = fiscalDetail ?? receipt.fiscalDetail ?? null;
+  const [currentFiscal, setCurrentFiscal] = useState<FiscalDocumentDetailDto | null>(initialFiscal);
+  const [isPolling, setIsPolling] = useState(
+    () =>
+      !(
+        initialFiscal &&
+        (initialFiscal.status === FISCAL_STATUS.Autorizado ||
+          initialFiscal.status === FISCAL_STATUS.ContingenciaPendente)
+      )
+  );
+  const [sefazNotice, setSefazNotice] = useState<string | null>(null);
+
   const isDanfe = Boolean(
-    effectiveFiscal &&
-      (effectiveFiscal.status === FISCAL_STATUS.Autorizado ||
-        effectiveFiscal.status === FISCAL_STATUS.ContingenciaPendente)
+    currentFiscal &&
+      (currentFiscal.status === FISCAL_STATUS.Autorizado ||
+        currentFiscal.status === FISCAL_STATUS.ContingenciaPendente)
   );
 
   const companyName =
@@ -222,12 +244,67 @@ export default function ReceiptPreviewModal({
     .join(", ");
   const companyCity = [receipt.company?.city, receipt.company?.uf].filter(Boolean).join(" - ");
 
+  const checkFiscalStatus = useCallback(async () => {
+    if (!receipt.saleNumber) return false;
+    try {
+      const doc = await fiscalService.getBySaleNumber(receipt.saleNumber);
+      if (doc) {
+        setCurrentFiscal(doc);
+        if (
+          doc.status === FISCAL_STATUS.Autorizado ||
+          doc.status === FISCAL_STATUS.ContingenciaPendente
+        ) {
+          setSefazNotice(null);
+          return true;
+        }
+        if (doc.status === FISCAL_STATUS.Rejeitado) {
+          setSefazNotice(
+            doc.motivoStatus
+              ? `Rejeição SEFAZ: ${doc.motivoStatus}`
+              : "NFC-e rejeitada pela SEFAZ."
+          );
+          return true;
+        }
+        if (doc.status === FISCAL_STATUS.Denegado) {
+          setSefazNotice(`NFC-e denegada pela SEFAZ: ${doc.motivoStatus ?? ""}`);
+          return true;
+        }
+      }
+    } catch {
+      // Ignora erro transitório de rede
+    }
+    return false;
+  }, [receipt.saleNumber]);
+
+  useEffect(() => {
+    if (isDanfe) return;
+
+    let isMounted = true;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    const timer = setInterval(async () => {
+      attempts++;
+      const finished = await checkFiscalStatus();
+      if (!isMounted) return;
+      if (finished || attempts >= maxAttempts) {
+        setIsPolling(false);
+        clearInterval(timer);
+      }
+    }, 1200);
+
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
+  }, [checkFiscalStatus, isDanfe]);
+
   const printReceipt = () => {
     const popup = window.open("", "_blank", "width=420,height=720");
     if (!popup) return;
     popup.document.open();
-    if (isDanfe && effectiveFiscal) {
-      popup.document.write(buildDanfePrintHtml(receipt, effectiveFiscal, formatMoney));
+    if (isDanfe && currentFiscal) {
+      popup.document.write(buildDanfePrintHtml(receipt, currentFiscal, formatMoney));
     } else {
       popup.document.write(buildReceiptPrintHtml(receipt, formatMoney));
     }
@@ -249,9 +326,9 @@ export default function ReceiptPreviewModal({
                 {isDanfe ? "DANFE NFC-e (Bobina 80mm)" : "Prévia de impressão"}
               </h2>
               <p className="text-xs text-text-secondary">
-                {isDanfe && effectiveFiscal
-                  ? `NFC-e nº ${formatNumeroNf(effectiveFiscal.numeroNf)} · Série ${effectiveFiscal.serie} · Venda ${receipt.saleNumber}`
-                  : `Cupom não fiscal da venda ${receipt.saleNumber}`}
+                {isDanfe && currentFiscal
+                  ? `NFC-e nº ${formatNumeroNf(currentFiscal.numeroNf)} · Série ${currentFiscal.serie} · Venda ${receipt.saleNumber}`
+                  : `Cupom da venda ${receipt.saleNumber}`}
               </p>
             </div>
           </div>
@@ -267,6 +344,18 @@ export default function ReceiptPreviewModal({
 
         <div className="grid max-h-[74vh] overflow-y-auto bg-bg-primary md:grid-cols-[minmax(0,1fr)_320px]">
           <div className="p-4">
+            {isPolling ? (
+              <div className="mx-auto mb-3 flex max-w-[360px] items-center justify-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-medium text-accent animate-pulse">
+                <Loader2 size={15} className="animate-spin shrink-0" />
+                <span>Autorizando NFC-e junto à SEFAZ...</span>
+              </div>
+            ) : sefazNotice ? (
+              <div className="mx-auto mb-3 flex max-w-[360px] items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+                <AlertCircle size={15} className="mt-0.5 shrink-0" />
+                <span>{sefazNotice}</span>
+              </div>
+            ) : null}
+
             <div className="mx-auto w-full max-w-[360px] border border-border-secondary bg-white px-5 py-4 font-mono text-[11.5px] leading-tight text-slate-950 shadow-sm">
               {/* CABEÇALHO EMITENTE */}
               <div className="text-center">
@@ -286,7 +375,7 @@ export default function ReceiptPreviewModal({
               <div className="my-3 border-t border-dashed border-slate-500" />
 
               {/* TÍTULO / IDENTIFICAÇÃO DO CUPOM */}
-              {isDanfe && effectiveFiscal ? (
+              {isDanfe && currentFiscal ? (
                 <div className="space-y-1 text-center">
                   <p className="text-xs font-extrabold uppercase">DANFE NFC-e</p>
                   <p className="text-[10px] leading-tight">Documento Auxiliar da Nota Fiscal de Consumidor Eletrônica</p>
@@ -296,7 +385,7 @@ export default function ReceiptPreviewModal({
                       EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO<br />SEM VALOR FISCAL
                     </div>
                   ) : null}
-                  {effectiveFiscal.status === FISCAL_STATUS.ContingenciaPendente ? (
+                  {currentFiscal.status === FISCAL_STATUS.ContingenciaPendente ? (
                     <div className="my-1 border border-black p-1 text-[10px] font-extrabold">
                       EMITIDA EM CONTINGÊNCIA<br />Pendente de autorização
                     </div>
@@ -398,17 +487,17 @@ export default function ReceiptPreviewModal({
               ) : null}
 
               {/* IDENTIFICAÇÃO FISCAL E QR CODE */}
-              {isDanfe && effectiveFiscal ? (
+              {isDanfe && currentFiscal ? (
                 <>
                   <div className="my-3 border-t border-dashed border-slate-500" />
                   <div className="space-y-1 text-center text-[10px]">
                     <p className="font-bold">
-                      NFC-e nº {formatNumeroNf(effectiveFiscal.numeroNf)} Série {effectiveFiscal.serie}
+                      NFC-e nº {formatNumeroNf(currentFiscal.numeroNf)} Série {currentFiscal.serie}
                     </p>
                     <p>Data de Emissão: {formatReceiptDate(receipt.issuedAt)}</p>
-                    {effectiveFiscal.protocolo ? (
+                    {currentFiscal.protocolo ? (
                       <p>
-                        Protocolo de Autorização: <strong>{effectiveFiscal.protocolo}</strong>
+                        Protocolo de Autorização: <strong>{currentFiscal.protocolo}</strong>
                       </p>
                     ) : null}
                   </div>
@@ -419,7 +508,7 @@ export default function ReceiptPreviewModal({
                     <p className="break-all font-bold text-[9px]">{getSefazConsultaUrl(receipt.company?.uf)}</p>
                     <p className="pt-1 text-[9px] uppercase font-bold">Chave de Acesso:</p>
                     <p className="break-all font-mono font-bold text-[9.5px]">
-                      {formatChaveAcesso(effectiveFiscal.chaveAcesso)}
+                      {formatChaveAcesso(currentFiscal.chaveAcesso)}
                     </p>
                   </div>
 
@@ -433,10 +522,10 @@ export default function ReceiptPreviewModal({
                     </p>
                   </div>
 
-                  {effectiveFiscal.qrCodeUrl ? (
+                  {currentFiscal.qrCodeUrl ? (
                     <div className="mt-3 flex flex-col items-center justify-center">
                       <div className="border border-slate-300 p-1.5 bg-white">
-                        <QRCodeSVG value={effectiveFiscal.qrCodeUrl} size={140} />
+                        <QRCodeSVG value={currentFiscal.qrCodeUrl} size={140} />
                       </div>
                       <span className="mt-1 text-[9px]">Consulta via leitor de QR Code</span>
                     </div>
@@ -451,20 +540,63 @@ export default function ReceiptPreviewModal({
 
           {/* SIDEBAR LATERAL */}
           <aside className="border-t border-border-primary bg-bg-light p-4 md:border-l md:border-t-0">
-            {isDanfe && effectiveFiscal ? (
+            {isDanfe && currentFiscal ? (
               <div className="space-y-2">
                 <span
-                  className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${fiscalStatusBadgeClass(effectiveFiscal.status)}`}
+                  className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${fiscalStatusBadgeClass(currentFiscal.status)}`}
                 >
-                  {fiscalStatusLabel(effectiveFiscal.status)}
+                  {fiscalStatusLabel(currentFiscal.status)}
                 </span>
                 <p className="text-xs text-text-secondary">
-                  Documento fiscal pronto para impressão térmica na bobina de 80mm.
+                  Documento fiscal autorizado e pronto para impressão térmica na bobina de 80mm.
                 </p>
               </div>
+            ) : isPolling ? (
+              <div className="rounded-xl border border-accent/30 bg-accent/10 p-3 text-xs text-accent">
+                <div className="flex items-center gap-2 font-semibold">
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>Transmitindo à SEFAZ</span>
+                </div>
+                <p className="mt-1 text-text-secondary">
+                  Aguardando resposta do servidor fiscal para gerar o QR Code oficial.
+                </p>
+              </div>
+            ) : sefazNotice ? (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-400">
+                <p className="font-semibold">Emissão não autorizada</p>
+                <p className="mt-1 text-[11px] text-text-secondary">{sefazNotice}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPolling(true);
+                    checkFiscalStatus().finally(() => setIsPolling(false));
+                  }}
+                  className="btn-secondary mt-2.5 w-full inline-flex items-center justify-center gap-1.5 text-xs py-1.5"
+                >
+                  <RefreshCw size={12} />
+                  Tentar consultar novamente
+                </button>
+              </div>
             ) : (
-              <div className="rounded-xl border border-success/25 bg-success/10 px-3 py-2 text-sm font-semibold text-success">
-                Pronto para impressao
+              <div className="space-y-2">
+                <div className="rounded-xl border border-border-primary bg-bg-secondary p-3 text-xs">
+                  <p className="font-semibold text-text-primary">Cupom Não Fiscal</p>
+                  <p className="mt-1 text-text-secondary">
+                    NFC-e ainda não autorizada no momento da emissão.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPolling(true);
+                      checkFiscalStatus().finally(() => setIsPolling(false));
+                    }}
+                    disabled={isPolling}
+                    className="btn-secondary mt-2.5 w-full inline-flex items-center justify-center gap-1.5 text-xs py-1.5"
+                  >
+                    <RefreshCw size={12} className={isPolling ? "animate-spin" : ""} />
+                    {isPolling ? "Consultando SEFAZ..." : "Consultar SEFAZ agora"}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -473,18 +605,18 @@ export default function ReceiptPreviewModal({
                 <dt className="text-xs uppercase text-text-tertiary">Venda</dt>
                 <dd className="font-semibold text-text-primary">{receipt.saleNumber}</dd>
               </div>
-              {isDanfe && effectiveFiscal ? (
+              {isDanfe && currentFiscal ? (
                 <>
                   <div>
                     <dt className="text-xs uppercase text-text-tertiary">NFC-e</dt>
                     <dd className="font-semibold text-text-primary">
-                      {formatNumeroNf(effectiveFiscal.numeroNf)} (Série {effectiveFiscal.serie})
+                      {formatNumeroNf(currentFiscal.numeroNf)} (Série {currentFiscal.serie})
                     </dd>
                   </div>
-                  {effectiveFiscal.protocolo ? (
+                  {currentFiscal.protocolo ? (
                     <div>
                       <dt className="text-xs uppercase text-text-tertiary">Protocolo SEFAZ</dt>
-                      <dd className="font-mono text-xs font-semibold text-text-primary">{effectiveFiscal.protocolo}</dd>
+                      <dd className="font-mono text-xs font-semibold text-text-primary">{currentFiscal.protocolo}</dd>
                     </div>
                   ) : null}
                 </>
@@ -503,10 +635,10 @@ export default function ReceiptPreviewModal({
               </div>
             </dl>
 
-            {isDanfe && effectiveFiscal?.qrCodeUrl ? (
+            {isDanfe && currentFiscal?.qrCodeUrl ? (
               <div className="mt-4 border-t border-border-primary pt-3">
                 <a
-                  href={effectiveFiscal.qrCodeUrl}
+                  href={currentFiscal.qrCodeUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs text-accent hover:underline"
@@ -529,7 +661,7 @@ export default function ReceiptPreviewModal({
             className="btn-primary inline-flex items-center justify-center gap-2"
           >
             <Printer size={16} />
-            {isDanfe ? "Imprimir DANFE 80mm" : "Imprimir agora"}
+            {isDanfe ? "Imprimir DANFE 80mm" : "Imprimir Cupom Não Fiscal"}
           </button>
         </div>
       </div>

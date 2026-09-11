@@ -22,7 +22,7 @@ public sealed class NfceOutboxWorker(
     IServiceScopeFactory scopeFactory,
     ILogger<NfceOutboxWorker> logger) : BackgroundService
 {
-    private static readonly TimeSpan Intervalo = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan Intervalo = TimeSpan.FromSeconds(1);
     private const int LoteMaximo = 20;
     private const int MaxTentativas = 12;
 

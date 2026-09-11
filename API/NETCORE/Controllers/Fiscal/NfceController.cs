@@ -20,7 +20,7 @@ namespace HORUSPDV_API.Controllers.Fiscal;
 
 [ApiController]
 [Route("api/[controller]")]
-[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
 public class NfceController(
     DocumentoFiscalAB documentoFiscalAB,
     EmitenteFiscalStore emitenteFiscalStore,
@@ -62,6 +62,7 @@ public class NfceController(
     }
 
     [HttpPost("{id}/reemitir")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
     public async Task<IActionResult> Reemitir(string id)
     {
         var currentUser = GetCurrentUser();
@@ -74,6 +75,7 @@ public class NfceController(
     }
 
     [HttpPost("{id}/cancelar")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
     public async Task<IActionResult> Cancelar(string id, [FromBody] CancelamentoNfceRequest request)
     {
         var currentUser = GetCurrentUser();
@@ -115,6 +117,7 @@ public class NfceController(
     }
 
     [HttpPost("inutilizar")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
     public async Task<IActionResult> Inutilizar([FromBody] InutilizacaoNfceRequest request)
     {
         var currentUser = GetCurrentUser();

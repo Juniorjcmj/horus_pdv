@@ -757,10 +757,11 @@ export default function SalesStartPage({
 
       const saleNumber = result?.saleNumber || `PDV-${Date.now()}`;
 
-      // Aguarda brevemente a autorização da SEFAZ pelo outbox worker (polling ágil de até 2.5s)
+      // Aguarda brevemente a autorização da SEFAZ pelo outbox worker (polling ágil de até 1.5s)
+      // Caso ainda não tenha retornado, o ReceiptPreviewModal continuará o polling ao vivo sem travar o operador.
       let fiscalDetail: FiscalDocumentDetailDto | null = null;
       if (result?.saleNumber) {
-        for (let attempt = 0; attempt < 6; attempt++) {
+        for (let attempt = 0; attempt < 3; attempt++) {
           try {
             const doc = await fiscalService.getBySaleNumber(result.saleNumber);
             if (
@@ -774,7 +775,7 @@ export default function SalesStartPage({
           } catch {
             // Ignora falha transitória de rede durante o processamento da nota
           }
-          await new Promise((resolve) => setTimeout(resolve, 400));
+          await new Promise((resolve) => setTimeout(resolve, 500));
         }
       }
 
