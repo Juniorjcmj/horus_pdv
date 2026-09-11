@@ -26,6 +26,11 @@ import ReceiptPreviewModal, {
   type SaleReceipt,
 } from "@/components/Admin/ReceiptPreviewModal";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
+import {
+  FISCAL_STATUS,
+  fiscalService,
+  type FiscalDocumentDetailDto,
+} from "@/services/api/fiscalService";
 import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { productService } from "@/services/api/productService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
@@ -750,14 +755,38 @@ export default function SalesStartPage({
             payments: payloadPayments,
           });
 
+      const saleNumber = result?.saleNumber || `PDV-${Date.now()}`;
+
+      // Aguarda brevemente a autorização da SEFAZ pelo outbox worker (polling ágil de até 2.5s)
+      let fiscalDetail: FiscalDocumentDetailDto | null = null;
+      if (result?.saleNumber) {
+        for (let attempt = 0; attempt < 6; attempt++) {
+          try {
+            const doc = await fiscalService.getBySaleNumber(result.saleNumber);
+            if (
+              doc &&
+              (doc.status === FISCAL_STATUS.Autorizado ||
+                doc.status === FISCAL_STATUS.ContingenciaPendente)
+            ) {
+              fiscalDetail = doc;
+              break;
+            }
+          } catch {
+            // Ignora falha transitória de rede durante o processamento da nota
+          }
+          await new Promise((resolve) => setTimeout(resolve, 400));
+        }
+      }
+
       const receipt: SaleReceipt = {
-        saleNumber: result?.saleNumber || `PDV-${Date.now()}`,
+        saleNumber,
         issuedAt: new Date().toISOString(),
         company: company
           ? {
               fantasyName: company.fantasyName,
               corporateName: company.corporateName,
               cnpj: company.cnpj,
+              stateRegistration: company.stateRegistration,
               address: company.address,
               number: company.number,
               neighborhood: company.neighborhood,
@@ -765,6 +794,7 @@ export default function SalesStartPage({
               uf: company.uf,
               phone: company.phone,
               sacPhone: company.sacPhone,
+              ambienteFiscal: company.ambienteFiscal,
             }
           : null,
         customerCpf: cpfNota || "-",
@@ -788,6 +818,7 @@ export default function SalesStartPage({
           cashGiven: p.cashGiven,
           changeAmount: p.changeAmount,
         })),
+        fiscalDetail,
       };
 
       setCheckoutOpen(false);
@@ -796,7 +827,11 @@ export default function SalesStartPage({
       if (printPreviewEnabled) {
         setReceiptPreview(receipt);
       }
-      Toast.success(`Pagamento confirmado. Venda ${receipt.saleNumber} registrada.`);
+      if (fiscalDetail?.status === FISCAL_STATUS.Autorizado) {
+        Toast.success(`Venda ${receipt.saleNumber} confirmada e NFC-e autorizada!`);
+      } else {
+        Toast.success(`Pagamento confirmado. Venda ${receipt.saleNumber} registrada.`);
+      }
     } catch (error) {
       Toast.error(error instanceof Error ? error.message : "Erro ao registrar venda.");
       return;

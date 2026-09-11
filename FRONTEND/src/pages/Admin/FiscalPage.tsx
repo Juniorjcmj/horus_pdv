@@ -4,17 +4,21 @@
  *           cancelamento e inutilização de numeração.
  * Entradas esperadas: não recebe props; opera com estado local e a API de fiscal/empresa.
  */
-import { AlertCircle, AlertTriangle, QrCode, RefreshCw, RotateCcw, Search, XCircle } from "lucide-react";
+import { AlertCircle, AlertTriangle, Printer, QrCode, RefreshCw, RotateCcw, Search, XCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import DanfePreviewModal from "@/components/Admin/DanfePreviewModal";
 import FiscalErrorModal from "@/components/Admin/FiscalErrorModal";
 import PageHeader from "@/components/Admin/PageHeader";
+import ReceiptPreviewModal, { type SaleReceipt } from "@/components/Admin/ReceiptPreviewModal";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
 import TablePagination from "@/components/Pagination/TablePagination";
 import { Toast } from "@/hooks/Dialog";
 import { usePromptDialog } from "@/hooks/Dialog/usePromptDialog";
+import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import PageLayout from "@/layout/PageLayout";
+import { getStoredAuthUser } from "@/utils/authStorage";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
+import { salesHistoryService } from "@/services/api/salesHistoryService";
 import {
   FISCAL_STATUS,
   fiscalService,
@@ -53,6 +57,7 @@ async function askJustificativa(
 
 export default function FiscalPage() {
   const { prompt, PromptDialog } = usePromptDialog();
+  const { formatMoneyBr, parseMoneyBr } = useInputMasks();
   const [company, setCompany] = useState<CompanyDto | null>(null);
   const [documents, setDocuments] = useState<FiscalDocumentDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +66,7 @@ export default function FiscalPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [busyIds, setBusyIds] = useState<Set<string>>(() => new Set());
   const [danfePreview, setDanfePreview] = useState<FiscalDocumentDetailDto | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<SaleReceipt | null>(null);
   const [errorModalDoc, setErrorModalDoc] = useState<FiscalDocumentDto | null>(null);
 
   const [inutilizarSerie, setInutilizarSerie] = useState("1");
@@ -125,6 +131,65 @@ export default function FiscalPage() {
       setDanfePreview(detail);
     } finally {
       setBusy(doc.id, false);
+    }
+  };
+
+  const printDanfeDirect = async (detail: FiscalDocumentDetailDto) => {
+    try {
+      const printData = await salesHistoryService.print(detail.saleNumber);
+      const rows = printData?.rows ?? [];
+      const storedUser = getStoredAuthUser();
+      const first = rows[0];
+      const items = rows.map((row, index) => {
+        const unitPrice = parseMoneyBr(row.unitPrice || "0,00");
+        const itemTotal = parseMoneyBr(row.itemTotal || "0,00") || unitPrice * row.quantity;
+        return {
+          id: `${row.saleNumber}-${row.productCode}-${index}`,
+          code: row.productCode,
+          name: row.productName,
+          quantity: row.quantity,
+          unitPrice,
+          total: itemTotal,
+        };
+      });
+      const itemsSubtotal = items.reduce((sum, item) => sum + item.total, 0);
+      const receiptTotal = parseMoneyBr(first?.totalAmount || "0,00") || itemsSubtotal;
+      const paymentType = first?.paymentType || "dinheiro";
+
+      const receipt: SaleReceipt = {
+        saleNumber: detail.saleNumber,
+        issuedAt: first?.saleDate || detail.criadoEm,
+        printedAt: printData?.printedAt,
+        company: company
+          ? {
+              fantasyName: company.fantasyName,
+              corporateName: company.corporateName,
+              cnpj: company.cnpj,
+              stateRegistration: company.stateRegistration,
+              address: company.address,
+              number: company.number,
+              neighborhood: company.neighborhood,
+              city: company.city,
+              uf: company.uf,
+              phone: company.phone,
+              sacPhone: company.sacPhone,
+              ambienteFiscal: company.ambienteFiscal,
+            }
+          : null,
+        customerCpf: first?.customerCpf || "-",
+        paymentType,
+        paymentLabel: paymentType,
+        operatorName: first?.operatorName || storedUser?.name || "Operador",
+        subtotal: receiptTotal,
+        cashGiven: paymentType === "dinheiro" ? receiptTotal : 0,
+        change: 0,
+        items,
+        fiscalDetail: detail,
+      };
+
+      setReceiptPreview(receipt);
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Erro ao preparar DANFE para impressão.");
     }
   };
 
@@ -297,6 +362,28 @@ export default function FiscalPage() {
                           loadingLabel: "Carregando...",
                           onClick: () => openDanfe(doc),
                         },
+                        ...(doc.status === FISCAL_STATUS.Autorizado
+                          ? [
+                              {
+                                key: "printDanfe",
+                                label: "Imprimir DANFE 80mm",
+                                icon: <Printer size={13} />,
+                                loading: busyIds.has(doc.id),
+                                loadingLabel: "Carregando...",
+                                onClick: async () => {
+                                  setBusy(doc.id, true);
+                                  try {
+                                    const detail = await fiscalService.getBySaleNumber(doc.saleNumber);
+                                    if (detail) {
+                                      await printDanfeDirect(detail);
+                                    }
+                                  } finally {
+                                    setBusy(doc.id, false);
+                                  }
+                                },
+                              },
+                            ]
+                          : []),
                         ...(doc.status === FISCAL_STATUS.Rejeitado || doc.motivoStatus
                           ? [
                               {
@@ -404,11 +491,23 @@ export default function FiscalPage() {
         </div>
       </section>
 
+      {receiptPreview ? (
+        <ReceiptPreviewModal
+          receipt={receiptPreview}
+          formatMoney={formatMoneyBr}
+          onClose={() => setReceiptPreview(null)}
+        />
+      ) : null}
+
       {danfePreview ? (
         <DanfePreviewModal
           detail={danfePreview}
           companyName={company?.fantasyName || company?.corporateName || "Hórus PDV"}
           onClose={() => setDanfePreview(null)}
+          onPrintDanfe={(detail) => {
+            setDanfePreview(null);
+            void printDanfeDirect(detail);
+          }}
         />
       ) : null}
 

@@ -42,6 +42,7 @@ function toCompanyReceipt(company: CompanyDto | null): SaleReceipt["company"] {
     fantasyName: company.fantasyName,
     corporateName: company.corporateName,
     cnpj: company.cnpj,
+    stateRegistration: company.stateRegistration,
     address: company.address,
     number: company.number,
     neighborhood: company.neighborhood,
@@ -49,6 +50,7 @@ function toCompanyReceipt(company: CompanyDto | null): SaleReceipt["company"] {
     uf: company.uf,
     phone: company.phone,
     sacPhone: company.sacPhone,
+    ambienteFiscal: company.ambienteFiscal,
   };
 }
 
@@ -154,7 +156,10 @@ export default function SalesHistoryPage() {
   const openPrintPreview = async (sale: SaleHistoryRow) => {
     setPrintingSaleNumbers((current) => new Set(current).add(sale.saleNumber));
     try {
-      const result = await salesHistoryService.print(sale.saleNumber);
+      const [result, fiscalDetail] = await Promise.all([
+        salesHistoryService.print(sale.saleNumber),
+        fiscalService.getBySaleNumber(sale.saleNumber).catch(() => null),
+      ]);
       const rows =
         result?.rows && result.rows.length > 0
           ? result.rows
@@ -163,6 +168,13 @@ export default function SalesHistoryPage() {
       if (!receipt) {
         Toast.error("Venda não encontrada para impressão.");
         return;
+      }
+      if (
+        fiscalDetail &&
+        (fiscalDetail.status === FISCAL_STATUS.Autorizado ||
+          fiscalDetail.status === FISCAL_STATUS.ContingenciaPendente)
+      ) {
+        receipt.fiscalDetail = fiscalDetail;
       }
       setReceiptPreview(receipt);
     } catch (error) {
@@ -385,6 +397,13 @@ export default function SalesHistoryPage() {
           detail={danfePreview}
           companyName={company?.fantasyName || company?.corporateName || "Hórus PDV"}
           onClose={() => setDanfePreview(null)}
+          onPrintDanfe={(detail) => {
+            const sale = salesHistory.find((s) => s.saleNumber === detail.saleNumber);
+            if (sale) {
+              setDanfePreview(null);
+              void openPrintPreview(sale);
+            }
+          }}
         />
       ) : null}
 

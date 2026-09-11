@@ -1,11 +1,11 @@
 /**
  * Arquivo: src/components/Admin/DanfePreviewModal.tsx
- * Objetivo: exibir em tela os dados de uma NFC-e autorizada (chave, protocolo, QR Code) para
- *           conferência do operador — equivalente ao DANFE, sem depender de impressão térmica.
- * Entradas esperadas: recebe o detalhe do documento fiscal (fiscalService) e o nome da empresa emitente.
+ * Objetivo: exibir em tela os dados de uma NFC-e autorizada (chave, protocolo, QR Code) e
+ *           permitir o acionamento direto da impressão térmica oficial em bobina de 80mm.
+ * Entradas esperadas: recebe o detalhe do documento fiscal, nome da empresa, callbacks de fechar e imprimir.
  */
 import { QRCodeSVG } from "qrcode.react";
-import { ExternalLink, ReceiptText, X } from "lucide-react";
+import { ExternalLink, Printer, ReceiptText, X } from "lucide-react";
 import {
   FISCAL_STATUS,
   fiscalStatusBadgeClass,
@@ -36,12 +36,18 @@ export default function DanfePreviewModal({
   detail,
   companyName,
   onClose,
+  onPrintDanfe,
+  isPrinting = false,
 }: {
   detail: FiscalDocumentDetailDto;
   companyName: string;
   onClose: () => void;
+  onPrintDanfe?: (detail: FiscalDocumentDetailDto) => void;
+  isPrinting?: boolean;
 }) {
-  const autorizado = detail.status === FISCAL_STATUS.Autorizado;
+  const autorizado =
+    detail.status === FISCAL_STATUS.Autorizado ||
+    detail.status === FISCAL_STATUS.ContingenciaPendente;
 
   return (
     <div className="fixed inset-0 z-layer-dialog flex items-end bg-black/55 px-3 backdrop-blur-sm md:items-center md:justify-center">
@@ -118,10 +124,21 @@ export default function DanfePreviewModal({
           </dl>
         </div>
 
-        <div className="flex justify-end border-t border-border-primary px-4 py-3">
+        <div className="flex flex-col-reverse gap-2 border-t border-border-primary px-4 py-3 sm:flex-row sm:justify-end">
           <button type="button" onClick={onClose} className="btn-secondary">
             Fechar
           </button>
+          {autorizado && onPrintDanfe ? (
+            <button
+              type="button"
+              onClick={() => onPrintDanfe(detail)}
+              disabled={isPrinting}
+              className="btn-primary inline-flex items-center justify-center gap-2"
+            >
+              <Printer size={16} />
+              {isPrinting ? "Preparando..." : "Imprimir DANFE 80mm"}
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

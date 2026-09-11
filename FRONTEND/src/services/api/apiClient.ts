@@ -21,6 +21,7 @@ export async function apiRequest<T>(
   options: ApiRequestOptions = {},
 ): Promise<ApiResponse<T>> {
   const { skipAuth: _skipAuth, headers, ...requestOptions } = options;
+  void _skipAuth;
   const response = await fetch(endpointUrl, {
     credentials: "include",
     headers: {

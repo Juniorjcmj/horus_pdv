@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
-    "mtime": 1788920855.0163374,
-    "seen": 1789164187.7262762,
-    "ast_hash": "a9bb8fb9b55e7374fac06b7b73a4bd45",
+    "mtime": 1788716089.3634255,
+    "seen": 1788888974.351758,
+    "ast_hash": "a53ff1295d6b4164063cb74f105b2f0e",
     "semantic_hash": ""
   },
   ".codex/hooks.json": {
@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1788920674.9888394,
-    "seen": 1789164187.7347052,
-    "ast_hash": "4d406b15e6b9947207392ccac098890c",
+    "mtime": 1788894248.1297164,
+    "seen": 1788894387.2967665,
+    "ast_hash": "31128d9f52c87303a2061ccd52cc0702",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -516,15 +516,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/NfceOutboxWorker.cs": {
-    "mtime": 1788923333.070117,
-    "seen": 1789164187.7368834,
-    "ast_hash": "d5cc3b13e9cd4811e60592cd354cea03",
+    "mtime": 1788725795.5308416,
+    "seen": 1788888974.3519475,
+    "ast_hash": "43488630836424b1b352bd30fe665fdc",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs": {
-    "mtime": 1788922255.9865856,
-    "seen": 1789164187.7368855,
-    "ast_hash": "96ca9692606cc42141fae6c8a1b36d85",
+    "mtime": 1788894092.8754313,
+    "seen": 1788894387.3032346,
+    "ast_hash": "c5b39720b23b975b47820c86ecfb5c59",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/FornecedorService.cs": {
@@ -672,9 +672,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/DanfePreviewModal.tsx": {
-    "mtime": 1789163897.332905,
-    "seen": 1789164187.7397313,
-    "ast_hash": "58ff1ef118ba17e1cc15cfadc380fb4b",
+    "mtime": 1788675915.208974,
+    "seen": 1788888974.3519962,
+    "ast_hash": "341aaf541b855ceb514f7c42ec368824",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/FiscalErrorModal.tsx": {
@@ -714,9 +714,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReceiptPreviewModal.tsx": {
-    "mtime": 1789163703.474335,
-    "seen": 1789164187.740435,
-    "ast_hash": "ba17005b16181a56117531d520431e0a",
+    "mtime": 1788720846.5362697,
+    "seen": 1788888974.352009,
+    "ast_hash": "95bf5d678490f06b095f5b6c35ee8e6d",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/ReportCardsGrid.tsx": {
@@ -1002,9 +1002,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiscalPage.tsx": {
-    "mtime": 1789164040.2957952,
-    "seen": 1789164187.746194,
-    "ast_hash": "95473e2f0f4bf37edd4d62cd38c3746e",
+    "mtime": 1788888848.951114,
+    "seen": 1788888974.3521283,
+    "ast_hash": "4f8984a091fd023575a1b5b04f31e869",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/HomePage.tsx": {
@@ -1068,15 +1068,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesHistoryPage.tsx": {
-    "mtime": 1789163954.0130038,
-    "seen": 1789164187.747345,
-    "ast_hash": "2ef1b92e099bc9522cdf9da6b0743b7a",
+    "mtime": 1788888904.9050083,
+    "seen": 1788888974.3521714,
+    "ast_hash": "1f69d890d7e92425cd12ed9c183ec95d",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1789163859.664494,
-    "seen": 1789164187.747347,
-    "ast_hash": "881ed1d319883a953fa54267c61d9da3",
+    "mtime": 1788722545.4705248,
+    "seen": 1788888974.352175,
+    "ast_hash": "bb942abaa71504684976743ed1e66ebe",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1146,9 +1146,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/apiClient.ts": {
-    "mtime": 1789164132.3303814,
-    "seen": 1789164187.7486548,
-    "ast_hash": "a9d101a344c3234ec369ce810f44d0d2",
+    "mtime": 1788665266.6079025,
+    "seen": 1788888974.3522148,
+    "ast_hash": "3e6a6d53b2d51e8e85e3b6debc37fb36",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/authService.ts": {
@@ -1995,42 +1995,6 @@
     "mtime": 1788665266.7444394,
     "seen": 1788888974.3525264,
     "ast_hash": "148e36e314ede06ebc118c405a6e38bc",
-    "semantic_hash": ""
-  },
-  "FRONTEND/src/utils/danfePrint.ts": {
-    "mtime": 1789163655.2146616,
-    "seen": 1789164187.751415,
-    "ast_hash": "da51b22c2c7db18e0e91c63bdc9497a8",
-    "semantic_hash": ""
-  },
-  "openspec/changes/imprimir-danfe-nfce-qrcode/.openspec.yaml": {
-    "mtime": 1789163458.9859905,
-    "seen": 1789164187.7638907,
-    "ast_hash": "cc975a23d7ed7a52763fccaab2776010",
-    "semantic_hash": ""
-  },
-  "openspec/changes/imprimir-danfe-nfce-qrcode/design.md": {
-    "mtime": 1789163541.5131247,
-    "seen": 1789164187.7638934,
-    "ast_hash": "9bf479e752cd5d11f6e5d948e77f1bde",
-    "semantic_hash": ""
-  },
-  "openspec/changes/imprimir-danfe-nfce-qrcode/proposal.md": {
-    "mtime": 1789163502.7539651,
-    "seen": 1789164187.7638948,
-    "ast_hash": "048ebdb522998ff4d3e86f91838862d6",
-    "semantic_hash": ""
-  },
-  "openspec/changes/imprimir-danfe-nfce-qrcode/specs/fiscal/danfe-nfce-impressao/spec.md": {
-    "mtime": 1789163524.2516062,
-    "seen": 1789164187.7638965,
-    "ast_hash": "a9a9ac18e9d61a95df191144c4317f11",
-    "semantic_hash": ""
-  },
-  "openspec/changes/imprimir-danfe-nfce-qrcode/tasks.md": {
-    "mtime": 1789163556.3796003,
-    "seen": 1789164187.7638981,
-    "ast_hash": "88b2c8ea7eb1bcfc7b07a864b00a62c9",
     "semantic_hash": ""
   }
 }

@@ -1,9 +1,23 @@
 /**
  * Arquivo: src/components/Admin/ReceiptPreviewModal.tsx
- * Objetivo: exibir e imprimir uma prévia de cupom não fiscal reutilizável no PDV.
-  * Entradas esperadas: recebe dados da venda, itens, empresa e callbacks para fechar/imprimir o recibo.
-*/
-import { Printer, ReceiptText, X } from "lucide-react";
+ * Objetivo: exibir e imprimir o comprovante de venda no PDV, suportando tanto o
+ *           DANFE NFC-e oficial com QR Code (quando autorizada) quanto o cupom gerencial.
+ * Entradas esperadas: recebe dados da venda, itens, empresa, dados fiscais (opcionais) e callbacks.
+ */
+import { ExternalLink, Printer, QrCode, ReceiptText, X } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import {
+  FISCAL_STATUS,
+  fiscalStatusBadgeClass,
+  fiscalStatusLabel,
+  type FiscalDocumentDetailDto,
+} from "@/services/api/fiscalService";
+import {
+  buildDanfePrintHtml,
+  formatChaveAcesso,
+  formatNumeroNf,
+  getSefazConsultaUrl,
+} from "@/utils/danfePrint";
 
 export type PaymentType = "dinheiro" | "pix" | "debito" | "credito" | string;
 
@@ -11,6 +25,7 @@ export type ReceiptCompany = {
   fantasyName?: string;
   corporateName?: string;
   cnpj?: string;
+  stateRegistration?: string;
   address?: string;
   number?: string;
   neighborhood?: string;
@@ -18,6 +33,7 @@ export type ReceiptCompany = {
   uf?: string;
   phone?: string;
   sacPhone?: string;
+  ambienteFiscal?: number;
 } | null;
 
 export type SaleReceiptItem = {
@@ -51,6 +67,7 @@ export type SaleReceipt = {
   change: number;
   items: SaleReceiptItem[];
   payments?: ReceiptPaymentItem[];
+  fiscalDetail?: FiscalDocumentDetailDto | null;
 };
 
 function formatReceiptDate(value: string) {
@@ -180,11 +197,20 @@ export default function ReceiptPreviewModal({
   receipt,
   formatMoney,
   onClose,
+  fiscalDetail,
 }: {
   receipt: SaleReceipt;
   formatMoney: (value: number) => string;
   onClose: () => void;
+  fiscalDetail?: FiscalDocumentDetailDto | null;
 }) {
+  const effectiveFiscal = fiscalDetail ?? receipt.fiscalDetail ?? null;
+  const isDanfe = Boolean(
+    effectiveFiscal &&
+      (effectiveFiscal.status === FISCAL_STATUS.Autorizado ||
+        effectiveFiscal.status === FISCAL_STATUS.ContingenciaPendente)
+  );
+
   const companyName =
     receipt.company?.fantasyName || receipt.company?.corporateName || "Horus PDV";
   const companyAddress = [
@@ -200,9 +226,15 @@ export default function ReceiptPreviewModal({
     const popup = window.open("", "_blank", "width=420,height=720");
     if (!popup) return;
     popup.document.open();
-    popup.document.write(buildReceiptPrintHtml(receipt, formatMoney));
+    if (isDanfe && effectiveFiscal) {
+      popup.document.write(buildDanfePrintHtml(receipt, effectiveFiscal, formatMoney));
+    } else {
+      popup.document.write(buildReceiptPrintHtml(receipt, formatMoney));
+    }
     popup.document.close();
   };
+
+  const tributosEstimados = receipt.subtotal * 0.3145;
 
   return (
     <div className="fixed inset-0 z-layer-dialog flex items-end bg-black/55 px-3 backdrop-blur-sm md:items-center md:justify-center">
@@ -213,8 +245,14 @@ export default function ReceiptPreviewModal({
               <ReceiptText size={18} />
             </span>
             <div>
-              <h2 className="text-base font-semibold text-text-primary">Previa de impressao</h2>
-              <p className="text-xs text-text-secondary">Cupom da venda {receipt.saleNumber}</p>
+              <h2 className="text-base font-semibold text-text-primary">
+                {isDanfe ? "DANFE NFC-e (Bobina 80mm)" : "Prévia de impressão"}
+              </h2>
+              <p className="text-xs text-text-secondary">
+                {isDanfe && effectiveFiscal
+                  ? `NFC-e nº ${formatNumeroNf(effectiveFiscal.numeroNf)} · Série ${effectiveFiscal.serie} · Venda ${receipt.saleNumber}`
+                  : `Cupom não fiscal da venda ${receipt.saleNumber}`}
+              </p>
             </div>
           </div>
           <button
@@ -229,11 +267,17 @@ export default function ReceiptPreviewModal({
 
         <div className="grid max-h-[74vh] overflow-y-auto bg-bg-primary md:grid-cols-[minmax(0,1fr)_320px]">
           <div className="p-4">
-            <div className="mx-auto w-full max-w-[360px] border border-border-secondary bg-white px-5 py-4 font-mono text-[12px] leading-tight text-slate-950 shadow-sm">
+            <div className="mx-auto w-full max-w-[360px] border border-border-secondary bg-white px-5 py-4 font-mono text-[11.5px] leading-tight text-slate-950 shadow-sm">
+              {/* CABEÇALHO EMITENTE */}
               <div className="text-center">
-                <p className="text-sm font-bold uppercase">{companyName}</p>
-                <p>{receipt.company?.corporateName || companyName}</p>
+                <p className="text-sm font-bold uppercase">{receipt.company?.corporateName || companyName}</p>
+                {receipt.company?.fantasyName && receipt.company.fantasyName !== receipt.company.corporateName ? (
+                  <p className="uppercase text-xs">{receipt.company.fantasyName}</p>
+                ) : null}
                 <p>CNPJ: {receipt.company?.cnpj || "-"}</p>
+                {receipt.company?.stateRegistration ? (
+                  <p>Inscrição Estadual: {receipt.company.stateRegistration}</p>
+                ) : null}
                 {companyAddress ? <p>{companyAddress}</p> : null}
                 {companyCity ? <p>{companyCity}</p> : null}
                 <p>Telefone: {receipt.company?.phone || receipt.company?.sacPhone || "-"}</p>
@@ -241,32 +285,52 @@ export default function ReceiptPreviewModal({
 
               <div className="my-3 border-t border-dashed border-slate-500" />
 
-              <div className="space-y-1">
-                <p>CUPOM NAO FISCAL</p>
-                <p>Venda: {receipt.saleNumber}</p>
-                <p>Emissao: {formatReceiptDate(receipt.issuedAt)}</p>
-                <p>Operador: {receipt.operatorName}</p>
-                <p>CPF/CNPJ consumidor: {receipt.customerCpf || "-"}</p>
-              </div>
+              {/* TÍTULO / IDENTIFICAÇÃO DO CUPOM */}
+              {isDanfe && effectiveFiscal ? (
+                <div className="space-y-1 text-center">
+                  <p className="text-xs font-extrabold uppercase">DANFE NFC-e</p>
+                  <p className="text-[10px] leading-tight">Documento Auxiliar da Nota Fiscal de Consumidor Eletrônica</p>
+                  <p className="text-[10px] font-bold leading-tight">Não permite aproveitamento de crédito de ICMS</p>
+                  {receipt.company?.ambienteFiscal === 2 ? (
+                    <div className="my-1 border border-black p-1 text-[10px] font-extrabold">
+                      EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO<br />SEM VALOR FISCAL
+                    </div>
+                  ) : null}
+                  {effectiveFiscal.status === FISCAL_STATUS.ContingenciaPendente ? (
+                    <div className="my-1 border border-black p-1 text-[10px] font-extrabold">
+                      EMITIDA EM CONTINGÊNCIA<br />Pendente de autorização
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <p className="font-bold">CUPOM NAO FISCAL</p>
+                  <p>Venda: {receipt.saleNumber}</p>
+                  <p>Emissao: {formatReceiptDate(receipt.issuedAt)}</p>
+                  <p>Operador: {receipt.operatorName}</p>
+                  <p>CPF/CNPJ consumidor: {receipt.customerCpf || "-"}</p>
+                </div>
+              )}
 
               <div className="my-3 border-t border-dashed border-slate-500" />
 
-              <div className="grid grid-cols-[28px_1fr_44px_64px] gap-1 font-bold">
+              {/* ITENS */}
+              <div className="grid grid-cols-[20px_1fr_32px_52px] gap-1 font-bold">
                 <span>#</span>
                 <span>ITEM</span>
                 <span className="text-right">QTD</span>
                 <span className="text-right">TOTAL</span>
               </div>
-              <div className="mt-1 space-y-2">
+              <div className="mt-1 space-y-1.5">
                 {receipt.items.map((item, index) => (
-                  <div key={`${item.id}-${index}`}>
-                    <div className="grid grid-cols-[28px_1fr_44px_64px] gap-1">
+                  <div key={item.id || index}>
+                    <div className="grid grid-cols-[20px_1fr_32px_52px] gap-1">
                       <span>{String(index + 1).padStart(2, "0")}</span>
-                      <span className="truncate">{item.name}</span>
+                      <span className="break-words">{item.name}</span>
                       <span className="text-right">{item.quantity}</span>
                       <span className="text-right">{formatMoney(item.total)}</span>
                     </div>
-                    <p className="pl-7 text-[11px]">
+                    <p className="pl-6 text-[10px] text-slate-700">
                       {item.code} - UN {formatMoney(item.unitPrice)}
                     </p>
                   </div>
@@ -275,86 +339,183 @@ export default function ReceiptPreviewModal({
 
               <div className="my-3 border-t border-dashed border-slate-500" />
 
+              {/* TOTAIS E PAGAMENTO */}
               <div className="space-y-1">
-                <div className="flex justify-between font-bold">
-                  <span>TOTAL</span>
-                  <span>R$ {formatMoney(receipt.subtotal)}</span>
+                {isDanfe ? (
+                  <div className="flex justify-between text-[11px]">
+                    <span>Qtd. total de itens</span>
+                    <span>{receipt.items.length}</span>
+                  </div>
+                ) : null}
+                <div className="flex justify-between text-sm font-bold">
+                  <span>TOTAL R$</span>
+                  <span>{formatMoney(receipt.subtotal)}</span>
                 </div>
-                {receipt.payments && receipt.payments.length > 1 ? (
-                  <>
-                    <div className="pt-1 text-xs font-semibold text-slate-400">Formas de pagamento:</div>
-                    {receipt.payments.map((p, idx) => (
-                      <div key={idx} className="flex justify-between pl-2 text-xs">
-                        <span>{p.paymentLabel}</span>
-                        <span>R$ {formatMoney(p.amount)}</span>
-                      </div>
-                    ))}
-                    {receipt.change > 0 ? (
-                      <div className="flex justify-between font-semibold text-emerald-400">
-                        <span>Troco</span>
-                        <span>R$ {formatMoney(receipt.change)}</span>
-                      </div>
-                    ) : null}
-                  </>
-                ) : (
-                  <>
-                    <div className="flex justify-between">
-                      <span>Pagamento</span>
-                      <span>{receipt.paymentLabel}</span>
-                    </div>
-                    {receipt.paymentType === "dinheiro" ? (
-                      <>
-                        <div className="flex justify-between">
-                          <span>Valor recebido</span>
-                          <span>R$ {formatMoney(receipt.cashGiven)}</span>
+
+                <div className="pt-1">
+                  <div className="font-bold text-[11px]">FORMA DE PAGAMENTO</div>
+                  {receipt.payments && receipt.payments.length > 1 ? (
+                    <>
+                      {receipt.payments.map((p, idx) => (
+                        <div key={idx} className="flex justify-between pl-1 text-[11px]">
+                          <span>{p.paymentLabel}</span>
+                          <span>R$ {formatMoney(p.amount)}</span>
                         </div>
-                        <div className="flex justify-between">
+                      ))}
+                      {receipt.change > 0 ? (
+                        <div className="flex justify-between font-bold text-emerald-700">
                           <span>Troco</span>
                           <span>R$ {formatMoney(receipt.change)}</span>
                         </div>
-                      </>
-                    ) : null}
-                  </>
-                )}
+                      ) : null}
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-[11px]">
+                        <span>{receipt.paymentLabel}</span>
+                        <span>R$ {formatMoney(receipt.subtotal)}</span>
+                      </div>
+                      {receipt.paymentType === "dinheiro" && receipt.change > 0 ? (
+                        <div className="flex justify-between font-bold text-emerald-700">
+                          <span>Troco</span>
+                          <span>R$ {formatMoney(receipt.change)}</span>
+                        </div>
+                      ) : null}
+                    </>
+                  )}
+                </div>
               </div>
 
+              {/* TRIBUTOS LEI 12.741/2012 */}
+              {isDanfe ? (
+                <>
+                  <div className="my-3 border-t border-dashed border-slate-500" />
+                  <div className="text-center text-[10px]">
+                    <p>Tributos Totais Incidentes (Lei Fed. 12.741/2012):</p>
+                    <p className="font-bold">R$ {formatMoney(tributosEstimados)}</p>
+                  </div>
+                </>
+              ) : null}
+
+              {/* IDENTIFICAÇÃO FISCAL E QR CODE */}
+              {isDanfe && effectiveFiscal ? (
+                <>
+                  <div className="my-3 border-t border-dashed border-slate-500" />
+                  <div className="space-y-1 text-center text-[10px]">
+                    <p className="font-bold">
+                      NFC-e nº {formatNumeroNf(effectiveFiscal.numeroNf)} Série {effectiveFiscal.serie}
+                    </p>
+                    <p>Data de Emissão: {formatReceiptDate(receipt.issuedAt)}</p>
+                    {effectiveFiscal.protocolo ? (
+                      <p>
+                        Protocolo de Autorização: <strong>{effectiveFiscal.protocolo}</strong>
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="my-3 border-t border-dashed border-slate-500" />
+                  <div className="space-y-1 text-center text-[10px]">
+                    <p>Consulte pela Chave de Acesso em:</p>
+                    <p className="break-all font-bold text-[9px]">{getSefazConsultaUrl(receipt.company?.uf)}</p>
+                    <p className="pt-1 text-[9px] uppercase font-bold">Chave de Acesso:</p>
+                    <p className="break-all font-mono font-bold text-[9.5px]">
+                      {formatChaveAcesso(effectiveFiscal.chaveAcesso)}
+                    </p>
+                  </div>
+
+                  <div className="my-3 border-t border-dashed border-slate-500" />
+                  <div className="text-center text-[10px]">
+                    <p className="font-bold uppercase">
+                      CONSUMIDOR:{" "}
+                      {receipt.customerCpf && receipt.customerCpf !== "-" && receipt.customerCpf.trim().length > 0
+                        ? `CPF ${receipt.customerCpf}`
+                        : "NÃO IDENTIFICADO"}
+                    </p>
+                  </div>
+
+                  {effectiveFiscal.qrCodeUrl ? (
+                    <div className="mt-3 flex flex-col items-center justify-center">
+                      <div className="border border-slate-300 p-1.5 bg-white">
+                        <QRCodeSVG value={effectiveFiscal.qrCodeUrl} size={140} />
+                      </div>
+                      <span className="mt-1 text-[9px]">Consulta via leitor de QR Code</span>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+
               <div className="my-3 border-t border-dashed border-slate-500" />
-              <p className="text-center">Obrigado pela preferencia.</p>
+              <p className="text-center text-[10.5px]">Obrigado pela preferencia.</p>
             </div>
           </div>
 
+          {/* SIDEBAR LATERAL */}
           <aside className="border-t border-border-primary bg-bg-light p-4 md:border-l md:border-t-0">
-            <div className="rounded-xl border border-success/25 bg-success/10 px-3 py-2 text-sm font-semibold text-success">
-              Pronto para reimpressao
-            </div>
+            {isDanfe && effectiveFiscal ? (
+              <div className="space-y-2">
+                <span
+                  className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${fiscalStatusBadgeClass(effectiveFiscal.status)}`}
+                >
+                  {fiscalStatusLabel(effectiveFiscal.status)}
+                </span>
+                <p className="text-xs text-text-secondary">
+                  Documento fiscal pronto para impressão térmica na bobina de 80mm.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-success/25 bg-success/10 px-3 py-2 text-sm font-semibold text-success">
+                Pronto para impressao
+              </div>
+            )}
+
             <dl className="mt-4 space-y-3 text-sm">
               <div>
                 <dt className="text-xs uppercase text-text-tertiary">Venda</dt>
                 <dd className="font-semibold text-text-primary">{receipt.saleNumber}</dd>
               </div>
+              {isDanfe && effectiveFiscal ? (
+                <>
+                  <div>
+                    <dt className="text-xs uppercase text-text-tertiary">NFC-e</dt>
+                    <dd className="font-semibold text-text-primary">
+                      {formatNumeroNf(effectiveFiscal.numeroNf)} (Série {effectiveFiscal.serie})
+                    </dd>
+                  </div>
+                  {effectiveFiscal.protocolo ? (
+                    <div>
+                      <dt className="text-xs uppercase text-text-tertiary">Protocolo SEFAZ</dt>
+                      <dd className="font-mono text-xs font-semibold text-text-primary">{effectiveFiscal.protocolo}</dd>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
               <div>
                 <dt className="text-xs uppercase text-text-tertiary">Emissao</dt>
-                <dd className="font-semibold text-text-primary">
-                  {formatReceiptDate(receipt.issuedAt)}
-                </dd>
+                <dd className="font-semibold text-text-primary">{formatReceiptDate(receipt.issuedAt)}</dd>
               </div>
-              {receipt.printedAt ? (
-                <div>
-                  <dt className="text-xs uppercase text-text-tertiary">Solicitada em</dt>
-                  <dd className="font-semibold text-text-primary">{receipt.printedAt}</dd>
-                </div>
-              ) : null}
               <div>
                 <dt className="text-xs uppercase text-text-tertiary">Itens</dt>
                 <dd className="font-semibold text-text-primary">{receipt.items.length}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase text-text-tertiary">Total</dt>
-                <dd className="text-2xl font-bold text-text-primary">
-                  R$ {formatMoney(receipt.subtotal)}
-                </dd>
+                <dd className="text-2xl font-bold text-text-primary">R$ {formatMoney(receipt.subtotal)}</dd>
               </div>
             </dl>
+
+            {isDanfe && effectiveFiscal?.qrCodeUrl ? (
+              <div className="mt-4 border-t border-border-primary pt-3">
+                <a
+                  href={effectiveFiscal.qrCodeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-accent hover:underline"
+                >
+                  <QrCode size={13} />
+                  Abrir link de consulta SEFAZ <ExternalLink size={11} />
+                </a>
+              </div>
+            ) : null}
           </aside>
         </div>
 
@@ -362,9 +523,13 @@ export default function ReceiptPreviewModal({
           <button type="button" onClick={onClose} className="btn-secondary">
             Fechar
           </button>
-          <button type="button" onClick={printReceipt} className="btn-primary inline-flex items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={printReceipt}
+            className="btn-primary inline-flex items-center justify-center gap-2"
+          >
             <Printer size={16} />
-            Imprimir agora
+            {isDanfe ? "Imprimir DANFE 80mm" : "Imprimir agora"}
           </button>
         </div>
       </div>
