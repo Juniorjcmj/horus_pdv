@@ -4,7 +4,7 @@
  * Entradas esperadas: recebe flag opcional de modo standalone para ajustar comportamento da aba PDV.
  */
 
-import { Image as ImageIcon, Plus, Printer, Search, Trash2, X } from "lucide-react";
+import { Image as ImageIcon, Loader2, Plus, Printer, Search, Trash2, X } from "lucide-react";
 import {
   type ClipboardEvent,
   type FormEvent,
@@ -162,6 +162,7 @@ export default function SalesStartPage({
   const [printPreviewEnabled, setPrintPreviewEnabled] = useState(() =>
     getPrintPreviewEnabled(),
   );
+  const [isConfirmingSale, setIsConfirmingSale] = useState(false);
 
   const pasteCurrentCashGiven = (event: ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault();
@@ -389,14 +390,6 @@ export default function SalesStartPage({
     });
   }, [filteredProducts]);
 
-  const selectProductOption = (product: Product) => {
-    setSelectedProductId(product.id);
-    setProductSearch(product.name);
-    setShowProductOptions(false);
-    setHighlightedProductIndex(0);
-    qtyInputRef.current?.focus();
-  };
-
   // Compartilhada entre "adicionar item" manual e a leitura de código de barras de balança
   // (peso variável) — ambos os fluxos acabam no mesmo carrinho, com a mesma checagem de estoque.
   const addProductToCart = useCallback((product: Product, quantityToAdd: number) => {
@@ -437,6 +430,26 @@ export default function SalesStartPage({
 
     return added;
   }, []);
+
+  const selectProductOption = useCallback(
+    (product: Product) => {
+      if (cartLocked) {
+        Toast.error("Este carrinho veio de um pedido — solte o pedido para adicionar itens à mão.");
+        return;
+      }
+
+      const qty = quantity > 0 ? quantity : 1;
+      if (!addProductToCart(product, qty)) return;
+
+      setSelectedProductId("");
+      setProductSearch("");
+      setShowProductOptions(false);
+      setHighlightedProductIndex(0);
+      setQuantityInput("1");
+      productInputRef.current?.focus();
+    },
+    [addProductToCart, cartLocked, quantity],
+  );
 
   const addItem = useCallback(() => {
     if (cartLocked) {
@@ -718,6 +731,8 @@ export default function SalesStartPage({
       }
     }
 
+    if (isConfirmingSale) return;
+    setIsConfirmingSale(true);
     try {
       const latestCashStatus = await loadCashStatus();
       if (!latestCashStatus?.canSell) {
@@ -836,6 +851,8 @@ export default function SalesStartPage({
     } catch (error) {
       Toast.error(error instanceof Error ? error.message : "Erro ao registrar venda.");
       return;
+    } finally {
+      setIsConfirmingSale(false);
     }
 
     setCart([]);
@@ -983,8 +1000,31 @@ export default function SalesStartPage({
                   }}
                   onBlur={() => window.setTimeout(() => setShowProductOptions(false), 120)}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter" && addFromBalancaBarcode(productSearch)) {
+                    if (event.key === "Enter") {
                       event.preventDefault();
+                      if (addFromBalancaBarcode(productSearch)) {
+                        return;
+                      }
+
+                      const product =
+                        filteredProducts[highlightedProductIndex] ??
+                        filteredProducts.find(
+                          (item) =>
+                            item.code.toLowerCase() === productSearch.trim().toLowerCase() ||
+                            item.name.toLowerCase() === productSearch.trim().toLowerCase(),
+                        ) ??
+                        products.find(
+                          (item) =>
+                            item.code.toLowerCase() === productSearch.trim().toLowerCase() ||
+                            item.name.toLowerCase() === productSearch.trim().toLowerCase(),
+                        ) ??
+                        filteredProducts[0];
+
+                      if (product) {
+                        selectProductOption(product);
+                      } else if (productSearch.trim().length > 0) {
+                        Toast.error("Produto não encontrado.");
+                      }
                       return;
                     }
 
@@ -1004,14 +1044,6 @@ export default function SalesStartPage({
                       setHighlightedProductIndex((current) =>
                         current <= 0 ? filteredProducts.length - 1 : current - 1,
                       );
-                    }
-
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                      const product = filteredProducts[highlightedProductIndex];
-                      if (product) {
-                        selectProductOption(product);
-                      }
                     }
 
                     if (event.key === "Escape") {
@@ -1504,17 +1536,45 @@ export default function SalesStartPage({
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              <button type="button" onClick={() => setCheckoutOpen(false)} className="btn-cancel">
+              <button
+                type="button"
+                onClick={() => setCheckoutOpen(false)}
+                disabled={isConfirmingSale}
+                className="btn-cancel disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 Voltar
               </button>
               <button
                 type="button"
                 onClick={confirmPayment}
-                className="btn-success"
-                disabled={!canConfirmPayment}
+                className="btn-success flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!canConfirmPayment || isConfirmingSale}
               >
-                Confirmar Venda
+                {isConfirmingSale ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Processando venda...
+                  </>
+                ) : (
+                  "Confirmar Venda"
+                )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isConfirmingSale && (
+        <div className="fixed inset-0 z-layer-dialog flex flex-col items-center justify-center bg-black/65 px-4 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-border-primary bg-bg-light p-6 text-center shadow-2xl">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+              <Loader2 size={32} className="animate-spin" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-text-primary">Processando Venda</h3>
+              <p className="mt-1 text-xs text-text-secondary">
+                Registrando pagamento e preparando cupom fiscal...
+              </p>
             </div>
           </div>
         </div>
