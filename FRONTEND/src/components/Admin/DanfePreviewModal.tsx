@@ -12,6 +12,7 @@ import {
   fiscalStatusLabel,
   type FiscalDocumentDetailDto,
 } from "@/services/api/fiscalService";
+import { getSefazConsultaUrl } from "@/utils/danfePrint";
 
 function formatChave(chave: string | null) {
   if (!chave) return "—";
@@ -48,6 +49,10 @@ export default function DanfePreviewModal({
   const autorizado =
     detail.status === FISCAL_STATUS.Autorizado ||
     detail.status === FISCAL_STATUS.ContingenciaPendente;
+
+  const effectiveQrCodeUrl =
+    detail.qrCodeUrl?.trim() ||
+    (detail.chaveAcesso ? `${getSefazConsultaUrl()}?p=${detail.chaveAcesso}` : null);
 
   return (
     <div className="fixed inset-0 z-layer-dialog flex items-end bg-black/55 px-3 backdrop-blur-sm md:items-center md:justify-center">
@@ -88,11 +93,11 @@ export default function DanfePreviewModal({
             </p>
           ) : null}
 
-          {autorizado && detail.qrCodeUrl ? (
+          {autorizado && effectiveQrCodeUrl ? (
             <div className="flex flex-col items-center gap-3 rounded-xl border border-border-secondary bg-white p-4">
-              <QRCodeSVG value={detail.qrCodeUrl} size={176} />
+              <QRCodeSVG value={effectiveQrCodeUrl} size={176} includeMargin={true} />
               <a
-                href={detail.qrCodeUrl}
+                href={effectiveQrCodeUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"

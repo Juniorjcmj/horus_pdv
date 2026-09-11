@@ -223,7 +223,7 @@ public class DocumentoFiscalAB(
     {
         const string sql = """
             SELECT d.Id, v.SaleNumber, d.Serie, d.NumeroNf, d.Status, d.ChaveAcesso, d.Protocolo,
-                   d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas, d.XmlProtocolado
+                   d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas, d.XmlProtocolado, d.XmlAssinado
             FROM DocumentosFiscais d
             INNER JOIN Vendas v ON v.Id = d.VendaId
             WHERE d.CompanyId = @CompanyId AND v.SaleNumber = @SaleNumber
@@ -238,6 +238,7 @@ public class DocumentoFiscalAB(
         if (!await reader.ReadAsync()) return null;
 
         var xmlProtocolado = ReadNullableString(reader, "XmlProtocolado");
+        var xmlAssinado = ReadNullableString(reader, "XmlAssinado");
         return new DocumentoFiscalDetalhe
         {
             Id = ReadString(reader, "Id"),
@@ -251,7 +252,7 @@ public class DocumentoFiscalAB(
             DhAutorizacao = ReadNullableDateTimeOffset(reader, "DhAutorizacao"),
             CriadoEm = reader.GetDateTimeOffset(reader.GetOrdinal("CriadoEm")),
             Tentativas = ReadInt(reader, "Tentativas"),
-            QrCodeUrl = ExtrairQrCode(xmlProtocolado)
+            QrCodeUrl = ExtrairQrCode(xmlProtocolado) ?? ExtrairQrCode(xmlAssinado)
         };
     }
 
@@ -397,17 +398,22 @@ public class DocumentoFiscalAB(
         await command.ExecuteNonQueryAsync(ct);
     }
 
-    /// <summary>Extração leve do link do QR Code já embutido no XML autorizado (nfeProc/infNFeSupl).</summary>
-    private static string? ExtrairQrCode(string? xmlProtocolado)
+    /// <summary>Extração leve do link do QR Code já embutido no XML autorizado (nfeProc/infNFeSupl) ou assinado.</summary>
+    private static string? ExtrairQrCode(string? xml)
     {
-        if (string.IsNullOrWhiteSpace(xmlProtocolado)) return null;
-        var inicio = xmlProtocolado.IndexOf("<qrCode>", StringComparison.OrdinalIgnoreCase);
-        if (inicio < 0) return null;
-        inicio += "<qrCode>".Length;
-        var fim = xmlProtocolado.IndexOf("</qrCode>", inicio, StringComparison.OrdinalIgnoreCase);
-        if (fim < 0) return null;
-        var conteudo = xmlProtocolado[inicio..fim];
-        return conteudo.Replace("<![CDATA[", string.Empty).Replace("]]>", string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(xml)) return null;
+
+        var match = System.Text.RegularExpressions.Regex.Match(
+            xml,
+            @"<qrCode[^>]*>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?<\/qrCode>",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Singleline);
+
+        if (!match.Success) return null;
+
+        var conteudo = match.Groups[1].Value.Trim();
+        if (string.IsNullOrWhiteSpace(conteudo)) return null;
+
+        return System.Net.WebUtility.HtmlDecode(conteudo);
     }
 
     public Task MarcarAutorizadoAsync(string id, ResultadoFiscal resultado, CancellationToken ct = default)

@@ -27,6 +27,7 @@ import {
   buildDanfePrintHtml,
   formatChaveAcesso,
   formatNumeroNf,
+  generateQrCodeSvg,
   getSefazConsultaUrl,
 } from "@/utils/danfePrint";
 
@@ -103,7 +104,11 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#039;");
 }
 
-function buildReceiptPrintHtml(receipt: SaleReceipt, formatMoney: (value: number) => string) {
+function buildReceiptPrintHtml(
+  receipt: SaleReceipt,
+  formatMoney: (value: number) => string,
+  fiscal?: FiscalDocumentDetailDto | null
+) {
   const companyName =
     receipt.company?.fantasyName || receipt.company?.corporateName || "Horus PDV";
   const companyAddress = [
@@ -130,6 +135,13 @@ function buildReceiptPrintHtml(receipt: SaleReceipt, formatMoney: (value: number
     )
     .join("");
 
+  const effectiveQrCodeUrl =
+    fiscal?.qrCodeUrl?.trim() ||
+    (fiscal?.chaveAcesso
+      ? `${getSefazConsultaUrl(receipt.company?.uf)}?p=${fiscal.chaveAcesso}`
+      : "");
+  const qrSvg = generateQrCodeSvg(effectiveQrCodeUrl, 130);
+
   return `<!doctype html>
 <html lang="pt-BR">
   <head>
@@ -138,7 +150,7 @@ function buildReceiptPrintHtml(receipt: SaleReceipt, formatMoney: (value: number
     <style>
       @page { size: 80mm auto; margin: 4mm; }
       * { box-sizing: border-box; }
-      body { margin: 0; color: #020617; font: 12px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      body { margin: 0; color: #020617; font: 12px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .receipt { width: 72mm; margin: 0 auto; }
       .center { text-align: center; }
       .brand { font-size: 14px; font-weight: 800; text-transform: uppercase; }
@@ -149,6 +161,11 @@ function buildReceiptPrintHtml(receipt: SaleReceipt, formatMoney: (value: number
       .bold { font-weight: 800; }
       .item { margin-top: 7px; }
       .item-meta { padding-left: 28px; font-size: 11px; }
+      .qrcode-wrapper { text-align: center; margin: 8px auto 4px auto; width: 100%; page-break-inside: avoid; }
+      .qrcode-box { display: inline-block; padding: 4px; background: #ffffff; }
+      .qrcode-wrapper svg { display: inline-block; margin: 0 auto; width: 130px !important; height: 130px !important; shape-rendering: crispEdges; }
+      .qrcode-wrapper path { fill: #000000 !important; }
+      .qrcode-caption { font-size: 9px; margin-top: 4px; text-align: center; color: #000; }
     </style>
   </head>
   <body>
@@ -196,10 +213,49 @@ function buildReceiptPrintHtml(receipt: SaleReceipt, formatMoney: (value: number
                }`
         }
       </section>
+
+      ${
+        fiscal?.chaveAcesso
+          ? `
+            <div class="divider"></div>
+            <section class="center" style="font-size: 9.5px;">
+              <div>CHAVE DE ACESSO:</div>
+              <div class="bold" style="word-break: break-all; margin-top: 2px;">${escapeHtml(formatChaveAcesso(fiscal.chaveAcesso))}</div>
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        qrSvg
+          ? `
+            <div class="divider"></div>
+            <section class="qrcode-wrapper">
+              <div class="qrcode-box">
+                ${qrSvg}
+              </div>
+              <div class="qrcode-caption">Consulta via leitor de QR Code</div>
+            </section>
+          `
+          : ""
+      }
+
       <div class="divider"></div>
       <p class="center">Obrigado pela preferencia.</p>
     </main>
-    <script>window.addEventListener("load", () => window.print());</script>
+    <script>
+      function triggerPrint() {
+        setTimeout(function () {
+          window.focus();
+          window.print();
+        }, 200);
+      }
+      if (document.readyState === "complete") {
+        triggerPrint();
+      } else {
+        window.addEventListener("load", triggerPrint);
+      }
+    </script>
   </body>
 </html>`;
 }
@@ -299,6 +355,12 @@ export default function ReceiptPreviewModal({
     };
   }, [checkFiscalStatus, isDanfe]);
 
+  const effectiveQrCodeUrl =
+    currentFiscal?.qrCodeUrl?.trim() ||
+    (currentFiscal?.chaveAcesso
+      ? `${getSefazConsultaUrl(receipt.company?.uf)}?p=${currentFiscal.chaveAcesso}`
+      : null);
+
   const printReceipt = () => {
     const popup = window.open("", "_blank", "width=420,height=720");
     if (!popup) return;
@@ -306,7 +368,7 @@ export default function ReceiptPreviewModal({
     if (isDanfe && currentFiscal) {
       popup.document.write(buildDanfePrintHtml(receipt, currentFiscal, formatMoney));
     } else {
-      popup.document.write(buildReceiptPrintHtml(receipt, formatMoney));
+      popup.document.write(buildReceiptPrintHtml(receipt, formatMoney, currentFiscal));
     }
     popup.document.close();
   };
@@ -522,10 +584,10 @@ export default function ReceiptPreviewModal({
                     </p>
                   </div>
 
-                  {currentFiscal.qrCodeUrl ? (
+                  {effectiveQrCodeUrl ? (
                     <div className="mt-3 flex flex-col items-center justify-center">
                       <div className="border border-slate-300 p-1.5 bg-white">
-                        <QRCodeSVG value={currentFiscal.qrCodeUrl} size={140} />
+                        <QRCodeSVG value={effectiveQrCodeUrl} size={140} includeMargin={true} />
                       </div>
                       <span className="mt-1 text-[9px]">Consulta via leitor de QR Code</span>
                     </div>
@@ -635,10 +697,10 @@ export default function ReceiptPreviewModal({
               </div>
             </dl>
 
-            {isDanfe && currentFiscal?.qrCodeUrl ? (
+            {isDanfe && effectiveQrCodeUrl ? (
               <div className="mt-4 border-t border-border-primary pt-3">
                 <a
-                  href={currentFiscal.qrCodeUrl}
+                  href={effectiveQrCodeUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs text-accent hover:underline"

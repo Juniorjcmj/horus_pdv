@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1788920674.9888394,
-    "seen": 1789164187.7347052,
-    "ast_hash": "4d406b15e6b9947207392ccac098890c",
+    "mtime": 1789167965.9617035,
+    "seen": 1789168191.967713,
+    "ast_hash": "ee4a8aa545dd8e267d7633d21c39e4fc",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -672,9 +672,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/DanfePreviewModal.tsx": {
-    "mtime": 1789163897.332905,
-    "seen": 1789164187.7397313,
-    "ast_hash": "58ff1ef118ba17e1cc15cfadc380fb4b",
+    "mtime": 1789168130.3900821,
+    "seen": 1789168191.972863,
+    "ast_hash": "b8eba17ac44cac17e0d7de215d662b50",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/FiscalErrorModal.tsx": {
@@ -714,9 +714,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReceiptPreviewModal.tsx": {
-    "mtime": 1789165316.488481,
-    "seen": 1789165382.3823507,
-    "ast_hash": "d8e157fc20efa13ab9b430f022a08b6f",
+    "mtime": 1789168102.3175216,
+    "seen": 1789168191.9735804,
+    "ast_hash": "5fc61a569f691e6e9d114f8b16bb471c",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/ReportCardsGrid.tsx": {
@@ -1998,9 +1998,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/danfePrint.ts": {
-    "mtime": 1789163655.2146616,
-    "seen": 1789164187.751415,
-    "ast_hash": "da51b22c2c7db18e0e91c63bdc9497a8",
+    "mtime": 1789168016.364223,
+    "seen": 1789168191.9847744,
+    "ast_hash": "04aa253012a11f21e55bab4a653d918a",
     "semantic_hash": ""
   },
   "openspec/changes/imprimir-danfe-nfce-qrcode/.openspec.yaml": {

@@ -71,7 +71,7 @@ export function generateQrCodeSvg(url: string | null | undefined, size = 140): s
         value: url,
         size,
         level: "M",
-        includeMargin: false,
+        includeMargin: true,
       })
     );
   } catch {
@@ -112,7 +112,10 @@ export function buildDanfePrintHtml(
     )
     .join("");
 
-  const qrSvg = generateQrCodeSvg(fiscal.qrCodeUrl, 140);
+  const effectiveQrCodeUrl =
+    fiscal.qrCodeUrl?.trim() ||
+    (fiscal.chaveAcesso ? `${getSefazConsultaUrl(company?.uf)}?p=${fiscal.chaveAcesso}` : "");
+  const qrSvg = generateQrCodeSvg(effectiveQrCodeUrl, 140);
   const sefazUrl = getSefazConsultaUrl(company?.uf);
   const formattedChave = formatChaveAcesso(fiscal.chaveAcesso);
   const formattedNumero = formatNumeroNf(fiscal.numeroNf);
@@ -222,20 +225,31 @@ export function buildDanfePrintHtml(
         margin: 3px 0;
       }
       .qrcode-wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        margin: 8px 0 4px 0;
+        text-align: center;
+        margin: 8px auto 4px auto;
+        width: 100%;
+        page-break-inside: avoid;
+      }
+      .qrcode-box {
+        display: inline-block;
+        padding: 4px;
+        background: #ffffff;
       }
       .qrcode-wrapper svg {
-        display: block;
+        display: inline-block;
         margin: 0 auto;
+        width: 140px !important;
+        height: 140px !important;
+        shape-rendering: crispEdges;
+      }
+      .qrcode-wrapper path {
+        fill: #000000 !important;
       }
       .qrcode-caption {
         font-size: 9px;
-        margin-top: 3px;
+        margin-top: 4px;
         text-align: center;
+        color: #000;
       }
       .fiscal-meta {
         font-size: 10px;
@@ -388,7 +402,9 @@ export function buildDanfePrintHtml(
           ? `
             <div class="divider"></div>
             <section class="qrcode-wrapper">
-              ${qrSvg}
+              <div class="qrcode-box">
+                ${qrSvg}
+              </div>
               <div class="qrcode-caption">Consulta via leitor de QR Code</div>
             </section>
           `
@@ -403,11 +419,17 @@ export function buildDanfePrintHtml(
     </main>
 
     <script>
-      window.addEventListener("load", function () {
+      function triggerPrint() {
         setTimeout(function () {
+          window.focus();
           window.print();
-        }, 120);
-      });
+        }, 200);
+      }
+      if (document.readyState === "complete") {
+        triggerPrint();
+      } else {
+        window.addEventListener("load", triggerPrint);
+      }
     </script>
   </body>
 </html>`;
