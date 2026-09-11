@@ -256,6 +256,51 @@ public class DocumentoFiscalAB(
         };
     }
 
+    /// <summary>Retorna os XMLs das notas autorizadas e canceladas de um mês para geração do pacote ZIP contábil.</summary>
+    public async Task<List<DocumentoFiscalExportacaoXml>> ObterXmlsPorMesAsync(string companyId, int ano, int mes, CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT d.Id, v.SaleNumber, d.Serie, d.NumeroNf, d.Status, d.ChaveAcesso, d.Protocolo,
+                   d.DhAutorizacao, d.CriadoEm, d.XmlAssinado, d.XmlProtocolado, d.XmlCancelamento
+            FROM DocumentosFiscais d
+            INNER JOIN Vendas v ON v.Id = d.VendaId
+            WHERE d.CompanyId = @CompanyId
+              AND d.Status IN (3, 6, 8) -- Autorizado, Cancelado, ContingenciaPendente
+              AND YEAR(COALESCE(d.DhAutorizacao, d.CriadoEm)) = @Ano
+              AND MONTH(COALESCE(d.DhAutorizacao, d.CriadoEm)) = @Mes
+            ORDER BY d.NumeroNf ASC;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Ano", ano);
+        command.Parameters.AddWithValue("@Mes", mes);
+
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        var rows = new List<DocumentoFiscalExportacaoXml>();
+        while (await reader.ReadAsync(ct))
+        {
+            rows.Add(new DocumentoFiscalExportacaoXml
+            {
+                Id = ReadString(reader, "Id"),
+                SaleNumber = ReadString(reader, "SaleNumber"),
+                Serie = ReadInt(reader, "Serie"),
+                NumeroNf = ReadInt(reader, "NumeroNf"),
+                Status = (StatusDocumentoFiscal)ReadInt(reader, "Status"),
+                ChaveAcesso = ReadNullableString(reader, "ChaveAcesso"),
+                Protocolo = ReadNullableString(reader, "Protocolo"),
+                DhAutorizacao = ReadNullableDateTimeOffset(reader, "DhAutorizacao"),
+                CriadoEm = reader.GetDateTimeOffset(reader.GetOrdinal("CriadoEm")),
+                XmlAssinado = ReadNullableString(reader, "XmlAssinado"),
+                XmlProtocolado = ReadNullableString(reader, "XmlProtocolado"),
+                XmlCancelamento = ReadNullableString(reader, "XmlCancelamento")
+            });
+        }
+
+        return rows;
+    }
+
     /// <summary>Reenfileira um documento rejeitado definitivamente. Se foi duplicidade (539) ou mudança de série, aloca nova numeração.</summary>
     public async Task<bool> ReemitirAsync(string companyId, string id)
     {
@@ -660,4 +705,21 @@ public record DocumentoFiscalResumo
 public sealed record DocumentoFiscalDetalhe : DocumentoFiscalResumo
 {
     public string? QrCodeUrl { get; init; }
+}
+
+/// <summary>Registro com XMLs completos para exportação mensal de contabilidade em arquivo ZIP.</summary>
+public sealed record DocumentoFiscalExportacaoXml
+{
+    public required string Id { get; init; }
+    public required string SaleNumber { get; init; }
+    public required int Serie { get; init; }
+    public required int NumeroNf { get; init; }
+    public required StatusDocumentoFiscal Status { get; init; }
+    public string? ChaveAcesso { get; init; }
+    public string? Protocolo { get; init; }
+    public DateTimeOffset? DhAutorizacao { get; init; }
+    public required DateTimeOffset CriadoEm { get; init; }
+    public string? XmlAssinado { get; init; }
+    public string? XmlProtocolado { get; init; }
+    public string? XmlCancelamento { get; init; }
 }

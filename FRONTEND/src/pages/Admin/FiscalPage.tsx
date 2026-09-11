@@ -4,7 +4,20 @@
  *           cancelamento e inutilização de numeração.
  * Entradas esperadas: não recebe props; opera com estado local e a API de fiscal/empresa.
  */
-import { AlertCircle, AlertTriangle, Printer, QrCode, RefreshCw, RotateCcw, Search, XCircle } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Download,
+  FileArchive,
+  Loader2,
+  Printer,
+  QrCode,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  X,
+  XCircle,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import DanfePreviewModal from "@/components/Admin/DanfePreviewModal";
 import FiscalErrorModal from "@/components/Admin/FiscalErrorModal";
@@ -73,6 +86,25 @@ export default function FiscalPage() {
   const [inutilizarInicial, setInutilizarInicial] = useState("");
   const [inutilizarFinal, setInutilizarFinal] = useState("");
   const [inutilizando, setInutilizando] = useState(false);
+
+  const now = useMemo(() => new Date(), []);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportMonth, setExportMonth] = useState<number>(now.getMonth() + 1);
+  const [exportYear, setExportYear] = useState<number>(now.getFullYear());
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportXmls = async () => {
+    setIsExporting(true);
+    try {
+      await fiscalService.exportarXmlsMes(exportYear, exportMonth);
+      Toast.success(`Pacote de XMLs (${String(exportMonth).padStart(2, "0")}/${exportYear}) baixado com sucesso!`);
+      setExportModalOpen(false);
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Erro ao exportar XMLs.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const loadDocuments = () => {
     setLoading(true);
@@ -256,6 +288,16 @@ export default function FiscalPage() {
       <PageHeader
         title="Fiscal NFC-e"
         description="Documentos fiscais emitidos em segundo plano após cada venda — status, DANFE em tela, reemissão e cancelamento."
+        action={
+          <button
+            type="button"
+            onClick={() => setExportModalOpen(true)}
+            className="btn-primary inline-flex items-center gap-2 text-sm"
+          >
+            <Download size={16} />
+            Exportar XMLs (Contabilidade)
+          </button>
+        }
       />
 
       {!company?.certificadoHasValue ? (
@@ -521,6 +563,98 @@ export default function FiscalPage() {
           }}
           isReemitindo={busyIds.has(errorModalDoc.id)}
         />
+      ) : null}
+
+      {exportModalOpen ? (
+        <div className="fixed inset-0 z-layer-dialog flex items-end bg-black/55 px-3 backdrop-blur-sm md:items-center md:justify-center">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-border-primary bg-bg-light shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border-primary px-5 py-4">
+              <div className="flex items-center gap-2.5">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                  <FileArchive size={18} />
+                </span>
+                <div>
+                  <h3 className="text-base font-bold text-text-primary">Exportar XMLs (Contabilidade)</h3>
+                  <p className="text-xs text-text-secondary">Pacote .ZIP de NFC-e autorizadas e canceladas</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setExportModalOpen(false)}
+                disabled={isExporting}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-text-secondary hover:bg-hover-light"
+                aria-label="Fechar"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-4 p-5">
+              <div className="rounded-xl border border-border-secondary bg-bg-primary p-3.5 text-xs text-text-secondary leading-relaxed">
+                <p className="font-semibold text-text-primary mb-1">📦 Fechamento Mensal / SPED / Simples Nacional</p>
+                Este arquivo compactado (.ZIP) contém todos os arquivos XML com a assinatura digital e protocolo oficial da SEFAZ, organizados por chave de acesso para envio direto ao seu contador.
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-text-secondary">Mês</label>
+                  <select
+                    value={exportMonth}
+                    onChange={(e) => setExportMonth(Number(e.target.value))}
+                    disabled={isExporting}
+                    className="input-field w-full text-sm font-medium"
+                  >
+                    <option value={1}>01 - Janeiro</option>
+                    <option value={2}>02 - Fevereiro</option>
+                    <option value={3}>03 - Março</option>
+                    <option value={4}>04 - Abril</option>
+                    <option value={5}>05 - Maio</option>
+                    <option value={6}>06 - Junho</option>
+                    <option value={7}>07 - Julho</option>
+                    <option value={8}>08 - Agosto</option>
+                    <option value={9}>09 - Setembro</option>
+                    <option value={10}>10 - Outubro</option>
+                    <option value={11}>11 - Novembro</option>
+                    <option value={12}>12 - Dezembro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-text-secondary">Ano</label>
+                  <select
+                    value={exportYear}
+                    onChange={(e) => setExportYear(Number(e.target.value))}
+                    disabled={isExporting}
+                    className="input-field w-full text-sm font-medium"
+                  >
+                    {Array.from({ length: 5 }, (_, i) => now.getFullYear() - i).map((year) => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-border-primary bg-bg-secondary px-5 py-3">
+              <button
+                type="button"
+                onClick={() => setExportModalOpen(false)}
+                disabled={isExporting}
+                className="btn-secondary text-xs"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleExportXmls}
+                disabled={isExporting}
+                className="btn-primary inline-flex items-center gap-2 text-xs"
+              >
+                {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                {isExporting ? "Compactando e baixando..." : "Baixar Pacote (.ZIP)"}
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {PromptDialog}

@@ -115,4 +115,31 @@ export const fiscalService = {
     });
     return response.message;
   },
+  async exportarXmlsMes(ano: number, mes: number): Promise<void> {
+    const url = `${NFCE_API_URL}/exportar-mes?ano=${encodeURIComponent(ano)}&mes=${encodeURIComponent(mes)}`;
+    const response = await fetch(url, {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      let errorMessage = "Erro ao exportar XMLs.";
+      try {
+        const errorJson = (await response.json()) as { message?: string };
+        if (errorJson?.message) errorMessage = errorJson.message;
+      } catch {
+        // Usa mensagem padrão caso não seja json
+      }
+      throw new Error(errorMessage);
+    }
+
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = `NFCe_XMLs_${ano}_${String(mes).padStart(2, "0")}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  },
 };

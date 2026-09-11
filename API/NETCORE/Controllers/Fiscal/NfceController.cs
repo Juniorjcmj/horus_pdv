@@ -9,6 +9,8 @@
  * Este controller enfileira e consulta; cancelamento e inutilização são operações raras e
  * relativamente rápidas, por isso rodam síncronas na própria requisição.
  */
+using System.IO.Compression;
+using System.Text;
 using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Models.Response;
 using HORUSPDV_API.Repositories.DatabaseAccess;
@@ -151,6 +153,68 @@ public class NfceController(
         return resultado.Status == StatusDocumentoFiscal.Inutilizado
             ? Ok(new ApiResponse<object> { Success = true, Message = "Faixa de numeração inutilizada com sucesso." })
             : BadRequest(new ApiResponse<object> { Success = false, Message = resultado.MotivoStatus });
+    }
+
+    [HttpGet("exportar-mes")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
+    public async Task<IActionResult> ExportarXmlsMes([FromQuery] int ano, [FromQuery] int mes, CancellationToken ct = default)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        if (mes < 1 || mes > 12)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Mês deve estar entre 1 e 12." });
+        }
+
+        if (ano < 2000 || ano > DateTime.UtcNow.Year + 1)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Ano informado é inválido." });
+        }
+
+        var docs = await documentoFiscalAB.ObterXmlsPorMesAsync(currentUser.CompanyId, ano, mes, ct);
+        if (docs.Count == 0)
+        {
+            return NotFound(new ApiResponse<object>
+            {
+                Success = false,
+                Message = $"Nenhum documento fiscal autorizado ou cancelado encontrado em {mes:D2}/{ano}."
+            });
+        }
+
+        using var memoryStream = new MemoryStream();
+        using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var doc in docs)
+            {
+                var chaveOuNum = !string.IsNullOrWhiteSpace(doc.ChaveAcesso) ? doc.ChaveAcesso : $"NFCe_S{doc.Serie}_N{doc.NumeroNf}";
+
+                // 1. XML da NFC-e (autorizada ou contingência):
+                var xmlNota = !string.IsNullOrWhiteSpace(doc.XmlProtocolado) ? doc.XmlProtocolado : doc.XmlAssinado;
+                if (!string.IsNullOrWhiteSpace(xmlNota))
+                {
+                    var entry = archive.CreateEntry($"{chaveOuNum}-nfe.xml", CompressionLevel.Optimal);
+                    using var entryStream = entry.Open();
+                    using var writer = new StreamWriter(entryStream, Encoding.UTF8);
+                    writer.Write(xmlNota);
+                }
+
+                // 2. Se for cancelada, inclui também o XML do evento de cancelamento da SEFAZ:
+                if (doc.Status == StatusDocumentoFiscal.Cancelado && !string.IsNullOrWhiteSpace(doc.XmlCancelamento))
+                {
+                    var entryCanc = archive.CreateEntry($"{chaveOuNum}-procEventoCanc.xml", CompressionLevel.Optimal);
+                    using var entryStreamCanc = entryCanc.Open();
+                    using var writerCanc = new StreamWriter(entryStreamCanc, Encoding.UTF8);
+                    writerCanc.Write(doc.XmlCancelamento);
+                }
+            }
+        }
+
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        var zipBytes = memoryStream.ToArray();
+        var nomeZip = $"NFCe_XMLs_{ano}_{mes:D2}.zip";
+
+        return File(zipBytes, "application/zip", nomeZip);
     }
 
     private AuthenticatedUser? GetCurrentUser()
