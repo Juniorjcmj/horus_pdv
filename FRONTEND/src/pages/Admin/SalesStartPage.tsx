@@ -4,7 +4,17 @@
  * Entradas esperadas: recebe flag opcional de modo standalone para ajustar comportamento da aba PDV.
  */
 
-import { Image as ImageIcon, Loader2, Plus, Printer, Search, Trash2, X } from "lucide-react";
+import {
+  Image as ImageIcon,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  Plus,
+  Printer,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 import {
   type ClipboardEvent,
   type FormEvent,
@@ -376,6 +386,61 @@ export default function SalesStartPage({
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [standalone]);
+
+  const [isFullscreen, setIsFullscreen] = useState(
+    typeof document !== "undefined" ? Boolean(document.fullscreenElement) : false,
+  );
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.warn("Fullscreen toggle error:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleF11 = (event: KeyboardEvent) => {
+      if (event.key === "F11") {
+        event.preventDefault();
+        void toggleFullscreen();
+      }
+    };
+    window.addEventListener("keydown", handleF11);
+    return () => window.removeEventListener("keydown", handleF11);
+  }, [toggleFullscreen]);
+
+  // Ao abrir a frente de caixa, no primeiro clique ou tecla do operador,
+  // expande automaticamente para tela cheia caso o navegador ainda não esteja nela.
+  useEffect(() => {
+    const enterFullscreenOnFirstGesture = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    };
+
+    window.addEventListener("click", enterFullscreenOnFirstGesture, { once: true });
+    window.addEventListener("keydown", enterFullscreenOnFirstGesture, { once: true });
+
+    return () => {
+      window.removeEventListener("click", enterFullscreenOnFirstGesture);
+      window.removeEventListener("keydown", enterFullscreenOnFirstGesture);
+    };
+  }, []);
 
   useEffect(() => {
     if (filteredProducts.length === 0) {
@@ -919,17 +984,38 @@ export default function SalesStartPage({
     : "Validando caixa...";
 
   return (
-    <div className="h-[100dvh] overflow-y-auto bg-bg-primary p-1.5 md:overflow-hidden md:p-2">
-      <div className="mx-auto flex min-h-full w-full max-w-[1600px] flex-col overflow-visible rounded-2xl border border-border-primary bg-bg-light shadow-md md:h-full md:overflow-hidden">
+    <div
+      className={`h-[100dvh] overflow-y-auto bg-bg-primary ${
+        isFullscreen ? "p-0" : "p-1.5 md:overflow-hidden md:p-2"
+      }`}
+    >
+      <div
+        className={`mx-auto flex min-h-full w-full ${
+          isFullscreen
+            ? "max-w-none rounded-none border-0"
+            : "max-w-[1600px] rounded-2xl border border-border-primary"
+        } flex-col overflow-visible bg-bg-light shadow-md md:h-full md:overflow-hidden`}
+      >
         <header className="relative border-b border-border-secondary bg-accent px-4 py-3 text-text-light">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display text-2xl font-bold italic leading-none md:text-4xl">Quack PDV</h1>
               <p className="text-sm italic leading-none md:text-lg">Frente de Caixa</p>
             </div>
-            <div className="text-right text-xs md:text-sm">
-              <p className="capitalize">{dateLabel}</p>
-              <p className="text-base font-semibold md:text-lg">{timeLabel}</p>
+            <div className="flex items-center gap-2.5 md:gap-4">
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                title={isFullscreen ? "Sair da tela cheia (F11 ou Esc)" : "Entrar em tela cheia (F11)"}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-white/20 active:scale-95 focus:outline-none"
+              >
+                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                <span className="hidden sm:inline">{isFullscreen ? "Sair Tela Cheia" : "Tela Cheia (F11)"}</span>
+              </button>
+              <div className="text-right text-xs md:text-sm">
+                <p className="capitalize">{dateLabel}</p>
+                <p className="text-base font-semibold md:text-lg">{timeLabel}</p>
+              </div>
             </div>
           </div>
         </header>
