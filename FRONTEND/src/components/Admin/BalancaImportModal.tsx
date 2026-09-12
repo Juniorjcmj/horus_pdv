@@ -5,12 +5,13 @@
  *           filtro de busca, barra de progresso e opção de download/cópia do script SQL.
  */
 
-import { CheckCircle2, Copy, Loader2, Scale, Search, X } from "lucide-react";
+import { CheckCircle2, Copy, Download, Loader2, Scale, Search, Wifi, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import LoadingButton from "@/components/Loading/LoadingButton";
 import { Toast } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import { productService, type ProductDto, type ProductPayload } from "@/services/api/productService";
+import { downloadTextFile, generateMgvCargaTxt, generateTriunfoCargaTxt } from "@/utils/exportBalancaCarga";
 import { PRODUTOS_BALANCA } from "@/utils/produtosBalancaData";
 
 interface BalancaImportModalProps {
@@ -24,7 +25,7 @@ export default function BalancaImportModal({
   onClose,
   onImported,
 }: BalancaImportModalProps) {
-  const { formatMoneyBr } = useInputMasks();
+  const { formatMoneyBr, parseMoneyBr } = useInputMasks();
 
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
   const [searchTerm, setSearchTerm] = useState("");
@@ -162,6 +163,46 @@ export default function BalancaImportModal({
     Toast.success("Caminho do arquivo SQL copiado para a área de transferência!");
   };
 
+  const handleExportMgv = () => {
+    const exportItems = PRODUTOS_BALANCA.map((item) => {
+      const match = existingProducts.find(
+        (p) => p.productCode === item.code || Number(p.productCode) === Number(item.code),
+      );
+      const price = match ? parseMoneyBr(match.productSalePrice) : item.defaultSalePrice;
+      return {
+        code: item.code,
+        name: match?.productName || item.name,
+        salePrice: price,
+        unit: match?.unidadeComercial || item.unit,
+        validityDays: 0,
+      };
+    });
+
+    const content = generateMgvCargaTxt(exportItems);
+    downloadTextFile("ITENSTXT.TXT", content);
+    Toast.success("Arquivo ITENSTXT.TXT (formato Toledo/MGV) gerado com sucesso!");
+  };
+
+  const handleExportTriunfo = () => {
+    const exportItems = PRODUTOS_BALANCA.map((item) => {
+      const match = existingProducts.find(
+        (p) => p.productCode === item.code || Number(p.productCode) === Number(item.code),
+      );
+      const price = match ? parseMoneyBr(match.productSalePrice) : item.defaultSalePrice;
+      return {
+        code: item.code,
+        name: match?.productName || item.name,
+        salePrice: price,
+        unit: match?.unidadeComercial || item.unit,
+        validityDays: 0,
+      };
+    });
+
+    const content = generateTriunfoCargaTxt(exportItems);
+    downloadTextFile("PRODUTOS_TRIUNFO.TXT", content);
+    Toast.success("Arquivo PRODUTOS_TRIUNFO.TXT gerado com sucesso!");
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
       <div className="flex h-[90vh] w-full max-w-5xl flex-col rounded-2xl border border-border-primary bg-bg-light shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -189,6 +230,36 @@ export default function BalancaImportModal({
           >
             <X size={20} />
           </button>
+        </div>
+
+        {/* Banner de Sincronização Wi-Fi / Exportação de Carga */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-primary bg-accent/5 px-6 py-2.5 text-xs text-text-primary">
+          <div className="flex items-center gap-2">
+            <Wifi size={16} className="text-accent shrink-0" />
+            <span>
+              <strong>Sincronização com Balança Wi-Fi:</strong> Ao alterar valores no PDV, gere o arquivo de carga e envie para a balança pelo Software Triunfo.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleExportMgv}
+              className="btn-secondary py-1 px-2.5 text-[11px] inline-flex items-center gap-1.5 hover:border-accent hover:text-accent"
+              title="Gera ITENSTXT.TXT no padrão Toledo/MGV aceito pelo SoftTriunfo"
+            >
+              <Download size={13} />
+              Exportar Carga (MGV)
+            </button>
+            <button
+              type="button"
+              onClick={handleExportTriunfo}
+              className="btn-secondary py-1 px-2.5 text-[11px] inline-flex items-center gap-1.5 hover:border-accent hover:text-accent"
+              title="Gera TXT no formato nativo da Triunfo"
+            >
+              <Download size={13} />
+              Exportar Carga (Triunfo)
+            </button>
+          </div>
         </div>
 
         {/* Barra de Filtros e Categorias */}
