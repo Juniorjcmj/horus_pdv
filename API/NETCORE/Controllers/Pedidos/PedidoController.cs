@@ -172,7 +172,7 @@ public class PedidoController(
             PedidoStatus.Cancelado => "cancelado",
             _ => "aberto"
         },
-        CreatedAt = source.CreatedAt.LocalDateTime.ToString("dd/MM/yyyy HH:mm:ss"),
+        CreatedAt = HorusDateTime.Format(source.CreatedAt),
         TotalAmount = HorusMoneyFormat.Format(source.Itens.Sum(item => item.ItemTotal)),
         Itens = source.Itens.Select(item => new PedidoItemModel
         {

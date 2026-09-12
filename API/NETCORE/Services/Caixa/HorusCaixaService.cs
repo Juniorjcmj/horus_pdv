@@ -25,7 +25,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
 
     public CaixaStatusDto GetStatus(AuthenticatedUser currentUser, DateTimeOffset? reference = null)
     {
-        var status = BuildStatus(currentUser.CompanyId, reference ?? DateTimeOffset.Now);
+        var status = BuildStatus(currentUser.CompanyId, reference ?? HorusDateTime.Now);
         if (HorusRoles.IsGerenteOuAdmin(currentUser.Role))
         {
             return status;
@@ -46,7 +46,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
 
     public CaixaStatusDto Abrir(AbrirCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
     {
-        var now = DateTimeOffset.Now;
+        var now = HorusDateTime.Now;
         var openSession = caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId).GetAwaiter().GetResult();
         if (openSession is not null)
         {
@@ -83,7 +83,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
 
     public CaixaStatusDto RegistrarMovimento(RegistrarMovimentoCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
     {
-        var now = DateTimeOffset.Now;
+        var now = HorusDateTime.Now;
         var openSession = caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId).GetAwaiter().GetResult();
         if (openSession is null)
         {
@@ -150,7 +150,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
 
     public CaixaStatusDto Fechar(FecharCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
     {
-        var now = DateTimeOffset.Now;
+        var now = HorusDateTime.Now;
         var openSession = caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId).GetAwaiter().GetResult();
         if (openSession is null)
         {
@@ -206,7 +206,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
 
     public void EnsureVendaPermitida(AuthenticatedUser currentUser, string? ip = null)
     {
-        var status = BuildStatus(currentUser.CompanyId, DateTimeOffset.Now);
+        var status = BuildStatus(currentUser.CompanyId, HorusDateTime.Now);
         if (status.CanSell) return;
 
         auditLogAB.RegistrarAsync(
@@ -294,7 +294,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             State = state,
             CanSell = canSell,
             BlockReason = blockReason,
-            ServerNow = now.ToString("o"),
+            ServerNow = HorusDateTime.FormatIso(now),
             CurrentSession = openSessionDto,
             LastSession = lastSession is null ? null : BuildDto(lastSession),
             History = sessions.Take(12).Select(BuildDto).ToList()
@@ -313,7 +313,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             Tipo = item.Tipo.ToString(),
             Valor = HorusMoneyFormat.Format(item.Valor),
             Motivo = item.Motivo,
-            CreatedAt = item.CreatedAt.ToString("o"),
+            CreatedAt = HorusDateTime.FormatIso(item.CreatedAt),
             OperatorName = item.OperatorName,
         }).ToList();
 
@@ -332,8 +332,8 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         {
             Id = source.Id,
             Status = closedAt is null ? "Aberto" : "Fechado",
-            OpenedAt = source.OpenedAt.ToString("o"),
-            ClosedAt = closedAt?.ToString("o"),
+            OpenedAt = HorusDateTime.FormatIso(source.OpenedAt),
+            ClosedAt = source.ClosedAt.HasValue ? HorusDateTime.FormatIso(source.ClosedAt.Value) : null,
             OpeningAmount = HorusMoneyFormat.Format(source.OpeningAmount),
             ClosingAmount = HorusMoneyFormat.Format(source.ClosingAmount),
             OperatorId = source.OperatorId,

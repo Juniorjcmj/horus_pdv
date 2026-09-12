@@ -546,9 +546,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
-    "mtime": 1788711752.2154176,
-    "seen": 1788888974.351957,
-    "ast_hash": "ce52ad3d5b886b9cb429e2768a9866e9",
+    "mtime": 1789171835.5576806,
+    "seen": 1789171967.9947364,
+    "ast_hash": "bc5d52f6fb01509e7420375e10838195",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeXmlParser.cs": {
@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NfeImportModal.tsx": {
-    "mtime": 1788705727.8193905,
-    "seen": 1788888974.352005,
-    "ast_hash": "e927d36774deea67f75ac940d1cafbec",
+    "mtime": 1789171931.6077628,
+    "seen": 1789171967.9976091,
+    "ast_hash": "439757b3d97215d3e59685a4600edaf3",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {

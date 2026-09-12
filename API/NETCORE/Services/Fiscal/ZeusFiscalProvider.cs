@@ -43,6 +43,7 @@ using NFe.Utils;
 using NFe.Utils.InformacoesSuplementares;
 using NFe.Utils.NFe;
 using Shared.NFe.Classes.Informacoes.InfRespTec;
+using HORUSPDV_API.Services.Shared;
 
 namespace HORUSPDV_API.Services.Fiscal;
 
@@ -261,7 +262,7 @@ public sealed class ZeusFiscalProvider(
             using var servico = new ServicosNFe(cfg, certificado);
             var retorno = servico.NfeInutilizacao(
                 cnpj: emitente.Cnpj,
-                ano: DateTime.Now.Year,
+                ano: HorusDateTime.Now.Year,
                 modelo: ModeloDocumento.NFCe,
                 serie: request.Serie,
                 numeroInicial: request.NumeroInicial,
@@ -377,7 +378,7 @@ public sealed class ZeusFiscalProvider(
             serie = request.Serie,
             nNF = request.NumeroNf,
             cNF = GerarCodigoNumerico(request.NumeroNf),
-            dhEmi = DateTimeOffset.Now,
+            dhEmi = HorusDateTime.Now,
             tpNF = TipoNFe.tnSaida,
             idDest = DestinoOperacao.doInterna,
             cMunFG = long.Parse(e.CodigoMunicipioIbge, Inv),
@@ -395,7 +396,7 @@ public sealed class ZeusFiscalProvider(
 
         if (request.TipoEmissao == TipoEmissaoFiscal.ContingenciaOffline)
         {
-            ide.dhCont = request.DhContingencia ?? DateTimeOffset.Now;
+            ide.dhCont = request.DhContingencia.HasValue ? HorusDateTime.ToBrasilia(request.DhContingencia.Value) : HorusDateTime.Now;
             ide.xJust = request.JustificativaContingencia;
         }
 

@@ -9618,7 +9618,7 @@
       "file_type": "code",
       "norm_label": "nfeimportmodal()",
       "source_file": "FRONTEND/src/components/Admin/NfeImportModal.tsx",
-      "source_location": "L26"
+      "source_location": "L35"
     },
     {
       "id": "frontend_src_components_admin_pageheader_pageheader",
@@ -56786,7 +56786,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/NfeImportService.cs",
-      "source_location": "L183",
+      "source_location": "L201",
       "weight": 1.0
     },
     {
@@ -56798,7 +56798,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/NfeImportService.cs",
-      "source_location": "L189",
+      "source_location": "L207",
       "weight": 1.0
     },
     {
@@ -96670,7 +96670,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/NfeImportModal.tsx",
-      "source_location": "L26",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -111641,7 +111641,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/NfeImportService.cs",
-      "source_location": "L147",
+      "source_location": "L133",
       "weight": 1.0
     },
     {
@@ -111653,7 +111653,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/NfeImportService.cs",
-      "source_location": "L160",
+      "source_location": "L178",
       "weight": 1.0
     },
     {
@@ -111665,7 +111665,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/NfeImportService.cs",
-      "source_location": "L181",
+      "source_location": "L199",
       "weight": 1.0
     },
     {
@@ -111677,7 +111677,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/NfeImportService.cs",
-      "source_location": "L199",
+      "source_location": "L217",
       "weight": 1.0
     },
     {
@@ -111689,7 +111689,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/NfeImportService.cs",
-      "source_location": "L241",
+      "source_location": "L259",
       "weight": 1.0
     },
     {
@@ -112685,7 +112685,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/NfeImportService.cs",
-      "source_location": "L161",
+      "source_location": "L179",
       "weight": 1.0
     },
     {
@@ -112697,7 +112697,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/NfeImportService.cs",
-      "source_location": "L215",
+      "source_location": "L233",
       "weight": 1.0
     },
     {
@@ -114238,5 +114238,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "d193557fdb9d39bba65014f95c821aef6ea1b468"
+  "built_at_commit": "9265ad3b7d3506878373bf9d4e75fab06d86f48d"
 }

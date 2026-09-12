@@ -23,9 +23,13 @@ export function formatNumeroNf(numero: number | string | null | undefined): stri
 
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return "—";
-  const date = new Date(value);
+  const trimmed = String(value).trim();
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(trimmed)) return trimmed;
+
+  const date = new Date(trimmed);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

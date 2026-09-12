@@ -21,7 +21,8 @@ WORKDIR /app
 # Kestrel escuta em 8080 (sem TLS) — a terminação HTTPS é feita pelo Traefik na frente.
 ENV ASPNETCORE_URLS=http://+:8080 \
     ASPNETCORE_ENVIRONMENT=Production \
-    DOTNET_EnableDiagnostics=0
+    DOTNET_EnableDiagnostics=0 \
+    TZ=America/Sao_Paulo
 
 EXPOSE 8080
 

@@ -54,9 +54,13 @@ function paymentLabel(paymentType: string) {
 
 function formatDateTime(value?: string | null) {
   if (!value) return "-";
-  const date = new Date(value);
+  const trimmed = value.trim();
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(trimmed)) return trimmed;
+
+  const date = new Date(trimmed);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

@@ -170,7 +170,7 @@ public class HistoricoVendasAB(Connection connection)
         List<VendaPagamentoRequest>? payments)
     {
         var saleNumber = await NextSaleNumberAsync(db, transaction);
-        var now = DateTimeOffset.Now;
+        var now = HorusDateTime.Now;
         var saleId = $"sale-{saleNumber}";
 
         await using (var saleCommand = new SqlCommand(
@@ -309,7 +309,7 @@ public class HistoricoVendasAB(Connection connection)
                 Quantity = item.Quantity,
                 UnitPrice = HorusMoneyFormat.Format(item.UnitPrice),
                 ItemTotal = HorusMoneyFormat.Format(itemTotal),
-                SaleDate = now.LocalDateTime.ToString("dd/MM/yyyy HH:mm:ss")
+                SaleDate = HorusDateTime.Format(now)
             });
         }
 
@@ -486,7 +486,7 @@ public class HistoricoVendasAB(Connection connection)
         Quantity = reader.GetDecimal(reader.GetOrdinal("Quantity")),
         UnitPrice = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("UnitPrice"))),
         ItemTotal = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("ItemTotal"))),
-        SaleDate = reader.GetDateTimeOffset(reader.GetOrdinal("SaleDate")).LocalDateTime.ToString("dd/MM/yyyy HH:mm:ss")
+        SaleDate = HorusDateTime.Format(reader.GetDateTimeOffset(reader.GetOrdinal("SaleDate")))
     };
 
     private static string ReadString(SqlDataReader reader, string name)
