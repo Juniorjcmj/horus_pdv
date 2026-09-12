@@ -130,7 +130,26 @@ public class NfeImportService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB)
             throw new InvalidOperationException("Razão social do fornecedor é obrigatória.");
         }
 
-        // Códigos duplicados dentro do próprio lote (dois itens da nota sugerindo o mesmo código).
+        var produtosAtuais = await produtosAB.ListarAsync(companyId);
+
+        // Se o operador ajustou o código/barras para bater com um produto já cadastrado na loja,
+        // vincula o ProdutoExistenteId automaticamente para fazer entrada de estoque:
+        foreach (var item in request.Itens)
+        {
+            if (string.IsNullOrWhiteSpace(item.ProdutoExistenteId))
+            {
+                var match = produtosAtuais.FirstOrDefault(p =>
+                    p.ProductCode.Equals(item.ProductCode.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrWhiteSpace(item.Gtin) && item.Gtin != "SEM GTIN" && !string.IsNullOrWhiteSpace(p.Gtin) && p.Gtin.Equals(item.Gtin.Trim(), StringComparison.OrdinalIgnoreCase)));
+
+                if (match is not null)
+                {
+                    item.ProdutoExistenteId = match.Id;
+                }
+            }
+        }
+
+        // Códigos duplicados dentro dos itens realmente novos do lote
         var codigosNovos = request.Itens
             .Where(item => string.IsNullOrWhiteSpace(item.ProdutoExistenteId))
             .Select(item => item.ProductCode.Trim())
@@ -141,10 +160,9 @@ public class NfeImportService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB)
         if (codigoDuplicadoNoLote is not null)
         {
             throw new InvalidOperationException(
-                $"Código de produto \"{codigoDuplicadoNoLote.Key}\" repetido em mais de um item da nota — ajuste antes de confirmar.");
+                $"Código de produto \"{codigoDuplicadoNoLote.Key}\" repetido em mais de um item novo da nota — ajuste antes de confirmar.");
         }
 
-        var produtosAtuais = await produtosAB.ListarAsync(companyId);
         var codigoJaCadastrado = codigosNovos.FirstOrDefault(code =>
             produtosAtuais.Any(p => p.ProductCode.Equals(code, StringComparison.OrdinalIgnoreCase)));
         if (codigoJaCadastrado is not null)
