@@ -41,6 +41,9 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
     public Task<bool> ExcluirAsync(string companyId, string id)
         => produtosAB.ExcluirAsync(companyId, id);
 
+    public Task<int> ImportarCargaLegadoAsync(string companyId)
+        => produtosAB.ImportarCargaLegadoAsync(companyId);
+
     private static void Validate(ProdutoRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.ProductName) || request.ProductName.Trim().Length < 3)

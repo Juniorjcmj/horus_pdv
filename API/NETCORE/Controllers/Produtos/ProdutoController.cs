@@ -101,6 +101,29 @@ public class ProdutoController(IProdutoService produtoService) : ControllerBase
         return Ok(new ApiResponse<object> { Success = true, Message = "Produto removido com sucesso." });
     }
 
+    [HttpPost("importar-legado")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ImportarLegado()
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+        try
+        {
+            var rows = await produtoService.ImportarCargaLegadoAsync(currentUser.CompanyId);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Carga de 4.714 produtos importada com sucesso!",
+                Data = new { rowsAffected = rows }
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = $"Erro ao importar carga: {ex.Message}" });
+        }
+    }
+
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
 }

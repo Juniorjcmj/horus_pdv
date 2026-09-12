@@ -1,0 +1,2254 @@
+[
+  {
+    "code": "4442",
+    "name": "ABACATE KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 2.75,
+    "allPrices": [
+      2.75,
+      1.1,
+      2.75,
+      1,
+      5.99,
+      1.6,
+      7.99,
+      0.02,
+      4.3
+    ]
+  },
+  {
+    "code": "4008",
+    "name": "AMEIXA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 5,
+    "allPrices": [
+      5,
+      9.17,
+      5,
+      14.99,
+      6.9,
+      0.02,
+      0.1
+    ]
+  },
+  {
+    "code": "2691",
+    "name": "BANANA ORGANICA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 4,
+    "allPrices": [
+      4,
+      0.4,
+      4,
+      0.4,
+      8.99,
+      0.6,
+      0.02,
+      0.1,
+      0.42
+    ]
+  },
+  {
+    "code": "2325",
+    "name": "BANANA PRATA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 3.5,
+    "allPrices": [
+      3.5,
+      0.6,
+      3.5,
+      0.6,
+      7.99,
+      1.2,
+      0.02,
+      4.3,
+      0.64
+    ]
+  },
+  {
+    "code": "4954",
+    "name": "CAJU KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 12,
+    "allPrices": [
+      12,
+      1.1,
+      12,
+      1.1,
+      24.99,
+      2.9,
+      0.02,
+      1.5,
+      0.64
+    ]
+  },
+  {
+    "code": "6163",
+    "name": "CAQUI BDJ",
+    "unit": "BDJ",
+    "category": "Frutas",
+    "price": 4,
+    "allPrices": [
+      4,
+      0.9,
+      4,
+      0.9,
+      7.99,
+      1.3,
+      0.02
+    ]
+  },
+  {
+    "code": "727",
+    "name": "CAQUI KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 1,
+    "allPrices": [
+      1,
+      0.3,
+      1,
+      0.3,
+      4.99,
+      0.5,
+      0.02,
+      83.18,
+      0.64
+    ]
+  },
+  {
+    "code": "6262",
+    "name": "CARAMBOLA BDJ",
+    "unit": "BDJ",
+    "category": "Frutas",
+    "price": 5,
+    "allPrices": [
+      5,
+      0.4,
+      5,
+      0.4,
+      8.99,
+      0.6,
+      0.02
+    ]
+  },
+  {
+    "code": "5982",
+    "name": "CEREJA FRUTA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 18,
+    "allPrices": [
+      18,
+      7.5,
+      18,
+      7.4,
+      49.99,
+      8.9,
+      0.02,
+      0.81,
+      0.6
+    ]
+  },
+  {
+    "code": "5999",
+    "name": "FIGO ROXO BDJ",
+    "unit": "BDJ",
+    "category": "Frutas",
+    "price": 15,
+    "allPrices": [
+      15,
+      0.5,
+      15,
+      0.5,
+      25,
+      0.8,
+      0.02,
+      1
+    ]
+  },
+  {
+    "code": "5234",
+    "name": "GOIABA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 13,
+    "allPrices": [
+      13,
+      1.7,
+      13,
+      1.7,
+      19.99,
+      2.4,
+      0.02
+    ]
+  },
+  {
+    "code": "5920",
+    "name": "KIWI BDJ",
+    "unit": "BDJ",
+    "category": "Frutas",
+    "price": 5,
+    "allPrices": [
+      5,
+      0.3,
+      5,
+      0.3,
+      10,
+      0.4,
+      0.02,
+      0.8,
+      0.64
+    ]
+  },
+  {
+    "code": "2288",
+    "name": "LARANJA PERA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 1.9,
+    "allPrices": [
+      1.9,
+      0.1,
+      1.9,
+      0.1,
+      3.99,
+      0.3,
+      0.02
+    ]
+  },
+  {
+    "code": "4985",
+    "name": "LARANJA SELECTA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 2,
+    "allPrices": [
+      2,
+      0.6,
+      0.8,
+      0.6,
+      3.99,
+      1.1,
+      0.99,
+      0.02
+    ]
+  },
+  {
+    "code": "6033",
+    "name": "LICHIA BDJ",
+    "unit": "BDJ",
+    "category": "Frutas",
+    "price": 10,
+    "allPrices": [
+      10,
+      1.1,
+      10,
+      1,
+      17.99,
+      1.6,
+      0.02,
+      0.8
+    ]
+  },
+  {
+    "code": "2899",
+    "name": "MACA ARGENTINA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 0.6,
+    "allPrices": [
+      0.6,
+      6.67,
+      0.6,
+      12.99,
+      0.9,
+      0.02
+    ]
+  },
+  {
+    "code": "2349",
+    "name": "MACA GALA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 0.4,
+    "allPrices": [
+      0.4,
+      6.94,
+      0.4,
+      12.99,
+      0.8,
+      2.02
+    ]
+  },
+  {
+    "code": "6545",
+    "name": "MAMAO FORMOSA",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 5.5,
+    "allPrices": [
+      5.5,
+      0.3,
+      5.5,
+      0.3,
+      9.99,
+      0.4,
+      0.02,
+      2.3
+    ]
+  },
+  {
+    "code": "2677",
+    "name": "MAMAO PAPAYA",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 2.25,
+    "allPrices": [
+      2.25,
+      0.1,
+      2.25,
+      0.1,
+      4.99,
+      0.4,
+      0.02,
+      91
+    ]
+  },
+  {
+    "code": "2318",
+    "name": "MANGA PALMER KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 416.7,
+    "allPrices": [
+      416.7,
+      0.1,
+      4.17,
+      0.1,
+      8.99,
+      0.3,
+      3.99,
+      1.02,
+      0.2
+    ]
+  },
+  {
+    "code": "2295",
+    "name": "MARACUJA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 15.99,
+    "allPrices": [
+      8,
+      8,
+      15.99,
+      0.5,
+      7.99,
+      0.02
+    ]
+  },
+  {
+    "code": "2684",
+    "name": "MELANCIA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 3,
+    "allPrices": [
+      3,
+      0.1,
+      3,
+      0.1,
+      6.99,
+      0.1,
+      2.99,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "4015",
+    "name": "MELAO KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 5,
+    "allPrices": [
+      5,
+      0.2,
+      5,
+      0.2,
+      8.99,
+      0.5,
+      0.02,
+      3.4
+    ]
+  },
+  {
+    "code": "5937",
+    "name": "PERA BDJ",
+    "unit": "BDJ",
+    "category": "Frutas",
+    "price": 5,
+    "allPrices": [
+      5,
+      1.2,
+      5,
+      1.2,
+      10,
+      1.9,
+      0.02,
+      2,
+      0.64
+    ]
+  },
+  {
+    "code": "2141",
+    "name": "PERA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 0.5,
+    "allPrices": [
+      0.3,
+      7.22,
+      0.5,
+      14.99,
+      0.5,
+      7.99,
+      0.02
+    ]
+  },
+  {
+    "code": "3995",
+    "name": "PESSEGO KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 1.2,
+    "allPrices": [
+      1.2,
+      6.33,
+      1.2,
+      10.99,
+      1.7,
+      0.02,
+      0.3
+    ]
+  },
+  {
+    "code": "4961",
+    "name": "PINHA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 0.7,
+    "allPrices": [
+      0.7,
+      11.16,
+      0.7,
+      29.99,
+      1.5,
+      0.02,
+      15.58
+    ]
+  },
+  {
+    "code": "6279",
+    "name": "PITAYA BDJ",
+    "unit": "BDJ",
+    "category": "Frutas",
+    "price": 4.5,
+    "allPrices": [
+      4.5,
+      0.1,
+      4.5,
+      0.1,
+      6.5,
+      0.2,
+      0.02,
+      0.1
+    ]
+  },
+  {
+    "code": "925",
+    "name": "PITAYA KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 12.5,
+    "allPrices": [
+      12.5,
+      0.2,
+      12.5,
+      0.2,
+      29.99,
+      0.4,
+      2.02,
+      2.9
+    ]
+  },
+  {
+    "code": "901",
+    "name": "PITAYA UNIDADE",
+    "unit": "UN",
+    "category": "Frutas",
+    "price": 10,
+    "allPrices": [
+      5.99,
+      0.7,
+      0.7,
+      10,
+      1.1,
+      0.02,
+      20,
+      2,
+      4,
+      35.49
+    ]
+  },
+  {
+    "code": "949",
+    "name": "TANGERINA PONKAN KG",
+    "unit": "KG",
+    "category": "Frutas",
+    "price": 366.7,
+    "allPrices": [
+      366.7,
+      0.4,
+      3.67,
+      0.4,
+      5.99,
+      0.7,
+      0.02
+    ]
+  },
+  {
+    "code": "6637",
+    "name": "UVA VERDE THOMPSON BDJ",
+    "unit": "BDJ",
+    "category": "Frutas",
+    "price": 8,
+    "allPrices": [
+      4,
+      8,
+      0.7,
+      5.99,
+      0.1,
+      0.02,
+      0.1
+    ]
+  },
+  {
+    "code": "4404",
+    "name": "ABOBORA KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 3,
+    "allPrices": [
+      3,
+      0.1,
+      3,
+      0.1,
+      6.99,
+      0.2,
+      5,
+      0.02,
+      6.1,
+      0.64
+    ]
+  },
+  {
+    "code": "4435",
+    "name": "ABOBRINHA KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 166.7,
+    "allPrices": [
+      166.7,
+      0.5,
+      1.67,
+      0.5,
+      3.99,
+      0.8,
+      2.5,
+      0.02,
+      21.43,
+      0.64
+    ]
+  },
+  {
+    "code": "4565",
+    "name": "AIPIM KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 2,
+    "allPrices": [
+      2,
+      0.4,
+      2,
+      0.8,
+      3.99,
+      0.4,
+      2.99,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "2394",
+    "name": "ALHO KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 19,
+    "allPrices": [
+      19,
+      0.3,
+      19,
+      0.5,
+      29.9,
+      0.4,
+      0.02
+    ]
+  },
+  {
+    "code": "2653",
+    "name": "BATATA DOCE KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 305.6,
+    "allPrices": [
+      305.6,
+      0.3,
+      3.06,
+      0.3,
+      5.99,
+      0.5,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "2370",
+    "name": "BATATA KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 140,
+    "allPrices": [
+      5.6,
+      0.5,
+      140,
+      11,
+      9.99,
+      0.9,
+      2.19,
+      2.02,
+      0.6
+    ]
+  },
+  {
+    "code": "4657",
+    "name": "BERINJELA KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 2.5,
+    "allPrices": [
+      2.5,
+      0.2,
+      2.5,
+      0.2,
+      3.99,
+      0.4,
+      3.99,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "4282",
+    "name": "BETERABA KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 2.6,
+    "allPrices": [
+      2.6,
+      0.1,
+      2.6,
+      0.1,
+      6.99,
+      0.2,
+      1.02,
+      8.5,
+      0.64
+    ]
+  },
+  {
+    "code": "2387",
+    "name": "CEBOLA KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 110,
+    "allPrices": [
+      5.5,
+      1.9,
+      110,
+      1.9,
+      9.99,
+      2.9,
+      2.49,
+      0.02,
+      1.8,
+      0.6
+    ]
+  },
+  {
+    "code": "2363",
+    "name": "CENOURA KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 3.5,
+    "allPrices": [
+      3.5,
+      0.4,
+      3.5,
+      0.3,
+      7.99,
+      0.5,
+      2.99,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "4299",
+    "name": "CHUCHU KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 138.9,
+    "allPrices": [
+      138.9,
+      1.39,
+      2.99,
+      0.1,
+      1.5,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "4923",
+    "name": "GENGIBRE KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 1.4,
+    "allPrices": [
+      1.4,
+      6.67,
+      1.4,
+      19.99,
+      2.2,
+      0.02,
+      16.82,
+      0.64
+    ]
+  },
+  {
+    "code": "697",
+    "name": "INHAME KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 4.25,
+    "allPrices": [
+      4.25,
+      0.5,
+      4.25,
+      0.2,
+      7.99,
+      0.7,
+      1.99,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "703",
+    "name": "JILO KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 2.38,
+    "allPrices": [
+      2.38,
+      0.9,
+      1.65,
+      0.9,
+      3.99,
+      1.5,
+      2.8,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "2332",
+    "name": "LIMAO KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 8.75,
+    "allPrices": [
+      8.75,
+      0.1,
+      8.75,
+      0.1,
+      14.99,
+      0.3,
+      3.19,
+      0.02,
+      1.1
+    ]
+  },
+  {
+    "code": "6118",
+    "name": "MAXIXE KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 158.2,
+    "allPrices": [
+      158.2,
+      0.1,
+      1.58,
+      2.5,
+      0.2,
+      0.02,
+      3.9,
+      0.64
+    ]
+  },
+  {
+    "code": "4688",
+    "name": "MILHO VERDE C/3",
+    "unit": "BDJ",
+    "category": "Legumes",
+    "price": 2.31,
+    "allPrices": [
+      2.31,
+      0.2,
+      2.31,
+      0.2,
+      4.99,
+      0.4,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "4275",
+    "name": "PEPINO KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 2.33,
+    "allPrices": [
+      2.33,
+      0.6,
+      0.12,
+      0.6,
+      4.99,
+      1,
+      2.99,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "3469",
+    "name": "PIMENTAO KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 3,
+    "allPrices": [
+      3,
+      0.4,
+      3,
+      0.7,
+      5.99,
+      0.6,
+      3.99,
+      0.02,
+      3.4,
+      0.64
+    ]
+  },
+  {
+    "code": "3438",
+    "name": "QUIABO KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 3,
+    "allPrices": [
+      3,
+      0.7,
+      1.71,
+      0.7,
+      4.99,
+      1.2,
+      6.59,
+      0.02,
+      1,
+      0.64
+    ]
+  },
+  {
+    "code": "4350",
+    "name": "REPOLHO KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 133.3,
+    "allPrices": [
+      133.3,
+      0.3,
+      1.33,
+      0.1,
+      4.99,
+      0.6,
+      2.99,
+      2.02,
+      0.64
+    ]
+  },
+  {
+    "code": "4367",
+    "name": "REPOLHO ROXO KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 3.33,
+    "allPrices": [
+      3.33,
+      0.3,
+      1.65,
+      0.3,
+      6.99,
+      0.5,
+      2.49,
+      1.02,
+      0.1,
+      0.64
+    ]
+  },
+  {
+    "code": "2356",
+    "name": "TOMATE KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 4.5,
+    "allPrices": [
+      4.5,
+      0.3,
+      4.5,
+      0.3,
+      8.99,
+      0.7,
+      2.99,
+      2.02,
+      0.64
+    ]
+  },
+  {
+    "code": "5876",
+    "name": "VAGEM KG",
+    "unit": "KG",
+    "category": "Legumes",
+    "price": 384.6,
+    "allPrices": [
+      384.6,
+      1.2,
+      3.85,
+      1.1,
+      5.99,
+      1.6,
+      0.02,
+      0.64
+    ]
+  },
+  {
+    "code": "4039",
+    "name": "BACALHAU ZARBO KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.6,
+    "allPrices": [
+      0.6,
+      82.99,
+      0.6,
+      85,
+      1.1,
+      0.02,
+      151.8,
+      0.19
+    ]
+  },
+  {
+    "code": "4084",
+    "name": "CAR BOV MIOLO ALCATRA MATURATTA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 59.99,
+    "allPrices": [
+      1.1,
+      49.9,
+      1,
+      59.99,
+      1.7,
+      0.02,
+      0.46
+    ]
+  },
+  {
+    "code": "499",
+    "name": "CAR BOV ACEM FRIBOI KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 24.98,
+    "allPrices": [
+      24.98,
+      1.5,
+      24.98,
+      33.99,
+      2.3,
+      0.02,
+      0.41
+    ]
+  },
+  {
+    "code": "3544",
+    "name": "CAR BOV ALCATRA C/MAMIN FRIBOI KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 49.99,
+    "allPrices": [
+      4.8,
+      39.9,
+      4.5,
+      49.99,
+      5.9,
+      0.02,
+      0.46
+    ]
+  },
+  {
+    "code": "3971",
+    "name": "CAR BOV BIFE ANCHO MATURATTA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 48.9,
+    "allPrices": [
+      48.9,
+      1.8,
+      45.89,
+      1.8,
+      59.99,
+      2.6,
+      0.02,
+      0.46
+    ]
+  },
+  {
+    "code": "5012",
+    "name": "CAR BOV BIFE ANCHO ENTRECORTE MATURATTA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 42.15,
+    "allPrices": [
+      42.15,
+      0.3,
+      42.15,
+      0.3,
+      49.99,
+      0.5,
+      0.02,
+      0.2,
+      0.87
+    ]
+  },
+  {
+    "code": "4992",
+    "name": "CAR BOV BIFE CHORIZO COMPO NOBRE KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 2.2,
+    "allPrices": [
+      2.2,
+      59.97,
+      2.2,
+      74.99,
+      3,
+      0.02
+    ]
+  },
+  {
+    "code": "3407",
+    "name": "CAR BOV CONTRA FILE KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 1.6,
+    "allPrices": [
+      1.6,
+      43.69,
+      1.6,
+      54.99,
+      2.2,
+      0.02,
+      0.04
+    ]
+  },
+  {
+    "code": "6576",
+    "name": "CAR BOV COR ALC BABY B MONT STEAKH NA BRASA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 1,
+    "allPrices": [
+      0.7,
+      0.7,
+      1,
+      0.02
+    ]
+  },
+  {
+    "code": "6583",
+    "name": "CAR BOV COR ALC BABY BIFE NA BRASA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 45,
+    "allPrices": [
+      45,
+      1,
+      45,
+      1,
+      59.99,
+      1.6,
+      0.02,
+      16.15,
+      0.1,
+      0.09
+    ]
+  },
+  {
+    "code": "2240",
+    "name": "CAR BOV CORACAO ALCATRA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 47.2,
+    "allPrices": [
+      47.2,
+      0.3,
+      39.99,
+      0.4,
+      59.99,
+      0.5,
+      0.02,
+      0.04
+    ]
+  },
+  {
+    "code": "611",
+    "name": "CAR BOV CORACAO DE ALCATRA MATURATTA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.4,
+    "allPrices": [
+      0.4,
+      40.73,
+      0.4,
+      59.99,
+      0.6,
+      49.9,
+      0.02,
+      0.6,
+      0.12
+    ]
+  },
+  {
+    "code": "2257",
+    "name": "CAR BOV FILE COSTELA MATURATTA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 2.9,
+    "allPrices": [
+      2.9,
+      46.42,
+      2.9,
+      59.99,
+      5.4,
+      0.02,
+      0.1,
+      0.12
+    ]
+  },
+  {
+    "code": "1618",
+    "name": "CAR BOV PALETA FRIBOI KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.3,
+    "allPrices": [
+      0.3,
+      21.85,
+      0.3,
+      27,
+      0.5,
+      0.02,
+      0.12
+    ]
+  },
+  {
+    "code": "5005",
+    "name": "CAR BOV PICANHA RESFRIADA MATURATTA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 75,
+    "allPrices": [
+      75,
+      0.2,
+      69,
+      0.2,
+      0.3,
+      0.02,
+      282.6,
+      4,
+      0.87
+    ]
+  },
+  {
+    "code": "2752",
+    "name": "CAR BOV PICANHA A BOA CARNE KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.2,
+    "allPrices": [
+      0.2,
+      71.39,
+      0.2,
+      89.99,
+      0.3,
+      0.02,
+      3.2
+    ]
+  },
+  {
+    "code": "6132",
+    "name": "CAR BOV PICANHA CONG FATIADA BLACK FRIBOI KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 68,
+    "allPrices": [
+      68,
+      0.2,
+      68,
+      0.2,
+      84.99,
+      0.3,
+      0.02,
+      65.9,
+      0.5,
+      0.87
+    ]
+  },
+  {
+    "code": "6064",
+    "name": "CAR BOV PICANHA GRILL PUL SELECTION KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 1.8,
+    "allPrices": [
+      1.8,
+      74.52,
+      1.8,
+      89.99,
+      2.4,
+      0.02
+    ]
+  },
+  {
+    "code": "3414",
+    "name": "CAR SUIN BISTECA FRIMESA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.6,
+    "allPrices": [
+      0.6,
+      16.1,
+      0.6,
+      22.99,
+      0.8,
+      0.02,
+      0.9,
+      0.12
+    ]
+  },
+  {
+    "code": "482",
+    "name": "CAR SUIN CARRE KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 15.2,
+    "allPrices": [
+      15.2,
+      0.1,
+      15.2,
+      0.1,
+      21.99,
+      0.4,
+      0.02,
+      390.8,
+      3.5,
+      0.19
+    ]
+  },
+  {
+    "code": "3988",
+    "name": "CAR SUIN CONG AURORA BISTECA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.1,
+    "allPrices": [
+      0.1,
+      16.97,
+      0.1,
+      22.99,
+      0.4,
+      0.02,
+      467.2,
+      0.01
+    ]
+  },
+  {
+    "code": "4091",
+    "name": "CAR SUIN CONG BISTECA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 12.64,
+    "allPrices": [
+      12.64,
+      1.6,
+      12.64,
+      1.6,
+      20.99,
+      2.4,
+      20,
+      0.02,
+      0.09
+    ]
+  },
+  {
+    "code": "5722",
+    "name": "CAR SUIN PERNIL C/O SADIA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 18.44,
+    "allPrices": [
+      18.44,
+      16.1,
+      18.44,
+      16.1,
+      19.99,
+      21.9,
+      0.02,
+      0.2,
+      0.09
+    ]
+  },
+  {
+    "code": "4855",
+    "name": "FGO CONG ASA ENVELOP. LAR KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.6,
+    "allPrices": [
+      0.6,
+      9.39,
+      0.6,
+      13.99,
+      1,
+      0.02
+    ]
+  },
+  {
+    "code": "6668",
+    "name": "FGO CONG COXA C/DORSO ENVE JAGUAFRANGOS",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.2,
+    "allPrices": [
+      0.2,
+      6.69,
+      0.2,
+      11.99,
+      0.3,
+      0.02,
+      4.77,
+      1.9
+    ]
+  },
+  {
+    "code": "6347",
+    "name": "FGO CONG COXA/SOBRECOXA ENVELOP. CVALE KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 18.99,
+    "allPrices": [
+      0.4,
+      7.69,
+      0.3,
+      18.99,
+      0.7,
+      0.02
+    ]
+  },
+  {
+    "code": "4800",
+    "name": "FGO CONG COXA/SOBRECOXA ENVELOP. LAR KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.1,
+    "allPrices": [
+      0.1,
+      7.69,
+      0.1,
+      12.99,
+      0.3,
+      9.99,
+      0.02
+    ]
+  },
+  {
+    "code": "4831",
+    "name": "FGO CONG DRUMET LAR KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.3,
+    "allPrices": [
+      0.3,
+      10.89,
+      0.3,
+      15.99,
+      0.5,
+      0.02
+    ]
+  },
+  {
+    "code": "6651",
+    "name": "FGO CONG FILE DE PEITO ENVEL",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.5,
+    "allPrices": [
+      0.5,
+      13.79,
+      0.5,
+      20.99,
+      0.8,
+      0.02
+    ]
+  },
+  {
+    "code": "6125",
+    "name": "FGO CONG FILE DE PEITO ENVEL. BELLO KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.1,
+    "allPrices": [
+      0.1,
+      13.99,
+      0.1,
+      21.99,
+      0.3,
+      0.02,
+      4.7
+    ]
+  },
+  {
+    "code": "550",
+    "name": "FGO CONG FILE DE PEITO KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.1,
+    "allPrices": [
+      0.1,
+      14.87,
+      0.1,
+      22.99,
+      0.3,
+      0.02,
+      3.4,
+      0.12
+    ]
+  },
+  {
+    "code": "4886",
+    "name": "FGO CONG FILE DE PEITO ENVEL. LAR KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 0.7,
+    "allPrices": [
+      0.7,
+      14.49,
+      0.7,
+      22.99,
+      1.1,
+      0.02
+    ]
+  },
+  {
+    "code": "4848",
+    "name": "FGO CONG PEITO C/OSSO ENVELOP. LAR KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 11.95,
+    "allPrices": [
+      11.95,
+      0.9,
+      11.89,
+      0.9,
+      16.99,
+      1.3,
+      14.99,
+      0.02
+    ]
+  },
+  {
+    "code": "6644",
+    "name": "FGO CONG PEITO ENVELOP. COOPAVEL KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 1.3,
+    "allPrices": [
+      1.3,
+      9.79,
+      1.3,
+      15.99,
+      2,
+      0.02,
+      370.9,
+      1.2
+    ]
+  },
+  {
+    "code": "3391",
+    "name": "LING CHURRASCO PERDIGAO KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 15.98,
+    "allPrices": [
+      15.98,
+      1.5,
+      15.98,
+      1.5,
+      23.99,
+      2,
+      19.99,
+      0.02,
+      0.5,
+      0.19
+    ]
+  },
+  {
+    "code": "2158",
+    "name": "LING DE FRANGO AURORA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 14.22,
+    "allPrices": [
+      13.96,
+      1.6,
+      14.22,
+      1.6,
+      21.99,
+      2.5,
+      0.02,
+      82.4,
+      0.12
+    ]
+  },
+  {
+    "code": "826",
+    "name": "LING DE FRANGO SEARA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 20.9,
+    "allPrices": [
+      15.5,
+      1,
+      14.89,
+      20.9,
+      22.99,
+      2.4,
+      0.02,
+      5.6,
+      0.19
+    ]
+  },
+  {
+    "code": "413",
+    "name": "LING MISTA FINA DEF PERDIGAO KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 25,
+    "allPrices": [
+      17.9,
+      16.9,
+      0.7,
+      25,
+      0.1,
+      0.02,
+      0.01
+    ]
+  },
+  {
+    "code": "2165",
+    "name": "LING SUINA AURORA CHURRASCO",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 16.9,
+    "allPrices": [
+      16.9,
+      0.8,
+      16.9,
+      0.8,
+      25.99,
+      1.2,
+      1.02,
+      0.85
+    ]
+  },
+  {
+    "code": "2875",
+    "name": "LING SUINA EDER KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 13.52,
+    "allPrices": [
+      13.52,
+      1.7,
+      11.3,
+      1.6,
+      19.99,
+      2.5,
+      0.02
+    ]
+  },
+  {
+    "code": "833",
+    "name": "LING SUINA SEARA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 209.8,
+    "allPrices": [
+      10.49,
+      0.4,
+      209.8,
+      0.4,
+      24.99,
+      0.6,
+      0.02
+    ]
+  },
+  {
+    "code": "3476",
+    "name": "LING T CALAB DEF SADIA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 16.34,
+    "allPrices": [
+      16.34,
+      0.6,
+      16.34,
+      0.1,
+      25.99,
+      1,
+      0.02,
+      5.55,
+      1.6,
+      0.09
+    ]
+  },
+  {
+    "code": "3612",
+    "name": "LING T CALAB DEF SEARA KG",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 242.85,
+    "allPrices": [
+      16.19,
+      0.2,
+      242.85,
+      0.2,
+      24.99,
+      0.3,
+      0.02,
+      0.1
+    ]
+  },
+  {
+    "code": "5098",
+    "name": "LINGUICA MISTA COZ DEF",
+    "unit": "KG",
+    "category": "Açougue",
+    "price": 127.01,
+    "allPrices": [
+      6.05,
+      0.5,
+      127.01,
+      0.6,
+      9.49,
+      0.8,
+      0.02,
+      0.5,
+      0.09
+    ]
+  },
+  {
+    "code": "3483",
+    "name": "BACON KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 0.1,
+    "allPrices": [
+      0.1,
+      29.99,
+      0.1,
+      54.99,
+      1.6,
+      0.02,
+      119.6,
+      1.6,
+      0.19
+    ]
+  },
+  {
+    "code": "994",
+    "name": "MORTADELA DEFUMADA KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 152.04,
+    "allPrices": [
+      15.42,
+      1.2,
+      152.04,
+      1.2,
+      29.99,
+      1.6,
+      0.02,
+      495.9
+    ]
+  },
+  {
+    "code": "987",
+    "name": "MORTADELA TRADICIONAL KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 101.2,
+    "allPrices": [
+      10.02,
+      1.5,
+      101.2,
+      15.2,
+      18.99,
+      2.9,
+      14.99,
+      0.02,
+      0.4
+    ]
+  },
+  {
+    "code": "376",
+    "name": "PEITO PERU DEFUMADO KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 0.1,
+    "allPrices": [
+      0.1,
+      48.99,
+      0.1,
+      89.99,
+      0.3,
+      0.02
+    ]
+  },
+  {
+    "code": "2424",
+    "name": "PRESUNTO KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 20.99,
+    "allPrices": [
+      20.99,
+      0.6,
+      20.99,
+      0.6,
+      39.99,
+      0.8,
+      24.99,
+      0.02,
+      0.19
+    ]
+  },
+  {
+    "code": "956",
+    "name": "QJO CHEDDAR KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 45.99,
+    "allPrices": [
+      45.99,
+      0.5,
+      45.99,
+      0.5,
+      64.99,
+      0.6,
+      0.02,
+      0.8,
+      0.15
+    ]
+  },
+  {
+    "code": "4428",
+    "name": "QJO COALHO KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 39.9,
+    "allPrices": [
+      39.9,
+      0.3,
+      39.9,
+      0.3,
+      64.99,
+      0.4,
+      51.99,
+      0.02
+    ]
+  },
+  {
+    "code": "451",
+    "name": "QJO MUSSARELA KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 39.5,
+    "allPrices": [
+      39.5,
+      0.2,
+      39.5,
+      0.2,
+      69.99,
+      0.4,
+      0.02,
+      99.55
+    ]
+  },
+  {
+    "code": "4893",
+    "name": "QJO PARMESAO KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 38.5,
+    "allPrices": [
+      38.5,
+      3.9,
+      38.5,
+      3.9,
+      54.99,
+      5.7,
+      49.02,
+      0.4
+    ]
+  },
+  {
+    "code": "352",
+    "name": "QJO PRATO KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 37.5,
+    "allPrices": [
+      37.5,
+      1,
+      37.5,
+      1,
+      59.99,
+      1.4,
+      0.02,
+      0.1
+    ]
+  },
+  {
+    "code": "4916",
+    "name": "QJO PRATO BOLA KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 45.6,
+    "allPrices": [
+      45.6,
+      0.1,
+      45.6,
+      69.99,
+      0.2,
+      0.02
+    ]
+  },
+  {
+    "code": "4909",
+    "name": "QJO PROVOLONE KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 39.9,
+    "allPrices": [
+      39.9,
+      3.3,
+      39.9,
+      3.3,
+      57.99,
+      4.4,
+      49.99,
+      0.02,
+      450.6
+    ]
+  },
+  {
+    "code": "4183",
+    "name": "QUEIJO MINAS",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 25.5,
+    "allPrices": [
+      25.5,
+      0.1,
+      25.5,
+      0.5,
+      45.99,
+      0.4,
+      0.02
+    ]
+  },
+  {
+    "code": "5111",
+    "name": "SALAME AGRANEL KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 2.5,
+    "allPrices": [
+      2.5,
+      73.58,
+      2.5,
+      129.99,
+      3.8,
+      0.02,
+      0.1,
+      0.19
+    ]
+  },
+  {
+    "code": "4046",
+    "name": "SALSICHA AGRANEL KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 77.88,
+    "allPrices": [
+      6.49,
+      0.2,
+      77.88,
+      0.2,
+      12.99,
+      0.4,
+      0.02,
+      4
+    ]
+  },
+  {
+    "code": "819",
+    "name": "SALSICHA PERDIGAO KG",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 6.07,
+    "allPrices": [
+      6.07,
+      1.5,
+      6.07,
+      1.4,
+      12.99,
+      2.2,
+      0.02,
+      0.09
+    ]
+  },
+  {
+    "code": "2936",
+    "name": "BACON PREMIADO",
+    "unit": "KG",
+    "category": "Frios",
+    "price": 0.8,
+    "allPrices": [
+      0.7,
+      28.99,
+      0.8,
+      54.99,
+      1.3,
+      0.02,
+      341.2,
+      0.7
+    ]
+  },
+  {
+    "code": "3711",
+    "name": "RACÃO CAO FANNY AD PREMIUM R.PEQ KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 59.9,
+    "allPrices": [
+      5.99,
+      0.1,
+      59.9,
+      0.1,
+      8.99,
+      0.2,
+      0.02,
+      1.1
+    ]
+  },
+  {
+    "code": "3346",
+    "name": "RACAO CAO GOLDEN AD CARNE MINIBIT KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 19.99,
+    "allPrices": [
+      1.8,
+      12.13,
+      19.99,
+      2.8,
+      0.02
+    ]
+  },
+  {
+    "code": "6088",
+    "name": "RACAO CAO GOLDEN AD FGO MINIBIT KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 22.99,
+    "allPrices": [
+      2.8,
+      12.13,
+      2.7,
+      22.99,
+      4.3,
+      0.02,
+      0.3
+    ]
+  },
+  {
+    "code": "3230",
+    "name": "RACAO CAO PEDIGREE NUTR ESSENCIAL KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 7.18,
+    "allPrices": [
+      7.18,
+      0.2,
+      7.18,
+      0.2,
+      12.99,
+      0.3,
+      0.02
+    ]
+  },
+  {
+    "code": "5906",
+    "name": "RACAO CAO PEDIGREE R.PQ ADULTO CARNE/VEG KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 0.7,
+    "allPrices": [
+      0.7,
+      9.73,
+      0.7,
+      14.99,
+      1,
+      0.02,
+      0.8
+    ]
+  },
+  {
+    "code": "3919",
+    "name": "RACAO CAO PURUCA CARNE KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 4.14,
+    "allPrices": [
+      4.14,
+      0.5,
+      4.14,
+      5.9,
+      7.49,
+      0.8,
+      0.02
+    ]
+  },
+  {
+    "code": "2516",
+    "name": "RACAO DE CAO FOSTER ORIGINAL KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 0.4,
+    "allPrices": [
+      0.4,
+      5.21,
+      0.4,
+      7.99,
+      0.6,
+      0.02,
+      0.9
+    ]
+  },
+  {
+    "code": "4077",
+    "name": "RACAO GATO FANNY CAT CASTR CARNE KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 59.9,
+    "allPrices": [
+      5.99,
+      0.6,
+      59.9,
+      6.9,
+      8.99,
+      1,
+      0.02
+    ]
+  },
+  {
+    "code": "4107",
+    "name": "RACAO GATO FANNY CAT S/COR FG/PEIXE KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 69.9,
+    "allPrices": [
+      6.99,
+      0.2,
+      69.9,
+      0.2,
+      10.99,
+      0.3,
+      0.02,
+      0.3
+    ]
+  },
+  {
+    "code": "3681",
+    "name": "RACAO GATO GOLDEN AD CASTRAD SALMAO KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 19.79,
+    "allPrices": [
+      19.79,
+      0.5,
+      19.79,
+      5.9,
+      29.99,
+      0.8,
+      0.02
+    ]
+  },
+  {
+    "code": "3360",
+    "name": "RACAO GATO GOLDEN AD FRANGO KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 28.99,
+    "allPrices": [
+      18.59,
+      1.7,
+      0.1,
+      28.99,
+      2.6,
+      0.02
+    ]
+  },
+  {
+    "code": "3636",
+    "name": "RACAO GATO GOLDEN AD CARNE KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 17.19,
+    "allPrices": [
+      17.19,
+      1.8,
+      0.1,
+      1.8,
+      26.99,
+      2.8,
+      0.02
+    ]
+  },
+  {
+    "code": "3667",
+    "name": "RACAO GATO GOLDEN FILHOTE FGO KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 18.59,
+    "allPrices": [
+      18.59,
+      1.9,
+      18.59,
+      1.9,
+      28.99,
+      2.9,
+      0.02,
+      0.7
+    ]
+  },
+  {
+    "code": "3148",
+    "name": "RACAO GATO WHISKAS CARNE KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 14.55,
+    "allPrices": [
+      14.55,
+      1.4,
+      14.55,
+      1.4,
+      22.99,
+      2.3,
+      0.02
+    ]
+  },
+  {
+    "code": "3186",
+    "name": "RACAO GATO WHISKAS CASTADO PEIXE KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 14.55,
+    "allPrices": [
+      14.55,
+      1.3,
+      14.55,
+      1.3,
+      23.99,
+      2.1,
+      19.02
+    ]
+  },
+  {
+    "code": "6149",
+    "name": "RACAO GATO WHISKAS FRANGO KG",
+    "unit": "KG",
+    "category": "Rações",
+    "price": 14.19,
+    "allPrices": [
+      14.19,
+      0.5,
+      14.19,
+      0.5,
+      22.99,
+      0.7,
+      0.02,
+      3.86
+    ]
+  }
+]

@@ -57,6 +57,31 @@ public class ProdutoAB(Connection connection)
         return await reader.ReadAsync() ? Map(reader) : null;
     }
 
+    public async Task<int> ImportarCargaLegadoAsync(string companyId)
+    {
+        var scriptPath = Path.Combine(AppContext.BaseDirectory, "DataBase", "Migrations", "06_produtos_mercado_completo.sql");
+        if (!File.Exists(scriptPath))
+        {
+            scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "DataBase", "Migrations", "06_produtos_mercado_completo.sql");
+        }
+        if (!File.Exists(scriptPath))
+        {
+            throw new FileNotFoundException("Script de migração 06_produtos_mercado_completo.sql não encontrado.");
+        }
+
+        var script = await File.ReadAllTextAsync(scriptPath);
+        var cleanScript = System.Text.RegularExpressions.Regex.Replace(
+            script, @"^\s*GO\s*;?\s*$", "",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Multiline);
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(cleanScript, db)
+        {
+            CommandTimeout = 300
+        };
+        return await command.ExecuteNonQueryAsync();
+    }
+
     /// <summary>Usada pelo módulo fiscal (DocumentoFiscalAB) para montar o item da NFC-e.</summary>
     public async Task<ProdutoAD?> ObterPorCodigoAsync(string companyId, string productCode)
     {

@@ -63,4 +63,10 @@ export const productService = {
   async remove(id: string) {
     await apiRequest<object>(`${PRODUTO_API_URL}/${id}`, { method: "DELETE" });
   },
+  async importarLegado() {
+    const response = await apiRequest<{ rowsAffected: number }>(`${PRODUTO_API_URL}/importar-legado`, {
+      method: "POST",
+    });
+    return response;
+  },
 };

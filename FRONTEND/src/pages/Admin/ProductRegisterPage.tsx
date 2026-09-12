@@ -4,7 +4,7 @@
  * Entradas esperadas: não recebe props; opera com estado local de lista e formulário de produto.
  */
 
-import { FileUp, Pencil, Plus, Scale, Search, Trash2, X } from "lucide-react";
+import { Database, FileUp, Loader2, Pencil, Plus, Scale, Search, Trash2, X } from "lucide-react";
 import { type ClipboardEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import BalancaImportModal from "@/components/Admin/BalancaImportModal";
 import NfeImportModal from "@/components/Admin/NfeImportModal";
@@ -799,6 +799,7 @@ export default function ProductRegisterPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [balancaModalOpen, setBalancaModalOpen] = useState(false);
+  const [isImportingMercado, setIsImportingMercado] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -1062,6 +1063,27 @@ export default function ProductRegisterPage() {
     setForm(EMPTY_FORM);
   };
 
+  const handleImportarCargaMercado = async () => {
+    if (
+      !window.confirm(
+        "Deseja sincronizar/importar todos os 4.714 produtos do mercado (base exp_cadprodutos.cds)?\n\nTodos os códigos de barras (EAN-13), descrições, unidades e preços de venda serão sincronizados no sistema."
+      )
+    ) {
+      return;
+    }
+
+    setIsImportingMercado(true);
+    try {
+      const res = await productService.importarLegado();
+      Toast.success(res?.message || "Carga de 4.714 produtos importada com sucesso no sistema!");
+      loadProducts();
+    } catch (err) {
+      Toast.error(err instanceof Error ? err.message : "Erro ao importar carga de produtos.");
+    } finally {
+      setIsImportingMercado(false);
+    }
+  };
+
   return (
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
@@ -1077,6 +1099,20 @@ export default function ProductRegisterPage() {
             >
               <Scale size={16} />
               Carga Balança (133)
+            </button>
+            <button
+              type="button"
+              onClick={handleImportarCargaMercado}
+              disabled={isImportingMercado}
+              className="btn-secondary inline-flex items-center gap-2"
+              title="Importar todos os 4.714 produtos do mercado da base exp_cadprodutos.cds"
+            >
+              {isImportingMercado ? (
+                <Loader2 size={16} className="animate-spin text-primary" />
+              ) : (
+                <Database size={16} className="text-primary" />
+              )}
+              {isImportingMercado ? "Importando base..." : "Carga Mercado (4.714)"}
             </button>
             <button
               type="button"
