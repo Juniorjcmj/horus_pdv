@@ -121,7 +121,7 @@ export default function HomePage({ onNavigate, onOpenSalesInNewTab }: HomePagePr
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
         title="Home"
-        description="Visão geral da operação do Hórus PDV em tempo real."
+        description="Visão geral da operação do Quack PDV em tempo real."
       />
 
       <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">

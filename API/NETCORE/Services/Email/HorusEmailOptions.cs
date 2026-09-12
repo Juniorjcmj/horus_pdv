@@ -14,7 +14,7 @@ public class HorusEmailOptions
     public string User { get; set; } = "naoresponderhoruspdv@outlook.com";
     public string Password { get; set; } = string.Empty;
     public string FromEmail { get; set; } = "naoresponderhoruspdv@outlook.com";
-    public string FromName { get; set; } = "Hórus PDV";
+    public string FromName { get; set; } = "Quack PDV";
     public string ReplyTo { get; set; } = string.Empty;
     public string FrontendBaseUrl { get; set; } = "http://localhost:5173";
 }

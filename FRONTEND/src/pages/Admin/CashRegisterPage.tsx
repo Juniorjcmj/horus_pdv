@@ -148,7 +148,7 @@ export default function CashRegisterPage() {
   const { maskMoneyBr, parseMoneyBr, formatMoneyBr } = useInputMasks();
   const statusDialog = useStatusDialog();
   const [cashStatus, setCashStatus] = useState<CashRegisterStatusDto | null>(null);
-  const [companyName, setCompanyName] = useState("Hórus PDV");
+  const [companyName, setCompanyName] = useState("Quack PDV");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [openingAmount, setOpeningAmount] = useState("0,00");

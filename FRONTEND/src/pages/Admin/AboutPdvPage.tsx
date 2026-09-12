@@ -1,7 +1,7 @@
 /**
  * Arquivo: src/pages/Admin/AboutPdvPage.tsx
  * Objetivo: apresenta informações institucionais do projeto (história, autoria, licença e visão futura).
- * Entradas esperadas: não recebe props; exibe conteúdo estático/documental do Hórus PDV.
+ * Entradas esperadas: não recebe props; exibe conteúdo estático/documental do Quack PDV.
  */
 
 import { BookOpenText, Code2, HeartHandshake, Rocket } from "lucide-react";
@@ -13,14 +13,14 @@ export default function AboutPdvPage() {
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
         title="Sobre PDV"
-        description="História, propósito e modelo de uso do projeto Hórus PDV."
+        description="História, propósito e modelo de uso do projeto Quack PDV."
       />
 
       <section className="card overflow-hidden">
         <div className="border-b border-border-primary bg-gradient-to-r from-secondary/8 via-bg-light to-accent/8 px-4 py-4 md:px-5">
           <h2 className="text-lg font-semibold text-text-primary">Projeto open source</h2>
           <p className="mt-1 text-sm text-text-secondary">
-            O Hórus PDV é um projeto pessoal, aberto para estudo e uso da comunidade.
+            O Quack PDV é um projeto pessoal, aberto para estudo e uso da comunidade.
           </p>
         </div>
 

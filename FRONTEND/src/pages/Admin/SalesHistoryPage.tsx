@@ -395,7 +395,7 @@ export default function SalesHistoryPage() {
       {danfePreview ? (
         <DanfePreviewModal
           detail={danfePreview}
-          companyName={company?.fantasyName || company?.corporateName || "Hórus PDV"}
+          companyName={company?.fantasyName || company?.corporateName || "Quack PDV"}
           onClose={() => setDanfePreview(null)}
           onPrintDanfe={(detail) => {
             const sale = salesHistory.find((s) => s.saleNumber === detail.saleNumber);

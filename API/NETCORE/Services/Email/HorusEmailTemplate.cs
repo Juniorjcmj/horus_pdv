@@ -12,7 +12,7 @@ public static class HorusEmailTemplate
 {
     public static string BuildPasswordResetHtml(string companyName, string resetUrl, DateTimeOffset expiresAt)
     {
-        var safeCompanyName = WebUtility.HtmlEncode(string.IsNullOrWhiteSpace(companyName) ? "Hórus PDV" : companyName.Trim());
+        var safeCompanyName = WebUtility.HtmlEncode(string.IsNullOrWhiteSpace(companyName) ? "Quack PDV" : companyName.Trim());
         var safeResetUrl = WebUtility.HtmlEncode(resetUrl);
         var expiresLabel = FormatDateTimePtBr(expiresAt);
 
@@ -21,7 +21,7 @@ public static class HorusEmailTemplate
           <div style="max-width:620px;margin:0 auto;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;background:#ffffff;">
             <div style="padding:16px 24px;background:linear-gradient(135deg,#4f46e5 0%,#2563eb 52%,#0f766e 100%);">
               <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ffffff;opacity:.94;">
-                Hórus PDV
+                Quack PDV
               </p>
             </div>
 
@@ -62,7 +62,7 @@ public static class HorusEmailTemplate
             </div>
 
             <div style="padding:12px 24px;border-top:1px solid #e5e7eb;background:#f8fafc;font-size:12px;color:#64748b;">
-              Mensagem automática enviada por Hórus PDV. Não é necessário responder.
+              Mensagem automática enviada por Quack PDV. Não é necessário responder.
             </div>
           </div>
         </div>
@@ -73,9 +73,9 @@ public static class HorusEmailTemplate
     {
         var lines = new[]
         {
-            "Hórus PDV - Recuperação de senha",
+            "Quack PDV - Recuperação de senha",
             "",
-            $"Empresa: {NormalizeText(companyName, "Hórus PDV")}",
+            $"Empresa: {NormalizeText(companyName, "Quack PDV")}",
             "Recebemos uma solicitação para redefinir sua senha.",
             $"Link: {resetUrl}",
             $"Expira em: {FormatDateTimePtBr(expiresAt)} (horário de Brasília)",
@@ -96,7 +96,7 @@ public static class HorusEmailTemplate
           <div style="max-width:620px;margin:0 auto;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;background:#ffffff;">
             <div style="padding:16px 24px;background:linear-gradient(135deg,#4f46e5 0%,#2563eb 52%,#0f766e 100%);">
               <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ffffff;opacity:.94;">
-                Hórus PDV
+                Quack PDV
               </p>
             </div>
 
@@ -105,7 +105,7 @@ public static class HorusEmailTemplate
                 Cadastro criado com sucesso
               </h1>
               <p style="margin:0 0 14px;color:#475569;">
-                A conta da empresa <strong style="color:#111827;">{{safeCompanyName}}</strong> foi criada no Hórus PDV.
+                A conta da empresa <strong style="color:#111827;">{{safeCompanyName}}</strong> foi criada no Quack PDV.
               </p>
               <p style="margin:0 0 14px;color:#475569;">
                 Você já pode acessar o painel usando o e-mail e a senha cadastrados.
@@ -116,7 +116,7 @@ public static class HorusEmailTemplate
                   href="{{safeLoginUrl}}"
                   style="display:inline-block;padding:11px 18px;border-radius:10px;background:#4f46e5;color:#ffffff;text-decoration:none;font-weight:700;"
                 >
-                  Acessar o Hórus PDV
+                  Acessar o Quack PDV
                 </a>
               </p>
 
@@ -126,7 +126,7 @@ public static class HorusEmailTemplate
             </div>
 
             <div style="padding:12px 24px;border-top:1px solid #e5e7eb;background:#f8fafc;font-size:12px;color:#64748b;">
-              Mensagem automática enviada por Hórus PDV. Não é necessário responder.
+              Mensagem automática enviada por Quack PDV. Não é necessário responder.
             </div>
           </div>
         </div>
@@ -137,7 +137,7 @@ public static class HorusEmailTemplate
     {
         var lines = new[]
         {
-            "Hórus PDV - Cadastro criado",
+            "Quack PDV - Cadastro criado",
             "",
             $"Empresa: {NormalizeText(companyName, "sua empresa")}",
             "Sua conta foi criada com sucesso.",

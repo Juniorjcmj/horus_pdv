@@ -924,7 +924,7 @@ export default function SalesStartPage({
         <header className="relative border-b border-border-secondary bg-accent px-4 py-3 text-text-light">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="font-display text-2xl font-bold italic leading-none md:text-4xl">Hórus PDV</h1>
+              <h1 className="font-display text-2xl font-bold italic leading-none md:text-4xl">Quack PDV</h1>
               <p className="text-sm italic leading-none md:text-lg">Frente de Caixa</p>
             </div>
             <div className="text-right text-xs md:text-sm">
@@ -1158,7 +1158,7 @@ export default function SalesStartPage({
             <div className="grid grid-cols-1 gap-1 border-b border-border-primary bg-bg-gray-theme px-3 py-2 text-xs text-text-primary sm:grid-cols-[1fr_200px] sm:gap-0">
               <p>
                 <span className="font-semibold">Empresa:</span>{" "}
-                {company?.fantasyName || "Hórus PDV"}
+                {company?.fantasyName || "Quack PDV"}
               </p>
               <p className="sm:text-right">
                 <span className="font-semibold">CNPJ:</span> {company?.cnpj || "-"}
@@ -1325,7 +1325,7 @@ export default function SalesStartPage({
               <footer className="space-y-0.5 border-t border-border-primary bg-bg-primary px-3 py-2 text-[11px] text-text-secondary sm:grid sm:grid-cols-3 sm:items-center sm:space-y-0 sm:text-xs">
                 <p>Usuário: {operatorName}</p>
                 <p className="sm:text-center">
-                  Estabelecimento: {company?.fantasyName || "Hórus PDV"}
+                  Estabelecimento: {company?.fantasyName || "Quack PDV"}
                 </p>
                 <p className="sm:text-right">
                   Prévia impressão: {printPreviewEnabled ? "Sim" : "Não"} • Caixa:{" "}

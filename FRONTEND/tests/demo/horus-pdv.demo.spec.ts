@@ -256,7 +256,7 @@ async function openCashRegister(page: Page, request: APIRequestContext) {
 async function completeSale(page: Page, request: APIRequestContext) {
   await caption(page, "Frente de caixa: adicionar produto e confirmar pagamento");
   await page.goto(`${APP_URL}?pdv=1`);
-  await expect(page.getByRole("heading", { name: /Hórus PDV/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Quack PDV/i })).toBeVisible();
   await page.getByLabel(/^Produto:/i).fill(demo.productCode);
   await page.getByText(demo.productEditedName, { exact: true }).click();
   await page.getByLabel(/quantidade/i).fill("2");
@@ -284,7 +284,7 @@ async function historyAndReports(page: Page) {
 
 async function finishOnHome(page: Page) {
   await openAppPage(page, "home", "Home");
-  await caption(page, "Hórus PDV pronto para operação de balcão");
+  await caption(page, "Quack PDV pronto para operação de balcão");
   await pause(page, 1_200);
 }
 

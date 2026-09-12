@@ -61,7 +61,7 @@ services:
       Email__User: "${EMAIL_USER:-}"
       Email__Password: "${EMAIL_PASSWORD:-}"
       Email__FromEmail: "${EMAIL_FROM:-}"
-      Email__FromName: "Hórus PDV"
+      Email__FromName: "Quack PDV"
       Recaptcha__Enabled: "${RECAPTCHA_ENABLED:-false}"
       Recaptcha__SecretKey: "${RECAPTCHA_SECRET_KEY:-}"
     networks:

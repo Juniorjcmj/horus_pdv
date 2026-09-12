@@ -89,7 +89,7 @@ export function buildDanfePrintHtml(
   formatMoney: (value: number) => string
 ): string {
   const company = receipt.company;
-  const companyCorporate = company?.corporateName || company?.fantasyName || "HORUS PDV";
+  const companyCorporate = company?.corporateName || company?.fantasyName || "QUACK PDV";
   const companyFantasy = company?.fantasyName;
   const companyAddress = [
     company?.address,
@@ -418,7 +418,7 @@ export function buildDanfePrintHtml(
       <div class="divider"></div>
       <footer class="center fiscal-meta" style="font-size: 9px; color: #444;">
         <div>Venda: ${escapeHtml(receipt.saleNumber)} · Operador: ${escapeHtml(receipt.operatorName || "-")}</div>
-        <div>Horus PDV - Sistema de Ponto de Venda</div>
+        <div>Quack PDV - Sistema de Ponto de Venda</div>
       </footer>
     </main>
 

@@ -549,7 +549,7 @@ export default function FiscalPage() {
       {danfePreview ? (
         <DanfePreviewModal
           detail={danfePreview}
-          companyName={company?.fantasyName || company?.corporateName || "Hórus PDV"}
+          companyName={company?.fantasyName || company?.corporateName || "Quack PDV"}
           onClose={() => setDanfePreview(null)}
           onPrintDanfe={(detail) => {
             setDanfePreview(null);

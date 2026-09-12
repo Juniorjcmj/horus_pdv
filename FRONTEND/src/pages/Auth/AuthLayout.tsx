@@ -34,7 +34,7 @@ export default function AuthLayout({
             <div>
               <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-white/80">
                 <ShieldCheck size={13} />
-                Hórus PDV
+                Quack PDV
               </p>
               <h1 className="mt-4 text-3xl font-bold leading-tight">
                 Gestão de vendas com fluxo rápido para operação de balcão.

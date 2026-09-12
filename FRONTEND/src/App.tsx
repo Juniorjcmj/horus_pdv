@@ -590,10 +590,10 @@ export default function App() {
 
   useEffect(() => {
     if (activePage === "vendas" && isStandalonePos) {
-      document.title = "Hórus PDV - Frente de caixa grátis";
+      document.title = "Quack PDV - Frente de caixa grátis";
       return;
     }
-    document.title = "Hórus PDV - PDV grátis e frente de caixa";
+    document.title = "Quack PDV - PDV grátis e frente de caixa";
   }, [activePage, isStandalonePos]);
 
   useEffect(() => {

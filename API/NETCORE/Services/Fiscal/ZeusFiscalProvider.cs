@@ -391,7 +391,7 @@ public sealed class ZeusFiscalProvider(
             indFinal = ConsumidorFinal.cfConsumidorFinal,
             indPres = PresencaComprador.pcPresencial,
             procEmi = ProcessoEmissao.peAplicativoContribuinte,
-            verProc = "HorusPDV/1.0"
+            verProc = "QuackPDV/1.0"
         };
 
         if (request.TipoEmissao == TipoEmissaoFiscal.ContingenciaOffline)

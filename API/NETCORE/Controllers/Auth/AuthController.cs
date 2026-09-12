@@ -135,7 +135,7 @@ public class AuthController(
             {
                 await emailService.SendPasswordResetEmailAsync(
                     request.Email,
-                    "Hórus PDV",
+                    "Quack PDV",
                     resetUrl,
                     resetRequest.ExpiresAt.Value,
                     HttpContext.RequestAborted);

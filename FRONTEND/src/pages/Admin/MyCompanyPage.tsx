@@ -94,7 +94,7 @@ export default function MyCompanyPage() {
   const [emailSmtpPassword, setEmailSmtpPassword] = useState("");
   const [emailSmtpHasPassword, setEmailSmtpHasPassword] = useState(false);
   const [emailSmtpFromEmail, setEmailSmtpFromEmail] = useState("");
-  const [emailSmtpFromName, setEmailSmtpFromName] = useState("Hórus PDV");
+  const [emailSmtpFromName, setEmailSmtpFromName] = useState("Quack PDV");
   const [emailSmtpReplyTo, setEmailSmtpReplyTo] = useState("");
   const [cepLookupLoading, setCepLookupLoading] = useState(false);
   const [cepLookupError, setCepLookupError] = useState("");
@@ -149,7 +149,7 @@ export default function MyCompanyPage() {
         setEmailSmtpPassword("");
         setEmailSmtpHasPassword(Boolean(data.emailSmtpHasPassword));
         setEmailSmtpFromEmail(data.emailSmtpFromEmail || data.email || "");
-        setEmailSmtpFromName(data.emailSmtpFromName || data.fantasyName || "Hórus PDV");
+        setEmailSmtpFromName(data.emailSmtpFromName || data.fantasyName || "Quack PDV");
         setEmailSmtpReplyTo(data.emailSmtpReplyTo || "");
         setCrt(data.crt || 1);
         setCnaeFiscal(data.cnaeFiscal || "");
@@ -342,7 +342,7 @@ export default function MyCompanyPage() {
         setEmailSmtpPassword("");
         setEmailSmtpHasPassword(Boolean(data.emailSmtpHasPassword));
         setEmailSmtpFromEmail(data.emailSmtpFromEmail || data.email || "");
-        setEmailSmtpFromName(data.emailSmtpFromName || data.fantasyName || "Hórus PDV");
+        setEmailSmtpFromName(data.emailSmtpFromName || data.fantasyName || "Quack PDV");
         setEmailSmtpReplyTo(data.emailSmtpReplyTo || "");
         setCrt(data.crt || 1);
         setCnaeFiscal(data.cnaeFiscal || "");

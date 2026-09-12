@@ -500,12 +500,12 @@ END;
 IF EXISTS (SELECT 1 FROM Empresas WHERE Id = N'empresa-principal')
 BEGIN
     UPDATE Empresas
-       SET FantasyName = N'Hórus PDV',
-           CorporateName = N'Hórus PDV LTDA',
+       SET FantasyName = N'Quack PDV',
+           CorporateName = N'Quack PDV LTDA',
            Cnpj = N'06.332.765/0001-05',
            StateRegistration = N'123.456.789.110',
-           Website = N'https://www.horuspdv.com.br',
-           Email = N'contato@hpdv.com.br',
+           Website = N'https://www.quackpdv.com.br',
+           Email = N'contato@quackpdv.com.br',
            SacPhone = N'(11) 3000-1000',
            Phone = N'(11) 3149-5959',
            Mobile = N'(11) 98888-1000',
@@ -520,7 +520,7 @@ BEGIN
            EmailSmtpPort = CASE WHEN EmailSmtpPort <= 0 THEN 587 ELSE EmailSmtpPort END,
            EmailSmtpEnableSsl = 1,
            EmailSmtpFromEmail = CASE WHEN EmailSmtpFromEmail = N'' THEN N'naoresponderhoruspdv@outlook.com' ELSE EmailSmtpFromEmail END,
-           EmailSmtpFromName = CASE WHEN EmailSmtpFromName = N'' THEN N'Hórus PDV' ELSE EmailSmtpFromName END
+           EmailSmtpFromName = CASE WHEN EmailSmtpFromName = N'' THEN N'Quack PDV' ELSE EmailSmtpFromName END
      WHERE Id = N'empresa-principal';
 END
 ELSE
@@ -531,10 +531,10 @@ BEGIN
          EmailSmtpPort, EmailSmtpEnableSsl, EmailSmtpUser, EmailSmtpPassword, EmailSmtpFromEmail,
          EmailSmtpFromName, EmailSmtpReplyTo)
     VALUES
-        (N'empresa-principal', N'Hórus PDV', N'Hórus PDV LTDA', N'06.332.765/0001-05',
-         N'123.456.789.110', N'https://www.horuspdv.com.br', N'contato@hpdv.com.br',
+        (N'empresa-principal', N'Quack PDV', N'Quack PDV LTDA', N'06.332.765/0001-05',
+         N'123.456.789.110', N'https://www.quackpdv.com.br', N'contato@quackpdv.com.br',
          N'(11) 3000-1000', N'(11) 3149-5959', N'(11) 98888-1000', N'01310-200',
          N'Avenida Paulista', N'1578', N'Bela Vista', N'São Paulo', N'SP', N'Próximo ao MASP',
          0, N'smtp-mail.outlook.com', 587, 1, N'', N'', N'naoresponderhoruspdv@outlook.com',
-         N'Hórus PDV', N'');
+         N'Quack PDV', N'');
 END;

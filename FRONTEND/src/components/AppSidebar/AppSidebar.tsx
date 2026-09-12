@@ -155,7 +155,7 @@ export default function AppSidebar({
         <div className="flex items-center justify-between p-4 border-b border-border-primary">
           {!collapsed && (
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-accent">Hórus PDV</h1>
+              <h1 className="text-lg font-bold tracking-tight text-accent">Quack PDV</h1>
               <p className="text-[11px] text-text-secondary">Painel operacional</p>
             </div>
           )}

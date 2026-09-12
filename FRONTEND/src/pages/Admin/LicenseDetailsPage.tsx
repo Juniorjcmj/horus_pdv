@@ -13,7 +13,7 @@ export default function LicenseDetailsPage() {
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
         title="Detalhes da Licença"
-        description="Informações de uso do Hórus PDV como projeto open source."
+        description="Informações de uso do Quack PDV como projeto open source."
       />
 
       <section className="card overflow-hidden">
@@ -31,7 +31,7 @@ export default function LicenseDetailsPage() {
               Modelo
             </p>
             <p className="mt-2 text-sm text-text-secondary">
-              O Hórus PDV pode ser utilizado gratuitamente nesta versão, para estudo, operação
+              O Quack PDV pode ser utilizado gratuitamente nesta versão, para estudo, operação
               e evolução do projeto.
             </p>
           </article>
