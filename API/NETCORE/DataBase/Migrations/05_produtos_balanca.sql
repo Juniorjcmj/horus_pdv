@@ -1,7 +1,8 @@
 /* ------------------------------------------------------------------------- */
-/* Seed_Produtos_Balanca.sql                                                 */
-/* Carga dos 133 produtos da balança etiquetadora (Triunfo Quantum 30 T)     */
-/* Executável manualmente via SQL Server Management Studio (SSMS) ou DBeaver */
+/* 05_produtos_balanca.sql                                                   */
+/* Carga automática dos 133 produtos da balança etiquetadora                 */
+/* (Triunfo Quantum 30 T) em todas as empresas da base                       */
+/* Idempotente — executado no boot pelo HorusDatabaseInitializer             */
 /* ------------------------------------------------------------------------- */
 
 SET NOCOUNT ON;
@@ -171,7 +172,7 @@ VALUES
     (N'3186', N'RACAO GATO WHISKAS CASTADO PEIXE KG', 0.00, N'KG', N'Rações'),
     (N'6149', N'RACAO GATO WHISKAS FRANGO KG', 0.00, N'KG', N'Rações');
 
--- Aplica para todas as empresas da base
+-- Aplica para todas as empresas da base (ou empresa-principal se não houver empresas cadastradas)
 DECLARE @EmpresasDestino TABLE (CompanyId NVARCHAR(40));
 
 IF OBJECT_ID(N'Empresas', N'U') IS NOT NULL
@@ -268,10 +269,4 @@ WHEN NOT MATCHED THEN
     );
 
 DROP TABLE #ProdutosBalancaTemp;
-
-SELECT 
-    CompanyId,
-    COUNT(1) AS TotalProdutosBalanca 
-FROM Produtos 
-WHERE ProductSupplier = N'Balança Etiquetadora'
-GROUP BY CompanyId;
+GO
