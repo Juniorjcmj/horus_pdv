@@ -549,7 +549,7 @@ export default function SalesStartPage({
   // PLU + peso e adiciona direto ao carrinho, sem passar pelos campos de quantidade manual.
   const addFromBalancaBarcode = useCallback(
     (code: string) => {
-      const decoded = parseBalancaBarcode(code);
+      const decoded = parseBalancaBarcode(code, products);
       if (!decoded) return false;
       if (cartLocked) {
         Toast.error("Este carrinho veio de um pedido — solte o pedido para adicionar itens à mão.");
@@ -566,7 +566,13 @@ export default function SalesStartPage({
       }
 
       if (addProductToCart(product, decoded.weightKg)) {
-        Toast.success(`${product.name} — ${formatQuantityDisplay(decoded.weightKg)} kg adicionado.`);
+        if (decoded.mode === "price" && decoded.totalPrice) {
+          Toast.success(
+            `${product.name} — ${formatQuantityDisplay(decoded.weightKg)} kg (R$ ${formatMoneyBr(decoded.totalPrice)}) adicionado.`,
+          );
+        } else {
+          Toast.success(`${product.name} — ${formatQuantityDisplay(decoded.weightKg)} kg adicionado.`);
+        }
         setProductSearch("");
         setSelectedProductId("");
         setShowProductOptions(false);
@@ -574,7 +580,7 @@ export default function SalesStartPage({
       }
       return true;
     },
-    [addProductToCart, cartLocked, products],
+    [addProductToCart, cartLocked, formatMoneyBr, products],
   );
 
   const removeItem = (id: string) => {

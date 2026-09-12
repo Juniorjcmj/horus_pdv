@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1789223379.4921844,
-    "seen": 1789223433.4169204,
-    "ast_hash": "287f21d0ffb3a68c61823beeda700642",
+    "mtime": 1789175098.3356187,
+    "seen": 1789175139.306285,
+    "ast_hash": "7c687dedf4725894dbbf99ee2fe2566e",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1248,9 +1248,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/balancaBarcode.ts": {
-    "mtime": 1789223354.8984933,
-    "seen": 1789223433.4214628,
-    "ast_hash": "ddcc05e06f192a556a6246c5d198de91",
+    "mtime": 1788692976.9147007,
+    "seen": 1788888974.3522706,
+    "ast_hash": "86ee028caa427b516f62ce84b56d068e",
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/cepLookup.ts": {

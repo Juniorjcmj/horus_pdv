@@ -4,8 +4,9 @@
  * Entradas esperadas: não recebe props; opera com estado local de lista e formulário de produto.
  */
 
-import { FileUp, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { FileUp, Pencil, Plus, Scale, Search, Trash2, X } from "lucide-react";
 import { type ClipboardEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import BalancaImportModal from "@/components/Admin/BalancaImportModal";
 import NfeImportModal from "@/components/Admin/NfeImportModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
@@ -797,6 +798,7 @@ export default function ProductRegisterPage() {
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(() => new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [balancaModalOpen, setBalancaModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -1069,6 +1071,15 @@ export default function ProductRegisterPage() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
+              onClick={() => setBalancaModalOpen(true)}
+              className="btn-secondary inline-flex items-center gap-2"
+              title="Carga automática dos 133 produtos da balança etiquetadora"
+            >
+              <Scale size={16} />
+              Carga Balança (133)
+            </button>
+            <button
+              type="button"
               onClick={() => setImportModalOpen(true)}
               className="btn-secondary inline-flex items-center gap-2"
             >
@@ -1082,6 +1093,16 @@ export default function ProductRegisterPage() {
           </div>
         }
       />
+
+      {balancaModalOpen ? (
+        <BalancaImportModal
+          existingProducts={products}
+          onClose={() => setBalancaModalOpen(false)}
+          onImported={() => {
+            loadProducts();
+          }}
+        />
+      ) : null}
 
       {importModalOpen ? (
         <NfeImportModal
