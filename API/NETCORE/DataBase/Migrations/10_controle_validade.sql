@@ -32,7 +32,7 @@ IF NOT EXISTS (
 BEGIN
     CREATE NONCLUSTERED INDEX IX_Produtos_Validade 
     ON Produtos (CompanyId, ControlaValidade, DataValidade)
-    INCLUDE (BarCode, Description, Stock, CostPrice, SalePrice, CategoriaId)
+    INCLUDE (ProductCode, ProductName, ProductQnt, ProductUnitPrice, ProductSalePrice, CategoriaId)
     WHERE ControlaValidade = 1 AND DataValidade IS NOT NULL;
 END;
 GO
