@@ -84,7 +84,7 @@ public class FiadoAB(Connection connection)
 
         var saldoAtual = saldoAnterior + valor;
         var now = HorusDateTime.Now;
-        var movId = $"fiado-{companyId}-{Guid.NewGuid():N}";
+        var movId = $"fm-{Guid.NewGuid():N}";
 
         const string updateSql = """
             UPDATE Clientes
@@ -193,7 +193,7 @@ public class FiadoAB(Connection connection)
 
             var saldoAtual = Math.Max(0, saldoAnterior - valor);
             var now = HorusDateTime.Now;
-            var movId = $"fiado-{companyId}-{Guid.NewGuid():N}";
+            var movId = $"fm-{Guid.NewGuid():N}";
 
             const string updateSql = """
                 UPDATE Clientes
