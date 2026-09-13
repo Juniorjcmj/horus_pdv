@@ -14,6 +14,13 @@ public class NfeImportPreviewRequest
     public string XmlBase64 { get; set; } = string.Empty;
 }
 
+public class NfeImportChaveRequest
+{
+    /// <summary>Chave de acesso da NF-e de compra (44 dígitos numéricos) para download na SEFAZ.</summary>
+    public string ChaveAcesso { get; set; } = string.Empty;
+}
+
+
 public class NfeImportFornecedorInput
 {
     public string Cnpj { get; set; } = string.Empty;

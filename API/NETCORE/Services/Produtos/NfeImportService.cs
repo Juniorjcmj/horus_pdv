@@ -16,11 +16,15 @@ using HORUSPDV_API.Models.Produtos;
 using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Repositories.DataAccess;
 using HORUSPDV_API.Repositories.DatabaseAccess;
+using HORUSPDV_API.Services.Fiscal;
 using HORUSPDV_API.Services.Shared;
 
 namespace HORUSPDV_API.Services.Produtos;
 
-public class NfeImportService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB)
+public class NfeImportService(
+    ProdutoAB produtosAB,
+    FornecedorAB fornecedoresAB,
+    SefazDFeDownloadService sefazDownloadService)
 {
     public async Task<NfeImportPreviewModel> PreVisualizarAsync(string companyId, NfeImportPreviewRequest request)
     {
@@ -39,8 +43,23 @@ public class NfeImportService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB)
             throw new InvalidOperationException("Arquivo XML inválido (base64 corrompido).", ex);
         }
 
+        return await PreVisualizarXmlBytesAsync(companyId, xmlBytes);
+    }
+
+    public async Task<NfeImportPreviewModel> PreVisualizarPorChaveSefazAsync(
+        string companyId,
+        string chaveAcesso,
+        CancellationToken ct = default)
+    {
+        var xmlBytes = await sefazDownloadService.BuscarXmlNfePorChaveAsync(companyId, chaveAcesso, ct);
+        return await PreVisualizarXmlBytesAsync(companyId, xmlBytes);
+    }
+
+    public async Task<NfeImportPreviewModel> PreVisualizarXmlBytesAsync(string companyId, byte[] xmlBytes)
+    {
         var parsed = NfeXmlParser.Parse(xmlBytes);
         var fornecedorExistente = await fornecedoresAB.ObterPorCnpjAsync(companyId, parsed.Emitente.Cnpj);
+
 
         var fornecedorPreview = fornecedorExistente is not null
             ? new NfeImportFornecedorPreview

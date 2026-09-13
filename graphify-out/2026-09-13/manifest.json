@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfceController.cs": {
-    "mtime": 1789169527.1740015,
-    "seen": 1789169709.9973874,
-    "ast_hash": "caf551a739d470c4fb7b7e58e7059226",
+    "mtime": 1789320736.3435812,
+    "seen": 1789320942.507739,
+    "ast_hash": "fa0b8506611151a182286f81b84c41d0",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fornecedores/FornecedorController.cs": {
@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1789169492.5479803,
-    "seen": 1789169710.0066688,
-    "ast_hash": "2cb59dc277a5b2d6a978405a9a3ec6a8",
+    "mtime": 1789320725.9785278,
+    "seen": 1789320942.514372,
+    "ast_hash": "6aeec5a9e8b7c96f636fdd3ca698c700",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -1002,9 +1002,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiscalPage.tsx": {
-    "mtime": 1789174181.8755472,
-    "seen": 1789174379.112742,
-    "ast_hash": "4a59a5eae93092c55dd15d641d10af0b",
+    "mtime": 1789320903.29573,
+    "seen": 1789320942.5272708,
+    "ast_hash": "0410937a3b228acbc7b95055e8108d9d",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/HomePage.tsx": {
@@ -1176,9 +1176,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiscalService.ts": {
-    "mtime": 1789169540.5548863,
-    "seen": 1789169710.0246196,
-    "ast_hash": "85b83dfa363f59f483a02981361a6ada",
+    "mtime": 1789320764.9032593,
+    "seen": 1789320942.5306518,
+    "ast_hash": "ba03354f87c2f1411ef71b757d32f2a9",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/homeService.ts": {
@@ -2103,6 +2103,18 @@
     "mtime": 1789233869.5207927,
     "seen": 1789309612.5677938,
     "ast_hash": "2570c3424f0aad66d4084d9c4c81039f",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/FiscalCancelModal.tsx": {
+    "mtime": 1789320788.1893597,
+    "seen": 1789320942.5204754,
+    "ast_hash": "61421ab32a6e5c3ae66f9de6e9c1978e",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/FiscalDetailModal.tsx": {
+    "mtime": 1789320883.0763369,
+    "seen": 1789320942.5204778,
+    "ast_hash": "358f3d20f73b39d70687f9a4bbdc1308",
     "semantic_hash": ""
   }
 }

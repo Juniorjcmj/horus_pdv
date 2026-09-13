@@ -20,6 +20,7 @@ import {
   Filter,
   Layers,
   Loader2,
+  PackagePlus,
   Printer,
   QrCode,
   Receipt,
@@ -34,6 +35,7 @@ import DanfePreviewModal from "@/components/Admin/DanfePreviewModal";
 import FiscalCancelModal from "@/components/Admin/FiscalCancelModal";
 import FiscalDetailModal from "@/components/Admin/FiscalDetailModal";
 import FiscalErrorModal from "@/components/Admin/FiscalErrorModal";
+import NfeImportModal from "@/components/Admin/NfeImportModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import ReceiptPreviewModal, { type SaleReceipt } from "@/components/Admin/ReceiptPreviewModal";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
@@ -110,6 +112,7 @@ export default function FiscalPage() {
   const [errorModalDoc, setErrorModalDoc] = useState<FiscalDocumentDto | null>(null);
   const [danfePreview, setDanfePreview] = useState<FiscalDocumentDetailDto | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<SaleReceipt | null>(null);
+  const [importNfeModalOpen, setImportNfeModalOpen] = useState(false);
 
   // Exportação mensal
   const now = useMemo(() => new Date(), []);
@@ -435,6 +438,15 @@ export default function FiscalPage() {
             >
               <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
               Atualizar
+            </button>
+            <button
+              type="button"
+              onClick={() => setImportNfeModalOpen(true)}
+              className="btn-secondary inline-flex items-center gap-1.5 text-xs font-medium"
+              title="Dar entrada em notas fiscais de compra por chave SEFAZ ou arquivo XML"
+            >
+              <PackagePlus size={15} />
+              Entrada de NF-e
             </button>
             <button
               type="button"
@@ -1258,6 +1270,16 @@ export default function FiscalPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {importNfeModalOpen && (
+        <NfeImportModal
+          onClose={() => setImportNfeModalOpen(false)}
+          onImported={() => {
+            setImportNfeModalOpen(false);
+            loadDocuments();
+          }}
+        />
       )}
 
       {PromptDialog}

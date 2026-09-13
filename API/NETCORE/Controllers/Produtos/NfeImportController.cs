@@ -44,6 +44,37 @@ public class NfeImportController(NfeImportService nfeImportService) : Controller
         }
     }
 
+    [HttpPost("buscar-sefaz")]
+    [ProducesResponseType(typeof(ApiResponse<NfeImportPreviewModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<NfeImportPreviewModel>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> BuscarSefaz([FromBody] NfeImportChaveRequest request, CancellationToken ct)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null)
+        {
+            return Unauthorized(new ApiResponse<NfeImportPreviewModel> { Success = false, Message = "Sessão não encontrada." });
+        }
+
+        try
+        {
+            var preview = await nfeImportService.PreVisualizarPorChaveSefazAsync(currentUser.CompanyId, request.ChaveAcesso, ct);
+            return Ok(new ApiResponse<NfeImportPreviewModel>
+            {
+                Success = true,
+                Message = "NF-e baixada diretamente da SEFAZ com sucesso.",
+                Data = preview
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<NfeImportPreviewModel> { Success = false, Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<NfeImportPreviewModel> { Success = false, Message = $"Falha ao consultar SEFAZ: {ex.Message}" });
+        }
+    }
+
     [HttpPost("confirmar")]
     [ProducesResponseType(typeof(ApiResponse<NfeImportResultModel>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<NfeImportResultModel>), StatusCodes.Status400BadRequest)]

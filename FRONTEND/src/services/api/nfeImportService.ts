@@ -104,6 +104,13 @@ export const nfeImportService = {
     });
     return response.data ?? null;
   },
+  async previewPorChave(chaveAcesso: string) {
+    const response = await apiRequest<NfeImportPreview>(`${NFE_IMPORT_API_URL}/buscar-sefaz`, {
+      method: "POST",
+      body: JSON.stringify({ chaveAcesso }),
+    });
+    return response.data ?? null;
+  },
   async confirmar(payload: NfeImportConfirmPayload) {
     const response = await apiRequest<NfeImportResult>(`${NFE_IMPORT_API_URL}/confirmar`, {
       method: "POST",
