@@ -13,7 +13,7 @@ using Microsoft.Data.SqlClient;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
-public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb)
+public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogAB auditLogAb)
 {
     public async Task<List<VendaHistoricoAD>> ListarAsync(string companyId, string? saleNumber = null)
     {
@@ -148,12 +148,24 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb)
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, payments);
 
+            FiadoMovimentoAD? fiadoMov = null;
             if (fiadoPayment is not null && fiadoPayment.Amount > 0 && fiadoClienteId is not null)
             {
-                await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteId, fiadoPayment.Amount, result.VendaId, operatorName);
+                fiadoMov = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteId, fiadoPayment.Amount, result.VendaId, operatorName);
             }
 
             await transaction.CommitAsync();
+
+            if (fiadoMov is not null)
+            {
+                _ = auditLogAb.RegistrarAsync(
+                    companyId, "", operatorName,
+                    AuditEventTypes.FiadoDebito,
+                    $"Venda fiado {HorusMoneyFormat.Format(fiadoMov.Valor)} para {fiadoMov.ClienteNome}. Saldo devedor: {HorusMoneyFormat.Format(fiadoMov.SaldoAtual)}.",
+                    entityType: "Cliente",
+                    entityId: fiadoMov.ClienteId);
+            }
+
             return result;
         }
         catch
@@ -246,12 +258,24 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb)
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, pagamentos);
 
+            FiadoMovimentoAD? fiadoMovFixo = null;
             if (fiadoPaymentFixo is not null && fiadoPaymentFixo.Amount > 0 && fiadoClienteIdFixo is not null)
             {
-                await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteIdFixo, fiadoPaymentFixo.Amount, result.VendaId, operatorName);
+                fiadoMovFixo = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteIdFixo, fiadoPaymentFixo.Amount, result.VendaId, operatorName);
             }
 
             await transaction.CommitAsync();
+
+            if (fiadoMovFixo is not null)
+            {
+                _ = auditLogAb.RegistrarAsync(
+                    companyId, "", operatorName,
+                    AuditEventTypes.FiadoDebito,
+                    $"Venda fiado {HorusMoneyFormat.Format(fiadoMovFixo.Valor)} para {fiadoMovFixo.ClienteNome}. Saldo devedor: {HorusMoneyFormat.Format(fiadoMovFixo.SaldoAtual)}.",
+                    entityType: "Cliente",
+                    entityId: fiadoMovFixo.ClienteId);
+            }
+
             return result;
         }
         catch
