@@ -107,6 +107,7 @@ export default function BalancaImportModal({
         productSupplier: "Balança Etiquetadora",
         productDescription: `Produto de balança - ${item.category}`,
         productQnt: "9999,0000", // Estoque alto inicial para balança
+        estoqueMinimo: "0,0000",
         productUnitPrice: "0,00",
         productSalePrice: item.defaultSalePrice > 0 ? formatMoneyBr(item.defaultSalePrice) : "0,00",
         totalPriceOnProduct: "0,00",

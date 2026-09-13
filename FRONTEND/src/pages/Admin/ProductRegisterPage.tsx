@@ -4,9 +4,10 @@
  * Entradas esperadas: não recebe props; opera com estado local de lista e formulário de produto.
  */
 
-import { AlertTriangle, Database, FileUp, Loader2, Pencil, Plus, Scale, Search, Trash2, X } from "lucide-react";
+import { AlertTriangle, Database, FileUp, Loader2, Pencil, Plus, Scale, Search, Tag, Trash2, X } from "lucide-react";
 import { type ClipboardEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import BalancaImportModal from "@/components/Admin/BalancaImportModal";
+import GondolaLabelModal from "@/components/Admin/GondolaLabelModal";
 import NfeImportModal from "@/components/Admin/NfeImportModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
@@ -830,6 +831,8 @@ export default function ProductRegisterPage() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [deletingProductIds, setDeletingProductIds] = useState<Set<string>>(() => new Set());
   const [form, setForm] = useState<ProductFormData>(EMPTY_FORM);
+  const [gondolaModalOpen, setGondolaModalOpen] = useState(false);
+  const [gondolaInitialProducts, setGondolaInitialProducts] = useState<Product[]>([]);
 
   const loadProducts = () => {
     productService
@@ -932,6 +935,21 @@ export default function ProductRegisterPage() {
     setEditingId(product.id);
     setForm({ ...product });
     setDrawerOpen(true);
+  };
+
+  const handleOpenGondolaModal = (selectedOnly = false) => {
+    if (selectedOnly && selectedProductIds.size > 0) {
+      const selectedItems = products.filter((p) => selectedProductIds.has(p.id));
+      setGondolaInitialProducts(selectedItems);
+    } else {
+      setGondolaInitialProducts([]);
+    }
+    setGondolaModalOpen(true);
+  };
+
+  const handlePrintSingleGondolaLabel = (product: Product) => {
+    setGondolaInitialProducts([product]);
+    setGondolaModalOpen(true);
   };
 
   const handleDelete = async (product: Product) => {
@@ -1165,6 +1183,15 @@ export default function ProductRegisterPage() {
               <FileUp size={16} />
               Importar XML
             </button>
+            <button
+              type="button"
+              onClick={() => handleOpenGondolaModal(selectedProductIds.size > 0)}
+              className="btn-secondary inline-flex items-center gap-2"
+              title="Gerar e imprimir etiquetas de gôndola/prateleira (A4 Pimaco ou Bobina Térmica)"
+            >
+              <Tag size={16} />
+              Etiquetas de Gôndola {selectedProductIds.size > 0 ? `(${selectedProductIds.size})` : ""}
+            </button>
             <button type="button" onClick={openCreateDrawer} className="btn-primary inline-flex items-center gap-2">
               <Plus size={16} />
               Novo produto
@@ -1190,6 +1217,14 @@ export default function ProductRegisterPage() {
             loadProducts();
             loadSuppliers();
           }}
+        />
+      ) : null}
+
+      {gondolaModalOpen ? (
+        <GondolaLabelModal
+          initialProducts={gondolaInitialProducts}
+          allProducts={products}
+          onClose={() => setGondolaModalOpen(false)}
         />
       ) : null}
 
@@ -1236,16 +1271,27 @@ export default function ProductRegisterPage() {
             <p className="text-sm font-semibold text-text-primary">
               {selectedProductIds.size} produto(s) selecionado(s)
             </p>
-            <LoadingButton
-              type="button"
-              onClick={handleBulkDelete}
-              isLoading={bulkDeleting}
-              loadingLabel="Excluindo..."
-              className="btn-cancel inline-flex items-center justify-center gap-2"
-            >
-              <Trash2 size={15} />
-              Excluir selecionados
-            </LoadingButton>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleOpenGondolaModal(true)}
+                className="btn-secondary inline-flex items-center justify-center gap-2 text-xs"
+                title="Imprimir etiquetas de gôndola para os produtos selecionados"
+              >
+                <Tag size={14} />
+                Imprimir Etiquetas ({selectedProductIds.size})
+              </button>
+              <LoadingButton
+                type="button"
+                onClick={handleBulkDelete}
+                isLoading={bulkDeleting}
+                loadingLabel="Excluindo..."
+                className="btn-cancel inline-flex items-center justify-center gap-2"
+              >
+                <Trash2 size={15} />
+                Excluir selecionados
+              </LoadingButton>
+            </div>
           </div>
         ) : null}
         <div className="overflow-x-auto">
@@ -1322,6 +1368,12 @@ export default function ProductRegisterPage() {
                   <td className="px-4 py-3">
                     <RowActionsMenu
                       items={[
+                        {
+                          key: "etiqueta",
+                          label: "Imprimir Etiqueta",
+                          icon: <Tag size={13} />,
+                          onClick: () => handlePrintSingleGondolaLabel(product),
+                        },
                         {
                           key: "edit",
                           label: "Editar",

@@ -19,7 +19,9 @@
     "demo:video": "playwright test --config playwright.demo.config.ts"
   },
   "dependencies": {
+    "@types/jsbarcode": "^3.11.4",
     "date-fns": "^4.1.0",
+    "jsbarcode": "^3.12.3",
     "lucide-react": "^1.0.1",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.4",
