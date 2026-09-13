@@ -19,6 +19,8 @@ public static class AuditEventTypes
     public const string CaixaReforco = "CaixaReforco";
     public const string CaixaSangria = "CaixaSangria";
     public const string VendaBloqueada = "VendaBloqueada";
+    public const string FiadoDebito = "FiadoDebito";
+    public const string FiadoRecebimento = "FiadoRecebimento";
 }
 
 public class AuditLogAB(Connection connection)

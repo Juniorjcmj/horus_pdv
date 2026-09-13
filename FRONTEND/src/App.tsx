@@ -36,6 +36,8 @@ const ProductRegisterPage = lazy(
   () => import("@/pages/Admin/ProductRegisterPage"),
 );
 const SalesHistoryPage = lazy(() => import("@/pages/Admin/SalesHistoryPage"));
+const PromocoesPage = lazy(() => import("@/pages/Admin/PromocoesPage"));
+const FiadoPage = lazy(() => import("@/pages/Admin/FiadoPage"));
 const SalesStartPage = lazy(() => import("@/pages/Admin/SalesStartPage"));
 const NovoPedidoPage = lazy(() => import("@/pages/Admin/NovoPedidoPage"));
 const ReportsPage = lazy(() => import("@/pages/Admin/ReportsPage"));
@@ -124,6 +126,8 @@ export default function App() {
       "cadastro-cliente",
       "cadastro-fornecedor",
       "cadastro-produto",
+      "promocoes",
+      "fiado",
       "historico-vendas",
       "relatorios",
       "vendas",
@@ -208,6 +212,8 @@ export default function App() {
     "cadastro-cliente": "Cadastro de Cliente",
     "cadastro-fornecedor": "Cadastro de Fornecedor",
     "cadastro-produto": "Cadastro de Produto",
+    promocoes: "Promoções e Preços Dinâmicos",
+    fiado: "Fiado / Conta Corrente",
     "historico-vendas": "Histórico de Vendas",
     relatorios: "Relatórios",
     vendas: "Iniciar Vendas",
@@ -238,6 +244,10 @@ export default function App() {
         return SupplierRegisterPage;
       case "cadastro-produto":
         return ProductRegisterPage;
+      case "promocoes":
+        return PromocoesPage;
+      case "fiado":
+        return FiadoPage;
       case "historico-vendas":
         return SalesHistoryPage;
       case "relatorios":

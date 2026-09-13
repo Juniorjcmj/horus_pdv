@@ -4,6 +4,7 @@
  *           fiscais de produtos.
  * Entradas esperadas: recebe conexão configurada, parâmetros normalizados e executa leitura/escrita no SQL Server.
  */
+using HORUSPDV_API.Models.Produtos;
 using HORUSPDV_API.Repositories.DataAccess;
 using Microsoft.Data.SqlClient;
 
@@ -12,20 +13,22 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 public class ProdutoAB(Connection connection)
 {
     private const string Columns = """
-        Id, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier,
-        ProductDescription, ProductQnt, EstoqueMinimo, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
-        MargemDesejadaPercentual,
-        Ncm, Cest, Cfop, OrigemMercadoria, UnidadeComercial, UnidadeTributavel, Gtin,
-        CsosnIcms, CstIcms, AliquotaIcms, CstPis, CstCofins, CstIbsCbs, CClassTrib
+        p.Id, p.ProductImageUrl, p.ProductImageName, p.ProductName, p.ProductCode, p.ProductSupplier,
+        p.ProductDescription, p.ProductQnt, p.EstoqueMinimo, p.ProductUnitPrice, p.ProductSalePrice, p.TotalPriceOnProduct,
+        p.MargemDesejadaPercentual, p.CategoriaId, c.Nome AS CategoriaNome,
+        p.DataValidade, p.ControlaValidade, p.DiasAlertaValidade,
+        p.Ncm, p.Cest, p.Cfop, p.OrigemMercadoria, p.UnidadeComercial, p.UnidadeTributavel, p.Gtin,
+        p.CsosnIcms, p.CstIcms, p.AliquotaIcms, p.CstPis, p.CstCofins, p.CstIbsCbs, p.CClassTrib
         """;
 
     public async Task<List<ProdutoAD>> ListarAsync(string companyId)
     {
         var sql = $"""
             SELECT {Columns}
-            FROM Produtos
-            WHERE CompanyId = @CompanyId
-            ORDER BY ProductName;
+            FROM Produtos p
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            WHERE p.CompanyId = @CompanyId
+            ORDER BY p.ProductName;
             """;
 
         await using var db = await connection.OpenConnectionAsync();
@@ -45,8 +48,9 @@ public class ProdutoAB(Connection connection)
     {
         var sql = $"""
             SELECT {Columns}
-            FROM Produtos
-            WHERE Id = @Id AND CompanyId = @CompanyId;
+            FROM Produtos p
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            WHERE p.Id = @Id AND p.CompanyId = @CompanyId;
             """;
 
         await using var db = await connection.OpenConnectionAsync();
@@ -91,8 +95,9 @@ public class ProdutoAB(Connection connection)
     {
         var sql = $"""
             SELECT {Columns}
-            FROM Produtos
-            WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;
+            FROM Produtos p
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            WHERE p.CompanyId = @CompanyId AND p.ProductCode = @ProductCode;
             """;
 
         await using var db = await connection.OpenConnectionAsync();
@@ -113,8 +118,9 @@ public class ProdutoAB(Connection connection)
 
         var sql = $"""
             SELECT TOP 1 {Columns}
-            FROM Produtos
-            WHERE CompanyId = @CompanyId AND Gtin = @Gtin;
+            FROM Produtos p
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            WHERE p.CompanyId = @CompanyId AND p.Gtin = @Gtin;
             """;
 
         await using var db = await connection.OpenConnectionAsync();
@@ -137,7 +143,12 @@ public class ProdutoAB(Connection connection)
         try
         {
             await using var select = new SqlCommand(
-                $"SELECT {Columns} FROM Produtos WITH (UPDLOCK, ROWLOCK) WHERE Id = @Id AND CompanyId = @CompanyId;",
+                $"""
+                SELECT {Columns}
+                FROM Produtos p WITH (UPDLOCK, ROWLOCK)
+                LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+                WHERE p.Id = @Id AND p.CompanyId = @CompanyId;
+                """,
                 db,
                 transaction);
             select.Parameters.AddWithValue("@Id", productId);
@@ -217,6 +228,10 @@ public class ProdutoAB(Connection connection)
                        ProductSalePrice = @ProductSalePrice,
                        TotalPriceOnProduct = @TotalPriceOnProduct,
                        MargemDesejadaPercentual = @MargemDesejadaPercentual,
+                       CategoriaId = @CategoriaId,
+                       DataValidade = @DataValidade,
+                       ControlaValidade = @ControlaValidade,
+                       DiasAlertaValidade = @DiasAlertaValidade,
                        Ncm = @Ncm,
                        Cest = @Cest,
                        Cfop = @Cfop,
@@ -238,13 +253,13 @@ public class ProdutoAB(Connection connection)
                 INSERT INTO Produtos
                     (Id, CompanyId, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier, SupplierId,
                      ProductDescription, ProductQnt, EstoqueMinimo, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
-                     MargemDesejadaPercentual,
+                     MargemDesejadaPercentual, CategoriaId, DataValidade, ControlaValidade, DiasAlertaValidade,
                      Ncm, Cest, Cfop, OrigemMercadoria, UnidadeComercial, UnidadeTributavel, Gtin,
                      CsosnIcms, CstIcms, AliquotaIcms, CstPis, CstCofins, CstIbsCbs, CClassTrib)
                 VALUES
                     (@Id, @CompanyId, @ProductImageUrl, @ProductImageName, @ProductName, @ProductCode, @ProductSupplier, @SupplierId,
                      @ProductDescription, @ProductQnt, @EstoqueMinimo, @ProductUnitPrice, @ProductSalePrice, @TotalPriceOnProduct,
-                     @MargemDesejadaPercentual,
+                     @MargemDesejadaPercentual, @CategoriaId, @DataValidade, @ControlaValidade, @DiasAlertaValidade,
                      @Ncm, @Cest, @Cfop, @OrigemMercadoria, @UnidadeComercial, @UnidadeTributavel, @Gtin,
                      @CsosnIcms, @CstIcms, @AliquotaIcms, @CstPis, @CstCofins, @CstIbsCbs, @CClassTrib);
             END;
@@ -264,6 +279,83 @@ public class ProdutoAB(Connection connection)
         await using var command = new SqlCommand("DELETE FROM Produtos WHERE Id = @Id AND CompanyId = @CompanyId;", db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Id", id);
+        return await command.ExecuteNonQueryAsync() > 0;
+    }
+
+    public async Task<List<ProdutoAD>> ListarVencimentosAsync(string companyId, int dias)
+    {
+        var sql = $"""
+            SELECT {Columns}
+            FROM Produtos p
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            WHERE p.CompanyId = @CompanyId
+              AND p.ControlaValidade = 1
+              AND p.DataValidade IS NOT NULL
+              AND p.DataValidade <= DATEADD(day, @Dias, CAST(GETDATE() AS DATE))
+            ORDER BY p.DataValidade ASC, p.ProductName ASC;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Dias", dias);
+        await using var reader = await command.ExecuteReaderAsync();
+        var rows = new List<ProdutoAD>();
+        while (await reader.ReadAsync())
+        {
+            rows.Add(Map(reader));
+        }
+
+        return rows;
+    }
+
+    public async Task<VencimentoResumoModel> ObterResumoVencimentosAsync(string companyId)
+    {
+        const string sql = """
+            SELECT
+                COUNT(CASE WHEN ControlaValidade = 1 AND DataValidade < CAST(GETDATE() AS DATE) THEN 1 END) AS Vencidos,
+                COUNT(CASE WHEN ControlaValidade = 1 AND DataValidade >= CAST(GETDATE() AS DATE) AND DataValidade <= DATEADD(day, 7, CAST(GETDATE() AS DATE)) THEN 1 END) AS VenceEm7Dias,
+                COUNT(CASE WHEN ControlaValidade = 1 AND DataValidade >= CAST(GETDATE() AS DATE) AND DataValidade <= DATEADD(day, 15, CAST(GETDATE() AS DATE)) THEN 1 END) AS VenceEm15Dias,
+                COUNT(CASE WHEN ControlaValidade = 1 AND DataValidade >= CAST(GETDATE() AS DATE) AND DataValidade <= DATEADD(day, 30, CAST(GETDATE() AS DATE)) THEN 1 END) AS VenceEm30Dias,
+                COUNT(CASE WHEN ControlaValidade = 1 THEN 1 END) AS TotalControlados,
+                COUNT(CASE WHEN ControlaValidade = 1 AND DataValidade IS NULL THEN 1 END) AS SemDataInformada
+            FROM Produtos
+            WHERE CompanyId = @CompanyId;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        await using var reader = await command.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return new VencimentoResumoModel
+            {
+                Vencidos = ReadInt(reader, "Vencidos"),
+                VenceEm7Dias = ReadInt(reader, "VenceEm7Dias"),
+                VenceEm15Dias = ReadInt(reader, "VenceEm15Dias"),
+                VenceEm30Dias = ReadInt(reader, "VenceEm30Dias"),
+                TotalControlados = ReadInt(reader, "TotalControlados"),
+                SemDataInformada = ReadInt(reader, "SemDataInformada")
+            };
+        }
+
+        return new VencimentoResumoModel();
+    }
+
+    public async Task<bool> AtualizarValidadeAsync(string companyId, string produtoId, DateTime? dataValidade)
+    {
+        const string sql = """
+            UPDATE Produtos
+               SET DataValidade = @DataValidade
+             WHERE Id = @Id AND CompanyId = @CompanyId;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Id", produtoId);
+        command.Parameters.AddWithValue("@DataValidade", (object?)dataValidade?.Date ?? DBNull.Value);
         return await command.ExecuteNonQueryAsync() > 0;
     }
 
@@ -371,6 +463,10 @@ public class ProdutoAB(Connection connection)
         command.Parameters.AddWithValue("@ProductSalePrice", product.ProductSalePrice);
         command.Parameters.AddWithValue("@TotalPriceOnProduct", product.TotalPriceOnProduct);
         command.Parameters.AddWithValue("@MargemDesejadaPercentual", (object?)product.MargemDesejadaPercentual ?? DBNull.Value);
+        command.Parameters.AddWithValue("@CategoriaId", (object?)product.CategoriaId ?? DBNull.Value);
+        command.Parameters.AddWithValue("@DataValidade", (object?)product.DataValidade?.Date ?? DBNull.Value);
+        command.Parameters.AddWithValue("@ControlaValidade", product.ControlaValidade);
+        command.Parameters.AddWithValue("@DiasAlertaValidade", product.DiasAlertaValidade);
         command.Parameters.AddWithValue("@Ncm", product.Ncm);
         command.Parameters.AddWithValue("@Cest", (object?)product.Cest ?? DBNull.Value);
         command.Parameters.AddWithValue("@Cfop", product.Cfop);
@@ -402,6 +498,11 @@ public class ProdutoAB(Connection connection)
         ProductSalePrice = ReadDecimal(source, "ProductSalePrice"),
         TotalPriceOnProduct = ReadDecimal(source, "TotalPriceOnProduct"),
         MargemDesejadaPercentual = ReadNullableDecimal(source, "MargemDesejadaPercentual"),
+        CategoriaId = ReadNullableString(source, "CategoriaId"),
+        CategoriaNome = ReadNullableString(source, "CategoriaNome"),
+        DataValidade = ReadNullableDateTime(source, "DataValidade"),
+        ControlaValidade = ReadBool(source, "ControlaValidade"),
+        DiasAlertaValidade = ReadInt(source, "DiasAlertaValidade"),
         Ncm = ReadString(source, "Ncm"),
         Cest = ReadNullableString(source, "Cest"),
         Cfop = ReadString(source, "Cfop"),
@@ -446,5 +547,17 @@ public class ProdutoAB(Connection connection)
     {
         var ordinal = reader.GetOrdinal(name);
         return reader.IsDBNull(ordinal) ? 0 : Convert.ToInt32(reader.GetValue(ordinal));
+    }
+
+    private static DateTime? ReadNullableDateTime(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? null : reader.GetDateTime(ordinal);
+    }
+
+    private static bool ReadBool(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return !reader.IsDBNull(ordinal) && reader.GetBoolean(ordinal);
     }
 }

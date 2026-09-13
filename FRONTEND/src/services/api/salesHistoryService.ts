@@ -40,6 +40,10 @@ export type RegisterSalePayload = {
     productCode: string;
     productName: string;
     quantity: number;
+    unitPrice?: number;
+    desconto?: number;
+    itemTotal?: number;
+    promocaoId?: string | null;
   }>;
   payments?: SalePaymentDto[];
 };

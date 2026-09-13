@@ -21,6 +21,12 @@ public class ProdutoModel
     public string ProductSalePrice { get; set; } = string.Empty;
     public string TotalPriceOnProduct { get; set; } = string.Empty;
     public string? MargemDesejadaPercentual { get; set; }
+    public string? CategoriaId { get; set; }
+    public string? CategoriaNome { get; set; }
+    public string? DataValidade { get; set; }
+    public bool ControlaValidade { get; set; }
+    public int DiasAlertaValidade { get; set; } = 15;
+    public int? DiasRestantes { get; set; }
 
     // Dados fiscais (NFC-e modelo 65)
     public string Ncm { get; set; } = "00000000";

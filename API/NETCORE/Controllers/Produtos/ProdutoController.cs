@@ -101,6 +101,53 @@ public class ProdutoController(IProdutoService produtoService) : ControllerBase
         return Ok(new ApiResponse<object> { Success = true, Message = "Produto removido com sucesso." });
     }
 
+    [HttpGet("vencimentos")]
+    [ProducesResponseType(typeof(ApiResponse<List<ProdutoModel>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListarVencimentos([FromQuery] int dias = 15)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<List<ProdutoModel>> { Success = false, Message = "Sessão não encontrada." });
+        var data = await produtoService.ListarVencimentosAsync(currentUser.CompanyId, dias);
+        return Ok(new ApiResponse<List<ProdutoModel>>
+        {
+            Success = true,
+            Message = "Produtos com controle de validade obtidos com sucesso.",
+            Data = data
+        });
+    }
+
+    [HttpGet("vencimentos/resumo")]
+    [ProducesResponseType(typeof(ApiResponse<VencimentoResumoModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ObterResumoVencimentos()
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<VencimentoResumoModel> { Success = false, Message = "Sessão não encontrada." });
+        var data = await produtoService.ObterResumoVencimentosAsync(currentUser.CompanyId);
+        return Ok(new ApiResponse<VencimentoResumoModel>
+        {
+            Success = true,
+            Message = "Resumo de vencimentos obtido com sucesso.",
+            Data = data
+        });
+    }
+
+    [HttpPut("{id}/validade")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AtualizarValidade(string id, [FromBody] AtualizarValidadeRequest request)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+        var updated = await produtoService.AtualizarValidadeAsync(currentUser.CompanyId, id, request.DataValidade);
+        if (!updated)
+        {
+            return NotFound(new ApiResponse<object> { Success = false, Message = "Produto não encontrado." });
+        }
+
+        return Ok(new ApiResponse<object> { Success = true, Message = "Validade atualizada com sucesso." });
+    }
+
     [HttpPost("importar-legado")]
     [HorusAuthorizeRoles("administrador", "gerente")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]

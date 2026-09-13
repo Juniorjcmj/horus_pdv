@@ -13,7 +13,7 @@ public class ClienteAB(Connection connection)
     private const string Columns = """
         Id, CustomerName, Document, BirthDate, Age, Cep, City, State, Address, Neighborhood,
         StreetComplement, Number, ReferencePoint, Telephone, Cellphone, Email,
-        IndIeDest, InscricaoEstadual, CodigoMunicipioIbge
+        IndIeDest, InscricaoEstadual, CodigoMunicipioIbge, LimiteCredito, SaldoDevedor
         """;
 
     public async Task<List<ClienteAD>> ListarAsync(string companyId)
@@ -96,7 +96,8 @@ public class ClienteAB(Connection connection)
                        Email = @Email,
                        IndIeDest = @IndIeDest,
                        InscricaoEstadual = @InscricaoEstadual,
-                       CodigoMunicipioIbge = @CodigoMunicipioIbge
+                       CodigoMunicipioIbge = @CodigoMunicipioIbge,
+                       LimiteCredito = @LimiteCredito
                  WHERE Id = @Id AND CompanyId = @CompanyId;
             END
             ELSE
@@ -104,11 +105,11 @@ public class ClienteAB(Connection connection)
                 INSERT INTO Clientes
                     (Id, CompanyId, CustomerName, Document, BirthDate, Age, Cep, City, State, Address, Neighborhood,
                      StreetComplement, Number, ReferencePoint, Telephone, Cellphone, Email,
-                     IndIeDest, InscricaoEstadual, CodigoMunicipioIbge)
+                     IndIeDest, InscricaoEstadual, CodigoMunicipioIbge, LimiteCredito, SaldoDevedor)
                 VALUES
                     (@Id, @CompanyId, @CustomerName, @Document, @BirthDate, @Age, @Cep, @City, @State, @Address, @Neighborhood,
                      @StreetComplement, @Number, @ReferencePoint, @Telephone, @Cellphone, @Email,
-                     @IndIeDest, @InscricaoEstadual, @CodigoMunicipioIbge);
+                     @IndIeDest, @InscricaoEstadual, @CodigoMunicipioIbge, @LimiteCredito, @SaldoDevedor);
             END;
             """;
 
@@ -150,6 +151,8 @@ public class ClienteAB(Connection connection)
         command.Parameters.AddWithValue("@IndIeDest", customer.IndIeDest);
         command.Parameters.AddWithValue("@InscricaoEstadual", (object?)customer.InscricaoEstadual ?? DBNull.Value);
         command.Parameters.AddWithValue("@CodigoMunicipioIbge", (object?)customer.CodigoMunicipioIbge ?? DBNull.Value);
+        command.Parameters.AddWithValue("@LimiteCredito", customer.LimiteCredito);
+        command.Parameters.AddWithValue("@SaldoDevedor", customer.SaldoDevedor);
     }
 
     private static ClienteAD Map(SqlDataReader source) => new()
@@ -172,7 +175,9 @@ public class ClienteAB(Connection connection)
         Email = ReadString(source, "Email"),
         IndIeDest = (byte)ReadInt(source, "IndIeDest"),
         InscricaoEstadual = ReadNullableString(source, "InscricaoEstadual"),
-        CodigoMunicipioIbge = ReadNullableString(source, "CodigoMunicipioIbge")
+        CodigoMunicipioIbge = ReadNullableString(source, "CodigoMunicipioIbge"),
+        LimiteCredito = ReadDecimal(source, "LimiteCredito"),
+        SaldoDevedor = ReadDecimal(source, "SaldoDevedor")
     };
 
     private static string ReadString(SqlDataReader reader, string name)
@@ -191,5 +196,11 @@ public class ClienteAB(Connection connection)
     {
         var ordinal = reader.GetOrdinal(name);
         return reader.IsDBNull(ordinal) ? 0 : Convert.ToInt32(reader.GetValue(ordinal));
+    }
+
+    private static decimal ReadDecimal(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? 0m : Convert.ToDecimal(reader.GetValue(ordinal));
     }
 }

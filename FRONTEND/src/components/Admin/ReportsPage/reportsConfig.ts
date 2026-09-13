@@ -7,10 +7,13 @@
 import {
   BarChart3,
   Boxes,
+  CalendarClock,
   FileChartColumnIncreasing,
   HandCoins,
   History,
+  Landmark,
   PackageSearch,
+  Percent,
   ShoppingCart,
   TrendingUp,
   Users,
@@ -56,6 +59,7 @@ const paymentMethodOptions: ReportFilterOption[] = [
   { label: "PIX", value: "pix" },
   { label: "Cartão de Débito", value: "debit" },
   { label: "Cartão de Crédito", value: "credit" },
+  { label: "Fiado", value: "fiado" },
 ];
 
 const auditEventTypeOptions: ReportFilterOption[] = [
@@ -65,14 +69,48 @@ const auditEventTypeOptions: ReportFilterOption[] = [
   { label: "Reforço de caixa", value: "CaixaReforco" },
   { label: "Sangria de caixa", value: "CaixaSangria" },
   { label: "Venda bloqueada", value: "VendaBloqueada" },
+  { label: "Débito fiado", value: "FiadoDebito" },
+  { label: "Recebimento fiado", value: "FiadoRecebimento" },
 ];
 
-const categoryOptions: ReportFilterOption[] = [
-  { label: "Todas", value: "all" },
-  { label: "Bebidas", value: "bebidas" },
-  { label: "Alimentos", value: "alimentos" },
-  { label: "Limpeza", value: "limpeza" },
-  { label: "Higiene", value: "higiene" },
+const departmentOptions: ReportFilterOption[] = [
+  { label: "Todos os departamentos", value: "all" },
+  { label: "Mercearia", value: "dept-mercearia" },
+  { label: "Bebidas", value: "dept-bebidas" },
+  { label: "Laticínios e Frios", value: "dept-laticinios" },
+  { label: "Padaria e Confeitaria", value: "dept-padaria" },
+  { label: "Açougue e Carnes", value: "dept-acougue" },
+  { label: "Hortifruti", value: "dept-hortifruti" },
+  { label: "Frios e Embutidos", value: "dept-frios" },
+  { label: "Limpeza", value: "dept-limpeza" },
+  { label: "Higiene e Perfumaria", value: "dept-higiene" },
+  { label: "Congelados", value: "dept-congelados" },
+  { label: "Bomboniere e Doces", value: "dept-bomboniere" },
+  { label: "Bazar e Utilidades", value: "dept-bazar" },
+  { label: "Pet Shop", value: "dept-pet" },
+  { label: "Tabacaria", value: "dept-tabacaria" },
+];
+
+const categoriaFilter: ReportFilter = {
+  id: "categoriaId",
+  label: "Departamento",
+  type: "select",
+  options: departmentOptions,
+};
+
+const faixaValidadeOptions: ReportFilterOption[] = [
+  { label: "Todos os controlados", value: "todos" },
+  { label: "Somente vencidos", value: "vencidos" },
+  { label: "Vencem em até 7 dias", value: "7d" },
+  { label: "Vencem em até 15 dias", value: "15d" },
+  { label: "Vencem em até 30 dias", value: "30d" },
+];
+
+const faixaInadimplenciaOptions: ReportFilterOption[] = [
+  { label: "Todos os devedores", value: "todos" },
+  { label: "Em dia (menos de 30 dias)", value: "em_dia" },
+  { label: "Atraso moderado (30 a 60 dias)", value: "atraso_30" },
+  { label: "Inadimplência crítica (mais de 60 dias)", value: "atraso_60" },
 ];
 
 export const reportCatalog: ReportDefinition[] = [
@@ -80,38 +118,68 @@ export const reportCatalog: ReportDefinition[] = [
     id: "vendas-periodo",
     title: "Vendas por Período",
     description: "Consolida faturamento, ticket médio e quantidade de vendas no período.",
-    icon: FileChartColumnIncreasing,
+    icon: TrendingUp,
     filters: [
       ...periodFilters,
+      categoriaFilter,
       { id: "groupBy", label: "Agrupar por", type: "select", options: groupByOptions },
-      {
-        id: "paymentMethod",
-        label: "Forma de pagamento",
-        type: "multiselect",
-        options: paymentMethodOptions,
-      },
+      { id: "paymentMethod", label: "Forma de pagamento", type: "select", options: paymentMethodOptions },
     ],
   },
   {
     id: "historico-vendas",
     title: "Histórico de Vendas",
-    description: "Lista detalhada das vendas com cliente, itens e forma de pagamento.",
+    description: "Relatório detalhado de operações por operador, cliente e forma de pagamento.",
     icon: ShoppingCart,
     filters: [
       ...periodFilters,
+      categoriaFilter,
+      { id: "startTime", label: "Hora inicial", type: "time" },
+      { id: "endTime", label: "Hora final", type: "time" },
       { id: "paymentMethod", label: "Forma de pagamento", type: "select", options: paymentMethodOptions },
-      { id: "onlyCanceled", label: "Incluir canceladas", type: "checkbox" },
     ],
   },
   {
     id: "produtos-mais-vendidos",
     title: "Produtos Mais Vendidos",
-    description: "Ranking de produtos por quantidade vendida e faturamento.",
-    icon: TrendingUp,
+    description: "Classifica os itens com maior saída por quantidade e faturamento.",
+    icon: FileChartColumnIncreasing,
     filters: [
       ...periodFilters,
-      { id: "category", label: "Categoria", type: "select", options: categoryOptions },
-      { id: "groupBy", label: "Agrupar por", type: "select", options: groupByOptions },
+      categoriaFilter,
+      { id: "startTime", label: "Hora inicial", type: "time" },
+      { id: "endTime", label: "Hora final", type: "time" },
+      { id: "paymentMethod", label: "Forma de pagamento", type: "select", options: paymentMethodOptions },
+    ],
+  },
+  {
+    id: "margem-por-categoria",
+    title: "Margem por Categoria",
+    description: "Analisa rentabilidade, CMV e margem bruta (R$ e %) consolidada por departamento.",
+    icon: Percent,
+    filters: [
+      ...periodFilters,
+      categoriaFilter,
+      { id: "paymentMethod", label: "Forma de pagamento", type: "select", options: paymentMethodOptions },
+    ],
+  },
+  {
+    id: "vencimentos",
+    title: "Controle de Vencimentos",
+    description: "Monitora produtos perecíveis vencidos e próximos do vencimento para evitar perdas.",
+    icon: CalendarClock,
+    filters: [
+      { id: "faixa", label: "Faixa de vencimento", type: "select", options: faixaValidadeOptions },
+      categoriaFilter,
+    ],
+  },
+  {
+    id: "inadimplencia",
+    title: "Inadimplência e Aging List (Fiado)",
+    description: "Acompanhamento da carteira de clientes com saldo devedor fiado, faixas de atraso e dias sem pagamento.",
+    icon: Landmark,
+    filters: [
+      { id: "faixa", label: "Faixa de atraso", type: "select", options: faixaInadimplenciaOptions },
     ],
   },
   {
@@ -132,7 +200,7 @@ export const reportCatalog: ReportDefinition[] = [
     description: "Identifica produtos abaixo do estoque mínimo para reposição.",
     icon: PackageSearch,
     filters: [
-      { id: "category", label: "Categoria", type: "select", options: categoryOptions },
+      categoriaFilter,
       { id: "onlyOutOfStock", label: "Somente sem estoque", type: "checkbox" },
     ],
   },
@@ -143,7 +211,7 @@ export const reportCatalog: ReportDefinition[] = [
     icon: HandCoins,
     filters: [
       ...periodFilters,
-      { id: "category", label: "Categoria", type: "select", options: categoryOptions },
+      categoriaFilter,
     ],
   },
   {
@@ -153,7 +221,7 @@ export const reportCatalog: ReportDefinition[] = [
     icon: Boxes,
     filters: [
       ...periodFilters,
-      { id: "category", label: "Categoria", type: "select", options: categoryOptions },
+      categoriaFilter,
       { id: "groupBy", label: "Agrupar por", type: "select", options: groupByOptions },
     ],
   },
@@ -170,7 +238,7 @@ export const reportCatalog: ReportDefinition[] = [
   {
     id: "log-atividades",
     title: "Log de Atividades",
-    description: "Trilha de auditoria: quem fez o quê e quando (caixa, sangria/reforço, vendas bloqueadas).",
+    description: "Trilha de auditoria: quem fez o quê e quando (caixa, sangria/reforço, vendas bloqueadas, fiado).",
     icon: History,
     filters: [
       ...periodFilters,

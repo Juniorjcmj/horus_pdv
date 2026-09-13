@@ -23,6 +23,8 @@ public class VendaHistoricoAD
     public string ProductName { get; set; } = string.Empty;
     public decimal Quantity { get; set; }
     public string UnitPrice { get; set; } = string.Empty;
+    public decimal Desconto { get; set; }
+    public string? PromocaoId { get; set; }
     public string ItemTotal { get; set; } = string.Empty;
     public string SaleDate { get; set; } = string.Empty;
 }

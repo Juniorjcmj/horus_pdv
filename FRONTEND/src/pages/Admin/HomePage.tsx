@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import type { PageKey } from "@/components/AppSidebar/AppSidebar";
 import PageHeader from "@/components/Admin/PageHeader";
 import KpiTrendCard from "@/components/Admin/KpiTrendCard";
+import ValidadeAlertWidget from "@/components/Admin/ValidadeAlertWidget";
 import PageLayout from "@/layout/PageLayout";
 import { homeService, type HomeKpiDto } from "@/services/api/homeService";
 
@@ -136,6 +137,8 @@ export default function HomePage({ onNavigate, onOpenSalesInNewTab }: HomePagePr
           />
         ))}
       </section>
+
+      <ValidadeAlertWidget onNavigate={onNavigate} />
 
       <section className="card p-4 md:p-5">
         <h2 className="text-base font-semibold text-text-primary">Ações rápidas</h2>

@@ -25,6 +25,7 @@ public class HomeAB(Connection connection)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Count();
         var criticalStock = products.Count(item => item.Quantity <= 5);
+        var validitySummary = await ObterResumoValidadeAsync(companyId);
 
         return new
         {
@@ -66,7 +67,8 @@ public class HomeAB(Connection connection)
                     color = "#7c3aed",
                     trend = Enumerable.Repeat(criticalStock, 7).ToArray()
                 }
-            }
+            },
+            validade = validitySummary
         };
     }
 
@@ -128,6 +130,44 @@ public class HomeAB(Connection connection)
     {
         var ordinal = reader.GetOrdinal(name);
         return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+    }
+
+    private static int ReadInt(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? 0 : Convert.ToInt32(reader.GetValue(ordinal));
+    }
+
+    private async Task<object> ObterResumoValidadeAsync(string companyId)
+    {
+        const string sql = """
+            SELECT
+                COUNT(CASE WHEN ControlaValidade = 1 AND DataValidade < CAST(GETDATE() AS DATE) THEN 1 END) AS Vencidos,
+                COUNT(CASE WHEN ControlaValidade = 1 AND DataValidade >= CAST(GETDATE() AS DATE) AND DataValidade <= DATEADD(day, 7, CAST(GETDATE() AS DATE)) THEN 1 END) AS VenceEm7Dias,
+                COUNT(CASE WHEN ControlaValidade = 1 AND DataValidade >= CAST(GETDATE() AS DATE) AND DataValidade <= DATEADD(day, 15, CAST(GETDATE() AS DATE)) THEN 1 END) AS VenceEm15Dias,
+                COUNT(CASE WHEN ControlaValidade = 1 AND DataValidade >= CAST(GETDATE() AS DATE) AND DataValidade <= DATEADD(day, 30, CAST(GETDATE() AS DATE)) THEN 1 END) AS VenceEm30Dias,
+                COUNT(CASE WHEN ControlaValidade = 1 THEN 1 END) AS TotalControlados
+            FROM Produtos
+            WHERE CompanyId = @CompanyId;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        await using var reader = await command.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return new
+            {
+                vencidos = ReadInt(reader, "Vencidos"),
+                venceEm7Dias = ReadInt(reader, "VenceEm7Dias"),
+                venceEm15Dias = ReadInt(reader, "VenceEm15Dias"),
+                venceEm30Dias = ReadInt(reader, "VenceEm30Dias"),
+                totalControlados = ReadInt(reader, "TotalControlados")
+            };
+        }
+
+        return new { vencidos = 0, venceEm7Dias = 0, venceEm15Dias = 0, venceEm30Dias = 0, totalControlados = 0 };
     }
 
     private static string FormatMoney(decimal value)

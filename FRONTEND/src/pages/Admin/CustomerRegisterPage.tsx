@@ -42,6 +42,8 @@ type Customer = {
   telephone: string;
   cellphone: string;
   email: string;
+  limiteCredito?: number;
+  saldoDevedor?: number;
 };
 
 type CustomerFormData = Omit<Customer, "id">;
@@ -62,6 +64,8 @@ const EMPTY_FORM: CustomerFormData = {
   telephone: "",
   cellphone: "",
   email: "",
+  limiteCredito: 0,
+  saldoDevedor: 0,
 };
 
 function CustomerFormDrawer({
@@ -184,6 +188,50 @@ function CustomerFormDrawer({
             onFillAddressFromCep={onFillAddressFromCep}
             onChange={(field, fieldValue) => setField(field, fieldValue)}
           />
+
+          <section className="card rounded-2xl p-4">
+            <h4 className="text-sm font-semibold text-text-secondary">Conta Corrente / Fiado</h4>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">
+                  Limite de Crédito (R$)
+                </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={value.limiteCredito ?? 0}
+                  onChange={(event) =>
+                    setField("limiteCredito", Math.max(0, parseFloat(event.target.value) || 0))
+                  }
+                  className="input-field w-full"
+                  placeholder="0,00 (0 = ilimitado)"
+                />
+                <span className="mt-1 block text-xs text-text-tertiary">
+                  0 significa sem limite pré-estabelecido.
+                </span>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">
+                  Saldo Devedor Atual
+                </span>
+                <div
+                  className={`input-field flex w-full items-center font-semibold ${
+                    (value.saldoDevedor || 0) > 0 ? "text-amber-500" : "text-emerald-500"
+                  }`}
+                >
+                  R${" "}
+                  {(value.saldoDevedor || 0).toLocaleString("pt-BR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <span className="mt-1 block text-xs text-text-tertiary">
+                  Atualizado automaticamente através das vendas a prazo e quitações.
+                </span>
+              </label>
+            </div>
+          </section>
         </div>
 
         <div className="border-t border-border-primary p-4">
@@ -532,6 +580,7 @@ export default function CustomerRegisterPage() {
                 <th className="px-4 py-3">Cidade</th>
                 <th className="px-4 py-3">Celular</th>
                 <th className="px-4 py-3">E-mail</th>
+                <th className="px-4 py-3">Saldo Devedor</th>
                 <th className="px-4 py-3">Ações</th>
               </tr>
             </thead>
@@ -547,11 +596,23 @@ export default function CustomerRegisterPage() {
                       className="h-4 w-4 rounded border-border-secondary accent-accent"
                     />
                   </td>
-                  <td className="px-4 py-3">{customer.customerName}</td>
+                  <td className="px-4 py-3 font-medium text-text-primary">{customer.customerName}</td>
                   <td className="px-4 py-3">{customer.document}</td>
                   <td className="px-4 py-3">{customer.city}</td>
                   <td className="px-4 py-3">{customer.cellphone}</td>
                   <td className="px-4 py-3">{customer.email || "-"}</td>
+                  <td className="px-4 py-3">
+                    {(customer.saldoDevedor ?? 0) > 0 ? (
+                      <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-500">
+                        R${" "}
+                        {Number(customer.saldoDevedor).toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                        })}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-text-tertiary">R$ 0,00</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <RowActionsMenu
                       items={[

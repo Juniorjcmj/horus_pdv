@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
-public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
+public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB fiadoAB)
 {
     private static readonly CultureInfo PtBr = new("pt-BR");
 
@@ -28,7 +28,10 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
             "clientes-frequentes" => await GerarClientesFrequentesAsync(companyId, filters),
             "estoque-critico" => await GerarEstoqueCriticoAsync(companyId, filters),
             "compras-fornecedor" => await GerarComprasFornecedorAsync(companyId),
-            "movimento-estoque" => await GerarMovimentoEstoqueAsync(companyId),
+            "movimento-estoque" => await GerarMovimentoEstoqueAsync(companyId, filters),
+            "margem-por-categoria" => await GerarMargemPorCategoriaAsync(companyId, filters),
+            "vencimentos" => await GerarVencimentosAsync(companyId, filters),
+            "inadimplencia" => await GerarInadimplenciaAsync(companyId, filters),
             "desempenho-caixa" => await GerarDesempenhoCaixaAsync(companyId, filters),
             "log-atividades" => await GerarLogAtividadesAsync(companyId, filters, restrictToUserId),
             _ => throw new InvalidOperationException("Relatório não encontrado.")
@@ -122,11 +125,19 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
     private async Task<object> GerarEstoqueCriticoAsync(string companyId, Dictionary<string, JsonElement> filters)
     {
         var onlyOutOfStock = GetBool(filters, "onlyOutOfStock");
-        var rows = (await ListarProdutosAsync(companyId))
+        var categoriaFilter = GetString(filters, "categoriaId");
+        var produtos = await ListarProdutosAsync(companyId);
+        if (!string.IsNullOrWhiteSpace(categoriaFilter) && categoriaFilter != "all")
+        {
+            produtos = produtos.Where(p => p.CategoriaId == categoriaFilter || p.CategoriaPaiId == categoriaFilter).ToList();
+        }
+
+        var rows = produtos
             .Where(item => onlyOutOfStock ? item.Quantity <= 0 : item.Quantity <= 5)
             .Select(item => Row(
                 ("codigo", item.Code),
                 ("produto", item.Name),
+                ("categoria", string.IsNullOrWhiteSpace(item.CategoriaNome) ? "-" : item.CategoriaNome),
                 ("estoque", item.Quantity),
                 ("valorVenda", FormatMoney(item.SalePrice)),
                 ("status", item.Quantity <= 0 ? "Sem estoque" : "Crítico")))
@@ -134,7 +145,7 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
             .ToList();
 
         return Result(
-            Columns(("codigo", "Código"), ("produto", "Produto"), ("estoque", "Estoque"), ("valorVenda", "Preço venda"), ("status", "Status")),
+            Columns(("codigo", "Código"), ("produto", "Produto"), ("categoria", "Categoria"), ("estoque", "Estoque"), ("valorVenda", "Preço venda"), ("status", "Status")),
             rows);
     }
 
@@ -155,12 +166,20 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
             rows);
     }
 
-    private async Task<object> GerarMovimentoEstoqueAsync(string companyId)
+    private async Task<object> GerarMovimentoEstoqueAsync(string companyId, Dictionary<string, JsonElement> filters)
     {
-        var rows = (await ListarProdutosAsync(companyId))
+        var categoriaFilter = GetString(filters, "categoriaId");
+        var produtos = await ListarProdutosAsync(companyId);
+        if (!string.IsNullOrWhiteSpace(categoriaFilter) && categoriaFilter != "all")
+        {
+            produtos = produtos.Where(p => p.CategoriaId == categoriaFilter || p.CategoriaPaiId == categoriaFilter).ToList();
+        }
+
+        var rows = produtos
             .Select(item => Row(
                 ("codigo", item.Code),
                 ("produto", item.Name),
+                ("categoria", string.IsNullOrWhiteSpace(item.CategoriaNome) ? "-" : item.CategoriaNome),
                 ("estoqueAtual", item.Quantity),
                 ("custoUnitario", FormatMoney(item.UnitPrice)),
                 ("valorEstoque", FormatMoney(item.UnitPrice * item.Quantity))))
@@ -168,8 +187,178 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
             .ToList();
 
         return Result(
-            Columns(("codigo", "Código"), ("produto", "Produto"), ("estoqueAtual", "Estoque atual"), ("custoUnitario", "Custo unitário"), ("valorEstoque", "Valor em estoque")),
+            Columns(("codigo", "Código"), ("produto", "Produto"), ("categoria", "Categoria"), ("estoqueAtual", "Estoque atual"), ("custoUnitario", "Custo unitário"), ("valorEstoque", "Valor em estoque")),
             rows);
+    }
+
+    private async Task<object> GerarMargemPorCategoriaAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        var rows = FilterSales(await ListarVendasAsync(companyId), filters, includeItems: true);
+        var reportRows = rows
+            .GroupBy(item => string.IsNullOrWhiteSpace(item.DepartamentoNome) ? "Sem departamento" : item.DepartamentoNome)
+            .Select(group =>
+            {
+                var qtd = group.Sum(item => item.Quantity);
+                var receita = group.Sum(item => item.ItemTotal);
+                var cmv = group.Sum(item => item.CostPrice * item.Quantity);
+                var margemReais = receita - cmv;
+                var margemPct = receita == 0 ? 0m : Math.Round((margemReais / receita) * 100m, 2);
+
+                return Row(
+                    ("departamento", group.Key),
+                    ("qtdVendida", qtd),
+                    ("receita", FormatMoney(receita)),
+                    ("cmv", FormatMoney(cmv)),
+                    ("margem", FormatMoney(margemReais)),
+                    ("margemPct", $"{margemPct:F2}%"));
+            })
+            .OrderByDescending(row => row["receita"])
+            .ToList();
+
+        return Result(
+            Columns(
+                ("departamento", "Departamento"),
+                ("qtdVendida", "Qtd. vendida"),
+                ("receita", "Receita"),
+                ("cmv", "CMV (Custo)"),
+                ("margem", "Margem (R$)"),
+                ("margemPct", "Margem (%)")),
+            reportRows);
+    }
+
+    private async Task<object> GerarVencimentosAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        var faixa = GetString(filters, "faixa", "todos").ToLowerInvariant();
+        var categoriaFilter = GetString(filters, "categoriaId");
+
+        var sql = new StringBuilder("""
+            SELECT p.ProductCode, p.ProductName, p.ProductQnt, p.ProductUnitPrice, p.DataValidade,
+                   c.Nome AS CategoriaNome, c.Id AS CategoriaId, c.CategoriaPaiId
+            FROM Produtos p
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            WHERE p.CompanyId = @CompanyId
+              AND p.ControlaValidade = 1
+              AND p.DataValidade IS NOT NULL
+            """);
+
+        switch (faixa)
+        {
+            case "vencido":
+            case "vencidos":
+                sql.Append(" AND p.DataValidade < CAST(GETDATE() AS DATE)");
+                break;
+            case "7d":
+                sql.Append(" AND p.DataValidade <= DATEADD(day, 7, CAST(GETDATE() AS DATE))");
+                break;
+            case "15d":
+                sql.Append(" AND p.DataValidade <= DATEADD(day, 15, CAST(GETDATE() AS DATE))");
+                break;
+            case "30d":
+                sql.Append(" AND p.DataValidade <= DATEADD(day, 30, CAST(GETDATE() AS DATE))");
+                break;
+            default: // "todos"
+                break;
+        }
+
+        if (!string.IsNullOrWhiteSpace(categoriaFilter) && categoriaFilter != "all")
+        {
+            sql.Append(" AND (p.CategoriaId = @CategoriaFilter OR c.CategoriaPaiId = @CategoriaFilter)");
+        }
+
+        sql.Append(" ORDER BY p.DataValidade ASC, p.ProductName ASC;");
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql.ToString(), db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        if (!string.IsNullOrWhiteSpace(categoriaFilter) && categoriaFilter != "all")
+        {
+            command.Parameters.AddWithValue("@CategoriaFilter", categoriaFilter);
+        }
+
+        await using var reader = await command.ExecuteReaderAsync();
+        var rows = new List<Dictionary<string, object>>();
+        var today = DateTime.UtcNow.Date;
+
+        while (await reader.ReadAsync())
+        {
+            var code = ReadString(reader, "ProductCode");
+            var name = ReadString(reader, "ProductName");
+            var stock = ReadDecimal(reader, "ProductQnt");
+            var unitPrice = ReadDecimal(reader, "ProductUnitPrice");
+            var valDate = reader.GetDateTime(reader.GetOrdinal("DataValidade"));
+            var catName = ReadNullableString(reader, "CategoriaNome") ?? "-";
+            var diasRestantes = (int)Math.Floor((valDate.Date - today).TotalDays);
+
+            string statusText = diasRestantes < 0
+                ? "VENCIDO"
+                : diasRestantes == 0
+                    ? "Vence hoje"
+                    : $"Vence em {diasRestantes} d";
+
+            rows.Add(Row(
+                ("codigo", code),
+                ("produto", name),
+                ("categoria", catName),
+                ("validade", valDate.ToString("dd/MM/yyyy")),
+                ("diasRestantes", diasRestantes),
+                ("status", statusText),
+                ("qtdEstoque", stock),
+                ("custoTotal", FormatMoney(stock * unitPrice))));
+        }
+
+        return Result(
+            Columns(
+                ("codigo", "Código"),
+                ("produto", "Produto"),
+                ("categoria", "Categoria"),
+                ("validade", "Validade"),
+                ("diasRestantes", "Dias restantes"),
+                ("status", "Status"),
+                ("qtdEstoque", "Qtd. estoque"),
+                ("custoTotal", "Custo em estoque")),
+            rows);
+    }
+
+    private async Task<object> GerarInadimplenciaAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        var faixa = GetString(filters, "faixa", "todos");
+        var devedores = await fiadoAB.ListarDevedoresAsync(companyId);
+
+        var filtered = devedores.Where(d =>
+        {
+            var dias = d.DiasSemPagamento ?? 0;
+            return faixa switch
+            {
+                "em_dia" => dias < 30,
+                "atraso_30" => dias >= 30 && dias < 60,
+                "atraso_60" => dias >= 60,
+                _ => true
+            };
+        }).OrderByDescending(d => d.SaldoDevedor);
+
+        var reportRows = filtered.Select(d => Row(
+            ("cliente", d.ClienteNome),
+            ("documento", d.Document),
+            ("contato", string.IsNullOrWhiteSpace(d.Cellphone) ? (d.Telephone ?? "-") : d.Cellphone),
+            ("limite", d.LimiteCredito > 0 ? FormatMoney(d.LimiteCredito) : "Ilimitado"),
+            ("saldoDevedor", FormatMoney(d.SaldoDevedor)),
+            ("ultimaCompra", d.UltimaCompra.HasValue ? d.UltimaCompra.Value.ToLocalTime().ToString("dd/MM/yyyy") : "-"),
+            ("diasAtraso", d.DiasSemPagamento.HasValue ? $"{d.DiasSemPagamento.Value} dias" : "0 dias"),
+            ("status", (d.DiasSemPagamento ?? 0) >= 60 ? "Crítico (>60d)" : (d.DiasSemPagamento ?? 0) >= 30 ? "Atenção (>30d)" : "Em dia (<30d)")
+        )).ToList();
+
+        return Result(
+            Columns(
+                ("cliente", "Cliente"),
+                ("documento", "CPF/CNPJ"),
+                ("contato", "Contato"),
+                ("limite", "Limite"),
+                ("saldoDevedor", "Saldo Devedor"),
+                ("ultimaCompra", "Última Compra"),
+                ("diasAtraso", "Dias sem Pgto"),
+                ("status", "Status Aging")
+            ),
+            reportRows);
     }
 
     private async Task<object> GerarDesempenhoCaixaAsync(string companyId, Dictionary<string, JsonElement> filters)
@@ -227,9 +416,17 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
     {
         const string sql = """
             SELECT v.SaleNumber, v.CustomerName, v.CustomerCpf, v.PaymentType, v.TotalAmount, v.SaleDate,
-                   i.ProductCode, i.ProductName, i.Quantity, i.UnitPrice, i.ItemTotal
+                   i.ProductCode, i.ProductName, i.Quantity, i.UnitPrice, i.ItemTotal,
+                   ISNULL(p.ProductUnitPrice, 0) AS CostPrice,
+                   p.CategoriaId,
+                   c.Nome AS CategoriaNome,
+                   c.CategoriaPaiId,
+                   COALESCE(pai.Nome, c.Nome, 'Sem categoria') AS DepartamentoNome
             FROM Vendas v
             LEFT JOIN VendaItens i ON i.VendaId = v.Id
+            LEFT JOIN Produtos p ON p.ProductCode = i.ProductCode AND p.CompanyId = v.CompanyId
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = v.CompanyId
+            LEFT JOIN Categorias pai ON pai.Id = c.CategoriaPaiId AND pai.CompanyId = v.CompanyId
             WHERE v.CompanyId = @CompanyId
             ORDER BY v.SaleDate DESC;
             """;
@@ -252,7 +449,12 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
                 ReadString(reader, "ProductName"),
                 ReadDecimal(reader, "Quantity"),
                 ReadDecimal(reader, "UnitPrice"),
-                ReadDecimal(reader, "ItemTotal")));
+                ReadDecimal(reader, "ItemTotal"),
+                ReadDecimal(reader, "CostPrice"),
+                ReadNullableString(reader, "CategoriaId"),
+                ReadNullableString(reader, "CategoriaPaiId"),
+                ReadNullableString(reader, "CategoriaNome"),
+                ReadString(reader, "DepartamentoNome")));
         }
 
         return rows;
@@ -261,10 +463,12 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
     private async Task<List<ReportProductRow>> ListarProdutosAsync(string companyId)
     {
         const string sql = """
-            SELECT ProductCode, ProductName, ProductSupplier, ProductQnt, ProductUnitPrice, ProductSalePrice
-            FROM Produtos
-            WHERE CompanyId = @CompanyId
-            ORDER BY ProductName;
+            SELECT p.ProductCode, p.ProductName, p.ProductSupplier, p.ProductQnt, p.ProductUnitPrice, p.ProductSalePrice,
+                   p.CategoriaId, c.Nome AS CategoriaNome, c.CategoriaPaiId
+            FROM Produtos p
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            WHERE p.CompanyId = @CompanyId
+            ORDER BY p.ProductName;
             """;
 
         await using var db = await connection.OpenConnectionAsync();
@@ -280,7 +484,10 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
                 ReadString(reader, "ProductSupplier"),
                 ReadDecimal(reader, "ProductQnt"),
                 ReadDecimal(reader, "ProductUnitPrice"),
-                ReadDecimal(reader, "ProductSalePrice")));
+                ReadDecimal(reader, "ProductSalePrice"),
+                ReadNullableString(reader, "CategoriaId"),
+                ReadNullableString(reader, "CategoriaPaiId"),
+                ReadNullableString(reader, "CategoriaNome")));
         }
 
         return rows;
@@ -325,6 +532,12 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
         var filtered = rows
             .Where(item => item.SaleDate >= startDate && item.SaleDate < endDate)
             .Where(item => paymentMethods.Count == 0 || paymentMethods.Contains(NormalizePaymentFilter(item.PaymentType)));
+
+        var categoriaFilter = GetString(filters, "categoriaId");
+        if (!string.IsNullOrWhiteSpace(categoriaFilter) && categoriaFilter != "all")
+        {
+            filtered = filtered.Where(item => item.CategoriaId == categoriaFilter || item.CategoriaPaiId == categoriaFilter);
+        }
 
         if (!includeItems)
         {
@@ -377,6 +590,12 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
     {
         var ordinal = reader.GetOrdinal(name);
         return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+    }
+
+    private static string? ReadNullableString(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal).Trim();
     }
 
     private static decimal ReadDecimal(SqlDataReader reader, string name)
@@ -452,7 +671,12 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
         string ProductName,
         decimal Quantity,
         decimal UnitPrice,
-        decimal ItemTotal);
+        decimal ItemTotal,
+        decimal CostPrice,
+        string? CategoriaId,
+        string? CategoriaPaiId,
+        string? CategoriaNome,
+        string DepartamentoNome);
 
     private sealed record ReportProductRow(
         string Code,
@@ -460,7 +684,10 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB)
         string Supplier,
         decimal Quantity,
         decimal UnitPrice,
-        decimal SalePrice);
+        decimal SalePrice,
+        string? CategoriaId,
+        string? CategoriaPaiId,
+        string? CategoriaNome);
 
     private sealed record ReportCashRow(
         DateTimeOffset OpenedAt,

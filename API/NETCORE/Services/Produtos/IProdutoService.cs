@@ -15,4 +15,7 @@ public interface IProdutoService
     Task<ProdutoModel?> AtualizarAsync(string companyId, string id, ProdutoRequest request);
     Task<bool> ExcluirAsync(string companyId, string id);
     Task<int> ImportarCargaLegadoAsync(string companyId);
+    Task<List<ProdutoModel>> ListarVencimentosAsync(string companyId, int dias);
+    Task<VencimentoResumoModel> ObterResumoVencimentosAsync(string companyId);
+    Task<bool> AtualizarValidadeAsync(string companyId, string id, string? dataValidade);
 }

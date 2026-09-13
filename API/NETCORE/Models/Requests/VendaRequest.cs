@@ -33,4 +33,7 @@ public class VendaItemRequest
     public string ProductCode { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public decimal Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal Desconto { get; set; }
+    public string? PromocaoId { get; set; }
 }

@@ -44,6 +44,18 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
     public Task<int> ImportarCargaLegadoAsync(string companyId)
         => produtosAB.ImportarCargaLegadoAsync(companyId);
 
+    public async Task<List<ProdutoModel>> ListarVencimentosAsync(string companyId, int dias)
+        => (await produtosAB.ListarVencimentosAsync(companyId, dias)).Select(ToModel).ToList();
+
+    public Task<VencimentoResumoModel> ObterResumoVencimentosAsync(string companyId)
+        => produtosAB.ObterResumoVencimentosAsync(companyId);
+
+    public async Task<bool> AtualizarValidadeAsync(string companyId, string id, string? dataValidade)
+    {
+        DateTime? parsed = DateTime.TryParse(dataValidade, out var dt) ? dt : null;
+        return await produtosAB.AtualizarValidadeAsync(companyId, id, parsed);
+    }
+
     private static void Validate(ProdutoRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.ProductName) || request.ProductName.Trim().Length < 3)
@@ -115,6 +127,10 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         MargemDesejadaPercentual = string.IsNullOrWhiteSpace(request.MargemDesejadaPercentual)
             ? null
             : HorusMoneyFormat.ParseDecimal(request.MargemDesejadaPercentual),
+        CategoriaId = string.IsNullOrWhiteSpace(request.CategoriaId) ? null : request.CategoriaId.Trim(),
+        DataValidade = DateTime.TryParse(request.DataValidade, out var dt) ? dt : null,
+        ControlaValidade = request.ControlaValidade,
+        DiasAlertaValidade = request.DiasAlertaValidade <= 0 ? 15 : request.DiasAlertaValidade,
         Ncm = string.IsNullOrWhiteSpace(request.Ncm) ? "00000000" : request.Ncm.Trim(),
         Cest = string.IsNullOrWhiteSpace(request.Cest) ? null : request.Cest.Trim(),
         Cfop = string.IsNullOrWhiteSpace(request.Cfop) ? "5102" : request.Cfop.Trim(),
@@ -146,6 +162,12 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         ProductSalePrice = HorusMoneyFormat.Format(source.ProductSalePrice),
         TotalPriceOnProduct = HorusMoneyFormat.Format(source.TotalPriceOnProduct),
         MargemDesejadaPercentual = source.MargemDesejadaPercentual is { } margem ? HorusMoneyFormat.Format(margem) : null,
+        CategoriaId = source.CategoriaId,
+        CategoriaNome = source.CategoriaNome,
+        DataValidade = source.DataValidade?.ToString("yyyy-MM-dd"),
+        ControlaValidade = source.ControlaValidade,
+        DiasAlertaValidade = source.DiasAlertaValidade,
+        DiasRestantes = source.DataValidade.HasValue ? (int)Math.Floor((source.DataValidade.Value.Date - DateTime.UtcNow.Date).TotalDays) : null,
         Ncm = source.Ncm,
         Cest = source.Cest,
         Cfop = source.Cfop,

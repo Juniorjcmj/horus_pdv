@@ -28,6 +28,19 @@ public class ProdutoAD
     /// <summary>% de lucro desejado sobre o custo (ex.: 30 = 30%). Null = não configurado.</summary>
     public decimal? MargemDesejadaPercentual { get; set; }
 
+    /// <summary>Vínculo com a tabela Categorias (departamento ou subcategoria). Null = sem categoria.</summary>
+    public string? CategoriaId { get; set; }
+    public string? CategoriaNome { get; set; }
+
+    /// <summary>Data de validade do lote mais próximo (null se não informado ou não controlado).</summary>
+    public DateTime? DataValidade { get; set; }
+
+    /// <summary>Indica se o produto tem controle de validade ativo.</summary>
+    public bool ControlaValidade { get; set; }
+
+    /// <summary>Dias de antecedência para disparar alertas de vencimento (padrão 15).</summary>
+    public int DiasAlertaValidade { get; set; } = 15;
+
     // Dados fiscais (NFC-e modelo 65) — ver API/NETCORE/DataBase/Migrations/02_estrutura_fiscal.sql
     public string Ncm { get; set; } = "00000000";
     public string? Cest { get; set; }

@@ -120,6 +120,9 @@ public class DocumentoFiscalAB(
                 ?? throw new InvalidOperationException(
                     $"Produto {linha.ProductCode} não encontrado — não é possível montar a NFC-e da venda {doc.VendaId}.");
 
+            var valorUnitario = HorusMoneyFormat.ParseDecimal(linha.UnitPrice);
+            var valorBruto = Math.Round(valorUnitario * linha.Quantity, 2, MidpointRounding.AwayFromZero);
+
             itens.Add(new ItemFiscal
             {
                 Numero = index + 1,
@@ -132,8 +135,9 @@ public class DocumentoFiscalAB(
                 Origem = produto.OrigemMercadoria,
                 UnidadeComercial = produto.UnidadeComercial,
                 Quantidade = linha.Quantity,
-                ValorUnitario = HorusMoneyFormat.ParseDecimal(linha.UnitPrice),
-                ValorTotal = HorusMoneyFormat.ParseDecimal(linha.ItemTotal),
+                ValorUnitario = valorUnitario,
+                ValorTotal = valorBruto,
+                Desconto = linha.Desconto,
                 Csosn = produto.CsosnIcms,
                 CstIcms = produto.CstIcms,
                 AliquotaIcms = produto.AliquotaIcms,
@@ -722,10 +726,11 @@ public class DocumentoFiscalAB(
         };
     }
 
-    /// <summary>tPag: 01 dinheiro, 03 crédito, 04 débito, 17 PIX dinâmico.</summary>
+    /// <summary>tPag: 01 dinheiro, 03 crédito, 04 débito, 05 crédito loja / fiado, 17 PIX dinâmico.</summary>
     private static string MapearFormaPagamento(string paymentType)
     {
         var normalized = paymentType.Trim().ToLowerInvariant();
+        if (normalized.Contains("fiado") || normalized.Contains("crediario") || normalized.Contains("crediário")) return "05";
         if (normalized.Contains("pix")) return "17";
         if (normalized.Contains("debit") || normalized.Contains("débit")) return "04";
         if (normalized.Contains("credit") || normalized.Contains("crédit")) return "03";

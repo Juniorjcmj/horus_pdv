@@ -28,4 +28,8 @@ public class ClienteModel
     public byte IndIeDest { get; set; } = 9;
     public string? InscricaoEstadual { get; set; }
     public string? CodigoMunicipioIbge { get; set; }
+
+    // Fiado / Conta Corrente
+    public decimal LimiteCredito { get; set; }
+    public decimal SaldoDevedor { get; set; }
 }

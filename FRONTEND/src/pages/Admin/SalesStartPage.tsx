@@ -5,6 +5,7 @@
  */
 
 import {
+  AlertTriangle,
   Image as ImageIcon,
   Loader2,
   Maximize2,
@@ -13,6 +14,8 @@ import {
   Printer,
   Search,
   Trash2,
+  UserCheck,
+  Users,
   X,
 } from "lucide-react";
 import {
@@ -35,7 +38,11 @@ import ReceiptPreviewModal, {
   type PaymentType,
   type SaleReceipt,
 } from "@/components/Admin/ReceiptPreviewModal";
+import { categoriaService, type CategoriaArvore } from "@/services/api/categoriaService";
+import { promocaoService, type Promocao } from "@/services/api/promocaoService";
+import { applyPromotions } from "@/utils/promotionEngine";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
+import { customerService, type CustomerDto } from "@/services/api/customerService";
 import {
   FISCAL_STATUS,
   fiscalService,
@@ -61,6 +68,11 @@ type Product = {
   salePrice: number;
   imageUrl?: string;
   unit: string;
+  categoriaId?: string | null;
+  dataValidade?: string | null;
+  controlaValidade?: boolean;
+  diasAlertaValidade?: number;
+  diasRestantes?: number | null;
 };
 
 // Produtos vendidos por peso/volume aceitam quantidade fracionada na NFC-e (ex.: 0,452 kg).
@@ -80,6 +92,15 @@ type CartItem = {
   name: string;
   quantity: number;
   unitPrice: number;
+  categoriaId?: string | null;
+  dataValidade?: string | null;
+  controlaValidade?: boolean;
+  diasAlertaValidade?: number;
+  diasRestantes?: number | null;
+  discount?: number;
+  itemTotal?: number;
+  promocaoId?: string | null;
+  promocaoNome?: string | null;
 };
 
 const PAYMENT_OPTIONS: Array<{ value: PaymentType; label: string }> = [
@@ -87,6 +108,7 @@ const PAYMENT_OPTIONS: Array<{ value: PaymentType; label: string }> = [
   { value: "pix", label: "PIX" },
   { value: "debito", label: "Cartão Débito" },
   { value: "credito", label: "Cartão Crédito" },
+  { value: "fiado", label: "Fiado / A Prazo" },
 ];
 
 const LAST_RECEIPT_STORAGE_KEY = "horus-pdv-last-receipt";
@@ -146,13 +168,16 @@ export default function SalesStartPage({
   const [now, setNow] = useState(new Date());
   const [productSearch, setProductSearch] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<CategoriaArvore[]>([]);
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string | null>(null);
   const [company, setCompany] = useState<CompanyDto | null>(null);
   const [cashStatus, setCashStatus] = useState<CashRegisterStatusDto | null>(null);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [showProductOptions, setShowProductOptions] = useState(false);
   const [highlightedProductIndex, setHighlightedProductIndex] = useState(0);
   const [quantityInput, setQuantityInput] = useState("1");
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [rawCart, setRawCart] = useState<CartItem[]>([]);
+  const [promocoes, setPromocoes] = useState<Promocao[]>([]);
 
   // Pedido montado pelo vendedor (ver NovoPedidoPage) e localizado aqui pelo número — o
   // carrinho fica travado (preço e itens vêm congelados do pedido) até finalizar ou soltar.
@@ -167,12 +192,43 @@ export default function SalesStartPage({
   const [currentPaymentAmount, setCurrentPaymentAmount] = useState("");
   const [currentCashGiven, setCurrentCashGiven] = useState("");
   const [cpfNota, setCpfNota] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerDto | null>(null);
+  const [customerModalOpen, setCustomerModalOpen] = useState(false);
+  const [customerList, setCustomerList] = useState<CustomerDto[]>([]);
+  const [customerFilter, setCustomerFilter] = useState("");
+  const [loadingCustomers, setLoadingCustomers] = useState(false);
   const [lastReceipt, setLastReceipt] = useState<SaleReceipt | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<SaleReceipt | null>(null);
   const [printPreviewEnabled, setPrintPreviewEnabled] = useState(() =>
     getPrintPreviewEnabled(),
   );
   const [isConfirmingSale, setIsConfirmingSale] = useState(false);
+
+  const openCustomerModal = useCallback(async () => {
+    setCustomerModalOpen(true);
+    if (customerList.length === 0) {
+      setLoadingCustomers(true);
+      try {
+        const data = await customerService.list();
+        setCustomerList(data);
+      } catch {
+        Toast.error("Não foi possível carregar a lista de clientes.");
+      } finally {
+        setLoadingCustomers(false);
+      }
+    }
+  }, [customerList.length]);
+
+  const filteredCustomerList = useMemo(() => {
+    const q = customerFilter.trim().toLowerCase();
+    if (!q) return customerList;
+    return customerList.filter(
+      (c) =>
+        c.customerName.toLowerCase().includes(q) ||
+        c.document.toLowerCase().includes(q) ||
+        (c.cellphone && c.cellphone.includes(q)),
+    );
+  }, [customerList, customerFilter]);
 
   const pasteCurrentCashGiven = (event: ClipboardEvent<HTMLInputElement>) => {
     event.preventDefault();
@@ -193,19 +249,78 @@ export default function SalesStartPage({
     return quantityIsFractionable ? parsed : Math.floor(parsed);
   }, [quantityInput, quantityIsFractionable]);
 
+  const activeCategoryIds = useMemo(() => {
+    if (!selectedDepartmentId) return null;
+    const dep = categories.find((c) => c.id === selectedDepartmentId);
+    if (!dep) return new Set([selectedDepartmentId]);
+    const ids = new Set<string>([dep.id]);
+    dep.subcategorias?.forEach((sub) => ids.add(sub.id));
+    return ids;
+  }, [categories, selectedDepartmentId]);
+
   const filteredProducts = useMemo(() => {
     const normalized = productSearch.trim().toLowerCase();
-    if (!normalized) return products;
-    return products.filter(
-      (item) =>
-        item.name.toLowerCase().includes(normalized) ||
-        item.code.toLowerCase().includes(normalized),
-    );
-  }, [products, productSearch]);
+    let list = products;
+    if (activeCategoryIds) {
+      list = list.filter((item) => item.categoriaId && activeCategoryIds.has(item.categoriaId));
+    }
+    if (normalized) {
+      list = list.filter(
+        (item) =>
+          item.name.toLowerCase().includes(normalized) ||
+          item.code.toLowerCase().includes(normalized),
+      );
+    }
+    return list;
+  }, [products, productSearch, activeCategoryIds]);
 
-  const subtotal = useMemo(
+  useEffect(() => {
+    let cancelled = false;
+    const fetchPromos = () => {
+      promocaoService
+        .listAtivas()
+        .then((ativas) => {
+          if (!cancelled) setPromocoes(ativas);
+        })
+        .catch(() => {
+          // Falha silenciosa para não travar o PDV
+        });
+    };
+
+    fetchPromos();
+    const interval = window.setInterval(fetchPromos, 5 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const produtoCategoriaMap = useMemo(() => {
+    const map = new Map<string, string | null>();
+    for (const p of products) {
+      if (p.categoriaId) {
+        map.set(p.id, p.categoriaId);
+        map.set(p.code, p.categoriaId);
+      }
+    }
+    return map;
+  }, [products]);
+
+  const cart = useMemo(() => {
+    return applyPromotions(rawCart, promocoes, produtoCategoriaMap);
+  }, [rawCart, promocoes, produtoCategoriaMap]);
+
+  const grossSubtotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
     [cart],
+  );
+  const totalDiscount = useMemo(
+    () => cart.reduce((sum, item) => sum + (item.discount ?? 0), 0),
+    [cart],
+  );
+  const subtotal = useMemo(
+    () => Math.max(0, grossSubtotal - totalDiscount),
+    [grossSubtotal, totalDiscount],
   );
   const totalVolumes = useMemo(
     () => cart.reduce((sum, item) => sum + item.quantity, 0),
@@ -241,8 +356,33 @@ export default function SalesStartPage({
     currentCashGivenValue,
   ]);
 
+  const totalFiadoCommitted = useMemo(() => {
+    return payments
+      .filter((p) => p.paymentType === "fiado")
+      .reduce((sum, p) => sum + p.amount, 0);
+  }, [payments]);
+
+  const fiadoLimitExceeded = useMemo(() => {
+    if (!selectedCustomer) return false;
+    const currentFiadoValue = currentPaymentType === "fiado" ? currentPaymentAmountValue : 0;
+    const totalPotentialFiado = totalFiadoCommitted + currentFiadoValue;
+    const limite = selectedCustomer.limiteCredito ?? 0;
+    const saldo = selectedCustomer.saldoDevedor ?? 0;
+    if (limite > 0 && saldo + totalPotentialFiado > limite + 0.009) {
+      return true;
+    }
+    return false;
+  }, [selectedCustomer, currentPaymentType, currentPaymentAmountValue, totalFiadoCommitted]);
+
   const canConfirmPayment = useMemo(() => {
     if (cart.length === 0) return false;
+    const hasFiado =
+      payments.some((p) => p.paymentType === "fiado") ||
+      (payments.length === 0 && currentPaymentType === "fiado");
+    if (hasFiado) {
+      if (!selectedCustomer) return false;
+      if (fiadoLimitExceeded) return false;
+    }
     if (payments.length === 0) {
       if (currentPaymentAmountValue < subtotal - 0.009) return false;
       if (currentPaymentType === "dinheiro" && currentCashGivenValue < subtotal - 0.009) return false;
@@ -252,12 +392,14 @@ export default function SalesStartPage({
     return currentCoversRemaining;
   }, [
     cart.length,
-    payments.length,
+    payments,
+    currentPaymentType,
+    selectedCustomer,
+    fiadoLimitExceeded,
     remainingToPay,
     currentCoversRemaining,
     currentPaymentAmountValue,
     currentCashGivenValue,
-    currentPaymentType,
     subtotal,
   ]);
 
@@ -307,6 +449,11 @@ export default function SalesStartPage({
         salePrice: parseMoneyBr(item.productSalePrice || "0"),
         imageUrl: item.productImageUrl,
         unit: item.unidadeComercial || "UN",
+        categoriaId: item.categoriaId,
+        dataValidade: item.dataValidade,
+        controlaValidade: item.controlaValidade,
+        diasAlertaValidade: item.diasAlertaValidade,
+        diasRestantes: item.diasRestantes,
       })),
     );
   }, [parseMoneyBr]);
@@ -317,12 +464,22 @@ export default function SalesStartPage({
     return status ?? null;
   }, []);
 
+  const loadCategories = useCallback(async () => {
+    try {
+      const items = await categoriaService.list(false, true);
+      setCategories(items);
+    } catch {
+      setCategories([]);
+    }
+  }, []);
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadProducts().catch(() => {
       Toast.error("Não foi possível carregar produtos da API no PDV.");
     });
-  }, [loadProducts]);
+    loadCategories();
+  }, [loadProducts, loadCategories]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -457,44 +614,75 @@ export default function SalesStartPage({
 
   // Compartilhada entre "adicionar item" manual e a leitura de código de barras de balança
   // (peso variável) — ambos os fluxos acabam no mesmo carrinho, com a mesma checagem de estoque.
-  const addProductToCart = useCallback((product: Product, quantityToAdd: number) => {
-    if (quantityToAdd <= 0) {
-      Toast.error("Informe uma quantidade maior que zero.");
-      return false;
-    }
-    if (quantityToAdd > product.stock) {
-      Toast.error(`Estoque insuficiente. Disponível: ${formatQuantityDisplay(product.stock)}.`);
-      return false;
-    }
-
-    let added = true;
-    setCart((current) => {
-      const existing = current.find((item) => item.id === product.id);
-      if (!existing) {
-        return [
-          ...current,
-          {
-            id: product.id,
-            code: product.code,
-            name: product.name,
-            quantity: quantityToAdd,
-            unitPrice: product.salePrice,
-          },
-        ];
+  const addProductToCart = useCallback(
+    (product: Product, quantityToAdd: number) => {
+      if (quantityToAdd <= 0) {
+        Toast.error("Informe uma quantidade maior que zero.");
+        return false;
       }
-      const nextQuantity = existing.quantity + quantityToAdd;
-      if (nextQuantity > product.stock) {
-        Toast.error(`Estoque insuficiente para ${product.name}.`);
-        added = false;
-        return current;
+      if (quantityToAdd > product.stock) {
+        Toast.error(`Estoque insuficiente. Disponível: ${formatQuantityDisplay(product.stock)}.`);
+        return false;
       }
-      return current.map((item) =>
-        item.id === product.id ? { ...item, quantity: nextQuantity } : item,
-      );
-    });
 
-    return added;
-  }, []);
+      // Verificação de validade de produtos perecíveis
+      if (product.controlaValidade && product.dataValidade) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const valDate = new Date(product.dataValidade + "T00:00:00");
+        const diffDays = Math.ceil((valDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        const alertDays = product.diasAlertaValidade || 15;
+
+        if (diffDays < 0) {
+          const blockExpired = localStorage.getItem("horus_pdv_bloquear_vencidos") !== "false";
+          if (blockExpired) {
+            statusDialog.error(
+              `PRODUTO VENCIDO: "${product.name}" venceu em ${valDate.toLocaleDateString("pt-BR")}. Venda bloqueada conforme normas sanitárias.`,
+            );
+            return false;
+          } else {
+            Toast.error(`Produto VENCIDO em ${valDate.toLocaleDateString("pt-BR")}`);
+          }
+        } else if (diffDays <= alertDays) {
+          Toast.info(`Atenção: "${product.name}" vence em ${diffDays} dia(s).`);
+        }
+      }
+
+      let added = true;
+      setRawCart((current) => {
+        const existing = current.find((item) => item.id === product.id);
+        if (!existing) {
+          return [
+            ...current,
+            {
+              id: product.id,
+              code: product.code,
+              name: product.name,
+              quantity: quantityToAdd,
+              unitPrice: product.salePrice,
+              categoriaId: product.categoriaId,
+              dataValidade: product.dataValidade,
+              controlaValidade: product.controlaValidade,
+              diasAlertaValidade: product.diasAlertaValidade,
+              diasRestantes: product.diasRestantes,
+            },
+          ];
+        }
+        const nextQuantity = existing.quantity + quantityToAdd;
+        if (nextQuantity > product.stock) {
+          Toast.error(`Estoque insuficiente para ${product.name}.`);
+          added = false;
+          return current;
+        }
+        return current.map((item) =>
+          item.id === product.id ? { ...item, quantity: nextQuantity } : item,
+        );
+      });
+
+      return added;
+    },
+    [statusDialog],
+  );
 
   const selectProductOption = useCallback(
     (product: Product) => {
@@ -588,7 +776,7 @@ export default function SalesStartPage({
       Toast.error("Este carrinho veio de um pedido — solte o pedido para remover itens.");
       return;
     }
-    setCart((current) => current.filter((item) => item.id !== id));
+    setRawCart((current) => current.filter((item) => item.id !== id));
   };
 
   const loadPedido = async () => {
@@ -612,7 +800,7 @@ export default function SalesStartPage({
         return;
       }
 
-      setCart(
+      setRawCart(
         pedido.itens.map((item) => ({
           id: item.productCode,
           code: item.productCode,
@@ -634,7 +822,7 @@ export default function SalesStartPage({
 
   const clearPedido = () => {
     setActivePedido(null);
-    setCart([]);
+    setRawCart([]);
     setCpfNota("");
   };
 
@@ -661,7 +849,7 @@ export default function SalesStartPage({
       activePedido ? `Soltar o pedido ${activePedido.orderNumber} sem pagar?` : "Cancelar venda atual?",
     );
     if (!confirmed) return;
-    setCart([]);
+    setRawCart([]);
     setActivePedido(null);
     setCpfNota("");
     setCurrentCashGiven("");
@@ -707,6 +895,25 @@ export default function SalesStartPage({
         `Valor de R$ ${formatMoneyBr(amountVal)} excede o saldo restante de R$ ${formatMoneyBr(remainingToPay)}.`,
       );
       return;
+    }
+
+    if (currentPaymentType === "fiado") {
+      if (!selectedCustomer) {
+        Toast.error("Para pagamento fiado, selecione um cliente cadastrado.");
+        void openCustomerModal();
+        return;
+      }
+      const limite = selectedCustomer.limiteCredito ?? 0;
+      const saldo = selectedCustomer.saldoDevedor ?? 0;
+      if (limite > 0 && saldo + totalFiadoCommitted + amountVal > limite + 0.009) {
+        const disponivel = Math.max(0, limite - saldo - totalFiadoCommitted);
+        Toast.error(
+          `Limite de crédito excedido para ${selectedCustomer.customerName}! Limite disponível: R$ ${formatMoneyBr(
+            disponivel,
+          )}`,
+        );
+        return;
+      }
     }
 
     const cashGivenVal =
@@ -802,6 +1009,31 @@ export default function SalesStartPage({
       }
     }
 
+    const hasFiado = finalPayments.some((p) => p.paymentType === "fiado");
+    const totalFiado = finalPayments
+      .filter((p) => p.paymentType === "fiado")
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    if (hasFiado) {
+      if (!selectedCustomer) {
+        Toast.error("Para pagamento fiado, selecione um cliente cadastrado.");
+        void openCustomerModal();
+        return;
+      }
+      const limite = selectedCustomer.limiteCredito ?? 0;
+      const saldo = selectedCustomer.saldoDevedor ?? 0;
+      if (limite > 0 && saldo + totalFiado > limite + 0.009) {
+        Toast.error(
+          `Limite de crédito excedido para ${selectedCustomer.customerName}! Limite: R$ ${formatMoneyBr(
+            limite,
+          )} | Saldo devedor: R$ ${formatMoneyBr(saldo)} | Disponível: R$ ${formatMoneyBr(
+            Math.max(0, limite - saldo),
+          )}.`,
+        );
+        return;
+      }
+    }
+
     if (isConfirmingSale) return;
     setIsConfirmingSale(true);
     try {
@@ -828,8 +1060,8 @@ export default function SalesStartPage({
       const result = activePedido
         ? await pedidoService.finalize(activePedido.orderNumber, primaryPaymentType, payloadPayments)
         : await salesHistoryService.register({
-            customerName: "Consumidor",
-            customerCpf: cpfNota || "-",
+            customerName: selectedCustomer ? selectedCustomer.customerName : "Consumidor",
+            customerCpf: selectedCustomer ? selectedCustomer.document : (cpfNota || "-"),
             paymentType: primaryPaymentType,
             totalAmount: formatMoneyBr(subtotal),
             operatorName,
@@ -837,6 +1069,10 @@ export default function SalesStartPage({
               productCode: item.code,
               productName: item.name,
               quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              desconto: item.discount ?? 0,
+              itemTotal: item.itemTotal ?? Math.max(0, item.quantity * item.unitPrice - (item.discount ?? 0)),
+              promocaoId: item.promocaoId ?? null,
             })),
             payments: payloadPayments,
           });
@@ -884,7 +1120,7 @@ export default function SalesStartPage({
               ambienteFiscal: company.ambienteFiscal,
             }
           : null,
-        customerCpf: cpfNota || "-",
+        customerCpf: selectedCustomer ? selectedCustomer.document : (cpfNota || "-"),
         paymentType: finalPayments.length === 1 ? finalPayments[0].paymentType : "dinheiro",
         paymentLabel:
           finalPayments.length === 1
@@ -896,7 +1132,9 @@ export default function SalesStartPage({
         change: totalChange,
         items: cart.map((item) => ({
           ...item,
-          total: item.quantity * item.unitPrice,
+          discount: item.discount,
+          promocaoNome: item.promocaoNome,
+          total: item.itemTotal ?? Math.max(0, item.quantity * item.unitPrice - (item.discount ?? 0)),
         })),
         payments: finalPayments.map((p) => ({
           paymentType: p.paymentType,
@@ -906,6 +1144,11 @@ export default function SalesStartPage({
           changeAmount: p.changeAmount,
         })),
         fiscalDetail,
+        isFiado: hasFiado,
+        saldoDevedorAtual:
+          hasFiado && selectedCustomer
+            ? (selectedCustomer.saldoDevedor ?? 0) + totalFiado
+            : undefined,
       };
 
       setCheckoutOpen(false);
@@ -926,9 +1169,10 @@ export default function SalesStartPage({
       setIsConfirmingSale(false);
     }
 
-    setCart([]);
+    setRawCart([]);
     setActivePedido(null);
     setSelectedProductId("");
+    setSelectedCustomer(null);
     setProductSearch("");
     setShowProductOptions(false);
     setQuantityInput("1");
@@ -1086,7 +1330,7 @@ export default function SalesStartPage({
                   }}
                   onFocus={() => {
                     // Evita reabrir o autocomplete automaticamente após adicionar item no mobile.
-                    const hasSearch = productSearch.trim().length > 0;
+                    const hasSearch = productSearch.trim().length > 0 || selectedDepartmentId !== null;
                     setShowProductOptions(hasSearch);
                     if (hasSearch && filteredProducts.length > 0) setHighlightedProductIndex(0);
                   }}
@@ -1171,6 +1415,47 @@ export default function SalesStartPage({
                 )}
               </div>
             </label>
+
+            {categories.length > 0 && (
+              <div className="mb-3">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
+                    Departamentos
+                  </span>
+                  {selectedDepartmentId && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDepartmentId(null)}
+                      className="text-[10px] font-medium text-accent hover:underline"
+                    >
+                      Limpar filtro
+                    </button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto pr-0.5">
+                  {categories.map((dept) => {
+                    const isSelected = selectedDepartmentId === dept.id;
+                    return (
+                      <button
+                        key={dept.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedDepartmentId((current) => (current === dept.id ? null : dept.id));
+                          setShowProductOptions(true);
+                        }}
+                        className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${
+                          isSelected
+                            ? "bg-accent text-white shadow-sm ring-2 ring-accent/30"
+                            : "border border-border-primary bg-bg-light text-text-secondary hover:border-accent/40 hover:text-text-primary"
+                        }`}
+                      >
+                        {dept.nome}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <label className="mb-2 block">
               <span className="mb-1 block text-xs font-semibold uppercase">
@@ -1286,6 +1571,7 @@ export default function SalesStartPage({
                     <div className="space-y-2 p-2 md:hidden">
                       {cart.map((item, index) => {
                         const total = item.quantity * item.unitPrice;
+                        const hasDiscount = (item.discount ?? 0) > 0;
                         return (
                           <article
                             key={item.id}
@@ -1298,6 +1584,20 @@ export default function SalesStartPage({
                                 </p>
                                 <p className="truncate text-sm font-semibold text-text-primary">
                                   {item.name}
+                                  {item.promocaoNome ? (
+                                    <span className="ml-1.5 inline-block rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                      PROMO • {item.promocaoNome}
+                                    </span>
+                                  ) : null}
+                                  {item.controlaValidade && item.dataValidade && (item.diasRestantes ?? 0) <= (item.diasAlertaValidade || 15) ? (
+                                    <span className={`ml-1.5 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                                      (item.diasRestantes ?? 0) < 0
+                                        ? "bg-red-500/15 text-red-600 dark:text-red-400 font-semibold"
+                                        : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                                    }`}>
+                                      {(item.diasRestantes ?? 0) < 0 ? "VENCIDO" : `Vence em ${item.diasRestantes}d`}
+                                    </span>
+                                  ) : null}
                                 </p>
                               </div>
                               <button
@@ -1317,15 +1617,40 @@ export default function SalesStartPage({
                               </div>
                               <div>
                                 <p className="text-text-secondary">Vl. Unit</p>
-                                <p className="font-semibold text-text-primary">
-                                  {formatMoneyBr(item.unitPrice)}
-                                </p>
+                                {hasDiscount ? (
+                                  <div>
+                                    <span className="text-[10px] text-text-secondary line-through">
+                                      {formatMoneyBr(item.unitPrice)}
+                                    </span>
+                                    <p className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                      {formatMoneyBr((item.itemTotal ?? total) / item.quantity)}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <p className="font-semibold text-text-primary">
+                                    {formatMoneyBr(item.unitPrice)}
+                                  </p>
+                                )}
                               </div>
                               <div>
                                 <p className="text-text-secondary">Vl. Total</p>
-                                <p className="font-semibold text-text-primary">
-                                  {formatMoneyBr(total)}
-                                </p>
+                                {hasDiscount ? (
+                                  <div>
+                                    <span className="text-[10px] text-text-secondary line-through">
+                                      {formatMoneyBr(total)}
+                                    </span>
+                                    <p className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                      {formatMoneyBr(item.itemTotal ?? (total - (item.discount ?? 0)))}
+                                    </p>
+                                    <p className="text-[10px] font-medium text-emerald-500">
+                                      -{formatMoneyBr(item.discount ?? 0)}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <p className="font-semibold text-text-primary">
+                                    {formatMoneyBr(total)}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </article>
@@ -1348,14 +1673,60 @@ export default function SalesStartPage({
                       <tbody>
                         {cart.map((item, index) => {
                           const total = item.quantity * item.unitPrice;
+                          const hasDiscount = (item.discount ?? 0) > 0;
                           return (
                             <tr key={item.id} className="border-b border-border-primary">
                               <td className="w-12 px-2 py-1 text-center">{index + 1}</td>
                               <td className="w-28 px-2 py-1">{item.code}</td>
-                              <td className="px-2 py-1">{item.name}</td>
+                              <td className="px-2 py-1">
+                                <span>{item.name}</span>
+                                {item.promocaoNome ? (
+                                  <span className="ml-1.5 inline-block rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                                    PROMO • {item.promocaoNome}
+                                  </span>
+                                ) : null}
+                                {item.controlaValidade && item.dataValidade && (item.diasRestantes ?? 0) <= (item.diasAlertaValidade || 15) ? (
+                                  <span className={`ml-1.5 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                                    (item.diasRestantes ?? 0) < 0
+                                      ? "bg-red-500/15 text-red-600 dark:text-red-400 font-semibold"
+                                      : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                                  }`}>
+                                    {(item.diasRestantes ?? 0) < 0 ? "VENCIDO" : `Vence em ${item.diasRestantes}d`}
+                                  </span>
+                                ) : null}
+                              </td>
                               <td className="w-16 px-2 py-1 text-center">{item.quantity}</td>
-                              <td className="w-32 px-2 py-1 text-right">{formatMoneyBr(item.unitPrice)}</td>
-                              <td className="w-32 px-2 py-1 text-right">{formatMoneyBr(total)}</td>
+                              <td className="w-32 px-2 py-1 text-right">
+                                {hasDiscount ? (
+                                  <div>
+                                    <span className="text-[11px] text-text-secondary line-through">
+                                      {formatMoneyBr(item.unitPrice)}
+                                    </span>
+                                    <p className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                      {formatMoneyBr((item.itemTotal ?? total) / item.quantity)}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  formatMoneyBr(item.unitPrice)
+                                )}
+                              </td>
+                              <td className="w-32 px-2 py-1 text-right">
+                                {hasDiscount ? (
+                                  <div>
+                                    <span className="text-[11px] text-text-secondary line-through">
+                                      {formatMoneyBr(total)}
+                                    </span>
+                                    <p className="font-bold text-emerald-600 dark:text-emerald-400">
+                                      {formatMoneyBr(item.itemTotal ?? (total - (item.discount ?? 0)))}
+                                    </p>
+                                    <p className="text-[10px] font-medium text-emerald-500">
+                                      -{formatMoneyBr(item.discount ?? 0)}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  formatMoneyBr(total)
+                                )}
+                              </td>
                               <td className="w-12 px-1 py-1 text-center">
                                 <button
                                   type="button"
@@ -1378,6 +1749,13 @@ export default function SalesStartPage({
 
             <div className="md:sticky md:bottom-0 md:z-10 md:shadow-[0_-8px_18px_rgba(15,23,42,0.08)]">
               <div className="border-t border-border-primary bg-bg-gray-theme px-3 py-1.5 text-sm text-text-primary">00 - Ajuda</div>
+
+              {totalDiscount > 0 ? (
+                <div className="flex items-center justify-between border-t border-border-primary bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                  <span>DESCONTOS / PROMOÇÕES:</span>
+                  <span className="font-bold">- R$ {formatMoneyBr(totalDiscount)}</span>
+                </div>
+              ) : null}
 
               <div className="grid grid-cols-[1fr_160px] border-t border-border-primary md:grid-cols-[1fr_220px]">
                 <div className="bg-bg-gray-theme px-3 py-2 text-right text-sm font-semibold uppercase text-text-primary">
@@ -1444,15 +1822,140 @@ export default function SalesStartPage({
             </div>
 
             <div className="space-y-3">
-              <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">CPF na nota (opcional)</span>
-                <input
-                  value={cpfNota}
-                  onChange={(event) => setCpfNota(event.target.value)}
-                  className="input-field w-full"
-                  placeholder="Somente se cliente pedir"
-                />
-              </label>
+              {/* Identificação do Cliente / Conta Fiado */}
+              <div className="rounded-xl border border-border-primary bg-bg-primary/40 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users size={16} className="text-accent" />
+                    <span className="text-xs font-semibold text-text-primary uppercase tracking-wide">
+                      Identificação do Cliente
+                    </span>
+                  </div>
+                  {selectedCustomer ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCustomer(null);
+                        setCpfNota("");
+                      }}
+                      className="text-[11px] font-medium text-danger hover:underline"
+                    >
+                      Desvincular
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void openCustomerModal()}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
+                    >
+                      <UserCheck size={13} /> Buscar Cliente
+                    </button>
+                  )}
+                </div>
+
+                {selectedCustomer ? (
+                  <div className="mt-2.5 space-y-1.5 rounded-lg border border-border-primary bg-bg-light p-2.5 text-xs">
+                    <div className="flex items-center justify-between font-semibold text-text-primary">
+                      <span>{selectedCustomer.customerName}</span>
+                      <button
+                        type="button"
+                        onClick={() => void openCustomerModal()}
+                        className="text-[11px] font-normal text-accent hover:underline"
+                      >
+                        Trocar
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-text-secondary">
+                      <span>Doc: {selectedCustomer.document}</span>
+                      {selectedCustomer.cellphone && <span>Tel: {selectedCustomer.cellphone}</span>}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 border-t border-border-primary pt-1 text-[11px]">
+                      <span className="text-text-secondary">
+                        Limite:{" "}
+                        <strong className="text-text-primary">
+                          {(selectedCustomer.limiteCredito ?? 0) > 0
+                            ? `R$ ${formatMoneyBr(selectedCustomer.limiteCredito!)}`
+                            : "Ilimitado"}
+                        </strong>
+                      </span>
+                      <span className="text-text-secondary">•</span>
+                      <span className="text-text-secondary">
+                        Saldo Devedor:{" "}
+                        <strong
+                          className={
+                            (selectedCustomer.saldoDevedor ?? 0) > 0
+                              ? "text-amber-500"
+                              : "text-success"
+                          }
+                        >
+                          R$ {formatMoneyBr(selectedCustomer.saldoDevedor ?? 0)}
+                        </strong>
+                      </span>
+                      {(selectedCustomer.limiteCredito ?? 0) > 0 && (
+                        <>
+                          <span className="text-text-secondary">•</span>
+                          <span className="text-text-secondary">
+                            Disponível:{" "}
+                            <strong
+                              className={fiadoLimitExceeded ? "text-danger" : "text-success"}
+                            >
+                              R${" "}
+                              {formatMoneyBr(
+                                Math.max(
+                                  0,
+                                  (selectedCustomer.limiteCredito ?? 0) -
+                                    (selectedCustomer.saldoDevedor ?? 0),
+                                ),
+                              )}
+                            </strong>
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    {fiadoLimitExceeded && (
+                      <div className="mt-1 flex items-center gap-1.5 rounded bg-danger/10 p-1.5 text-[11px] font-semibold text-danger">
+                        <AlertTriangle size={13} />
+                        Limite de crédito excedido para esta compra a prazo!
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      value={cpfNota}
+                      onChange={(event) => setCpfNota(event.target.value)}
+                      className="input-field flex-1 text-xs"
+                      placeholder="CPF na nota (opcional, ou busque cliente ao lado)"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void openCustomerModal()}
+                      className="btn-secondary inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-xs"
+                    >
+                      <Search size={13} /> Buscar
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Alerta se forma for Fiado e não tiver cliente selecionado */}
+              {(currentPaymentType === "fiado" ||
+                payments.some((p) => p.paymentType === "fiado")) &&
+                !selectedCustomer && (
+                  <div className="flex items-center justify-between rounded-xl border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs text-amber-500">
+                    <div className="flex items-center gap-1.5 font-medium">
+                      <AlertTriangle size={15} />
+                      <span>Venda a prazo (Fiado) exige seleção de cliente cadastrado.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void openCustomerModal()}
+                      className="btn-primary px-2.5 py-1 text-xs font-semibold"
+                    >
+                      Selecionar
+                    </button>
+                  </div>
+                )}
 
               {/* Painel de Resumo dos Valores */}
               <div className="grid grid-cols-2 gap-2 rounded-xl border border-border-primary bg-bg-primary p-3 text-xs sm:grid-cols-4 sm:text-sm">
@@ -1544,6 +2047,8 @@ export default function SalesStartPage({
                         setCurrentPaymentType(tipo);
                         if (tipo === "dinheiro") {
                           setCurrentCashGiven(currentPaymentAmount);
+                        } else if (tipo === "fiado" && !selectedCustomer) {
+                          void openCustomerModal();
                         }
                       }}
                       getOptionValue={(option) => option.value}
@@ -1679,6 +2184,120 @@ export default function SalesStartPage({
           onClose={() => setReceiptPreview(null)}
         />
       ) : null}
+
+      {customerModalOpen && (
+        <div
+          className="dept-drawer-overlay flex items-center justify-center p-4"
+          onClick={() => setCustomerModalOpen(false)}
+        >
+          <aside
+            className="card flex max-h-[85vh] w-full max-w-xl flex-col rounded-2xl p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-border-primary pb-3">
+              <div className="flex items-center gap-2">
+                <Users size={18} className="text-accent" />
+                <h3 className="text-base font-semibold text-text-primary">
+                  Selecionar Cliente para Fiado
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCustomerModalOpen(false)}
+                className="rounded-lg p-1.5 text-text-secondary hover:bg-hover-light"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="mt-3">
+              <div className="relative">
+                <Search
+                  size={15}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+                />
+                <input
+                  value={customerFilter}
+                  onChange={(e) => setCustomerFilter(e.target.value)}
+                  placeholder="Pesquise por nome, CPF ou celular..."
+                  className="input-field w-full pl-9 text-xs"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="mt-3 flex-1 space-y-2 overflow-y-auto pr-1">
+              {loadingCustomers ? (
+                <div className="flex items-center justify-center py-8 text-xs text-text-secondary">
+                  <Loader2 size={20} className="mr-2 animate-spin text-accent" /> Carregando clientes...
+                </div>
+              ) : filteredCustomerList.length === 0 ? (
+                <div className="py-8 text-center text-xs text-text-secondary">
+                  Nenhum cliente encontrado.
+                </div>
+              ) : (
+                filteredCustomerList.map((c) => {
+                  const saldo = c.saldoDevedor ?? 0;
+                  const limite = c.limiteCredito ?? 0;
+                  const disponivel = limite > 0 ? Math.max(0, limite - saldo) : null;
+                  return (
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between rounded-xl border border-border-primary bg-bg-primary/50 p-3 text-xs transition hover:bg-bg-primary"
+                    >
+                      <div className="space-y-1">
+                        <p className="font-semibold text-text-primary">{c.customerName}</p>
+                        <p className="text-[11px] text-text-secondary">
+                          CPF: {c.document} {c.cellphone ? `• Tel: ${c.cellphone}` : ""}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2 text-[10px]">
+                          <span className="text-text-tertiary">
+                            Limite:{" "}
+                            <strong className="text-text-primary">
+                              {limite > 0 ? `R$ ${formatMoneyBr(limite)}` : "Ilimitado"}
+                            </strong>
+                          </span>
+                          <span className="text-text-tertiary">•</span>
+                          <span
+                            className={
+                              saldo > 0 ? "font-semibold text-amber-500" : "text-text-tertiary"
+                            }
+                          >
+                            Saldo Devedor: R$ {formatMoneyBr(saldo)}
+                          </span>
+                          {disponivel !== null && (
+                            <>
+                              <span className="text-text-tertiary">•</span>
+                              <span
+                                className={`font-semibold ${
+                                  disponivel <= 0 ? "text-danger" : "text-success"
+                                }`}
+                              >
+                                Disponível: R$ {formatMoneyBr(disponivel)}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCustomer(c);
+                          setCpfNota(c.document);
+                          setCustomerModalOpen(false);
+                        }}
+                        className="btn-primary px-3 py-1.5 text-xs font-semibold"
+                      >
+                        Selecionar
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </aside>
+        </div>
+      )}
 
       {statusDialog.Dialog}
     </div>

@@ -25,6 +25,8 @@ export type CustomerDto = {
   telephone: string;
   cellphone: string;
   email: string;
+  limiteCredito?: number;
+  saldoDevedor?: number;
 };
 
 export type CustomerPayload = Omit<CustomerDto, "id">;

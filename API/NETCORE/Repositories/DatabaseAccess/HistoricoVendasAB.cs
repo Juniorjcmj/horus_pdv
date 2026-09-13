@@ -13,14 +13,15 @@ using Microsoft.Data.SqlClient;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
-public class HistoricoVendasAB(Connection connection)
+public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb)
 {
     public async Task<List<VendaHistoricoAD>> ListarAsync(string companyId, string? saleNumber = null)
     {
         const string sql = """
             SELECT v.SaleNumber, v.CustomerName, v.CustomerCpf, v.PaymentType,
                    v.TotalAmount, v.OperatorName, v.SaleDate,
-                   i.ProductCode, i.ProductName, i.Quantity, i.UnitPrice, i.ItemTotal
+                   i.ProductCode, i.ProductName, i.Quantity, i.UnitPrice, i.ItemTotal,
+                   i.Desconto, i.PromocaoId
             FROM VendaItens i
             INNER JOIN Vendas v ON v.Id = i.VendaId
             WHERE v.CompanyId = @CompanyId
@@ -48,7 +49,8 @@ public class HistoricoVendasAB(Connection connection)
         const string sql = """
             SELECT v.SaleNumber, v.CustomerName, v.CustomerCpf, v.PaymentType,
                    v.TotalAmount, v.OperatorName, v.SaleDate,
-                   i.ProductCode, i.ProductName, i.Quantity, i.UnitPrice, i.ItemTotal
+                   i.ProductCode, i.ProductName, i.Quantity, i.UnitPrice, i.ItemTotal,
+                   i.Desconto, i.PromocaoId
             FROM VendaItens i
             INNER JOIN Vendas v ON v.Id = i.VendaId
             WHERE v.CompanyId = @CompanyId AND v.Id = @VendaId
@@ -94,11 +96,62 @@ public class HistoricoVendasAB(Connection connection)
                 paymentType = payments.Count == 1 ? payments[0].PaymentType : "Múltiplo";
             }
 
+            var fiadoPayment = payments.FirstOrDefault(p => string.Equals(p.PaymentType?.Trim(), "fiado", StringComparison.OrdinalIgnoreCase))
+                ?? (string.Equals(paymentType, "fiado", StringComparison.OrdinalIgnoreCase) ? new VendaPagamentoRequest { PaymentType = "fiado", Amount = totalAmount } : null);
+
+            string? fiadoClienteId = null;
+            if (fiadoPayment is not null && fiadoPayment.Amount > 0)
+            {
+                if (string.IsNullOrWhiteSpace(customerCpf) || customerCpf == "-")
+                {
+                    throw new InvalidOperationException("Para compras a prazo / fiado, é obrigatório vincular um cliente cadastrado.");
+                }
+
+                var digits = new string(customerCpf.Where(char.IsDigit).ToArray());
+                const string findClienteSql = """
+                    SELECT Id, LimiteCredito, SaldoDevedor, CustomerName
+                    FROM Clientes WITH (UPDLOCK, ROWLOCK)
+                    WHERE CompanyId = @CompanyId
+                      AND REPLACE(REPLACE(REPLACE(Document, '.', ''), '-', ''), '/', '') = @Document;
+                    """;
+
+                await using var findCmd = new SqlCommand(findClienteSql, db, transaction);
+                findCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                findCmd.Parameters.AddWithValue("@Document", digits);
+                decimal limiteCredito = 0;
+                decimal saldoDevedor = 0;
+
+                await using (var r = await findCmd.ExecuteReaderAsync())
+                {
+                    if (!await r.ReadAsync())
+                    {
+                        throw new InvalidOperationException($"Cliente com CPF/CNPJ {customerCpf} não encontrado no cadastro.");
+                    }
+
+                    fiadoClienteId = r.GetString(r.GetOrdinal("Id"));
+                    limiteCredito = r.GetDecimal(r.GetOrdinal("LimiteCredito"));
+                    saldoDevedor = r.GetDecimal(r.GetOrdinal("SaldoDevedor"));
+                    customerName = r.GetString(r.GetOrdinal("CustomerName"));
+                }
+
+                if (limiteCredito > 0 && (saldoDevedor + fiadoPayment.Amount) > limiteCredito)
+                {
+                    var disponivel = Math.Max(0, limiteCredito - saldoDevedor);
+                    throw new InvalidOperationException(
+                        $"Limite de crédito excedido para {customerName}. Limite: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoDevedor:N2}, Disponível: R$ {disponivel:N2}, Valor fiado: R$ {fiadoPayment.Amount:N2}.");
+                }
+            }
+
             // A venda e a baixa de estoque compartilham a mesma transação para evitar histórico sem estoque atualizado.
             var saleItems = await BaixarEstoqueAsync(db, transaction, companyId, request.Items);
 
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, payments);
+
+            if (fiadoPayment is not null && fiadoPayment.Amount > 0 && fiadoClienteId is not null)
+            {
+                await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteId, fiadoPayment.Amount, result.VendaId, operatorName);
+            }
 
             await transaction.CommitAsync();
             return result;
@@ -144,8 +197,59 @@ public class HistoricoVendasAB(Connection connection)
                 paymentType = pagamentos.Count == 1 ? pagamentos[0].PaymentType : "Múltiplo";
             }
 
+            var fiadoPaymentFixo = pagamentos.FirstOrDefault(p => string.Equals(p.PaymentType?.Trim(), "fiado", StringComparison.OrdinalIgnoreCase))
+                ?? (string.Equals(paymentType, "fiado", StringComparison.OrdinalIgnoreCase) ? new VendaPagamentoRequest { PaymentType = "fiado", Amount = totalAmount } : null);
+
+            string? fiadoClienteIdFixo = null;
+            if (fiadoPaymentFixo is not null && fiadoPaymentFixo.Amount > 0)
+            {
+                if (string.IsNullOrWhiteSpace(customerCpf) || customerCpf == "-")
+                {
+                    throw new InvalidOperationException("Para compras a prazo / fiado, é obrigatório vincular um cliente cadastrado.");
+                }
+
+                var digits = new string(customerCpf.Where(char.IsDigit).ToArray());
+                const string findClienteSql = """
+                    SELECT Id, LimiteCredito, SaldoDevedor, CustomerName
+                    FROM Clientes WITH (UPDLOCK, ROWLOCK)
+                    WHERE CompanyId = @CompanyId
+                      AND REPLACE(REPLACE(REPLACE(Document, '.', ''), '-', ''), '/', '') = @Document;
+                    """;
+
+                await using var findCmd = new SqlCommand(findClienteSql, db, transaction);
+                findCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                findCmd.Parameters.AddWithValue("@Document", digits);
+                decimal limiteCredito = 0;
+                decimal saldoDevedor = 0;
+
+                await using (var r = await findCmd.ExecuteReaderAsync())
+                {
+                    if (!await r.ReadAsync())
+                    {
+                        throw new InvalidOperationException($"Cliente com CPF/CNPJ {customerCpf} não encontrado no cadastro.");
+                    }
+
+                    fiadoClienteIdFixo = r.GetString(r.GetOrdinal("Id"));
+                    limiteCredito = r.GetDecimal(r.GetOrdinal("LimiteCredito"));
+                    saldoDevedor = r.GetDecimal(r.GetOrdinal("SaldoDevedor"));
+                    customerName = r.GetString(r.GetOrdinal("CustomerName"));
+                }
+
+                if (limiteCredito > 0 && (saldoDevedor + fiadoPaymentFixo.Amount) > limiteCredito)
+                {
+                    var disponivel = Math.Max(0, limiteCredito - saldoDevedor);
+                    throw new InvalidOperationException(
+                        $"Limite de crédito excedido para {customerName}. Limite: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoDevedor:N2}, Disponível: R$ {disponivel:N2}, Valor fiado: R$ {fiadoPaymentFixo.Amount:N2}.");
+                }
+            }
+
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, pagamentos);
+
+            if (fiadoPaymentFixo is not null && fiadoPaymentFixo.Amount > 0 && fiadoClienteIdFixo is not null)
+            {
+                await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteIdFixo, fiadoPaymentFixo.Amount, result.VendaId, operatorName);
+            }
 
             await transaction.CommitAsync();
             return result;
@@ -277,13 +381,14 @@ public class HistoricoVendasAB(Connection connection)
         {
             var item = saleItems[index];
             var itemId = $"{saleId}-item-{index + 1:000}";
-            var itemTotal = Math.Round(item.UnitPrice * item.Quantity, 2, MidpointRounding.AwayFromZero);
+            var itemTotal = Math.Round(item.UnitPrice * item.Quantity - item.Desconto, 2, MidpointRounding.AwayFromZero);
+            if (itemTotal < 0) itemTotal = 0m;
             await using var itemCommand = new SqlCommand(
                 """
                 INSERT INTO VendaItens
-                    (Id, VendaId, ProductCode, ProductName, Quantity, UnitPrice, ItemTotal)
+                    (Id, VendaId, ProductCode, ProductName, Quantity, UnitPrice, Desconto, ItemTotal, PromocaoId)
                 VALUES
-                    (@Id, @VendaId, @ProductCode, @ProductName, @Quantity, @UnitPrice, @ItemTotal);
+                    (@Id, @VendaId, @ProductCode, @ProductName, @Quantity, @UnitPrice, @Desconto, @ItemTotal, @PromocaoId);
                 """,
                 db,
                 transaction);
@@ -293,7 +398,9 @@ public class HistoricoVendasAB(Connection connection)
             itemCommand.Parameters.AddWithValue("@ProductName", item.ProductName);
             itemCommand.Parameters.AddWithValue("@Quantity", item.Quantity);
             itemCommand.Parameters.AddWithValue("@UnitPrice", item.UnitPrice);
+            itemCommand.Parameters.AddWithValue("@Desconto", item.Desconto);
             itemCommand.Parameters.AddWithValue("@ItemTotal", itemTotal);
+            itemCommand.Parameters.AddWithValue("@PromocaoId", string.IsNullOrWhiteSpace(item.PromocaoId) ? DBNull.Value : item.PromocaoId);
             await itemCommand.ExecuteNonQueryAsync();
 
             rows.Add(new VendaHistoricoAD
@@ -308,6 +415,8 @@ public class HistoricoVendasAB(Connection connection)
                 ProductName = item.ProductName,
                 Quantity = item.Quantity,
                 UnitPrice = HorusMoneyFormat.Format(item.UnitPrice),
+                Desconto = item.Desconto,
+                PromocaoId = item.PromocaoId,
                 ItemTotal = HorusMoneyFormat.Format(itemTotal),
                 SaleDate = HorusDateTime.Format(now)
             });
@@ -339,19 +448,21 @@ public class HistoricoVendasAB(Connection connection)
         string companyId,
         IEnumerable<VendaItemRequest> items)
     {
-        var groupedItems = items
-            .GroupBy(item => item.ProductCode.Trim(), StringComparer.OrdinalIgnoreCase)
-            .Select(group => new VendaItemRecord
-            {
-                ProductCode = group.Key,
-                ProductName = group.First().ProductName.Trim(),
-                Quantity = group.Sum(item => item.Quantity)
-            })
-            .ToList();
-
-        foreach (var item in groupedItems)
+        var itemList = items.ToList();
+        if (itemList.Count == 0)
         {
-            if (item.Quantity <= 0)
+            throw new InvalidOperationException("Venda deve conter ao menos um item.");
+        }
+
+        var stockByCode = itemList
+            .GroupBy(item => item.ProductCode.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity), StringComparer.OrdinalIgnoreCase);
+
+        var pricesByCode = new Dictionary<string, (string Id, string ProductName, decimal SalePrice, decimal CostPrice)>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (code, totalQty) in stockByCode)
+        {
+            if (totalQty <= 0)
             {
                 throw new InvalidOperationException("Quantidade da venda deve ser maior que zero.");
             }
@@ -364,29 +475,29 @@ public class HistoricoVendasAB(Connection connection)
                 """,
                 db,
                 transaction);
-            select.Parameters.AddWithValue("@ProductCode", item.ProductCode);
+            select.Parameters.AddWithValue("@ProductCode", code);
             select.Parameters.AddWithValue("@CompanyId", companyId);
             await using var reader = await select.ExecuteReaderAsync();
             if (!await reader.ReadAsync())
             {
-                throw new InvalidOperationException($"Produto {item.ProductCode} não encontrado.");
+                throw new InvalidOperationException($"Produto {code} não encontrado.");
             }
 
             var productId = ReadString(reader, "Id");
-            item.ProductName = ReadString(reader, "ProductName");
+            var productName = ReadString(reader, "ProductName");
             var currentStock = reader.GetDecimal(reader.GetOrdinal("ProductQnt"));
-            var unitPrice = reader.GetDecimal(reader.GetOrdinal("ProductUnitPrice"));
+            var unitCost = reader.GetDecimal(reader.GetOrdinal("ProductUnitPrice"));
             var salePrice = reader.GetDecimal(reader.GetOrdinal("ProductSalePrice"));
-            item.UnitPrice = salePrice > 0 ? salePrice : unitPrice;
+            var effectivePrice = salePrice > 0 ? salePrice : unitCost;
             await reader.CloseAsync();
 
-            if (currentStock < item.Quantity)
+            if (currentStock < totalQty)
             {
                 throw new InvalidOperationException(
-                    $"Estoque insuficiente para {item.ProductName}. Disponível: {HorusMoneyFormat.FormatQuantity(currentStock)}.");
+                    $"Estoque insuficiente para {productName}. Disponível: {HorusMoneyFormat.FormatQuantity(currentStock)}.");
             }
 
-            var nextStock = currentStock - item.Quantity;
+            var nextStock = currentStock - totalQty;
             await using var update = new SqlCommand(
                 """
                 UPDATE Produtos
@@ -397,12 +508,31 @@ public class HistoricoVendasAB(Connection connection)
                 db,
                 transaction);
             update.Parameters.AddWithValue("@ProductQnt", nextStock);
-            update.Parameters.AddWithValue("@TotalPriceOnProduct", unitPrice * nextStock);
+            update.Parameters.AddWithValue("@TotalPriceOnProduct", unitCost * nextStock);
             update.Parameters.AddWithValue("@Id", productId);
             await update.ExecuteNonQueryAsync();
+
+            pricesByCode[code] = (productId, productName, effectivePrice, unitCost);
         }
 
-        return groupedItems;
+        var saleItems = new List<VendaItemRecord>();
+        foreach (var req in itemList)
+        {
+            var code = req.ProductCode.Trim();
+            var info = pricesByCode[code];
+            var unitPrice = req.UnitPrice > 0 ? req.UnitPrice : info.SalePrice;
+            saleItems.Add(new VendaItemRecord
+            {
+                ProductCode = code,
+                ProductName = string.IsNullOrWhiteSpace(req.ProductName) ? info.ProductName : req.ProductName.Trim(),
+                UnitPrice = unitPrice,
+                Quantity = req.Quantity,
+                Desconto = req.Desconto,
+                PromocaoId = req.PromocaoId
+            });
+        }
+
+        return saleItems;
     }
 
     /// <summary>
@@ -493,6 +623,8 @@ public class HistoricoVendasAB(Connection connection)
         ProductName = ReadString(reader, "ProductName"),
         Quantity = reader.GetDecimal(reader.GetOrdinal("Quantity")),
         UnitPrice = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("UnitPrice"))),
+        Desconto = reader.GetDecimal(reader.GetOrdinal("Desconto")),
+        PromocaoId = reader.IsDBNull(reader.GetOrdinal("PromocaoId")) ? null : reader.GetString(reader.GetOrdinal("PromocaoId")),
         ItemTotal = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("ItemTotal"))),
         SaleDate = HorusDateTime.Format(reader.GetDateTimeOffset(reader.GetOrdinal("SaleDate")))
     };
@@ -542,5 +674,7 @@ public class HistoricoVendasAB(Connection connection)
         public string ProductName { get; set; } = string.Empty;
         public decimal UnitPrice { get; set; }
         public decimal Quantity { get; set; }
+        public decimal Desconto { get; set; }
+        public string? PromocaoId { get; set; }
     }
 }

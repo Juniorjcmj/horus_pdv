@@ -21,6 +21,7 @@ import {
   Repeat2,
   ShoppingCart,
   Store,
+  Tag,
   Truck,
   UserCog,
   UsersRound,
@@ -35,6 +36,8 @@ export type PageKey =
   | "cadastro-cliente"
   | "cadastro-fornecedor"
   | "cadastro-produto"
+  | "promocoes"
+  | "fiado"
   | "historico-vendas"
   | "relatorios"
   | "vendas"
@@ -260,6 +263,20 @@ export default function AppSidebar({
                   active={activePage === "historico-vendas"}
                   collapsed={collapsed}
                   onClick={() => handleChangePage("historico-vendas")}
+                />
+                <SidebarItem
+                  icon={<Tag size={20} />}
+                  label="Promoções"
+                  active={activePage === "promocoes"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("promocoes")}
+                />
+                <SidebarItem
+                  icon={<Landmark size={20} />}
+                  label="Fiado / Conta Corrente"
+                  active={activePage === "fiado"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("fiado")}
                 />
                 <SidebarItem
                   icon={<FileText size={20} />}

@@ -98,7 +98,8 @@ public class ClienteService(ClienteAB clientesAB) : IClienteService
         Email = request.Email,
         IndIeDest = request.IndIeDest,
         InscricaoEstadual = string.IsNullOrWhiteSpace(request.InscricaoEstadual) ? null : request.InscricaoEstadual.Trim(),
-        CodigoMunicipioIbge = string.IsNullOrWhiteSpace(request.CodigoMunicipioIbge) ? null : request.CodigoMunicipioIbge.Trim()
+        CodigoMunicipioIbge = string.IsNullOrWhiteSpace(request.CodigoMunicipioIbge) ? null : request.CodigoMunicipioIbge.Trim(),
+        LimiteCredito = request.LimiteCredito
     };
 
     private static ClienteModel ToModel(ClienteAD source) => new()
@@ -121,7 +122,9 @@ public class ClienteService(ClienteAB clientesAB) : IClienteService
         Email = source.Email,
         IndIeDest = source.IndIeDest,
         InscricaoEstadual = source.InscricaoEstadual,
-        CodigoMunicipioIbge = source.CodigoMunicipioIbge
+        CodigoMunicipioIbge = source.CodigoMunicipioIbge,
+        LimiteCredito = source.LimiteCredito,
+        SaldoDevedor = source.SaldoDevedor
     };
 
     private static string OnlyDigits(string value) => new(value.Where(char.IsDigit).ToArray());

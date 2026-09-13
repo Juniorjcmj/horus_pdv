@@ -27,6 +27,18 @@ public class ProdutoRequest
     /// <summary>% de lucro desejado sobre o custo (ex.: "30,00" = 30%). Vazio/nulo = não configurado.</summary>
     public string? MargemDesejadaPercentual { get; set; }
 
+    /// <summary>Vínculo com a tabela Categorias (departamento ou subcategoria). Null/vazio = sem categoria.</summary>
+    public string? CategoriaId { get; set; }
+
+    /// <summary>Data de validade do produto (formato ISO "YYYY-MM-DD" ou null/vazio).</summary>
+    public string? DataValidade { get; set; }
+
+    /// <summary>Indica se o produto tem controle de validade ativo.</summary>
+    public bool ControlaValidade { get; set; }
+
+    /// <summary>Dias de antecedência para disparar alertas de vencimento (padrão 15).</summary>
+    public int DiasAlertaValidade { get; set; } = 15;
+
     // Dados fiscais (NFC-e modelo 65)
     public string Ncm { get; set; } = "00000000";
     public string? Cest { get; set; }

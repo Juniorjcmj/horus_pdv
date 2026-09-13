@@ -6,6 +6,7 @@
 
 import {
   AlertTriangle,
+  Calendar,
   ChevronDown,
   Database,
   FileUp,
@@ -32,6 +33,7 @@ import AddressContactFields from "@/components/Register/AddressContactFields";
 import { Toast, useStatusDialog } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import PageLayout from "@/layout/PageLayout";
+import { categoriaService, type CategoriaArvore } from "@/services/api/categoriaService";
 import { productService } from "@/services/api/productService";
 import { supplierService, type SupplierPayload } from "@/services/api/supplierService";
 import { lookupAddressByCep } from "@/utils/cepLookup";
@@ -52,6 +54,12 @@ type Product = {
   productSalePrice: string;
   totalPriceOnProduct: string;
   margemDesejadaPercentual: string | null;
+  categoriaId?: string | null;
+  categoriaNome?: string | null;
+  dataValidade?: string | null;
+  controlaValidade?: boolean;
+  diasAlertaValidade?: number;
+  diasRestantes?: number | null;
 
   // Dados fiscais (NFC-e modelo 65)
   ncm: string;
@@ -92,6 +100,12 @@ const EMPTY_FORM: ProductFormData = {
   productSalePrice: "",
   totalPriceOnProduct: "",
   margemDesejadaPercentual: "",
+  categoriaId: null,
+  categoriaNome: null,
+  dataValidade: "",
+  controlaValidade: false,
+  diasAlertaValidade: 15,
+  diasRestantes: null,
   ncm: "",
   cest: "",
   cfop: "5102",
@@ -142,6 +156,7 @@ function ProductFormDrawer({
   onSave,
   supplierOptions,
   onCreateSupplier,
+  categories,
 }: {
   open: boolean;
   isEditMode: boolean;
@@ -152,6 +167,7 @@ function ProductFormDrawer({
   onSave: () => void;
   supplierOptions: string[];
   onCreateSupplier: (draft: QuickSupplierDraft) => Promise<string | null>;
+  categories: CategoriaArvore[];
 }) {
   const {
     maskCnpj,
@@ -168,6 +184,50 @@ function ProductFormDrawer({
   const [supplierDraft, setSupplierDraft] = useState<QuickSupplierDraft>(EMPTY_SUPPLIER_DRAFT);
   const [savingSupplier, setSavingSupplier] = useState(false);
   const [loadingSupplierCep, setLoadingSupplierCep] = useState(false);
+
+  let selectedDepId = "";
+  let selectedSubId = "";
+  if (value.categoriaId) {
+    const asRoot = categories.find((c) => c.id === value.categoriaId);
+    if (asRoot) {
+      selectedDepId = asRoot.id;
+    } else {
+      for (const root of categories) {
+        const sub = root.subcategorias?.find((s) => s.id === value.categoriaId);
+        if (sub) {
+          selectedDepId = root.id;
+          selectedSubId = sub.id;
+          break;
+        }
+      }
+    }
+  }
+
+  const currentSubcategories = useMemo(() => {
+    if (!selectedDepId) return [];
+    const root = categories.find((c) => c.id === selectedDepId);
+    return root?.subcategorias ?? [];
+  }, [categories, selectedDepId]);
+
+  const handleDepartmentChange = (depId: string) => {
+    if (!depId) {
+      onChange({ ...value, categoriaId: null, categoriaNome: null });
+    } else {
+      const dep = categories.find((c) => c.id === depId);
+      onChange({ ...value, categoriaId: depId, categoriaNome: dep?.nome ?? null });
+    }
+  };
+
+  const handleSubcategoryChange = (subId: string) => {
+    if (!subId) {
+      const dep = categories.find((c) => c.id === selectedDepId);
+      onChange({ ...value, categoriaId: selectedDepId || null, categoriaNome: dep?.nome ?? null });
+    } else {
+      const sub = currentSubcategories.find((s) => s.id === subId);
+      onChange({ ...value, categoriaId: subId, categoriaNome: sub?.nome ?? null });
+    }
+  };
+
   if (!open) return null;
 
   const setField = <K extends keyof ProductFormData>(
@@ -471,6 +531,49 @@ function ProductFormDrawer({
           </section>
 
           <section className="card rounded-2xl p-4">
+            <h4 className="text-sm font-semibold text-text-secondary">Classificação</h4>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Departamento</span>
+                <select
+                  value={selectedDepId}
+                  onChange={(event) => handleDepartmentChange(event.target.value)}
+                  className="input-field w-full"
+                >
+                  <option value="">Sem departamento</option>
+                  {categories.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Subcategoria</span>
+                <select
+                  value={selectedSubId}
+                  onChange={(event) => handleSubcategoryChange(event.target.value)}
+                  disabled={!selectedDepId || currentSubcategories.length === 0}
+                  className="input-field w-full disabled:opacity-50"
+                >
+                  <option value="">
+                    {!selectedDepId
+                      ? "Selecione um departamento primeiro"
+                      : currentSubcategories.length === 0
+                      ? "Nenhuma subcategoria cadastrada"
+                      : "Sem subcategoria (departamento geral)"}
+                  </option>
+                  {currentSubcategories.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section className="card rounded-2xl p-4">
             <h4 className="text-sm font-semibold text-text-secondary">Preço e estoque</h4>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <label className="block">
@@ -561,6 +664,112 @@ function ProductFormDrawer({
                 />
               </label>
             </div>
+          </section>
+
+          <section className="card rounded-2xl p-4">
+            <div className="flex items-center justify-between">
+              <h4 className="flex items-center gap-2 text-sm font-semibold text-text-secondary">
+                <Calendar className="h-4 w-4 text-primary" />
+                Controle de Validade
+              </h4>
+              <label className="relative inline-flex cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={value.controlaValidade ?? false}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      controlaValidade: e.target.checked,
+                      diasAlertaValidade: value.diasAlertaValidade || 15,
+                    })
+                  }
+                  className="h-4 w-4 rounded border-border-secondary text-primary focus:ring-primary"
+                />
+                <span className="text-sm font-medium text-text-primary">Controlar validade</span>
+              </label>
+            </div>
+
+            {value.controlaValidade ? (
+              <div className="mt-4 space-y-3 border-t border-border-secondary pt-3">
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm text-text-secondary">
+                      Data de Validade (lote mais próximo)
+                    </span>
+                    <input
+                      type="date"
+                      value={value.dataValidade ?? ""}
+                      onChange={(e) =>
+                        onChange({
+                          ...value,
+                          dataValidade: e.target.value,
+                        })
+                      }
+                      className="input-field w-full"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm text-text-secondary">
+                      Dias de Antecedência para Alerta
+                    </span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={value.diasAlertaValidade ?? 15}
+                      onChange={(e) =>
+                        onChange({
+                          ...value,
+                          diasAlertaValidade: Number(e.target.value) || 15,
+                        })
+                      }
+                      className="input-field w-full"
+                      placeholder="15"
+                    />
+                    <span className="mt-1 block text-xs text-text-secondary">
+                      Alerta quando a validade estiver a X dias do vencimento.
+                    </span>
+                  </label>
+                </div>
+
+                {/* Indicador visual de status semafórico */}
+                {value.dataValidade ? (() => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const valDate = new Date(value.dataValidade + "T00:00:00");
+                  const diffTime = valDate.getTime() - today.getTime();
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  const alertDays = value.diasAlertaValidade || 15;
+
+                  if (diffDays < 0) {
+                    return (
+                      <div className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
+                        <AlertTriangle className="h-4 w-4 shrink-0" />
+                        <span><strong className="font-semibold">PRODUTO VENCIDO:</strong> Venceu há {Math.abs(diffDays)} dia(s) (em {valDate.toLocaleDateString("pt-BR")}).</span>
+                      </div>
+                    );
+                  } else if (diffDays <= alertDays) {
+                    return (
+                      <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
+                        <AlertTriangle className="h-4 w-4 shrink-0" />
+                        <span><strong className="font-semibold">ATENÇÃO - PRÓXIMO DO VENCIMENTO:</strong> Vence em {diffDays} dia(s) (em {valDate.toLocaleDateString("pt-BR")}).</span>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                        <span><strong className="font-medium">Válido:</strong> Vence em {diffDays} dia(s) (em {valDate.toLocaleDateString("pt-BR")}).</span>
+                      </div>
+                    );
+                  }
+                })() : (
+                  <p className="text-xs text-text-tertiary">
+                    Informe a data de validade para monitorar alertas automáticos e evitar perdas.
+                  </p>
+                )}
+              </div>
+            ) : null}
           </section>
 
           <section className="card rounded-2xl p-4">
@@ -868,6 +1077,8 @@ export default function ProductRegisterPage() {
     };
   }, [importMenuOpen]);
 
+  const [categories, setCategories] = useState<CategoriaArvore[]>([]);
+
   const loadProducts = () => {
     productService
       .list()
@@ -890,9 +1101,19 @@ export default function ProductRegisterPage() {
       .catch(() => setSupplierOptions([]));
   };
 
+  const loadCategories = () => {
+    categoriaService
+      .list()
+      .then(setCategories)
+      .catch(() => {
+        setCategories([]);
+      });
+  };
+
   useEffect(() => {
     loadProducts();
     loadSuppliers();
+    loadCategories();
   }, []);
 
   const lowStockCount = useMemo(() => {
@@ -1464,7 +1685,36 @@ export default function ProductRegisterPage() {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3">{product.productName}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-text-primary">{product.productName}</div>
+                    {product.categoriaNome ? (
+                      <span className="mt-0.5 inline-block rounded border border-border-secondary bg-bg-surface px-1.5 py-0.5 text-[11px] text-text-tertiary">
+                        {product.categoriaNome}
+                      </span>
+                    ) : null}
+                    {product.controlaValidade && product.dataValidade ? (() => {
+                      const diffDays = product.diasRestantes ?? 0;
+                      if (diffDays < 0) {
+                        return (
+                          <span className="mt-0.5 ml-1 inline-block rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400">
+                            Vencido
+                          </span>
+                        );
+                      }
+                      if (diffDays <= (product.diasAlertaValidade || 15)) {
+                        return (
+                          <span className="mt-0.5 ml-1 inline-block rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                            Vence em {diffDays}d
+                          </span>
+                        );
+                      }
+                      return (
+                        <span className="mt-0.5 ml-1 inline-block rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-600 dark:text-emerald-400">
+                          Val: {new Date(product.dataValidade + "T00:00:00").toLocaleDateString("pt-BR")}
+                        </span>
+                      );
+                    })() : null}
+                  </td>
                   <td className="px-4 py-3">{product.productCode}</td>
                   <td className="px-4 py-3">{product.productSupplier}</td>
                   <td className="px-4 py-3">
@@ -1543,6 +1793,7 @@ export default function ProductRegisterPage() {
         onSave={handleSave}
         supplierOptions={supplierOptions}
         onCreateSupplier={handleCreateSupplier}
+        categories={categories}
       />
       {statusDialog.Dialog}
     </PageLayout>

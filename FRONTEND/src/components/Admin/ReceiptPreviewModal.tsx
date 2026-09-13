@@ -55,6 +55,8 @@ export type SaleReceiptItem = {
   quantity: number;
   unitPrice: number;
   total: number;
+  discount?: number;
+  promocaoNome?: string | null;
 };
 
 export type ReceiptPaymentItem = {
@@ -80,6 +82,8 @@ export type SaleReceipt = {
   items: SaleReceiptItem[];
   payments?: ReceiptPaymentItem[];
   fiscalDetail?: FiscalDocumentDetailDto | null;
+  saldoDevedorAtual?: number;
+  isFiado?: boolean;
 };
 
 function formatReceiptDate(value: string) {
@@ -218,6 +222,23 @@ function buildReceiptPrintHtml(
                }`
         }
       </section>
+
+      ${
+        receipt.isFiado || receipt.paymentType === "fiado" || receipt.payments?.some((p) => p.paymentType === "fiado")
+          ? `
+            <div class="divider"></div>
+            <section class="center" style="font-size: 11px;">
+              <div class="bold" style="font-size: 12px; letter-spacing: 1px;">*** COMPRA FIADO / A PRAZO ***</div>
+              ${
+                receipt.saldoDevedorAtual !== undefined
+                  ? `<div class="line bold" style="margin-top: 4px;"><span>Novo Saldo Devedor:</span><span>R$ ${formatMoney(receipt.saldoDevedorAtual)}</span></div>`
+                  : ""
+              }
+              <div style="margin-top: 24px; border-top: 1px solid #000; padding-top: 4px; font-size: 10px;">Assinatura do Cliente</div>
+            </section>
+          `
+          : ""
+      }
 
       ${
         fiscal?.chaveAcesso
@@ -488,6 +509,9 @@ export default function ReceiptPreviewModal({
                     </div>
                     <p className="pl-6 text-[10px] text-slate-700">
                       {item.code} - UN {formatMoney(item.unitPrice)}
+                      {item.discount && item.discount > 0 ? (
+                        <span className="font-semibold text-emerald-700"> (Desc: -{formatMoney(item.discount)})</span>
+                      ) : null}
                     </p>
                   </div>
                 ))}
@@ -540,6 +564,20 @@ export default function ReceiptPreviewModal({
                     </>
                   )}
                 </div>
+
+                {(receipt.isFiado || receipt.paymentType === "fiado" || receipt.payments?.some((p) => p.paymentType === "fiado")) ? (
+                  <div className="mt-2.5 rounded-lg border border-amber-600/30 bg-amber-500/10 p-2 text-center text-[11px]">
+                    <p className="font-bold tracking-wider text-amber-800 uppercase">
+                      *** COMPRA FIADO / A PRAZO ***
+                    </p>
+                    {receipt.saldoDevedorAtual !== undefined ? (
+                      <div className="mt-1 flex justify-between font-medium text-amber-900">
+                        <span>Novo Saldo Devedor:</span>
+                        <span className="font-bold">R$ {formatMoney(receipt.saldoDevedorAtual)}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               {/* TRIBUTOS LEI 12.741/2012 */}
