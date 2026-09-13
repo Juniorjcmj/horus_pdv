@@ -217,6 +217,54 @@ public class NfceController(
         return File(zipBytes, "application/zip", nomeZip);
     }
 
+    [HttpGet("{id}/xml")]
+    public async Task<IActionResult> BaixarXml(string id, [FromQuery] string? tipo = null)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        var dados = await documentoFiscalAB.ObterXmlAsync(currentUser.CompanyId, id);
+        if (dados is null)
+        {
+            return NotFound(new ApiResponse<object> { Success = false, Message = "Documento fiscal não encontrado." });
+        }
+
+        var isCancelamento = string.Equals(tipo, "cancelamento", StringComparison.OrdinalIgnoreCase);
+        var xml = isCancelamento ? dados.Value.XmlCancelamento : dados.Value.Xml;
+
+        if (string.IsNullOrWhiteSpace(xml))
+        {
+            return NotFound(new ApiResponse<object>
+            {
+                Success = false,
+                Message = isCancelamento
+                    ? "XML de cancelamento não disponível para este documento."
+                    : "XML do documento fiscal ainda não disponível."
+            });
+        }
+
+        var chave = !string.IsNullOrWhiteSpace(dados.Value.ChaveAcesso) ? dados.Value.ChaveAcesso : id;
+        var sufixo = isCancelamento ? "-procEventoCanc.xml" : "-nfe.xml";
+        var fileName = $"{chave}{sufixo}";
+
+        return File(Encoding.UTF8.GetBytes(xml), "application/xml", fileName);
+    }
+
+    [HttpGet("{id}/itens")]
+    public async Task<IActionResult> ObterItens(string id)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        var itens = await documentoFiscalAB.ObterItensDocumentoAsync(currentUser.CompanyId, id);
+        return Ok(new ApiResponse<List<DocumentoFiscalItemResumo>>
+        {
+            Success = true,
+            Message = "Itens do documento fiscal obtidos com sucesso.",
+            Data = itens
+        });
+    }
+
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
 }

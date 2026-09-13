@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs": {
-    "mtime": 1789173553.5063188,
-    "seen": 1789173793.8073637,
-    "ast_hash": "497368680c3fdf879b5b22986d64a6f8",
+    "mtime": 1789312177.0849345,
+    "seen": 1789312481.656775,
+    "ast_hash": "77dbdebe4786d2902b4ac06295f2756c",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HomeAB.cs": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs": {
-    "mtime": 1789248191.1727118,
-    "seen": 1789309612.5275624,
-    "ast_hash": "9e55292d143e4e0c6b23bb320b61d576",
+    "mtime": 1789312240.0450292,
+    "seen": 1789312481.6572547,
+    "ast_hash": "3870b56fce0b5fa5357f34468c19ca5b",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1789248083.5817802,
-    "seen": 1789309612.5277493,
-    "ast_hash": "23c257f6d5cad7c46e3c64c5fb8665d0",
+    "mtime": 1789312153.2697287,
+    "seen": 1789312481.6573756,
+    "ast_hash": "05399ee8572d4311079199bb63fe8825",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -498,9 +498,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Email/HorusEmailService.cs": {
-    "mtime": 1789174290.8310418,
-    "seen": 1789174379.1026657,
-    "ast_hash": "6049ebe08fc60e135abc992945bcfc91",
+    "mtime": 1789312265.2521532,
+    "seen": 1789312481.6578572,
+    "ast_hash": "12c0445c888a7c8231523d352587354a",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Email/HorusEmailTemplate.cs": {
@@ -654,9 +654,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1789174153.1503916,
-    "seen": 1789174379.106296,
-    "ast_hash": "b22076140d48d3716394b4f2c09bf5d4",
+    "mtime": 1789312444.7470708,
+    "seen": 1789312481.661486,
+    "ast_hash": "4195ce9030fa228b018937335c686662",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -810,15 +810,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/AppSidebar.tsx": {
-    "mtime": 1789174159.053858,
-    "seen": 1789174379.1091607,
-    "ast_hash": "bb14322d6ec32ecc7e1eb265840fd348",
+    "mtime": 1789312399.5280056,
+    "seen": 1789312481.6656766,
+    "ast_hash": "8fe72794f4c46f4cc3f8f14099967902",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/UserMenu.tsx": {
-    "mtime": 1788791513.8692348,
-    "seen": 1788888974.352038,
-    "ast_hash": "1a5f5ace1d1724a50316c4dccab1b135",
+    "mtime": 1789312382.3822122,
+    "seen": 1789312481.6656792,
+    "ast_hash": "3a4590f341f0b2b8d127c5e360dffa3a",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Form/DatePickerField.tsx": {
@@ -1020,9 +1020,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/MyCompanyPage.tsx": {
-    "mtime": 1789174220.6189773,
-    "seen": 1789174379.1127474,
-    "ast_hash": "32448b9061933de8870e48f63a0c6d0b",
+    "mtime": 1789312424.115756,
+    "seen": 1789312481.6698124,
+    "ast_hash": "ff04bc253875f8ee732e52d722cb4e25",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/NovoPedidoPage.tsx": {

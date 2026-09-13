@@ -34,6 +34,24 @@ export type FiscalDocumentDto = {
   dhAutorizacao: string | null;
   criadoEm: string;
   tentativas: number;
+  totalAmount?: string | null;
+  customerName?: string | null;
+  customerCpf?: string | null;
+  paymentType?: string | null;
+  hasXml?: boolean;
+  hasCancelXml?: boolean;
+};
+
+export type FiscalDocumentItemDto = {
+  productCode: string;
+  productName: string;
+  quantity: number;
+  unitPrice: string;
+  itemTotal: string;
+  ncm?: string | null;
+  cest?: string | null;
+  cfop?: string | null;
+  unidadeComercial?: string | null;
 };
 
 export type FiscalDocumentDetailDto = FiscalDocumentDto & {
@@ -141,5 +159,38 @@ export const fiscalService = {
     link.click();
     link.remove();
     window.URL.revokeObjectURL(downloadUrl);
+  },
+  async downloadXml(id: string, chave: string, tipo?: "autorizado" | "cancelamento"): Promise<void> {
+    const query = tipo ? `?tipo=${encodeURIComponent(tipo)}` : "";
+    const url = `${NFCE_API_URL}/${encodeURIComponent(id)}/xml${query}`;
+    const response = await fetch(url, {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      let errorMessage = "Erro ao baixar XML.";
+      try {
+        const errorJson = (await response.json()) as { message?: string };
+        if (errorJson?.message) errorMessage = errorJson.message;
+      } catch {
+        // Fallback
+      }
+      throw new Error(errorMessage);
+    }
+
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    const sufixo = tipo === "cancelamento" ? "-procEventoCanc.xml" : "-nfe.xml";
+    link.download = `${chave || id}${sufixo}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  },
+  async getItens(id: string): Promise<FiscalDocumentItemDto[]> {
+    const response = await apiRequest<FiscalDocumentItemDto[]>(`${NFCE_API_URL}/${encodeURIComponent(id)}/itens`);
+    return response.data ?? [];
   },
 };

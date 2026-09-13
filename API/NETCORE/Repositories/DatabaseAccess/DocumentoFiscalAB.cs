@@ -185,7 +185,10 @@ public class DocumentoFiscalAB(
     {
         const string sql = """
             SELECT d.Id, v.SaleNumber, d.Serie, d.NumeroNf, d.Status, d.ChaveAcesso, d.Protocolo,
-                   d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas
+                   d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas,
+                   v.TotalAmount, v.CustomerName, v.CustomerCpf, v.PaymentType,
+                   CASE WHEN d.XmlProtocolado IS NOT NULL OR d.XmlAssinado IS NOT NULL THEN 1 ELSE 0 END AS HasXml,
+                   CASE WHEN d.XmlCancelamento IS NOT NULL THEN 1 ELSE 0 END AS HasCancelXml
             FROM DocumentosFiscais d
             LEFT JOIN Vendas v ON v.Id = d.VendaId
             WHERE d.CompanyId = @CompanyId
@@ -199,6 +202,9 @@ public class DocumentoFiscalAB(
         var rows = new List<DocumentoFiscalResumo>();
         while (await reader.ReadAsync())
         {
+            var totalOrdinal = reader.GetOrdinal("TotalAmount");
+            var totalAmount = reader.IsDBNull(totalOrdinal) ? null : HorusMoneyFormat.Format(reader.GetDecimal(totalOrdinal));
+
             rows.Add(new DocumentoFiscalResumo
             {
                 Id = ReadString(reader, "Id"),
@@ -211,7 +217,76 @@ public class DocumentoFiscalAB(
                 MotivoStatus = ReadNullableString(reader, "MotivoStatus"),
                 DhAutorizacao = ReadNullableDateTimeOffset(reader, "DhAutorizacao"),
                 CriadoEm = reader.GetDateTimeOffset(reader.GetOrdinal("CriadoEm")),
-                Tentativas = ReadInt(reader, "Tentativas")
+                Tentativas = ReadInt(reader, "Tentativas"),
+                TotalAmount = totalAmount,
+                CustomerName = ReadNullableString(reader, "CustomerName"),
+                CustomerCpf = ReadNullableString(reader, "CustomerCpf"),
+                PaymentType = ReadNullableString(reader, "PaymentType"),
+                HasXml = reader.GetInt32(reader.GetOrdinal("HasXml")) == 1,
+                HasCancelXml = reader.GetInt32(reader.GetOrdinal("HasCancelXml")) == 1
+            });
+        }
+
+        return rows;
+    }
+
+    /// <summary>Recupera o XML oficial (autorizado ou cancelamento) para download individual.</summary>
+    public async Task<(string? Xml, string? ChaveAcesso, StatusDocumentoFiscal Status, string? XmlCancelamento)?> ObterXmlAsync(string companyId, string id)
+    {
+        const string sql = """
+            SELECT ChaveAcesso, Status, XmlAssinado, XmlProtocolado, XmlCancelamento
+            FROM DocumentosFiscais
+            WHERE Id = @Id AND CompanyId = @CompanyId;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@Id", id);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        await using var reader = await command.ExecuteReaderAsync();
+        if (!await reader.ReadAsync()) return null;
+
+        var chave = ReadNullableString(reader, "ChaveAcesso");
+        var status = (StatusDocumentoFiscal)ReadInt(reader, "Status");
+        var assinado = ReadNullableString(reader, "XmlAssinado");
+        var protocolado = ReadNullableString(reader, "XmlProtocolado");
+        var cancelamento = ReadNullableString(reader, "XmlCancelamento");
+
+        return (protocolado ?? assinado, chave, status, cancelamento);
+    }
+
+    /// <summary>Obtém os itens detalhados da venda vinculada ao documento fiscal para a visão Raio-X.</summary>
+    public async Task<List<DocumentoFiscalItemResumo>> ObterItensDocumentoAsync(string companyId, string id)
+    {
+        const string sql = """
+            SELECT i.ProductCode, i.ProductName, i.Quantity, i.UnitPrice, i.ItemTotal,
+                   p.Ncm, p.Cest, p.Cfop, p.UnidadeComercial
+            FROM DocumentosFiscais d
+            INNER JOIN VendaItens i ON i.VendaId = d.VendaId
+            LEFT JOIN Produtos p ON p.CompanyId = d.CompanyId AND p.ProductCode = i.ProductCode
+            WHERE d.Id = @Id AND d.CompanyId = @CompanyId
+            ORDER BY i.Id;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@Id", id);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        await using var reader = await command.ExecuteReaderAsync();
+        var rows = new List<DocumentoFiscalItemResumo>();
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new DocumentoFiscalItemResumo
+            {
+                ProductCode = ReadString(reader, "ProductCode"),
+                ProductName = ReadString(reader, "ProductName"),
+                Quantity = reader.GetDecimal(reader.GetOrdinal("Quantity")),
+                UnitPrice = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("UnitPrice"))),
+                ItemTotal = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("ItemTotal"))),
+                Ncm = ReadNullableString(reader, "Ncm"),
+                Cest = ReadNullableString(reader, "Cest"),
+                Cfop = ReadNullableString(reader, "Cfop"),
+                UnidadeComercial = ReadNullableString(reader, "UnidadeComercial")
             });
         }
 
@@ -699,6 +774,26 @@ public record DocumentoFiscalResumo
     public DateTimeOffset? DhAutorizacao { get; init; }
     public required DateTimeOffset CriadoEm { get; init; }
     public required int Tentativas { get; init; }
+    public string? TotalAmount { get; init; }
+    public string? CustomerName { get; init; }
+    public string? CustomerCpf { get; init; }
+    public string? PaymentType { get; init; }
+    public bool HasXml { get; init; }
+    public bool HasCancelXml { get; init; }
+}
+
+/// <summary>Item de produto vinculado ao documento fiscal.</summary>
+public sealed record DocumentoFiscalItemResumo
+{
+    public required string ProductCode { get; init; }
+    public required string ProductName { get; init; }
+    public required decimal Quantity { get; init; }
+    public required string UnitPrice { get; init; }
+    public required string ItemTotal { get; init; }
+    public string? Ncm { get; init; }
+    public string? Cest { get; init; }
+    public string? Cfop { get; init; }
+    public string? UnidadeComercial { get; init; }
 }
 
 /// <summary>Detalhe de um documento fiscal, com o link do QR Code para montar o DANFE em tela.</summary>
