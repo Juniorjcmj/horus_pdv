@@ -301,7 +301,7 @@
       "file_type": "code",
       "norm_label": "product",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L27"
+      "source_location": "L41"
     },
     {
       "id": "frontend_src_pages_admin_productregisterpage_productformdata",
@@ -314,7 +314,7 @@
       "file_type": "code",
       "norm_label": "productformdata",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L59"
+      "source_location": "L73"
     },
     {
       "id": "frontend_src_pages_admin_productregisterpage_quicksupplierdraft",
@@ -327,7 +327,7 @@
       "file_type": "code",
       "norm_label": "quicksupplierdraft",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L61"
+      "source_location": "L75"
     },
     {
       "id": "api_netcore_models_requests_authregisterrequest_horuspdv_api_models_requests_authregisterrequest",
@@ -6330,7 +6330,7 @@
       "file_type": "code",
       "norm_label": "isfractionableunit()",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L64"
+      "source_location": "L78"
     },
     {
       "id": "frontend_src_pages_admin_productregisterpage_preventnondigitbeforeinput",
@@ -6342,7 +6342,7 @@
       "file_type": "code",
       "norm_label": "preventnondigitbeforeinput()",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L114"
+      "source_location": "L128"
     },
     {
       "id": "frontend_src_pages_admin_productregisterpage_productformdrawer",
@@ -6354,7 +6354,7 @@
       "file_type": "code",
       "norm_label": "productformdrawer()",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L121"
+      "source_location": "L135"
     },
     {
       "id": "frontend_src_pages_admin_productregisterpage_productregisterpage",
@@ -6366,7 +6366,7 @@
       "file_type": "code",
       "norm_label": "productregisterpage()",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L815"
+      "source_location": "L829"
     },
     {
       "id": "frontend_src_pages_admin_useraccountspage_defaultform",
@@ -22119,7 +22119,7 @@
       "file_type": "code",
       "norm_label": "empty_form",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L68"
+      "source_location": "L82"
     },
     {
       "id": "frontend_src_pages_admin_productregisterpage_empty_supplier_draft",
@@ -22130,7 +22130,7 @@
       "file_type": "code",
       "norm_label": "empty_supplier_draft",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L97"
+      "source_location": "L111"
     },
     {
       "id": "userformdrawer",
@@ -60407,7 +60407,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L150",
+      "source_location": "L164",
       "weight": 1.0
     },
     {
@@ -83116,6 +83116,18 @@
     },
     {
       "source": "frontend_src_pages_admin_productregisterpage",
+      "target": "ref_react",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_src_pages_admin_productregisterpage",
       "target": "ref_lucide_react",
       "relation": "imports_from",
       "_origin": "ast",
@@ -83124,18 +83136,6 @@
       "context": "import",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
       "source_location": "L7",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_src_pages_admin_productregisterpage",
-      "target": "ref_react",
-      "relation": "imports_from",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L8",
       "weight": 1.0
     },
     {
@@ -102496,13 +102496,24 @@
     },
     {
       "source": "frontend_src_pages_admin_productregisterpage",
+      "target": "frontend_src_pages_admin_productregisterpage_empty_supplier_draft",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_src_pages_admin_productregisterpage",
       "target": "frontend_src_pages_admin_productregisterpage_preventnondigitbeforeinput",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L114",
+      "source_location": "L128",
       "weight": 1.0
     },
     {
@@ -102513,7 +102524,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L121",
+      "source_location": "L135",
       "weight": 1.0
     },
     {
@@ -102524,7 +102535,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L27",
+      "source_location": "L41",
       "weight": 1.0
     },
     {
@@ -102535,7 +102546,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L59",
+      "source_location": "L73",
       "weight": 1.0
     },
     {
@@ -102546,7 +102557,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L61",
+      "source_location": "L75",
       "weight": 1.0
     },
     {
@@ -102557,7 +102568,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L64",
+      "source_location": "L78",
       "weight": 1.0
     },
     {
@@ -102568,7 +102579,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L68",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -102579,18 +102590,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L815",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_src_pages_admin_productregisterpage",
-      "target": "frontend_src_pages_admin_productregisterpage_empty_supplier_draft",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L97",
+      "source_location": "L829",
       "weight": 1.0
     },
     {
@@ -118314,5 +118314,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "eaabbd98622f2d1de96a725bad3782d8c9bb924c"
+  "built_at_commit": "5da2076cc0c5c837ecad2fe0072590b54155eff6"
 }

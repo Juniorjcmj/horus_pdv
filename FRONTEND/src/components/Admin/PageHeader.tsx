@@ -26,20 +26,20 @@ export default function PageHeader({
       className={`mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between ${className}`.trim()}
     >
       <div className="min-w-0 shrink-0">
-        <div className="flex flex-wrap items-center gap-3 lg:gap-4">
-          <button
-            type="button"
-            onClick={openGuidedTour}
-            className="hidden h-10 shrink-0 items-center gap-2 rounded-xl border border-secondary/35 bg-bg-light px-3.5 text-sm font-semibold text-secondary transition hover:bg-secondary/10 lg:inline-flex"
-            aria-label="Abrir tour da tela"
-            title="Tour da tela"
-          >
-            <CircleHelp size={16} />
-            Tour da tela
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl whitespace-nowrap">
             {title}
           </h1>
+          <button
+            type="button"
+            onClick={openGuidedTour}
+            className="hidden h-7 shrink-0 items-center gap-1.5 rounded-full border border-secondary/35 bg-bg-light px-2.5 text-xs font-semibold text-secondary transition hover:bg-secondary/10 lg:inline-flex"
+            aria-label="Abrir tour da tela"
+            title="Tour da tela"
+          >
+            <CircleHelp size={13} />
+            <span>Tour da tela</span>
+          </button>
         </div>
         <p className="mt-1.5 max-w-2xl text-sm text-text-secondary">
           {description}

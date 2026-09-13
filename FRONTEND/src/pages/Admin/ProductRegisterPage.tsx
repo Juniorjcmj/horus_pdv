@@ -4,7 +4,21 @@
  * Entradas esperadas: não recebe props; opera com estado local de lista e formulário de produto.
  */
 
-import { AlertTriangle, Database, FileUp, Loader2, Pencil, Plus, Scale, Search, Tag, Trash2, X } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronDown,
+  Database,
+  FileUp,
+  Loader2,
+  Pencil,
+  Plus,
+  Scale,
+  Search,
+  Tag,
+  Trash2,
+  UploadCloud,
+  X,
+} from "lucide-react";
 import { type ClipboardEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import BalancaImportModal from "@/components/Admin/BalancaImportModal";
 import GondolaLabelModal from "@/components/Admin/GondolaLabelModal";
@@ -833,6 +847,26 @@ export default function ProductRegisterPage() {
   const [form, setForm] = useState<ProductFormData>(EMPTY_FORM);
   const [gondolaModalOpen, setGondolaModalOpen] = useState(false);
   const [gondolaInitialProducts, setGondolaInitialProducts] = useState<Product[]>([]);
+  const [importMenuOpen, setImportMenuOpen] = useState(false);
+  const importMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!importMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (importMenuRef.current && !importMenuRef.current.contains(event.target as Node)) {
+        setImportMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setImportMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [importMenuOpen]);
 
   const loadProducts = () => {
     productService
@@ -1149,52 +1183,139 @@ export default function ProductRegisterPage() {
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
         title="Cadastro de Produto"
-        description="Cadastro e manutenção de produtos com os campos do sistema legado."
+        description="Gerencie o catálogo de produtos, estoque, preços de venda, códigos de barras e tributação fiscal."
         action={
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setBalancaModalOpen(true)}
-              className="btn-secondary inline-flex items-center gap-2"
-              title="Carga automática dos 133 produtos da balança etiquetadora"
-            >
-              <Scale size={16} />
-              Carga Balança (133)
-            </button>
-            <button
-              type="button"
-              onClick={handleImportarCargaMercado}
-              disabled={isImportingMercado}
-              className="btn-secondary inline-flex items-center gap-2"
-              title="Importar todos os 4.714 produtos do mercado da base exp_cadprodutos.cds"
-            >
-              {isImportingMercado ? (
-                <Loader2 size={16} className="animate-spin text-primary" />
-              ) : (
-                <Database size={16} className="text-primary" />
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Menu Dropdown: Importar & Cargas */}
+            <div className="relative" ref={importMenuRef}>
+              <button
+                type="button"
+                onClick={() => setImportMenuOpen((prev) => !prev)}
+                className={`btn-secondary inline-flex items-center gap-2 font-medium transition-all ${
+                  importMenuOpen ? "border-accent text-accent shadow-sm" : ""
+                }`}
+                aria-expanded={importMenuOpen}
+                aria-haspopup="true"
+                title="Opções de importação de notas fiscais e cargas em lote"
+              >
+                <UploadCloud size={16} className={importMenuOpen ? "text-accent" : "text-text-secondary"} />
+                <span>Importar / Cargas</span>
+                <ChevronDown
+                  size={14}
+                  className={`transition-transform duration-200 ${importMenuOpen ? "rotate-180 text-accent" : "text-text-tertiary"}`}
+                />
+              </button>
+
+              {importMenuOpen && (
+                <div className="absolute right-0 top-full z-50 mt-1.5 w-80 rounded-xl border border-border-primary bg-bg-light p-2 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95">
+                  <div className="px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+                    Entrada & Importação
+                  </div>
+
+                  {/* Entrada de NF-e */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImportMenuOpen(false);
+                      setImportModalOpen(true);
+                    }}
+                    className="flex w-full items-start gap-3 rounded-lg p-2.5 text-left transition hover:bg-accent/10"
+                  >
+                    <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent">
+                      <FileUp size={16} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-text-primary">
+                        Entrada de NF-e (XML / SEFAZ)
+                      </div>
+                      <div className="text-[11px] text-text-secondary">
+                        Baixar direto da SEFAZ por chave ou enviar arquivo XML
+                      </div>
+                    </div>
+                  </button>
+
+                  <div className="my-1.5 border-t border-border-primary/60" />
+
+                  <div className="px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+                    Cargas Rápidas em Lote
+                  </div>
+
+                  {/* Carga Balança */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImportMenuOpen(false);
+                      setBalancaModalOpen(true);
+                    }}
+                    className="flex w-full items-start gap-3 rounded-lg p-2.5 text-left transition hover:bg-hover-light"
+                  >
+                    <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary/15 text-secondary">
+                      <Scale size={16} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-text-primary">
+                        Carga Balança Toledo (133 produtos)
+                      </div>
+                      <div className="text-[11px] text-text-secondary">
+                        Sincronizar produtos pesáveis e códigos PLU
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Carga Mercado */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImportMenuOpen(false);
+                      void handleImportarCargaMercado();
+                    }}
+                    disabled={isImportingMercado}
+                    className="flex w-full items-start gap-3 rounded-lg p-2.5 text-left transition hover:bg-hover-light disabled:opacity-60"
+                  >
+                    <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                      {isImportingMercado ? (
+                        <Loader2 size={16} className="animate-spin text-primary" />
+                      ) : (
+                        <Database size={16} />
+                      )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-text-primary">
+                        {isImportingMercado ? "Importando base..." : "Carga Mercado (4.714 produtos)"}
+                      </div>
+                      <div className="text-[11px] text-text-secondary">
+                        Sincronizar catálogo da base exp_cadprodutos
+                      </div>
+                    </div>
+                  </button>
+                </div>
               )}
-              {isImportingMercado ? "Importando base..." : "Carga Mercado (4.714)"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setImportModalOpen(true)}
-              className="btn-secondary inline-flex items-center gap-2"
-            >
-              <FileUp size={16} />
-              Importar XML
-            </button>
+            </div>
+
+            {/* Etiquetas de Gôndola */}
             <button
               type="button"
               onClick={() => handleOpenGondolaModal(selectedProductIds.size > 0)}
-              className="btn-secondary inline-flex items-center gap-2"
+              className="btn-secondary inline-flex items-center gap-2 font-medium"
               title="Gerar e imprimir etiquetas de gôndola/prateleira (A4 Pimaco ou Bobina Térmica)"
             >
-              <Tag size={16} />
-              Etiquetas de Gôndola {selectedProductIds.size > 0 ? `(${selectedProductIds.size})` : ""}
+              <Tag size={16} className="text-text-secondary" />
+              <span>Etiquetas de Gôndola</span>
+              {selectedProductIds.size > 0 && (
+                <span className="inline-flex h-5 items-center justify-center rounded-full bg-accent/20 px-2 text-xs font-bold text-accent">
+                  {selectedProductIds.size}
+                </span>
+              )}
             </button>
-            <button type="button" onClick={openCreateDrawer} className="btn-primary inline-flex items-center gap-2">
+
+            {/* Novo Produto (Ação Primária) */}
+            <button
+              type="button"
+              onClick={openCreateDrawer}
+              className="btn-primary inline-flex items-center gap-2 font-semibold shadow-md"
+            >
               <Plus size={16} />
-              Novo produto
+              <span>Novo produto</span>
             </button>
           </div>
         }

@@ -708,9 +708,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {
-    "mtime": 1789311302.6922383,
-    "seen": 1789311372.5261352,
-    "ast_hash": "306e763a1973de026ef65bb998da1d33",
+    "mtime": 1789323375.5144143,
+    "seen": 1789323596.7525074,
+    "ast_hash": "91732ea832bbf8221f3b2d965abefca4",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReceiptPreviewModal.tsx": {
@@ -1044,9 +1044,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1789309500.5350318,
-    "seen": 1789309612.545808,
-    "ast_hash": "599f03a75588e39166235ca0966e016f",
+    "mtime": 1789323537.154656,
+    "seen": 1789323596.7663388,
+    "ast_hash": "690a9e04014b04cef3a597aa1175da63",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
