@@ -20,6 +20,7 @@ public class ProdutoAD
     public string ProductSupplier { get; set; } = string.Empty;
     public string ProductDescription { get; set; } = string.Empty;
     public decimal ProductQnt { get; set; }
+    public decimal EstoqueMinimo { get; set; }
     public decimal ProductUnitPrice { get; set; }
     public decimal ProductSalePrice { get; set; }
     public decimal TotalPriceOnProduct { get; set; }

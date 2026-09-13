@@ -13,7 +13,7 @@ public class ProdutoAB(Connection connection)
 {
     private const string Columns = """
         Id, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier,
-        ProductDescription, ProductQnt, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
+        ProductDescription, ProductQnt, EstoqueMinimo, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
         MargemDesejadaPercentual,
         Ncm, Cest, Cfop, OrigemMercadoria, UnidadeComercial, UnidadeTributavel, Gtin,
         CsosnIcms, CstIcms, AliquotaIcms, CstPis, CstCofins, CstIbsCbs, CClassTrib
@@ -208,6 +208,7 @@ public class ProdutoAB(Connection connection)
                        SupplierId = @SupplierId,
                        ProductDescription = @ProductDescription,
                        ProductQnt = @ProductQnt,
+                       EstoqueMinimo = @EstoqueMinimo,
                        ProductUnitPrice = @ProductUnitPrice,
                        ProductSalePrice = @ProductSalePrice,
                        TotalPriceOnProduct = @TotalPriceOnProduct,
@@ -232,13 +233,13 @@ public class ProdutoAB(Connection connection)
             BEGIN
                 INSERT INTO Produtos
                     (Id, CompanyId, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier, SupplierId,
-                     ProductDescription, ProductQnt, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
+                     ProductDescription, ProductQnt, EstoqueMinimo, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
                      MargemDesejadaPercentual,
                      Ncm, Cest, Cfop, OrigemMercadoria, UnidadeComercial, UnidadeTributavel, Gtin,
                      CsosnIcms, CstIcms, AliquotaIcms, CstPis, CstCofins, CstIbsCbs, CClassTrib)
                 VALUES
                     (@Id, @CompanyId, @ProductImageUrl, @ProductImageName, @ProductName, @ProductCode, @ProductSupplier, @SupplierId,
-                     @ProductDescription, @ProductQnt, @ProductUnitPrice, @ProductSalePrice, @TotalPriceOnProduct,
+                     @ProductDescription, @ProductQnt, @EstoqueMinimo, @ProductUnitPrice, @ProductSalePrice, @TotalPriceOnProduct,
                      @MargemDesejadaPercentual,
                      @Ncm, @Cest, @Cfop, @OrigemMercadoria, @UnidadeComercial, @UnidadeTributavel, @Gtin,
                      @CsosnIcms, @CstIcms, @AliquotaIcms, @CstPis, @CstCofins, @CstIbsCbs, @CClassTrib);
@@ -361,6 +362,7 @@ public class ProdutoAB(Connection connection)
         command.Parameters.AddWithValue("@SupplierId", supplierId is null ? DBNull.Value : supplierId);
         command.Parameters.AddWithValue("@ProductDescription", product.ProductDescription);
         command.Parameters.AddWithValue("@ProductQnt", product.ProductQnt);
+        command.Parameters.AddWithValue("@EstoqueMinimo", product.EstoqueMinimo);
         command.Parameters.AddWithValue("@ProductUnitPrice", product.ProductUnitPrice);
         command.Parameters.AddWithValue("@ProductSalePrice", product.ProductSalePrice);
         command.Parameters.AddWithValue("@TotalPriceOnProduct", product.TotalPriceOnProduct);
@@ -391,6 +393,7 @@ public class ProdutoAB(Connection connection)
         ProductSupplier = ReadString(source, "ProductSupplier"),
         ProductDescription = ReadString(source, "ProductDescription"),
         ProductQnt = ReadDecimal(source, "ProductQnt"),
+        EstoqueMinimo = ReadDecimal(source, "EstoqueMinimo"),
         ProductUnitPrice = ReadDecimal(source, "ProductUnitPrice"),
         ProductSalePrice = ReadDecimal(source, "ProductSalePrice"),
         TotalPriceOnProduct = ReadDecimal(source, "TotalPriceOnProduct"),

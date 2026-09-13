@@ -17,6 +17,7 @@ export type ProductDto = {
   productSupplier: string;
   productDescription: string;
   productQnt: string;
+  estoqueMinimo: string;
   productUnitPrice: string;
   productSalePrice: string;
   totalPriceOnProduct: string;

@@ -16,6 +16,7 @@ public class ProdutoModel
     public string ProductSupplier { get; set; } = string.Empty;
     public string ProductDescription { get; set; } = string.Empty;
     public string ProductQnt { get; set; } = string.Empty;
+    public string EstoqueMinimo { get; set; } = "0";
     public string ProductUnitPrice { get; set; } = string.Empty;
     public string ProductSalePrice { get; set; } = string.Empty;
     public string TotalPriceOnProduct { get; set; } = string.Empty;

@@ -4,7 +4,7 @@
  * Entradas esperadas: não recebe props; opera com estado local de lista e formulário de produto.
  */
 
-import { Database, FileUp, Loader2, Pencil, Plus, Scale, Search, Trash2, X } from "lucide-react";
+import { AlertTriangle, Database, FileUp, Loader2, Pencil, Plus, Scale, Search, Trash2, X } from "lucide-react";
 import { type ClipboardEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import BalancaImportModal from "@/components/Admin/BalancaImportModal";
 import NfeImportModal from "@/components/Admin/NfeImportModal";
@@ -32,6 +32,7 @@ type Product = {
   productSupplier: string;
   productDescription: string;
   productQnt: string;
+  estoqueMinimo: string;
   productUnitPrice: string;
   productSalePrice: string;
   totalPriceOnProduct: string;
@@ -71,6 +72,7 @@ const EMPTY_FORM: ProductFormData = {
   productSupplier: "",
   productDescription: "",
   productQnt: "",
+  estoqueMinimo: "0",
   productUnitPrice: "",
   productSalePrice: "",
   totalPriceOnProduct: "",
@@ -180,6 +182,13 @@ function ProductFormDrawer({
       ? sanitizeDecimalInput(rawValue, 4).replace(".", ",")
       : sanitizeIntegerInput(rawValue).slice(0, 8);
     setField("productQnt", sanitized);
+  };
+
+  const setEstoqueMinimoField = (rawValue: string) => {
+    const sanitized = quantityIsFractionable
+      ? sanitizeDecimalInput(rawValue, 4).replace(".", ",")
+      : sanitizeIntegerInput(rawValue).slice(0, 8);
+    setField("estoqueMinimo", sanitized);
   };
 
   const applyImage = (file: File | null) => {
@@ -460,6 +469,21 @@ function ProductFormDrawer({
                   className="input-field w-full"
                   placeholder={quantityIsFractionable ? "0,000" : "Quantidade"}
                 />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">
+                  Estoque Mínimo {quantityIsFractionable ? `(${value.unidadeComercial})` : ""}
+                </span>
+                <input
+                  value={value.estoqueMinimo}
+                  inputMode="decimal"
+                  onChange={(event) => setEstoqueMinimoField(event.target.value)}
+                  className="input-field w-full"
+                  placeholder={quantityIsFractionable ? "0,000" : "0"}
+                />
+                <span className="mt-1 block text-xs text-text-secondary">
+                  Alerta no sistema quando o estoque estiver igual ou abaixo deste valor.
+                </span>
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
@@ -800,6 +824,7 @@ export default function ProductRegisterPage() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [balancaModalOpen, setBalancaModalOpen] = useState(false);
   const [isImportingMercado, setIsImportingMercado] = useState(false);
+  const [filterLowStockOnly, setFilterLowStockOnly] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -833,15 +858,33 @@ export default function ProductRegisterPage() {
     loadSuppliers();
   }, []);
 
+  const lowStockCount = useMemo(() => {
+    return products.filter((p) => {
+      const min = parseMoneyBr(p.estoqueMinimo || "0");
+      const current = parseMoneyBr(p.productQnt || "0");
+      return min > 0 && current <= min;
+    }).length;
+  }, [products, parseMoneyBr]);
+
   const filteredProducts = useMemo(() => {
     const normalized = search.trim().toLowerCase();
-    if (!normalized) return products;
-    return products.filter(
-      (product) =>
-        product.productName.toLowerCase().includes(normalized) ||
-        product.productCode.toLowerCase().includes(normalized),
-    );
-  }, [products, search]);
+    let list = products;
+    if (normalized) {
+      list = list.filter(
+        (product) =>
+          product.productName.toLowerCase().includes(normalized) ||
+          product.productCode.toLowerCase().includes(normalized),
+      );
+    }
+    if (filterLowStockOnly) {
+      list = list.filter((product) => {
+        const min = parseMoneyBr(product.estoqueMinimo || "0");
+        const current = parseMoneyBr(product.productQnt || "0");
+        return min > 0 && current <= min;
+      });
+    }
+    return list;
+  }, [products, search, filterLowStockOnly, parseMoneyBr]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -1151,22 +1194,40 @@ export default function ProductRegisterPage() {
       ) : null}
 
       <section className="card p-4 md:p-5">
-        <label className="relative mx-auto block w-full max-w-xl">
-          <Search
-            size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
-          />
-          <input
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <label className="relative block w-full max-w-xl">
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+            />
+            <input
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setCurrentPage(1);
+                setSelectedProductIds(new Set());
+              }}
+              className="input-field w-full pl-9"
+              placeholder="Pesquise por nome ou código do produto"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={() => {
+              setFilterLowStockOnly(!filterLowStockOnly);
               setCurrentPage(1);
-              setSelectedProductIds(new Set());
             }}
-            className="input-field w-full pl-9"
-            placeholder="Pesquise por nome ou código do produto"
-          />
-        </label>
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all shrink-0 ${
+              filterLowStockOnly
+                ? "border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                : "border-border-primary bg-bg-surface text-text-secondary hover:text-text-primary"
+            }`}
+            title="Filtrar apenas produtos com estoque igual ou abaixo do mínimo cadastrado"
+          >
+            <AlertTriangle size={14} className={filterLowStockOnly ? "text-amber-500" : "text-text-tertiary"} />
+            Estoque Baixo ({lowStockCount})
+          </button>
+        </div>
       </section>
 
       <section className="card overflow-hidden">
@@ -1239,7 +1300,24 @@ export default function ProductRegisterPage() {
                   <td className="px-4 py-3">{product.productName}</td>
                   <td className="px-4 py-3">{product.productCode}</td>
                   <td className="px-4 py-3">{product.productSupplier}</td>
-                  <td className="px-4 py-3">{product.productQnt}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-text-primary">
+                        {product.productQnt} {product.unidadeComercial}
+                      </span>
+                      {parseMoneyBr(product.estoqueMinimo || "0") > 0 ? (
+                        <span className="text-xs text-text-tertiary">
+                          Mín: {product.estoqueMinimo} {product.unidadeComercial}
+                        </span>
+                      ) : null}
+                      {parseMoneyBr(product.estoqueMinimo || "0") > 0 &&
+                      parseMoneyBr(product.productQnt || "0") <= parseMoneyBr(product.estoqueMinimo || "0") ? (
+                        <span className="mt-1 inline-flex w-fit items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                          Abaixo do mín.
+                        </span>
+                      ) : null}
+                    </div>
+                  </td>
                   <td className="px-4 py-3">{product.productSalePrice}</td>
                   <td className="px-4 py-3">
                     <RowActionsMenu
