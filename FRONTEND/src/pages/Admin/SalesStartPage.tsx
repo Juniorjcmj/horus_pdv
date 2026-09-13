@@ -2187,11 +2187,11 @@ export default function SalesStartPage({
 
       {customerModalOpen && (
         <div
-          className="dept-drawer-overlay flex items-center justify-center p-4"
+          className="fixed inset-0 z-layer-dialog flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
           onClick={() => setCustomerModalOpen(false)}
         >
           <aside
-            className="card flex max-h-[85vh] w-full max-w-xl flex-col rounded-2xl p-5 shadow-2xl"
+            className="card flex max-h-[85vh] w-full max-w-xl flex-col rounded-2xl border border-border-primary bg-bg-light p-5 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-border-primary pb-3">
