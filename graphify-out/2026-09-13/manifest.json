@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
-    "mtime": 1789326385.6768816,
-    "seen": 1789327815.2638626,
-    "ast_hash": "58ee8595becb49811b3332eac081cc16",
+    "mtime": 1789334354.0317788,
+    "seen": 1789334546.6114748,
+    "ast_hash": "810aa532c3633d1eb9c4ecb980e91be2",
     "semantic_hash": ""
   },
   ".codex/hooks.json": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs": {
-    "mtime": 1789329503.0217445,
-    "seen": 1789330645.1109297,
-    "ast_hash": "7a316faba0fe128994ca9325c8d4872b",
+    "mtime": 1789331846.3684766,
+    "seen": 1789334546.623664,
+    "ast_hash": "e5b998f64ac1fd4f092196480cb4f5b7",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HomeAB.cs": {
@@ -630,9 +630,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/eslint.config.js": {
-    "mtime": 1788665266.5635417,
-    "seen": 1788888974.3519833,
-    "ast_hash": "957218024dbfdaaccd46c509d5e3089f",
+    "mtime": 1789330746.6940756,
+    "seen": 1789334546.629943,
+    "ast_hash": "9dfde2663a61dd40d6abfca67e5128af",
     "semantic_hash": ""
   },
   "FRONTEND/package.json": {
@@ -744,9 +744,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/reportsConfig.ts": {
-    "mtime": 1789330477.899,
-    "seen": 1789330645.1250684,
-    "ast_hash": "e07752a40e7793172007a7cadf64f2fc",
+    "mtime": 1789331811.6935909,
+    "seen": 1789334546.6331456,
+    "ast_hash": "d134f5bb2bdf4aa95fa38e36f6b88ebc",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/RowActionsMenu.tsx": {
@@ -1044,9 +1044,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1789328180.55367,
-    "seen": 1789328505.8567789,
-    "ast_hash": "f0c7142929bc1ea99b8126455240a0b5",
+    "mtime": 1789330732.2795148,
+    "seen": 1789334546.6403716,
+    "ast_hash": "dbd33940159fc5c70fdd063791170ba3",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1789330073.113418,
-    "seen": 1789330645.1383853,
-    "ast_hash": "1c7dbf244b6e0ade9e3deeabd6c19182",
+    "mtime": 1789335400.909458,
+    "seen": 1789335454.4333527,
+    "ast_hash": "f87e5819b930306e7337fbf0fd15436f",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -2171,54 +2171,6 @@
     "ast_hash": "d457f2c49e37c7c2e67678e8c12dc6f2",
     "semantic_hash": ""
   },
-  "openspec/changes/gestao-mercadinho-completa/.openspec.yaml": {
-    "mtime": 1789326389.806353,
-    "seen": 1789327815.3033798,
-    "ast_hash": "023bd6a30a4a37ec1d0180ed76f93c32",
-    "semantic_hash": ""
-  },
-  "openspec/changes/gestao-mercadinho-completa/design.md": {
-    "mtime": 1789326634.1514587,
-    "seen": 1789327815.3034015,
-    "ast_hash": "9f4805205c5a1bb918561dfcf5412fb3",
-    "semantic_hash": ""
-  },
-  "openspec/changes/gestao-mercadinho-completa/proposal.md": {
-    "mtime": 1789326435.2973652,
-    "seen": 1789327815.3034034,
-    "ast_hash": "e80a8e6f1cb837c0cd39f99a80bcf4cd",
-    "semantic_hash": ""
-  },
-  "openspec/changes/gestao-mercadinho-completa/specs/produtos/categorias/spec.md": {
-    "mtime": 1789326461.908018,
-    "seen": 1789327815.303406,
-    "ast_hash": "6019ac0f18362a572248f0b7f4728012",
-    "semantic_hash": ""
-  },
-  "openspec/changes/gestao-mercadinho-completa/specs/produtos/controle-validade/spec.md": {
-    "mtime": 1789326489.6026647,
-    "seen": 1789327815.3034081,
-    "ast_hash": "96519ada61d1218a00aa7aaf2ae5ce49",
-    "semantic_hash": ""
-  },
-  "openspec/changes/gestao-mercadinho-completa/specs/vendas/fiado-conta-corrente/spec.md": {
-    "mtime": 1789326560.7714558,
-    "seen": 1789327815.3034096,
-    "ast_hash": "9c431a83ab1e3d3f6eb16143635f8bf1",
-    "semantic_hash": ""
-  },
-  "openspec/changes/gestao-mercadinho-completa/specs/vendas/promocoes/spec.md": {
-    "mtime": 1789326525.3662355,
-    "seen": 1789327815.3034112,
-    "ast_hash": "821eec16a6644e3617fb26425ea82797",
-    "semantic_hash": ""
-  },
-  "openspec/changes/gestao-mercadinho-completa/tasks.md": {
-    "mtime": 1789330611.9714272,
-    "seen": 1789330645.174598,
-    "ast_hash": "699cf55b1244cf5cd006ecacfb4f0d12",
-    "semantic_hash": ""
-  },
   "API/NETCORE/Models/Produtos/VencimentoResumoModel.cs": {
     "mtime": 1789327908.330146,
     "seen": 1789328505.835919,
@@ -2316,15 +2268,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiadoPage.tsx": {
-    "mtime": 1789330539.5773754,
-    "seen": 1789330645.1353462,
-    "ast_hash": "4fc6da116bf4849b4667e5561eca82bd",
+    "mtime": 1789330699.5405915,
+    "seen": 1789334546.639542,
+    "ast_hash": "91de31abe8e332b67a37406df357edac",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PromocoesPage.tsx": {
-    "mtime": 1789329263.7113266,
-    "seen": 1789330645.1373706,
-    "ast_hash": "f52949542f86c4b14be0b23e250dd944",
+    "mtime": 1789330705.6250844,
+    "seen": 1789334546.6403737,
+    "ast_hash": "85848e98a943e6d3c840ae2ea5763902",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiadoService.ts": {
@@ -2343,6 +2295,78 @@
     "mtime": 1789328990.181139,
     "seen": 1789330645.1480818,
     "ast_hash": "1a41a8f08e6d672d2c15d6fed06f30ef",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-09-13-gestao-mercadinho-completa/.openspec.yaml": {
+    "mtime": 1789326389.806353,
+    "seen": 1789334546.6585076,
+    "ast_hash": "023bd6a30a4a37ec1d0180ed76f93c32",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-09-13-gestao-mercadinho-completa/design.md": {
+    "mtime": 1789326634.1514587,
+    "seen": 1789334546.6585097,
+    "ast_hash": "9f4805205c5a1bb918561dfcf5412fb3",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-09-13-gestao-mercadinho-completa/proposal.md": {
+    "mtime": 1789326435.2973652,
+    "seen": 1789334546.6585112,
+    "ast_hash": "e80a8e6f1cb837c0cd39f99a80bcf4cd",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-09-13-gestao-mercadinho-completa/specs/produtos/categorias/spec.md": {
+    "mtime": 1789326461.908018,
+    "seen": 1789334546.6585126,
+    "ast_hash": "6019ac0f18362a572248f0b7f4728012",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-09-13-gestao-mercadinho-completa/specs/produtos/controle-validade/spec.md": {
+    "mtime": 1789326489.6026647,
+    "seen": 1789334546.6585143,
+    "ast_hash": "96519ada61d1218a00aa7aaf2ae5ce49",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-09-13-gestao-mercadinho-completa/specs/vendas/fiado-conta-corrente/spec.md": {
+    "mtime": 1789326560.7714558,
+    "seen": 1789334546.6585157,
+    "ast_hash": "9c431a83ab1e3d3f6eb16143635f8bf1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-09-13-gestao-mercadinho-completa/specs/vendas/promocoes/spec.md": {
+    "mtime": 1789326525.3662355,
+    "seen": 1789334546.6585174,
+    "ast_hash": "821eec16a6644e3617fb26425ea82797",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-09-13-gestao-mercadinho-completa/tasks.md": {
+    "mtime": 1789330793.2966893,
+    "seen": 1789334546.658519,
+    "ast_hash": "64b7721cf400506d58b2c3b69dec928b",
+    "semantic_hash": ""
+  },
+  "openspec/specs/produtos/categorias/spec.md": {
+    "mtime": 1789332312.3917255,
+    "seen": 1789334546.65938,
+    "ast_hash": "5c5e7feecf0a49739883e5ec4bd9c8fc",
+    "semantic_hash": ""
+  },
+  "openspec/specs/produtos/controle-validade/spec.md": {
+    "mtime": 1789332356.253512,
+    "seen": 1789334546.6593819,
+    "ast_hash": "64fb58107e4976dad39f94916bc0d25c",
+    "semantic_hash": ""
+  },
+  "openspec/specs/vendas/fiado-conta-corrente/spec.md": {
+    "mtime": 1789332426.0072448,
+    "seen": 1789334546.6593833,
+    "ast_hash": "4eb79e8d2f89c397a23e24efd8fb8acd",
+    "semantic_hash": ""
+  },
+  "openspec/specs/vendas/promocoes/spec.md": {
+    "mtime": 1789332391.0628128,
+    "seen": 1789334546.6593847,
+    "ast_hash": "a37b27c49a74efa34a78623dd10ff96e",
     "semantic_hash": ""
   }
 }

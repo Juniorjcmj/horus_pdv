@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1789335400.909458,
-    "seen": 1789335454.4333527,
-    "ast_hash": "f87e5819b930306e7337fbf0fd15436f",
+    "mtime": 1789337034.9689722,
+    "seen": 1789337215.6809146,
+    "ast_hash": "d9af3a3f4ecb3a2d32f51b8b199ec2d6",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -2367,6 +2367,12 @@
     "mtime": 1789332391.0628128,
     "seen": 1789334546.6593847,
     "ast_hash": "a37b27c49a74efa34a78623dd10ff96e",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/QuickCustomerRegisterModal.tsx": {
+    "mtime": 1789337154.2621188,
+    "seen": 1789337215.67217,
+    "ast_hash": "3fd8dee98c7038da7f5b8f5465cfd322",
     "semantic_hash": ""
   }
 }

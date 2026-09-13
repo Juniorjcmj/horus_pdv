@@ -15,7 +15,9 @@ import {
   Search,
   Trash2,
   UserCheck,
+  UserPlus,
   Users,
+  UserX,
   X,
 } from "lucide-react";
 import {
@@ -53,6 +55,8 @@ import { productService } from "@/services/api/productService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
+import { QuickCustomerRegisterModal } from "@/components/Admin/QuickCustomerRegisterModal";
+import { onlyDigits } from "@/utils/inputMasks";
 
 type SalesStartPageProps = {
   onExit?: () => void;
@@ -204,20 +208,55 @@ export default function SalesStartPage({
   );
   const [isConfirmingSale, setIsConfirmingSale] = useState(false);
 
-  const openCustomerModal = useCallback(async () => {
-    setCustomerModalOpen(true);
-    if (customerList.length === 0) {
-      setLoadingCustomers(true);
-      try {
-        const data = await customerService.list();
-        setCustomerList(data);
-      } catch {
-        Toast.error("Não foi possível carregar a lista de clientes.");
-      } finally {
-        setLoadingCustomers(false);
+  const [quickCustomerModalOpen, setQuickCustomerModalOpen] = useState(false);
+  const [quickCustomerInitialDoc, setQuickCustomerInitialDoc] = useState("");
+  const [quickCustomerInitialName, setQuickCustomerInitialName] = useState("");
+
+  const openCustomerModal = useCallback(
+    async (initialSearch = "") => {
+      if (initialSearch) {
+        setCustomerFilter(initialSearch);
       }
+      setCustomerModalOpen(true);
+      if (customerList.length === 0) {
+        setLoadingCustomers(true);
+        try {
+          const data = await customerService.list();
+          setCustomerList(data);
+        } catch {
+          Toast.error("Não foi possível carregar a lista de clientes.");
+        } finally {
+          setLoadingCustomers(false);
+        }
+      }
+    },
+    [customerList.length],
+  );
+
+  const handleOpenQuickCustomerRegister = (initialVal = "") => {
+    const rawVal = initialVal.trim();
+    const digits = onlyDigits(rawVal);
+    if (digits.length >= 8) {
+      setQuickCustomerInitialDoc(rawVal);
+      setQuickCustomerInitialName("");
+    } else {
+      setQuickCustomerInitialDoc("");
+      setQuickCustomerInitialName(rawVal);
     }
-  }, [customerList.length]);
+    setQuickCustomerModalOpen(true);
+  };
+
+  const handleCustomerCreated = (newCustomer: CustomerDto) => {
+    setCustomerList((prev) => {
+      const exists = prev.some((c) => c.id === newCustomer.id);
+      if (exists) return prev;
+      return [newCustomer, ...prev];
+    });
+    setSelectedCustomer(newCustomer);
+    setCpfNota(newCustomer.document);
+    setQuickCustomerModalOpen(false);
+    setCustomerModalOpen(false);
+  };
 
   const filteredCustomerList = useMemo(() => {
     const q = customerFilter.trim().toLowerCase();
@@ -1843,13 +1882,23 @@ export default function SalesStartPage({
                       Desvincular
                     </button>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => void openCustomerModal()}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
-                    >
-                      <UserCheck size={13} /> Buscar Cliente
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void openCustomerModal(cpfNota)}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
+                      >
+                        <UserCheck size={13} /> Buscar
+                      </button>
+                      <span className="text-border-primary">•</span>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenQuickCustomerRegister(cpfNota)}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-success hover:underline"
+                      >
+                        <UserPlus size={13} /> + Cadastrar
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -1924,15 +1973,29 @@ export default function SalesStartPage({
                     <input
                       value={cpfNota}
                       onChange={(event) => setCpfNota(event.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          void openCustomerModal(cpfNota);
+                        }
+                      }}
                       className="input-field flex-1 text-xs"
                       placeholder="CPF na nota (opcional, ou busque cliente ao lado)"
                     />
                     <button
                       type="button"
-                      onClick={() => void openCustomerModal()}
+                      onClick={() => void openCustomerModal(cpfNota)}
                       className="btn-secondary inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-xs"
                     >
                       <Search size={13} /> Buscar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenQuickCustomerRegister(cpfNota)}
+                      className="btn-secondary inline-flex items-center gap-1 whitespace-nowrap border-success/30 px-3 py-2 text-xs text-success hover:bg-success/10"
+                      title="Cadastrar novo cliente"
+                    >
+                      <UserPlus size={13} /> Cadastrar
                     </button>
                   </div>
                 )}
@@ -1947,13 +2010,22 @@ export default function SalesStartPage({
                       <AlertTriangle size={15} />
                       <span>Venda a prazo (Fiado) exige seleção de cliente cadastrado.</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => void openCustomerModal()}
-                      className="btn-primary px-2.5 py-1 text-xs font-semibold"
-                    >
-                      Selecionar
-                    </button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => void openCustomerModal(cpfNota)}
+                        className="btn-primary px-2.5 py-1 text-xs font-semibold"
+                      >
+                        Selecionar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenQuickCustomerRegister(cpfNota)}
+                        className="btn-secondary border-success/30 px-2.5 py-1 text-xs font-semibold text-success hover:bg-success/10"
+                      >
+                        + Cadastrar
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -2201,13 +2273,22 @@ export default function SalesStartPage({
                   Selecionar Cliente para Fiado
                 </h3>
               </div>
-              <button
-                type="button"
-                onClick={() => setCustomerModalOpen(false)}
-                className="rounded-lg p-1.5 text-text-secondary hover:bg-hover-light"
-              >
-                <X size={16} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleOpenQuickCustomerRegister(customerFilter)}
+                  className="btn-secondary inline-flex items-center gap-1 border-success/30 px-2.5 py-1 text-xs font-semibold text-success hover:bg-success/10"
+                >
+                  <UserPlus size={14} /> + Novo Cliente
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCustomerModalOpen(false)}
+                  className="rounded-lg p-1.5 text-text-secondary hover:bg-hover-light"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
 
             <div className="mt-3">
@@ -2232,8 +2313,25 @@ export default function SalesStartPage({
                   <Loader2 size={20} className="mr-2 animate-spin text-accent" /> Carregando clientes...
                 </div>
               ) : filteredCustomerList.length === 0 ? (
-                <div className="py-8 text-center text-xs text-text-secondary">
-                  Nenhum cliente encontrado.
+                <div className="space-y-3 py-8 text-center">
+                  <UserX size={36} className="mx-auto text-text-tertiary opacity-60" />
+                  <div>
+                    <p className="text-sm font-semibold text-text-primary">
+                      Nenhum cliente encontrado
+                    </p>
+                    <p className="mt-0.5 text-xs text-text-secondary">
+                      {customerFilter
+                        ? `Nenhum cliente com "${customerFilter}" foi localizado.`
+                        : "Não há clientes cadastrados no sistema."}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenQuickCustomerRegister(customerFilter)}
+                    className="btn-primary mx-auto inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold shadow-md"
+                  >
+                    <UserPlus size={14} /> Cadastrar {customerFilter ? `"${customerFilter}"` : "Novo Cliente"}
+                  </button>
                 </div>
               ) : (
                 filteredCustomerList.map((c) => {
@@ -2298,6 +2396,15 @@ export default function SalesStartPage({
           </aside>
         </div>
       )}
+
+      {/* Modal de Cadastro Rápido de Cliente */}
+      <QuickCustomerRegisterModal
+        open={quickCustomerModalOpen}
+        initialDocument={quickCustomerInitialDoc}
+        initialName={quickCustomerInitialName}
+        onClose={() => setQuickCustomerModalOpen(false)}
+        onSuccess={handleCustomerCreated}
+      />
 
       {statusDialog.Dialog}
     </div>
