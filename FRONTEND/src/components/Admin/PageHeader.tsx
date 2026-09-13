@@ -11,17 +11,22 @@ type PageHeaderProps = {
   title: string;
   description: string;
   action?: ReactNode;
+  className?: string;
 };
 
 export default function PageHeader({
   title,
   description,
   action,
+  className = "",
 }: PageHeaderProps) {
   return (
-    <header data-tour="page-header" className="mb-5 flex flex-wrap items-start justify-between gap-3">
-      <div className="min-w-0 max-w-full flex-1">
-        <div className="flex items-center gap-3 lg:gap-4">
+    <header
+      data-tour="page-header"
+      className={`mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between ${className}`.trim()}
+    >
+      <div className="min-w-0 shrink-0">
+        <div className="flex flex-wrap items-center gap-3 lg:gap-4">
           <button
             type="button"
             onClick={openGuidedTour}
@@ -32,13 +37,22 @@ export default function PageHeader({
             <CircleHelp size={16} />
             Tour da tela
           </button>
-          <h1 className="min-w-0 break-words text-2xl font-bold text-text-primary">{title}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl whitespace-nowrap">
+            {title}
+          </h1>
         </div>
-        <p className="mt-1.5 max-w-4xl break-words text-sm text-text-secondary">
+        <p className="mt-1.5 max-w-2xl text-sm text-text-secondary">
           {description}
         </p>
       </div>
-      {action ? <div data-tour="page-header-action" className="max-w-full">{action}</div> : null}
+      {action ? (
+        <div
+          data-tour="page-header-action"
+          className="flex flex-wrap items-center gap-2 xl:justify-end"
+        >
+          {action}
+        </div>
+      ) : null}
     </header>
   );
 }

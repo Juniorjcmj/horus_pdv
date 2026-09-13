@@ -708,9 +708,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {
-    "mtime": 1788665266.5715885,
-    "seen": 1788888974.352007,
-    "ast_hash": "558f7b505a1c31e386445f11bcf0213c",
+    "mtime": 1789311302.6922383,
+    "seen": 1789311372.5261352,
+    "ast_hash": "306e763a1973de026ef65bb998da1d33",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReceiptPreviewModal.tsx": {

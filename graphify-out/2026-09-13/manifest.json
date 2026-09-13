@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/ProdutoController.cs": {
-    "mtime": 1788791169.7328868,
-    "seen": 1788888974.3517957,
-    "ast_hash": "c0accb54f9d286481ac799fa1203db49",
+    "mtime": 1789234549.1480832,
+    "seen": 1789309612.5177052,
+    "ast_hash": "63bcc6b42df977e4bc11408d2f304173",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Relatorio/RelatorioController.cs": {
@@ -192,9 +192,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/ProdutoModel.cs": {
-    "mtime": 1788711768.0021667,
-    "seen": 1788888974.3518295,
-    "ast_hash": "ce4b2221517da63245b6e096b8e4ac65",
+    "mtime": 1789248118.4906044,
+    "seen": 1789309612.5202842,
+    "ast_hash": "2d07dcc37cdb77bd083a2e04ff02a385",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/AuthRegisterRequest.cs": {
@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ProdutoRequest.cs": {
-    "mtime": 1788711759.8643825,
-    "seen": 1788888974.351855,
-    "ast_hash": "c2fbca2b2e119482689e17b38d9011f7",
+    "mtime": 1789248136.538765,
+    "seen": 1789309612.5224702,
+    "ast_hash": "2945713a2cdd508f83b35488c0d84e1e",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ResetPasswordWithTokenRequest.cs": {
@@ -366,9 +366,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/ProdutoAD.cs": {
-    "mtime": 1788711668.7897942,
-    "seen": 1788888974.3518965,
-    "ast_hash": "c620f2c02a90ae117ec53fc92a19d917",
+    "mtime": 1789248154.104289,
+    "seen": 1789309612.5250204,
+    "ast_hash": "6f44e9dd37a20e53987cd076cce9313e",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/VendaHistoricoAD.cs": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs": {
-    "mtime": 1788711738.0049143,
-    "seen": 1788888974.351924,
-    "ast_hash": "3a5d8e2aecd416fad99a3eeca5a9ac9f",
+    "mtime": 1789248191.1727118,
+    "seen": 1789309612.5275624,
+    "ast_hash": "9e55292d143e4e0c6b23bb320b61d576",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1788894109.7313175,
-    "seen": 1788894387.3002954,
-    "ast_hash": "9952e1ad6a2d0207e4ebf56613bc455f",
+    "mtime": 1789248083.5817802,
+    "seen": 1789309612.5277493,
+    "ast_hash": "23c257f6d5cad7c46e3c64c5fb8665d0",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -540,9 +540,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/IProdutoService.cs": {
-    "mtime": 1788665266.5580294,
-    "seen": 1788888974.3519552,
-    "ast_hash": "b9279e2ea7f97f5458457e8c7dabe6a5",
+    "mtime": 1789234532.0630002,
+    "seen": 1789309612.5301716,
+    "ast_hash": "d972f17e631d195ad194ad9ac8c906e8",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
-    "mtime": 1788711779.460212,
-    "seen": 1788888974.351961,
-    "ast_hash": "6db9de063987714374ee07adeed8767f",
+    "mtime": 1789248209.6905525,
+    "seen": 1789309612.5308979,
+    "ast_hash": "7c34b02e31215352f97458189298971e",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusAuthorizeRolesAttribute.cs": {
@@ -636,9 +636,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/package.json": {
-    "mtime": 1788675882.5619001,
-    "seen": 1788888974.3519855,
-    "ast_hash": "8795023f9daefe8ca11e74904d69dd6b",
+    "mtime": 1789309340.664583,
+    "seen": 1789309612.5341005,
+    "ast_hash": "2891e9cf37514ce853891d82c983af9f",
     "semantic_hash": ""
   },
   "FRONTEND/playwright.config.ts": {
@@ -1044,9 +1044,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1788711875.7657669,
-    "seen": 1788888974.352158,
-    "ast_hash": "bbe5a32b54f6cd32c98653a34011e36b",
+    "mtime": 1789309500.5350318,
+    "seen": 1789309612.545808,
+    "ast_hash": "599f03a75588e39166235ca0966e016f",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
@@ -1206,9 +1206,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/productService.ts": {
-    "mtime": 1788711826.1456654,
-    "seen": 1788888974.3522468,
-    "ast_hash": "29da45e8e8bb1d83283c6a0d3dd4d2db",
+    "mtime": 1789248226.7368515,
+    "seen": 1789309612.5503578,
+    "ast_hash": "63af515b621e909444dcf38ab7c8eb3e",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/reportService.ts": {
@@ -2037,6 +2037,72 @@
     "mtime": 1789173524.45033,
     "seen": 1789173793.8138452,
     "ast_hash": "21d551f39ea6e19bc3ff374ac919ab94",
+    "semantic_hash": ""
+  },
+  "CARGA_BALANCA/produtos_133_precos_exatos.json": {
+    "mtime": 1789233840.544589,
+    "seen": 1789309612.5336328,
+    "ast_hash": "a61231ecfbbe205df521f96912037dcb",
+    "semantic_hash": ""
+  },
+  "CARGA_BALANCA/produtos_com_precos_reais.json": {
+    "mtime": 1789233769.3440125,
+    "seen": 1789309612.5336373,
+    "ast_hash": "1c0446225b89043952405a930d0d4379",
+    "semantic_hash": ""
+  },
+  "CARGA_BALANCA/produtos_finais_com_precos.json": {
+    "mtime": 1789233795.3107119,
+    "seen": 1789309612.5336952,
+    "ast_hash": "35ecc888318d20ffc8a418f565fe521a",
+    "semantic_hash": ""
+  },
+  "CARGA_BALANCA/todos_produtos_mercado.json": {
+    "mtime": 1789234266.5294545,
+    "seen": 1789309612.5337112,
+    "ast_hash": "2bb7f581764fa5dc2a9ee8065f077121",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/BalancaImportModal.tsx": {
+    "mtime": 1789309539.4914439,
+    "seen": 1789309612.534659,
+    "ast_hash": "44070cf7b92914b32858237e54710ab2",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/BarcodeSvg.tsx": {
+    "mtime": 1789309397.268993,
+    "seen": 1789309612.5346615,
+    "ast_hash": "2d6c42a12bfb0781676302559067c19e",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/GondolaLabelModal.tsx": {
+    "mtime": 1789309548.866612,
+    "seen": 1789309612.5354664,
+    "ast_hash": "d52e57949b1357068cefdd2da3825d1f",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/exportBalancaCarga.ts": {
+    "mtime": 1789231179.5434234,
+    "seen": 1789309612.551957,
+    "ast_hash": "ebe63e2fe377dbeb5a6a216bd83882eb",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/produtosBalancaData.ts": {
+    "mtime": 1789233869.5114594,
+    "seen": 1789309612.5522919,
+    "ast_hash": "b08495795eed6937c4ac599fac3f434c",
+    "semantic_hash": ""
+  },
+  "CARGA_BALANCA/ITENSTXT.TXT": {
+    "mtime": 1789233869.5207927,
+    "seen": 1789309612.5677896,
+    "ast_hash": "af12217ede19350f1432bd28af602bc1",
+    "semantic_hash": ""
+  },
+  "CARGA_BALANCA/PRODUTOS_TRIUNFO.TXT": {
+    "mtime": 1789233869.5207927,
+    "seen": 1789309612.5677938,
+    "ast_hash": "2570c3424f0aad66d4084d9c4c81039f",
     "semantic_hash": ""
   }
 }
