@@ -364,6 +364,7 @@ export default function MyCompanyPage() {
         setRespTecFone(data.respTecFone || "");
       }
       Toast.success("Dados da empresa salvos com sucesso.");
+      window.dispatchEvent(new CustomEvent("horuspdv-company-change"));
     } catch (error) {
       Toast.error(error instanceof Error ? error.message : "Erro ao salvar dados da empresa.");
     } finally {

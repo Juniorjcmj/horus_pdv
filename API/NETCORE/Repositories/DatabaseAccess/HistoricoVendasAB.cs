@@ -169,9 +169,9 @@ public class HistoricoVendasAB(Connection connection)
         List<VendaItemRecord> saleItems,
         List<VendaPagamentoRequest>? payments)
     {
-        var saleNumber = await NextSaleNumberAsync(db, transaction);
+        var saleNumber = await NextSaleNumberAsync(db, transaction, companyId);
         var now = HorusDateTime.Now;
-        var saleId = $"sale-{saleNumber}";
+        var saleId = $"sale-{companyId}-{saleNumber}";
 
         await using (var saleCommand = new SqlCommand(
                          """
@@ -316,13 +316,21 @@ public class HistoricoVendasAB(Connection connection)
         return new VendaRegistroResultadoAD { SaleNumber = saleNumber, VendaId = saleId, Rows = rows, Payments = pagamentosAD };
     }
 
-    private static async Task<string> NextSaleNumberAsync(SqlConnection db, SqlTransaction transaction)
+    private static async Task<string> NextSaleNumberAsync(SqlConnection db, SqlTransaction transaction, string companyId)
     {
+        var defaultBase = companyId == "empresa-principal" ? 15039 : 0;
         await using var command = new SqlCommand(
-            "SELECT CONVERT(NVARCHAR(30), ISNULL(MAX(TRY_CONVERT(INT, SaleNumber)), 15039) + 1) FROM Vendas WITH (UPDLOCK, HOLDLOCK);",
+            """
+            SELECT CONVERT(NVARCHAR(30), ISNULL(MAX(TRY_CONVERT(INT, SaleNumber)), @DefaultBase) + 1)
+            FROM Vendas WITH (UPDLOCK, HOLDLOCK)
+            WHERE CompanyId = @CompanyId;
+            """,
             db,
             transaction);
-        return Convert.ToString(await command.ExecuteScalarAsync()) ?? "15040";
+        command.Parameters.AddWithValue("@DefaultBase", defaultBase);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        var next = Convert.ToString(await command.ExecuteScalarAsync());
+        return string.IsNullOrWhiteSpace(next) ? (defaultBase + 1).ToString() : next;
     }
 
     private static async Task<List<VendaItemRecord>> BaixarEstoqueAsync(

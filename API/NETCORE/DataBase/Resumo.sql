@@ -175,7 +175,7 @@ BEGIN
         LastLoginAt NVARCHAR(60) NOT NULL CONSTRAINT DF_Usuarios_LastLoginAt DEFAULT N'-',
         PasswordHash NVARCHAR(300) NOT NULL,
         MustChangePassword BIT NOT NULL CONSTRAINT DF_Usuarios_MustChangePassword DEFAULT 1,
-        CONSTRAINT UQ_Usuarios_Cpf UNIQUE (Cpf),
+        CONSTRAINT UQ_Usuarios_Company_Cpf UNIQUE (CompanyId, Cpf),
         CONSTRAINT UQ_Usuarios_Email UNIQUE (Email)
     );
 END;
@@ -325,7 +325,7 @@ BEGIN
         TotalAmount NVARCHAR(30) NOT NULL CONSTRAINT DF_Vendas_TotalAmount DEFAULT N'0,00',
         OperatorName NVARCHAR(180) NOT NULL CONSTRAINT DF_Vendas_OperatorName DEFAULT N'Operador',
         SaleDate DATETIMEOFFSET NOT NULL CONSTRAINT DF_Vendas_SaleDate DEFAULT SYSDATETIMEOFFSET(),
-        CONSTRAINT UQ_Vendas_SaleNumber UNIQUE (SaleNumber)
+        CONSTRAINT UQ_Vendas_Company_SaleNumber UNIQUE (CompanyId, SaleNumber)
     );
 END;
 

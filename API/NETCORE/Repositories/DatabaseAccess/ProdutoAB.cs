@@ -74,11 +74,15 @@ public class ProdutoAB(Connection connection)
             script, @"^\s*GO\s*;?\s*$", "",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Multiline);
 
+        // Garante que a carga seja aplicada exclusivamente na empresa solicitante
+        cleanScript = cleanScript.Replace("VALUES (N'empresa-principal');", "VALUES (@TargetCompanyId);");
+
         await using var db = await connection.OpenConnectionAsync();
         await using var command = new SqlCommand(cleanScript, db)
         {
             CommandTimeout = 300
         };
+        command.Parameters.AddWithValue("@TargetCompanyId", companyId);
         return await command.ExecuteNonQueryAsync();
     }
 

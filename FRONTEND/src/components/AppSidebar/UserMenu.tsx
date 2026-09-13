@@ -11,6 +11,8 @@ type UserMenuProps = {
   collapsed: boolean;
   currentUserName: string;
   currentUserPermission: string;
+  companyName?: string;
+  companyCnpj?: string;
   /** Perfil "caixa": esconde os atalhos de Minha Empresa/Detalhes da Licença (fora do escopo dele). */
   hideCompanyLinks?: boolean;
   avatarUrl: string | null;
@@ -26,6 +28,8 @@ export default function UserMenu({
   collapsed,
   currentUserName,
   currentUserPermission,
+  companyName,
+  companyCnpj,
   hideCompanyLinks = false,
   avatarUrl,
   onOpenProfile,
@@ -106,7 +110,7 @@ export default function UserMenu({
         onClick={() => setShowUserMenu((current) => !current)}
         className="w-full flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-accent/10 focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_rgba(46,191,244,0.22)]"
       >
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-secondary text-white text-xs font-semibold flex items-center justify-center shadow-sm overflow-hidden">
+        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-secondary text-white text-xs font-semibold flex items-center justify-center shadow-sm overflow-hidden shrink-0">
           {avatarUrl ? (
             <img
               src={avatarUrl}
@@ -120,17 +124,26 @@ export default function UserMenu({
 
         {!collapsed && (
           <>
-            <div className="flex-1 text-left">
-              <span className="block text-sm font-semibold text-text-primary">
+            <div className="flex-1 text-left min-w-0">
+              {companyName && (
+                <div className="flex items-center gap-1 text-[11px] font-semibold text-accent truncate" title={companyName}>
+                  <Building2 size={12} className="shrink-0" />
+                  <span className="truncate">{companyName}</span>
+                </div>
+              )}
+              <span className="block text-sm font-semibold text-text-primary truncate">
                 {currentUserName}
               </span>
-              <span className="block text-[11px] text-text-secondary">
-                {currentUserPermission}
-              </span>
+              <div className="flex items-center gap-1.5 text-[11px] text-text-secondary truncate">
+                <span>{currentUserPermission}</span>
+                {companyCnpj && (
+                  <span className="text-[10px] opacity-75 truncate">({companyCnpj})</span>
+                )}
+              </div>
             </div>
             <ChevronUp
               size={16}
-              className={`text-text-secondary transition-transform ${showUserMenu ? "rotate-180" : ""}`}
+              className={`text-text-secondary shrink-0 transition-transform ${showUserMenu ? "rotate-180" : ""}`}
             />
           </>
         )}
@@ -143,6 +156,20 @@ export default function UserMenu({
               style={{ top: panelTop, left: panelLeft, width: panelWidth }}
               className="fixed z-layer-popover bg-bg-light border border-border-secondary rounded-xl shadow-lg p-1.5"
             >
+              {companyName && (
+                <div className="px-3 py-2 border-b border-border-primary/60 mb-1 bg-accent/5 rounded-lg">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-text-primary truncate" title={companyName}>
+                    <Building2 size={13} className="text-accent shrink-0" />
+                    <span className="truncate">{companyName}</span>
+                  </div>
+                  {companyCnpj && (
+                    <div className="text-[10px] text-text-secondary mt-0.5 truncate font-mono">
+                      CNPJ: {companyCnpj}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={() => {

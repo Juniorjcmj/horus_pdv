@@ -4769,17 +4769,7 @@ VALUES
     (N'7896002312493', N'Takis Intense Nacho 49g', N'7896002312493', N'UN', 5.9900, 5.9900, '19059090', NULL, '5102', N'102', N'07', N'07');
 
 DECLARE @EmpresasDestino TABLE (CompanyId NVARCHAR(40));
-
-IF OBJECT_ID(N'Empresas', N'U') IS NOT NULL
-BEGIN
-    INSERT INTO @EmpresasDestino (CompanyId)
-    SELECT DISTINCT Id FROM Empresas;
-END;
-
-IF NOT EXISTS (SELECT 1 FROM @EmpresasDestino)
-BEGIN
-    INSERT INTO @EmpresasDestino (CompanyId) VALUES (N'empresa-principal');
-END;
+INSERT INTO @EmpresasDestino (CompanyId) VALUES (N'empresa-principal');
 
 MERGE INTO Produtos AS target
 USING (

@@ -153,17 +153,7 @@ VALUES
     (N'6149', N'RACAO GATO WHISKAS FRANGO KG', 22.99, N'KG', N'Rações');
 
 DECLARE @EmpresasDestino TABLE (CompanyId NVARCHAR(40));
-
-IF OBJECT_ID(N'Empresas', N'U') IS NOT NULL
-BEGIN
-    INSERT INTO @EmpresasDestino (CompanyId)
-    SELECT DISTINCT Id FROM Empresas;
-END;
-
-IF NOT EXISTS (SELECT 1 FROM @EmpresasDestino)
-BEGIN
-    INSERT INTO @EmpresasDestino (CompanyId) VALUES (N'empresa-principal');
-END;
+INSERT INTO @EmpresasDestino (CompanyId) VALUES (N'empresa-principal');
 
 MERGE INTO Produtos AS target
 USING (

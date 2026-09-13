@@ -17,6 +17,7 @@ import ResetPasswordPage from "@/pages/Auth/ResetPasswordPage";
 import type { RegisterFormPayload } from "@/pages/Auth/types";
 import { authService } from "@/services/api/authService";
 import { cashRegisterService } from "@/services/api/cashRegisterService";
+import { companyService } from "@/services/api/companyService";
 import {
   clearAuthSession,
   getStoredAuthUser,
@@ -200,6 +201,7 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     return params.get("resetToken") || params.get("token") || "";
   });
+  const [companyInfo, setCompanyInfo] = useState<{ name: string; cnpj: string } | null>(null);
 
   const pageTitleByKey: Record<PageKey, string> = {
     home: "Home",
@@ -282,6 +284,7 @@ export default function App() {
     setActivePage("home");
     window.localStorage.setItem(ACTIVE_PAGE_STORAGE_KEY, "home");
     setIsAuthenticated(false);
+    setCompanyInfo(null);
     authService.logout().catch(() => undefined);
     clearAuthSession();
   };
@@ -570,6 +573,36 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setCompanyInfo(null);
+      return;
+    }
+
+    let isMounted = true;
+    const loadCompany = () => {
+      companyService
+        .get()
+        .then((data) => {
+          if (!isMounted || !data) return;
+          setCompanyInfo({
+            name: data.fantasyName || data.corporateName || "",
+            cnpj: data.cnpj || "",
+          });
+        })
+        .catch(() => {
+          if (isMounted) setCompanyInfo(null);
+        });
+    };
+
+    loadCompany();
+    window.addEventListener("horuspdv-company-change", loadCompany);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("horuspdv-company-change", loadCompany);
+    };
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     if (isStandalonePos) return;
     window.localStorage.setItem(ACTIVE_PAGE_STORAGE_KEY, activePage);
   }, [activePage, isStandalonePos]);
@@ -734,6 +767,8 @@ export default function App() {
         currentUserRole={currentUser.role}
         currentUserPermission={currentUser.permission}
         currentUserAvatarUrl={currentUser.avatarUrl}
+        companyName={companyInfo?.name}
+        companyCnpj={companyInfo?.cnpj}
         onOpenProfile={() => setActivePage("editar-perfil")}
         onOpenSettings={() => setActivePage("configuracoes")}
         onLogout={handleLogout}

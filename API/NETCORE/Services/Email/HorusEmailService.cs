@@ -20,9 +20,9 @@ public class HorusEmailService(
 
     public bool IsEnabled => _options.Enabled;
 
-    public async Task<bool> IsEnabledAsync()
+    public async Task<bool> IsEnabledAsync(string? companyId = null)
     {
-        var settings = await ResolveSmtpSettingsAsync(CancellationToken.None);
+        var settings = await ResolveSmtpSettingsAsync(companyId, CancellationToken.None);
         return settings.Enabled;
     }
 
@@ -31,9 +31,10 @@ public class HorusEmailService(
         string companyName,
         string resetUrl,
         DateTimeOffset expiresAt,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? companyId = null)
     {
-        if (!await IsEnabledAsync())
+        if (!await IsEnabledAsync(companyId))
         {
             logger.LogInformation("Envio de e-mail desabilitado. Link de recuperação gerado para {Email}.", toEmail);
             return;
@@ -43,15 +44,16 @@ public class HorusEmailService(
             toEmail,
             "Recuperação de senha - Quack PDV",
             HorusEmailTemplate.BuildPasswordResetHtml(companyName, resetUrl, expiresAt),
-            HorusEmailTemplate.BuildPasswordResetText(companyName, resetUrl, expiresAt)), cancellationToken);
+            HorusEmailTemplate.BuildPasswordResetText(companyName, resetUrl, expiresAt)), cancellationToken, companyId);
     }
 
     public async Task SendSignupWelcomeEmailAsync(
         string toEmail,
         string companyName,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? companyId = null)
     {
-        if (!await IsEnabledAsync())
+        if (!await IsEnabledAsync(companyId))
         {
             logger.LogInformation("Envio de e-mail desabilitado. E-mail de cadastro não enviado para {Email}.", toEmail);
             return;
@@ -62,7 +64,7 @@ public class HorusEmailService(
             toEmail,
             "Cadastro criado - Quack PDV",
             HorusEmailTemplate.BuildSignupWelcomeHtml(companyName, loginUrl),
-            HorusEmailTemplate.BuildSignupWelcomeText(companyName, loginUrl)), cancellationToken);
+            HorusEmailTemplate.BuildSignupWelcomeText(companyName, loginUrl)), cancellationToken, companyId);
     }
 
     public string BuildPasswordResetUrl(string token)
@@ -72,14 +74,14 @@ public class HorusEmailService(
         return $"{baseUrl}/?resetToken={encodedToken}";
     }
 
-    private async Task SendEmailAsync(EmailPayload payload, CancellationToken cancellationToken)
+    private async Task SendEmailAsync(EmailPayload payload, CancellationToken cancellationToken, string? companyId = null)
     {
         if (string.IsNullOrWhiteSpace(payload.ToEmail) || !payload.ToEmail.Contains('@'))
         {
             throw new InvalidOperationException("E-mail de destino inválido.");
         }
 
-        var settings = await ResolveSmtpSettingsAsync(cancellationToken);
+        var settings = await ResolveSmtpSettingsAsync(companyId, cancellationToken);
         ValidateSmtpConfiguration(settings);
         using var message = new MailMessage
         {
@@ -114,12 +116,15 @@ public class HorusEmailService(
             ? "http://localhost:5173"
             : _options.FrontendBaseUrl.Trim().TrimEnd('/');
 
-    private async Task<SmtpSettings> ResolveSmtpSettingsAsync(CancellationToken cancellationToken)
+    private async Task<SmtpSettings> ResolveSmtpSettingsAsync(string? companyId = null, CancellationToken cancellationToken = default)
     {
-        var empresa = await empresaAB.ObterPrincipalAsync();
-        if (empresa is not null && empresa.EmailSmtpEnabled)
+        if (!string.IsNullOrWhiteSpace(companyId))
         {
-            return FromCompany(empresa);
+            var empresa = await empresaAB.ObterAsync(companyId);
+            if (empresa is not null && empresa.EmailSmtpEnabled)
+            {
+                return FromCompany(empresa);
+            }
         }
 
         return new SmtpSettings(

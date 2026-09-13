@@ -113,6 +113,8 @@ type AppSidebarProps = {
   currentUserRole: string;
   currentUserPermission: string;
   currentUserAvatarUrl: string | null;
+  companyName?: string;
+  companyCnpj?: string;
   onOpenProfile: () => void;
   onOpenSettings: () => void;
   onLogout: () => void;
@@ -130,6 +132,8 @@ export default function AppSidebar({
   currentUserRole,
   currentUserPermission,
   currentUserAvatarUrl,
+  companyName,
+  companyCnpj,
   onOpenProfile,
   onOpenSettings,
   onLogout,
@@ -154,9 +158,11 @@ export default function AppSidebar({
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="flex items-center justify-between p-4 border-b border-border-primary">
           {!collapsed && (
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-accent">Quack PDV</h1>
-              <p className="text-[11px] text-text-secondary">Painel operacional</p>
+            <div className="min-w-0 pr-2">
+              <h1 className="text-lg font-bold tracking-tight text-accent truncate">Quack PDV</h1>
+              <p className="text-[11px] text-text-secondary truncate" title={companyName || "Painel operacional"}>
+                {companyName || "Painel operacional"}
+              </p>
             </div>
           )}
 
@@ -372,6 +378,8 @@ export default function AppSidebar({
           collapsed={collapsed}
           currentUserName={currentUserName}
           currentUserPermission={currentUserPermission}
+          companyName={companyName}
+          companyCnpj={companyCnpj}
           hideCompanyLinks={isCaixaRole}
           avatarUrl={currentUserAvatarUrl}
           onOpenProfile={() => {
