@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
-    "mtime": 1789522287.1881895,
-    "seen": 1789523450.831735,
-    "ast_hash": "39b043aa03ec9827c784113c3aa1d557",
+    "mtime": 1789334354.0317788,
+    "seen": 1789334546.6114748,
+    "ast_hash": "810aa532c3633d1eb9c4ecb980e91be2",
     "semantic_hash": ""
   },
   ".codex/hooks.json": {
@@ -192,9 +192,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/ProdutoModel.cs": {
-    "mtime": 1789521465.3405743,
-    "seen": 1789523450.8387306,
-    "ast_hash": "27ba386aebe73dde914a58f2dc6170a1",
+    "mtime": 1789327929.3766687,
+    "seen": 1789328505.8359158,
+    "ast_hash": "f1acd125028321b35913dbc7346ca0c5",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/AuthRegisterRequest.cs": {
@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ProdutoRequest.cs": {
-    "mtime": 1789521472.8911788,
-    "seen": 1789523450.8425024,
-    "ast_hash": "555b9571e4d6ed199fc766a6467bce70",
+    "mtime": 1789327921.6541915,
+    "seen": 1789328505.8377526,
+    "ast_hash": "d69a3163a80f8bad48ae47b9f39b27d5",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ResetPasswordWithTokenRequest.cs": {
@@ -366,9 +366,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/ProdutoAD.cs": {
-    "mtime": 1789521458.1463897,
-    "seen": 1789523450.8466723,
-    "ast_hash": "57946173b2002be24fe02191611e2ea7",
+    "mtime": 1789327898.5713398,
+    "seen": 1789328505.8401902,
+    "ast_hash": "2f776386ac0aabdde7f35718730caa62",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/VendaHistoricoAD.cs": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs": {
-    "mtime": 1789521550.120769,
-    "seen": 1789523450.850942,
-    "ast_hash": "cdb0bf17a9dcdd11def1cb87c730a149",
+    "mtime": 1789327970.26155,
+    "seen": 1789328505.8422763,
+    "ast_hash": "28232a0f4288be5e6b997cc62b5ce7e2",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
-    "mtime": 1789521603.0095625,
-    "seen": 1789523450.8550253,
-    "ast_hash": "e30219df386ed15675fd060a40330710",
+    "mtime": 1789328000.7889233,
+    "seen": 1789328505.8442547,
+    "ast_hash": "8bff49a0c625534c7e9d3563a1604d24",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusAuthorizeRolesAttribute.cs": {
@@ -1044,9 +1044,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1789522621.4377778,
-    "seen": 1789523450.8750231,
-    "ast_hash": "5b7c259ae2e6c5a9a5dd2f4a7a017ada",
+    "mtime": 1789330732.2795148,
+    "seen": 1789334546.6403716,
+    "ast_hash": "dbd33940159fc5c70fdd063791170ba3",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1789522631.4610765,
-    "seen": 1789523450.8761058,
-    "ast_hash": "33417c86d13ea49fd32b0033f7b96df8",
+    "mtime": 1789337034.9689722,
+    "seen": 1789337215.6809146,
+    "ast_hash": "d9af3a3f4ecb3a2d32f51b8b199ec2d6",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1206,9 +1206,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/productService.ts": {
-    "mtime": 1789523342.5116923,
-    "seen": 1789523450.8804088,
-    "ast_hash": "0321cba4eef273ebc33277dea4f62865",
+    "mtime": 1789328113.371331,
+    "seen": 1789328505.859934,
+    "ast_hash": "9dbf726e01b814af02afe88d3dcba587",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/reportService.ts": {
@@ -2064,9 +2064,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/BalancaImportModal.tsx": {
-    "mtime": 1789523301.2416058,
-    "seen": 1789523450.8603537,
-    "ast_hash": "db935e3791cfca913820871e4071c91c",
+    "mtime": 1789309539.4914439,
+    "seen": 1789309612.534659,
+    "ast_hash": "44070cf7b92914b32858237e54710ab2",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/BarcodeSvg.tsx": {
@@ -2148,9 +2148,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/CategoriaAB.cs": {
-    "mtime": 1789522576.6472323,
-    "seen": 1789523450.8479426,
-    "ast_hash": "3040f70f83abfd73dca7b9027ed42b14",
+    "mtime": 1789327109.881824,
+    "seen": 1789327815.2710977,
+    "ast_hash": "643879795081efb3d7f095ee1013bcb2",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Categorias/CategoriaService.cs": {
@@ -2166,9 +2166,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/categoriaService.ts": {
-    "mtime": 1789522581.5613432,
-    "seen": 1789523450.878821,
-    "ast_hash": "41d49f32eeac968e6252d01a193cb861",
+    "mtime": 1789327364.366217,
+    "seen": 1789327815.288637,
+    "ast_hash": "d457f2c49e37c7c2e67678e8c12dc6f2",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/VencimentoResumoModel.cs": {
@@ -2373,36 +2373,6 @@
     "mtime": 1789337154.2621188,
     "seen": 1789337215.67217,
     "ast_hash": "3fd8dee98c7038da7f5b8f5465cfd322",
-    "semantic_hash": ""
-  },
-  "openspec/changes/modelo-produto-multi-segmento/.openspec.yaml": {
-    "mtime": 1789520955.555884,
-    "seen": 1789523450.906358,
-    "ast_hash": "82c2a3fac04d2e62e8fa8291088cf725",
-    "semantic_hash": ""
-  },
-  "openspec/changes/modelo-produto-multi-segmento/design.md": {
-    "mtime": 1789521121.0182667,
-    "seen": 1789523450.9063616,
-    "ast_hash": "fa847464bf6022c6c59c30a8d5f62616",
-    "semantic_hash": ""
-  },
-  "openspec/changes/modelo-produto-multi-segmento/proposal.md": {
-    "mtime": 1789521004.8300886,
-    "seen": 1789523450.9063642,
-    "ast_hash": "a1cf78173ea511f753e75409526456e7",
-    "semantic_hash": ""
-  },
-  "openspec/changes/modelo-produto-multi-segmento/specs/produtos/modelo-expandido/spec.md": {
-    "mtime": 1789521056.2067208,
-    "seen": 1789523450.9063663,
-    "ast_hash": "286f747de29aafef7c0d32acc42e335a",
-    "semantic_hash": ""
-  },
-  "openspec/changes/modelo-produto-multi-segmento/tasks.md": {
-    "mtime": 1789522661.449592,
-    "seen": 1789523450.906369,
-    "ast_hash": "043084fded4a79b81e6488070a85a490",
     "semantic_hash": ""
   }
 }
