@@ -1,10 +1,10 @@
 /*
- * Arquivo: API/NETCORE/DataBase/Migrations/12_modelo_produto_expandido.sql
+ * Arquivo: API/NETCORE/DataBase/Migrations/13_modelo_produto_expandido.sql
  * Objetivo: expandir o modelo de produto para suportar múltiplos segmentos de varejo
  *           (material de construção, mercado, etc.) com campos de unidade, marca,
  *           peso/dimensões, estoque expandido, custos e campos comerciais.
  *
- * Pré-requisito: migrações 01-11 aplicadas.
+ * Pré-requisito: migrações 01-12 aplicadas.
  * Idempotente: pode ser executado repetidamente sem erro (IF COL_LENGTH).
  */
 
@@ -125,14 +125,18 @@ GO
 /* 7. Backfill: popular CustoMedio a partir do custo unitário existente       */
 /* ------------------------------------------------------------------------- */
 UPDATE Produtos
-   SET CustoMedio = ProductUnitPrice
+   SET CustoMedio = TRY_CONVERT(DECIMAL(15,4), ProductUnitPrice)
  WHERE CustoMedio = 0
-   AND ProductUnitPrice > 0;
+   AND ProductUnitPrice IS NOT NULL
+   AND TRY_CONVERT(DECIMAL(15,4), ProductUnitPrice) > 0;
 GO
 
 /* Inicializar UnidadeCompra com o mesmo valor de UnidadeComercial */
-UPDATE Produtos
-   SET UnidadeCompra = UnidadeComercial
- WHERE UnidadeCompra = N'UN'
-   AND UnidadeComercial <> N'UN';
+IF COL_LENGTH(N'Produtos', N'UnidadeComercial') IS NOT NULL
+BEGIN
+    UPDATE Produtos
+       SET UnidadeCompra = UnidadeComercial
+     WHERE UnidadeCompra = N'UN'
+       AND UnidadeComercial <> N'UN';
+END;
 GO

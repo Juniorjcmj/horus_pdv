@@ -39,7 +39,7 @@ A mudança afeta 3 camadas verticalmente: banco de dados → API backend → fro
 ├─────────┼───────────────────────────────────────┤
 │  SQL Server                                      │
 │  ┌──────┴──────────────────────────┐             │
-│  │ 12_modelo_produto_expandido.sql │             │
+│  │ 13_modelo_produto_expandido.sql │             │
 │  │ ALTER + conversão + ADD cols    │             │
 │  └─────────────────────────────────┘             │
 └─────────────────────────────────────────────────┘
@@ -47,7 +47,7 @@ A mudança afeta 3 camadas verticalmente: banco de dados → API backend → fro
 
 ## Database Migration Strategy
 
-### Migration: `12_modelo_produto_expandido.sql`
+### Migration: `13_modelo_produto_expandido.sql`
 
 A migração é a parte mais delicada — converte colunas NVARCHAR para DECIMAL em tabelas com dados existentes. Estratégia: **rename-convert-drop** para cada coluna.
 

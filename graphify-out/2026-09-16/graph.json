@@ -24312,18 +24312,6 @@
             "receiver_type": "Path",
             "lang": "csharp",
             "line": "L41"
-          },
-          {
-            "callee": "Exists",
-            "receiver_type": "File",
-            "lang": "csharp",
-            "line": "L87"
-          },
-          {
-            "callee": "GetCurrentDirectory",
-            "receiver_type": "Directory",
-            "lang": "csharp",
-            "line": "L88"
           }
         ]
       },
@@ -24349,13 +24337,13 @@
             "callee": "ExecuteScalarAsync",
             "receiver_type": "SqlCommand",
             "lang": "csharp",
-            "line": "L184"
+            "line": "L176"
           }
         ]
       },
       "norm_label": ".iscolumnstilltextasync()",
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L177"
+      "source_location": "L169"
     },
     {
       "id": "api_netcore_repositories_horusdatabaseinitializer_horuspdv_api_repositories_horusdatabaseinitializer_runscriptfileasync",
@@ -24375,85 +24363,85 @@
             "callee": "Combine",
             "receiver_type": "Path",
             "lang": "csharp",
-            "line": "L98"
+            "line": "L90"
           },
           {
             "callee": "Exists",
             "receiver_type": "File",
             "lang": "csharp",
-            "line": "L99"
+            "line": "L91"
           },
           {
             "callee": "GetCurrentDirectory",
             "receiver_type": "Directory",
             "lang": "csharp",
-            "line": "L101"
+            "line": "L93"
           },
           {
             "callee": "LogWarning",
             "receiver_type": "ILogger",
             "lang": "csharp",
-            "line": "L106"
+            "line": "L98"
           },
           {
             "callee": "ReadAllTextAsync",
             "receiver_type": "File",
             "lang": "csharp",
-            "line": "L110"
+            "line": "L102"
           },
           {
             "callee": "Split",
             "receiver_type": "Regex",
             "lang": "csharp",
-            "line": "L111"
+            "line": "L103"
           },
           {
             "callee": "Replace",
             "receiver_type": "Regex",
             "lang": "csharp",
-            "line": "L131"
+            "line": "L123"
           },
           {
             "callee": "BeginTransactionAsync",
             "receiver_type": "SqlConnection",
             "lang": "csharp",
-            "line": "L136"
+            "line": "L128"
           },
           {
             "callee": "CommitAsync",
             "receiver_type": "SqlTransaction",
             "lang": "csharp",
-            "line": "L146"
+            "line": "L138"
           },
           {
             "callee": "DisposeAsync",
             "receiver_type": "SqlTransaction",
             "lang": "csharp",
-            "line": "L147"
+            "line": "L139"
           },
           {
             "callee": "ExecuteNonQueryAsync",
             "receiver_type": "SqlCommand",
             "lang": "csharp",
-            "line": "L157"
+            "line": "L149"
           },
           {
             "callee": "RollbackAsync",
             "receiver_type": "SqlTransaction",
             "lang": "csharp",
-            "line": "L164"
+            "line": "L156"
           },
           {
             "callee": "LogInformation",
             "receiver_type": "ILogger",
             "lang": "csharp",
-            "line": "L170"
+            "line": "L162"
           }
         ]
       },
       "norm_label": ".runscriptfileasync()",
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L96"
+      "source_location": "L88"
     },
     {
       "id": "api_netcore_controllers_modulomercado_modulomercadocontroller_cs_httpdelete",
@@ -30094,14 +30082,14 @@
       "source_location": "L202"
     },
     {
-      "id": "openspec_changes_modelo_produto_multi_segmento_design_migration_13_modelo_produto_expandido_sql",
-      "label": "Migration: `13_modelo_produto_expandido.sql`",
+      "id": "openspec_changes_modelo_produto_multi_segmento_design_migration_12_modelo_produto_expandido_sql",
+      "label": "Migration: `12_modelo_produto_expandido.sql`",
       "_origin": "ast",
       "community": 129,
       "community_name": "Design: Modelo de Produto Multi-Segmento",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "migration: `13_modelo_produto_expandido.sql`",
+      "norm_label": "migration: `12_modelo_produto_expandido.sql`",
       "source_file": "openspec/changes/modelo-produto-multi-segmento/design.md",
       "source_location": "L50"
     },
@@ -106795,7 +106783,7 @@
         "ref_token": "ILogger"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L96",
+      "source_location": "L88",
       "weight": 1.0
     },
     {
@@ -108445,7 +108433,7 @@
         "ref_token": "SqlConnection"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L177",
+      "source_location": "L169",
       "weight": 1.0
     },
     {
@@ -108460,7 +108448,7 @@
         "ref_token": "SqlConnection"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L96",
+      "source_location": "L88",
       "weight": 1.0
     },
     {
@@ -114365,7 +114353,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L177",
+      "source_location": "L169",
       "weight": 1.0
     },
     {
@@ -114380,7 +114368,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L96",
+      "source_location": "L88",
       "weight": 1.0
     },
     {
@@ -132456,7 +132444,7 @@
     },
     {
       "source": "openspec_changes_modelo_produto_multi_segmento_design_database_migration_strategy",
-      "target": "openspec_changes_modelo_produto_multi_segmento_design_migration_13_modelo_produto_expandido_sql",
+      "target": "openspec_changes_modelo_produto_multi_segmento_design_migration_12_modelo_produto_expandido_sql",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -132576,7 +132564,7 @@
       "weight": 1.0
     },
     {
-      "source": "openspec_changes_modelo_produto_multi_segmento_design_migration_13_modelo_produto_expandido_sql",
+      "source": "openspec_changes_modelo_produto_multi_segmento_design_migration_12_modelo_produto_expandido_sql",
       "target": "openspec_changes_modelo_produto_multi_segmento_design_passo_1_convers\u00e3o_de_tipos_em_produtos",
       "relation": "contains",
       "_origin": "ast",
@@ -132587,7 +132575,7 @@
       "weight": 1.0
     },
     {
-      "source": "openspec_changes_modelo_produto_multi_segmento_design_migration_13_modelo_produto_expandido_sql",
+      "source": "openspec_changes_modelo_produto_multi_segmento_design_migration_12_modelo_produto_expandido_sql",
       "target": "openspec_changes_modelo_produto_multi_segmento_design_passo_2_convers\u00e3o_de_vendaitens",
       "relation": "contains",
       "_origin": "ast",
@@ -132598,7 +132586,7 @@
       "weight": 1.0
     },
     {
-      "source": "openspec_changes_modelo_produto_multi_segmento_design_migration_13_modelo_produto_expandido_sql",
+      "source": "openspec_changes_modelo_produto_multi_segmento_design_migration_12_modelo_produto_expandido_sql",
       "target": "openspec_changes_modelo_produto_multi_segmento_design_passo_3_novos_campos_em_produtos",
       "relation": "contains",
       "_origin": "ast",
@@ -138762,7 +138750,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L177",
+      "source_location": "L169",
       "weight": 1.0
     },
     {
@@ -138784,7 +138772,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L96",
+      "source_location": "L88",
       "weight": 1.0
     },
     {
@@ -147766,5 +147754,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "df6c49f0d24fe7bc0b2ed3d6d3c7b8f94a6130c6"
+  "built_at_commit": "bd3f34a14dcb0187e7899b2a41a845aa50959edd"
 }

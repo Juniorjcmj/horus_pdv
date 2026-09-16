@@ -83,6 +83,14 @@ public static class HorusDatabaseInitializer
 
         await RunScriptFileAsync(
             sqlConnection, logger, Path.Combine("DataBase", "Migrations", "12_fiado_conta_corrente.sql"));
+
+        var migrationProdutoExpandido = File.Exists(Path.Combine(AppContext.BaseDirectory, "DataBase", "Migrations", "13_modelo_produto_expandido.sql"))
+            || File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "DataBase", "Migrations", "13_modelo_produto_expandido.sql"))
+            ? "13_modelo_produto_expandido.sql"
+            : "12_modelo_produto_expandido.sql";
+
+        await RunScriptFileAsync(
+            sqlConnection, logger, Path.Combine("DataBase", "Migrations", migrationProdutoExpandido));
     }
 
     private static async Task RunScriptFileAsync(SqlConnection sqlConnection, ILogger logger, string relativePath)

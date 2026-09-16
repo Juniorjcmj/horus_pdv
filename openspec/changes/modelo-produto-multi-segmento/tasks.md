@@ -9,7 +9,7 @@
 **Nota**: A migração 01 já converteu ProductQnt, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct (Produtos) e Quantity, UnitPrice, ItemTotal (VendaItens) para DECIMAL. O contrato HTTP (ProdutoModel/ProdutoRequest) usa string pt-BR por design — a conversão acontece no ProdutoService via HorusMoneyFormat.
 
 ### Task 1.2: Adicionar novos campos na migração
-- [x] Criar arquivo `API/NETCORE/DataBase/Migrations/12_modelo_produto_expandido.sql`
+- [x] Criar arquivo `API/NETCORE/DataBase/Migrations/13_modelo_produto_expandido.sql`
 - [x] Adicionar campos de unidade: `UnidadeCompra`, `FatorConversao`, `QtdEmbalagem`
 - [x] Adicionar campos de marca: `Marca`, `Fabricante`, `ReferenciaFabricante`
 - [x] Adicionar campos de peso/dimensão: `PesoLiquidoKg`, `PesoBrutoKg`, `LarguraCm`, `AlturaCm`, `ComprimentoCm`
@@ -20,7 +20,7 @@
 - [x] Criar índice `IX_Produtos_Company_Marca` para busca por marca
 - [x] Backfill: CustoMedio = ProductUnitPrice, UnidadeCompra = UnidadeComercial
 
-**Arquivos**: `API/NETCORE/DataBase/Migrations/12_modelo_produto_expandido.sql`
+**Arquivos**: `API/NETCORE/DataBase/Migrations/13_modelo_produto_expandido.sql`
 
 ---
 

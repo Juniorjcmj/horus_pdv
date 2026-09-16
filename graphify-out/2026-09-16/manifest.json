@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1789588195.418485,
-    "seen": 1789588295.6588883,
-    "ast_hash": "cab76fa919f0d28cc4bc48ffbee3a675",
+    "mtime": 1789329348.9491854,
+    "seen": 1789330645.11225,
+    "ast_hash": "2c4321c3e3b3753ed3f4bbb5eac0b1ba",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -2382,15 +2382,15 @@
     "semantic_hash": ""
   },
   "openspec/changes/modelo-produto-multi-segmento/design.md": {
-    "mtime": 1789588230.0079207,
-    "seen": 1789588295.7210703,
-    "ast_hash": "030c6b0e52641e7e9ff8c96d8119b529",
+    "mtime": 1789521121.0182667,
+    "seen": 1789523450.9063616,
+    "ast_hash": "fa847464bf6022c6c59c30a8d5f62616",
     "semantic_hash": ""
   },
   "openspec/changes/modelo-produto-multi-segmento/proposal.md": {
-    "mtime": 1789588211.940428,
-    "seen": 1789588295.7210746,
-    "ast_hash": "27dc6169acc81858afa39070f4c4b6f0",
+    "mtime": 1789521004.8300886,
+    "seen": 1789523450.9063642,
+    "ast_hash": "a1cf78173ea511f753e75409526456e7",
     "semantic_hash": ""
   },
   "openspec/changes/modelo-produto-multi-segmento/specs/produtos/modelo-expandido/spec.md": {
@@ -2400,9 +2400,9 @@
     "semantic_hash": ""
   },
   "openspec/changes/modelo-produto-multi-segmento/tasks.md": {
-    "mtime": 1789588245.7586293,
-    "seen": 1789588295.7213125,
-    "ast_hash": "cd0de21a45c2e97d3f0ef282b86a9dc6",
+    "mtime": 1789522661.449592,
+    "seen": 1789523450.906369,
+    "ast_hash": "043084fded4a79b81e6488070a85a490",
     "semantic_hash": ""
   }
 }

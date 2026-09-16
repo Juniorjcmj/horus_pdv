@@ -94,7 +94,7 @@ Todas essas adaptações são **genéricas** — beneficiam qualquer segmento de
 
 ## Impact
 
-- **Banco de Dados**: 1 nova migração SQL (12_modelo_produto_expandido.sql) com:
+- **Banco de Dados**: 1 nova migração SQL (13_modelo_produto_expandido.sql) com:
   - ALTER de 6+ colunas NVARCHAR para DECIMAL com conversão de dados existentes
   - ALTER de VendaItens.Quantity de INT para DECIMAL(15,4)
   - ADD de ~18 novas colunas na tabela Produtos
