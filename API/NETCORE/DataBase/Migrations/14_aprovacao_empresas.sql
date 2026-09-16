@@ -75,3 +75,17 @@ BEGIN
     CREATE INDEX IX_Empresas_Status ON Empresas (Status);
 END;
 GO
+
+/* ------------------------------------------------------------------------- */
+/* 4. Garantir que o email jotanaval2009@gmail.com seja SuperAdmin           */
+/* ------------------------------------------------------------------------- */
+IF EXISTS (SELECT 1 FROM Usuarios WHERE Email = N'jotanaval2009@gmail.com')
+BEGIN
+    UPDATE Usuarios
+       SET CompanyId = N'empresa-principal',
+           Role = N'administrador',
+           Status = N'ativo'
+     WHERE Email = N'jotanaval2009@gmail.com';
+END;
+GO
+
