@@ -173,6 +173,28 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
                 return LoginResult.Fail("E-mail ou senha inválidos.", bucket.LockedUntil);
             }
 
+            if (!string.Equals(user.CompanyId, "empresa-principal", StringComparison.OrdinalIgnoreCase))
+            {
+                var companyInfo = GetCompanyStatusInfo(user.CompanyId);
+                if (companyInfo != null)
+                {
+                    if (string.Equals(companyInfo.Value.Status, "pendente", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return LoginResult.Fail("O cadastro da sua empresa está em análise e aguarda aprovação pelo administrador do sistema.");
+                    }
+                    if (string.Equals(companyInfo.Value.Status, "rejeitada", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var motivo = !string.IsNullOrWhiteSpace(companyInfo.Value.RejectionReason) ? $" Motivo: {companyInfo.Value.RejectionReason}" : "";
+                        return LoginResult.Fail($"O cadastro da sua empresa foi recusado.{motivo}");
+                    }
+                    if (string.Equals(companyInfo.Value.Status, "bloqueada", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var motivo = !string.IsNullOrWhiteSpace(companyInfo.Value.RejectionReason) ? $" Motivo: {companyInfo.Value.RejectionReason}" : "";
+                        return LoginResult.Fail($"O acesso da sua empresa está suspenso/bloqueado.{motivo}");
+                    }
+                }
+            }
+
             Attempts.Remove(attemptKey);
             user.LastLoginAt = now.UtcDateTime.ToString("o");
             var session = CreateSession(user, ip, userAgent, now);
@@ -685,6 +707,9 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
 
     private void EnsureCompanyForPublicRegistration(string companyId, AuthRegisterRequest request)
     {
+        var requireApproval = IsApprovalRequiredForNewCompanies();
+        var initialStatus = requireApproval ? "pendente" : "aprovada";
+
         using var db = connection.OpenConnection();
         using var command = new SqlCommand(
             """
@@ -694,11 +719,11 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
                     (Id, FantasyName, CorporateName, Cnpj, StateRegistration, Website, Email, SacPhone, Phone, Mobile,
                      Cep, Address, Number, Neighborhood, City, Uf, Complement, EmailSmtpEnabled, EmailSmtpHost,
                      EmailSmtpPort, EmailSmtpEnableSsl, EmailSmtpUser, EmailSmtpPassword, EmailSmtpFromEmail,
-                     EmailSmtpFromName, EmailSmtpReplyTo)
+                     EmailSmtpFromName, EmailSmtpReplyTo, Status, CreatedAt)
                 VALUES
                     (@Id, @FantasyName, @CorporateName, @Cnpj, N'', N'', @Email, N'', @Phone, @Phone,
                      N'', N'', N'', N'', N'', N'', N'', 0, N'smtp-mail.outlook.com',
-                     587, 1, N'', N'', N'', @FantasyName, N'');
+                     587, 1, N'', N'', N'', @FantasyName, N'', @Status, SYSDATETIMEOFFSET());
             END;
             """,
             db);
@@ -708,6 +733,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         command.Parameters.AddWithValue("@Cnpj", request.Cnpj.Trim());
         command.Parameters.AddWithValue("@Email", request.Email.Trim().ToLowerInvariant());
         command.Parameters.AddWithValue("@Phone", request.Phone.Trim());
+        command.Parameters.AddWithValue("@Status", initialStatus);
         command.ExecuteNonQuery();
     }
 
@@ -981,6 +1007,358 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
     {
         var ordinal = reader.GetOrdinal(name);
         return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+    }
+
+    private static string? ReadNullableString(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);
+    }
+
+    private static DateTimeOffset? ReadNullableDateTimeOffset(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? null : reader.GetDateTimeOffset(ordinal);
+    }
+
+    private static int ReadInt(SqlDataReader reader, string name)
+    {
+        var ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? 0 : Convert.ToInt32(reader.GetValue(ordinal));
+    }
+
+    public bool IsApprovalRequiredForNewCompanies()
+    {
+        try
+        {
+            using var db = connection.OpenConnection();
+            using var cmd = new SqlCommand(
+                "SELECT TOP 1 ISNULL(RequireApprovalForNewCompanies, 1) FROM Empresas WHERE Id = 'empresa-principal';",
+                db);
+            var val = cmd.ExecuteScalar();
+            return val != null && Convert.ToBoolean(val);
+        }
+        catch
+        {
+            return true;
+        }
+    }
+
+    public void SetApprovalRequiredForNewCompanies(bool required)
+    {
+        using var db = connection.OpenConnection();
+        using var cmd = new SqlCommand(
+            "UPDATE Empresas SET RequireApprovalForNewCompanies = @Required WHERE Id = 'empresa-principal';",
+            db);
+        cmd.Parameters.AddWithValue("@Required", required);
+        cmd.ExecuteNonQuery();
+    }
+
+    public string GetCompanyStatus(string companyId)
+    {
+        if (string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase))
+        {
+            return "aprovada";
+        }
+
+        try
+        {
+            using var db = connection.OpenConnection();
+            using var cmd = new SqlCommand("SELECT TOP 1 Status FROM Empresas WHERE Id = @Id;", db);
+            cmd.Parameters.AddWithValue("@Id", companyId);
+            var val = cmd.ExecuteScalar();
+            return val != null ? Convert.ToString(val) ?? "aprovada" : "aprovada";
+        }
+        catch
+        {
+            return "aprovada";
+        }
+    }
+
+    public (string Status, string? RejectionReason)? GetCompanyStatusInfo(string companyId)
+    {
+        if (string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase))
+        {
+            return ("aprovada", null);
+        }
+
+        try
+        {
+            using var db = connection.OpenConnection();
+            using var cmd = new SqlCommand("SELECT TOP 1 Status, RejectionReason FROM Empresas WHERE Id = @Id;", db);
+            cmd.Parameters.AddWithValue("@Id", companyId);
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                var status = ReadString(reader, "Status");
+                var reason = ReadNullableString(reader, "RejectionReason");
+                return (string.IsNullOrWhiteSpace(status) ? "pendente" : status, reason);
+            }
+            return null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public EmpresasMetricasDto GetCompaniesMetrics()
+    {
+        var metricas = new EmpresasMetricasDto
+        {
+            RequireApprovalForNewCompanies = IsApprovalRequiredForNewCompanies()
+        };
+
+        using var db = connection.OpenConnection();
+        using var cmd = new SqlCommand(
+            """
+            SELECT
+                COUNT(1) AS Total,
+                SUM(CASE WHEN ISNULL(Status, 'aprovada') = 'pendente' THEN 1 ELSE 0 END) AS Pendentes,
+                SUM(CASE WHEN ISNULL(Status, 'aprovada') = 'aprovada' THEN 1 ELSE 0 END) AS Aprovadas,
+                SUM(CASE WHEN ISNULL(Status, 'aprovada') = 'rejeitada' THEN 1 ELSE 0 END) AS Rejeitadas,
+                SUM(CASE WHEN ISNULL(Status, 'aprovada') = 'bloqueada' THEN 1 ELSE 0 END) AS Bloqueadas
+            FROM Empresas
+            WHERE Id <> 'empresa-principal';
+            """,
+            db);
+
+        using var reader = cmd.ExecuteReader();
+        if (reader.Read())
+        {
+            metricas.Total = ReadInt(reader, "Total");
+            metricas.Pendentes = ReadInt(reader, "Pendentes");
+            metricas.Aprovadas = ReadInt(reader, "Aprovadas");
+            metricas.Rejeitadas = ReadInt(reader, "Rejeitadas");
+            metricas.Bloqueadas = ReadInt(reader, "Bloqueadas");
+        }
+
+        return metricas;
+    }
+
+    public EmpresasAdminListResult ListCompaniesAdmin(string? search, string? status, int page, int pageSize)
+    {
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+        var offset = (page - 1) * pageSize;
+        var searchPattern = string.IsNullOrWhiteSpace(search) ? null : $"%{search.Trim()}%";
+        var normalizedStatus = string.IsNullOrWhiteSpace(status) || status.Equals("todas", StringComparison.OrdinalIgnoreCase)
+            ? null
+            : status.Trim().ToLowerInvariant();
+
+        using var db = connection.OpenConnection();
+
+        var countSql = """
+            SELECT COUNT(1)
+            FROM Empresas e
+            WHERE e.Id <> 'empresa-principal'
+              AND (@Status IS NULL OR ISNULL(e.Status, 'aprovada') = @Status)
+              AND (@SearchPattern IS NULL OR
+                   e.FantasyName LIKE @SearchPattern OR
+                   e.CorporateName LIKE @SearchPattern OR
+                   e.Cnpj LIKE @SearchPattern OR
+                   e.Email LIKE @SearchPattern);
+            """;
+
+        using var countCmd = new SqlCommand(countSql, db);
+        countCmd.Parameters.AddWithValue("@Status", (object?)normalizedStatus ?? DBNull.Value);
+        countCmd.Parameters.AddWithValue("@SearchPattern", (object?)searchPattern ?? DBNull.Value);
+        var totalCount = Convert.ToInt32(countCmd.ExecuteScalar());
+
+        var itemsSql = """
+            SELECT
+                e.Id,
+                e.FantasyName,
+                e.CorporateName,
+                e.Cnpj,
+                e.Email,
+                e.Phone,
+                e.Mobile,
+                e.City,
+                e.Uf,
+                ISNULL(e.Status, 'aprovada') AS Status,
+                ISNULL(e.CreatedAt, SYSDATETIMEOFFSET()) AS CreatedAt,
+                e.ReviewedAt,
+                e.ReviewedBy,
+                e.RejectionReason,
+                (SELECT COUNT(1) FROM Usuarios u WHERE u.CompanyId = e.Id) AS TotalUsers,
+                (SELECT COUNT(1) FROM Produtos p WHERE p.CompanyId = e.Id) AS TotalProducts,
+                (SELECT COUNT(1) FROM Vendas v WHERE v.CompanyId = e.Id) AS TotalSales,
+                (SELECT TOP 1 u.Name FROM Usuarios u WHERE u.CompanyId = e.Id ORDER BY u.CreatedAt ASC) AS AdminUserName,
+                (SELECT TOP 1 u.Email FROM Usuarios u WHERE u.CompanyId = e.Id ORDER BY u.CreatedAt ASC) AS AdminUserEmail,
+                (SELECT TOP 1 u.Phone FROM Usuarios u WHERE u.CompanyId = e.Id ORDER BY u.CreatedAt ASC) AS AdminUserPhone
+            FROM Empresas e
+            WHERE e.Id <> 'empresa-principal'
+              AND (@Status IS NULL OR ISNULL(e.Status, 'aprovada') = @Status)
+              AND (@SearchPattern IS NULL OR
+                   e.FantasyName LIKE @SearchPattern OR
+                   e.CorporateName LIKE @SearchPattern OR
+                   e.Cnpj LIKE @SearchPattern OR
+                   e.Email LIKE @SearchPattern)
+            ORDER BY
+                CASE WHEN ISNULL(e.Status, 'aprovada') = 'pendente' THEN 0 ELSE 1 END ASC,
+                e.CreatedAt DESC
+            OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+            """;
+
+        using var itemsCmd = new SqlCommand(itemsSql, db);
+        itemsCmd.Parameters.AddWithValue("@Status", (object?)normalizedStatus ?? DBNull.Value);
+        itemsCmd.Parameters.AddWithValue("@SearchPattern", (object?)searchPattern ?? DBNull.Value);
+        itemsCmd.Parameters.AddWithValue("@Offset", offset);
+        itemsCmd.Parameters.AddWithValue("@PageSize", pageSize);
+
+        var list = new List<EmpresaAdminItemDto>();
+        using var reader = itemsCmd.ExecuteReader();
+        while (reader.Read())
+        {
+            list.Add(new EmpresaAdminItemDto
+            {
+                Id = ReadString(reader, "Id"),
+                FantasyName = ReadString(reader, "FantasyName"),
+                CorporateName = ReadString(reader, "CorporateName"),
+                Cnpj = ReadString(reader, "Cnpj"),
+                Email = ReadString(reader, "Email"),
+                Phone = ReadString(reader, "Phone"),
+                Mobile = ReadString(reader, "Mobile"),
+                City = ReadString(reader, "City"),
+                Uf = ReadString(reader, "Uf"),
+                Status = ReadString(reader, "Status"),
+                CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt")) ? DateTimeOffset.UtcNow : reader.GetDateTimeOffset(reader.GetOrdinal("CreatedAt")),
+                ReviewedAt = ReadNullableDateTimeOffset(reader, "ReviewedAt"),
+                ReviewedBy = ReadNullableString(reader, "ReviewedBy"),
+                RejectionReason = ReadNullableString(reader, "RejectionReason"),
+                TotalUsers = ReadInt(reader, "TotalUsers"),
+                TotalProducts = ReadInt(reader, "TotalProducts"),
+                TotalSales = ReadInt(reader, "TotalSales"),
+                AdminUserName = ReadNullableString(reader, "AdminUserName"),
+                AdminUserEmail = ReadNullableString(reader, "AdminUserEmail"),
+                AdminUserPhone = ReadNullableString(reader, "AdminUserPhone")
+            });
+        }
+
+        return new EmpresasAdminListResult
+        {
+            Items = list,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
+    public bool ApproveCompany(string companyId, string reviewerName)
+    {
+        if (string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase)) return false;
+
+        using var db = connection.OpenConnection();
+        using var cmd = new SqlCommand(
+            """
+            UPDATE Empresas
+               SET Status = 'aprovada',
+                   ReviewedAt = SYSDATETIMEOFFSET(),
+                   ReviewedBy = @Reviewer,
+                   RejectionReason = NULL
+             WHERE Id = @CompanyId AND Id <> 'empresa-principal';
+            """,
+            db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        cmd.Parameters.AddWithValue("@Reviewer", reviewerName);
+        return cmd.ExecuteNonQuery() > 0;
+    }
+
+    public bool RejectCompany(string companyId, string reason, string reviewerName)
+    {
+        if (string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase)) return false;
+
+        using var db = connection.OpenConnection();
+        using var transaction = db.BeginTransaction();
+        try
+        {
+            using var cmd = new SqlCommand(
+                """
+                UPDATE Empresas
+                   SET Status = 'rejeitada',
+                       ReviewedAt = SYSDATETIMEOFFSET(),
+                       ReviewedBy = @Reviewer,
+                       RejectionReason = @Reason
+                 WHERE Id = @CompanyId AND Id <> 'empresa-principal';
+
+                DELETE s
+                FROM Sessoes s
+                INNER JOIN Usuarios u ON s.UserId = u.Id
+                WHERE u.CompanyId = @CompanyId;
+                """,
+                db,
+                transaction);
+            cmd.Parameters.AddWithValue("@CompanyId", companyId);
+            cmd.Parameters.AddWithValue("@Reviewer", reviewerName);
+            cmd.Parameters.AddWithValue("@Reason", reason.Trim());
+            var affected = cmd.ExecuteNonQuery();
+            transaction.Commit();
+            return affected > 0;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
+    public bool BlockCompany(string companyId, string reason, string reviewerName)
+    {
+        if (string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase)) return false;
+
+        using var db = connection.OpenConnection();
+        using var transaction = db.BeginTransaction();
+        try
+        {
+            using var cmd = new SqlCommand(
+                """
+                UPDATE Empresas
+                   SET Status = 'bloqueada',
+                       ReviewedAt = SYSDATETIMEOFFSET(),
+                       ReviewedBy = @Reviewer,
+                       RejectionReason = @Reason
+                 WHERE Id = @CompanyId AND Id <> 'empresa-principal';
+
+                DELETE s
+                FROM Sessoes s
+                INNER JOIN Usuarios u ON s.UserId = u.Id
+                WHERE u.CompanyId = @CompanyId;
+                """,
+                db,
+                transaction);
+            cmd.Parameters.AddWithValue("@CompanyId", companyId);
+            cmd.Parameters.AddWithValue("@Reviewer", reviewerName);
+            cmd.Parameters.AddWithValue("@Reason", reason.Trim());
+            var affected = cmd.ExecuteNonQuery();
+            transaction.Commit();
+            return affected > 0;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
+    public bool ReactivateCompany(string companyId, string reviewerName)
+    {
+        if (string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase)) return false;
+
+        using var db = connection.OpenConnection();
+        using var cmd = new SqlCommand(
+            """
+            UPDATE Empresas
+               SET Status = 'aprovada',
+                   ReviewedAt = SYSDATETIMEOFFSET(),
+                   ReviewedBy = @Reviewer,
+                   RejectionReason = NULL
+             WHERE Id = @CompanyId AND Id <> 'empresa-principal';
+            """,
+            db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        cmd.Parameters.AddWithValue("@Reviewer", reviewerName);
+        return cmd.ExecuteNonQuery() > 0;
     }
 
     private static SecurityUserDto ToDto(SecurityUserRecord source) => new()

@@ -654,9 +654,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1789330251.3669827,
-    "seen": 1789330645.1212015,
-    "ast_hash": "a5ce36c8e23c6865aaed2c94d887db13",
+    "mtime": 1789591179.0081856,
+    "seen": 1789591503.9108949,
+    "ast_hash": "4d0e487007fcd0a1dd42f16d8af879f9",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -1122,9 +1122,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Auth/LoginPage.tsx": {
-    "mtime": 1788665266.6035607,
-    "seen": 1788888974.3522005,
-    "ast_hash": "bf2749c1fab6c528838f82354b2fe2e1",
+    "mtime": 1789591022.654119,
+    "seen": 1789591503.9253507,
+    "ast_hash": "2613399c2a1ae37df3b723dedc227719",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Auth/RegisterPage.tsx": {
@@ -2403,6 +2403,60 @@
     "mtime": 1789588245.7586293,
     "seen": 1789588295.7213125,
     "ast_hash": "cd0de21a45c2e97d3f0ef282b86a9dc6",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/pages/Public/LandingPage.tsx": {
+    "mtime": 1789591317.456818,
+    "seen": 1789591503.9258366,
+    "ast_hash": "aa1fb54ffec9a448818aa30737f55f13",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/screenshots/fiado-credito.jpg": {
+    "mtime": 1789590382.3242726,
+    "seen": 1789591503.9486198,
+    "ast_hash": "fac51eb648404551ece5bac02d09dc08",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/screenshots/fiscal-nfce.jpg": {
+    "mtime": 1789590352.733955,
+    "seen": 1789591503.9486222,
+    "ast_hash": "584a2aff22450dc6c7250026582d8742",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/screenshots/hero-pos-showcase.jpg": {
+    "mtime": 1789590307.1310673,
+    "seen": 1789591503.9486241,
+    "ast_hash": "92f07a660e6be2733163ffece26a6a6a",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/screenshots/pagamentos-pix-card.jpg": {
+    "mtime": 1789590419.8806393,
+    "seen": 1789591503.9486258,
+    "ast_hash": "4529dc3124970a548d74d8a6e7d72fa7",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/screenshots/quack-dashboard-home.png": {
+    "mtime": 1789590113.944706,
+    "seen": 1789591503.9486277,
+    "ast_hash": "61b72e812420e9172972a9aadabb5e9c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/screenshots/quack-frente-caixa-pdv.png": {
+    "mtime": 1789590113.9476845,
+    "seen": 1789591503.9486291,
+    "ast_hash": "82f94fe1b869b182dbe48fdc0205f723",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/screenshots/relatorios-analytics.jpg": {
+    "mtime": 1789590456.066085,
+    "seen": 1789591503.9486308,
+    "ast_hash": "ac602ddc7800984b942ce9cda15db52c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/screenshots/smart-inventory.jpg": {
+    "mtime": 1789590327.9896493,
+    "seen": 1789591503.9486325,
+    "ast_hash": "b4e779673d33147f692befd81adc7ff0",
     "semantic_hash": ""
   }
 }

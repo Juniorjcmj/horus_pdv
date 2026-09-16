@@ -19,6 +19,7 @@ import {
   PackageCheck,
   Receipt,
   Repeat2,
+  ShieldCheck,
   ShoppingCart,
   Store,
   Tag,
@@ -52,6 +53,7 @@ export type PageKey =
   | "omnichannel"
   | "conta-de-usuario"
   | "minha-empresa"
+  | "gerenciamento-geral"
   | "configuracoes"
   | "detalhe-licenca"
   | "sobre-pdv"
@@ -60,6 +62,7 @@ export type PageKey =
 type SidebarItemProps = {
   icon: ReactNode;
   label: string;
+  badge?: ReactNode;
   active?: boolean;
   collapsed: boolean;
   onClick: () => void;
@@ -85,6 +88,7 @@ function SidebarSectionTitle({ label, collapsed }: SidebarSectionTitleProps) {
 function SidebarItem({
   icon,
   label,
+  badge,
   active,
   collapsed,
   onClick,
@@ -102,6 +106,7 @@ function SidebarItem({
     >
       <div className="text-accent">{icon}</div>
       {!collapsed && <span className="flex-1 whitespace-nowrap">{label}</span>}
+      {!collapsed && badge}
       {!collapsed && <ChevronRight size={14} className="text-text-secondary" />}
     </button>
   );
@@ -118,6 +123,8 @@ type AppSidebarProps = {
   currentUserAvatarUrl: string | null;
   companyName?: string;
   companyCnpj?: string;
+  isSuperAdmin?: boolean;
+  pendingApprovalsCount?: number;
   onOpenProfile: () => void;
   onOpenSettings: () => void;
   onLogout: () => void;
@@ -137,6 +144,8 @@ export default function AppSidebar({
   currentUserAvatarUrl,
   companyName,
   companyCnpj,
+  isSuperAdmin = false,
+  pendingApprovalsCount = 0,
   onOpenProfile,
   onOpenSettings,
   onLogout,
@@ -222,6 +231,26 @@ export default function AppSidebar({
                   onClick={() => handleChangePage("home")}
                 />
               </div>
+
+              {isSuperAdmin && (
+                <div className="space-y-2">
+                  <SidebarSectionTitle label="Administração Master" collapsed={collapsed} />
+                  <SidebarItem
+                    icon={<ShieldCheck size={20} className="text-amber-400" />}
+                    label="Gerenciamento Geral"
+                    badge={
+                      pendingApprovalsCount > 0 ? (
+                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-slate-950 animate-pulse">
+                          {pendingApprovalsCount}
+                        </span>
+                      ) : undefined
+                    }
+                    active={activePage === "gerenciamento-geral"}
+                    collapsed={collapsed}
+                    onClick={() => handleChangePage("gerenciamento-geral")}
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <SidebarSectionTitle label="Cadastros" collapsed={collapsed} />

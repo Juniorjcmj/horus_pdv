@@ -36,6 +36,28 @@ public class HorusAuthMiddleware(RequestDelegate next)
         }
 
         context.Items["CurrentUser"] = authenticatedUser;
+
+        if (!string.Equals(authenticatedUser.CompanyId, "empresa-principal", StringComparison.OrdinalIgnoreCase))
+        {
+            var companyStatus = securityStore.GetCompanyStatus(authenticatedUser.CompanyId);
+            if (!string.Equals(companyStatus, "aprovada", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsJsonAsync(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = companyStatus switch
+                    {
+                        "pendente" => "Sua empresa ainda aguarda aprovação da administração.",
+                        "rejeitada" => "O cadastro da sua empresa foi recusado.",
+                        "bloqueada" => "O acesso da sua empresa está bloqueado/suspenso.",
+                        _ => "Acesso restrito para esta empresa."
+                    }
+                });
+                return;
+            }
+        }
+
         var rolePolicy = context.GetEndpoint()?.Metadata.GetMetadata<HorusAuthorizeRolesAttribute>();
         if (rolePolicy is not null && rolePolicy.Roles.Count > 0 && !rolePolicy.Roles.Contains(authenticatedUser.Role))
         {

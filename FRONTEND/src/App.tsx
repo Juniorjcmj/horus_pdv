@@ -53,6 +53,9 @@ const CrmLoyaltyPage = lazy(() => import("@/pages/Admin/CrmLoyaltyPage"));
 const OmnichannelPage = lazy(() => import("@/pages/Admin/OmnichannelPage"));
 const SettingsPage = lazy(() => import("@/pages/Admin/SettingsPage"));
 const MyCompanyPage = lazy(() => import("@/pages/Admin/MyCompanyPage"));
+const GerenciamentoGeralPage = lazy(
+  () => import("@/pages/Admin/GerenciamentoGeralPage"),
+);
 const LicenseDetailsPage = lazy(
   () => import("@/pages/Admin/LicenseDetailsPage"),
 );
@@ -67,6 +70,7 @@ const EmptyPage = () => null;
 
 type CurrentUser = {
   id: string;
+  companyId: string;
   name: string;
   email: string;
   phone: string;
@@ -103,6 +107,7 @@ function formatRole(role: string) {
 function toCurrentUser(user: AuthenticatedUser): CurrentUser {
   return {
     id: user.id,
+    companyId: user.companyId || "",
     name: user.name,
     email: user.email,
     phone: user.phone,
@@ -144,6 +149,7 @@ export default function App() {
       "omnichannel",
       "conta-de-usuario",
       "minha-empresa",
+      "gerenciamento-geral",
       "detalhe-licenca",
       "sobre-pdv",
       "editar-perfil",
@@ -184,6 +190,7 @@ export default function App() {
       typeof window !== "undefined" ? getStoredAuthUser() : null;
     return {
       id: storedUser?.id || "",
+      companyId: storedUser?.companyId || "",
       name: storedUser?.name || "",
       email: storedUser?.email || "",
       phone: storedUser?.phone || "",
@@ -231,6 +238,7 @@ export default function App() {
     omnichannel: "Omnichannel e Integrações",
     "conta-de-usuario": "Contas de Usuários",
     "minha-empresa": "Minha Empresa",
+    "gerenciamento-geral": "Gerenciamento Geral de Empresas",
     "detalhe-licenca": "Detalhes da Licença",
     "sobre-pdv": "Sobre PDV",
     "editar-perfil": "Meu Perfil",
@@ -279,6 +287,8 @@ export default function App() {
         return UserAccountsPage;
       case "minha-empresa":
         return MyCompanyPage;
+      case "gerenciamento-geral":
+        return GerenciamentoGeralPage;
       case "detalhe-licenca":
         return LicenseDetailsPage;
       case "sobre-pdv":
@@ -287,6 +297,34 @@ export default function App() {
         return EmptyPage;
     }
   }, [activePage]);
+
+  const isSuperAdmin = useMemo(() => {
+    return (
+      currentUser.companyId === "empresa-principal" &&
+      currentUser.role.toLowerCase() === "administrador"
+    );
+  }, [currentUser.companyId, currentUser.role]);
+
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
+
+  useEffect(() => {
+    if (!isSuperAdmin || !isAuthenticated) {
+      setPendingApprovalsCount(0);
+      return;
+    }
+
+    let isMounted = true;
+    import("@/services/api/superAdminService")
+      .then(({ superAdminService }) => superAdminService.getMetrics())
+      .then((m) => {
+        if (isMounted) setPendingApprovalsCount(m.pendentes);
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isSuperAdmin, isAuthenticated, activePage]);
 
   const handleToggleTheme = () => {
     setThemeMode((current) => (current === "light" ? "dark" : "light"));
@@ -792,6 +830,8 @@ export default function App() {
         currentUserAvatarUrl={currentUser.avatarUrl}
         companyName={companyInfo?.name}
         companyCnpj={companyInfo?.cnpj}
+        isSuperAdmin={isSuperAdmin}
+        pendingApprovalsCount={pendingApprovalsCount}
         onOpenProfile={() => setActivePage("editar-perfil")}
         onOpenSettings={() => setActivePage("configuracoes")}
         onLogout={handleLogout}
