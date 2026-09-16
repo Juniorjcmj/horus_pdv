@@ -31,6 +31,38 @@ export type ProductDto = {
   diasAlertaValidade?: number;
   diasRestantes?: number | null;
 
+  // Unidades de medida (compra/conversão)
+  unidadeCompra: string;
+  fatorConversao: string;
+  qtdEmbalagem: string;
+
+  // Marca e fabricante
+  marca?: string | null;
+  fabricante?: string | null;
+  referenciaFabricante?: string | null;
+
+  // Peso e dimensões
+  pesoLiquidoKg: string;
+  pesoBrutoKg: string;
+  larguraCm: string;
+  alturaCm: string;
+  comprimentoCm: string;
+
+  // Estoque expandido
+  estoqueMaximo: string;
+  localizacaoEstoque?: string | null;
+
+  // Dados de custo detalhados
+  custoMedio: string;
+  custoComImposto: string;
+  custoSemImposto: string;
+
+  // Campos comerciais
+  descontoMaximoPercentual: string;
+  comissaoPercentual: string;
+  markupCadastrado: string;
+  markupPraticado: string;
+
   // Dados fiscais (NFC-e modelo 65)
   ncm: string;
   cest: string | null;

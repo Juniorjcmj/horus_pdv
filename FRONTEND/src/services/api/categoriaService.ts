@@ -18,7 +18,7 @@ export type Categoria = {
 };
 
 export type CategoriaArvore = Categoria & {
-  subcategorias: Categoria[];
+  subcategorias: CategoriaArvore[];
 };
 
 export type CategoriaPayload = {

@@ -40,17 +40,29 @@ public class CategoriaAB(Connection connection)
             all.Add(Map(reader));
         }
 
-        var roots = all.Where(c => string.IsNullOrEmpty(c.CategoriaPaiId)).ToList();
-        foreach (var root in roots)
+        var lookup = all.ToLookup(c => c.CategoriaPaiId ?? "");
+
+        void AttachChildren(CategoriaAD parent)
         {
-            var children = all
-                .Where(c => c.CategoriaPaiId == root.Id)
+            var children = lookup[parent.Id]
                 .OrderBy(c => c.Ordem)
                 .ThenBy(c => c.Nome)
                 .ToList();
 
-            root.Subcategorias = children;
-            root.QuantidadeProdutos += children.Sum(c => c.QuantidadeProdutos);
+            foreach (var child in children)
+            {
+                AttachChildren(child);
+                child.QuantidadeProdutos += child.Subcategorias.Sum(gc => gc.QuantidadeProdutos);
+            }
+
+            parent.Subcategorias = children;
+        }
+
+        var roots = lookup[""].OrderBy(c => c.Ordem).ThenBy(c => c.Nome).ToList();
+        foreach (var root in roots)
+        {
+            AttachChildren(root);
+            root.QuantidadeProdutos += root.Subcategorias.Sum(c => c.QuantidadeProdutos);
         }
 
         return roots;

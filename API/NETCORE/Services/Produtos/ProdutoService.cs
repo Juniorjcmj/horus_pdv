@@ -110,42 +110,71 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         }
     }
 
-    private static ProdutoAD MapRequest(string id, ProdutoRequest request) => new()
+    private static ProdutoAD MapRequest(string id, ProdutoRequest request)
     {
-        Id = id,
-        ProductImageUrl = request.ProductImageUrl,
-        ProductImageName = request.ProductImageName,
-        ProductName = request.ProductName.Trim(),
-        ProductCode = request.ProductCode.Trim(),
-        ProductSupplier = request.ProductSupplier.Trim(),
-        ProductDescription = request.ProductDescription.Trim(),
-        ProductQnt = HorusMoneyFormat.ParseDecimal(request.ProductQnt),
-        EstoqueMinimo = HorusMoneyFormat.ParseDecimal(request.EstoqueMinimo),
-        ProductUnitPrice = HorusMoneyFormat.ParseDecimal(request.ProductUnitPrice),
-        ProductSalePrice = HorusMoneyFormat.ParseDecimal(request.ProductSalePrice),
-        TotalPriceOnProduct = HorusMoneyFormat.ParseDecimal(request.TotalPriceOnProduct),
-        MargemDesejadaPercentual = string.IsNullOrWhiteSpace(request.MargemDesejadaPercentual)
-            ? null
-            : HorusMoneyFormat.ParseDecimal(request.MargemDesejadaPercentual),
-        CategoriaId = string.IsNullOrWhiteSpace(request.CategoriaId) ? null : request.CategoriaId.Trim(),
-        DataValidade = DateTime.TryParse(request.DataValidade, out var dt) ? dt : null,
-        ControlaValidade = request.ControlaValidade,
-        DiasAlertaValidade = request.DiasAlertaValidade <= 0 ? 15 : request.DiasAlertaValidade,
-        Ncm = string.IsNullOrWhiteSpace(request.Ncm) ? "00000000" : request.Ncm.Trim(),
-        Cest = string.IsNullOrWhiteSpace(request.Cest) ? null : request.Cest.Trim(),
-        Cfop = string.IsNullOrWhiteSpace(request.Cfop) ? "5102" : request.Cfop.Trim(),
-        OrigemMercadoria = request.OrigemMercadoria,
-        UnidadeComercial = string.IsNullOrWhiteSpace(request.UnidadeComercial) ? "UN" : request.UnidadeComercial.Trim().ToUpperInvariant(),
-        UnidadeTributavel = string.IsNullOrWhiteSpace(request.UnidadeTributavel) ? "UN" : request.UnidadeTributavel.Trim().ToUpperInvariant(),
-        Gtin = string.IsNullOrWhiteSpace(request.Gtin) ? "SEM GTIN" : request.Gtin.Trim(),
-        CsosnIcms = string.IsNullOrWhiteSpace(request.CsosnIcms) ? null : request.CsosnIcms.Trim(),
-        CstIcms = string.IsNullOrWhiteSpace(request.CstIcms) ? null : request.CstIcms.Trim(),
-        AliquotaIcms = HorusMoneyFormat.ParseDecimal(request.AliquotaIcms),
-        CstPis = string.IsNullOrWhiteSpace(request.CstPis) ? "07" : request.CstPis.Trim(),
-        CstCofins = string.IsNullOrWhiteSpace(request.CstCofins) ? "07" : request.CstCofins.Trim(),
-        CstIbsCbs = string.IsNullOrWhiteSpace(request.CstIbsCbs) ? null : request.CstIbsCbs.Trim(),
-        CClassTrib = string.IsNullOrWhiteSpace(request.CClassTrib) ? null : request.CClassTrib.Trim()
-    };
+        var custoUnitario = HorusMoneyFormat.ParseDecimal(request.ProductUnitPrice);
+        var precoVenda = HorusMoneyFormat.ParseDecimal(request.ProductSalePrice);
+        var custoMedio = HorusMoneyFormat.ParseDecimal(request.CustoMedio);
+        if (custoMedio == 0) custoMedio = custoUnitario;
+        var markupPraticado = custoMedio > 0 ? (precoVenda - custoMedio) / custoMedio * 100m : 0m;
+
+        return new()
+        {
+            Id = id,
+            ProductImageUrl = request.ProductImageUrl,
+            ProductImageName = request.ProductImageName,
+            ProductName = request.ProductName.Trim(),
+            ProductCode = request.ProductCode.Trim(),
+            ProductSupplier = request.ProductSupplier.Trim(),
+            ProductDescription = request.ProductDescription.Trim(),
+            ProductQnt = HorusMoneyFormat.ParseDecimal(request.ProductQnt),
+            EstoqueMinimo = HorusMoneyFormat.ParseDecimal(request.EstoqueMinimo),
+            ProductUnitPrice = custoUnitario,
+            ProductSalePrice = precoVenda,
+            TotalPriceOnProduct = HorusMoneyFormat.ParseDecimal(request.TotalPriceOnProduct),
+            MargemDesejadaPercentual = string.IsNullOrWhiteSpace(request.MargemDesejadaPercentual)
+                ? null
+                : HorusMoneyFormat.ParseDecimal(request.MargemDesejadaPercentual),
+            CategoriaId = string.IsNullOrWhiteSpace(request.CategoriaId) ? null : request.CategoriaId.Trim(),
+            DataValidade = DateTime.TryParse(request.DataValidade, out var dt) ? dt : null,
+            ControlaValidade = request.ControlaValidade,
+            DiasAlertaValidade = request.DiasAlertaValidade <= 0 ? 15 : request.DiasAlertaValidade,
+            UnidadeCompra = string.IsNullOrWhiteSpace(request.UnidadeCompra) ? "UN" : request.UnidadeCompra.Trim().ToUpperInvariant(),
+            FatorConversao = Math.Max(1m, HorusMoneyFormat.ParseDecimal(request.FatorConversao)),
+            QtdEmbalagem = Math.Max(1m, HorusMoneyFormat.ParseDecimal(request.QtdEmbalagem)),
+            Marca = string.IsNullOrWhiteSpace(request.Marca) ? null : request.Marca.Trim(),
+            Fabricante = string.IsNullOrWhiteSpace(request.Fabricante) ? null : request.Fabricante.Trim(),
+            ReferenciaFabricante = string.IsNullOrWhiteSpace(request.ReferenciaFabricante) ? null : request.ReferenciaFabricante.Trim(),
+            PesoLiquidoKg = HorusMoneyFormat.ParseDecimal(request.PesoLiquidoKg),
+            PesoBrutoKg = HorusMoneyFormat.ParseDecimal(request.PesoBrutoKg),
+            LarguraCm = HorusMoneyFormat.ParseDecimal(request.LarguraCm),
+            AlturaCm = HorusMoneyFormat.ParseDecimal(request.AlturaCm),
+            ComprimentoCm = HorusMoneyFormat.ParseDecimal(request.ComprimentoCm),
+            EstoqueMaximo = HorusMoneyFormat.ParseDecimal(request.EstoqueMaximo),
+            LocalizacaoEstoque = string.IsNullOrWhiteSpace(request.LocalizacaoEstoque) ? null : request.LocalizacaoEstoque.Trim(),
+            CustoMedio = custoMedio,
+            CustoComImposto = HorusMoneyFormat.ParseDecimal(request.CustoComImposto),
+            CustoSemImposto = HorusMoneyFormat.ParseDecimal(request.CustoSemImposto),
+            DescontoMaximoPercentual = HorusMoneyFormat.ParseDecimal(request.DescontoMaximoPercentual),
+            ComissaoPercentual = HorusMoneyFormat.ParseDecimal(request.ComissaoPercentual),
+            MarkupCadastrado = HorusMoneyFormat.ParseDecimal(request.MarkupCadastrado),
+            MarkupPraticado = markupPraticado,
+            Ncm = string.IsNullOrWhiteSpace(request.Ncm) ? "00000000" : request.Ncm.Trim(),
+            Cest = string.IsNullOrWhiteSpace(request.Cest) ? null : request.Cest.Trim(),
+            Cfop = string.IsNullOrWhiteSpace(request.Cfop) ? "5102" : request.Cfop.Trim(),
+            OrigemMercadoria = request.OrigemMercadoria,
+            UnidadeComercial = string.IsNullOrWhiteSpace(request.UnidadeComercial) ? "UN" : request.UnidadeComercial.Trim().ToUpperInvariant(),
+            UnidadeTributavel = string.IsNullOrWhiteSpace(request.UnidadeTributavel) ? "UN" : request.UnidadeTributavel.Trim().ToUpperInvariant(),
+            Gtin = string.IsNullOrWhiteSpace(request.Gtin) ? "SEM GTIN" : request.Gtin.Trim(),
+            CsosnIcms = string.IsNullOrWhiteSpace(request.CsosnIcms) ? null : request.CsosnIcms.Trim(),
+            CstIcms = string.IsNullOrWhiteSpace(request.CstIcms) ? null : request.CstIcms.Trim(),
+            AliquotaIcms = HorusMoneyFormat.ParseDecimal(request.AliquotaIcms),
+            CstPis = string.IsNullOrWhiteSpace(request.CstPis) ? "07" : request.CstPis.Trim(),
+            CstCofins = string.IsNullOrWhiteSpace(request.CstCofins) ? "07" : request.CstCofins.Trim(),
+            CstIbsCbs = string.IsNullOrWhiteSpace(request.CstIbsCbs) ? null : request.CstIbsCbs.Trim(),
+            CClassTrib = string.IsNullOrWhiteSpace(request.CClassTrib) ? null : request.CClassTrib.Trim()
+        };
+    }
 
     private static ProdutoModel ToModel(ProdutoAD source) => new()
     {
@@ -168,6 +197,26 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         ControlaValidade = source.ControlaValidade,
         DiasAlertaValidade = source.DiasAlertaValidade,
         DiasRestantes = source.DataValidade.HasValue ? (int)Math.Floor((source.DataValidade.Value.Date - DateTime.UtcNow.Date).TotalDays) : null,
+        UnidadeCompra = source.UnidadeCompra,
+        FatorConversao = HorusMoneyFormat.FormatQuantity(source.FatorConversao),
+        QtdEmbalagem = HorusMoneyFormat.FormatQuantity(source.QtdEmbalagem),
+        Marca = source.Marca,
+        Fabricante = source.Fabricante,
+        ReferenciaFabricante = source.ReferenciaFabricante,
+        PesoLiquidoKg = HorusMoneyFormat.FormatQuantity(source.PesoLiquidoKg),
+        PesoBrutoKg = HorusMoneyFormat.FormatQuantity(source.PesoBrutoKg),
+        LarguraCm = HorusMoneyFormat.FormatQuantity(source.LarguraCm),
+        AlturaCm = HorusMoneyFormat.FormatQuantity(source.AlturaCm),
+        ComprimentoCm = HorusMoneyFormat.FormatQuantity(source.ComprimentoCm),
+        EstoqueMaximo = HorusMoneyFormat.FormatQuantity(source.EstoqueMaximo),
+        LocalizacaoEstoque = source.LocalizacaoEstoque,
+        CustoMedio = HorusMoneyFormat.Format(source.CustoMedio),
+        CustoComImposto = HorusMoneyFormat.Format(source.CustoComImposto),
+        CustoSemImposto = HorusMoneyFormat.Format(source.CustoSemImposto),
+        DescontoMaximoPercentual = HorusMoneyFormat.FormatQuantity(source.DescontoMaximoPercentual),
+        ComissaoPercentual = HorusMoneyFormat.FormatQuantity(source.ComissaoPercentual),
+        MarkupCadastrado = HorusMoneyFormat.FormatQuantity(source.MarkupCadastrado),
+        MarkupPraticado = HorusMoneyFormat.FormatQuantity(source.MarkupPraticado),
         Ncm = source.Ncm,
         Cest = source.Cest,
         Cfop = source.Cfop,

@@ -39,6 +39,38 @@ public class ProdutoRequest
     /// <summary>Dias de antecedência para disparar alertas de vencimento (padrão 15).</summary>
     public int DiasAlertaValidade { get; set; } = 15;
 
+    // Unidades de medida (compra/conversão)
+    public string UnidadeCompra { get; set; } = "UN";
+    public string FatorConversao { get; set; } = "1";
+    public string QtdEmbalagem { get; set; } = "1";
+
+    // Marca e fabricante
+    public string? Marca { get; set; }
+    public string? Fabricante { get; set; }
+    public string? ReferenciaFabricante { get; set; }
+
+    // Peso e dimensões
+    public string PesoLiquidoKg { get; set; } = "0";
+    public string PesoBrutoKg { get; set; } = "0";
+    public string LarguraCm { get; set; } = "0";
+    public string AlturaCm { get; set; } = "0";
+    public string ComprimentoCm { get; set; } = "0";
+
+    // Estoque expandido
+    public string EstoqueMaximo { get; set; } = "0";
+    public string? LocalizacaoEstoque { get; set; }
+
+    // Dados de custo detalhados
+    public string CustoMedio { get; set; } = "0,00";
+    public string CustoComImposto { get; set; } = "0,00";
+    public string CustoSemImposto { get; set; } = "0,00";
+
+    // Campos comerciais
+    public string DescontoMaximoPercentual { get; set; } = "0";
+    public string ComissaoPercentual { get; set; } = "0";
+    public string MarkupCadastrado { get; set; } = "0";
+    public string MarkupPraticado { get; set; } = "0";
+
     // Dados fiscais (NFC-e modelo 65)
     public string Ncm { get; set; } = "00000000";
     public string? Cest { get; set; }

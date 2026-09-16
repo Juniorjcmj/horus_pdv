@@ -61,6 +61,38 @@ type Product = {
   diasAlertaValidade?: number;
   diasRestantes?: number | null;
 
+  // Unidades de medida (compra/conversão)
+  unidadeCompra: string;
+  fatorConversao: string;
+  qtdEmbalagem: string;
+
+  // Marca e fabricante
+  marca?: string | null;
+  fabricante?: string | null;
+  referenciaFabricante?: string | null;
+
+  // Peso e dimensões
+  pesoLiquidoKg: string;
+  pesoBrutoKg: string;
+  larguraCm: string;
+  alturaCm: string;
+  comprimentoCm: string;
+
+  // Estoque expandido
+  estoqueMaximo: string;
+  localizacaoEstoque?: string | null;
+
+  // Dados de custo detalhados
+  custoMedio: string;
+  custoComImposto: string;
+  custoSemImposto: string;
+
+  // Campos comerciais
+  descontoMaximoPercentual: string;
+  comissaoPercentual: string;
+  markupCadastrado: string;
+  markupPraticado: string;
+
   // Dados fiscais (NFC-e modelo 65)
   ncm: string;
   cest: string | null;
@@ -87,6 +119,12 @@ function isFractionableUnit(unit: string) {
   return unit.trim().toUpperCase() !== "UN";
 }
 
+const SEFAZ_UNITS = [
+  "UN", "KG", "LT", "MT", "M2", "M3", "PC", "CX", "RL", "PAR",
+  "SC", "GL", "CT", "BD", "BL", "JG", "BOB", "ML", "SACH", "DZ",
+  "FD", "GF", "PT", "TB", "TN",
+] as const;
+
 const EMPTY_FORM: ProductFormData = {
   productImageUrl: "",
   productImageName: "",
@@ -106,6 +144,26 @@ const EMPTY_FORM: ProductFormData = {
   controlaValidade: false,
   diasAlertaValidade: 15,
   diasRestantes: null,
+  unidadeCompra: "UN",
+  fatorConversao: "1",
+  qtdEmbalagem: "1",
+  marca: "",
+  fabricante: "",
+  referenciaFabricante: "",
+  pesoLiquidoKg: "0",
+  pesoBrutoKg: "0",
+  larguraCm: "0",
+  alturaCm: "0",
+  comprimentoCm: "0",
+  estoqueMaximo: "0",
+  localizacaoEstoque: "",
+  custoMedio: "0,00",
+  custoComImposto: "0,00",
+  custoSemImposto: "0,00",
+  descontoMaximoPercentual: "0",
+  comissaoPercentual: "0",
+  markupCadastrado: "0",
+  markupPraticado: "0",
   ncm: "",
   cest: "",
   cfop: "5102",
@@ -184,10 +242,14 @@ function ProductFormDrawer({
   const [supplierDraft, setSupplierDraft] = useState<QuickSupplierDraft>(EMPTY_SUPPLIER_DRAFT);
   const [savingSupplier, setSavingSupplier] = useState(false);
   const [loadingSupplierCep, setLoadingSupplierCep] = useState(false);
+  const [showPesoDimensoes, setShowPesoDimensoes] = useState(false);
+  const [showDadosComerciais, setShowDadosComerciais] = useState(false);
 
   let selectedDepId = "";
   let selectedSubId = "";
+  let selectedSubSubId = "";
   if (value.categoriaId) {
+    // Try to find the categoriaId at any of the 3 levels
     const asRoot = categories.find((c) => c.id === value.categoriaId);
     if (asRoot) {
       selectedDepId = asRoot.id;
@@ -199,6 +261,16 @@ function ProductFormDrawer({
           selectedSubId = sub.id;
           break;
         }
+        for (const mid of root.subcategorias ?? []) {
+          const subsub = mid.subcategorias?.find((ss) => ss.id === value.categoriaId);
+          if (subsub) {
+            selectedDepId = root.id;
+            selectedSubId = mid.id;
+            selectedSubSubId = subsub.id;
+            break;
+          }
+        }
+        if (selectedDepId) break;
       }
     }
   }
@@ -208,6 +280,12 @@ function ProductFormDrawer({
     const root = categories.find((c) => c.id === selectedDepId);
     return root?.subcategorias ?? [];
   }, [categories, selectedDepId]);
+
+  const currentSubSubcategories = useMemo(() => {
+    if (!selectedSubId) return [];
+    const sub = currentSubcategories.find((c) => c.id === selectedSubId);
+    return sub?.subcategorias ?? [];
+  }, [currentSubcategories, selectedSubId]);
 
   const handleDepartmentChange = (depId: string) => {
     if (!depId) {
@@ -225,6 +303,16 @@ function ProductFormDrawer({
     } else {
       const sub = currentSubcategories.find((s) => s.id === subId);
       onChange({ ...value, categoriaId: subId, categoriaNome: sub?.nome ?? null });
+    }
+  };
+
+  const handleSubSubcategoryChange = (subSubId: string) => {
+    if (!subSubId) {
+      const sub = currentSubcategories.find((s) => s.id === selectedSubId);
+      onChange({ ...value, categoriaId: selectedSubId || null, categoriaNome: sub?.nome ?? null });
+    } else {
+      const subsub = currentSubSubcategories.find((s) => s.id === subSubId);
+      onChange({ ...value, categoriaId: subSubId, categoriaNome: subsub?.nome ?? null });
     }
   };
 
@@ -516,6 +604,33 @@ function ProductFormDrawer({
                 onCreateOption={openSupplierModal}
                 className="md:col-span-2"
               />
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Marca</span>
+                <input
+                  value={value.marca ?? ""}
+                  onChange={(event) => setField("marca", event.target.value || null)}
+                  className="input-field w-full"
+                  placeholder="Ex.: Votorantim, Tigre"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Fabricante</span>
+                <input
+                  value={value.fabricante ?? ""}
+                  onChange={(event) => setField("fabricante", event.target.value || null)}
+                  className="input-field w-full"
+                  placeholder="Fabricante"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Ref. Fabricante</span>
+                <input
+                  value={value.referenciaFabricante ?? ""}
+                  onChange={(event) => setField("referenciaFabricante", event.target.value || null)}
+                  className="input-field w-full"
+                  placeholder="Código do fabricante"
+                />
+              </label>
               <label className="block md:col-span-2">
                 <span className="mb-1.5 block text-sm text-text-secondary">
                   Descrição do Produto *
@@ -532,7 +647,7 @@ function ProductFormDrawer({
 
           <section className="card rounded-2xl p-4">
             <h4 className="text-sm font-semibold text-text-secondary">Classificação</h4>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">Departamento</span>
                 <select
@@ -549,7 +664,7 @@ function ProductFormDrawer({
                 </select>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">Subcategoria</span>
+                <span className="mb-1.5 block text-sm text-text-secondary">Grupo</span>
                 <select
                   value={selectedSubId}
                   onChange={(event) => handleSubcategoryChange(event.target.value)}
@@ -558,14 +673,36 @@ function ProductFormDrawer({
                 >
                   <option value="">
                     {!selectedDepId
-                      ? "Selecione um departamento primeiro"
+                      ? "Selecione um departamento"
                       : currentSubcategories.length === 0
-                      ? "Nenhuma subcategoria cadastrada"
-                      : "Sem subcategoria (departamento geral)"}
+                      ? "Nenhum grupo cadastrado"
+                      : "Sem grupo"}
                   </option>
                   {currentSubcategories.map((sub) => (
                     <option key={sub.id} value={sub.id}>
                       {sub.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Subgrupo</span>
+                <select
+                  value={selectedSubSubId}
+                  onChange={(event) => handleSubSubcategoryChange(event.target.value)}
+                  disabled={!selectedSubId || currentSubSubcategories.length === 0}
+                  className="input-field w-full disabled:opacity-50"
+                >
+                  <option value="">
+                    {!selectedSubId
+                      ? "Selecione um grupo"
+                      : currentSubSubcategories.length === 0
+                      ? "Nenhum subgrupo cadastrado"
+                      : "Sem subgrupo"}
+                  </option>
+                  {currentSubSubcategories.map((subsub) => (
+                    <option key={subsub.id} value={subsub.id}>
+                      {subsub.nome}
                     </option>
                   ))}
                 </select>
@@ -602,6 +739,67 @@ function ProductFormDrawer({
                 <span className="mt-1 block text-xs text-text-secondary">
                   Alerta no sistema quando o estoque estiver igual ou abaixo deste valor.
                 </span>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">
+                  Estoque Máximo {quantityIsFractionable ? `(${value.unidadeComercial})` : ""}
+                </span>
+                <input
+                  value={value.estoqueMaximo}
+                  inputMode="decimal"
+                  onChange={(event) => {
+                    const sanitized = quantityIsFractionable
+                      ? sanitizeDecimalInput(event.target.value, 4).replace(".", ",")
+                      : sanitizeIntegerInput(event.target.value).slice(0, 8);
+                    setField("estoqueMaximo", sanitized);
+                  }}
+                  className="input-field w-full"
+                  placeholder={quantityIsFractionable ? "0,000" : "0"}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Localização no Estoque</span>
+                <input
+                  value={value.localizacaoEstoque ?? ""}
+                  onChange={(event) => setField("localizacaoEstoque", event.target.value || null)}
+                  className="input-field w-full"
+                  placeholder="Ex.: Corredor 3, Prateleira A"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Unidade de Compra</span>
+                <select
+                  value={value.unidadeCompra}
+                  onChange={(event) => setField("unidadeCompra", event.target.value)}
+                  className="input-field w-full"
+                >
+                  {SEFAZ_UNITS.map((unit) => (
+                    <option key={unit} value={unit}>{unit}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Fator de Conversão</span>
+                <input
+                  value={value.fatorConversao}
+                  inputMode="decimal"
+                  onChange={(event) => setField("fatorConversao", sanitizeDecimalInput(event.target.value, 4).replace(".", ","))}
+                  className="input-field w-full"
+                  placeholder="1"
+                />
+                <span className="mt-1 block text-xs text-text-secondary">
+                  Quantas unidades de venda por unidade de compra (ex.: 1 CX = 100 UN).
+                </span>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">Qtd por Embalagem</span>
+                <input
+                  value={value.qtdEmbalagem}
+                  inputMode="decimal"
+                  onChange={(event) => setField("qtdEmbalagem", sanitizeDecimalInput(event.target.value, 4).replace(".", ","))}
+                  className="input-field w-full"
+                  placeholder="1"
+                />
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
@@ -664,6 +862,176 @@ function ProductFormDrawer({
                 />
               </label>
             </div>
+          </section>
+
+          <section className="card rounded-2xl p-4">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between"
+              onClick={() => setShowPesoDimensoes((prev) => !prev)}
+            >
+              <h4 className="flex items-center gap-2 text-sm font-semibold text-text-secondary">
+                <Scale className="h-4 w-4 text-primary" />
+                Peso e Dimensões
+              </h4>
+              <ChevronDown
+                className={`h-4 w-4 text-text-secondary transition-transform ${showPesoDimensoes ? "rotate-180" : ""}`}
+              />
+            </button>
+            {showPesoDimensoes ? (
+              <div className="mt-3 grid gap-3 border-t border-border-secondary pt-3 md:grid-cols-3">
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Peso Líquido (kg)</span>
+                  <input
+                    value={value.pesoLiquidoKg}
+                    inputMode="decimal"
+                    onChange={(event) => setField("pesoLiquidoKg", sanitizeDecimalInput(event.target.value, 3).replace(".", ","))}
+                    className="input-field w-full"
+                    placeholder="0,000"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Peso Bruto (kg)</span>
+                  <input
+                    value={value.pesoBrutoKg}
+                    inputMode="decimal"
+                    onChange={(event) => setField("pesoBrutoKg", sanitizeDecimalInput(event.target.value, 3).replace(".", ","))}
+                    className="input-field w-full"
+                    placeholder="0,000"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Largura (cm)</span>
+                  <input
+                    value={value.larguraCm}
+                    inputMode="decimal"
+                    onChange={(event) => setField("larguraCm", sanitizeDecimalInput(event.target.value, 2).replace(".", ","))}
+                    className="input-field w-full"
+                    placeholder="0,00"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Altura (cm)</span>
+                  <input
+                    value={value.alturaCm}
+                    inputMode="decimal"
+                    onChange={(event) => setField("alturaCm", sanitizeDecimalInput(event.target.value, 2).replace(".", ","))}
+                    className="input-field w-full"
+                    placeholder="0,00"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Comprimento (cm)</span>
+                  <input
+                    value={value.comprimentoCm}
+                    inputMode="decimal"
+                    onChange={(event) => setField("comprimentoCm", sanitizeDecimalInput(event.target.value, 2).replace(".", ","))}
+                    className="input-field w-full"
+                    placeholder="0,00"
+                  />
+                </label>
+              </div>
+            ) : null}
+          </section>
+
+          <section className="card rounded-2xl p-4">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between"
+              onClick={() => setShowDadosComerciais((prev) => !prev)}
+            >
+              <h4 className="flex items-center gap-2 text-sm font-semibold text-text-secondary">
+                <Tag className="h-4 w-4 text-primary" />
+                Dados Comerciais
+              </h4>
+              <ChevronDown
+                className={`h-4 w-4 text-text-secondary transition-transform ${showDadosComerciais ? "rotate-180" : ""}`}
+              />
+            </button>
+            {showDadosComerciais ? (
+              <div className="mt-3 grid gap-3 border-t border-border-secondary pt-3 md:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Custo Médio</span>
+                  <input
+                    value={value.custoMedio}
+                    inputMode="numeric"
+                    pattern="[0-9,.]*"
+                    onBeforeInput={preventNonDigitBeforeInput}
+                    onChange={(event) => setField("custoMedio", maskMoneyBr(event.target.value))}
+                    className="input-field w-full"
+                    placeholder="0,00"
+                  />
+                  <span className="mt-1 block text-xs text-text-secondary">
+                    Calculado automaticamente se não informado.
+                  </span>
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Custo c/ Imposto</span>
+                  <input
+                    value={value.custoComImposto}
+                    inputMode="numeric"
+                    pattern="[0-9,.]*"
+                    onBeforeInput={preventNonDigitBeforeInput}
+                    onChange={(event) => setField("custoComImposto", maskMoneyBr(event.target.value))}
+                    className="input-field w-full"
+                    placeholder="0,00"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Custo s/ Imposto</span>
+                  <input
+                    value={value.custoSemImposto}
+                    inputMode="numeric"
+                    pattern="[0-9,.]*"
+                    onBeforeInput={preventNonDigitBeforeInput}
+                    onChange={(event) => setField("custoSemImposto", maskMoneyBr(event.target.value))}
+                    className="input-field w-full"
+                    placeholder="0,00"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Markup Cadastrado (%)</span>
+                  <input
+                    value={value.markupCadastrado}
+                    inputMode="decimal"
+                    onChange={(event) => setField("markupCadastrado", sanitizeDecimalInput(event.target.value, 2).replace(".", ","))}
+                    className="input-field w-full"
+                    placeholder="0,00"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Markup Praticado (%)</span>
+                  <input
+                    value={value.markupPraticado}
+                    className="input-field w-full bg-bg-primary/50"
+                    disabled
+                  />
+                  <span className="mt-1 block text-xs text-text-secondary">
+                    Calculado pelo sistema: (Venda - Custo Médio) / Custo Médio.
+                  </span>
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Desconto Máximo (%)</span>
+                  <input
+                    value={value.descontoMaximoPercentual}
+                    inputMode="decimal"
+                    onChange={(event) => setField("descontoMaximoPercentual", sanitizeDecimalInput(event.target.value, 2).replace(".", ","))}
+                    className="input-field w-full"
+                    placeholder="0,00"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm text-text-secondary">Comissão (%)</span>
+                  <input
+                    value={value.comissaoPercentual}
+                    inputMode="decimal"
+                    onChange={(event) => setField("comissaoPercentual", sanitizeDecimalInput(event.target.value, 2).replace(".", ","))}
+                    className="input-field w-full"
+                    placeholder="0,00"
+                  />
+                </label>
+              </div>
+            ) : null}
           </section>
 
           <section className="card rounded-2xl p-4">
@@ -827,22 +1195,28 @@ function ProductFormDrawer({
                 </select>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">Unidade comercial</span>
-                <input
+                <span className="mb-1.5 block text-sm text-text-secondary">Unidade comercial (venda)</span>
+                <select
                   value={value.unidadeComercial}
-                  onChange={(event) => setField("unidadeComercial", event.target.value.toUpperCase().slice(0, 6))}
+                  onChange={(event) => setField("unidadeComercial", event.target.value)}
                   className="input-field w-full"
-                  placeholder="UN, KG, LT..."
-                />
+                >
+                  {SEFAZ_UNITS.map((unit) => (
+                    <option key={unit} value={unit}>{unit}</option>
+                  ))}
+                </select>
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">Unidade tributável</span>
-                <input
+                <select
                   value={value.unidadeTributavel}
-                  onChange={(event) => setField("unidadeTributavel", event.target.value.toUpperCase().slice(0, 6))}
+                  onChange={(event) => setField("unidadeTributavel", event.target.value)}
                   className="input-field w-full"
-                  placeholder="UN, KG, LT..."
-                />
+                >
+                  {SEFAZ_UNITS.map((unit) => (
+                    <option key={unit} value={unit}>{unit}</option>
+                  ))}
+                </select>
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">GTIN / código de barras</span>
@@ -1049,6 +1423,15 @@ export default function ProductRegisterPage() {
   const [balancaModalOpen, setBalancaModalOpen] = useState(false);
   const [isImportingMercado, setIsImportingMercado] = useState(false);
   const [filterLowStockOnly, setFilterLowStockOnly] = useState(false);
+  const [filterLocation, setFilterLocation] = useState("");
+
+  const locationOptions = useMemo(() => {
+    const locs = new Set<string>();
+    for (const p of products) {
+      if (p.localizacaoEstoque) locs.add(p.localizacaoEstoque);
+    }
+    return Array.from(locs).sort();
+  }, [products]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -1141,8 +1524,11 @@ export default function ProductRegisterPage() {
         return min > 0 && current <= min;
       });
     }
+    if (filterLocation) {
+      list = list.filter((product) => product.localizacaoEstoque === filterLocation);
+    }
     return list;
-  }, [products, search, filterLowStockOnly, parseMoneyBr]);
+  }, [products, search, filterLowStockOnly, filterLocation, parseMoneyBr]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -1604,6 +1990,21 @@ export default function ProductRegisterPage() {
             <AlertTriangle size={14} className={filterLowStockOnly ? "text-amber-500" : "text-text-tertiary"} />
             Estoque Baixo ({lowStockCount})
           </button>
+          {locationOptions.length > 0 ? (
+            <select
+              value={filterLocation}
+              onChange={(event) => {
+                setFilterLocation(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="input-field h-9 rounded-xl text-xs shrink-0"
+            >
+              <option value="">Todas localizações</option>
+              {locationOptions.map((loc) => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
+            </select>
+          ) : null}
         </div>
       </section>
 
@@ -1731,6 +2132,17 @@ export default function ProductRegisterPage() {
                       parseMoneyBr(product.productQnt || "0") <= parseMoneyBr(product.estoqueMinimo || "0") ? (
                         <span className="mt-1 inline-flex w-fit items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
                           Abaixo do mín.
+                        </span>
+                      ) : null}
+                      {parseMoneyBr(product.estoqueMaximo || "0") > 0 &&
+                      parseMoneyBr(product.productQnt || "0") > parseMoneyBr(product.estoqueMaximo || "0") ? (
+                        <span className="mt-1 inline-flex w-fit items-center gap-1 rounded bg-blue-500/15 px-1.5 py-0.5 text-[10px] font-medium text-blue-600 dark:text-blue-400">
+                          Acima do máx.
+                        </span>
+                      ) : null}
+                      {product.localizacaoEstoque ? (
+                        <span className="text-xs text-text-tertiary">
+                          Local: {product.localizacaoEstoque}
                         </span>
                       ) : null}
                     </div>

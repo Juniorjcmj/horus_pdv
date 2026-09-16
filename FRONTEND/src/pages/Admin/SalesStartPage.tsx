@@ -72,6 +72,7 @@ type Product = {
   salePrice: number;
   imageUrl?: string;
   unit: string;
+  marca?: string | null;
   categoriaId?: string | null;
   dataValidade?: string | null;
   controlaValidade?: boolean;
@@ -293,7 +294,10 @@ export default function SalesStartPage({
     const dep = categories.find((c) => c.id === selectedDepartmentId);
     if (!dep) return new Set([selectedDepartmentId]);
     const ids = new Set<string>([dep.id]);
-    dep.subcategorias?.forEach((sub) => ids.add(sub.id));
+    dep.subcategorias?.forEach((sub) => {
+      ids.add(sub.id);
+      sub.subcategorias?.forEach((subsub) => ids.add(subsub.id));
+    });
     return ids;
   }, [categories, selectedDepartmentId]);
 
@@ -307,7 +311,8 @@ export default function SalesStartPage({
       list = list.filter(
         (item) =>
           item.name.toLowerCase().includes(normalized) ||
-          item.code.toLowerCase().includes(normalized),
+          item.code.toLowerCase().includes(normalized) ||
+          (item.marca && item.marca.toLowerCase().includes(normalized)),
       );
     }
     return list;
@@ -488,6 +493,7 @@ export default function SalesStartPage({
         salePrice: parseMoneyBr(item.productSalePrice || "0"),
         imageUrl: item.productImageUrl,
         unit: item.unidadeComercial || "UN",
+        marca: item.marca,
         categoriaId: item.categoriaId,
         dataValidade: item.dataValidade,
         controlaValidade: item.controlaValidade,
@@ -1444,7 +1450,13 @@ export default function SalesStartPage({
                           }}
                         >
                           <p className="font-semibold">{item.name}</p>
-                          <p className="text-[11px] text-text-secondary">{item.code}</p>
+                          <p className="text-[11px] text-text-secondary">
+                            {item.code}
+                            {item.marca ? ` · ${item.marca}` : ""}
+                            {" · R$ "}
+                            {item.salePrice.toFixed(2).replace(".", ",")}
+                            {item.unit !== "UN" ? `/${item.unit.toLowerCase()}` : ""}
+                          </p>
                         </li>
                       ))
                     ) : (
@@ -1522,7 +1534,9 @@ export default function SalesStartPage({
             </label>
 
             <label className="mb-2 block">
-              <span className="mb-1 block text-xs font-semibold uppercase">Preço unitário:</span>
+              <span className="mb-1 block text-xs font-semibold uppercase">
+                Preço unitário{selectedProduct && selectedProduct.unit !== "UN" ? ` (/${selectedProduct.unit.toLowerCase()})` : ""}:
+              </span>
               <input
                 value={selectedProduct ? formatMoneyBr(selectedProduct.salePrice) : "0,00"}
                 className="input-field h-10 w-full text-lg font-semibold"

@@ -41,6 +41,38 @@ public class ProdutoAD
     /// <summary>Dias de antecedência para disparar alertas de vencimento (padrão 15).</summary>
     public int DiasAlertaValidade { get; set; } = 15;
 
+    // Unidades de medida (compra/conversão)
+    public string UnidadeCompra { get; set; } = "UN";
+    public decimal FatorConversao { get; set; } = 1;
+    public decimal QtdEmbalagem { get; set; } = 1;
+
+    // Marca e fabricante
+    public string? Marca { get; set; }
+    public string? Fabricante { get; set; }
+    public string? ReferenciaFabricante { get; set; }
+
+    // Peso e dimensões
+    public decimal PesoLiquidoKg { get; set; }
+    public decimal PesoBrutoKg { get; set; }
+    public decimal LarguraCm { get; set; }
+    public decimal AlturaCm { get; set; }
+    public decimal ComprimentoCm { get; set; }
+
+    // Estoque expandido
+    public decimal EstoqueMaximo { get; set; }
+    public string? LocalizacaoEstoque { get; set; }
+
+    // Dados de custo detalhados
+    public decimal CustoMedio { get; set; }
+    public decimal CustoComImposto { get; set; }
+    public decimal CustoSemImposto { get; set; }
+
+    // Campos comerciais
+    public decimal DescontoMaximoPercentual { get; set; }
+    public decimal ComissaoPercentual { get; set; }
+    public decimal MarkupCadastrado { get; set; }
+    public decimal MarkupPraticado { get; set; }
+
     // Dados fiscais (NFC-e modelo 65) — ver API/NETCORE/DataBase/Migrations/02_estrutura_fiscal.sql
     public string Ncm { get; set; } = "00000000";
     public string? Cest { get; set; }

@@ -17,6 +17,12 @@ public class ProdutoAB(Connection connection)
         p.ProductDescription, p.ProductQnt, p.EstoqueMinimo, p.ProductUnitPrice, p.ProductSalePrice, p.TotalPriceOnProduct,
         p.MargemDesejadaPercentual, p.CategoriaId, c.Nome AS CategoriaNome,
         p.DataValidade, p.ControlaValidade, p.DiasAlertaValidade,
+        p.UnidadeCompra, p.FatorConversao, p.QtdEmbalagem,
+        p.Marca, p.Fabricante, p.ReferenciaFabricante,
+        p.PesoLiquidoKg, p.PesoBrutoKg, p.LarguraCm, p.AlturaCm, p.ComprimentoCm,
+        p.EstoqueMaximo, p.LocalizacaoEstoque,
+        p.CustoMedio, p.CustoComImposto, p.CustoSemImposto,
+        p.DescontoMaximoPercentual, p.ComissaoPercentual, p.MarkupCadastrado, p.MarkupPraticado,
         p.Ncm, p.Cest, p.Cfop, p.OrigemMercadoria, p.UnidadeComercial, p.UnidadeTributavel, p.Gtin,
         p.CsosnIcms, p.CstIcms, p.AliquotaIcms, p.CstPis, p.CstCofins, p.CstIbsCbs, p.CClassTrib
         """;
@@ -232,6 +238,26 @@ public class ProdutoAB(Connection connection)
                        DataValidade = @DataValidade,
                        ControlaValidade = @ControlaValidade,
                        DiasAlertaValidade = @DiasAlertaValidade,
+                       UnidadeCompra = @UnidadeCompra,
+                       FatorConversao = @FatorConversao,
+                       QtdEmbalagem = @QtdEmbalagem,
+                       Marca = @Marca,
+                       Fabricante = @Fabricante,
+                       ReferenciaFabricante = @ReferenciaFabricante,
+                       PesoLiquidoKg = @PesoLiquidoKg,
+                       PesoBrutoKg = @PesoBrutoKg,
+                       LarguraCm = @LarguraCm,
+                       AlturaCm = @AlturaCm,
+                       ComprimentoCm = @ComprimentoCm,
+                       EstoqueMaximo = @EstoqueMaximo,
+                       LocalizacaoEstoque = @LocalizacaoEstoque,
+                       CustoMedio = @CustoMedio,
+                       CustoComImposto = @CustoComImposto,
+                       CustoSemImposto = @CustoSemImposto,
+                       DescontoMaximoPercentual = @DescontoMaximoPercentual,
+                       ComissaoPercentual = @ComissaoPercentual,
+                       MarkupCadastrado = @MarkupCadastrado,
+                       MarkupPraticado = @MarkupPraticado,
                        Ncm = @Ncm,
                        Cest = @Cest,
                        Cfop = @Cfop,
@@ -254,12 +280,24 @@ public class ProdutoAB(Connection connection)
                     (Id, CompanyId, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier, SupplierId,
                      ProductDescription, ProductQnt, EstoqueMinimo, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
                      MargemDesejadaPercentual, CategoriaId, DataValidade, ControlaValidade, DiasAlertaValidade,
+                     UnidadeCompra, FatorConversao, QtdEmbalagem,
+                     Marca, Fabricante, ReferenciaFabricante,
+                     PesoLiquidoKg, PesoBrutoKg, LarguraCm, AlturaCm, ComprimentoCm,
+                     EstoqueMaximo, LocalizacaoEstoque,
+                     CustoMedio, CustoComImposto, CustoSemImposto,
+                     DescontoMaximoPercentual, ComissaoPercentual, MarkupCadastrado, MarkupPraticado,
                      Ncm, Cest, Cfop, OrigemMercadoria, UnidadeComercial, UnidadeTributavel, Gtin,
                      CsosnIcms, CstIcms, AliquotaIcms, CstPis, CstCofins, CstIbsCbs, CClassTrib)
                 VALUES
                     (@Id, @CompanyId, @ProductImageUrl, @ProductImageName, @ProductName, @ProductCode, @ProductSupplier, @SupplierId,
                      @ProductDescription, @ProductQnt, @EstoqueMinimo, @ProductUnitPrice, @ProductSalePrice, @TotalPriceOnProduct,
                      @MargemDesejadaPercentual, @CategoriaId, @DataValidade, @ControlaValidade, @DiasAlertaValidade,
+                     @UnidadeCompra, @FatorConversao, @QtdEmbalagem,
+                     @Marca, @Fabricante, @ReferenciaFabricante,
+                     @PesoLiquidoKg, @PesoBrutoKg, @LarguraCm, @AlturaCm, @ComprimentoCm,
+                     @EstoqueMaximo, @LocalizacaoEstoque,
+                     @CustoMedio, @CustoComImposto, @CustoSemImposto,
+                     @DescontoMaximoPercentual, @ComissaoPercentual, @MarkupCadastrado, @MarkupPraticado,
                      @Ncm, @Cest, @Cfop, @OrigemMercadoria, @UnidadeComercial, @UnidadeTributavel, @Gtin,
                      @CsosnIcms, @CstIcms, @AliquotaIcms, @CstPis, @CstCofins, @CstIbsCbs, @CClassTrib);
             END;
@@ -474,6 +512,26 @@ public class ProdutoAB(Connection connection)
         command.Parameters.AddWithValue("@UnidadeComercial", product.UnidadeComercial);
         command.Parameters.AddWithValue("@UnidadeTributavel", product.UnidadeTributavel);
         command.Parameters.AddWithValue("@Gtin", product.Gtin);
+        command.Parameters.AddWithValue("@UnidadeCompra", product.UnidadeCompra);
+        command.Parameters.AddWithValue("@FatorConversao", product.FatorConversao);
+        command.Parameters.AddWithValue("@QtdEmbalagem", product.QtdEmbalagem);
+        command.Parameters.AddWithValue("@Marca", (object?)product.Marca ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Fabricante", (object?)product.Fabricante ?? DBNull.Value);
+        command.Parameters.AddWithValue("@ReferenciaFabricante", (object?)product.ReferenciaFabricante ?? DBNull.Value);
+        command.Parameters.AddWithValue("@PesoLiquidoKg", product.PesoLiquidoKg);
+        command.Parameters.AddWithValue("@PesoBrutoKg", product.PesoBrutoKg);
+        command.Parameters.AddWithValue("@LarguraCm", product.LarguraCm);
+        command.Parameters.AddWithValue("@AlturaCm", product.AlturaCm);
+        command.Parameters.AddWithValue("@ComprimentoCm", product.ComprimentoCm);
+        command.Parameters.AddWithValue("@EstoqueMaximo", product.EstoqueMaximo);
+        command.Parameters.AddWithValue("@LocalizacaoEstoque", (object?)product.LocalizacaoEstoque ?? DBNull.Value);
+        command.Parameters.AddWithValue("@CustoMedio", product.CustoMedio);
+        command.Parameters.AddWithValue("@CustoComImposto", product.CustoComImposto);
+        command.Parameters.AddWithValue("@CustoSemImposto", product.CustoSemImposto);
+        command.Parameters.AddWithValue("@DescontoMaximoPercentual", product.DescontoMaximoPercentual);
+        command.Parameters.AddWithValue("@ComissaoPercentual", product.ComissaoPercentual);
+        command.Parameters.AddWithValue("@MarkupCadastrado", product.MarkupCadastrado);
+        command.Parameters.AddWithValue("@MarkupPraticado", product.MarkupPraticado);
         command.Parameters.AddWithValue("@CsosnIcms", (object?)product.CsosnIcms ?? DBNull.Value);
         command.Parameters.AddWithValue("@CstIcms", (object?)product.CstIcms ?? DBNull.Value);
         command.Parameters.AddWithValue("@AliquotaIcms", product.AliquotaIcms);
@@ -503,6 +561,26 @@ public class ProdutoAB(Connection connection)
         DataValidade = ReadNullableDateTime(source, "DataValidade"),
         ControlaValidade = ReadBool(source, "ControlaValidade"),
         DiasAlertaValidade = ReadInt(source, "DiasAlertaValidade"),
+        UnidadeCompra = ReadString(source, "UnidadeCompra"),
+        FatorConversao = ReadDecimal(source, "FatorConversao"),
+        QtdEmbalagem = ReadDecimal(source, "QtdEmbalagem"),
+        Marca = ReadNullableString(source, "Marca"),
+        Fabricante = ReadNullableString(source, "Fabricante"),
+        ReferenciaFabricante = ReadNullableString(source, "ReferenciaFabricante"),
+        PesoLiquidoKg = ReadDecimal(source, "PesoLiquidoKg"),
+        PesoBrutoKg = ReadDecimal(source, "PesoBrutoKg"),
+        LarguraCm = ReadDecimal(source, "LarguraCm"),
+        AlturaCm = ReadDecimal(source, "AlturaCm"),
+        ComprimentoCm = ReadDecimal(source, "ComprimentoCm"),
+        EstoqueMaximo = ReadDecimal(source, "EstoqueMaximo"),
+        LocalizacaoEstoque = ReadNullableString(source, "LocalizacaoEstoque"),
+        CustoMedio = ReadDecimal(source, "CustoMedio"),
+        CustoComImposto = ReadDecimal(source, "CustoComImposto"),
+        CustoSemImposto = ReadDecimal(source, "CustoSemImposto"),
+        DescontoMaximoPercentual = ReadDecimal(source, "DescontoMaximoPercentual"),
+        ComissaoPercentual = ReadDecimal(source, "ComissaoPercentual"),
+        MarkupCadastrado = ReadDecimal(source, "MarkupCadastrado"),
+        MarkupPraticado = ReadDecimal(source, "MarkupPraticado"),
         Ncm = ReadString(source, "Ncm"),
         Cest = ReadNullableString(source, "Cest"),
         Cfop = ReadString(source, "Cfop"),
