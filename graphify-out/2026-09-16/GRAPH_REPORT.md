@@ -1,7 +1,7 @@
-# Graph Report - horus_pdv  (2026-09-15)
+# Graph Report - horus_pdv  (2026-09-16)
 
 ## Corpus Check
-- 385 files · ~804,789 words
+- 385 files · ~804,827 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `bd3f34a1`
+- Built from commit: `df6c49f0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -832,7 +832,7 @@ Nodes (6): Connection, List, SqlConnection, SqlDataReader, Task, PromocaoAB
 
 ### Community 129 - "Design: Modelo de Produto Multi-Segmento"
 Cohesion: 0.10
-Nodes (19): Architecture Overview, Backend Changes, Database Migration Strategy, Design: Modelo de Produto Multi-Segmento, Frontend Changes, Migration: `12_modelo_produto_expandido.sql`, Migration Safety, Passo 1: Conversão de Tipos em Produtos (+11 more)
+Nodes (19): Architecture Overview, Backend Changes, Database Migration Strategy, Design: Modelo de Produto Multi-Segmento, Frontend Changes, Migration: `13_modelo_produto_expandido.sql`, Migration Safety, Passo 1: Conversão de Tipos em Produtos (+11 more)
 
 ### Community 130 - ".agent/skills/openspec-explore/SKILL.md"
 Cohesion: 0.18

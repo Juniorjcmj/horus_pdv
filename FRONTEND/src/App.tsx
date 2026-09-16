@@ -14,6 +14,7 @@ import ForgotPasswordPage from "@/pages/Auth/ForgotPasswordPage";
 import LoginPage from "@/pages/Auth/LoginPage";
 import RegisterPage from "@/pages/Auth/RegisterPage";
 import ResetPasswordPage from "@/pages/Auth/ResetPasswordPage";
+import LandingPage from "@/pages/Public/LandingPage";
 import type { RegisterFormPayload } from "@/pages/Auth/types";
 import { authService } from "@/services/api/authService";
 import { cashRegisterService } from "@/services/api/cashRegisterService";
@@ -82,6 +83,7 @@ const CAIXA_ROLE_ALLOWED_PAGES: PageKey[] = ["vendas", "caixa", "editar-perfil",
 
 type ThemeMode = "light" | "dark";
 type PublicAuthPage =
+  | "landing"
   | "login"
   | "forgot-password"
   | "reset-password"
@@ -194,11 +196,12 @@ export default function App() {
     };
   });
   const [publicAuthPage, setPublicAuthPage] = useState<PublicAuthPage>(() => {
-    if (typeof window === "undefined") return "login";
+    if (typeof window === "undefined") return "landing";
     const params = new URLSearchParams(window.location.search);
-    return params.get("resetToken") || params.get("token")
-      ? "reset-password"
-      : "login";
+    if (params.get("resetToken") || params.get("token")) return "reset-password";
+    if (params.get("login") === "1" || params.get("page") === "login" || window.location.pathname === "/login") return "login";
+    if (params.get("register") === "1" || params.get("page") === "register" || window.location.pathname === "/register") return "register";
+    return "landing";
   });
   const [passwordResetToken, setPasswordResetToken] = useState(() => {
     if (typeof window === "undefined") return "";
@@ -695,11 +698,21 @@ export default function App() {
       );
     }
 
+    if (publicAuthPage === "landing") {
+      return (
+        <LandingPage
+          onOpenLogin={() => setPublicAuthPage("login")}
+          onOpenRegister={() => setPublicAuthPage("register")}
+        />
+      );
+    }
+
     return (
       <LoginPage
         onLogin={handleLogin}
         onOpenForgotPassword={() => setPublicAuthPage("forgot-password")}
         onOpenRegister={() => setPublicAuthPage("register")}
+        onOpenLanding={() => setPublicAuthPage("landing")}
       />
     );
   }

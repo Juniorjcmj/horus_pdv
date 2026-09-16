@@ -20,12 +20,14 @@ type LoginPageProps = {
   ) => Promise<AuthActionResult>;
   onOpenForgotPassword: () => void;
   onOpenRegister: () => void;
+  onOpenLanding?: () => void;
 };
 
 export default function LoginPage({
   onLogin,
   onOpenForgotPassword,
   onOpenRegister,
+  onOpenLanding,
 }: LoginPageProps) {
   const { executeRecaptcha, isRecaptchaConfigured } = useRecaptchaV3();
   const [email, setEmail] = useState("");
@@ -68,6 +70,17 @@ export default function LoginPage({
       title="Bem-vindo de volta!"
       description="Use seu e-mail e senha para acessar o painel."
     >
+      {onOpenLanding ? (
+        <div className="mb-4 pb-3 border-b border-border-primary">
+          <button
+            type="button"
+            onClick={onOpenLanding}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-hover-accent transition cursor-pointer"
+          >
+            ← Conhecer o Quack PDV (Apresentação do Sistema)
+          </button>
+        </div>
+      ) : null}
       <EmailField value={email} onChange={setEmail} onEnter={handleLogin} />
       <PasswordField
         label="Senha"
