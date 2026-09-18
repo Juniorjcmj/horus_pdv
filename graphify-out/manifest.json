@@ -30,9 +30,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Auth/AuthController.cs": {
-    "mtime": 1789174305.0137534,
-    "seen": 1789174379.0936687,
-    "ast_hash": "42a9b0669aa0ee1dbb78646ad160179c",
+    "mtime": 1789757125.6205702,
+    "seen": 1789757197.0832572,
+    "ast_hash": "c5acd3c198bde5e18124cd9433998159",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Caixa/CaixaController.cs": {
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HorusSecurityStore.cs": {
-    "mtime": 1789753936.941651,
-    "seen": 1789754042.3691196,
-    "ast_hash": "3c8e16a9ff394ddc6ed87be71b9a4791",
+    "mtime": 1789757112.4037142,
+    "seen": 1789757197.0963185,
+    "ast_hash": "5fcf491f01dfeebac675274103f964db",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ModuloMercadoAB.cs": {
@@ -654,9 +654,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1789597727.938864,
-    "seen": 1789597806.613479,
-    "ast_hash": "9b154f5ba84ecc1a2fdd55934145f9bc",
+    "mtime": 1789757150.5691662,
+    "seen": 1789757197.1035738,
+    "ast_hash": "06b6f52db30f8611084daf94ccd0f172",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -2460,9 +2460,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Admin/GerenciamentoEmpresasController.cs": {
-    "mtime": 1789597504.4945772,
-    "seen": 1789597806.5868058,
-    "ast_hash": "0d63e8945aa1595781bdc2c242ef5e59",
+    "mtime": 1789757143.3971918,
+    "seen": 1789757197.0832527,
+    "ast_hash": "54ae4749e0096624d1a19d34efcc29bc",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/AdminEmpresaContracts.cs": {

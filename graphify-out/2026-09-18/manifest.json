@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HorusSecurityStore.cs": {
-    "mtime": 1789597468.2161844,
-    "seen": 1789597806.60633,
-    "ast_hash": "4acec3f1393b3ff9823973d1be7e31d1",
+    "mtime": 1789753936.941651,
+    "seen": 1789754042.3691196,
+    "ast_hash": "3c8e16a9ff394ddc6ed87be71b9a4791",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ModuloMercadoAB.cs": {
@@ -2472,9 +2472,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/GerenciamentoGeralPage.tsx": {
-    "mtime": 1789597752.7317498,
-    "seen": 1789597806.6241977,
-    "ast_hash": "f4ee4eac4fca54a59cb13ac3ca445d79",
+    "mtime": 1789753974.0190382,
+    "seen": 1789754042.3876317,
+    "ast_hash": "e0656d6d652eb1060b00bcb7bac6b368",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/superAdminService.ts": {

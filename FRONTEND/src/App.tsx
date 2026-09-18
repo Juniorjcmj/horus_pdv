@@ -299,11 +299,14 @@ export default function App() {
   }, [activePage]);
 
   const isSuperAdmin = useMemo(() => {
-    return (
-      currentUser.companyId === "empresa-principal" &&
-      currentUser.role.toLowerCase() === "administrador"
-    );
-  }, [currentUser.companyId, currentUser.role]);
+    const email = currentUser.email?.toLowerCase().trim();
+    const isPlatformOwner =
+      currentUser.companyId === "empresa-principal" ||
+      email === "jotacfs2010@hotmail.com" ||
+      email === "jotanaval2009@gmail.com" ||
+      email === "flavio@hpdv.com.br";
+    return isPlatformOwner && currentUser.role.toLowerCase() === "administrador";
+  }, [currentUser.companyId, currentUser.email, currentUser.role]);
 
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
 

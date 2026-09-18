@@ -251,6 +251,15 @@ public class AuthController(
         {
             return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
         }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro inesperado ao registrar nova empresa/usuário.");
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "Não foi possível concluir o cadastro. Se já possui conta, faça login."
+            });
+        }
     }
 
     [HttpGet("me")]

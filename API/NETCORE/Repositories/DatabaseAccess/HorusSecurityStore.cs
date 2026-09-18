@@ -55,12 +55,36 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
     {
         if (!IsValidCnpj(request.Cnpj))
         {
-            throw new InvalidOperationException("CNPJ invalido.");
+            throw new InvalidOperationException("CNPJ inválido.");
         }
 
         if (!request.Password.Equals(request.ConfirmPassword, StringComparison.Ordinal))
         {
             throw new InvalidOperationException("A confirmação de senha não confere.");
+        }
+
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+        var normalizedCnpj = request.Cnpj.Trim();
+
+        using (var db = connection.OpenConnection())
+        {
+            using (var cmdCheckEmail = new SqlCommand("SELECT COUNT(1) FROM Usuarios WHERE LOWER(LTRIM(RTRIM(Email))) = @Email;", db))
+            {
+                cmdCheckEmail.Parameters.AddWithValue("@Email", normalizedEmail);
+                if (Convert.ToInt32(cmdCheckEmail.ExecuteScalar()) > 0)
+                {
+                    throw new InvalidOperationException("Este e-mail já está cadastrado no sistema. Faça login para acessar.");
+                }
+            }
+
+            using (var cmdCheckCnpj = new SqlCommand("SELECT COUNT(1) FROM Empresas WHERE Cnpj = @Cnpj AND Id <> 'empresa-principal';", db))
+            {
+                cmdCheckCnpj.Parameters.AddWithValue("@Cnpj", normalizedCnpj);
+                if (Convert.ToInt32(cmdCheckCnpj.ExecuteScalar()) > 0)
+                {
+                    throw new InvalidOperationException("Este CNPJ já possui uma empresa cadastrada no sistema. Faça login com sua conta.");
+                }
+            }
         }
 
         var companyId = $"emp-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
@@ -672,23 +696,43 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
     private void ValidateDuplicates(SecurityUserRecord user, string? currentId, string companyId)
     {
         using var db = connection.OpenConnection();
-        using var command = new SqlCommand(
+
+        // 1. E-mail é único globalmente na base de usuários da plataforma
+        using (var cmdEmail = new SqlCommand(
+            """
+            SELECT COUNT(1)
+            FROM Usuarios
+            WHERE Id <> @CurrentId
+              AND LOWER(LTRIM(RTRIM(Email))) = LOWER(LTRIM(RTRIM(@Email)));
+            """,
+            db))
+        {
+            cmdEmail.Parameters.AddWithValue("@CurrentId", currentId ?? string.Empty);
+            cmdEmail.Parameters.AddWithValue("@Email", user.Email);
+            if (Convert.ToInt32(cmdEmail.ExecuteScalar()) > 0)
+            {
+                throw new InvalidOperationException("Este e-mail já está cadastrado no sistema.");
+            }
+        }
+
+        // 2. CPF é único por empresa (multi-tenant)
+        using (var cmdCpf = new SqlCommand(
             """
             SELECT COUNT(1)
             FROM Usuarios
             WHERE Id <> @CurrentId
               AND CompanyId = @CompanyId
-              AND (Cpf = @Cpf OR Email = @Email);
+              AND Cpf = @Cpf;
             """,
-            db);
-        command.Parameters.AddWithValue("@CurrentId", currentId ?? string.Empty);
-        command.Parameters.AddWithValue("@CompanyId", companyId);
-        command.Parameters.AddWithValue("@Cpf", user.Cpf);
-        command.Parameters.AddWithValue("@Email", user.Email);
-
-        if (Convert.ToInt32(command.ExecuteScalar()) > 0)
+            db))
         {
-            throw new InvalidOperationException("Já existe usuário com este CPF ou e-mail.");
+            cmdCpf.Parameters.AddWithValue("@CurrentId", currentId ?? string.Empty);
+            cmdCpf.Parameters.AddWithValue("@CompanyId", companyId);
+            cmdCpf.Parameters.AddWithValue("@Cpf", user.Cpf);
+            if (Convert.ToInt32(cmdCpf.ExecuteScalar()) > 0)
+            {
+                throw new InvalidOperationException("Já existe um usuário com este CPF nesta empresa.");
+            }
         }
     }
 
