@@ -664,9 +664,16 @@ export default function GerenciamentoGeralPage() {
                       {/* Empresa */}
                       <td className="py-3 px-4">
                         <div className="flex flex-col">
-                          <span className="font-bold text-sm text-text-primary group-hover:text-accent transition-colors">
-                            {empresa.fantasyName || "Nome não informado"}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-text-primary group-hover:text-accent transition-colors">
+                              {empresa.fantasyName || "Nome não informado"}
+                            </span>
+                            {empresa.id === "empresa-principal" && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-accent/20 text-accent border border-accent/40">
+                                Matriz / Plataforma
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[11px] text-text-secondary">
                             {empresa.corporateName && empresa.corporateName !== empresa.fantasyName
                               ? empresa.corporateName
@@ -773,19 +780,25 @@ export default function GerenciamentoGeralPage() {
 
                           {/* Ações para Aprovada */}
                           {empresa.status === "aprovada" && (
-                            <button
-                              type="button"
-                              disabled={isBusy}
-                              onClick={() => {
-                                setEmpresaToBlock(empresa);
-                                setBlockReason("");
-                              }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500 text-purple-300 hover:text-white border border-purple-500/30 font-semibold text-xs transition"
-                              title="Suspender ou bloquear acesso"
-                            >
-                              <Lock size={13} />
-                              <span>Bloquear</span>
-                            </button>
+                            empresa.id === "empresa-principal" ? (
+                              <span className="text-[11px] font-semibold text-accent/90 px-2 py-1 bg-accent/10 rounded-lg border border-accent/25">
+                                Matriz
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={isBusy}
+                                onClick={() => {
+                                  setEmpresaToBlock(empresa);
+                                  setBlockReason("");
+                                }}
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500 text-purple-300 hover:text-white border border-purple-500/30 font-semibold text-xs transition"
+                                title="Suspender ou bloquear acesso"
+                              >
+                                <Lock size={13} />
+                                <span>Bloquear</span>
+                              </button>
+                            )
                           )}
 
                           {/* Ações para Rejeitada ou Bloqueada */}
@@ -1192,7 +1205,7 @@ export default function GerenciamentoGeralPage() {
                 </>
               )}
 
-              {selectedEmpresa.status === "aprovada" && (
+              {selectedEmpresa.status === "aprovada" && selectedEmpresa.id !== "empresa-principal" && (
                 <button
                   type="button"
                   onClick={() => {

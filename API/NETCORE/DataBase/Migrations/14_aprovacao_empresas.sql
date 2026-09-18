@@ -60,11 +60,26 @@ GO
 /* 2. Backfill: garantir que a empresa-principal e empresas pré-existentes    */
 /*    estejam aprovadas                                                      */
 /* ------------------------------------------------------------------------- */
+-- Garante que a empresa-principal esteja sempre com status aprovada
 UPDATE Empresas
    SET Status = N'aprovada'
- WHERE Status IS NULL 
-    OR Status = N''
-    OR Status = N'pendente' AND Id = N'empresa-principal';
+ WHERE Id = N'empresa-principal';
+GO
+
+-- Se houver empresas pré-existentes que receberam 'pendente' pelo default do ALTER TABLE,
+-- aprova-as para restabelecer o acesso normal de quem já estava cadastrado.
+IF NOT EXISTS (SELECT 1 FROM fn_listextendedproperty(N'Migration_14_BackfillDone', default, default, default, default, default, default))
+BEGIN
+    UPDATE Empresas
+       SET Status = N'aprovada'
+     WHERE Status IS NULL 
+        OR Status = N''
+        OR Status = N'pendente';
+
+    EXEC sys.sp_addextendedproperty 
+        @name = N'Migration_14_BackfillDone', 
+        @value = N'1';
+END;
 GO
 
 /* ------------------------------------------------------------------------- */

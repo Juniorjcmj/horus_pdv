@@ -1118,8 +1118,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
                 SUM(CASE WHEN ISNULL(Status, 'aprovada') = 'aprovada' THEN 1 ELSE 0 END) AS Aprovadas,
                 SUM(CASE WHEN ISNULL(Status, 'aprovada') = 'rejeitada' THEN 1 ELSE 0 END) AS Rejeitadas,
                 SUM(CASE WHEN ISNULL(Status, 'aprovada') = 'bloqueada' THEN 1 ELSE 0 END) AS Bloqueadas
-            FROM Empresas
-            WHERE Id <> 'empresa-principal';
+            FROM Empresas;
             """,
             db);
 
@@ -1151,8 +1150,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         var countSql = """
             SELECT COUNT(1)
             FROM Empresas e
-            WHERE e.Id <> 'empresa-principal'
-              AND (@Status IS NULL OR ISNULL(e.Status, 'aprovada') = @Status)
+            WHERE (@Status IS NULL OR ISNULL(e.Status, 'aprovada') = @Status)
               AND (@SearchPattern IS NULL OR
                    e.FantasyName LIKE @SearchPattern OR
                    e.CorporateName LIKE @SearchPattern OR
@@ -1188,14 +1186,14 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
                 (SELECT TOP 1 u.Email FROM Usuarios u WHERE u.CompanyId = e.Id ORDER BY u.CreatedAt ASC) AS AdminUserEmail,
                 (SELECT TOP 1 u.Phone FROM Usuarios u WHERE u.CompanyId = e.Id ORDER BY u.CreatedAt ASC) AS AdminUserPhone
             FROM Empresas e
-            WHERE e.Id <> 'empresa-principal'
-              AND (@Status IS NULL OR ISNULL(e.Status, 'aprovada') = @Status)
+            WHERE (@Status IS NULL OR ISNULL(e.Status, 'aprovada') = @Status)
               AND (@SearchPattern IS NULL OR
                    e.FantasyName LIKE @SearchPattern OR
                    e.CorporateName LIKE @SearchPattern OR
                    e.Cnpj LIKE @SearchPattern OR
                    e.Email LIKE @SearchPattern)
             ORDER BY
+                CASE WHEN e.Id = 'empresa-principal' THEN 0 ELSE 1 END ASC,
                 CASE WHEN ISNULL(e.Status, 'aprovada') = 'pendente' THEN 0 ELSE 1 END ASC,
                 e.CreatedAt DESC
             OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
