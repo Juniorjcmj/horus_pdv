@@ -1403,6 +1403,102 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         return cmd.ExecuteNonQuery() > 0;
     }
 
+    public (bool Success, string Message) UpdateCompanyAdminCredentials(string companyId, string? newEmail, string? newPassword)
+    {
+        if (string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase))
+            return (false, "Não é possível alterar credenciais da empresa-principal por aqui.");
+
+        var hasEmail = !string.IsNullOrWhiteSpace(newEmail);
+        var hasPassword = !string.IsNullOrWhiteSpace(newPassword);
+        if (!hasEmail && !hasPassword)
+            return (false, "Informe o novo e-mail ou a nova senha.");
+
+        using var db = connection.OpenConnection();
+        using var transaction = db.BeginTransaction();
+        try
+        {
+            // Busca o admin (role=administrador) da empresa
+            using var findCmd = new SqlCommand(
+                """
+                SELECT TOP 1 Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword
+                FROM Usuarios
+                WHERE CompanyId = @CompanyId AND Role = N'administrador' AND Status = N'ativo'
+                ORDER BY CreatedAt;
+                """,
+                db, transaction);
+            findCmd.Parameters.AddWithValue("@CompanyId", companyId);
+            SecurityUserRecord? admin;
+            using (var reader = findCmd.ExecuteReader())
+            {
+                admin = reader.Read() ? ReadUser(reader) : null;
+            }
+
+            if (admin is null)
+                return (false, "Nenhum usuário administrador ativo encontrado nesta empresa.");
+
+            if (hasEmail)
+            {
+                var email = newEmail!.Trim().ToLowerInvariant();
+                if (!email.Contains('@'))
+                    return (false, "E-mail inválido.");
+
+                // Verifica duplicidade
+                using var dupCmd = new SqlCommand(
+                    "SELECT COUNT(1) FROM Usuarios WHERE Email = @Email AND Id <> @UserId;",
+                    db, transaction);
+                dupCmd.Parameters.AddWithValue("@Email", email);
+                dupCmd.Parameters.AddWithValue("@UserId", admin.Id);
+                if (Convert.ToInt32(dupCmd.ExecuteScalar()) > 0)
+                    return (false, "Este e-mail já está em uso por outro usuário.");
+            }
+
+            var setClauses = new List<string>();
+            var parameters = new List<(string Name, object Value)>();
+
+            if (hasEmail)
+            {
+                setClauses.Add("Email = @NewEmail");
+                parameters.Add(("@NewEmail", newEmail!.Trim().ToLowerInvariant()));
+            }
+
+            if (hasPassword)
+            {
+                setClauses.Add("PasswordHash = @NewPasswordHash");
+                setClauses.Add("MustChangePassword = 0");
+                parameters.Add(("@NewPasswordHash", PasswordHasher.Hash(newPassword!)));
+            }
+
+            var sql = $"UPDATE Usuarios SET {string.Join(", ", setClauses)} WHERE Id = @UserId;";
+            using var updateCmd = new SqlCommand(sql, db, transaction);
+            updateCmd.Parameters.AddWithValue("@UserId", admin.Id);
+            foreach (var (name, value) in parameters)
+                updateCmd.Parameters.AddWithValue(name, value);
+
+            updateCmd.ExecuteNonQuery();
+
+            // Invalida sessões ativas do usuário se a senha foi trocada
+            if (hasPassword)
+            {
+                using var killSessions = new SqlCommand(
+                    "DELETE FROM Sessoes WHERE UserId = @UserId;", db, transaction);
+                killSessions.Parameters.AddWithValue("@UserId", admin.Id);
+                killSessions.ExecuteNonQuery();
+            }
+
+            transaction.Commit();
+
+            var changes = new List<string>();
+            if (hasEmail) changes.Add("e-mail");
+            if (hasPassword) changes.Add("senha");
+            return (true, $"Credenciais atualizadas ({string.Join(" e ", changes)}) para o administrador {admin.Name}.");
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
     public bool DeleteCompany(string companyId)
     {
         if (string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase)) return false;

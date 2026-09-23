@@ -19,6 +19,7 @@ import {
   Search,
   Shield,
   ShieldAlert,
+  KeyRound,
   ShieldCheck,
   Trash2,
   User,
@@ -76,6 +77,10 @@ export default function GerenciamentoGeralPage() {
   const [empresaToBlock, setEmpresaToBlock] = useState<EmpresaAdminItem | null>(null);
   const [empresaToDelete, setEmpresaToDelete] = useState<EmpresaAdminItem | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [empresaToEditCreds, setEmpresaToEditCreds] = useState<EmpresaAdminItem | null>(null);
+  const [credNewEmail, setCredNewEmail] = useState("");
+  const [credNewPassword, setCredNewPassword] = useState("");
+  const [credShowPassword, setCredShowPassword] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [blockReason, setBlockReason] = useState("");
 
@@ -266,6 +271,39 @@ export default function GerenciamentoGeralPage() {
     } catch (err) {
       showToast(
         err instanceof Error ? err.message : "Erro ao excluir empresa.",
+        "error"
+      );
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Alterar credenciais do admin
+  const handleSaveCredentials = async () => {
+    if (!empresaToEditCreds) return;
+    const hasEmail = credNewEmail.trim().length > 0;
+    const hasPassword = credNewPassword.trim().length > 0;
+    if (!hasEmail && !hasPassword) {
+      showToast("Informe o novo e-mail ou a nova senha.", "error");
+      return;
+    }
+    const emp = empresaToEditCreds;
+    setActionLoadingId(emp.id);
+    try {
+      await superAdminService.updateCompanyCredentials(emp.id, {
+        newEmail: hasEmail ? credNewEmail.trim() : undefined,
+        newPassword: hasPassword ? credNewPassword.trim() : undefined,
+      });
+      const changes = [hasEmail && "e-mail", hasPassword && "senha"].filter(Boolean).join(" e ");
+      showToast(`${changes.charAt(0).toUpperCase() + changes.slice(1)} do admin de "${emp.fantasyName}" atualizado(s) com sucesso.`);
+      setEmpresaToEditCreds(null);
+      setCredNewEmail("");
+      setCredNewPassword("");
+      setCredShowPassword(false);
+      loadData(true);
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Erro ao alterar credenciais.",
         "error"
       );
     } finally {
@@ -842,20 +880,36 @@ export default function GerenciamentoGeralPage() {
                             </button>
                           )}
 
-                          {/* Excluir permanentemente */}
+                          {/* Alterar credenciais e Excluir */}
                           {empresa.id !== "empresa-principal" && (
-                            <button
-                              type="button"
-                              disabled={isBusy}
-                              onClick={() => {
-                                setEmpresaToDelete(empresa);
-                                setDeleteConfirmText("");
-                              }}
-                              className="inline-flex items-center justify-center p-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white transition"
-                              title="Excluir empresa permanentemente"
-                            >
-                              <Trash2 size={14} />
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                disabled={isBusy}
+                                onClick={() => {
+                                  setEmpresaToEditCreds(empresa);
+                                  setCredNewEmail("");
+                                  setCredNewPassword("");
+                                  setCredShowPassword(false);
+                                }}
+                                className="inline-flex items-center justify-center p-1.5 rounded-lg border border-secondary/30 bg-secondary/10 hover:bg-secondary text-secondary hover:text-white transition"
+                                title="Alterar e-mail ou senha do administrador"
+                              >
+                                <KeyRound size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={isBusy}
+                                onClick={() => {
+                                  setEmpresaToDelete(empresa);
+                                  setDeleteConfirmText("");
+                                }}
+                                className="inline-flex items-center justify-center p-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white transition"
+                                title="Excluir empresa permanentemente"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </>
                           )}
 
                           {/* Detalhes Drawer/Modal */}
@@ -1299,7 +1353,109 @@ export default function GerenciamentoGeralPage() {
         </div>
       )}
 
-      {/* MODAL 5: Confirmação de Exclusão Permanente */}
+      {/* MODAL 5: Alterar Credenciais do Admin */}
+      {empresaToEditCreds && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-md rounded-2xl border border-secondary/30 bg-slate-900 p-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-secondary mb-4">
+              <div className="h-10 w-10 rounded-xl bg-secondary/20 border border-secondary/30 flex items-center justify-center shrink-0">
+                <KeyRound size={22} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Alterar Credenciais do Admin</h3>
+                <p className="text-xs text-slate-400">Atualizar e-mail e/ou senha do administrador</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-950/60 border border-slate-800 p-4 space-y-2 mb-5">
+              <div>
+                <span className="text-[11px] text-slate-400 uppercase font-semibold">Empresa:</span>
+                <p className="text-sm font-bold text-white">{empresaToEditCreds.fantasyName}</p>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">CNPJ:</span>
+                <span className="font-mono text-accent">{maskCnpj(empresaToEditCreds.cnpj)}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Admin atual:</span>
+                <span className="text-slate-200">{empresaToEditCreds.adminUserName || "-"}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">E-mail atual:</span>
+                <span className="text-slate-200">{empresaToEditCreds.adminUserEmail || empresaToEditCreds.email}</span>
+              </div>
+            </div>
+
+            <div className="space-y-3 mb-6">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Novo E-mail <span className="text-slate-500 font-normal">(deixe vazio para manter)</span>
+                </label>
+                <input
+                  type="email"
+                  value={credNewEmail}
+                  onChange={(e) => setCredNewEmail(e.target.value)}
+                  placeholder={empresaToEditCreds.adminUserEmail || empresaToEditCreds.email || "novo@email.com"}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-600 focus:border-secondary focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Nova Senha <span className="text-slate-500 font-normal">(deixe vazio para manter)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={credShowPassword ? "text" : "password"}
+                    value={credNewPassword}
+                    onChange={(e) => setCredNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 pr-10 text-xs text-slate-200 placeholder:text-slate-600 focus:border-secondary focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setCredShowPassword((v) => !v)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-0.5"
+                    title={credShowPassword ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    <Eye size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmpresaToEditCreds(null);
+                  setCredNewEmail("");
+                  setCredNewPassword("");
+                  setCredShowPassword(false);
+                }}
+                disabled={actionLoadingId === empresaToEditCreds.id}
+                className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-700 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCredentials}
+                disabled={actionLoadingId === empresaToEditCreds.id || (!credNewEmail.trim() && !credNewPassword.trim())}
+                className="px-4 py-2 rounded-xl bg-secondary hover:bg-secondary/80 text-xs font-bold text-white shadow-lg shadow-secondary/30 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {actionLoadingId === empresaToEditCreds.id ? (
+                  <RefreshCw size={14} className="animate-spin" />
+                ) : (
+                  <KeyRound size={14} />
+                )}
+                <span>Salvar Credenciais</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: Confirmação de Exclusão Permanente */}
       {empresaToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-fadeIn">
           <div className="w-full max-w-md rounded-2xl border border-rose-500/30 bg-slate-900 p-6 shadow-2xl">

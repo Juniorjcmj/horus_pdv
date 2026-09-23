@@ -57,6 +57,12 @@ public class AtualizarConfiguracaoPlataformaRequest
     public bool RequireApprovalForNewCompanies { get; set; } = true;
 }
 
+public class AlterarCredenciaisEmpresaRequest
+{
+    public string? NewEmail { get; set; }
+    public string? NewPassword { get; set; }
+}
+
 public class EmpresasAdminListResult
 {
     public List<EmpresaAdminItemDto> Items { get; set; } = [];

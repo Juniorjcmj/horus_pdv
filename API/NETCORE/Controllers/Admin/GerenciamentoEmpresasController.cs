@@ -283,6 +283,46 @@ public class GerenciamentoEmpresasController(
         }
     }
 
+    [HttpPut("{id}/credenciais")]
+    public IActionResult AlterarCredenciais([FromRoute] string id, [FromBody] AlterarCredenciaisEmpresaRequest request)
+    {
+        var adminUser = GetSuperAdminUser(out var errorResult);
+        if (adminUser is null) return errorResult!;
+
+        if (string.IsNullOrWhiteSpace(id) || string.Equals(id, "empresa-principal", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Empresa inválida para esta operação." });
+        }
+
+        try
+        {
+            var (success, message) = securityStore.UpdateCompanyAdminCredentials(id, request.NewEmail, request.NewPassword);
+            if (!success)
+            {
+                return BadRequest(new ApiResponse<object> { Success = false, Message = message });
+            }
+
+            logger.LogInformation(
+                "Credenciais do admin da empresa {CompanyId} alteradas pelo SuperAdmin {AdminName}.",
+                id, adminUser.Name);
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = message
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao alterar credenciais da empresa {CompanyId}.", id);
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "Erro interno ao alterar credenciais."
+            });
+        }
+    }
+
     [HttpDelete("{id}")]
     public IActionResult Excluir([FromRoute] string id)
     {

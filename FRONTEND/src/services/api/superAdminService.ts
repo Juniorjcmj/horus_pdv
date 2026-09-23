@@ -116,6 +116,19 @@ export const superAdminService = {
     });
   },
 
+  async updateCompanyCredentials(
+    companyId: string,
+    data: { newEmail?: string; newPassword?: string }
+  ): Promise<ApiResponse<unknown>> {
+    return apiRequest<unknown>(
+      `${SUPER_ADMIN_API_URL}/${encodeURIComponent(companyId)}/credenciais`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
   async deleteCompany(companyId: string): Promise<ApiResponse<unknown>> {
     return apiRequest<unknown>(`${SUPER_ADMIN_API_URL}/${encodeURIComponent(companyId)}`, {
       method: "DELETE",
