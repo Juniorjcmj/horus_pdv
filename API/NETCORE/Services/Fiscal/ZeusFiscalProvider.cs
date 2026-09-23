@@ -522,12 +522,11 @@ public sealed class ZeusFiscalProvider(
             xBairro = d.Bairro ?? string.Empty,
             cMun = long.TryParse(d.CodigoMunicipioIbge, out var cMunDest) ? cMunDest : 0,
             xMun = d.NomeMunicipio ?? string.Empty,
-            UF = ufDest,
+            UF = ufDest.ToString(),
             CEP = d.Cep,
             cPais = 1058,
             xPais = "BRASIL",
-            fone = ParseFoneNumerico(d.Fone),
-            email = d.Email
+            fone = ParseFoneNumerico(d.Fone)
         };
 
         var detalhes = request.Itens.Select(MontarItem).ToList();

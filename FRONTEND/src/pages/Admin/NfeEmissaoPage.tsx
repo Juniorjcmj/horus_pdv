@@ -180,15 +180,15 @@ export default function NfeEmissaoPage() {
     if (digits.length !== 8) return;
     setCepLoading(true);
     try {
-      const addr = await lookupAddressByCep(digits);
-      if (addr) {
+      const result = await lookupAddressByCep(digits);
+      if (result.success) {
+        const addr = result.data;
         setDest((prev) => ({
           ...prev,
-          logradouro: addr.logradouro || prev.logradouro,
+          logradouro: addr.endereco || prev.logradouro,
           bairro: addr.bairro || prev.bairro,
-          nomeMunicipio: addr.localidade || prev.nomeMunicipio,
-          uf: addr.uf || prev.uf,
-          codigoMunicipioIbge: addr.ibge || prev.codigoMunicipioIbge,
+          nomeMunicipio: addr.cidade || prev.nomeMunicipio,
+          uf: addr.estado || prev.uf,
         }));
       }
     } catch {
