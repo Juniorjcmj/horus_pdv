@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
-    "mtime": 1790192085.6469421,
-    "seen": 1790193586.8030348,
-    "ast_hash": "81caa35f2dc6db9cf751a8ee44884291",
+    "mtime": 1789522287.1881895,
+    "seen": 1789523450.831735,
+    "ast_hash": "39b043aa03ec9827c784113c3aa1d557",
     "semantic_hash": ""
   },
   ".codex/hooks.json": {
@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/ProdutoController.cs": {
-    "mtime": 1790192002.5459805,
-    "seen": 1790193586.8057473,
-    "ast_hash": "5b97b0c66d66d7f54a0c52760227a413",
+    "mtime": 1789328013.8995812,
+    "seen": 1789328505.8338528,
+    "ast_hash": "04143b2156a9656ed36fa26e54bd2765",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Relatorio/RelatorioController.cs": {
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HorusSecurityStore.cs": {
-    "mtime": 1790187311.8075142,
-    "seen": 1790193586.8231664,
-    "ast_hash": "dc636e9d184a91967522dea0bb006b1f",
+    "mtime": 1789757112.4037142,
+    "seen": 1789757197.0963185,
+    "ast_hash": "5fcf491f01dfeebac675274103f964db",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ModuloMercadoAB.cs": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs": {
-    "mtime": 1790191976.073763,
-    "seen": 1790193586.8236525,
-    "ast_hash": "981c2696dd5c7ab304991e5830943331",
+    "mtime": 1789521550.120769,
+    "seen": 1789523450.850942,
+    "ast_hash": "cdb0bf17a9dcdd11def1cb87c730a149",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
@@ -540,9 +540,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/IProdutoService.cs": {
-    "mtime": 1790191981.2898977,
-    "seen": 1790193586.8281617,
-    "ast_hash": "0e1338fd426f7cb39923776e3557cad4",
+    "mtime": 1789327978.8924968,
+    "seen": 1789328505.844016,
+    "ast_hash": "5cce905efd0715ef7009169ecefde162",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
-    "mtime": 1790191993.2649324,
-    "seen": 1790193586.8286314,
-    "ast_hash": "1e57dcab0d30567099ea6daffc3fc707",
+    "mtime": 1789521603.0095625,
+    "seen": 1789523450.8550253,
+    "ast_hash": "e30219df386ed15675fd060a40330710",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusAuthorizeRolesAttribute.cs": {
@@ -654,9 +654,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1790183815.985904,
-    "seen": 1790193586.8348389,
-    "ast_hash": "d70b827c1a34ddb0c1d5b5bae82c7767",
+    "mtime": 1789757150.5691662,
+    "seen": 1789757197.1035738,
+    "ast_hash": "06b6f52db30f8611084daf94ccd0f172",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1790193469.0917385,
-    "seen": 1790193586.8539264,
-    "ast_hash": "05b3e11faa7974d0cc1940cb8e1dfe76",
+    "mtime": 1789522631.4610765,
+    "seen": 1789523450.8761058,
+    "ast_hash": "33417c86d13ea49fd32b0033f7b96df8",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1086,9 +1086,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/StockPage.tsx": {
-    "mtime": 1790192107.517798,
-    "seen": 1790193586.854136,
-    "ast_hash": "fe76e24fb7e6b4bced0c7612fa2eb658",
+    "mtime": 1788665266.6035607,
+    "seen": 1788888974.3521812,
+    "ast_hash": "6076b98cc816ca3ec0974839858f2511",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SupplierRegisterPage.tsx": {
@@ -1206,9 +1206,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/productService.ts": {
-    "mtime": 1790191914.1393466,
-    "seen": 1790193586.8609917,
-    "ast_hash": "4d7021f471e6000650fd546601b14005",
+    "mtime": 1789523342.5116923,
+    "seen": 1789523450.8804088,
+    "ast_hash": "0321cba4eef273ebc33277dea4f62865",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/reportService.ts": {
@@ -2460,33 +2460,27 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Admin/GerenciamentoEmpresasController.cs": {
-    "mtime": 1790185329.0936642,
-    "seen": 1790193586.8034945,
-    "ast_hash": "53454e5dfdf72e0ccd6d1c11adaad943",
+    "mtime": 1789757143.3971918,
+    "seen": 1789757197.0832527,
+    "ast_hash": "54ae4749e0096624d1a19d34efcc29bc",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/AdminEmpresaContracts.cs": {
-    "mtime": 1790185290.7973688,
-    "seen": 1790193586.8109384,
-    "ast_hash": "3f879295ab14b76031964e17749e8abe",
+    "mtime": 1789597001.5389276,
+    "seen": 1789597806.596316,
+    "ast_hash": "d2b07191610e8b6ab706d2d63cbe681f",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/GerenciamentoGeralPage.tsx": {
-    "mtime": 1790185402.5214982,
-    "seen": 1790193586.8515553,
-    "ast_hash": "409ef0226e0a14ce1e6a6e2c0f9f3ad6",
+    "mtime": 1789753974.0190382,
+    "seen": 1789754042.3876317,
+    "ast_hash": "e0656d6d652eb1060b00bcb7bac6b368",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/superAdminService.ts": {
-    "mtime": 1790185336.0231578,
-    "seen": 1790193586.8622086,
-    "ast_hash": "99e09227dcf2dab209d4d6aa067022b1",
-    "semantic_hash": ""
-  },
-  "API/NETCORE/Models/Requests/AjusteEstoqueRequest.cs": {
-    "mtime": 1790191927.0979562,
-    "seen": 1790193586.8109431,
-    "ast_hash": "df369d1189a24eeeb5bd3c3aa63c2a29",
+    "mtime": 1789597736.033404,
+    "seen": 1789597806.631168,
+    "ast_hash": "ca47f6b548ca6ce0e93c221f715d9549",
     "semantic_hash": ""
   }
 }

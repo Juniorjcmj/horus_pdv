@@ -14,7 +14,6 @@ import {
   Printer,
   Search,
   Trash2,
-  UserCheck,
   UserPlus,
   Users,
   UserX,
@@ -1884,7 +1883,7 @@ export default function SalesStartPage({
                       Identificação do Cliente
                     </span>
                   </div>
-                  {selectedCustomer ? (
+                  {selectedCustomer && (
                     <button
                       type="button"
                       onClick={() => {
@@ -1895,24 +1894,6 @@ export default function SalesStartPage({
                     >
                       Desvincular
                     </button>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void openCustomerModal(cpfNota)}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
-                      >
-                        <UserCheck size={13} /> Buscar
-                      </button>
-                      <span className="text-border-primary">•</span>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenQuickCustomerRegister(cpfNota)}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-success hover:underline"
-                      >
-                        <UserPlus size={13} /> + Cadastrar
-                      </button>
-                    </div>
                   )}
                 </div>
 
