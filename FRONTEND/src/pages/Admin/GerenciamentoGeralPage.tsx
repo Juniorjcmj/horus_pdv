@@ -20,6 +20,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Trash2,
   User,
   Users,
   X,
@@ -73,6 +74,8 @@ export default function GerenciamentoGeralPage() {
   const [empresaToApprove, setEmpresaToApprove] = useState<EmpresaAdminItem | null>(null);
   const [empresaToReject, setEmpresaToReject] = useState<EmpresaAdminItem | null>(null);
   const [empresaToBlock, setEmpresaToBlock] = useState<EmpresaAdminItem | null>(null);
+  const [empresaToDelete, setEmpresaToDelete] = useState<EmpresaAdminItem | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [blockReason, setBlockReason] = useState("");
 
@@ -239,6 +242,30 @@ export default function GerenciamentoGeralPage() {
     } catch (err) {
       showToast(
         err instanceof Error ? err.message : "Erro ao reativar empresa.",
+        "error"
+      );
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Exclusão permanente
+  const handleConfirmDelete = async () => {
+    if (!empresaToDelete) return;
+    const emp = empresaToDelete;
+    setActionLoadingId(emp.id);
+    try {
+      await superAdminService.deleteCompany(emp.id);
+      showToast(`Empresa "${emp.fantasyName}" e todos os seus dados foram excluídos permanentemente.`);
+      setEmpresaToDelete(null);
+      setDeleteConfirmText("");
+      if (selectedEmpresa?.id === emp.id) {
+        setSelectedEmpresa(null);
+      }
+      loadData(true);
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : "Erro ao excluir empresa.",
         "error"
       );
     } finally {
@@ -815,6 +842,22 @@ export default function GerenciamentoGeralPage() {
                             </button>
                           )}
 
+                          {/* Excluir permanentemente */}
+                          {empresa.id !== "empresa-principal" && (
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() => {
+                                setEmpresaToDelete(empresa);
+                                setDeleteConfirmText("");
+                              }}
+                              className="inline-flex items-center justify-center p-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-600 text-rose-400 hover:text-white transition"
+                              title="Excluir empresa permanentemente"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
+
                           {/* Detalhes Drawer/Modal */}
                           <button
                             type="button"
@@ -1230,12 +1273,103 @@ export default function GerenciamentoGeralPage() {
                 </button>
               )}
 
+              {selectedEmpresa.id !== "empresa-principal" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmpresaToDelete(selectedEmpresa);
+                    setDeleteConfirmText("");
+                  }}
+                  className="px-4 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-700 text-rose-400 hover:text-white border border-rose-500/30 text-xs font-semibold transition flex items-center gap-1.5"
+                >
+                  <Trash2 size={14} />
+                  <span>Excluir Permanentemente</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => setSelectedEmpresa(null)}
                 className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-700 transition"
               >
                 Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: Confirmação de Exclusão Permanente */}
+      {empresaToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-md rounded-2xl border border-rose-500/30 bg-slate-900 p-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-rose-400 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center shrink-0">
+                <Trash2 size={22} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Excluir Empresa Permanentemente</h3>
+                <p className="text-xs text-slate-400">Esta ação é irreversível e apaga todos os dados</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-slate-950/60 border border-slate-800 p-4 space-y-2 mb-4">
+              <div>
+                <span className="text-[11px] text-slate-400 uppercase font-semibold">Empresa:</span>
+                <p className="text-sm font-bold text-white">{empresaToDelete.fantasyName}</p>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">CNPJ:</span>
+                <span className="font-mono text-rose-400">{maskCnpj(empresaToDelete.cnpj)}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Status atual:</span>
+                <span className="text-slate-200">{empresaToDelete.status}</span>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 mb-4">
+              <strong>Atenção:</strong> Serão excluídos permanentemente todos os usuários, produtos, clientes,
+              fornecedores, vendas, pedidos, sessões de caixa e demais dados vinculados a esta empresa.
+            </div>
+
+            <div className="space-y-2 mb-5">
+              <label className="block text-xs font-semibold text-slate-300">
+                Digite <span className="text-rose-400 font-bold">EXCLUIR</span> para confirmar:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="EXCLUIR"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200 placeholder:text-slate-600 focus:border-rose-500 focus:outline-none font-mono uppercase tracking-widest"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmpresaToDelete(null);
+                  setDeleteConfirmText("");
+                }}
+                disabled={actionLoadingId === empresaToDelete.id}
+                className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300 hover:bg-slate-700 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={actionLoadingId === empresaToDelete.id || deleteConfirmText.toUpperCase() !== "EXCLUIR"}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white shadow-lg shadow-rose-600/30 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {actionLoadingId === empresaToDelete.id ? (
+                  <RefreshCw size={14} className="animate-spin" />
+                ) : (
+                  <Trash2 size={14} />
+                )}
+                <span>Excluir Permanentemente</span>
               </button>
             </div>
           </div>

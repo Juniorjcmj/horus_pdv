@@ -116,6 +116,12 @@ export const superAdminService = {
     });
   },
 
+  async deleteCompany(companyId: string): Promise<ApiResponse<unknown>> {
+    return apiRequest<unknown>(`${SUPER_ADMIN_API_URL}/${encodeURIComponent(companyId)}`, {
+      method: "DELETE",
+    });
+  },
+
   async getConfig(): Promise<{ requireApprovalForNewCompanies: boolean }> {
     const response = await apiRequest<{ requireApprovalForNewCompanies: boolean }>(
       `${SUPER_ADMIN_API_URL}/configuracao`

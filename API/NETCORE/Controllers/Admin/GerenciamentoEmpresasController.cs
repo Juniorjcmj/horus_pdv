@@ -283,6 +283,43 @@ public class GerenciamentoEmpresasController(
         }
     }
 
+    [HttpDelete("{id}")]
+    public IActionResult Excluir([FromRoute] string id)
+    {
+        var adminUser = GetSuperAdminUser(out var errorResult);
+        if (adminUser is null) return errorResult!;
+
+        if (string.IsNullOrWhiteSpace(id) || string.Equals(id, "empresa-principal", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Empresa inválida para exclusão." });
+        }
+
+        try
+        {
+            var ok = securityStore.DeleteCompany(id);
+            if (!ok)
+            {
+                return NotFound(new ApiResponse<object> { Success = false, Message = "Empresa não encontrada." });
+            }
+
+            logger.LogInformation("Empresa {CompanyId} excluída permanentemente pelo SuperAdmin {AdminName}.", id, adminUser.Name);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "Empresa e todos os seus dados foram excluídos permanentemente."
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao excluir empresa {CompanyId}.", id);
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "Erro interno ao excluir empresa."
+            });
+        }
+    }
+
     private AuthenticatedUser? GetSuperAdminUser(out IActionResult? errorResult)
     {
         errorResult = null;

@@ -1403,6 +1403,48 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         return cmd.ExecuteNonQuery() > 0;
     }
 
+    public bool DeleteCompany(string companyId)
+    {
+        if (string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase)) return false;
+
+        using var db = connection.OpenConnection();
+        using var transaction = db.BeginTransaction();
+        try
+        {
+            var tables = new[]
+            {
+                "FiadoMovimentos", "PromocaoProdutos", "Promocoes", "Categorias",
+                "DocumentosFiscais", "FiscalSequencias",
+                "PedidoItens", "Pedidos",
+                "VendaPagamentos", "VendaItens", "Vendas",
+                "CaixaMovimentos", "CaixaSessoes",
+                "ModuloMercadoRegistros",
+                "AuditLog", "PasswordResetTokens", "Sessoes",
+                "Produtos", "Clientes", "Fornecedores", "Usuarios"
+            };
+
+            foreach (var table in tables)
+            {
+                using var cmd = new SqlCommand($"DELETE FROM [{table}] WHERE CompanyId = @CompanyId;", db, transaction);
+                cmd.Parameters.AddWithValue("@CompanyId", companyId);
+                cmd.ExecuteNonQuery();
+            }
+
+            using var deleteEmpresa = new SqlCommand(
+                "DELETE FROM Empresas WHERE Id = @CompanyId AND Id <> 'empresa-principal';", db, transaction);
+            deleteEmpresa.Parameters.AddWithValue("@CompanyId", companyId);
+            var deleted = deleteEmpresa.ExecuteNonQuery() > 0;
+
+            transaction.Commit();
+            return deleted;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
+
     private static SecurityUserDto ToDto(SecurityUserRecord source) => new()
     {
         Id = source.Id,
