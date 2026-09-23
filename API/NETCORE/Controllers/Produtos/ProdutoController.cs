@@ -148,6 +148,34 @@ public class ProdutoController(IProdutoService produtoService) : ControllerBase
         return Ok(new ApiResponse<object> { Success = true, Message = "Validade atualizada com sucesso." });
     }
 
+    [HttpPost("{id}/ajuste-estoque")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AjustarEstoque(string id, [FromBody] AjusteEstoqueRequest request)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+        try
+        {
+            var ok = await produtoService.AjustarEstoqueAsync(currentUser.CompanyId, id, request.Tipo, request.Quantidade);
+            if (!ok)
+                return NotFound(new ApiResponse<object> { Success = false, Message = "Produto não encontrado." });
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = string.Equals(request.Tipo, "entrada", StringComparison.OrdinalIgnoreCase)
+                    ? $"Entrada de {request.Quantidade} registrada com sucesso."
+                    : $"Saída de {request.Quantidade} registrada com sucesso."
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
+    }
+
     [HttpPost("importar-legado")]
     [HorusAuthorizeRoles("administrador", "gerente")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]

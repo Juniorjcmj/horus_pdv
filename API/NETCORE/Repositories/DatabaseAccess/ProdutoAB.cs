@@ -638,4 +638,68 @@ public class ProdutoAB(Connection connection)
         var ordinal = reader.GetOrdinal(name);
         return !reader.IsDBNull(ordinal) && reader.GetBoolean(ordinal);
     }
+
+    /// <summary>
+    /// Ajuste manual de estoque (entrada ou saída). Atualiza ProductQnt e TotalPriceOnProduct.
+    /// </summary>
+    public async Task<bool> AjustarEstoqueAsync(string companyId, string productId, string tipo, decimal quantidade)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+        try
+        {
+            await using var select = new SqlCommand(
+                """
+                SELECT ProductQnt, ProductUnitPrice
+                FROM Produtos WITH (UPDLOCK, ROWLOCK)
+                WHERE Id = @Id AND CompanyId = @CompanyId;
+                """,
+                db,
+                transaction);
+            select.Parameters.AddWithValue("@Id", productId);
+            select.Parameters.AddWithValue("@CompanyId", companyId);
+
+            decimal currentQty;
+            decimal unitPrice;
+            await using (var reader = await select.ExecuteReaderAsync())
+            {
+                if (!await reader.ReadAsync())
+                    return false;
+
+                currentQty = reader.GetDecimal(reader.GetOrdinal("ProductQnt"));
+                unitPrice = reader.GetDecimal(reader.GetOrdinal("ProductUnitPrice"));
+            }
+
+            var nextQty = string.Equals(tipo, "entrada", StringComparison.OrdinalIgnoreCase)
+                ? currentQty + quantidade
+                : currentQty - quantidade;
+
+            if (nextQty < 0)
+                throw new InvalidOperationException(
+                    $"Estoque insuficiente. Disponível: {currentQty}, solicitado: {quantidade}.");
+
+            await using var update = new SqlCommand(
+                """
+                UPDATE Produtos
+                   SET ProductQnt = @ProductQnt,
+                       TotalPriceOnProduct = @TotalPriceOnProduct
+                 WHERE Id = @Id AND CompanyId = @CompanyId;
+                """,
+                db,
+                transaction);
+            update.Parameters.AddWithValue("@ProductQnt", nextQty);
+            update.Parameters.AddWithValue("@TotalPriceOnProduct", unitPrice * nextQty);
+            update.Parameters.AddWithValue("@Id", productId);
+            update.Parameters.AddWithValue("@CompanyId", companyId);
+            await update.ExecuteNonQueryAsync();
+
+            await transaction.CommitAsync();
+            return true;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
 }

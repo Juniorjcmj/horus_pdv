@@ -56,6 +56,18 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         return await produtosAB.AtualizarValidadeAsync(companyId, id, parsed);
     }
 
+    public async Task<bool> AjustarEstoqueAsync(string companyId, string id, string tipo, decimal quantidade)
+    {
+        if (quantidade <= 0)
+            throw new InvalidOperationException("Quantidade deve ser maior que zero.");
+
+        if (!string.Equals(tipo, "entrada", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(tipo, "saida", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Tipo deve ser 'entrada' ou 'saida'.");
+
+        return await produtosAB.AjustarEstoqueAsync(companyId, id, tipo, quantidade);
+    }
+
     private static void Validate(ProdutoRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.ProductName) || request.ProductName.Trim().Length < 3)

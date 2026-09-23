@@ -134,4 +134,15 @@ export const productService = {
     });
     return response;
   },
+
+  async adjustStock(
+    id: string,
+    payload: { tipo: "entrada" | "saida"; quantidade: number; motivo: string },
+  ) {
+    const response = await apiRequest<object>(`${PRODUTO_API_URL}/${id}/ajuste-estoque`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return response;
+  },
 };
