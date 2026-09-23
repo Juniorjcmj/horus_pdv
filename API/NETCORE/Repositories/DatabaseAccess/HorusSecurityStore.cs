@@ -1504,58 +1504,69 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         if (string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase)) return false;
 
         using var db = connection.OpenConnection();
-        using var transaction = db.BeginTransaction();
-        try
-        {
-            // Tabelas-filhas sem CompanyId (referenciam via FK com CASCADE ou precisam de subquery)
-            var subqueryDeletes = new[]
-            {
-                "DELETE FROM PromocaoProdutos WHERE PromocaoId IN (SELECT Id FROM Promocoes WHERE CompanyId = @CompanyId);",
-                "DELETE FROM PedidoItens WHERE PedidoId IN (SELECT Id FROM Pedidos WHERE CompanyId = @CompanyId);",
-                "DELETE FROM VendaPagamentos WHERE VendaId IN (SELECT Id FROM Vendas WHERE CompanyId = @CompanyId);",
-                "DELETE FROM VendaItens WHERE VendaId IN (SELECT Id FROM Vendas WHERE CompanyId = @CompanyId);",
-                "DELETE FROM CaixaMovimentos WHERE CaixaSessaoId IN (SELECT Id FROM CaixaSessoes WHERE CompanyId = @CompanyId);",
-                "DELETE FROM Sessoes WHERE UserId IN (SELECT Id FROM Usuarios WHERE CompanyId = @CompanyId);",
-                "DELETE FROM PasswordResetTokens WHERE UserId IN (SELECT Id FROM Usuarios WHERE CompanyId = @CompanyId);",
-            };
+        using var cmd = new SqlCommand(
+            """
+            BEGIN TRANSACTION;
+            BEGIN TRY
+                -- Tabelas-filhas (sem CompanyId, referenciam via FK)
+                IF OBJECT_ID(N'PromocaoProdutos', N'U') IS NOT NULL
+                    DELETE FROM PromocaoProdutos WHERE PromocaoId IN (SELECT Id FROM Promocoes WHERE CompanyId = @CompanyId);
+                IF OBJECT_ID(N'PedidoItens', N'U') IS NOT NULL
+                    DELETE FROM PedidoItens WHERE PedidoId IN (SELECT Id FROM Pedidos WHERE CompanyId = @CompanyId);
+                IF OBJECT_ID(N'VendaPagamentos', N'U') IS NOT NULL
+                    DELETE FROM VendaPagamentos WHERE VendaId IN (SELECT Id FROM Vendas WHERE CompanyId = @CompanyId);
+                IF OBJECT_ID(N'VendaItens', N'U') IS NOT NULL
+                    DELETE FROM VendaItens WHERE VendaId IN (SELECT Id FROM Vendas WHERE CompanyId = @CompanyId);
+                IF OBJECT_ID(N'CaixaMovimentos', N'U') IS NOT NULL
+                    DELETE FROM CaixaMovimentos WHERE CaixaSessaoId IN (SELECT Id FROM CaixaSessoes WHERE CompanyId = @CompanyId);
+                IF OBJECT_ID(N'Sessoes', N'U') IS NOT NULL
+                    DELETE FROM Sessoes WHERE UserId IN (SELECT Id FROM Usuarios WHERE CompanyId = @CompanyId);
+                IF OBJECT_ID(N'PasswordResetTokens', N'U') IS NOT NULL
+                    DELETE FROM PasswordResetTokens WHERE UserId IN (SELECT Id FROM Usuarios WHERE CompanyId = @CompanyId);
 
-            foreach (var sql in subqueryDeletes)
-            {
-                using var cmd = new SqlCommand(sql, db, transaction);
-                cmd.Parameters.AddWithValue("@CompanyId", companyId);
-                cmd.ExecuteNonQuery();
-            }
+                -- Tabelas com CompanyId direto
+                IF OBJECT_ID(N'FiadoMovimentos', N'U') IS NOT NULL AND COL_LENGTH(N'FiadoMovimentos', N'CompanyId') IS NOT NULL
+                    DELETE FROM FiadoMovimentos WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'Promocoes', N'U') IS NOT NULL AND COL_LENGTH(N'Promocoes', N'CompanyId') IS NOT NULL
+                    DELETE FROM Promocoes WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'Categorias', N'U') IS NOT NULL AND COL_LENGTH(N'Categorias', N'CompanyId') IS NOT NULL
+                    DELETE FROM Categorias WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'DocumentosFiscais', N'U') IS NOT NULL AND COL_LENGTH(N'DocumentosFiscais', N'CompanyId') IS NOT NULL
+                    DELETE FROM DocumentosFiscais WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'FiscalSequencias', N'U') IS NOT NULL AND COL_LENGTH(N'FiscalSequencias', N'CompanyId') IS NOT NULL
+                    DELETE FROM FiscalSequencias WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'Pedidos', N'U') IS NOT NULL AND COL_LENGTH(N'Pedidos', N'CompanyId') IS NOT NULL
+                    DELETE FROM Pedidos WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'Vendas', N'U') IS NOT NULL AND COL_LENGTH(N'Vendas', N'CompanyId') IS NOT NULL
+                    DELETE FROM Vendas WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'CaixaSessoes', N'U') IS NOT NULL AND COL_LENGTH(N'CaixaSessoes', N'CompanyId') IS NOT NULL
+                    DELETE FROM CaixaSessoes WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'ModuloMercadoRegistros', N'U') IS NOT NULL AND COL_LENGTH(N'ModuloMercadoRegistros', N'CompanyId') IS NOT NULL
+                    DELETE FROM ModuloMercadoRegistros WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'AuditLog', N'U') IS NOT NULL AND COL_LENGTH(N'AuditLog', N'CompanyId') IS NOT NULL
+                    DELETE FROM AuditLog WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'Produtos', N'U') IS NOT NULL AND COL_LENGTH(N'Produtos', N'CompanyId') IS NOT NULL
+                    DELETE FROM Produtos WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'Clientes', N'U') IS NOT NULL AND COL_LENGTH(N'Clientes', N'CompanyId') IS NOT NULL
+                    DELETE FROM Clientes WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'Fornecedores', N'U') IS NOT NULL AND COL_LENGTH(N'Fornecedores', N'CompanyId') IS NOT NULL
+                    DELETE FROM Fornecedores WHERE CompanyId = @CompanyId;
+                IF OBJECT_ID(N'Usuarios', N'U') IS NOT NULL AND COL_LENGTH(N'Usuarios', N'CompanyId') IS NOT NULL
+                    DELETE FROM Usuarios WHERE CompanyId = @CompanyId;
 
-            // Tabelas com CompanyId direto (ordem respeita FKs)
-            var directTables = new[]
-            {
-                "FiadoMovimentos", "Promocoes", "Categorias",
-                "DocumentosFiscais", "FiscalSequencias",
-                "Pedidos", "Vendas",
-                "CaixaSessoes", "ModuloMercadoRegistros",
-                "AuditLog", "Produtos", "Clientes", "Fornecedores", "Usuarios"
-            };
+                -- Exclui a empresa
+                DELETE FROM Empresas WHERE Id = @CompanyId AND Id <> N'empresa-principal';
 
-            foreach (var table in directTables)
-            {
-                using var cmd = new SqlCommand($"DELETE FROM [{table}] WHERE CompanyId = @CompanyId;", db, transaction);
-                cmd.Parameters.AddWithValue("@CompanyId", companyId);
-                cmd.ExecuteNonQuery();
-            }
-
-            using var deleteEmpresa = new SqlCommand(
-                "DELETE FROM Empresas WHERE Id = @CompanyId AND Id <> 'empresa-principal';", db, transaction);
-            deleteEmpresa.Parameters.AddWithValue("@CompanyId", companyId);
-            var deleted = deleteEmpresa.ExecuteNonQuery() > 0;
-
-            transaction.Commit();
-            return deleted;
-        }
-        catch
-        {
-            transaction.Rollback();
-            throw;
-        }
+                COMMIT TRANSACTION;
+            END TRY
+            BEGIN CATCH
+                ROLLBACK TRANSACTION;
+                THROW;
+            END CATCH
+            """,
+            db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        return cmd.ExecuteNonQuery() > 0;
     }
 
     private static SecurityUserDto ToDto(SecurityUserRecord source) => new()
