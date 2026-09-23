@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
-    "mtime": 1790192085.6469421,
-    "seen": 1790193586.8030348,
-    "ast_hash": "81caa35f2dc6db9cf751a8ee44884291",
+    "mtime": 1790196640.1407583,
+    "seen": 1790200166.1180985,
+    "ast_hash": "401a550f3f249203e2289d8897193adc",
     "semantic_hash": ""
   },
   ".codex/hooks.json": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1789329590.4817796,
-    "seen": 1789330645.1066818,
-    "ast_hash": "86aaacb58955a1beab05830a90992c24",
+    "mtime": 1790197985.3722568,
+    "seen": 1790200166.131551,
+    "ast_hash": "94620a304206d647a096c0ee7565c872",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1789329473.9423378,
-    "seen": 1789330645.110137,
-    "ast_hash": "38804179793f11de7ab4da52b4d030df",
+    "mtime": 1790195067.732026,
+    "seen": 1790200166.1363523,
+    "ast_hash": "040e43cf45130cfa30ea1790b9ca4f3c",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1789596965.3490107,
-    "seen": 1789597806.6070638,
-    "ast_hash": "e04809f768ca3a69227c96442251d8dc",
+    "mtime": 1790199672.272334,
+    "seen": 1790200166.1386485,
+    "ast_hash": "181b8be7ef73b7adc00534a5857f46d4",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -510,21 +510,21 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalContracts.cs": {
-    "mtime": 1788675064.1895294,
-    "seen": 1788888974.351943,
-    "ast_hash": "f212a2c5964b9634aee7f4937d50e077",
+    "mtime": 1790194888.0777178,
+    "seen": 1790200166.140714,
+    "ast_hash": "c34718c6aeb5fa5b9bb48f0190cb9d2a",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/NfceOutboxWorker.cs": {
-    "mtime": 1789165107.1999767,
-    "seen": 1789165382.3785768,
-    "ast_hash": "b5f1545feaa2a63c515805e430bad238",
+    "mtime": 1790195093.9563346,
+    "seen": 1790200166.1407168,
+    "ast_hash": "2bf0f61cc8535e45dd753df994472729",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs": {
-    "mtime": 1789174319.7264605,
-    "seen": 1789174379.102895,
-    "ast_hash": "e276d684c674d4ad289dce0a1e9defc3",
+    "mtime": 1790196484.732787,
+    "seen": 1790200166.1409118,
+    "ast_hash": "fedfd8d1e68921ae51e50acfcdc86f0b",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/FornecedorService.cs": {
@@ -654,9 +654,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1790183815.985904,
-    "seen": 1790193586.8348389,
-    "ast_hash": "d70b827c1a34ddb0c1d5b5bae82c7767",
+    "mtime": 1790195656.0674648,
+    "seen": 1790200166.147016,
+    "ast_hash": "17597eabd565a03f87b267fcc7301e9c",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -810,9 +810,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/AppSidebar.tsx": {
-    "mtime": 1789597671.2638512,
-    "seen": 1789597806.6195378,
-    "ast_hash": "2a80e30bd077b272c79e19dcb7887b91",
+    "mtime": 1790195636.9495964,
+    "seen": 1790200166.153999,
+    "ast_hash": "eff0aad88f83fce51af1dc7b25a417c8",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/UserMenu.tsx": {
@@ -1050,9 +1050,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
-    "mtime": 1788665266.5957625,
-    "seen": 1788888974.3521612,
-    "ast_hash": "615d08c76b95721e3694c7cb400e27da",
+    "mtime": 1790200084.999484,
+    "seen": 1790200166.162436,
+    "ast_hash": "13c58146b06ca38838a0e1cc590c2ad5",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ReportsPage.tsx": {
@@ -1176,9 +1176,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiscalService.ts": {
-    "mtime": 1789320764.9032593,
-    "seen": 1789320942.5306518,
-    "ast_hash": "ba03354f87c2f1411ef71b757d32f2a9",
+    "mtime": 1790195606.2528486,
+    "seen": 1790200166.168965,
+    "ast_hash": "00fe3214ac035999a6a87fd388daa6f3",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/homeService.ts": {
@@ -2487,6 +2487,60 @@
     "mtime": 1790191927.0979562,
     "seen": 1790193586.8109431,
     "ast_hash": "df369d1189a24eeeb5bd3c3aa63c2a29",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Compras/OrdemCompraController.cs": {
+    "mtime": 1790199751.5780609,
+    "seen": 1790200166.1198652,
+    "ast_hash": "33b4cbec7f172655262b0b1543d65c9b",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Fiscal/NfeController.cs": {
+    "mtime": 1790195624.061519,
+    "seen": 1790200166.120498,
+    "ast_hash": "7ece645e058385579eaa05005a9f43b1",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Models/Requests/NfeEmissaoRequest.cs": {
+    "mtime": 1790195612.1664042,
+    "seen": 1790200166.12976,
+    "ast_hash": "e7f17aa44b04e1b2665be244013ca0c3",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Models/Requests/OrdemCompraRequests.cs": {
+    "mtime": 1790199702.7968233,
+    "seen": 1790200166.1300004,
+    "ast_hash": "22498da4606d8e4523ca5fa68b551151",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DataAccess/OrdemCompraAD.cs": {
+    "mtime": 1790199688.3571014,
+    "seen": 1790200166.134592,
+    "ast_hash": "133fd3082ac06f77c7dea3ac22bfc091",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/OrdemCompraAB.cs": {
+    "mtime": 1790199729.4876328,
+    "seen": 1790200166.1378868,
+    "ast_hash": "14c67d2b0198331261f7c4512d6c6315",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/PurchaseOrderPrintModal.tsx": {
+    "mtime": 1790199862.7609093,
+    "seen": 1790200166.1506653,
+    "ast_hash": "e164ace87a61fc791dba95e0de572b25",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/pages/Admin/NfeEmissaoPage.tsx": {
+    "mtime": 1790196494.4649796,
+    "seen": 1790200166.1612074,
+    "ast_hash": "4717c7e4f8d3348622db6dccda39799f",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/services/api/purchaseOrderService.ts": {
+    "mtime": 1790199836.6849282,
+    "seen": 1790200166.1706407,
+    "ast_hash": "cfc70bdc909a4c043c137fa16cd943eb",
     "semantic_hash": ""
   }
 }

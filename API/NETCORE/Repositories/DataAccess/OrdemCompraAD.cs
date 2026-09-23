@@ -26,6 +26,14 @@ public class OrdemCompraAD
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? ReceivedAt { get; set; }
     public DateTimeOffset? CanceledAt { get; set; }
+    public DateTimeOffset? PrevisaoEntrega { get; set; }
+    public string? CondicaoPagamento { get; set; }
+    public string? FormaPagamento { get; set; }
+    public decimal ValorFrete { get; set; }
+    public decimal ValorDesconto { get; set; }
+    public string? MotivoCancelamento { get; set; }
+    public string? ReceivedBy { get; set; }
+    public string? ReceivedByName { get; set; }
     public string Note { get; set; } = string.Empty;
     public decimal TotalEstimado { get; set; }
     public List<OrdemCompraItemAD> Itens { get; set; } = [];
@@ -39,6 +47,7 @@ public class OrdemCompraItemAD
     public decimal UnitCost { get; set; }
     public decimal ItemTotal { get; set; }
     public decimal QuantityReceived { get; set; }
+    public DateTimeOffset? DataValidade { get; set; }
 }
 
 public class SugestaoReposicaoAD

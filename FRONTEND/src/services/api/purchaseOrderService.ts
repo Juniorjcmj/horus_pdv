@@ -19,6 +19,14 @@ export type PurchaseOrderDto = {
   createdAt: string;
   receivedAt: string | null;
   canceledAt: string | null;
+  previsaoEntrega?: string | null;
+  condicaoPagamento?: string | null;
+  formaPagamento?: string | null;
+  valorFrete: number;
+  valorDesconto: number;
+  motivoCancelamento?: string | null;
+  receivedBy?: string | null;
+  receivedByName?: string | null;
   note: string;
   totalEstimado: number;
 };
@@ -30,6 +38,7 @@ export type PurchaseOrderItemDto = {
   unitCost: number;
   itemTotal: number;
   quantityReceived: number;
+  dataValidade?: string | null;
 };
 
 export type PurchaseOrderDetailDto = PurchaseOrderDto & {
@@ -101,6 +110,11 @@ export const purchaseOrderService = {
   async create(payload: {
     supplierId: string;
     note?: string;
+    previsaoEntrega?: string;
+    condicaoPagamento?: string;
+    formaPagamento?: string;
+    valorFrete?: number;
+    valorDesconto?: number;
     items: Array<{ productCode: string; quantity: number; unitCost: number }>;
   }) {
     const response = await apiRequest<{ orderNumber: string }>(`${OC_API_URL}`, {
@@ -110,9 +124,36 @@ export const purchaseOrderService = {
     return response;
   },
 
+  async update(
+    orderNumber: string,
+    payload: {
+      supplierId: string;
+      note?: string;
+      previsaoEntrega?: string;
+      condicaoPagamento?: string;
+      formaPagamento?: string;
+      valorFrete?: number;
+      valorDesconto?: number;
+      items: Array<{ productCode: string; quantity: number; unitCost: number }>;
+    },
+  ) {
+    const response = await apiRequest<PurchaseOrderDto>(
+      `${OC_API_URL}/${encodeURIComponent(orderNumber)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      },
+    );
+    return response;
+  },
+
   async receive(
     orderNumber: string,
-    itens: Array<{ productCode: string; quantityReceived: number }>,
+    itens: Array<{
+      productCode: string;
+      quantityReceived: number;
+      dataValidade?: string;
+    }>,
   ) {
     const response = await apiRequest<{ status: number }>(
       `${OC_API_URL}/${encodeURIComponent(orderNumber)}/receber`,
@@ -124,10 +165,13 @@ export const purchaseOrderService = {
     return response;
   },
 
-  async cancel(orderNumber: string) {
+  async cancel(orderNumber: string, motivoCancelamento?: string) {
     const response = await apiRequest<object>(
       `${OC_API_URL}/${encodeURIComponent(orderNumber)}/cancelar`,
-      { method: "POST" },
+      {
+        method: "POST",
+        body: JSON.stringify({ motivoCancelamento }),
+      },
     );
     return response.message;
   },
