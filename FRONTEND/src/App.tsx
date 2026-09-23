@@ -245,6 +245,23 @@ export default function App() {
     configuracoes: "Configurações",
   };
 
+  const isSuperAdmin = useMemo(() => {
+    const email = currentUser.email?.toLowerCase().trim();
+    const isPlatformOwner =
+      currentUser.companyId === "empresa-principal" ||
+      email === "jotacfs2010@hotmail.com" ||
+      email === "jotanaval2009@gmail.com" ||
+      email === "flavio@hpdv.com.br";
+    return isPlatformOwner && currentUser.role.toLowerCase() === "administrador";
+  }, [currentUser.companyId, currentUser.email, currentUser.role]);
+
+  // Protege a página de gerenciamento geral: só superAdmin pode acessar
+  useEffect(() => {
+    if (activePage === "gerenciamento-geral" && !isSuperAdmin) {
+      setActivePage("home");
+    }
+  }, [activePage, isSuperAdmin]);
+
   const CurrentPage = useMemo(() => {
     switch (activePage) {
       case "home":
@@ -288,7 +305,7 @@ export default function App() {
       case "minha-empresa":
         return MyCompanyPage;
       case "gerenciamento-geral":
-        return GerenciamentoGeralPage;
+        return isSuperAdmin ? GerenciamentoGeralPage : HomePage;
       case "detalhe-licenca":
         return LicenseDetailsPage;
       case "sobre-pdv":
@@ -296,17 +313,7 @@ export default function App() {
       default:
         return EmptyPage;
     }
-  }, [activePage]);
-
-  const isSuperAdmin = useMemo(() => {
-    const email = currentUser.email?.toLowerCase().trim();
-    const isPlatformOwner =
-      currentUser.companyId === "empresa-principal" ||
-      email === "jotacfs2010@hotmail.com" ||
-      email === "jotanaval2009@gmail.com" ||
-      email === "flavio@hpdv.com.br";
-    return isPlatformOwner && currentUser.role.toLowerCase() === "administrador";
-  }, [currentUser.companyId, currentUser.email, currentUser.role]);
+  }, [activePage, isSuperAdmin]);
 
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
 
