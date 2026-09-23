@@ -1507,19 +1507,36 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         using var transaction = db.BeginTransaction();
         try
         {
-            var tables = new[]
+            // Tabelas-filhas sem CompanyId (referenciam via FK com CASCADE ou precisam de subquery)
+            var subqueryDeletes = new[]
             {
-                "FiadoMovimentos", "PromocaoProdutos", "Promocoes", "Categorias",
-                "DocumentosFiscais", "FiscalSequencias",
-                "PedidoItens", "Pedidos",
-                "VendaPagamentos", "VendaItens", "Vendas",
-                "CaixaMovimentos", "CaixaSessoes",
-                "ModuloMercadoRegistros",
-                "AuditLog", "PasswordResetTokens", "Sessoes",
-                "Produtos", "Clientes", "Fornecedores", "Usuarios"
+                "DELETE FROM PromocaoProdutos WHERE PromocaoId IN (SELECT Id FROM Promocoes WHERE CompanyId = @CompanyId);",
+                "DELETE FROM PedidoItens WHERE PedidoId IN (SELECT Id FROM Pedidos WHERE CompanyId = @CompanyId);",
+                "DELETE FROM VendaPagamentos WHERE VendaId IN (SELECT Id FROM Vendas WHERE CompanyId = @CompanyId);",
+                "DELETE FROM VendaItens WHERE VendaId IN (SELECT Id FROM Vendas WHERE CompanyId = @CompanyId);",
+                "DELETE FROM CaixaMovimentos WHERE CaixaSessaoId IN (SELECT Id FROM CaixaSessoes WHERE CompanyId = @CompanyId);",
+                "DELETE FROM Sessoes WHERE UserId IN (SELECT Id FROM Usuarios WHERE CompanyId = @CompanyId);",
+                "DELETE FROM PasswordResetTokens WHERE UserId IN (SELECT Id FROM Usuarios WHERE CompanyId = @CompanyId);",
             };
 
-            foreach (var table in tables)
+            foreach (var sql in subqueryDeletes)
+            {
+                using var cmd = new SqlCommand(sql, db, transaction);
+                cmd.Parameters.AddWithValue("@CompanyId", companyId);
+                cmd.ExecuteNonQuery();
+            }
+
+            // Tabelas com CompanyId direto (ordem respeita FKs)
+            var directTables = new[]
+            {
+                "FiadoMovimentos", "Promocoes", "Categorias",
+                "DocumentosFiscais", "FiscalSequencias",
+                "Pedidos", "Vendas",
+                "CaixaSessoes", "ModuloMercadoRegistros",
+                "AuditLog", "Produtos", "Clientes", "Fornecedores", "Usuarios"
+            };
+
+            foreach (var table in directTables)
             {
                 using var cmd = new SqlCommand($"DELETE FROM [{table}] WHERE CompanyId = @CompanyId;", db, transaction);
                 cmd.Parameters.AddWithValue("@CompanyId", companyId);
