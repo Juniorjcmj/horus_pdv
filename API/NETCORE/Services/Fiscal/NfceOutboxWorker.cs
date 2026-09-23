@@ -69,16 +69,26 @@ public sealed class NfceOutboxWorker(
                 var emitente = await emitentes.ObterAsync(doc.CompanyId, ct);
                 if (emitente is null)
                 {
+                    var tipoDoc = doc.Modelo == 55 ? "NF-e" : "NFC-e";
                     logger.LogWarning(
-                        "NFC-e do documento {Id} (venda {VendaId}) não transmitida: Empresa sem certificado digital A1 (.pfx) ou CSC configurado em Minha Empresa.",
-                        doc.Id, doc.VendaId);
+                        "{TipoDoc} do documento {Id} (venda {VendaId}) não transmitida: Empresa sem certificado digital A1 (.pfx) ou CSC configurado em Minha Empresa.",
+                        tipoDoc, doc.Id, doc.VendaId);
                     await documentos.MarcarErroAsync(
                         doc.Id, "Empresa sem certificado ou CSC configurado.", proximaTentativa: null, ct);
                     continue;
                 }
 
-                var request = await documentos.MontarRequisicaoAsync(doc, emitente, ct);
-                var resultado = await provider.EmitirNfceAsync(request, ct);
+                ResultadoFiscal resultado;
+                if (doc.Modelo == 55)
+                {
+                    var nfeRequest = await documentos.MontarRequisicaoNfeAsync(doc, emitente, ct);
+                    resultado = await provider.EmitirNfeAsync(nfeRequest, ct);
+                }
+                else
+                {
+                    var nfceRequest = await documentos.MontarRequisicaoAsync(doc, emitente, ct);
+                    resultado = await provider.EmitirNfceAsync(nfceRequest, ct);
+                }
 
                 switch (resultado.Status)
                 {
@@ -202,10 +212,16 @@ public sealed record DocumentoFiscalPendente
     public required string Id { get; init; }
     public required string CompanyId { get; init; }
     public required string VendaId { get; init; }
+    public short Modelo { get; init; } = 65;
     public required int Serie { get; init; }
     public required int NumeroNf { get; init; }
     public required TipoEmissaoFiscal TipoEmissao { get; init; }
     public required int Tentativas { get; init; }
     public DateTimeOffset? DhContingencia { get; init; }
     public string? JustContingencia { get; init; }
+
+    // Campos exclusivos de NF-e modelo 55
+    public string? DestinatarioJson { get; init; }
+    public string? NaturezaOperacao { get; init; }
+    public byte ModalidadeFrete { get; init; } = 9;
 }

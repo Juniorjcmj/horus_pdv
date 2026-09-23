@@ -39,6 +39,12 @@ public interface IFiscalProvider
     /// </summary>
     Task<ResultadoFiscal> EmitirNfceAsync(EmissaoNfceRequest request, CancellationToken ct = default);
 
+    /// <summary>
+    /// Monta, assina e transmite a NF-e modelo 55 (venda para empresa/CNPJ).
+    /// Mesma restrição de thread que EmitirNfceAsync.
+    /// </summary>
+    Task<ResultadoFiscal> EmitirNfeAsync(EmissaoNfeRequest request, CancellationToken ct = default);
+
     Task<ResultadoFiscal> CancelarAsync(CancelamentoRequest request, CancellationToken ct = default);
 
     Task<ResultadoFiscal> InutilizarAsync(InutilizacaoRequest request, CancellationToken ct = default);
@@ -123,6 +129,18 @@ public sealed record DestinatarioFiscal
     /// <summary>1 contribuinte, 2 isento, 9 não contribuinte.</summary>
     public byte IndIeDest { get; init; } = 9;
     public string? InscricaoEstadual { get; init; }
+
+    // Endereço do destinatário — obrigatório para NF-e modelo 55
+    public string? Logradouro { get; init; }
+    public string? Numero { get; init; }
+    public string? Complemento { get; init; }
+    public string? Bairro { get; init; }
+    public string? CodigoMunicipioIbge { get; init; }
+    public string? NomeMunicipio { get; init; }
+    public string? Uf { get; init; }
+    public string? Cep { get; init; }
+    public string? Fone { get; init; }
+    public string? Email { get; init; }
 }
 
 public sealed record ItemFiscal
@@ -162,6 +180,24 @@ public sealed record PagamentoFiscal
     public string? BandeiraCartao { get; init; }
     public string? CnpjCredenciadora { get; init; }
     public string? AutorizacaoTef { get; init; }
+}
+
+/// <summary>Requisição de emissão de NF-e modelo 55 (venda para empresa).</summary>
+public sealed record EmissaoNfeRequest
+{
+    public required ContextoEmitente Emitente { get; init; }
+    public required int Serie { get; init; }
+    public required int NumeroNf { get; init; }
+    public required TipoEmissaoFiscal TipoEmissao { get; init; }
+    public string NaturezaOperacao { get; init; } = "VENDA DE MERCADORIA";
+
+    public required DestinatarioFiscal Destinatario { get; init; }
+    public required IReadOnlyList<ItemFiscal> Itens { get; init; }
+    public required IReadOnlyList<PagamentoFiscal> Pagamentos { get; init; }
+    public decimal ValorTroco { get; init; }
+
+    /// <summary>0 sem frete, 1 por conta do emitente, 2 por conta do destinatário, 9 sem transporte.</summary>
+    public byte ModalidadeFrete { get; init; } = 9;
 }
 
 public sealed record CancelamentoRequest

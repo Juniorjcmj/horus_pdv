@@ -62,6 +62,9 @@ public sealed class ZeusFiscalProvider(
     public Task<ResultadoFiscal> EmitirNfceAsync(EmissaoNfceRequest request, CancellationToken ct = default)
         => Task.Run(() => Emitir(request), ct);
 
+    public Task<ResultadoFiscal> EmitirNfeAsync(EmissaoNfeRequest request, CancellationToken ct = default)
+        => Task.Run(() => EmitirNfe(request), ct);
+
     private ResultadoFiscal Emitir(EmissaoNfceRequest request)
     {
         var emitente = request.Emitente;
@@ -302,8 +305,340 @@ public sealed class ZeusFiscalProvider(
         }, ct);
 
     /* --------------------------------------------------------------------- */
+    /* NF-e modelo 55                                                         */
+    /* --------------------------------------------------------------------- */
+
+    private ResultadoFiscal EmitirNfe(EmissaoNfeRequest request)
+    {
+        var emitente = request.Emitente;
+
+        if (string.IsNullOrWhiteSpace(emitente.InscricaoEstadual) ||
+            string.IsNullOrWhiteSpace(emitente.Logradouro) ||
+            string.IsNullOrWhiteSpace(emitente.Numero) ||
+            string.IsNullOrWhiteSpace(emitente.Bairro) ||
+            string.IsNullOrWhiteSpace(emitente.NomeMunicipio) ||
+            string.IsNullOrWhiteSpace(emitente.Cep))
+        {
+            return new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = 0,
+                MotivoStatus = "Dados cadastrais da empresa incompletos em Minha Empresa: preencha Inscrição Estadual e o Endereço completo.",
+                Retentavel = false
+            };
+        }
+
+        var dest = request.Destinatario;
+        if (string.IsNullOrWhiteSpace(dest.CpfCnpj) ||
+            string.IsNullOrWhiteSpace(dest.Nome) ||
+            string.IsNullOrWhiteSpace(dest.Logradouro) ||
+            string.IsNullOrWhiteSpace(dest.NomeMunicipio) ||
+            string.IsNullOrWhiteSpace(dest.Uf))
+        {
+            return new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = 0,
+                MotivoStatus = "Dados do destinatário incompletos: preencha CNPJ/CPF, nome, endereço completo.",
+                Retentavel = false
+            };
+        }
+
+        using var certificado = CarregarCertificado(emitente);
+        var cfg = MontarConfiguracaoNfe(emitente, request.TipoEmissao);
+
+        try
+        {
+            var nfe = MontarNfeModelo55(request);
+
+            nfe.Assina(cfg, certificado);
+
+            if (cfg.ValidarSchemas)
+            {
+                nfe.Valida(cfg);
+            }
+
+            var xmlAssinado = nfe.ObterXmlString();
+            var chave = nfe.infNFe.Id?.Replace("NFe", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+            using var servico = new ServicosNFe(cfg, certificado);
+            var retorno = servico.NFeAutorizacao(
+                idLote: 1,
+                indSinc: IndicadorSincronizacao.Sincrono,
+                nFes: [nfe],
+                compactarMensagem: true);
+
+            var protNfe = retorno.Retorno?.protNFe;
+            var cStat = protNfe?.infProt?.cStat ?? retorno.Retorno?.cStat ?? 0;
+            var xMotivo = protNfe?.infProt?.xMotivo ?? retorno.Retorno?.xMotivo ?? "Sem retorno da SEFAZ.";
+
+            if (cStat is 100 or 150)
+            {
+                return new ResultadoFiscal
+                {
+                    Status = StatusDocumentoFiscal.Autorizado,
+                    CodigoStatus = cStat,
+                    MotivoStatus = xMotivo,
+                    ChaveAcesso = protNfe?.infProt?.chNFe ?? chave,
+                    Protocolo = protNfe?.infProt?.nProt.ToString(),
+                    DhAutorizacao = protNfe?.infProt?.dhRecbto,
+                    XmlAssinado = xmlAssinado,
+                    XmlProtocolado = retorno.RetornoCompletoStr
+                };
+            }
+
+            if (cStat is 110 or 301 or 302 or 303)
+            {
+                return new ResultadoFiscal
+                {
+                    Status = StatusDocumentoFiscal.Denegado,
+                    CodigoStatus = cStat,
+                    MotivoStatus = xMotivo,
+                    ChaveAcesso = chave,
+                    XmlAssinado = xmlAssinado,
+                    Retentavel = false
+                };
+            }
+
+            logger.LogWarning(
+                "NF-e rejeitada. Empresa {CompanyId} serie {Serie} numero {Numero} cStat {CStat}: {Motivo}",
+                emitente.CompanyId, request.Serie, request.NumeroNf, cStat, xMotivo);
+
+            return new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = cStat,
+                MotivoStatus = xMotivo,
+                ChaveAcesso = chave,
+                XmlAssinado = xmlAssinado,
+                Retentavel = EhRejeicaoTransitoria(cStat)
+            };
+        }
+        catch (NFe.Utils.Excecoes.ValidacaoSchemaException ex)
+        {
+            logger.LogWarning(
+                "NF-e com erro de schema XML. Empresa {CompanyId} serie {Serie} numero {Numero}: {Motivo}",
+                emitente.CompanyId, request.Serie, request.NumeroNf, ex.Message);
+
+            return new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = 0,
+                MotivoStatus = "Erro de validação do XML contra o Schema da SEFAZ: " + ex.Message,
+                Retentavel = false
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex,
+                "Falha ao transmitir NF-e. Empresa {CompanyId} serie {Serie} numero {Numero}",
+                emitente.CompanyId, request.Serie, request.NumeroNf);
+
+            return new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Assinado,
+                CodigoStatus = 0,
+                MotivoStatus = ex.Message,
+                Retentavel = true
+            };
+        }
+    }
+
+    private static NFe.Classes.NFe MontarNfeModelo55(EmissaoNfeRequest request)
+    {
+        var e = request.Emitente;
+        var ufEmitente = ParseUf(e.Uf);
+
+        var ide = new ide
+        {
+            cUF = ufEmitente,
+            natOp = request.NaturezaOperacao,
+            mod = ModeloDocumento.NFe,
+            serie = request.Serie,
+            nNF = request.NumeroNf,
+            cNF = GerarCodigoNumerico(request.NumeroNf),
+            dhEmi = HorusDateTime.Now,
+            tpNF = TipoNFe.tnSaida,
+            idDest = DestinoOperacao.doInterna,
+            cMunFG = long.Parse(e.CodigoMunicipioIbge, Inv),
+            tpImp = TipoImpressao.tiRetrato,        // DANFE A4 retrato
+            tpEmis = request.TipoEmissao == TipoEmissaoFiscal.ContingenciaOffline
+                ? TipoEmissao.teOffLine
+                : TipoEmissao.teNormal,
+            tpAmb = e.Ambiente == 1 ? TipoAmbiente.Producao : TipoAmbiente.Homologacao,
+            finNFe = FinalidadeNFe.fnNormal,
+            indFinal = ConsumidorFinal.cfNao,        // NF-e B2B não é consumidor final
+            indPres = PresencaComprador.pcPresencial,
+            procEmi = ProcessoEmissao.peAplicativoContribuinte,
+            verProc = "HorusPDV/1.0"
+        };
+
+        var emit = new emit
+        {
+            CNPJ = e.Cnpj,
+            xNome = e.RazaoSocial,
+            xFant = string.IsNullOrWhiteSpace(e.NomeFantasia) ? null : e.NomeFantasia,
+            IE = e.InscricaoEstadual,
+            CRT = (CRT)e.Crt,
+            CNAE = null,
+            enderEmit = new enderEmit
+            {
+                xLgr = e.Logradouro,
+                nro = e.Numero,
+                xCpl = string.IsNullOrWhiteSpace(e.Complemento) ? null : e.Complemento,
+                xBairro = e.Bairro,
+                cMun = long.Parse(e.CodigoMunicipioIbge, Inv),
+                xMun = e.NomeMunicipio,
+                UF = ufEmitente,
+                CEP = e.Cep,
+                cPais = 1058,
+                xPais = "BRASIL",
+                fone = ParseFoneNumerico(e.Fone)
+            }
+        };
+
+        var d = request.Destinatario;
+        var ufDest = ParseUf(d.Uf ?? e.Uf);
+        var destNfe = new dest(VersaoServico.Versao400)
+        {
+            indIEDest = (indIEDest)d.IndIeDest,
+            xNome = d.Nome
+        };
+
+        if ((d.CpfCnpj?.Length ?? 0) == 11) destNfe.CPF = d.CpfCnpj;
+        else destNfe.CNPJ = d.CpfCnpj;
+
+        if (d.IndIeDest == 1 && !string.IsNullOrWhiteSpace(d.InscricaoEstadual))
+            destNfe.IE = d.InscricaoEstadual;
+
+        if (e.Ambiente == 2)
+            destNfe.xNome = "NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL";
+
+        destNfe.enderDest = new enderDest
+        {
+            xLgr = d.Logradouro ?? string.Empty,
+            nro = d.Numero ?? "S/N",
+            xCpl = string.IsNullOrWhiteSpace(d.Complemento) ? null : d.Complemento,
+            xBairro = d.Bairro ?? string.Empty,
+            cMun = long.TryParse(d.CodigoMunicipioIbge, out var cMunDest) ? cMunDest : 0,
+            xMun = d.NomeMunicipio ?? string.Empty,
+            UF = ufDest,
+            CEP = d.Cep,
+            cPais = 1058,
+            xPais = "BRASIL",
+            fone = ParseFoneNumerico(d.Fone),
+            email = d.Email
+        };
+
+        var detalhes = request.Itens.Select(MontarItem).ToList();
+
+        if (e.Ambiente == 2 && detalhes.Count > 0)
+            detalhes[0].prod.xProd = "NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL";
+
+        var total = new total
+        {
+            ICMSTot = new ICMSTot
+            {
+                vBC = 0,
+                vICMS = 0,
+                vICMSDeson = 0,
+                vFCP = 0,
+                vBCST = 0,
+                vST = 0,
+                vFCPST = 0,
+                vFCPSTRet = 0,
+                vProd = request.Itens.Sum(i => i.ValorTotal),
+                vFrete = 0,
+                vSeg = 0,
+                vDesc = request.Itens.Sum(i => i.Desconto),
+                vII = 0,
+                vIPI = 0,
+                vIPIDevol = 0,
+                vPIS = 0,
+                vCOFINS = 0,
+                vOutro = 0,
+                vNF = request.Itens.Sum(i => i.ValorTotal) - request.Itens.Sum(i => i.Desconto)
+            }
+        };
+
+        var pagamento = new pag
+        {
+            detPag = request.Pagamentos.Select(p =>
+            {
+                var tPag = (FormaPagamento)int.Parse(p.Tipo, Inv);
+                return new detPag
+                {
+                    tPag = tPag,
+                    vPag = p.Valor,
+                    card = MontarCard(p, tPag)
+                };
+            }).ToList(),
+            vTroco = request.ValorTroco > 0 ? request.ValorTroco : null
+        };
+
+        var modFrete = (ModalidadeFrete)request.ModalidadeFrete;
+
+        var infNFe = new infNFe
+        {
+            versao = "4.00",
+            ide = ide,
+            emit = emit,
+            dest = destNfe,
+            det = detalhes,
+            total = total,
+            transp = new transp { modFrete = modFrete },
+            pag = [pagamento],
+            infRespTec = string.IsNullOrWhiteSpace(e.RespTecCnpj) ? null : new infRespTec
+            {
+                CNPJ = e.RespTecCnpj,
+                xContato = e.RespTecContato,
+                email = e.RespTecEmail,
+                fone = e.RespTecFone
+            }
+        };
+
+        return new NFe.Classes.NFe { infNFe = infNFe };
+    }
+
+    /* --------------------------------------------------------------------- */
     /* Configuração                                                           */
     /* --------------------------------------------------------------------- */
+
+    private ConfiguracaoServico MontarConfiguracaoNfe(ContextoEmitente emitente, TipoEmissaoFiscal tipoEmissao)
+    {
+        var schemasDisponiveis = SchemasDisponiveis;
+        if (!schemasDisponiveis)
+        {
+            logger.LogWarning(
+                "Validacao local de schema XSD desativada para NF-e da empresa {CompanyId}.",
+                emitente.CompanyId);
+        }
+
+        return new ConfiguracaoServico
+        {
+            cUF = ParseUf(emitente.Uf),
+            tpAmb = emitente.Ambiente == 1
+                ? TipoAmbiente.Producao
+                : TipoAmbiente.Homologacao,
+            ModeloDocumento = ModeloDocumento.NFe,
+            VersaoLayout = VersaoServico.Versao400,
+            tpEmis = tipoEmissao == TipoEmissaoFiscal.ContingenciaOffline
+                ? TipoEmissao.teOffLine
+                : TipoEmissao.teNormal,
+            DefineVersaoServicosAutomaticamente = true,
+            DiretorioSchemas = DiretorioSchemas,
+            ValidarSchemas = schemasDisponiveis,
+            TimeOut = 30000,
+            SalvarXmlServicos = false,
+            Certificado = new ConfiguracaoCertificado
+            {
+                TipoCertificado = TipoCertificado.A1ByteArray,
+                ArrayBytesArquivo = emitente.CertificadoPfx,
+                Senha = emitente.CertificadoSenha,
+                ManterDadosEmCache = false
+            }
+        };
+    }
 
     private ConfiguracaoServico MontarConfiguracao(ContextoEmitente emitente, TipoEmissaoFiscal tipoEmissao)
     {
@@ -702,6 +1037,23 @@ public sealed class ZeusFiscalProvider(
             var b when b.Contains("DINERS") => BandeiraCartao.bcDinersClub,
             var b when b.Contains("SOROCRED") => BandeiraCartao.bcSorocred,
             _ => BandeiraCartao.bcOutros
+        };
+    }
+
+    /// <summary>Converte a sigla UF (ex.: "RJ") para o enum Estado da biblioteca DFe.NET.</summary>
+    private static Estado ParseUf(string? uf)
+    {
+        var u = (uf ?? "RJ").Trim().ToUpperInvariant();
+        return u switch
+        {
+            "AC" => Estado.AC, "AL" => Estado.AL, "AM" => Estado.AM, "AP" => Estado.AP,
+            "BA" => Estado.BA, "CE" => Estado.CE, "DF" => Estado.DF, "ES" => Estado.ES,
+            "GO" => Estado.GO, "MA" => Estado.MA, "MG" => Estado.MG, "MS" => Estado.MS,
+            "MT" => Estado.MT, "PA" => Estado.PA, "PB" => Estado.PB, "PE" => Estado.PE,
+            "PI" => Estado.PI, "PR" => Estado.PR, "RJ" => Estado.RJ, "RN" => Estado.RN,
+            "RO" => Estado.RO, "RR" => Estado.RR, "RS" => Estado.RS, "SC" => Estado.SC,
+            "SE" => Estado.SE, "SP" => Estado.SP, "TO" => Estado.TO,
+            _ => Estado.RJ
         };
     }
 

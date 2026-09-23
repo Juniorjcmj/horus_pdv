@@ -6,6 +6,7 @@
 import { apiRequest } from "./apiClient";
 
 const NFCE_API_URL = import.meta.env.VITE_NFCE_API_URL ?? "http://localhost:5260/api/Nfce";
+const NFE_API_URL = import.meta.env.VITE_NFE_API_URL ?? "http://localhost:5260/api/Nfe";
 
 /** Espelha StatusDocumentoFiscal (API/NETCORE/Services/Fiscal/FiscalContracts.cs). */
 export const FISCAL_STATUS = {
@@ -192,5 +193,82 @@ export const fiscalService = {
   async getItens(id: string): Promise<FiscalDocumentItemDto[]> {
     const response = await apiRequest<FiscalDocumentItemDto[]>(`${NFCE_API_URL}/${encodeURIComponent(id)}/itens`);
     return response.data ?? [];
+  },
+};
+
+// ---------------------------------------------------------------------------
+// NF-e modelo 55 (venda para empresas)
+// ---------------------------------------------------------------------------
+
+export type NfeDestinatario = {
+  cpfCnpj: string;
+  nome: string;
+  indIeDest: number;
+  inscricaoEstadual?: string | null;
+  logradouro: string;
+  numero: string;
+  complemento?: string | null;
+  bairro: string;
+  codigoMunicipioIbge: string;
+  nomeMunicipio: string;
+  uf: string;
+  cep: string;
+  fone?: string | null;
+  email?: string | null;
+};
+
+export type EmitirNfePayload = {
+  saleNumber: string;
+  destinatario: NfeDestinatario;
+  naturezaOperacao?: string;
+  modalidadeFrete?: number;
+};
+
+export const nfeService = {
+  async emitir(payload: EmitirNfePayload) {
+    const response = await apiRequest<{ documentoId: string }>(`${NFE_API_URL}/emitir`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return response;
+  },
+
+  async list() {
+    const response = await apiRequest<FiscalDocumentDto[]>(NFE_API_URL);
+    return response.data ?? [];
+  },
+
+  async cancelar(id: string, justificativa: string) {
+    const response = await apiRequest<object>(`${NFE_API_URL}/${encodeURIComponent(id)}/cancelar`, {
+      method: "POST",
+      body: JSON.stringify({ justificativa }),
+    });
+    return response.message;
+  },
+
+  async downloadXml(id: string, chave: string): Promise<void> {
+    const url = `${NFE_API_URL}/${encodeURIComponent(id)}/xml`;
+    const response = await fetch(url, { credentials: "include" });
+
+    if (!response.ok) {
+      let errorMessage = "Erro ao baixar XML da NF-e.";
+      try {
+        const errorJson = (await response.json()) as { message?: string };
+        if (errorJson?.message) errorMessage = errorJson.message;
+      } catch {
+        /* fallback */
+      }
+      throw new Error(errorMessage);
+    }
+
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = `nfe-${chave || id}.xml`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
   },
 };

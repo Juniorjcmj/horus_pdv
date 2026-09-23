@@ -44,6 +44,7 @@ export type PageKey =
   | "vendas"
   | "pedidos"
   | "fiscal"
+  | "nfe-emissao"
   | "pagamentos"
   | "estoque"
   | "caixa"
@@ -338,6 +339,13 @@ export default function AppSidebar({
                   active={activePage === "fiscal"}
                   collapsed={collapsed}
                   onClick={() => handleChangePage("fiscal")}
+                />
+                <SidebarItem
+                  icon={<FileText size={20} />}
+                  label="NF-e Modelo 55"
+                  active={activePage === "nfe-emissao"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("nfe-emissao")}
                 />
                 <SidebarItem
                   icon={<CreditCard size={20} />}

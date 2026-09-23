@@ -44,6 +44,7 @@ const NovoPedidoPage = lazy(() => import("@/pages/Admin/NovoPedidoPage"));
 const ReportsPage = lazy(() => import("@/pages/Admin/ReportsPage"));
 const UserAccountsPage = lazy(() => import("@/pages/Admin/UserAccountsPage"));
 const FiscalPage = lazy(() => import("@/pages/Admin/FiscalPage"));
+const NfeEmissaoPage = lazy(() => import("@/pages/Admin/NfeEmissaoPage"));
 const PaymentsPage = lazy(() => import("@/pages/Admin/PaymentsPage"));
 const StockPage = lazy(() => import("@/pages/Admin/StockPage"));
 const CashRegisterPage = lazy(() => import("@/pages/Admin/CashRegisterPage"));
@@ -140,6 +141,7 @@ export default function App() {
       "vendas",
       "pedidos",
       "fiscal",
+      "nfe-emissao",
       "pagamentos",
       "estoque",
       "caixa",
@@ -229,6 +231,7 @@ export default function App() {
     vendas: "Iniciar Vendas",
     pedidos: "Novo Pedido",
     fiscal: "Fiscal NFC-e / NF-e",
+    "nfe-emissao": "NF-e Modelo 55",
     pagamentos: "Pagamentos Integrados",
     estoque: "Estoque e Inventário",
     caixa: "Abertura e Fechamento de Caixa",
@@ -282,6 +285,8 @@ export default function App() {
         return ReportsPage;
       case "fiscal":
         return FiscalPage;
+      case "nfe-emissao":
+        return NfeEmissaoPage;
       case "pagamentos":
         return PaymentsPage;
       case "estoque":

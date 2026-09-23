@@ -21,7 +21,8 @@ public class DocumentoFiscalAB(
     ClienteAB clienteAB)
 {
     private const short ModeloNfce = 65;
-    // Modelo 65 = NFC-e. A série fiscal é lida da configuração da empresa (Empresas.SerieNfce).
+    private const short ModeloNfe = 55;
+    // Modelo 65 = NFC-e, Modelo 55 = NF-e. A série fiscal é lida da configuração da empresa.
 
     /// <summary>
     /// Aloca o próximo número fiscal e enfileira a venda para emissão. Roda fora da transação
@@ -68,11 +69,170 @@ public class DocumentoFiscalAB(
         }
     }
 
+    /// <summary>
+    /// Enfileira uma NF-e modelo 55 para emissão. Recebe os dados do destinatário em JSON
+    /// para que o worker possa montar a requisição sem depender de uma venda.
+    /// </summary>
+    public async Task<string> EnfileirarNfeAsync(
+        string companyId, string vendaId,
+        string destinatarioJson,
+        string naturezaOperacao = "VENDA DE MERCADORIA",
+        byte modalidadeFrete = 9,
+        CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync(ct);
+
+        try
+        {
+            var (ambiente, serie) = await ObterConfigFiscalNfeAsync(db, transaction, companyId, ct);
+            var numero = await AlocarProximoNumeroAsync(db, transaction, companyId, ModeloNfe, serie, ambiente, ct);
+            var id = $"nfe-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+
+            await using (var insert = new SqlCommand(
+                             """
+                             INSERT INTO DocumentosFiscais
+                                 (Id, CompanyId, VendaId, Modelo, Serie, NumeroNf, Ambiente, Status, TpEmis,
+                                  DestinatarioJson, NaturezaOperacao, ModalidadeFrete)
+                             VALUES
+                                 (@Id, @CompanyId, @VendaId, @Modelo, @Serie, @NumeroNf, @Ambiente, 1, 1,
+                                  @DestinatarioJson, @NaturezaOperacao, @ModalidadeFrete);
+                             """,
+                             db,
+                             transaction))
+            {
+                insert.Parameters.AddWithValue("@Id", id);
+                insert.Parameters.AddWithValue("@CompanyId", companyId);
+                insert.Parameters.AddWithValue("@VendaId", vendaId);
+                insert.Parameters.AddWithValue("@Modelo", ModeloNfe);
+                insert.Parameters.AddWithValue("@Serie", serie);
+                insert.Parameters.AddWithValue("@NumeroNf", numero);
+                insert.Parameters.AddWithValue("@Ambiente", ambiente);
+                insert.Parameters.AddWithValue("@DestinatarioJson", destinatarioJson);
+                insert.Parameters.AddWithValue("@NaturezaOperacao", naturezaOperacao);
+                insert.Parameters.AddWithValue("@ModalidadeFrete", modalidadeFrete);
+                await insert.ExecuteNonQueryAsync(ct);
+            }
+
+            await transaction.CommitAsync(ct);
+            return id;
+        }
+        catch
+        {
+            await transaction.RollbackAsync(ct);
+            throw;
+        }
+    }
+
+    public async Task<EmissaoNfeRequest> MontarRequisicaoNfeAsync(
+        DocumentoFiscalPendente doc, ContextoEmitente emitente, CancellationToken ct = default)
+    {
+        var linhas = await historicoVendasAB.ObterPorIdAsync(doc.CompanyId, doc.VendaId);
+        if (linhas.Count == 0)
+            throw new InvalidOperationException($"Venda {doc.VendaId} sem itens — não é possível montar a NF-e.");
+
+        var itens = new List<ItemFiscal>();
+        for (var index = 0; index < linhas.Count; index++)
+        {
+            var linha = linhas[index];
+            var produto = await produtoAB.ObterPorCodigoAsync(doc.CompanyId, linha.ProductCode)
+                ?? throw new InvalidOperationException(
+                    $"Produto {linha.ProductCode} não encontrado — não é possível montar a NF-e da venda {doc.VendaId}.");
+
+            var valorUnitario = HorusMoneyFormat.ParseDecimal(linha.UnitPrice);
+            var valorBruto = Math.Round(valorUnitario * linha.Quantity, 2, MidpointRounding.AwayFromZero);
+
+            // NF-e modelo 55 usa CFOP 5102 para venda interna ou 6102 para interestadual
+            var cfop = produto.Cfop;
+
+            itens.Add(new ItemFiscal
+            {
+                Numero = index + 1,
+                CodigoProduto = produto.ProductCode,
+                Descricao = produto.ProductName,
+                Gtin = produto.Gtin,
+                Ncm = produto.Ncm,
+                Cest = produto.Cest,
+                Cfop = cfop,
+                Origem = produto.OrigemMercadoria,
+                UnidadeComercial = produto.UnidadeComercial,
+                Quantidade = linha.Quantity,
+                ValorUnitario = valorUnitario,
+                ValorTotal = valorBruto,
+                Desconto = linha.Desconto,
+                Csosn = produto.CsosnIcms,
+                CstIcms = produto.CstIcms,
+                AliquotaIcms = produto.AliquotaIcms,
+                CstPis = produto.CstPis,
+                CstCofins = produto.CstCofins,
+                CstIbsCbs = produto.CstIbsCbs,
+                CClassTrib = produto.CClassTrib
+            });
+        }
+
+        var primeira = linhas[0];
+        var totalAmount = HorusMoneyFormat.ParseDecimal(primeira.TotalAmount);
+
+        var pagamentosCadastrados = await historicoVendasAB.ObterPagamentosVendaAsync(doc.CompanyId, doc.VendaId);
+        List<PagamentoFiscal> pagamentosFiscais;
+        decimal valorTrocoTotal = 0;
+
+        if (pagamentosCadastrados.Count > 0)
+        {
+            pagamentosFiscais = pagamentosCadastrados.Select(p => new PagamentoFiscal
+            {
+                Tipo = MapearFormaPagamento(p.PaymentType),
+                Valor = p.Amount
+            }).ToList();
+            valorTrocoTotal = pagamentosCadastrados.Sum(p => p.ChangeAmount);
+        }
+        else
+        {
+            pagamentosFiscais = [new PagamentoFiscal { Tipo = MapearFormaPagamento(primeira.PaymentType), Valor = totalAmount }];
+        }
+
+        // Deserializa o destinatário persistido no enfileiramento
+        var destinatario = System.Text.Json.JsonSerializer.Deserialize<DestinatarioFiscal>(
+            doc.DestinatarioJson ?? "{}",
+            new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+            ?? throw new InvalidOperationException("Dados do destinatário ausentes no documento fiscal.");
+
+        return new EmissaoNfeRequest
+        {
+            Emitente = emitente,
+            Serie = doc.Serie,
+            NumeroNf = doc.NumeroNf,
+            TipoEmissao = doc.TipoEmissao,
+            NaturezaOperacao = doc.NaturezaOperacao ?? "VENDA DE MERCADORIA",
+            Destinatario = destinatario,
+            Itens = itens,
+            Pagamentos = pagamentosFiscais,
+            ValorTroco = valorTrocoTotal,
+            ModalidadeFrete = doc.ModalidadeFrete
+        };
+    }
+
+    private async Task<(byte Ambiente, int Serie)> ObterConfigFiscalNfeAsync(
+        SqlConnection db, SqlTransaction transaction, string companyId, CancellationToken ct)
+    {
+        await using var command = new SqlCommand(
+            "SELECT AmbienteFiscal, ISNULL(SerieNfe, 1) FROM Empresas WHERE Id = @CompanyId;", db, transaction);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        if (await reader.ReadAsync(ct))
+        {
+            var amb = reader.IsDBNull(0) ? (byte)2 : reader.GetByte(0);
+            var serie = reader.IsDBNull(1) ? 1 : Convert.ToInt32(reader.GetValue(1));
+            return (amb, serie);
+        }
+        return (2, 1);
+    }
+
     public async Task<List<DocumentoFiscalPendente>> ObterPendentesAsync(int lote, CancellationToken ct = default)
     {
         const string sql = """
-            SELECT TOP (@Lote) Id, CompanyId, VendaId, Serie, NumeroNf, TpEmis, Tentativas,
-                   DhContingencia, JustContingencia
+            SELECT TOP (@Lote) Id, CompanyId, VendaId, Modelo, Serie, NumeroNf, TpEmis, Tentativas,
+                   DhContingencia, JustContingencia, DestinatarioJson, NaturezaOperacao, ModalidadeFrete
             FROM DocumentosFiscais
             WHERE Status IN (1, 2, 8)
               AND (ProximaTentativaEm IS NULL OR ProximaTentativaEm <= SYSDATETIMEOFFSET())
@@ -91,12 +251,16 @@ public class DocumentoFiscalAB(
                 Id = ReadString(reader, "Id"),
                 CompanyId = ReadString(reader, "CompanyId"),
                 VendaId = ReadString(reader, "VendaId"),
+                Modelo = (short)ReadInt(reader, "Modelo"),
                 Serie = ReadInt(reader, "Serie"),
                 NumeroNf = ReadInt(reader, "NumeroNf"),
                 TipoEmissao = (TipoEmissaoFiscal)ReadInt(reader, "TpEmis"),
                 Tentativas = ReadInt(reader, "Tentativas"),
                 DhContingencia = ReadNullableDateTimeOffset(reader, "DhContingencia"),
-                JustContingencia = ReadNullableString(reader, "JustContingencia")
+                JustContingencia = ReadNullableString(reader, "JustContingencia"),
+                DestinatarioJson = ReadNullableString(reader, "DestinatarioJson"),
+                NaturezaOperacao = ReadNullableString(reader, "NaturezaOperacao"),
+                ModalidadeFrete = (byte)ReadInt(reader, "ModalidadeFrete")
             });
         }
 
