@@ -409,15 +409,20 @@ export default function ReceiptPreviewModal({
     : "";
 
   const printReceipt = () => {
-    const popup = window.open("", "_blank", "width=420,height=720");
-    if (!popup) return;
-    popup.document.open();
-    if (isDanfe && currentFiscal) {
-      popup.document.write(buildDanfePrintHtml(receipt, currentFiscal, formatMoney));
+    const html = (isDanfe && currentFiscal)
+      ? buildDanfePrintHtml(receipt, currentFiscal, formatMoney)
+      : buildReceiptPrintHtml(receipt, formatMoney, currentFiscal);
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const popup = window.open(url, "_blank", "width=420,height=720");
+    if (popup) {
+      popup.addEventListener("afterprint", () => {
+        popup.close();
+        URL.revokeObjectURL(url);
+      });
     } else {
-      popup.document.write(buildReceiptPrintHtml(receipt, formatMoney, currentFiscal));
+      URL.revokeObjectURL(url);
     }
-    popup.document.close();
   };
 
   const tributosEstimados = receipt.subtotal * 0.3145;

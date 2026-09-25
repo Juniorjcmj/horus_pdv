@@ -1259,15 +1259,20 @@ export default function SalesStartPage({
       }
       saveLastReceipt(receipt);
 
-      // Impressão automática na impressora padrão
+      // Impressão automática na impressora padrão (Blob garante UTF-8)
       const printHtml = (fiscalDetail && !isOfflineSale)
         ? buildDanfePrintHtml(receipt, fiscalDetail, formatMoneyBr)
         : buildReceiptPrintHtml(receipt, formatMoneyBr, fiscalDetail);
-      const printPopup = window.open("", "_blank", "width=420,height=720");
+      const printBlob = new Blob([printHtml], { type: "text/html;charset=utf-8" });
+      const printUrl = URL.createObjectURL(printBlob);
+      const printPopup = window.open(printUrl, "_blank", "width=420,height=720");
       if (printPopup) {
-        printPopup.document.open();
-        printPopup.document.write(printHtml);
-        printPopup.document.close();
+        printPopup.addEventListener("afterprint", () => {
+          printPopup.close();
+          URL.revokeObjectURL(printUrl);
+        });
+      } else {
+        URL.revokeObjectURL(printUrl);
       }
 
       if (printPreviewEnabled) {
