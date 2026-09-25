@@ -18,6 +18,7 @@ import LandingPage from "@/pages/Public/LandingPage";
 import type { RegisterFormPayload } from "@/pages/Auth/types";
 import { authService } from "@/services/api/authService";
 import { cashRegisterService } from "@/services/api/cashRegisterService";
+import { startOfflineSync } from "@/services/offlineSync";
 import { companyService } from "@/services/api/companyService";
 import {
   clearAuthSession,
@@ -666,6 +667,11 @@ export default function App() {
       isMounted = false;
       window.removeEventListener("horuspdv-company-change", loadCompany);
     };
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    return startOfflineSync();
   }, [isAuthenticated]);
 
   useEffect(() => {

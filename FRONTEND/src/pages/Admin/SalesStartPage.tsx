@@ -52,6 +52,7 @@ import {
 import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { productService } from "@/services/api/productService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
+import { saveProductsCache, loadProductsCache, queueSale, getPendingSalesCount } from "@/services/offlineStore";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
 import { QuickCustomerRegisterModal } from "@/components/Admin/QuickCustomerRegisterModal";
@@ -208,6 +209,7 @@ export default function SalesStartPage({
     getPrintPreviewEnabled(),
   );
   const [isConfirmingSale, setIsConfirmingSale] = useState(false);
+  const [pendingOfflineCount, setPendingOfflineCount] = useState(() => getPendingSalesCount());
 
   const [quickCustomerModalOpen, setQuickCustomerModalOpen] = useState(false);
   const [quickCustomerInitialDoc, setQuickCustomerInitialDoc] = useState("");
@@ -483,9 +485,9 @@ export default function SalesStartPage({
   }, [selectedProduct, products, cart]);
 
   const loadProducts = useCallback(async () => {
-    const items = await productService.list();
-    setProducts(
-      items.map((item) => ({
+    try {
+      const items = await productService.list();
+      const mapped = items.map((item) => ({
         id: item.id,
         name: item.productName,
         code: item.productCode,
@@ -499,8 +501,18 @@ export default function SalesStartPage({
         controlaValidade: item.controlaValidade,
         diasAlertaValidade: item.diasAlertaValidade,
         diasRestantes: item.diasRestantes,
-      })),
-    );
+      }));
+      setProducts(mapped);
+      saveProductsCache(mapped);
+    } catch {
+      const cached = loadProductsCache();
+      if (cached && cached.length > 0) {
+        setProducts(cached);
+        Toast.info("Produtos carregados do cache offline.");
+      } else {
+        throw new Error("Sem conexão e sem cache de produtos disponível.");
+      }
+    }
   }, [parseMoneyBr]);
 
   const loadCashStatus = useCallback(async () => {
@@ -538,8 +550,8 @@ export default function SalesStartPage({
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadProducts().catch(() => {
-      Toast.error("Não foi possível carregar produtos da API no PDV.");
+    loadProducts().catch((err) => {
+      Toast.error(err instanceof Error ? err.message : "Não foi possível carregar produtos.");
     });
     loadCategories();
   }, [loadProducts, loadCategories]);
@@ -551,6 +563,16 @@ export default function SalesStartPage({
       Toast.error("Não foi possível validar a abertura de caixa. Verifique sua conexão.");
     });
   }, [loadCashStatus]);
+
+  useEffect(() => {
+    const onSyncSuccess = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { localSaleNumber: string };
+      setPendingOfflineCount(getPendingSalesCount());
+      Toast.success(`Venda offline ${detail.localSaleNumber} sincronizada com sucesso.`);
+    };
+    window.addEventListener("offline-sync-success", onSyncSuccess);
+    return () => window.removeEventListener("offline-sync-success", onSyncSuccess);
+  }, []);
 
   useEffect(() => {
     companyService
@@ -1120,48 +1142,63 @@ export default function SalesStartPage({
         changeAmount: p.changeAmount,
       }));
 
-      const result = activePedido
-        ? await pedidoService.finalize(activePedido.orderNumber, primaryPaymentType, payloadPayments)
-        : await salesHistoryService.register({
-            customerName: selectedCustomer ? selectedCustomer.customerName : "Consumidor",
-            customerCpf: selectedCustomer ? selectedCustomer.document : (cpfNota || "-"),
-            paymentType: primaryPaymentType,
-            totalAmount: formatMoneyBr(subtotal),
-            operatorName,
-            items: cart.map((item) => ({
-              productCode: item.code,
-              productName: item.name,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              desconto: item.discount ?? 0,
-              itemTotal: item.itemTotal ?? Math.max(0, item.quantity * item.unitPrice - (item.discount ?? 0)),
-              promocaoId: item.promocaoId ?? null,
-            })),
-            payments: payloadPayments,
-          });
+      const registerPayload = {
+        customerName: selectedCustomer ? selectedCustomer.customerName : "Consumidor",
+        customerCpf: selectedCustomer ? selectedCustomer.document : (cpfNota || "-"),
+        paymentType: primaryPaymentType,
+        totalAmount: formatMoneyBr(subtotal),
+        operatorName,
+        items: cart.map((item) => ({
+          productCode: item.code,
+          productName: item.name,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          desconto: item.discount ?? 0,
+          itemTotal: item.itemTotal ?? Math.max(0, item.quantity * item.unitPrice - (item.discount ?? 0)),
+          promocaoId: item.promocaoId ?? null,
+        })),
+        payments: payloadPayments,
+      };
 
-      const saleNumber = result?.saleNumber || `PDV-${Date.now()}`;
-
-      // Aguarda brevemente a autorização da SEFAZ pelo outbox worker (polling ágil de até 1.5s)
-      // Caso ainda não tenha retornado, o ReceiptPreviewModal continuará o polling ao vivo sem travar o operador.
+      let saleNumber: string;
+      let isOfflineSale = false;
       let fiscalDetail: FiscalDocumentDetailDto | null = null;
-      if (result?.saleNumber) {
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            const doc = await fiscalService.getBySaleNumber(result.saleNumber);
-            if (
-              doc &&
-              (doc.status === FISCAL_STATUS.Autorizado ||
-                doc.status === FISCAL_STATUS.ContingenciaPendente)
-            ) {
-              fiscalDetail = doc;
-              break;
+
+      try {
+        const result = activePedido
+          ? await pedidoService.finalize(activePedido.orderNumber, primaryPaymentType, payloadPayments)
+          : await salesHistoryService.register(registerPayload);
+
+        saleNumber = result?.saleNumber || `PDV-${Date.now()}`;
+
+        // Aguarda brevemente a autorização da SEFAZ pelo outbox worker (polling ágil de até 1.5s)
+        if (result?.saleNumber) {
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              const doc = await fiscalService.getBySaleNumber(result.saleNumber);
+              if (
+                doc &&
+                (doc.status === FISCAL_STATUS.Autorizado ||
+                  doc.status === FISCAL_STATUS.ContingenciaPendente)
+              ) {
+                fiscalDetail = doc;
+                break;
+              }
+            } catch {
+              // Ignora falha transitória de rede durante o processamento da nota
             }
-          } catch {
-            // Ignora falha transitória de rede durante o processamento da nota
+            await new Promise((resolve) => setTimeout(resolve, 500));
           }
-          await new Promise((resolve) => setTimeout(resolve, 500));
         }
+      } catch {
+        // API indisponível — enfileira venda para sincronização posterior
+        if (activePedido) {
+          // Pedidos não podem ser finalizados offline (dependem de estado no servidor)
+          Toast.error("Sem conexão. Pedidos só podem ser finalizados online.");
+          return;
+        }
+        saleNumber = queueSale(registerPayload);
+        isOfflineSale = true;
       }
 
       const receipt: SaleReceipt = {
@@ -1215,12 +1252,17 @@ export default function SalesStartPage({
       };
 
       setCheckoutOpen(false);
-      await loadProducts();
+      if (!isOfflineSale) {
+        await loadProducts().catch(() => { /* ignora falha de reload pós-venda */ });
+      }
       saveLastReceipt(receipt);
       if (printPreviewEnabled) {
         setReceiptPreview(receipt);
       }
-      if (fiscalDetail?.status === FISCAL_STATUS.Autorizado) {
+      if (isOfflineSale) {
+        setPendingOfflineCount(getPendingSalesCount());
+        Toast.info(`Venda ${saleNumber} salva offline. Será sincronizada automaticamente.`);
+      } else if (fiscalDetail?.status === FISCAL_STATUS.Autorizado) {
         Toast.success(`Venda ${receipt.saleNumber} confirmada e NFC-e autorizada!`);
       } else {
         Toast.success(`Pagamento confirmado. Venda ${receipt.saleNumber} registrada.`);
@@ -1316,6 +1358,12 @@ export default function SalesStartPage({
               <p className="text-sm italic leading-none md:text-lg">Frente de Caixa</p>
             </div>
             <div className="flex items-center gap-2.5 md:gap-4">
+              {pendingOfflineCount > 0 && (
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-yellow-400/40 bg-yellow-500/20 px-3 py-1.5 text-xs font-semibold text-yellow-100 shadow-sm">
+                  <AlertTriangle size={14} />
+                  {pendingOfflineCount} venda{pendingOfflineCount > 1 ? "s" : ""} offline pendente{pendingOfflineCount > 1 ? "s" : ""}
+                </span>
+              )}
               <button
                 type="button"
                 onClick={toggleFullscreen}
