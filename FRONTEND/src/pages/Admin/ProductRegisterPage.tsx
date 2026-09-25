@@ -20,7 +20,7 @@ import {
   UploadCloud,
   X,
 } from "lucide-react";
-import { type ClipboardEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type ClipboardEvent, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import BalancaImportModal from "@/components/Admin/BalancaImportModal";
 import GondolaLabelModal from "@/components/Admin/GondolaLabelModal";
 import NfeImportModal from "@/components/Admin/NfeImportModal";
@@ -1437,6 +1437,13 @@ export default function ProductRegisterPage() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [deletingProductIds, setDeletingProductIds] = useState<Set<string>>(() => new Set());
   const [form, setForm] = useState<ProductFormData>(EMPTY_FORM);
+
+  // Inline table editing
+  const [inlineEditCell, setInlineEditCell] = useState<{ id: string; field: string } | null>(null);
+  const [inlineEditValue, setInlineEditValue] = useState("");
+  const [inlineSaving, setInlineSaving] = useState(false);
+  const inlineInputRef = useRef<HTMLInputElement | null>(null);
+
   const [gondolaModalOpen, setGondolaModalOpen] = useState(false);
   const [gondolaInitialProducts, setGondolaInitialProducts] = useState<Product[]>([]);
   const [importMenuOpen, setImportMenuOpen] = useState(false);
@@ -1570,6 +1577,72 @@ export default function ProductRegisterPage() {
     setEditingId(null);
     setForm(EMPTY_FORM);
     setDrawerOpen(true);
+  };
+
+  // ---------------------------------------------------------------------------
+  // Inline cell editing (click-to-edit on table)
+  // ---------------------------------------------------------------------------
+
+  const startInlineEdit = (product: Product, field: string) => {
+    const value =
+      field === "productQnt" ? product.productQnt
+      : field === "productSalePrice" ? product.productSalePrice
+      : field === "productUnitPrice" ? product.productUnitPrice
+      : field === "margemDesejadaPercentual" ? (product.margemDesejadaPercentual ?? "")
+      : "";
+    setInlineEditCell({ id: product.id, field });
+    setInlineEditValue(value);
+    setTimeout(() => inlineInputRef.current?.select(), 0);
+  };
+
+  const cancelInlineEdit = () => {
+    setInlineEditCell(null);
+    setInlineEditValue("");
+  };
+
+  const saveInlineEdit = async () => {
+    if (!inlineEditCell || inlineSaving) return;
+    const product = products.find((p) => p.id === inlineEditCell.id);
+    if (!product) return;
+
+    const { field } = inlineEditCell;
+    const currentValue =
+      field === "productQnt" ? product.productQnt
+      : field === "productSalePrice" ? product.productSalePrice
+      : field === "productUnitPrice" ? product.productUnitPrice
+      : field === "margemDesejadaPercentual" ? (product.margemDesejadaPercentual ?? "")
+      : "";
+
+    // No change — just close
+    if (inlineEditValue === currentValue) {
+      cancelInlineEdit();
+      return;
+    }
+
+    setInlineSaving(true);
+    try {
+      const payload: ProductFormData = { ...product };
+      if (field === "productQnt") payload.productQnt = inlineEditValue;
+      else if (field === "productSalePrice") payload.productSalePrice = inlineEditValue;
+      else if (field === "productUnitPrice") payload.productUnitPrice = inlineEditValue;
+      else if (field === "margemDesejadaPercentual") payload.margemDesejadaPercentual = inlineEditValue || null;
+
+      const updated = await productService.update(product.id, payload);
+      if (updated) {
+        setProducts((cur) => cur.map((p) => (p.id === product.id ? updated : p)));
+        Toast.success("Atualizado!");
+      }
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Erro ao salvar.");
+    } finally {
+      setInlineSaving(false);
+      cancelInlineEdit();
+    }
+  };
+
+  const handleInlineKeyDown = (e: ReactKeyboardEvent) => {
+    if (e.key === "Enter") { e.preventDefault(); void saveInlineEdit(); }
+    else if (e.key === "Escape") cancelInlineEdit();
   };
 
   const openEditDrawer = (product: Product) => {
@@ -2038,7 +2111,7 @@ export default function ProductRegisterPage() {
           </div>
         ) : null}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[920px] text-sm">
+          <table className="w-full min-w-[1100px] text-sm">
             <thead className="bg-bg-primary text-left text-text-secondary">
               <tr>
                 <th className="w-12 px-4 py-3">
@@ -2055,7 +2128,9 @@ export default function ProductRegisterPage() {
                 <th className="px-4 py-3">Código</th>
                 <th className="px-4 py-3">Fornecedor</th>
                 <th className="px-4 py-3">Quantidade</th>
+                <th className="px-4 py-3">Preço Custo</th>
                 <th className="px-4 py-3">Preço Venda</th>
+                <th className="px-4 py-3">Margem %</th>
                 <th className="px-4 py-3">Ações</th>
               </tr>
             </thead>
@@ -2118,36 +2193,117 @@ export default function ProductRegisterPage() {
                   </td>
                   <td className="px-4 py-3">{product.productCode}</td>
                   <td className="px-4 py-3">{product.productSupplier}</td>
+                  {/* Quantidade — click-to-edit */}
                   <td className="px-4 py-3">
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-text-primary">
-                        {product.productQnt} {product.unidadeComercial}
-                      </span>
-                      {parseMoneyBr(product.estoqueMinimo || "0") > 0 ? (
-                        <span className="text-xs text-text-tertiary">
-                          Mín: {product.estoqueMinimo} {product.unidadeComercial}
+                    {inlineEditCell?.id === product.id && inlineEditCell.field === "productQnt" ? (
+                      <input
+                        ref={inlineInputRef}
+                        type="text"
+                        inputMode="decimal"
+                        value={inlineEditValue}
+                        onChange={(e) => setInlineEditValue(sanitizeDecimalInput(e.target.value, 4).replace(".", ","))}
+                        onBlur={() => void saveInlineEdit()}
+                        onKeyDown={handleInlineKeyDown}
+                        disabled={inlineSaving}
+                        className="input-field w-24 text-right text-sm font-semibold"
+                        autoFocus
+                      />
+                    ) : (
+                      <div
+                        className="cursor-pointer rounded px-1 py-0.5 transition hover:bg-accent/10"
+                        onClick={() => startInlineEdit(product, "productQnt")}
+                        title="Clique para editar quantidade"
+                      >
+                        <span className="font-semibold text-text-primary">
+                          {product.productQnt} {product.unidadeComercial}
                         </span>
-                      ) : null}
-                      {parseMoneyBr(product.estoqueMinimo || "0") > 0 &&
-                      parseMoneyBr(product.productQnt || "0") <= parseMoneyBr(product.estoqueMinimo || "0") ? (
-                        <span className="mt-1 inline-flex w-fit items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
-                          Abaixo do mín.
-                        </span>
-                      ) : null}
-                      {parseMoneyBr(product.estoqueMaximo || "0") > 0 &&
-                      parseMoneyBr(product.productQnt || "0") > parseMoneyBr(product.estoqueMaximo || "0") ? (
-                        <span className="mt-1 inline-flex w-fit items-center gap-1 rounded bg-blue-500/15 px-1.5 py-0.5 text-[10px] font-medium text-blue-600 dark:text-blue-400">
-                          Acima do máx.
-                        </span>
-                      ) : null}
-                      {product.localizacaoEstoque ? (
-                        <span className="text-xs text-text-tertiary">
-                          Local: {product.localizacaoEstoque}
-                        </span>
-                      ) : null}
-                    </div>
+                        {parseMoneyBr(product.estoqueMinimo || "0") > 0 &&
+                        parseMoneyBr(product.productQnt || "0") <= parseMoneyBr(product.estoqueMinimo || "0") ? (
+                          <span className="mt-1 block w-fit rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                            Abaixo do mín.
+                          </span>
+                        ) : null}
+                      </div>
+                    )}
                   </td>
-                  <td className="px-4 py-3">{product.productSalePrice}</td>
+                  {/* Preço Custo — click-to-edit */}
+                  <td className="px-4 py-3">
+                    {inlineEditCell?.id === product.id && inlineEditCell.field === "productUnitPrice" ? (
+                      <input
+                        ref={inlineInputRef}
+                        type="text"
+                        inputMode="decimal"
+                        value={inlineEditValue}
+                        onChange={(e) => setInlineEditValue(maskMoneyBr(e.target.value))}
+                        onBlur={() => void saveInlineEdit()}
+                        onKeyDown={handleInlineKeyDown}
+                        disabled={inlineSaving}
+                        className="input-field w-24 text-right text-sm"
+                        autoFocus
+                      />
+                    ) : (
+                      <span
+                        className="cursor-pointer rounded px-1 py-0.5 text-text-secondary transition hover:bg-accent/10"
+                        onClick={() => startInlineEdit(product, "productUnitPrice")}
+                        title="Clique para editar preço de custo"
+                      >
+                        {product.productUnitPrice}
+                      </span>
+                    )}
+                  </td>
+                  {/* Preço Venda — click-to-edit */}
+                  <td className="px-4 py-3">
+                    {inlineEditCell?.id === product.id && inlineEditCell.field === "productSalePrice" ? (
+                      <input
+                        ref={inlineInputRef}
+                        type="text"
+                        inputMode="decimal"
+                        value={inlineEditValue}
+                        onChange={(e) => setInlineEditValue(maskMoneyBr(e.target.value))}
+                        onBlur={() => void saveInlineEdit()}
+                        onKeyDown={handleInlineKeyDown}
+                        disabled={inlineSaving}
+                        className="input-field w-24 text-right text-sm font-semibold"
+                        autoFocus
+                      />
+                    ) : (
+                      <span
+                        className="cursor-pointer rounded px-1 py-0.5 font-semibold text-text-primary transition hover:bg-accent/10"
+                        onClick={() => startInlineEdit(product, "productSalePrice")}
+                        title="Clique para editar preço de venda"
+                      >
+                        {product.productSalePrice}
+                      </span>
+                    )}
+                  </td>
+                  {/* Margem Desejada — click-to-edit */}
+                  <td className="px-4 py-3">
+                    {inlineEditCell?.id === product.id && inlineEditCell.field === "margemDesejadaPercentual" ? (
+                      <input
+                        ref={inlineInputRef}
+                        type="text"
+                        inputMode="decimal"
+                        value={inlineEditValue}
+                        onChange={(e) => setInlineEditValue(sanitizeDecimalInput(e.target.value, 2).replace(".", ","))}
+                        onBlur={() => void saveInlineEdit()}
+                        onKeyDown={handleInlineKeyDown}
+                        disabled={inlineSaving}
+                        className="input-field w-20 text-right text-sm"
+                        placeholder="—"
+                        autoFocus
+                      />
+                    ) : (
+                      <span
+                        className="cursor-pointer rounded px-1 py-0.5 transition hover:bg-accent/10"
+                        onClick={() => startInlineEdit(product, "margemDesejadaPercentual")}
+                        title="Clique para editar margem desejada"
+                      >
+                        {product.margemDesejadaPercentual ? `${product.margemDesejadaPercentual}%` : (
+                          <span className="text-text-tertiary">—</span>
+                        )}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <RowActionsMenu
                       items={[
