@@ -1410,7 +1410,7 @@ function ProductFormDrawer({
 }
 
 export default function ProductRegisterPage() {
-  const { parseMoneyBr } = useInputMasks();
+  const { parseMoneyBr, maskMoneyBr, sanitizeDecimalInput } = useInputMasks();
   const statusDialog = useStatusDialog();
   const [products, setProducts] = useState<Product[]>([]);
   const [supplierOptions, setSupplierOptions] = useState<string[]>([]);
