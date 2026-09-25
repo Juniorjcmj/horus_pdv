@@ -181,8 +181,8 @@ export function buildReceiptPrintHtml(
       .item { margin-top: 7px; }
       .item-meta { padding-left: 28px; font-size: 11px; }
       .qrcode-wrapper { text-align: center; margin: 8px auto 4px auto; width: 100%; page-break-inside: avoid; }
-      .qrcode-box { display: inline-block; padding: 4px; background: #ffffff; }
-      .qrcode-wrapper svg { display: inline-block; margin: 0 auto; width: 130px !important; height: 130px !important; shape-rendering: crispEdges; }
+      .qrcode-box { display: inline-block; padding: 6px; background: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+      .qrcode-wrapper svg { display: inline-block; margin: 0 auto; width: 130px !important; height: 130px !important; shape-rendering: crispEdges; -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
       .qrcode-wrapper svg rect { fill: #ffffff !important; } .qrcode-wrapper svg path { fill: #000000 !important; }
       .qrcode-caption { font-size: 9px; margin-top: 4px; text-align: center; color: #000; }
     </style>

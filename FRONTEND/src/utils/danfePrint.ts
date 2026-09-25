@@ -70,13 +70,20 @@ export function getSefazConsultaUrl(uf?: string | null): string {
 export function generateQrCodeSvg(url: string | null | undefined, size = 140): string {
   if (!url) return "";
   try {
-    return renderToStaticMarkup(
+    const svg = renderToStaticMarkup(
       React.createElement(QRCodeSVG, {
         value: url,
         size,
         level: "M",
         includeMargin: true,
+        bgColor: "#ffffff",
+        fgColor: "#000000",
       })
+    );
+    // Garante que o fundo branco tenha inline style para impressão (browsers ignoram fill de CSS em SVG ao imprimir)
+    return svg.replace(
+      /(<rect[^>]*fill="#ffffff"[^>]*)(\/?>)/g,
+      '$1 style="fill:#ffffff"$2'
     );
   } catch {
     return "";
@@ -236,8 +243,11 @@ export function buildDanfePrintHtml(
       }
       .qrcode-box {
         display: inline-block;
-        padding: 4px;
-        background: #ffffff;
+        padding: 6px;
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
       }
       .qrcode-wrapper svg {
         display: inline-block;
@@ -245,6 +255,9 @@ export function buildDanfePrintHtml(
         width: 140px !important;
         height: 140px !important;
         shape-rendering: crispEdges;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
       }
       .qrcode-wrapper svg rect { fill: #ffffff !important; }
       .qrcode-wrapper svg path { fill: #000000 !important; }
