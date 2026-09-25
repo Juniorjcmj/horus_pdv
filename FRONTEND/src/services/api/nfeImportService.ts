@@ -101,13 +101,16 @@ export const nfeImportService = {
     const response = await apiRequest<NfeImportPreview>(`${NFE_IMPORT_API_URL}/preview`, {
       method: "POST",
       body: JSON.stringify({ xmlBase64 }),
+      timeoutMs: 30_000,
     });
     return response.data ?? null;
   },
   async previewPorChave(chaveAcesso: string) {
+    // Consulta SEFAZ pode levar 10-40s (query + Ciência da Operação + retries)
     const response = await apiRequest<NfeImportPreview>(`${NFE_IMPORT_API_URL}/buscar-sefaz`, {
       method: "POST",
       body: JSON.stringify({ chaveAcesso }),
+      timeoutMs: 60_000,
     });
     return response.data ?? null;
   },

@@ -229,6 +229,7 @@ export const nfeService = {
     const response = await apiRequest<{ documentoId: string }>(`${NFE_API_URL}/emitir`, {
       method: "POST",
       body: JSON.stringify(payload),
+      timeoutMs: 30_000,
     });
     return response;
   },

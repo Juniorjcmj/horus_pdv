@@ -14,6 +14,8 @@ export type ApiResponse<T> = {
 
 type ApiRequestOptions = RequestInit & {
   skipAuth?: boolean;
+  /** Timeout em milissegundos (padrão: 5 000 ms). Operações longas como consulta SEFAZ devem usar valor maior. */
+  timeoutMs?: number;
 };
 
 const API_TIMEOUT_MS = 5_000;
@@ -26,11 +28,11 @@ export async function apiRequest<T>(
     throw new Error("Sem conexão com a internet.");
   }
 
-  const { skipAuth: _skipAuth, headers, ...requestOptions } = options;
+  const { skipAuth: _skipAuth, headers, timeoutMs, ...requestOptions } = options;
   void _skipAuth;
 
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs ?? API_TIMEOUT_MS);
 
   let response: Response;
   try {
@@ -45,7 +47,7 @@ export async function apiRequest<T>(
     });
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") {
-      throw new Error("Sem conexão com a internet.");
+      throw new Error("A requisição demorou demais e foi cancelada. Verifique sua conexão ou tente novamente.");
     }
     throw err;
   } finally {
