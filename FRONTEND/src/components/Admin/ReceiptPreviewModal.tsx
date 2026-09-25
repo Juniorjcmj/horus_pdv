@@ -183,7 +183,7 @@ export function buildReceiptPrintHtml(
       .qrcode-wrapper { text-align: center; margin: 8px auto 4px auto; width: 100%; page-break-inside: avoid; }
       .qrcode-box { display: inline-block; padding: 4px; background: #ffffff; }
       .qrcode-wrapper svg { display: inline-block; margin: 0 auto; width: 130px !important; height: 130px !important; shape-rendering: crispEdges; }
-      .qrcode-wrapper path { fill: #000000 !important; }
+      .qrcode-wrapper svg rect { fill: #ffffff !important; } .qrcode-wrapper svg path { fill: #000000 !important; }
       .qrcode-caption { font-size: 9px; margin-top: 4px; text-align: center; color: #000; }
     </style>
   </head>

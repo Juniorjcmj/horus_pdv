@@ -246,9 +246,8 @@ export function buildDanfePrintHtml(
         height: 140px !important;
         shape-rendering: crispEdges;
       }
-      .qrcode-wrapper path {
-        fill: #000000 !important;
-      }
+      .qrcode-wrapper svg rect { fill: #ffffff !important; }
+      .qrcode-wrapper svg path { fill: #000000 !important; }
       .qrcode-caption {
         font-size: 9px;
         margin-top: 4px;
