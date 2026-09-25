@@ -116,6 +116,7 @@ const PAYMENT_OPTIONS: Array<{ value: PaymentType; label: string }> = [
 ];
 
 const LAST_RECEIPT_STORAGE_KEY = "horus-pdv-last-receipt";
+const CASH_STATUS_STORAGE_KEY = "horus-pdv-cash-status";
 
 function formatDateTime(date: Date) {
   return {
@@ -503,9 +504,27 @@ export default function SalesStartPage({
   }, [parseMoneyBr]);
 
   const loadCashStatus = useCallback(async () => {
-    const status = await cashRegisterService.status();
-    setCashStatus(status ?? null);
-    return status ?? null;
+    try {
+      const status = await cashRegisterService.status();
+      const result = status ?? null;
+      setCashStatus(result);
+      if (result) {
+        window.localStorage.setItem(CASH_STATUS_STORAGE_KEY, JSON.stringify(result));
+      }
+      return result;
+    } catch {
+      const cached = window.localStorage.getItem(CASH_STATUS_STORAGE_KEY);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached) as CashRegisterStatusDto;
+          setCashStatus(parsed);
+          return parsed;
+        } catch {
+          /* cache corrompido, ignora */
+        }
+      }
+      throw new Error("Não foi possível verificar o status do caixa.");
+    }
   }, []);
 
   const loadCategories = useCallback(async () => {
@@ -529,7 +548,7 @@ export default function SalesStartPage({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadCashStatus().catch(() => {
       setCashStatus(null);
-      Toast.error("Não foi possível validar a abertura de caixa.");
+      Toast.error("Não foi possível validar a abertura de caixa. Verifique sua conexão.");
     });
   }, [loadCashStatus]);
 

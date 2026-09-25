@@ -194,6 +194,9 @@ export default function CashRegisterPage() {
     const status = await cashRegisterService.status();
     setCashStatus(status ?? null);
     setClosingAmount(status?.currentSession?.expectedCashAmount || "0,00");
+    if (status) {
+      window.localStorage.setItem("horus-pdv-cash-status", JSON.stringify(status));
+    }
   }, []);
 
   useEffect(() => {
@@ -231,6 +234,9 @@ export default function CashRegisterPage() {
     try {
       const status = await cashRegisterService.open(openingAmount);
       setCashStatus(status ?? null);
+      if (status) {
+        window.localStorage.setItem("horus-pdv-cash-status", JSON.stringify(status));
+      }
       Toast.success("Caixa aberto. Frente de caixa liberada para venda.");
     } catch (error) {
       Toast.error(error instanceof Error ? error.message : "Não foi possível abrir o caixa.");
@@ -256,6 +262,9 @@ export default function CashRegisterPage() {
         hasDifference ? differenceReason.trim() : undefined,
       );
       setCashStatus(status ?? null);
+      if (status) {
+        window.localStorage.setItem("horus-pdv-cash-status", JSON.stringify(status));
+      }
       setClosingNote("");
       setDifferenceReason("");
       if (status?.lastSession) {
