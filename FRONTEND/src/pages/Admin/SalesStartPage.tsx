@@ -36,6 +36,7 @@ import {
   type CashRegisterStatusDto,
 } from "@/services/api/cashRegisterService";
 import ReceiptPreviewModal, {
+  buildReceiptPrintHtml,
   type PaymentType,
   type SaleReceipt,
 } from "@/components/Admin/ReceiptPreviewModal";
@@ -53,6 +54,7 @@ import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { productService } from "@/services/api/productService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { saveProductsCache, loadProductsCache, queueSale, getPendingSalesCount } from "@/services/offlineStore";
+import { buildDanfePrintHtml } from "@/utils/danfePrint";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
 import { QuickCustomerRegisterModal } from "@/components/Admin/QuickCustomerRegisterModal";
@@ -1256,6 +1258,18 @@ export default function SalesStartPage({
         await loadProducts().catch(() => { /* ignora falha de reload pós-venda */ });
       }
       saveLastReceipt(receipt);
+
+      // Impressão automática na impressora padrão
+      const printHtml = (fiscalDetail && !isOfflineSale)
+        ? buildDanfePrintHtml(receipt, fiscalDetail, formatMoneyBr)
+        : buildReceiptPrintHtml(receipt, formatMoneyBr, fiscalDetail);
+      const printPopup = window.open("", "_blank", "width=420,height=720");
+      if (printPopup) {
+        printPopup.document.open();
+        printPopup.document.write(printHtml);
+        printPopup.document.close();
+      }
+
       if (printPreviewEnabled) {
         setReceiptPreview(receipt);
       }

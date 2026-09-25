@@ -113,7 +113,7 @@ function escapeHtml(value: string) {
     .replace(/'/g, "&#039;");
 }
 
-function buildReceiptPrintHtml(
+export function buildReceiptPrintHtml(
   receipt: SaleReceipt,
   formatMoney: (value: number) => string,
   fiscal?: FiscalDocumentDetailDto | null
