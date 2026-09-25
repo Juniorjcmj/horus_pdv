@@ -6,8 +6,11 @@
 
 import {
   AlertTriangle,
+  Building2,
+  CheckCircle2,
   Image as ImageIcon,
   Loader2,
+  MapPin,
   Maximize2,
   Minimize2,
   Plus,
@@ -48,7 +51,9 @@ import { customerService, type CustomerDto } from "@/services/api/customerServic
 import {
   FISCAL_STATUS,
   fiscalService,
+  nfeService,
   type FiscalDocumentDetailDto,
+  type NfeDestinatario,
 } from "@/services/api/fiscalService";
 import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { productService } from "@/services/api/productService";
@@ -58,6 +63,7 @@ import { buildDanfePrintHtml } from "@/utils/danfePrint";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
 import { QuickCustomerRegisterModal } from "@/components/Admin/QuickCustomerRegisterModal";
+import { lookupAddressByCep } from "@/utils/cepLookup";
 import { onlyDigits } from "@/utils/inputMasks";
 
 type SalesStartPageProps = {
@@ -216,6 +222,29 @@ export default function SalesStartPage({
   const [quickCustomerModalOpen, setQuickCustomerModalOpen] = useState(false);
   const [quickCustomerInitialDoc, setQuickCustomerInitialDoc] = useState("");
   const [quickCustomerInitialName, setQuickCustomerInitialName] = useState("");
+
+  // Modelo fiscal: NFC-e (padrão consumidor) ou NF-e modelo 55 (empresas)
+  const [fiscalModel, setFiscalModel] = useState<"nfce" | "nfe">("nfce");
+  const EMPTY_NFE_DEST: NfeDestinatario = {
+    cpfCnpj: "",
+    nome: "",
+    indIeDest: 1,
+    inscricaoEstadual: "",
+    logradouro: "",
+    numero: "",
+    complemento: "",
+    bairro: "",
+    codigoMunicipioIbge: "",
+    nomeMunicipio: "",
+    uf: "",
+    cep: "",
+    fone: "",
+    email: "",
+  };
+  const [nfeDest, setNfeDest] = useState<NfeDestinatario>({ ...EMPTY_NFE_DEST });
+  const [nfeCnpjLoading, setNfeCnpjLoading] = useState(false);
+  const [nfeMatchedCustomer, setNfeMatchedCustomer] = useState<CustomerDto | null>(null);
+  const [nfeCepLoading, setNfeCepLoading] = useState(false);
 
   const openCustomerModal = useCallback(
     async (initialSearch = "") => {
@@ -1042,6 +1071,65 @@ export default function SalesStartPage({
     setCurrentCashGiven(formatMoneyBr(nextRemaining));
   };
 
+  // ---------------------------------------------------------------------------
+  // NF-e destinatário: busca CNPJ na base de clientes
+  // ---------------------------------------------------------------------------
+
+  const handleNfeCnpjBlur = async () => {
+    const digits = onlyDigits(nfeDest.cpfCnpj);
+    if (digits.length < 11) return;
+
+    setNfeCnpjLoading(true);
+    try {
+      const list = customerList.length > 0 ? customerList : await customerService.list();
+      if (customerList.length === 0) setCustomerList(list);
+      const found = list.find((c) => onlyDigits(c.document) === digits);
+      if (found) {
+        setNfeMatchedCustomer(found);
+        setNfeDest((prev) => ({
+          ...prev,
+          nome: found.customerName || prev.nome,
+          inscricaoEstadual: found.inscricaoEstadual ?? prev.inscricaoEstadual,
+          indIeDest: found.indIeDest ?? prev.indIeDest,
+          email: found.email || prev.email,
+          fone: found.cellphone || found.telephone || prev.fone,
+          cep: found.cep || prev.cep,
+          logradouro: found.address || prev.logradouro,
+          numero: found.number || prev.numero,
+          complemento: found.streetComplement || prev.complemento,
+          bairro: found.neighborhood || prev.bairro,
+          nomeMunicipio: found.city || prev.nomeMunicipio,
+          uf: found.state || prev.uf,
+          codigoMunicipioIbge: found.codigoMunicipioIbge ?? prev.codigoMunicipioIbge,
+        }));
+        Toast.success("Cliente encontrado — campos preenchidos!");
+      } else {
+        setNfeMatchedCustomer(null);
+      }
+    } catch { /* silent */ }
+    finally { setNfeCnpjLoading(false); }
+  };
+
+  const handleNfeCepBlur = async () => {
+    const digits = onlyDigits(nfeDest.cep);
+    if (digits.length !== 8) return;
+    setNfeCepLoading(true);
+    try {
+      const result = await lookupAddressByCep(digits);
+      if (result.success) {
+        const addr = result.data;
+        setNfeDest((prev) => ({
+          ...prev,
+          logradouro: addr.endereco || prev.logradouro,
+          bairro: addr.bairro || prev.bairro,
+          nomeMunicipio: addr.cidade || prev.nomeMunicipio,
+          uf: addr.estado || prev.uf,
+        }));
+      }
+    } catch { /* silent */ }
+    finally { setNfeCepLoading(false); }
+  };
+
   const confirmPayment = async () => {
     let finalPayments: SplitPayment[] = [...payments];
 
@@ -1121,6 +1209,23 @@ export default function SalesStartPage({
       }
     }
 
+    // Validação extra quando NF-e modelo 55 é selecionada
+    if (fiscalModel === "nfe") {
+      const cnpjDigits = onlyDigits(nfeDest.cpfCnpj);
+      if (cnpjDigits.length < 11) {
+        Toast.error("CNPJ/CPF do destinatário é obrigatório para NF-e.");
+        return;
+      }
+      if (!nfeDest.nome.trim()) {
+        Toast.error("Razão Social do destinatário é obrigatória para NF-e.");
+        return;
+      }
+      if (!nfeDest.logradouro.trim() || !nfeDest.bairro.trim() || !nfeDest.nomeMunicipio.trim() || !nfeDest.uf.trim()) {
+        Toast.error("Endereço completo do destinatário é obrigatório para NF-e.");
+        return;
+      }
+    }
+
     if (isConfirmingSale) return;
     setIsConfirmingSale(true);
     try {
@@ -1190,6 +1295,50 @@ export default function SalesStartPage({
               // Ignora falha transitória de rede durante o processamento da nota
             }
             await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        }
+
+        // Emite NF-e modelo 55 quando selecionado (após a venda ser registrada)
+        if (fiscalModel === "nfe" && result?.saleNumber) {
+          try {
+            const cnpjDigits = onlyDigits(nfeDest.cpfCnpj);
+            await nfeService.emitir({
+              saleNumber: result.saleNumber,
+              destinatario: {
+                ...nfeDest,
+                cpfCnpj: cnpjDigits,
+                cep: onlyDigits(nfeDest.cep),
+              },
+              naturezaOperacao: "VENDA DE MERCADORIA",
+              modalidadeFrete: 9,
+            });
+
+            // Cadastra cliente automaticamente se não existia
+            if (!nfeMatchedCustomer) {
+              try {
+                await customerService.create({
+                  customerName: nfeDest.nome,
+                  document: cnpjDigits,
+                  birthDate: "",
+                  age: "",
+                  cep: onlyDigits(nfeDest.cep),
+                  city: nfeDest.nomeMunicipio,
+                  state: nfeDest.uf,
+                  address: nfeDest.logradouro,
+                  neighborhood: nfeDest.bairro,
+                  streetComplement: nfeDest.complemento ?? "",
+                  number: nfeDest.numero,
+                  referencePoint: "",
+                  telephone: "",
+                  cellphone: nfeDest.fone ?? "",
+                  email: nfeDest.email ?? "",
+                });
+              } catch {
+                // Cadastro secundário — não impede a venda
+              }
+            }
+          } catch {
+            Toast.error("Venda registrada, mas erro ao enfileirar NF-e modelo 55.");
           }
         }
       } catch {
@@ -1281,6 +1430,8 @@ export default function SalesStartPage({
       if (isOfflineSale) {
         setPendingOfflineCount(getPendingSalesCount());
         Toast.info(`Venda ${saleNumber} salva offline. Será sincronizada automaticamente.`);
+      } else if (fiscalModel === "nfe") {
+        Toast.success(`Venda ${receipt.saleNumber} confirmada! NF-e modelo 55 enfileirada para emissão.`);
       } else if (fiscalDetail?.status === FISCAL_STATUS.Autorizado) {
         Toast.success(`Venda ${receipt.saleNumber} confirmada e NFC-e autorizada!`);
       } else {
@@ -1305,6 +1456,9 @@ export default function SalesStartPage({
     setCurrentPaymentAmount("");
     setCurrentCashGiven("");
     setCpfNota("");
+    setFiscalModel("nfce");
+    setNfeDest({ ...EMPTY_NFE_DEST });
+    setNfeMatchedCustomer(null);
     window.setTimeout(() => productInputRef.current?.focus(), 0);
   };
 
@@ -1947,7 +2101,7 @@ export default function SalesStartPage({
 
       {checkoutOpen && (
         <div className="fixed inset-0 z-layer-modal flex items-end bg-black/45 md:items-center md:justify-center">
-          <div className="w-full rounded-t-2xl border border-border-primary bg-bg-light p-4 md:max-w-xl md:rounded-2xl">
+          <div className="w-full rounded-t-2xl border border-border-primary bg-bg-light p-4 md:max-w-xl md:rounded-2xl max-h-[90vh] overflow-y-auto">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-text-primary">Pagamento</h2>
               <button
@@ -2078,6 +2232,227 @@ export default function SalesStartPage({
                     >
                       <UserPlus size={13} /> Cadastrar
                     </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Modelo Fiscal: NFC-e ou NF-e */}
+              <div className="rounded-xl border border-border-primary bg-bg-primary/40 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Building2 size={16} className="text-secondary" />
+                  <span className="text-xs font-semibold text-text-primary uppercase tracking-wide">
+                    Modelo Fiscal
+                  </span>
+                </div>
+                <select
+                  value={fiscalModel}
+                  onChange={(e) => {
+                    const model = e.target.value as "nfce" | "nfe";
+                    setFiscalModel(model);
+                    if (model === "nfce") {
+                      setNfeDest({ ...EMPTY_NFE_DEST });
+                      setNfeMatchedCustomer(null);
+                    }
+                  }}
+                  className="select-field w-full text-sm"
+                >
+                  <option value="nfce">NFC-e — Nota Fiscal de Consumidor (modelo 65)</option>
+                  <option value="nfe">NF-e — Nota Fiscal Eletrônica (modelo 55)</option>
+                </select>
+
+                {fiscalModel === "nfe" && (
+                  <div className="mt-3 space-y-3 rounded-lg border border-secondary/20 bg-secondary/5 p-3">
+                    <h4 className="flex items-center gap-1.5 text-xs font-bold text-secondary">
+                      <Building2 size={13} />
+                      Dados do Destinatário (NF-e)
+                    </h4>
+
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {/* CNPJ */}
+                      <div>
+                        <label className="mb-1 block text-[11px] font-semibold text-text-secondary">CNPJ/CPF *</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="00.000.000/0000-00"
+                            value={nfeDest.cpfCnpj}
+                            onChange={(e) => {
+                              setNfeDest((p) => ({ ...p, cpfCnpj: e.target.value }));
+                              setNfeMatchedCustomer(null);
+                            }}
+                            onBlur={() => void handleNfeCnpjBlur()}
+                            className="input-field w-full text-xs"
+                          />
+                          {nfeCnpjLoading && (
+                            <Loader2 size={12} className="absolute right-2 top-1/2 -translate-y-1/2 animate-spin text-text-tertiary" />
+                          )}
+                          {!nfeCnpjLoading && nfeMatchedCustomer && (
+                            <CheckCircle2 size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500" />
+                          )}
+                        </div>
+                        {nfeMatchedCustomer && (
+                          <p className="mt-0.5 flex items-center gap-1 text-[10px] text-green-600">
+                            <CheckCircle2 size={10} />
+                            {nfeMatchedCustomer.customerName}
+                          </p>
+                        )}
+                        {!nfeMatchedCustomer && onlyDigits(nfeDest.cpfCnpj).length >= 11 && !nfeCnpjLoading && (
+                          <p className="mt-0.5 flex items-center gap-1 text-[10px] text-amber-600">
+                            <UserPlus size={10} />
+                            Novo — será cadastrado ao confirmar
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Razão Social */}
+                      <div>
+                        <label className="mb-1 block text-[11px] font-semibold text-text-secondary">Razão Social *</label>
+                        <input
+                          type="text"
+                          placeholder="Razão Social"
+                          value={nfeDest.nome}
+                          onChange={(e) => setNfeDest((p) => ({ ...p, nome: e.target.value }))}
+                          className="input-field w-full text-xs"
+                        />
+                      </div>
+
+                      {/* IE */}
+                      <div>
+                        <label className="mb-1 block text-[11px] font-semibold text-text-secondary">Inscrição Estadual</label>
+                        <input
+                          type="text"
+                          placeholder="IE"
+                          value={nfeDest.inscricaoEstadual ?? ""}
+                          onChange={(e) => setNfeDest((p) => ({ ...p, inscricaoEstadual: e.target.value }))}
+                          className="input-field w-full text-xs"
+                        />
+                      </div>
+
+                      {/* Indicador IE */}
+                      <div>
+                        <label className="mb-1 block text-[11px] font-semibold text-text-secondary">Indicador IE</label>
+                        <select
+                          value={nfeDest.indIeDest}
+                          onChange={(e) => setNfeDest((p) => ({ ...p, indIeDest: Number(e.target.value) }))}
+                          className="select-field w-full text-xs"
+                        >
+                          <option value={1}>1 — Contribuinte ICMS</option>
+                          <option value={2}>2 — Isento</option>
+                          <option value={9}>9 — Não contribuinte</option>
+                        </select>
+                      </div>
+
+                      {/* Email */}
+                      <div>
+                        <label className="mb-1 block text-[11px] font-semibold text-text-secondary">E-mail</label>
+                        <input
+                          type="email"
+                          placeholder="email@empresa.com.br"
+                          value={nfeDest.email ?? ""}
+                          onChange={(e) => setNfeDest((p) => ({ ...p, email: e.target.value }))}
+                          className="input-field w-full text-xs"
+                        />
+                      </div>
+
+                      {/* Telefone */}
+                      <div>
+                        <label className="mb-1 block text-[11px] font-semibold text-text-secondary">Telefone</label>
+                        <input
+                          type="text"
+                          placeholder="(21) 99999-9999"
+                          value={nfeDest.fone ?? ""}
+                          onChange={(e) => setNfeDest((p) => ({ ...p, fone: e.target.value }))}
+                          className="input-field w-full text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Endereço */}
+                    <div>
+                      <h5 className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-secondary">
+                        <MapPin size={11} />
+                        Endereço
+                      </h5>
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <div>
+                          <label className="mb-1 block text-[11px] font-semibold text-text-secondary">CEP *</label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              placeholder="00000-000"
+                              value={nfeDest.cep}
+                              onChange={(e) => setNfeDest((p) => ({ ...p, cep: e.target.value }))}
+                              onBlur={() => void handleNfeCepBlur()}
+                              className="input-field w-full text-xs"
+                            />
+                            {nfeCepLoading && (
+                              <Loader2 size={12} className="absolute right-2 top-1/2 -translate-y-1/2 animate-spin text-text-tertiary" />
+                            )}
+                          </div>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="mb-1 block text-[11px] font-semibold text-text-secondary">Logradouro *</label>
+                          <input
+                            type="text"
+                            placeholder="Rua, Av..."
+                            value={nfeDest.logradouro}
+                            onChange={(e) => setNfeDest((p) => ({ ...p, logradouro: e.target.value }))}
+                            className="input-field w-full text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[11px] font-semibold text-text-secondary">Número</label>
+                          <input
+                            type="text"
+                            placeholder="S/N"
+                            value={nfeDest.numero}
+                            onChange={(e) => setNfeDest((p) => ({ ...p, numero: e.target.value }))}
+                            className="input-field w-full text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[11px] font-semibold text-text-secondary">Bairro *</label>
+                          <input
+                            type="text"
+                            placeholder="Bairro"
+                            value={nfeDest.bairro}
+                            onChange={(e) => setNfeDest((p) => ({ ...p, bairro: e.target.value }))}
+                            className="input-field w-full text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[11px] font-semibold text-text-secondary">Cidade *</label>
+                          <input
+                            type="text"
+                            placeholder="Cidade"
+                            value={nfeDest.nomeMunicipio}
+                            onChange={(e) => setNfeDest((p) => ({ ...p, nomeMunicipio: e.target.value }))}
+                            className="input-field w-full text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[11px] font-semibold text-text-secondary">UF *</label>
+                          <input
+                            type="text"
+                            placeholder="RJ"
+                            maxLength={2}
+                            value={nfeDest.uf}
+                            onChange={(e) => setNfeDest((p) => ({ ...p, uf: e.target.value.toUpperCase() }))}
+                            className="input-field w-full text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[11px] font-semibold text-text-secondary">Complemento</label>
+                          <input
+                            type="text"
+                            placeholder="Sala, andar..."
+                            value={nfeDest.complemento ?? ""}
+                            onChange={(e) => setNfeDest((p) => ({ ...p, complemento: e.target.value }))}
+                            className="input-field w-full text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -2305,6 +2680,8 @@ export default function SalesStartPage({
                     <Loader2 size={16} className="animate-spin" />
                     Processando venda...
                   </>
+                ) : fiscalModel === "nfe" ? (
+                  "Confirmar Venda + NF-e"
                 ) : (
                   "Confirmar Venda"
                 )}
@@ -2323,7 +2700,9 @@ export default function SalesStartPage({
             <div>
               <h3 className="text-base font-semibold text-text-primary">Processando Venda</h3>
               <p className="mt-1 text-xs text-text-secondary">
-                Registrando pagamento e preparando cupom fiscal...
+                {fiscalModel === "nfe"
+                  ? "Registrando pagamento e emitindo NF-e modelo 55..."
+                  : "Registrando pagamento e preparando cupom fiscal..."}
               </p>
             </div>
           </div>

@@ -5,18 +5,24 @@
  */
 import {
   Building2,
+  CheckCircle2,
   FileText,
   Loader2,
   MapPin,
   RefreshCw,
   Search,
   Send,
+  UserPlus,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PageHeader from "@/components/Admin/PageHeader";
 import TablePagination from "@/components/Pagination/TablePagination";
 import { Toast } from "@/hooks/Dialog";
 import PageLayout from "@/layout/PageLayout";
+import {
+  customerService,
+  type CustomerDto,
+} from "@/services/api/customerService";
 import {
   fiscalStatusBadgeClass,
   fiscalStatusLabel,
@@ -100,6 +106,12 @@ export default function NfeEmissaoPage() {
   const [emitting, setEmitting] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
 
+  // Customer lookup by CNPJ/CPF
+  const [customerCache, setCustomerCache] = useState<CustomerDto[]>([]);
+  const [cnpjLoading, setCnpjLoading] = useState(false);
+  const [matchedCustomer, setMatchedCustomer] = useState<CustomerDto | null>(null);
+  const customerCacheLoaded = useRef(false);
+
   // ---------------------------------------------------------------------------
   // Data loading
   // ---------------------------------------------------------------------------
@@ -172,6 +184,60 @@ export default function NfeEmissaoPage() {
   }, [salesSearch]);
 
   // ---------------------------------------------------------------------------
+  // Customer lookup by CNPJ/CPF
+  // ---------------------------------------------------------------------------
+
+  const ensureCustomerCache = useCallback(async () => {
+    if (customerCacheLoaded.current) return customerCache;
+    try {
+      const list = await customerService.list();
+      setCustomerCache(list);
+      customerCacheLoaded.current = true;
+      return list;
+    } catch {
+      return customerCache;
+    }
+  }, [customerCache]);
+
+  async function handleCnpjBlur() {
+    const digits = onlyDigits(dest.cpfCnpj);
+    if (digits.length < 11) return;
+
+    setCnpjLoading(true);
+    try {
+      const list = await ensureCustomerCache();
+      const found = list.find((c) => onlyDigits(c.document) === digits);
+
+      if (found) {
+        setMatchedCustomer(found);
+        setDest((prev) => ({
+          ...prev,
+          nome: found.customerName || prev.nome,
+          inscricaoEstadual: found.inscricaoEstadual ?? prev.inscricaoEstadual,
+          indIeDest: found.indIeDest ?? prev.indIeDest,
+          email: found.email || prev.email,
+          fone: found.cellphone || found.telephone || prev.fone,
+          cep: found.cep || prev.cep,
+          logradouro: found.address || prev.logradouro,
+          numero: found.number || prev.numero,
+          complemento: found.streetComplement || prev.complemento,
+          bairro: found.neighborhood || prev.bairro,
+          nomeMunicipio: found.city || prev.nomeMunicipio,
+          uf: found.state || prev.uf,
+          codigoMunicipioIbge: found.codigoMunicipioIbge ?? prev.codigoMunicipioIbge,
+        }));
+        Toast.success("Cliente encontrado na base — campos preenchidos automaticamente!");
+      } else {
+        setMatchedCustomer(null);
+      }
+    } catch {
+      /* silent */
+    } finally {
+      setCnpjLoading(false);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // CEP lookup
   // ---------------------------------------------------------------------------
 
@@ -236,9 +302,40 @@ export default function NfeEmissaoPage() {
       });
 
       if (response.success) {
-        Toast.success(response.message || "NF-e enfileirada para emissão!");
+        // Auto-register new customer if not already in the database
+        if (!matchedCustomer) {
+          try {
+            await customerService.create({
+              customerName: dest.nome,
+              document: cnpjDigits,
+              birthDate: "",
+              age: "",
+              cep: onlyDigits(dest.cep),
+              city: dest.nomeMunicipio,
+              state: dest.uf,
+              address: dest.logradouro,
+              neighborhood: dest.bairro,
+              streetComplement: dest.complemento ?? "",
+              number: dest.numero,
+              referencePoint: "",
+              telephone: "",
+              cellphone: dest.fone ?? "",
+              email: dest.email ?? "",
+            });
+            customerCacheLoaded.current = false; // invalidate cache
+            Toast.success("NF-e enfileirada e cliente cadastrado automaticamente!");
+          } catch {
+            // NF-e was emitted successfully, customer registration is secondary
+            Toast.success(response.message || "NF-e enfileirada para emissão!");
+            Toast.error("Não foi possível cadastrar o cliente automaticamente.");
+          }
+        } else {
+          Toast.success(response.message || "NF-e enfileirada para emissão!");
+        }
+
         setSelectedSale(null);
         setDest({ ...EMPTY_DEST });
+        setMatchedCustomer(null);
         setActiveTab("emitidas");
         loadNfeList();
       } else {
@@ -417,6 +514,7 @@ export default function NfeEmissaoPage() {
                     onClick={() => {
                       setSelectedSale(null);
                       setDest({ ...EMPTY_DEST });
+                      setMatchedCustomer(null);
                     }}
                     className="btn-cancel px-3 py-1.5 text-sm"
                   >
@@ -440,13 +538,43 @@ export default function NfeEmissaoPage() {
                     <label className="mb-1 block text-xs font-semibold text-text-secondary">
                       CNPJ/CPF *
                     </label>
-                    <input
-                      type="text"
-                      placeholder="00.000.000/0000-00"
-                      value={dest.cpfCnpj}
-                      onChange={(e) => setDest((p) => ({ ...p, cpfCnpj: e.target.value }))}
-                      className="input-field w-full text-sm"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="00.000.000/0000-00"
+                        value={dest.cpfCnpj}
+                        onChange={(e) => {
+                          setDest((p) => ({ ...p, cpfCnpj: e.target.value }));
+                          setMatchedCustomer(null);
+                        }}
+                        onBlur={handleCnpjBlur}
+                        className="input-field w-full text-sm"
+                      />
+                      {cnpjLoading && (
+                        <Loader2
+                          size={14}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-text-tertiary"
+                        />
+                      )}
+                      {!cnpjLoading && matchedCustomer && (
+                        <CheckCircle2
+                          size={14}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"
+                        />
+                      )}
+                    </div>
+                    {matchedCustomer && (
+                      <p className="mt-1 flex items-center gap-1 text-xs text-green-600">
+                        <CheckCircle2 size={11} />
+                        Cliente encontrado: {matchedCustomer.customerName}
+                      </p>
+                    )}
+                    {!matchedCustomer && onlyDigits(dest.cpfCnpj).length >= 11 && !cnpjLoading && (
+                      <p className="mt-1 flex items-center gap-1 text-xs text-amber-600">
+                        <UserPlus size={11} />
+                        Novo cliente — será cadastrado ao emitir a NF-e
+                      </p>
+                    )}
                   </div>
 
                   {/* Razão Social */}
@@ -684,6 +812,7 @@ export default function NfeEmissaoPage() {
                     onClick={() => {
                       setSelectedSale(null);
                       setDest({ ...EMPTY_DEST });
+                      setMatchedCustomer(null);
                     }}
                     className="btn-cancel px-4 py-2 text-sm"
                   >

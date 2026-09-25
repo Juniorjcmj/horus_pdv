@@ -27,6 +27,10 @@ export type CustomerDto = {
   email: string;
   limiteCredito?: number;
   saldoDevedor?: number;
+  // Fiscal fields
+  indIeDest?: number;
+  inscricaoEstadual?: string | null;
+  codigoMunicipioIbge?: string | null;
 };
 
 export type CustomerPayload = Omit<CustomerDto, "id">;
