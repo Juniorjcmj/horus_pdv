@@ -16,20 +16,41 @@ type ApiRequestOptions = RequestInit & {
   skipAuth?: boolean;
 };
 
+const API_TIMEOUT_MS = 5_000;
+
 export async function apiRequest<T>(
   endpointUrl: string,
   options: ApiRequestOptions = {},
 ): Promise<ApiResponse<T>> {
+  if (!navigator.onLine) {
+    throw new Error("Sem conexão com a internet.");
+  }
+
   const { skipAuth: _skipAuth, headers, ...requestOptions } = options;
   void _skipAuth;
-  const response = await fetch(endpointUrl, {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
-    ...requestOptions,
-  });
+
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(endpointUrl, {
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      signal: controller.signal,
+      ...requestOptions,
+    });
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("Sem conexão com a internet.");
+    }
+    throw err;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 
   const contentType = response.headers.get("content-type") || "";
   const payload = contentType.includes("application/json")

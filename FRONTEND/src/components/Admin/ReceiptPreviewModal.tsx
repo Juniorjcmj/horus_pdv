@@ -149,7 +149,17 @@ function buildReceiptPrintHtml(
     (fiscal?.chaveAcesso
       ? `${getSefazConsultaUrl(receipt.company?.uf)}?p=${fiscal.chaveAcesso}`
       : "");
-  const qrSvg = generateQrCodeSvg(effectiveQrCodeUrl, 130);
+  const offlineQrData = !effectiveQrCodeUrl
+    ? [
+        `Venda: ${receipt.saleNumber}`,
+        `Data: ${formatReceiptDate(receipt.issuedAt)}`,
+        receipt.company?.cnpj ? `CNPJ: ${receipt.company.cnpj}` : "",
+        `Total: R$ ${formatMoney(receipt.subtotal)}`,
+        `Pgto: ${receipt.paymentLabel}`,
+        `Op: ${receipt.operatorName}`,
+      ].filter(Boolean).join("\n")
+    : "";
+  const qrSvg = generateQrCodeSvg(effectiveQrCodeUrl || offlineQrData, 130);
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -260,7 +270,7 @@ function buildReceiptPrintHtml(
               <div class="qrcode-box">
                 ${qrSvg}
               </div>
-              <div class="qrcode-caption">Consulta via leitor de QR Code</div>
+              <div class="qrcode-caption">${effectiveQrCodeUrl ? "Consulta via leitor de QR Code" : "Dados da venda offline"}</div>
             </section>
           `
           : ""
@@ -386,6 +396,17 @@ export default function ReceiptPreviewModal({
     (currentFiscal?.chaveAcesso
       ? `${getSefazConsultaUrl(receipt.company?.uf)}?p=${currentFiscal.chaveAcesso}`
       : null);
+
+  const offlineQrData = !effectiveQrCodeUrl
+    ? [
+        `Venda: ${receipt.saleNumber}`,
+        `Data: ${formatReceiptDate(receipt.issuedAt)}`,
+        receipt.company?.cnpj ? `CNPJ: ${receipt.company.cnpj}` : "",
+        `Total: R$ ${formatMoney(receipt.subtotal)}`,
+        `Pgto: ${receipt.paymentLabel}`,
+        `Op: ${receipt.operatorName}`,
+      ].filter(Boolean).join("\n")
+    : "";
 
   const printReceipt = () => {
     const popup = window.open("", "_blank", "width=420,height=720");
@@ -636,6 +657,13 @@ export default function ReceiptPreviewModal({
                     </div>
                   ) : null}
                 </>
+              ) : offlineQrData ? (
+                <div className="mt-3 flex flex-col items-center justify-center">
+                  <div className="border border-slate-300 p-1.5 bg-white">
+                    <QRCodeSVG value={offlineQrData} size={140} includeMargin={true} />
+                  </div>
+                  <span className="mt-1 text-[9px]">Dados da venda offline</span>
+                </div>
               ) : null}
 
               <div className="my-3 border-t border-dashed border-slate-500" />
