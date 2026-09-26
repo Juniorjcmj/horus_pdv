@@ -18,10 +18,13 @@ RUN npm ci
 
 COPY . .
 
-# .env.prod já traz todas as VITE_*_API_URL com o placeholder "https://api.horuspdv.local" —
-# só troca o host pelo valor real de build (build:prod carrega .env.prod via --mode prod).
-RUN sed -i "s#https://api.horuspdv.local#${VITE_API_ORIGIN}#g" .env.prod \
-    && sed -i "s#^VITE_RECAPTCHA_SITE_KEY=.*#VITE_RECAPTCHA_SITE_KEY=${VITE_RECAPTCHA_SITE_KEY}#" .env.prod
+# Aplica VITE_API_ORIGIN e VITE_RECAPTCHA_SITE_KEY em .env.prod e .env.production:
+RUN if [ ! -f .env.prod ] && [ -f .env.production ]; then cp .env.production .env.prod; fi \
+    && if [ ! -f .env.production ] && [ -f .env.prod ]; then cp .env.prod .env.production; fi \
+    && for f in .env.prod .env.production; do \
+         [ -f "$f" ] && sed -i "s#https://api.horuspdv.local#${VITE_API_ORIGIN}#g" "$f" \
+                     && sed -i "s#^VITE_RECAPTCHA_SITE_KEY=.*#VITE_RECAPTCHA_SITE_KEY=${VITE_RECAPTCHA_SITE_KEY}#" "$f"; \
+       done
 
 RUN npm run build:prod
 
