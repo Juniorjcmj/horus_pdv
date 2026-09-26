@@ -111,6 +111,7 @@ export default function BalancaImportModal({
         productUnitPrice: "0,00",
         productSalePrice: item.defaultSalePrice > 0 ? formatMoneyBr(item.defaultSalePrice) : "0,00",
         totalPriceOnProduct: "0,00",
+        lucro: "0,00",
         margemDesejadaPercentual: null,
         categoriaId: null,
         categoriaNome: null,
