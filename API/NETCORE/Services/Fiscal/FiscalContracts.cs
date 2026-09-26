@@ -198,6 +198,18 @@ public sealed record EmissaoNfeRequest
 
     /// <summary>0 sem frete, 1 por conta do emitente, 2 por conta do destinatário, 9 sem transporte.</summary>
     public byte ModalidadeFrete { get; init; } = 9;
+
+    /// <summary>Tipo de Operação: 0 Entrada, 1 Saída (default = 1 Saída).</summary>
+    public byte TipoOperacao { get; init; } = 1;
+
+    /// <summary>Finalidade da NF-e: 1 Normal, 4 Devolução (default = 1 Normal).</summary>
+    public byte Finalidade { get; init; } = 1;
+
+    /// <summary>Chaves de acesso referenciadas (NFref) para devolução ou estorno.</summary>
+    public IReadOnlyList<string>? ChavesReferenciadas { get; init; }
+
+    /// <summary>Indica se a operação é para consumidor final (cfConsumidorFinal vs cfNao).</summary>
+    public bool? ConsumidorFinal { get; init; }
 }
 
 public sealed record CancelamentoRequest

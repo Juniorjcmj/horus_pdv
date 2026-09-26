@@ -335,13 +335,37 @@ public sealed class ZeusFiscalProvider(
             string.IsNullOrWhiteSpace(dest.NomeMunicipio) ||
             string.IsNullOrWhiteSpace(dest.Uf))
         {
-            return new ResultadoFiscal
+            if (request.TipoOperacao == 0 && request.Finalidade == 4)
             {
-                Status = StatusDocumentoFiscal.Rejeitado,
-                CodigoStatus = 0,
-                MotivoStatus = "Dados do destinatário incompletos: preencha CNPJ/CPF, nome, endereço completo.",
-                Retentavel = false
-            };
+                // Devolução com Entrada Própria: utiliza os dados cadastrais da própria loja
+                dest = new DestinatarioFiscal
+                {
+                    CpfCnpj = emitente.Cnpj,
+                    Nome = emitente.RazaoSocial,
+                    IndIeDest = 1,
+                    InscricaoEstadual = emitente.InscricaoEstadual,
+                    Logradouro = emitente.Logradouro,
+                    Numero = emitente.Numero,
+                    Complemento = emitente.Complemento,
+                    Bairro = emitente.Bairro,
+                    CodigoMunicipioIbge = emitente.CodigoMunicipioIbge,
+                    NomeMunicipio = emitente.NomeMunicipio,
+                    Uf = emitente.Uf,
+                    Cep = emitente.Cep,
+                    Fone = emitente.Fone
+                };
+                request = request with { Destinatario = dest };
+            }
+            else
+            {
+                return new ResultadoFiscal
+                {
+                    Status = StatusDocumentoFiscal.Rejeitado,
+                    CodigoStatus = 0,
+                    MotivoStatus = "Dados do destinatário incompletos: preencha CNPJ/CPF, nome, endereço completo.",
+                    Retentavel = false
+                };
+            }
         }
 
         using var certificado = CarregarCertificado(emitente);
@@ -458,7 +482,7 @@ public sealed class ZeusFiscalProvider(
             nNF = request.NumeroNf,
             cNF = GerarCodigoNumerico(request.NumeroNf),
             dhEmi = HorusDateTime.Now,
-            tpNF = TipoNFe.tnSaida,
+            tpNF = request.TipoOperacao == 0 ? TipoNFe.tnEntrada : TipoNFe.tnSaida,
             idDest = DestinoOperacao.doInterna,
             cMunFG = long.Parse(e.CodigoMunicipioIbge, Inv),
             tpImp = TipoImpressao.tiRetrato,        // DANFE A4 retrato
@@ -466,12 +490,22 @@ public sealed class ZeusFiscalProvider(
                 ? TipoEmissao.teOffLine
                 : TipoEmissao.teNormal,
             tpAmb = e.Ambiente == 1 ? TipoAmbiente.Producao : TipoAmbiente.Homologacao,
-            finNFe = FinalidadeNFe.fnNormal,
-            indFinal = ConsumidorFinal.cfNao,        // NF-e B2B não é consumidor final
+            finNFe = request.Finalidade == 4 ? FinalidadeNFe.fnDevolucao : FinalidadeNFe.fnNormal,
+            indFinal = request.ConsumidorFinal.HasValue
+                ? (request.ConsumidorFinal.Value ? ConsumidorFinal.cfConsumidorFinal : ConsumidorFinal.cfNao)
+                : (request.Finalidade == 4 ? ConsumidorFinal.cfConsumidorFinal : ConsumidorFinal.cfNao),
             indPres = PresencaComprador.pcPresencial,
             procEmi = ProcessoEmissao.peAplicativoContribuinte,
             verProc = "HorusPDV/1.0"
         };
+
+        if (request.ChavesReferenciadas != null && request.ChavesReferenciadas.Count > 0)
+        {
+            ide.NFref = request.ChavesReferenciadas
+                .Where(k => !string.IsNullOrWhiteSpace(k))
+                .Select(k => new NFref { refNFe = k.Trim() })
+                .ToList();
+        }
 
         var emit = new emit
         {
@@ -498,11 +532,33 @@ public sealed class ZeusFiscalProvider(
         };
 
         var d = request.Destinatario;
+        if ((string.IsNullOrWhiteSpace(d?.CpfCnpj) || string.IsNullOrWhiteSpace(d?.Nome)) &&
+            request.TipoOperacao == 0 && request.Finalidade == 4)
+        {
+            d = new DestinatarioFiscal
+            {
+                CpfCnpj = e.Cnpj,
+                Nome = e.RazaoSocial,
+                IndIeDest = 1,
+                InscricaoEstadual = e.InscricaoEstadual,
+                Logradouro = e.Logradouro,
+                Numero = e.Numero,
+                Complemento = e.Complemento,
+                Bairro = e.Bairro,
+                CodigoMunicipioIbge = e.CodigoMunicipioIbge,
+                NomeMunicipio = e.NomeMunicipio,
+                Uf = e.Uf,
+                Cep = e.Cep,
+                Fone = e.Fone
+            };
+        }
+
+        d ??= new DestinatarioFiscal();
         var ufDest = ParseUf(d.Uf ?? e.Uf);
         var destNfe = new dest(VersaoServico.Versao400)
         {
             indIEDest = (indIEDest)d.IndIeDest,
-            xNome = d.Nome
+            xNome = d.Nome ?? string.Empty
         };
 
         if ((d.CpfCnpj?.Length ?? 0) == 11) destNfe.CPF = d.CpfCnpj;
@@ -529,7 +585,7 @@ public sealed class ZeusFiscalProvider(
             fone = ParseFoneNumerico(d.Fone)
         };
 
-        var detalhes = request.Itens.Select(MontarItem).ToList();
+        var detalhes = request.Itens.Select(item => MontarItem(item, request.Finalidade, request.TipoOperacao)).ToList();
 
         if (e.Ambiente == 2 && detalhes.Count > 0)
             detalhes[0].prod.xProd = "NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL";
@@ -847,7 +903,30 @@ public sealed class ZeusFiscalProvider(
         return new NFe.Classes.NFe { infNFe = infNFe };
     }
 
-    private static det MontarItem(ItemFiscal item)
+    private static int ResolverCfopParaNfe(string cfopOriginal, byte finalidade, byte tipoOperacao)
+    {
+        if (finalidade == 4 || tipoOperacao == 0)
+        {
+            var cfopStr = cfopOriginal?.Trim() ?? "5102";
+            if (cfopStr.StartsWith("5"))
+            {
+                if (cfopStr == "5405" || cfopStr == "5403" || cfopStr == "5401") return 1411;
+                if (cfopStr == "5101") return 1201;
+                return 1202;
+            }
+            if (cfopStr.StartsWith("6"))
+            {
+                if (cfopStr == "6403" || cfopStr == "6404" || cfopStr == "6401") return 2411;
+                if (cfopStr == "6101") return 2201;
+                return 2202;
+            }
+        }
+        return int.TryParse(cfopOriginal, NumberStyles.Integer, Inv, out var parsed) ? parsed : 5102;
+    }
+
+    private static det MontarItem(ItemFiscal item) => MontarItem(item, 1, 1);
+
+    private static det MontarItem(ItemFiscal item, byte finalidade, byte tipoOperacao)
     {
         var prod = new prod
         {
@@ -856,7 +935,7 @@ public sealed class ZeusFiscalProvider(
             xProd = item.Descricao,
             NCM = item.Ncm,
             CEST = item.Cest,
-            CFOP = int.Parse(item.Cfop, Inv),
+            CFOP = ResolverCfopParaNfe(item.Cfop, finalidade, tipoOperacao),
             uCom = item.UnidadeComercial,
             qCom = item.Quantidade,
             vUnCom = item.ValorUnitario,

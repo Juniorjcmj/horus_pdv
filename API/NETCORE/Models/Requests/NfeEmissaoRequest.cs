@@ -40,3 +40,19 @@ public class NfeDestinatarioRequest
     public string? Fone { get; set; }
     public string? Email { get; set; }
 }
+
+public class DevolverNfceRequest
+{
+    /// <summary>ID do supervisor/gerente que autoriza a devolução.</summary>
+    public string SupervisorId { get; set; } = string.Empty;
+
+    /// <summary>Senha do supervisor/gerente.</summary>
+    public string SupervisorPassword { get; set; } = string.Empty;
+
+    /// <summary>Justificativa do estorno/devolução (mínimo 15 caracteres).</summary>
+    public string Justificativa { get; set; } = string.Empty;
+
+    /// <summary>Dados opcionais do consumidor. Se nulo ou vazio, emite como Entrada Própria.</summary>
+    public NfeDestinatarioRequest? Destinatario { get; set; }
+}
+

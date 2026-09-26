@@ -886,6 +886,264 @@ public class DocumentoFiscalAB(
         }
     }
 
+    /// <summary>
+    /// Obtém dados da NFC-e original para emissão da NF-e de Entrada (Devolução),
+    /// verificando se está autorizada e se não possui devolução anterior.
+    /// </summary>
+    public async Task<(string DocId, string VendaId, string ChaveAcesso, string Protocolo, List<ItemFiscal> Itens, decimal TotalVenda, string? CustomerCpf, string? CustomerName, string? CustomerPhone)?> ObterParaDevolucaoNfceAsync(
+        string companyId, string idOrChave, CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT TOP 1 d.Id, d.VendaId, d.ChaveAcesso, d.Protocolo, d.Status,
+                   v.CustomerCpf, v.CustomerName, v.CustomerPhone, v.TotalAmount, v.Status AS VendaStatus
+            FROM DocumentosFiscais d
+            INNER JOIN Vendas v ON v.Id = d.VendaId
+            WHERE d.CompanyId = @CompanyId
+              AND (d.Id = @Termo OR d.ChaveAcesso = @Termo)
+              AND d.Modelo = 65;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Termo", idOrChave.Trim());
+
+        string docId, vendaId, chave, protocolo;
+        string? custCpf, custName, custPhone;
+        decimal totalVenda;
+        StatusDocumentoFiscal status;
+        string? vendaStatus;
+
+        await using (var reader = await command.ExecuteReaderAsync(ct))
+        {
+            if (!await reader.ReadAsync(ct)) return null;
+
+            docId = ReadString(reader, "Id");
+            vendaId = ReadString(reader, "VendaId");
+            chave = ReadString(reader, "ChaveAcesso");
+            protocolo = ReadNullableString(reader, "Protocolo") ?? string.Empty;
+            status = (StatusDocumentoFiscal)ReadInt(reader, "Status");
+            custCpf = ReadNullableString(reader, "CustomerCpf");
+            custName = ReadNullableString(reader, "CustomerName");
+            custPhone = ReadNullableString(reader, "CustomerPhone");
+            totalVenda = reader.GetDecimal(reader.GetOrdinal("TotalAmount"));
+            vendaStatus = ReadNullableString(reader, "VendaStatus");
+        }
+
+        if (status != StatusDocumentoFiscal.Autorizado)
+            throw new InvalidOperationException("Apenas NFC-e autorizada perante a SEFAZ pode ser objeto de devolução.");
+
+        if (string.Equals(vendaStatus, "cancelada", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Esta venda já foi cancelada anteriormente.");
+
+        // Verifica se já existe NF-e de devolução emitida ou em andamento para esta NFC-e
+        const string checkDevolucaoSql = """
+            SELECT TOP 1 NumeroNf, Serie, ChaveAcesso
+            FROM DocumentosFiscais
+            WHERE CompanyId = @CompanyId
+              AND (DocumentoOrigemId = @DocId OR ChaveReferenciada = @Chave)
+              AND Status IN (1, 2, 3);
+            """;
+
+        await using (var cmdCheck = new SqlCommand(checkDevolucaoSql, db))
+        {
+            cmdCheck.Parameters.AddWithValue("@CompanyId", companyId);
+            cmdCheck.Parameters.AddWithValue("@DocId", docId);
+            cmdCheck.Parameters.AddWithValue("@Chave", chave);
+            await using var readerCheck = await cmdCheck.ExecuteReaderAsync(ct);
+            if (await readerCheck.ReadAsync(ct))
+            {
+                var numNf = ReadInt(readerCheck, "NumeroNf");
+                var serieNf = ReadInt(readerCheck, "Serie");
+                throw new InvalidOperationException($"Já existe uma NF-e de Devolução (Nº {numNf}, Série {serieNf}) registrada para esta NFC-e.");
+            }
+        }
+
+        // Carrega os itens da venda
+        var linhas = await historicoVendasAB.ObterPorIdAsync(companyId, vendaId);
+        if (linhas.Count == 0)
+            throw new InvalidOperationException($"Nenhum item encontrado para a venda {vendaId}.");
+
+        var itens = new List<ItemFiscal>();
+        for (var index = 0; index < linhas.Count; index++)
+        {
+            var linha = linhas[index];
+            var produto = await produtoAB.ObterPorCodigoAsync(companyId, linha.ProductCode)
+                ?? throw new InvalidOperationException($"Produto {linha.ProductCode} não encontrado.");
+
+            var valorUnitario = HorusMoneyFormat.ParseDecimal(linha.UnitPrice);
+            var valorBruto = Math.Round(valorUnitario * linha.Quantity, 2, MidpointRounding.AwayFromZero);
+
+            itens.Add(new ItemFiscal
+            {
+                Numero = index + 1,
+                CodigoProduto = produto.ProductCode,
+                Descricao = produto.ProductName,
+                Gtin = produto.Gtin,
+                Ncm = produto.Ncm,
+                Cest = produto.Cest,
+                Cfop = produto.Cfop,
+                Origem = produto.OrigemMercadoria,
+                UnidadeComercial = produto.UnidadeComercial,
+                Quantidade = linha.Quantity,
+                ValorUnitario = valorUnitario,
+                ValorTotal = valorBruto,
+                Desconto = linha.Desconto,
+                Csosn = produto.CsosnIcms,
+                CstIcms = produto.CstIcms,
+                AliquotaIcms = produto.AliquotaIcms,
+                CstPis = produto.CstPis,
+                CstCofins = produto.CstCofins,
+                CstIbsCbs = produto.CstIbsCbs,
+                CClassTrib = produto.CClassTrib
+            });
+        }
+
+        return (docId, vendaId, chave, protocolo, itens, totalVenda, custCpf, custName, custPhone);
+    }
+
+    /// <summary>Aloca o próximo número e série de NF-e (Modelo 55) para emissão imediata.</summary>
+    public async Task<(int Numero, int Serie, byte Ambiente)> AlocarNumeroNfeAsync(string companyId, CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync(ct);
+        try
+        {
+            var (ambiente, serie) = await ObterConfigFiscalNfeAsync(db, transaction, companyId, ct);
+            var numero = await AlocarProximoNumeroAsync(db, transaction, companyId, ModeloNfe, serie, ambiente, ct);
+            await transaction.CommitAsync(ct);
+            return (numero, serie, ambiente);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(ct);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Grava a NF-e Modelo 55 autorizada de devolução, estorna os itens no estoque físico em Produtos,
+    /// atualiza o status da venda e registra no AuditLog.
+    /// </summary>
+    public async Task<string> GravarDevolucaoNfeComAuditoriaAsync(
+        string companyId,
+        string vendaId,
+        string nfceOrigemId,
+        string chaveNfceOrigem,
+        int numeroNf,
+        int serie,
+        byte ambiente,
+        ResultadoFiscal resultado,
+        string supervisorId,
+        string supervisorNome,
+        string operadorNome,
+        string justificativa,
+        CancellationToken ct = default)
+    {
+        var idNfe = $"nfe-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync(ct);
+        try
+        {
+            // 1. Insere o documento fiscal Modelo 55 de devolução
+            const string insertSql = """
+                INSERT INTO DocumentosFiscais
+                    (Id, CompanyId, VendaId, Modelo, Serie, NumeroNf, Ambiente, Status, TpEmis,
+                     ChaveAcesso, Protocolo, DhAutorizacao, CodigoStatus, MotivoStatus,
+                     XmlAssinado, XmlProtocolado, ChaveReferenciada, DocumentoOrigemId,
+                     DevolvidoPorSupervisorId, DevolvidoPorSupervisorNome, DevolvidoPorOperador,
+                     DevolvidoJustificativa, NaturezaOperacao, CriadoEm, AtualizadoEm)
+                VALUES
+                    (@Id, @CompanyId, @VendaId, 55, @Serie, @NumeroNf, @Ambiente, @Status, 1,
+                     @ChaveAcesso, @Protocolo, @DhAutorizacao, @CodigoStatus, @MotivoStatus,
+                     @XmlAssinado, @XmlProtocolado, @ChaveReferenciada, @DocumentoOrigemId,
+                     @SupervisorId, @SupervisorNome, @OperadorNome,
+                     @Justificativa, 'DEVOLUCAO DE VENDA', SYSDATETIMEOFFSET(), SYSDATETIMEOFFSET());
+                """;
+
+            await using (var cmdInsert = new SqlCommand(insertSql, db, transaction))
+            {
+                cmdInsert.Parameters.AddWithValue("@Id", idNfe);
+                cmdInsert.Parameters.AddWithValue("@CompanyId", companyId);
+                cmdInsert.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdInsert.Parameters.AddWithValue("@Serie", serie);
+                cmdInsert.Parameters.AddWithValue("@NumeroNf", numeroNf);
+                cmdInsert.Parameters.AddWithValue("@Ambiente", ambiente);
+                cmdInsert.Parameters.AddWithValue("@Status", (int)resultado.Status);
+                cmdInsert.Parameters.AddWithValue("@ChaveAcesso", (object?)resultado.ChaveAcesso ?? DBNull.Value);
+                cmdInsert.Parameters.AddWithValue("@Protocolo", (object?)resultado.Protocolo ?? DBNull.Value);
+                cmdInsert.Parameters.AddWithValue("@DhAutorizacao", (object?)resultado.DhAutorizacao ?? DateTimeOffset.UtcNow);
+                cmdInsert.Parameters.AddWithValue("@CodigoStatus", resultado.CodigoStatus);
+                cmdInsert.Parameters.AddWithValue("@MotivoStatus", Truncar(resultado.MotivoStatus, 500));
+                cmdInsert.Parameters.AddWithValue("@XmlAssinado", (object?)resultado.XmlAssinado ?? DBNull.Value);
+                cmdInsert.Parameters.AddWithValue("@XmlProtocolado", (object?)resultado.XmlProtocolado ?? DBNull.Value);
+                cmdInsert.Parameters.AddWithValue("@ChaveReferenciada", chaveNfceOrigem);
+                cmdInsert.Parameters.AddWithValue("@DocumentoOrigemId", nfceOrigemId);
+                cmdInsert.Parameters.AddWithValue("@SupervisorId", supervisorId);
+                cmdInsert.Parameters.AddWithValue("@SupervisorNome", supervisorNome);
+                cmdInsert.Parameters.AddWithValue("@OperadorNome", operadorNome);
+                cmdInsert.Parameters.AddWithValue("@Justificativa", justificativa);
+                await cmdInsert.ExecuteNonQueryAsync(ct);
+            }
+
+            // 2. Atualiza status da venda para 'estornada'
+            await using (var cmdVenda = new SqlCommand(
+                "UPDATE Vendas SET Status = 'estornada' WHERE Id = @VendaId AND CompanyId = @CompanyId;",
+                db,
+                transaction))
+            {
+                cmdVenda.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdVenda.Parameters.AddWithValue("@CompanyId", companyId);
+                await cmdVenda.ExecuteNonQueryAsync(ct);
+            }
+
+            // 3. Estorno automático de estoque dos produtos da venda
+            await using (var cmdEstorno = new SqlCommand(
+                """
+                UPDATE p
+                   SET p.ProductQnt = p.ProductQnt + vi.Quantity,
+                       p.TotalPriceOnProduct = p.ProductUnitPrice * (p.ProductQnt + vi.Quantity)
+                  FROM Produtos p
+                  INNER JOIN VendaItens vi ON vi.ProductCode = p.ProductCode AND p.CompanyId = @CompanyId
+                 WHERE vi.VendaId = @VendaId;
+                """,
+                db,
+                transaction))
+            {
+                cmdEstorno.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
+                await cmdEstorno.ExecuteNonQueryAsync(ct);
+            }
+
+            // 4. Registra no AuditLog
+            await using (var cmdAudit = new SqlCommand(
+                """
+                INSERT INTO AuditLog (CompanyId, UserId, UserName, EventType, EntityType, EntityId, Description, Ip)
+                VALUES (@CompanyId, @UserId, @UserName, 'NfeDevolucaoEntrada', 'DocumentosFiscais', @EntityId, @Description, 'PDV');
+                """,
+                db,
+                transaction))
+            {
+                cmdAudit.Parameters.AddWithValue("@CompanyId", companyId);
+                cmdAudit.Parameters.AddWithValue("@UserId", supervisorId);
+                cmdAudit.Parameters.AddWithValue("@UserName", supervisorNome);
+                cmdAudit.Parameters.AddWithValue("@EntityId", idNfe);
+                cmdAudit.Parameters.AddWithValue("@Description",
+                    $"NF-e {numeroNf} Serie {serie} de Devolucao emitida perante a SEFAZ referenciando NFC-e {chaveNfceOrigem}. Operador: {operadorNome}. Justificativa: {justificativa}");
+                await cmdAudit.ExecuteNonQueryAsync(ct);
+            }
+
+            await transaction.CommitAsync(ct);
+            return idNfe;
+        }
+        catch
+        {
+            await transaction.RollbackAsync(ct);
+            throw;
+        }
+    }
+
     /// <summary>Extração leve do link do QR Code já embutido no XML autorizado (nfeProc/infNFeSupl) ou assinado.</summary>
     private static string? ExtrairQrCode(string? xml)
     {

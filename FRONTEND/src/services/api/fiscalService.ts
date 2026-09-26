@@ -72,6 +72,39 @@ export type CancelarComSupervisorResult = {
   supervisorNome?: string;
 };
 
+export type DevolverNfcePayload = {
+  supervisorId: string;
+  supervisorPassword: string;
+  justificativa: string;
+  destinatario?: {
+    cpfCnpj?: string;
+    nome?: string;
+    indIeDest?: number;
+    inscricaoEstadual?: string;
+    logradouro?: string;
+    numero?: string;
+    complemento?: string;
+    bairro?: string;
+    codigoMunicipioIbge?: string;
+    nomeMunicipio?: string;
+    uf?: string;
+    cep?: string;
+    fone?: string;
+    email?: string;
+  };
+};
+
+export type DevolverNfceResult = {
+  documentoId: string;
+  numeroNfe: number;
+  serieNfe: number;
+  chaveAcesso: string;
+  protocolo: string;
+  dhAutorizacao?: string;
+  supervisorNome: string;
+  destinatarioNome: string;
+};
+
 export function fiscalStatusLabel(status: FiscalStatus): string {
   switch (status) {
     case FISCAL_STATUS.Rascunho:
@@ -148,6 +181,16 @@ export const fiscalService = {
   async cancelarComSupervisor(id: string, payload: CancelarComSupervisorPayload) {
     const response = await apiRequest<CancelarComSupervisorResult>(
       `${NFCE_API_URL}/${encodeURIComponent(id)}/cancelar-com-supervisor`,
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }
+    );
+    return response;
+  },
+  async devolverNfce(id: string, payload: DevolverNfcePayload) {
+    const response = await apiRequest<DevolverNfceResult>(
+      `${NFE_API_URL}/devolver-nfce/${encodeURIComponent(id)}`,
       {
         method: "POST",
         body: JSON.stringify(payload),

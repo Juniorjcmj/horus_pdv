@@ -15,11 +15,12 @@ namespace HORUSPDV_API.Controllers.Fiscal;
 
 [ApiController]
 [Route("api/[controller]")]
-[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
 public class NfeController(
     DocumentoFiscalAB documentoFiscalAB,
     EmitenteFiscalStore emitenteFiscalStore,
-    IFiscalProvider fiscalProvider) : ControllerBase
+    IFiscalProvider fiscalProvider,
+    HorusSecurityStore securityStore) : ControllerBase
 {
     /// <summary>
     /// Enfileira uma NF-e modelo 55 para emissão a partir de uma venda já registrada.
@@ -161,6 +162,187 @@ public class NfeController(
         {
             Success = false,
             Message = $"Falha ao cancelar: {resultado.MotivoStatus}"
+        });
+    }
+
+    /// <summary>
+    /// Emite uma NF-e de Entrada (Modelo 55) com finalidade de devolução (finNFe = 4)
+    /// referenciando a chave de uma NFC-e original autorizada, sob validação de senha de supervisor.
+    /// </summary>
+    [HttpPost("devolver-nfce/{nfceId}")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
+    public async Task<IActionResult> DevolverNfce(string nfceId, [FromBody] DevolverNfceRequest request)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null)
+            return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        if (string.IsNullOrWhiteSpace(request.Justificativa) || request.Justificativa.Trim().Length < 15)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Justificativa deve ter no mínimo 15 caracteres." });
+        }
+
+        // Valida credenciais do supervisor
+        var (valido, msgSupervisor, supervisor) = securityStore.ValidateSupervisorCredentials(
+            request.SupervisorId,
+            request.SupervisorPassword,
+            currentUser.CompanyId);
+
+        if (!valido || supervisor is null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
+            {
+                Success = false,
+                Message = msgSupervisor
+            });
+        }
+
+        (string DocId, string VendaId, string ChaveAcesso, string Protocolo, List<ItemFiscal> Itens, decimal TotalVenda, string? CustomerCpf, string? CustomerName, string? CustomerPhone)? dadosOrigem;
+        try
+        {
+            dadosOrigem = await documentoFiscalAB.ObterParaDevolucaoNfceAsync(currentUser.CompanyId, nfceId);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
+
+        if (dadosOrigem is null)
+        {
+            return NotFound(new ApiResponse<object> { Success = false, Message = "NFC-e não encontrada ou não pertence à empresa." });
+        }
+
+        var emitente = await emitenteFiscalStore.ObterAsync(currentUser.CompanyId);
+        if (emitente is null)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Message = "Empresa sem certificado digital A1 (.pfx) ou CSC configurado. Configure em Minha Empresa antes de emitir NF-e."
+            });
+        }
+
+        // Aloca o próximo número para NF-e modelo 55
+        var (numeroNfe, serieNfe, ambiente) = await documentoFiscalAB.AlocarNumeroNfeAsync(currentUser.CompanyId);
+
+        // Regra híbrida para destinatário/remetente:
+        DestinatarioFiscal destFiscal;
+        var dReq = request.Destinatario;
+        if (dReq != null && !string.IsNullOrWhiteSpace(dReq.CpfCnpj) && !string.IsNullOrWhiteSpace(dReq.Nome))
+        {
+            destFiscal = new DestinatarioFiscal
+            {
+                CpfCnpj = new string(dReq.CpfCnpj.Where(char.IsDigit).ToArray()),
+                Nome = dReq.Nome.Trim(),
+                IndIeDest = dReq.IndIeDest,
+                InscricaoEstadual = dReq.InscricaoEstadual,
+                Logradouro = string.IsNullOrWhiteSpace(dReq.Logradouro) ? emitente.Logradouro : dReq.Logradouro,
+                Numero = string.IsNullOrWhiteSpace(dReq.Numero) ? emitente.Numero : dReq.Numero,
+                Complemento = dReq.Complemento,
+                Bairro = string.IsNullOrWhiteSpace(dReq.Bairro) ? emitente.Bairro : dReq.Bairro,
+                CodigoMunicipioIbge = string.IsNullOrWhiteSpace(dReq.CodigoMunicipioIbge) ? emitente.CodigoMunicipioIbge : dReq.CodigoMunicipioIbge,
+                NomeMunicipio = string.IsNullOrWhiteSpace(dReq.NomeMunicipio) ? emitente.NomeMunicipio : dReq.NomeMunicipio,
+                Uf = string.IsNullOrWhiteSpace(dReq.Uf) ? emitente.Uf : dReq.Uf,
+                Cep = string.IsNullOrWhiteSpace(dReq.Cep) ? emitente.Cep : new string(dReq.Cep.Where(char.IsDigit).ToArray()),
+                Fone = dReq.Fone
+            };
+        }
+        else if (!string.IsNullOrWhiteSpace(dadosOrigem.Value.CustomerCpf) && !string.IsNullOrWhiteSpace(dadosOrigem.Value.CustomerName))
+        {
+            destFiscal = new DestinatarioFiscal
+            {
+                CpfCnpj = new string(dadosOrigem.Value.CustomerCpf.Where(char.IsDigit).ToArray()),
+                Nome = dadosOrigem.Value.CustomerName.Trim(),
+                IndIeDest = 9,
+                Logradouro = emitente.Logradouro,
+                Numero = emitente.Numero,
+                Bairro = emitente.Bairro,
+                CodigoMunicipioIbge = emitente.CodigoMunicipioIbge,
+                NomeMunicipio = emitente.NomeMunicipio,
+                Uf = emitente.Uf,
+                Cep = emitente.Cep,
+                Fone = dadosOrigem.Value.CustomerPhone
+            };
+        }
+        else
+        {
+            // Entrada Própria (dados cadastrais da própria loja)
+            destFiscal = new DestinatarioFiscal
+            {
+                CpfCnpj = emitente.Cnpj,
+                Nome = emitente.RazaoSocial,
+                IndIeDest = 1,
+                InscricaoEstadual = emitente.InscricaoEstadual,
+                Logradouro = emitente.Logradouro,
+                Numero = emitente.Numero,
+                Complemento = emitente.Complemento,
+                Bairro = emitente.Bairro,
+                CodigoMunicipioIbge = emitente.CodigoMunicipioIbge,
+                NomeMunicipio = emitente.NomeMunicipio,
+                Uf = emitente.Uf,
+                Cep = emitente.Cep,
+                Fone = emitente.Fone
+            };
+        }
+
+        var emissaoRequest = new EmissaoNfeRequest
+        {
+            Emitente = emitente,
+            Serie = serieNfe,
+            NumeroNf = numeroNfe,
+            TipoEmissao = TipoEmissaoFiscal.Normal,
+            TipoOperacao = 0, // Entrada
+            Finalidade = 4,   // Devolução
+            NaturezaOperacao = "DEVOLUCAO DE VENDA",
+            ChavesReferenciadas = [dadosOrigem.Value.ChaveAcesso],
+            ConsumidorFinal = true,
+            Destinatario = destFiscal,
+            Itens = dadosOrigem.Value.Itens,
+            Pagamentos = [new PagamentoFiscal { Tipo = "90", Valor = dadosOrigem.Value.TotalVenda }], // 90 = Sem Pagamento (estorno fiscal)
+            ValorTroco = 0,
+            ModalidadeFrete = 9 // Sem frete
+        };
+
+        var resultado = await fiscalProvider.EmitirNfeAsync(emissaoRequest);
+
+        if (resultado.Status != StatusDocumentoFiscal.Autorizado)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Message = $"SEFAZ recusou a devolução: [{resultado.CodigoStatus}] {resultado.MotivoStatus}"
+            });
+        }
+
+        var novoDocId = await documentoFiscalAB.GravarDevolucaoNfeComAuditoriaAsync(
+            currentUser.CompanyId,
+            dadosOrigem.Value.VendaId,
+            dadosOrigem.Value.DocId,
+            dadosOrigem.Value.ChaveAcesso,
+            numeroNfe,
+            serieNfe,
+            ambiente,
+            resultado,
+            supervisor.Id,
+            supervisor.Name,
+            currentUser.Name,
+            request.Justificativa.Trim());
+
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = "NF-e de Devolução emitida e autorizada com sucesso perante a SEFAZ.",
+            Data = new
+            {
+                documentoId = novoDocId,
+                numeroNfe,
+                serieNfe,
+                chaveAcesso = resultado.ChaveAcesso,
+                protocolo = resultado.Protocolo,
+                dhAutorizacao = resultado.DhAutorizacao,
+                supervisorNome = supervisor.Name,
+                destinatarioNome = destFiscal.Nome
+            }
         });
     }
 
