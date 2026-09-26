@@ -34,6 +34,15 @@ class ConnectivityService {
     return this._status === "ONLINE" || this._status === "SYNCING";
   }
 
+  /** Chamado pelo SyncCoordinator para indicar sincronização ativa. */
+  setSyncing(active: boolean): void {
+    if (active && this._status === "ONLINE") {
+      this._setStatus("SYNCING");
+    } else if (!active && this._status === "SYNCING") {
+      this._setStatus("ONLINE");
+    }
+  }
+
   subscribe(listener: Listener): () => void {
     this._listeners.add(listener);
     return () => {
