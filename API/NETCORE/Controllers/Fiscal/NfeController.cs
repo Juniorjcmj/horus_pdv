@@ -298,7 +298,7 @@ public class NfeController(
             ConsumidorFinal = true,
             Destinatario = destFiscal,
             Itens = dadosOrigem.Value.Itens,
-            Pagamentos = [new PagamentoFiscal { Tipo = "90", Valor = dadosOrigem.Value.TotalVenda }], // 90 = Sem Pagamento (estorno fiscal)
+            Pagamentos = [new PagamentoFiscal { Tipo = "90", Valor = 0m }], // 90 = Sem Pagamento (estorno fiscal: regra 904 da SEFAZ exige vPag = 0.00)
             ValorTroco = 0,
             ModalidadeFrete = 9 // Sem frete
         };

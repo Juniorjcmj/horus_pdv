@@ -624,7 +624,7 @@ public sealed class ZeusFiscalProvider(
                 return new detPag
                 {
                     tPag = tPag,
-                    vPag = p.Valor,
+                    vPag = tPag == FormaPagamento.fpSemPagamento ? 0m : p.Valor,
                     card = MontarCard(p, tPag)
                 };
             }).ToList(),

@@ -987,7 +987,7 @@ public class DocumentoFiscalAB(
                 Gtin = produto.Gtin,
                 Ncm = produto.Ncm,
                 Cest = produto.Cest,
-                Cfop = produto.Cfop,
+                Cfop = ConverterCfopParaDevolucaoEntrada(produto.Cfop),
                 Origem = produto.OrigemMercadoria,
                 UnidadeComercial = produto.UnidadeComercial,
                 Quantidade = linha.Quantity,
@@ -1005,6 +1005,26 @@ public class DocumentoFiscalAB(
         }
 
         return (docId, vendaId, chave, protocolo, itens, totalVenda, custCpf, custName);
+    }
+
+    private static string ConverterCfopParaDevolucaoEntrada(string? cfop)
+    {
+        if (string.IsNullOrWhiteSpace(cfop)) return "1202";
+        var digits = new string(cfop.Where(char.IsDigit).ToArray());
+        return digits switch
+        {
+            "5102" => "1202",
+            "5101" => "1201",
+            "5405" => "1411",
+            "5403" => "1410",
+            "6102" => "2202",
+            "6101" => "2201",
+            "6405" => "2411",
+            "6403" => "2410",
+            var s when s.StartsWith("5") && s.Length == 4 => "1" + s[1..],
+            var s when s.StartsWith("6") && s.Length == 4 => "2" + s[1..],
+            _ => cfop
+        };
     }
 
     /// <summary>Aloca o próximo número e série de NF-e (Modelo 55) para emissão imediata.</summary>
