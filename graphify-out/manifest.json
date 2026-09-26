@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1790459722.6242237,
-    "seen": 1790459964.5579402,
-    "ast_hash": "09a07cd93ecb32c6acd75bfdb77a9ce7",
+    "mtime": 1790462770.0373828,
+    "seen": 1790462977.7520676,
+    "ast_hash": "88edfab69f5daf384f66fb366e8ff85e",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs": {
-    "mtime": 1790457403.207202,
-    "seen": 1790457529.3135588,
-    "ast_hash": "3f3c1e1d01ac4d0208ba95606051533b",
+    "mtime": 1790462694.6561513,
+    "seen": 1790462977.7558014,
+    "ast_hash": "fa1a312b0be233ad48fc4db47d662510",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/FornecedorService.cs": {
@@ -1170,9 +1170,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiscalService.ts": {
-    "mtime": 1790459761.4881628,
-    "seen": 1790459964.5866845,
-    "ast_hash": "6aedbe828f456e9002d14fd639f7eab6",
+    "mtime": 1790462861.8920014,
+    "seen": 1790462977.781361,
+    "ast_hash": "22623dad8bdbc350d90abcee30de43a2",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/homeService.ts": {
@@ -2490,9 +2490,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfeController.cs": {
-    "mtime": 1790458235.7125957,
-    "seen": 1790458304.132619,
-    "ast_hash": "7942626594c0a796c9a7e0b3641992c5",
+    "mtime": 1790462825.0497499,
+    "seen": 1790462977.7386289,
+    "ast_hash": "ece12ec52bb7c228ae56ba72dad9291b",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfeEmissaoRequest.cs": {
@@ -2838,9 +2838,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx": {
-    "mtime": 1790461393.7145875,
-    "seen": 1790461544.580912,
-    "ast_hash": "69ccb1765bfe9ee85e6b5ad820f98cba",
+    "mtime": 1790462930.8518045,
+    "seen": 1790462977.764686,
+    "ast_hash": "485fc4012fe636253c66295ee94756a4",
     "semantic_hash": ""
   },
   "FRONTEND/tests/homologation/A-login.spec.ts": {

@@ -214,7 +214,14 @@ public sealed class ZeusFiscalProvider(
         {
             var emitente = request.Emitente;
             using var certificado = CarregarCertificado(emitente);
-            var cfg = MontarConfiguracao(emitente, TipoEmissaoFiscal.Normal);
+
+            var isNfe55 = !string.IsNullOrWhiteSpace(request.ChaveAcesso)
+                && request.ChaveAcesso.Length >= 22
+                && request.ChaveAcesso.Substring(20, 2) == "55";
+
+            var cfg = isNfe55
+                ? MontarConfiguracaoNfe(emitente, TipoEmissaoFiscal.Normal)
+                : MontarConfiguracao(emitente, TipoEmissaoFiscal.Normal);
 
             try
             {
@@ -245,7 +252,7 @@ public sealed class ZeusFiscalProvider(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Falha ao cancelar NFC-e {Chave}", request.ChaveAcesso);
+                logger.LogError(ex, "Falha ao cancelar documento fiscal {Chave}", request.ChaveAcesso);
                 return new ResultadoFiscal
                 {
                     Status = StatusDocumentoFiscal.Rejeitado,

@@ -5479,7 +5479,7 @@
       "file_type": "code",
       "norm_label": "modaloperationmode",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L49"
+      "source_location": "L51"
     },
     {
       "id": "frontend_src_components_admin_pdvnfcecancelmodal_pdvnfcecancelmodalprops",
@@ -5492,7 +5492,7 @@
       "file_type": "code",
       "norm_label": "pdvnfcecancelmodalprops",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L43"
+      "source_location": "L44"
     },
     {
       "id": "frontend_src_components_admin_fiscalerrormodal_fiscalerrormodalprops",
@@ -23020,7 +23020,7 @@
       "file_type": "code",
       "norm_label": "buildcancellationprinthtml()",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L91"
+      "source_location": "L96"
     },
     {
       "id": "frontend_src_components_admin_pdvnfcecancelmodal_builddevolucaodanfea4html",
@@ -23032,7 +23032,7 @@
       "file_type": "code",
       "norm_label": "builddevolucaodanfea4html()",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L289"
+      "source_location": "L294"
     },
     {
       "id": "frontend_src_components_admin_pdvnfcecancelmodal_builddevolucaoprinthtml",
@@ -23044,7 +23044,7 @@
       "file_type": "code",
       "norm_label": "builddevolucaoprinthtml()",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L185"
+      "source_location": "L190"
     },
     {
       "id": "frontend_src_components_admin_pdvnfcecancelmodal_formatdate",
@@ -23056,7 +23056,7 @@
       "file_type": "code",
       "norm_label": "formatdate()",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L65"
+      "source_location": "L67"
     },
     {
       "id": "frontend_src_components_admin_pdvnfcecancelmodal_getminuteselapsed",
@@ -23068,7 +23068,7 @@
       "file_type": "code",
       "norm_label": "getminuteselapsed()",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L79"
+      "source_location": "L81"
     },
     {
       "id": "frontend_src_components_admin_pdvnfcecancelmodal_isover30minutes",
@@ -23080,7 +23080,7 @@
       "file_type": "code",
       "norm_label": "isover30minutes()",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L87"
+      "source_location": "L89"
     },
     {
       "id": "frontend_src_components_admin_pdvnfcecancelmodal_pdvnfcecancelmodal",
@@ -23092,7 +23092,7 @@
       "file_type": "code",
       "norm_label": "pdvnfcecancelmodal()",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L388"
+      "source_location": "L393"
     },
     {
       "id": "frontend_src_components_admin_fiscalerrormodal_fiscalerrormodal",
@@ -59250,7 +59250,7 @@
       "file_type": "code",
       "norm_label": "motivos_cancelamento",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L51"
+      "source_location": "L53"
     },
     {
       "id": "frontend_src_components_admin_pdvnfcecancelmodal_motivos_devolucao",
@@ -59261,7 +59261,7 @@
       "file_type": "code",
       "norm_label": "motivos_devolucao",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L58"
+      "source_location": "L60"
     },
     {
       "id": "openspec_changes_emissao_nfe_devolucao_nfce_proposal",
@@ -90109,7 +90109,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L88",
+      "source_location": "L91",
       "weight": 1.0
     },
     {
@@ -90121,7 +90121,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L429",
+      "source_location": "L436",
       "weight": 1.0
     },
     {
@@ -90133,7 +90133,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L430",
+      "source_location": "L437",
       "weight": 1.0
     },
     {
@@ -90145,7 +90145,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L618",
+      "source_location": "L663",
       "weight": 1.0
     },
     {
@@ -90157,7 +90157,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L634",
+      "source_location": "L679",
       "weight": 1.0
     },
     {
@@ -90169,7 +90169,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L650",
+      "source_location": "L695",
       "weight": 1.0
     },
     {
@@ -90181,7 +90181,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L923",
+      "source_location": "L970",
       "weight": 1.0
     },
     {
@@ -91141,7 +91141,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/FiscalPage.tsx",
-      "source_location": "L825",
+      "source_location": "L810",
       "weight": 1.0
     },
     {
@@ -91153,7 +91153,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/FiscalPage.tsx",
-      "source_location": "L871",
+      "source_location": "L856",
       "weight": 1.0
     },
     {
@@ -151130,7 +151130,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L185",
+      "source_location": "L190",
       "weight": 1.0
     },
     {
@@ -151141,7 +151141,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L289",
+      "source_location": "L294",
       "weight": 1.0
     },
     {
@@ -151152,7 +151152,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L388",
+      "source_location": "L393",
       "weight": 1.0
     },
     {
@@ -151163,7 +151163,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L43",
+      "source_location": "L44",
       "weight": 1.0
     },
     {
@@ -151174,7 +151174,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L49",
+      "source_location": "L51",
       "weight": 1.0
     },
     {
@@ -151185,7 +151185,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L51",
+      "source_location": "L53",
       "weight": 1.0
     },
     {
@@ -151196,7 +151196,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L58",
+      "source_location": "L60",
       "weight": 1.0
     },
     {
@@ -151207,7 +151207,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L65",
+      "source_location": "L67",
       "weight": 1.0
     },
     {
@@ -151218,7 +151218,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L79",
+      "source_location": "L81",
       "weight": 1.0
     },
     {
@@ -151229,7 +151229,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L87",
+      "source_location": "L89",
       "weight": 1.0
     },
     {
@@ -151240,7 +151240,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx",
-      "source_location": "L91",
+      "source_location": "L96",
       "weight": 1.0
     },
     {
@@ -183330,5 +183330,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "2cbbdd3bfea2e6a569237f31143703c3c2719e05"
+  "built_at_commit": "ca3b89026d7b7842acb74dd859d978a86881d390"
 }

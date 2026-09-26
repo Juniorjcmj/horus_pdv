@@ -209,9 +209,10 @@ export const fiscalService = {
     });
     return response.message;
   },
-  async cancelarComSupervisor(id: string, payload: CancelarComSupervisorPayload) {
+  async cancelarComSupervisor(id: string, payload: CancelarComSupervisorPayload, modelo?: number) {
+    const baseUrl = modelo === 55 ? NFE_API_URL : NFCE_API_URL;
     const response = await apiRequest<CancelarComSupervisorResult>(
-      `${NFCE_API_URL}/${encodeURIComponent(id)}/cancelar-com-supervisor`,
+      `${baseUrl}/${encodeURIComponent(id)}/cancelar-com-supervisor`,
       {
         method: "POST",
         body: JSON.stringify(payload),
@@ -221,13 +222,16 @@ export const fiscalService = {
   },
   async devolverNfce(id: string, payload: DevolverNfcePayload) {
     const response = await apiRequest<DevolverNfceResult>(
-      `${NFE_API_URL}/devolver-nfce/${encodeURIComponent(id)}`,
+      `${NFE_API_URL}/devolver/${encodeURIComponent(id)}`,
       {
         method: "POST",
         body: JSON.stringify(payload),
       }
     );
     return response;
+  },
+  async devolverNfe(id: string, payload: DevolverNfcePayload) {
+    return this.devolverNfce(id, payload);
   },
   async inutilizar(payload: {
     serie: number;

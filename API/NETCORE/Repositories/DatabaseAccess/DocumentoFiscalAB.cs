@@ -507,7 +507,8 @@ public class DocumentoFiscalAB(
     {
         const string sql = """
             SELECT d.Id, v.SaleNumber, d.Serie, d.NumeroNf, d.Status, d.ChaveAcesso, d.Protocolo,
-                   d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas, d.XmlProtocolado, d.XmlAssinado
+                   d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas, d.XmlProtocolado, d.XmlAssinado,
+                   d.Modelo
             FROM DocumentosFiscais d
             INNER JOIN Vendas v ON v.Id = d.VendaId
             WHERE d.CompanyId = @CompanyId AND v.SaleNumber = @SaleNumber
@@ -536,6 +537,7 @@ public class DocumentoFiscalAB(
             DhAutorizacao = ReadNullableDateTimeOffset(reader, "DhAutorizacao"),
             CriadoEm = reader.GetDateTimeOffset(reader.GetOrdinal("CriadoEm")),
             Tentativas = ReadInt(reader, "Tentativas"),
+            Modelo = (short)ReadInt(reader, "Modelo"),
             QrCodeUrl = ExtrairQrCode(xmlProtocolado) ?? ExtrairQrCode(xmlAssinado)
         };
     }
@@ -555,7 +557,7 @@ public class DocumentoFiscalAB(
         const string sql = """
             SELECT TOP 1 d.Id, v.SaleNumber, d.Serie, d.NumeroNf, d.Status, d.ChaveAcesso, d.Protocolo,
                    d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas, d.XmlProtocolado, d.XmlAssinado,
-                   v.TotalAmount, v.CustomerName, v.CustomerCpf, v.PaymentType,
+                   v.TotalAmount, v.CustomerName, v.CustomerCpf, v.PaymentType, d.Modelo,
                    CASE WHEN d.XmlProtocolado IS NOT NULL OR d.XmlAssinado IS NOT NULL THEN 1 ELSE 0 END AS HasXml,
                    CASE WHEN d.XmlCancelamento IS NOT NULL THEN 1 ELSE 0 END AS HasCancelXml
             FROM DocumentosFiscais d
@@ -608,6 +610,7 @@ public class DocumentoFiscalAB(
             CustomerName = ReadNullableString(reader, "CustomerName"),
             CustomerCpf = ReadNullableString(reader, "CustomerCpf"),
             PaymentType = ReadNullableString(reader, "PaymentType"),
+            Modelo = (short)ReadInt(reader, "Modelo"),
             HasXml = reader.GetInt32(reader.GetOrdinal("HasXml")) == 1,
             HasCancelXml = reader.GetInt32(reader.GetOrdinal("HasCancelXml")) == 1,
             QrCodeUrl = ExtrairQrCode(xmlProtocolado) ?? ExtrairQrCode(xmlAssinado)
@@ -928,20 +931,20 @@ public class DocumentoFiscalAB(
     }
 
     /// <summary>
-    /// Obtém dados da NFC-e original para emissão da NF-e de Entrada (Devolução),
-    /// verificando se está autorizada e se não possui devolução anterior.
+    /// Obtém dados do documento fiscal original (NFC-e modelo 65 ou NF-e modelo 55) para emissão
+    /// da NF-e de Entrada (Devolução), verificando se está autorizada e se não possui devolução anterior.
     /// </summary>
-    public async Task<(string DocId, string VendaId, string ChaveAcesso, string Protocolo, List<ItemFiscal> Itens, decimal TotalVenda, string? CustomerCpf, string? CustomerName)?> ObterParaDevolucaoNfceAsync(
+    public async Task<(string DocId, string VendaId, string ChaveAcesso, string Protocolo, List<ItemFiscal> Itens, decimal TotalVenda, string? CustomerCpf, string? CustomerName, string? DestinatarioJson)?> ObterParaDevolucaoNfceAsync(
         string companyId, string idOrChave, CancellationToken ct = default)
     {
         const string sql = """
-            SELECT TOP 1 d.Id, d.VendaId, d.ChaveAcesso, d.Protocolo, d.Status,
+            SELECT TOP 1 d.Id, d.VendaId, d.ChaveAcesso, d.Protocolo, d.Status, d.DestinatarioJson,
                    v.CustomerCpf, v.CustomerName, v.TotalAmount, v.Status AS VendaStatus
             FROM DocumentosFiscais d
             INNER JOIN Vendas v ON v.Id = d.VendaId
             WHERE d.CompanyId = @CompanyId
               AND (d.Id = @Termo OR d.ChaveAcesso = @Termo)
-              AND d.Modelo = 65;
+              AND d.Modelo IN (55, 65);
             """;
 
         await using var db = await connection.OpenConnectionAsync(ct);
@@ -950,7 +953,7 @@ public class DocumentoFiscalAB(
         command.Parameters.AddWithValue("@Termo", idOrChave.Trim());
 
         string docId, vendaId, chave, protocolo;
-        string? custCpf, custName;
+        string? custCpf, custName, destinatarioJson;
         decimal totalVenda;
         StatusDocumentoFiscal status;
         string? vendaStatus;
@@ -964,6 +967,7 @@ public class DocumentoFiscalAB(
             chave = ReadString(reader, "ChaveAcesso");
             protocolo = ReadNullableString(reader, "Protocolo") ?? string.Empty;
             status = (StatusDocumentoFiscal)ReadInt(reader, "Status");
+            destinatarioJson = ReadNullableString(reader, "DestinatarioJson");
             custCpf = ReadNullableString(reader, "CustomerCpf");
             custName = ReadNullableString(reader, "CustomerName");
             var totalRaw = reader.GetValue(reader.GetOrdinal("TotalAmount"));
@@ -977,12 +981,12 @@ public class DocumentoFiscalAB(
         }
 
         if (status != StatusDocumentoFiscal.Autorizado)
-            throw new InvalidOperationException("Apenas NFC-e autorizada perante a SEFAZ pode ser objeto de devolução.");
+            throw new InvalidOperationException("Apenas documento fiscal (NF-e ou NFC-e) autorizado perante a SEFAZ pode ser objeto de devolução.");
 
         if (string.Equals(vendaStatus, "cancelada", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Esta venda já foi cancelada anteriormente.");
 
-        // Verifica se já existe NF-e de devolução emitida ou em andamento para esta NFC-e
+        // Verifica se já existe NF-e de devolução emitida ou em andamento para este documento fiscal
         const string checkDevolucaoSql = """
             SELECT TOP 1 NumeroNf, Serie, ChaveAcesso
             FROM DocumentosFiscais
@@ -1001,7 +1005,7 @@ public class DocumentoFiscalAB(
             {
                 var numNf = ReadInt(readerCheck, "NumeroNf");
                 var serieNf = ReadInt(readerCheck, "Serie");
-                throw new InvalidOperationException($"Já existe uma NF-e de Devolução (Nº {numNf}, Série {serieNf}) registrada para esta NFC-e.");
+                throw new InvalidOperationException($"Já existe uma NF-e de Devolução (Nº {numNf}, Série {serieNf}) registrada para este documento fiscal.");
             }
         }
 
@@ -1045,7 +1049,7 @@ public class DocumentoFiscalAB(
             });
         }
 
-        return (docId, vendaId, chave, protocolo, itens, totalVenda, custCpf, custName);
+        return (docId, vendaId, chave, protocolo, itens, totalVenda, custCpf, custName, destinatarioJson);
     }
 
     private static string ConverterCfopParaDevolucaoEntrada(string? cfop)

@@ -167,9 +167,91 @@ public class NfeController(
     }
 
     /// <summary>
-    /// Emite uma NF-e de Entrada (Modelo 55) com finalidade de devolução (finNFe = 4)
-    /// referenciando a chave de uma NFC-e original autorizada, sob validação de senha de supervisor.
+    /// Cancela uma NF-e modelo 55 autorizada sob validação de senha de supervisor,
+    /// com estorno automático de estoque e cancelamento da venda vinculada.
     /// </summary>
+    [HttpPost("{id}/cancelar-com-supervisor")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
+    public async Task<IActionResult> CancelarComSupervisor(string id, [FromBody] CancelamentoComSupervisorRequest request)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null)
+            return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        if (string.IsNullOrWhiteSpace(request.Justificativa) || request.Justificativa.Trim().Length < 15)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Justificativa deve ter no mínimo 15 caracteres." });
+        }
+
+        // Valida credenciais do supervisor
+        var (valido, msgSupervisor, supervisor) = securityStore.ValidateSupervisorCredentials(
+            request.SupervisorId,
+            request.SupervisorPassword,
+            currentUser.CompanyId);
+
+        if (!valido || supervisor is null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
+            {
+                Success = false,
+                Message = msgSupervisor
+            });
+        }
+
+        var dados = await documentoFiscalAB.ObterParaCancelamentoAsync(currentUser.CompanyId, id);
+        if (dados is null)
+        {
+            return NotFound(new ApiResponse<object> { Success = false, Message = "NF-e não encontrada ou não está autorizada." });
+        }
+
+        var emitente = await emitenteFiscalStore.ObterAsync(currentUser.CompanyId);
+        if (emitente is null)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Empresa sem certificado configurado." });
+        }
+
+        var resultado = await fiscalProvider.CancelarAsync(new CancelamentoRequest
+        {
+            Emitente = emitente,
+            ChaveAcesso = dados.Value.ChaveAcesso,
+            Protocolo = dados.Value.Protocolo,
+            Justificativa = request.Justificativa.Trim(),
+            SequenciaEvento = 1
+        });
+
+        if (resultado.Status != StatusDocumentoFiscal.Cancelado)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = resultado.MotivoStatus });
+        }
+
+        await documentoFiscalAB.MarcarCanceladoComAuditoriaAsync(
+            currentUser.CompanyId,
+            id,
+            resultado,
+            supervisor.Id,
+            supervisor.Name,
+            currentUser.Name,
+            request.Justificativa.Trim());
+
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = "NF-e cancelada com sucesso perante a SEFAZ.",
+            Data = new
+            {
+                documentoId = id,
+                protocoloCancelamento = resultado.Protocolo,
+                motivoStatus = resultado.MotivoStatus,
+                supervisorNome = supervisor.Name
+            }
+        });
+    }
+
+    /// <summary>
+    /// Emite uma NF-e de Entrada (Modelo 55) com finalidade de devolução (finNFe = 4)
+    /// referenciando a chave de um documento original (NFC-e ou NF-e) autorizado, sob validação de senha de supervisor.
+    /// </summary>
+    [HttpPost("devolver/{nfceId}")]
     [HttpPost("devolver-nfce/{nfceId}")]
     [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
     public async Task<IActionResult> DevolverNfce(string nfceId, [FromBody] DevolverNfceRequest request)
@@ -198,7 +280,7 @@ public class NfeController(
             });
         }
 
-        (string DocId, string VendaId, string ChaveAcesso, string Protocolo, List<ItemFiscal> Itens, decimal TotalVenda, string? CustomerCpf, string? CustomerName)? dadosOrigem;
+        (string DocId, string VendaId, string ChaveAcesso, string Protocolo, List<ItemFiscal> Itens, decimal TotalVenda, string? CustomerCpf, string? CustomerName, string? DestinatarioJson)? dadosOrigem;
         try
         {
             dadosOrigem = await documentoFiscalAB.ObterParaDevolucaoNfceAsync(currentUser.CompanyId, nfceId);
@@ -210,7 +292,7 @@ public class NfeController(
 
         if (dadosOrigem is null)
         {
-            return NotFound(new ApiResponse<object> { Success = false, Message = "NFC-e não encontrada ou não pertence à empresa." });
+            return NotFound(new ApiResponse<object> { Success = false, Message = "Documento fiscal não encontrado ou não pertence à empresa." });
         }
 
         var emitente = await emitenteFiscalStore.ObterAsync(currentUser.CompanyId);
@@ -244,6 +326,25 @@ public class NfeController(
                 Cep = string.IsNullOrWhiteSpace(dReq.Cep) ? emitente.Cep : new string(dReq.Cep.Where(char.IsDigit).ToArray()),
                 Fone = dReq.Fone
             };
+        }
+        else if (!string.IsNullOrWhiteSpace(dadosOrigem.Value.DestinatarioJson))
+        {
+            try
+            {
+                var dOrig = System.Text.Json.JsonSerializer.Deserialize<DestinatarioFiscal>(dadosOrigem.Value.DestinatarioJson);
+                if (dOrig != null && !string.IsNullOrWhiteSpace(dOrig.CpfCnpj) && !string.IsNullOrWhiteSpace(dOrig.Nome))
+                {
+                    destFiscal = dOrig;
+                }
+                else
+                {
+                    destFiscal = MontarDestinatarioPadrao(emitente, dadosOrigem.Value.CustomerCpf, dadosOrigem.Value.CustomerName);
+                }
+            }
+            catch
+            {
+                destFiscal = MontarDestinatarioPadrao(emitente, dadosOrigem.Value.CustomerCpf, dadosOrigem.Value.CustomerName);
+            }
         }
         else if (!string.IsNullOrWhiteSpace(dadosOrigem.Value.CustomerCpf) && !string.IsNullOrWhiteSpace(dadosOrigem.Value.CustomerName))
         {
@@ -390,6 +491,44 @@ public class NfeController(
         var chave = dados.Value.ChaveAcesso ?? id;
         var bytes = System.Text.Encoding.UTF8.GetBytes(dados.Value.Xml);
         return File(bytes, "application/xml", $"nfe-{chave}.xml");
+    }
+
+    private static DestinatarioFiscal MontarDestinatarioPadrao(ContextoEmitente emitente, string? customerCpf, string? customerName)
+    {
+        if (!string.IsNullOrWhiteSpace(customerCpf) && !string.IsNullOrWhiteSpace(customerName))
+        {
+            return new DestinatarioFiscal
+            {
+                CpfCnpj = new string(customerCpf.Where(char.IsDigit).ToArray()),
+                Nome = customerName.Trim(),
+                IndIeDest = 9,
+                Logradouro = emitente.Logradouro,
+                Numero = emitente.Numero,
+                Bairro = emitente.Bairro,
+                CodigoMunicipioIbge = emitente.CodigoMunicipioIbge,
+                NomeMunicipio = emitente.NomeMunicipio,
+                Uf = emitente.Uf,
+                Cep = emitente.Cep,
+                Fone = emitente.Fone
+            };
+        }
+
+        return new DestinatarioFiscal
+        {
+            CpfCnpj = emitente.Cnpj,
+            Nome = emitente.RazaoSocial,
+            IndIeDest = 1,
+            InscricaoEstadual = emitente.InscricaoEstadual,
+            Logradouro = emitente.Logradouro,
+            Numero = emitente.Numero,
+            Complemento = emitente.Complemento,
+            Bairro = emitente.Bairro,
+            CodigoMunicipioIbge = emitente.CodigoMunicipioIbge,
+            NomeMunicipio = emitente.NomeMunicipio,
+            Uf = emitente.Uf,
+            Cep = emitente.Cep,
+            Fone = emitente.Fone
+        };
     }
 
     private AuthenticatedUser? GetCurrentUser()

@@ -108,11 +108,15 @@ function buildCancellationPrintHtml(
     second: "2-digit",
   });
 
+  const is55 = doc.modelo === 55;
+  const docTipo = is55 ? "NF-e (MODELO 55)" : "NFC-e (MODELO 65)";
+  const labelCancelada = is55 ? "NF-e Cancelada:" : "NFC-e Cancelada:";
+
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>Comprovante de Cancelamento NFC-e</title>
+  <title>Comprovante de Cancelamento ${is55 ? "NF-e" : "NFC-e"}</title>
   <style>
     @page { margin: 0; size: 80mm auto; }
     body {
@@ -136,11 +140,11 @@ function buildCancellationPrintHtml(
 </head>
 <body>
   <div class="text-center bold header">COMPROVANTE DE CANCELAMENTO</div>
-  <div class="text-center small">NFC-e (MODELO 65)</div>
+  <div class="text-center small">${docTipo}</div>
   <div class="divider"></div>
 
   <div class="row">
-    <span>NFC-e Cancelada:</span>
+    <span>${labelCancelada}</span>
     <span class="bold">Nº ${formatNumeroNf(doc.numeroNf)}</span>
   </div>
   <div class="row">
@@ -239,7 +243,7 @@ function buildDevolucaoPrintHtml(
     <span class="bold">Nº ${formatNumeroNf(result.numeroNfe)} / Série ${result.serieNfe}</span>
   </div>
   <div class="row">
-    <span>NFC-e Referenciada:</span>
+    <span>${doc.modelo === 55 ? "NF-e" : "NFC-e"} Referenciada:</span>
     <span class="bold">Nº ${formatNumeroNf(doc.numeroNf)}</span>
   </div>
   <div class="row">
@@ -356,8 +360,8 @@ function buildDevolucaoDanfeA4Html(
 
   <div class="box">
     <div class="bold" style="margin-bottom: 2px;">DOCUMENTOS FISCAIS REFERENCIADOS</div>
-    <div>NFC-e Referenciada (Modelo 65): <strong>${formatChaveAcesso(doc.chaveAcesso)}</strong></div>
-    <div>Venda de Origem: <strong>#${doc.saleNumber}</strong> &nbsp;|&nbsp; NFC-e Original Nº: <strong>${formatNumeroNf(doc.numeroNf)}</strong></div>
+    <div>${doc.modelo === 55 ? "NF-e Referenciada (Modelo 55)" : "NFC-e Referenciada (Modelo 65)"}: <strong>${formatChaveAcesso(doc.chaveAcesso)}</strong></div>
+    <div>Venda de Origem: <strong>#${doc.saleNumber}</strong> &nbsp;|&nbsp; ${doc.modelo === 55 ? "NF-e" : "NFC-e"} Original Nº: <strong>${formatNumeroNf(doc.numeroNf)}</strong></div>
   </div>
 
   <div class="box">
@@ -372,7 +376,7 @@ function buildDevolucaoDanfeA4Html(
   <div class="box">
     <div class="bold" style="margin-bottom: 4px;">DADOS ADICIONAIS / INFORMAÇÕES COMPLEMENTARES</div>
     <div style="font-size: 10px;">
-      Devolução de venda de mercadorias referente à NFC-e chave ${doc.chaveAcesso || ""}.<br />
+      Devolução de venda de mercadorias referente ao documento fiscal (${doc.modelo === 55 ? "NF-e Modelo 55" : "NFC-e Modelo 65"}) chave ${doc.chaveAcesso || ""}.<br />
       Justificativa: ${justificativa}.<br />
       Supervisor Responsável: ${result.supervisorNome}.
     </div>
@@ -567,26 +571,32 @@ export default function PdvNfceCancelModal({
 
     if (mode === "cancelar") {
       try {
-        const response = await fiscalService.cancelarComSupervisor(documento.id, {
-          supervisorId: selectedSupervisorId,
-          supervisorPassword,
-          justificativa: trimmedJustificativa,
-        });
+        const response = await fiscalService.cancelarComSupervisor(
+          documento.id,
+          {
+            supervisorId: selectedSupervisorId,
+            supervisorPassword,
+            justificativa: trimmedJustificativa,
+          },
+          documento.modelo
+        );
 
         if (!response.success) {
-          const msg = response.message || "Falha ao cancelar NFC-e.";
+          const msg = response.message || `Falha ao cancelar ${isModelo55 ? "NF-e" : "NFC-e"}.`;
           // Detecta rejeição por prazo expirado
           if (
             msg.toLowerCase().includes("prazo") ||
             msg.toLowerCase().includes("30") ||
+            msg.toLowerCase().includes("24") ||
             msg.toLowerCase().includes("502") ||
             msg.toLowerCase().includes("218") ||
+            msg.toLowerCase().includes("220") ||
             msg.toLowerCase().includes("superior ao previsto")
           ) {
             setSefazRejeicaoPrazo(msg);
             setMode("devolver");
             setJustificativa(MOTIVOS_DEVOLUCAO[1]);
-            Toast.info("O prazo de 30min expirou. Alterne para Devolução (NF-e 55).");
+            Toast.info(isModelo55 ? "O prazo legal de 24h expirou. Alterne para Devolução (NF-e 55)." : "O prazo de 30min expirou. Alterne para Devolução (NF-e 55).");
             return;
           }
           Toast.error(msg);
@@ -600,15 +610,17 @@ export default function PdvNfceCancelModal({
             supervisorNome: supervisores.find((s) => s.id === selectedSupervisorId)?.name,
           }
         );
-        Toast.success("NFC-e cancelada e mercadorias estornadas ao estoque!");
+        Toast.success(`${isModelo55 ? "NF-e" : "NFC-e"} cancelada e mercadorias estornadas ao estoque!`);
         onSuccess?.();
       } catch (error) {
         const msg = error instanceof Error ? error.message : "Erro ao processar cancelamento.";
         if (
           msg.toLowerCase().includes("prazo") ||
           msg.toLowerCase().includes("30") ||
+          msg.toLowerCase().includes("24") ||
           msg.toLowerCase().includes("502") ||
           msg.toLowerCase().includes("218") ||
+          msg.toLowerCase().includes("220") ||
           msg.toLowerCase().includes("superior ao previsto")
         ) {
           setSefazRejeicaoPrazo(msg);
@@ -736,14 +748,16 @@ export default function PdvNfceCancelModal({
             <div>
               <h2 className="text-sm font-bold text-text-primary">
                 {mode === "devolver"
-                  ? "Devolução Fiscal (NF-e 55 Entrada)"
+                  ? isModelo55
+                    ? "Devolução Fiscal de NF-e (Modelo 55 Entrada)"
+                    : "Devolução Fiscal (NF-e 55 Entrada)"
                   : isModelo55
                     ? "Cancelar NF-e (Modelo 55)"
                     : "Cancelar NFC-e (Modelo 65)"}
               </h2>
               <p className="text-[11px] text-text-secondary">
                 {mode === "devolver"
-                  ? "Emissão de NF-e Modelo 55 de entrada referenciando a NFC-e"
+                  ? `Emissão de NF-e Modelo 55 de entrada referenciando a ${isModelo55 ? "NF-e" : "NFC-e"}`
                   : "Cancelamento oficial perante a SEFAZ com autorização gerencial"}
               </p>
             </div>
@@ -766,7 +780,7 @@ export default function PdvNfceCancelModal({
               <CheckCircle2 size={32} />
             </div>
             <div>
-              <h3 className="text-base font-bold text-text-primary">NFC-e Cancelada com Sucesso!</h3>
+              <h3 className="text-base font-bold text-text-primary">{isModelo55 ? "NF-e" : "NFC-e"} Cancelada com Sucesso!</h3>
               <p className="mt-1 text-xs text-text-secondary">
                 O evento de cancelamento foi homologado pela SEFAZ. O estoque dos produtos foi estornado
                 e a venda marcada como cancelada.
@@ -779,7 +793,7 @@ export default function PdvNfceCancelModal({
                 <span className="font-semibold text-text-primary">#{documento?.saleNumber}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-secondary">NFC-e Nº:</span>
+                <span className="text-text-secondary">{isModelo55 ? "NF-e" : "NFC-e"} Nº:</span>
                 <span className="font-semibold text-text-primary">{formatNumeroNf(documento?.numeroNf ?? 0)}</span>
               </div>
               <div className="flex justify-between">
@@ -836,7 +850,7 @@ export default function PdvNfceCancelModal({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-secondary">NFC-e Referenciada:</span>
+                <span className="text-text-secondary">{isModelo55 ? "NF-e" : "NFC-e"} Referenciada:</span>
                 <span className="font-semibold text-text-primary">{formatNumeroNf(documento?.numeroNf ?? 0)}</span>
               </div>
               <div className="flex justify-between">
@@ -882,10 +896,10 @@ export default function PdvNfceCancelModal({
         ) : (
           /* Estado Normal: Formulário */
           <form onSubmit={handleSubmit} className="p-5 space-y-4">
-            {/* Campo de Busca do Código da NFC-e */}
+            {/* Campo de Busca do Código da Nota */}
             <div className="space-y-1">
               <label htmlFor="codigo-nfce" className="block text-xs font-semibold text-text-primary">
-                Código da NFC-e, Número da Venda ou Chave de Acesso <span className="text-primary">*</span>
+                Código da {isModelo55 ? "NF-e" : "NFC-e"}, Número da Venda ou Chave de Acesso <span className="text-primary">*</span>
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -996,7 +1010,7 @@ export default function PdvNfceCancelModal({
                   <div className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-600 dark:text-amber-400">
                     <AlertTriangle size={16} className="shrink-0" />
                     <span>
-                      Esta NFC-e está com status <strong>{fiscalStatusLabel(documento.status)}</strong> e não pode ser estornada. Apenas notas com status <strong>Autorizado</strong> são passíveis de cancelamento ou devolução perante a SEFAZ.
+                      Este documento fiscal está com status <strong>{fiscalStatusLabel(documento.status)}</strong> e não pode ser estornado. Apenas notas com status <strong>Autorizado</strong> são passíveis de cancelamento ou devolução perante a SEFAZ.
                     </span>
                   </div>
                 )}
@@ -1245,7 +1259,7 @@ export default function PdvNfceCancelModal({
                   ) : (
                     <>
                       <ShieldCheck size={14} />
-                      Autorizar e Cancelar NFC-e
+                      Autorizar e Cancelar {isModelo55 ? "NF-e" : "NFC-e"}
                     </>
                   )}
                 </button>
