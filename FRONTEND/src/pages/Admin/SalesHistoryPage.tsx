@@ -25,6 +25,7 @@ import {
   type FiscalDocumentDto,
 } from "@/services/api/fiscalService";
 import { salesHistoryService, type SaleHistoryDto } from "@/services/api/salesHistoryService";
+import { getLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
 import { getStoredAuthUser } from "@/utils/authStorage";
 
 type SaleHistoryRow = SaleHistoryDto;
@@ -81,8 +82,27 @@ export default function SalesHistoryPage() {
       .catch(() => setFiscalBySale(new Map()));
   };
 
+  const loadSalesHistory = async () => {
+    try {
+      const data = await salesHistoryService.list();
+      if (Array.isArray(data) && data.length > 0) {
+        setSalesHistory(data);
+        return;
+      }
+    } catch {
+      // Falha de rede / offline — consulta vendas locais no IndexedDB
+    }
+
+    try {
+      const localData = await getLocalSalesHistory();
+      setSalesHistory(localData);
+    } catch {
+      setSalesHistory([]);
+    }
+  };
+
   useEffect(() => {
-    salesHistoryService.list().then(setSalesHistory).catch(() => setSalesHistory([]));
+    void loadSalesHistory();
     companyService.get().then((data) => setCompany(data ?? null)).catch(() => setCompany(null));
     loadFiscalStatus();
   }, []);

@@ -11,6 +11,12 @@ namespace HORUSPDV_API.Models.Requests;
 
 public class VendaRequest
 {
+    public string? ClientSaleId { get; set; }
+    public string? EventId { get; set; }
+    public string? EventType { get; set; }
+    public string? OfflineReference { get; set; }
+    public DateTimeOffset? OccurredAt { get; set; }
+    public string? PayloadHash { get; set; }
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerCpf { get; set; } = string.Empty;
     public string PaymentType { get; set; } = string.Empty;

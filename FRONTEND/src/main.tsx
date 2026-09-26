@@ -8,6 +8,10 @@ import { createRoot } from "react-dom/client";
 import { ToastContainer } from "@/hooks/Dialog";
 import "./index.css";
 import App from "./App.tsx";
+import { registerServiceWorker } from "./registerServiceWorker";
+
+// Registra o Service Worker do PWA para operação Offline-First
+registerServiceWorker();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

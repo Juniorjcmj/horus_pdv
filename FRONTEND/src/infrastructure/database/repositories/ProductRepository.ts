@@ -52,4 +52,21 @@ export const productRepository = {
   async clear(): Promise<void> {
     await db.products.clear();
   },
+
+  /** Decrementa estoque localmente no IndexedDB para uma lista de itens vendidos. */
+  async decrementStockLocal(items: Array<{ productCode: string; quantity: number }>): Promise<void> {
+    await db.transaction("rw", db.products, async () => {
+      for (const item of items) {
+        const prod =
+          (await db.products.where("productCode").equals(item.productCode).first()) ||
+          (await db.products.where("barcode").equals(item.productCode).first());
+        if (prod) {
+          await db.products.update(prod.id, {
+            stock: (prod.stock ?? 0) - item.quantity,
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      }
+    });
+  },
 };

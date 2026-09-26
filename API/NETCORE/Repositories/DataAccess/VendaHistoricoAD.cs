@@ -27,12 +27,26 @@ public class VendaHistoricoAD
     public string? PromocaoId { get; set; }
     public string ItemTotal { get; set; } = string.Empty;
     public string SaleDate { get; set; } = string.Empty;
+    public string? ClientSaleId { get; set; }
+    public string? OfflineReference { get; set; }
 }
 
 public class VendaRegistroResultadoAD
 {
     public string SaleNumber { get; set; } = string.Empty;
     public string VendaId { get; set; } = string.Empty;
+    public string? ClientSaleId { get; set; }
+    public bool IsReplay { get; set; }
     public List<VendaHistoricoAD> Rows { get; set; } = [];
     public List<VendaPagamentoAD> Payments { get; set; } = [];
+    public List<EstoqueRupturaAvisoAD> Warnings { get; set; } = [];
+}
+
+public class EstoqueRupturaAvisoAD
+{
+    public string ProductCode { get; set; } = string.Empty;
+    public string ProductName { get; set; } = string.Empty;
+    public decimal EstoqueAnterior { get; set; }
+    public decimal QuantidadeVendida { get; set; }
+    public decimal SaldoResultante { get; set; }
 }

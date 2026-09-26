@@ -5,13 +5,16 @@
  *           Usa backoff exponencial para retries e dedup via processedEvents.
  */
 import { salesHistoryService, type RegisterSalePayload } from "@/services/api/salesHistoryService";
+import { cashRegisterService } from "@/services/api/cashRegisterService";
 import {
   getPendingEvents,
   markProcessing,
   markProcessed,
   markFailed,
   getPendingCount,
+  getFailedCount,
   purgeProcessed,
+  recoverStaleProcessing,
 } from "@/infrastructure/database/repositories/OutboxRepository";
 import { connectivityService } from "./ConnectivityService";
 import { syncCoordinator } from "./SyncCoordinator";
@@ -31,7 +34,7 @@ type PendingSaleLegacy = {
   localSaleNumber: string;
 };
 
-type SyncListener = (pendingCount: number) => void;
+type SyncListener = (pendingCount: number, failedCount: number) => void;
 
 /** Calcula delay de backoff exponencial com jitter. */
 function backoffDelay(retryCount: number): number {
@@ -49,6 +52,9 @@ class SyncEngine {
   start(): () => void {
     // Migra vendas legadas do localStorage para outbox (IndexedDB)
     void this.migrateLegacySales();
+
+    // Recupera eventos órfãos em PROCESSING (crash anterior)
+    void recoverStaleProcessing();
 
     // Tenta sincronizar imediatamente
     void this.runCycle();
@@ -72,21 +78,29 @@ class SyncEngine {
     };
   }
 
-  /** Inscreve listener para atualizações de contagem pendente. */
+  /** Inscreve listener para atualizações de contagem pendente e falhas. */
   subscribe(listener: SyncListener): () => void {
     this.listeners.add(listener);
-    // Notifica com o valor atual
-    void getPendingCount().then((c) => listener(c));
+    // Notifica imediatamente com os valores atuais
+    void Promise.all([getPendingCount(), getFailedCount()]).then(([p, f]) => listener(p, f));
     return () => {
       this.listeners.delete(listener);
     };
   }
 
   private async notifyListeners(): Promise<void> {
-    const count = await getPendingCount();
+    const [pendingCount, failedCount] = await Promise.all([
+      getPendingCount(),
+      getFailedCount(),
+    ]);
     for (const listener of this.listeners) {
-      listener(count);
+      listener(pendingCount, failedCount);
     }
+  }
+
+  /** Força a execução imediata de um ciclo de sincronização (push + pull). */
+  async syncNow(): Promise<void> {
+    await this.runCycle();
   }
 
   /** Ciclo completo: push (outbox) → pull (coordinator). */
@@ -99,17 +113,37 @@ class SyncEngine {
     }
   }
 
-  /** Processa todos os eventos pendentes no outbox com backoff exponencial. */
+  /** Processa todos os eventos pendentes no outbox com lock cross-tab e backoff exponencial. */
   private async processOutbox(): Promise<void> {
     if (this.syncing) return;
     if (!connectivityService.isOnline()) return;
 
+    // Garante que apenas uma aba processe o outbox por vez (lock cross-tab)
+    if (typeof navigator !== "undefined" && navigator.locks) {
+      try {
+        await navigator.locks.request("horus-pdv-sync-engine", { ifAvailable: true }, async (lock) => {
+          if (!lock) return; // Outra aba já está processando
+          await this.doProcessOutbox();
+        });
+        return;
+      } catch {
+        // Fallback caso navigator.locks falhe no navegador
+      }
+    }
+
+    await this.doProcessOutbox();
+  }
+
+  private async doProcessOutbox(): Promise<void> {
     this.syncing = true;
     const start = performance.now();
     let processedCount = 0;
     let pushError: string | null = null;
 
     try {
+      // Recupera eventos órfãos em PROCESSING antes de buscar pendentes
+      await recoverStaleProcessing();
+
       const pending = await getPendingEvents();
       if (pending.length === 0) return;
 
@@ -136,7 +170,7 @@ class SyncEngine {
         await markProcessing(event.id);
 
         try {
-          await this.dispatchEvent(event.eventType, event.payload);
+          const result = await this.dispatchEvent(event.eventType, event.payload);
 
           // Registra na tabela de dedup
           await db.processedEvents.put({
@@ -150,7 +184,11 @@ class SyncEngine {
           // Dispara evento customizado para a UI
           window.dispatchEvent(
             new CustomEvent("offline-sync-success", {
-              detail: { localSaleNumber: event.aggregateId },
+              detail: {
+                localSaleNumber: event.aggregateId,
+                serverSaleNumber: result?.saleNumber,
+                isReplay: result?.isReplay ?? false,
+              },
             }),
           );
         } catch (err) {
@@ -170,17 +208,67 @@ class SyncEngine {
         void syncCoordinator.logPush(processedCount, durationMs, pushError);
       }
 
+      // Atualiza o checkpoint contíguo seguro no IndexedDB
+      await syncCoordinator.updateCheckpoint();
       await this.notifyListeners();
     }
   }
 
   /** Despacha um evento para a API correta baseado no eventType. */
-  private async dispatchEvent(eventType: string, payloadJson: string): Promise<void> {
+  private async dispatchEvent(
+    eventType: string,
+    payloadJson: string,
+  ): Promise<{ saleNumber?: string; isReplay?: boolean } | void> {
     switch (eventType) {
       case "SALE_CREATED": {
         const payload = JSON.parse(payloadJson) as RegisterSalePayload;
-        await salesHistoryService.register(payload);
-        break;
+        const res = await salesHistoryService.register(payload);
+        return res;
+      }
+      case "CASH_OPEN": {
+        const payload = JSON.parse(payloadJson) as { openingAmount: string };
+        try {
+          await cashRegisterService.open(payload.openingAmount);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          // Se já existe caixa aberto no servidor, considera resolvido de forma idempotente
+          if (msg.includes("Já existe um caixa aberto")) {
+            return;
+          }
+          throw err;
+        }
+        return;
+      }
+      case "CASH_CLOSE": {
+        const payload = JSON.parse(payloadJson) as {
+          closingAmount: string;
+          note?: string;
+          differenceReason?: string;
+        };
+        try {
+          await cashRegisterService.close(
+            payload.closingAmount,
+            payload.note,
+            payload.differenceReason,
+          );
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          // Se já não existe caixa aberto no servidor, considera resolvido de forma idempotente
+          if (msg.includes("Não existe caixa aberto")) {
+            return;
+          }
+          throw err;
+        }
+        return;
+      }
+      case "CASH_MOVEMENT": {
+        const payload = JSON.parse(payloadJson) as {
+          tipo: "Reforco" | "Sangria";
+          valor: string;
+          motivo: string;
+        };
+        await cashRegisterService.registrarMovimento(payload.tipo, payload.valor, payload.motivo);
+        return;
       }
       default:
         throw new Error(`Tipo de evento desconhecido: ${eventType}`);

@@ -10,6 +10,7 @@ import type { SyncCheckpoint, SyncLog } from "@/shared/types/sync";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 import { syncProductsFromApi } from "@/application/products/ProductSyncAdapter";
 import { syncCustomersFromApi } from "@/application/customers/CustomerSyncAdapter";
+import { getContiguousProcessedSequence } from "../database/repositories/OutboxRepository";
 import { connectivityService } from "./ConnectivityService";
 
 /** Intervalo mínimo entre pull syncs completos (2 minutos). */
@@ -89,22 +90,18 @@ class SyncCoordinator {
     return db.syncCheckpoint.get(deviceId);
   }
 
-  private async updateCheckpoint(): Promise<void> {
+  /**
+   * Atualiza o checkpoint do dispositivo com a sequência contígua processada.
+   * Garante que lacunas/eventos com falha não permitam avançar indevidamente o checkpoint.
+   */
+  async updateCheckpoint(): Promise<void> {
     const deviceId = getCachedDeviceId() || "unknown";
-
-    const existing = await db.syncCheckpoint.get(deviceId);
-    const lastUploaded = existing?.lastUploadedSequence ?? 0;
-
-    // Pega a maior sequência processada no outbox
-    const lastProcessed = await db.outbox
-      .where("status")
-      .equals("PROCESSED")
-      .last();
+    const contiguousSeq = await getContiguousProcessedSequence();
 
     await db.syncCheckpoint.put({
       deviceId,
-      lastUploadedSequence: lastProcessed?.sequence ?? lastUploaded,
-      lastDownloadedSequence: 0, // Sem delta sync por enquanto (full-replace)
+      lastUploadedSequence: contiguousSeq,
+      lastDownloadedSequence: 0,
       lastSuccessfulSyncAt: new Date().toISOString(),
     });
   }

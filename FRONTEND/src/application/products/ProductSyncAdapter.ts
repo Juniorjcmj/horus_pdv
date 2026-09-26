@@ -7,7 +7,7 @@
 import { productService } from "@/services/api/productService";
 import type { ProductDto } from "@/services/api/productService";
 import { productRepository } from "@/infrastructure/database/repositories/ProductRepository";
-import type { LocalProductRecord } from "@/infrastructure/database/dexie";
+import { db, type LocalProductRecord } from "@/infrastructure/database/dexie";
 
 const LS_PRODUCTS_KEY = "horus-pdv-products-cache";
 
@@ -48,13 +48,59 @@ function parseDecimalBr(value: string | undefined | null): number {
 
 /**
  * Puxa todos os produtos da API e salva no IndexedDB.
+ * Executa em transação Dexie e protege os estoques decrementados localmente
+ * por vendas offline que ainda constam pendentes no outbox.
  * Retorna os registros locais salvos.
  */
 export async function syncProductsFromApi(): Promise<LocalProductRecord[]> {
   const dtos = await productService.list();
   const records = dtos.map(mapDtoToLocal);
-  await productRepository.clear();
-  await productRepository.bulkUpsert(records);
+
+  await db.transaction("rw", [db.products, db.outbox], async () => {
+    // Busca eventos de venda offline pendentes de sincronização
+    const pendingEvents = await db.outbox
+      .where("status")
+      .anyOf(["PENDING", "PROCESSING"])
+      .toArray();
+
+    const pendingDeductions = new Map<string, number>();
+
+    for (const evt of pendingEvents) {
+      if (evt.eventType === "SALE_CREATED") {
+        try {
+          const payload = typeof evt.payload === "string" ? JSON.parse(evt.payload) : evt.payload;
+          if (Array.isArray(payload?.items)) {
+            for (const item of payload.items) {
+              const code = String(item.productCode || "").trim();
+              const qty = Number(item.quantity) || 0;
+              if (code && qty > 0) {
+                pendingDeductions.set(code, (pendingDeductions.get(code) || 0) + qty);
+              }
+            }
+          }
+        } catch {
+          // Ignora payload malformado se houver
+        }
+      }
+    }
+
+    // Deduz quantidades pendentes dos registros recebidos do servidor
+    if (pendingDeductions.size > 0) {
+      for (const record of records) {
+        let deduct = pendingDeductions.get(record.productCode) || 0;
+        if (record.barcode && record.barcode !== record.productCode) {
+          deduct += pendingDeductions.get(record.barcode) || 0;
+        }
+        if (deduct > 0) {
+          record.stock = (record.stock ?? 0) - deduct;
+        }
+      }
+    }
+
+    await db.products.clear();
+    await db.products.bulkPut(records);
+  });
+
   // Limpa cache antigo do localStorage (migração)
   removeLegacyCache();
   return records;

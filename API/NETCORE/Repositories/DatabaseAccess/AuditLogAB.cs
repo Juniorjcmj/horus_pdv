@@ -21,6 +21,7 @@ public static class AuditEventTypes
     public const string VendaBloqueada = "VendaBloqueada";
     public const string FiadoDebito = "FiadoDebito";
     public const string FiadoRecebimento = "FiadoRecebimento";
+    public const string EstoqueRuptura = "EstoqueRuptura";
 }
 
 public class AuditLogAB(Connection connection)

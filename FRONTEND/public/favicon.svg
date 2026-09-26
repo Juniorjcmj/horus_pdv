@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="50%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+  <!-- Eye of Horus stylized geometric lines -->
+  <path d="M96 256 C144 160 368 160 416 256 C368 352 144 352 96 256 Z" fill="none" stroke="url(#goldGrad)" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="256" cy="256" r="54" fill="url(#goldGrad)" />
+  <path d="M416 256 L440 256" stroke="url(#goldGrad)" stroke-width="28" stroke-linecap="round" />
+  <path d="M220 328 L220 416 L256 390 L292 416 L292 328" fill="none" stroke="url(#goldGrad)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M340 310 C380 340 380 380 340 400" fill="none" stroke="url(#goldGrad)" stroke-width="22" stroke-linecap="round" />
+</svg>

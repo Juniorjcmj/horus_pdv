@@ -612,8 +612,15 @@ export default function App() {
         setIsAuthenticated(true);
       })
       .catch(() => {
-        clearAuthSession();
-        setIsAuthenticated(false);
+        // Se a chamada de rede falhou mas temos sessão local válida, preserva para operação offline
+        const cached = getStoredAuthUser();
+        if (cached) {
+          setCurrentUser(toCurrentUser(cached));
+          setIsAuthenticated(true);
+        } else {
+          clearAuthSession();
+          setIsAuthenticated(false);
+        }
       })
       .finally(() => {
         setIsCheckingAuth(false);

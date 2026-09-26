@@ -1,0 +1,19 @@
+{
+  "name": "Horus PDV - Ponto de Venda Offline-First",
+  "short_name": "Horus PDV",
+  "description": "Sistema de Ponto de Venda Offline-First de alta disponibilidade para varejo.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

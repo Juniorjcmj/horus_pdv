@@ -15,6 +15,8 @@ export type OutboxEvent = {
   eventType: string;
   aggregateType: string;
   aggregateId: string;
+  clientSaleId?: string;
+  payloadHash?: string;
   payload: string;
   sequence: number;
   occurredAt: string;

@@ -36,7 +36,13 @@ import {
   type CashRegisterSessionDto,
   type CashRegisterStatusDto,
 } from "@/services/api/cashRegisterService";
-import { saveCashStatus } from "@/infrastructure/database/repositories/CashSessionRepository";
+import {
+  saveCashStatus,
+  loadCachedCashStatus,
+  openCashLocal,
+  closeCashLocal,
+  registerMovementLocal,
+} from "@/infrastructure/database/repositories/CashSessionRepository";
 import { companyService } from "@/services/api/companyService";
 import { getStoredAuthUser } from "@/utils/authStorage";
 
@@ -192,11 +198,21 @@ export default function CashRegisterPage() {
   const hasDifference = hasOpenSession && difference !== 0;
 
   const loadStatus = useCallback(async () => {
-    const status = await cashRegisterService.status();
-    setCashStatus(status ?? null);
-    setClosingAmount(status?.currentSession?.expectedCashAmount || "0,00");
-    if (status) {
-      void saveCashStatus(status);
+    try {
+      const status = await cashRegisterService.status();
+      setCashStatus(status ?? null);
+      setClosingAmount(status?.currentSession?.expectedCashAmount || "0,00");
+      if (status) {
+        void saveCashStatus(status);
+      }
+    } catch {
+      const cached = await loadCachedCashStatus();
+      if (cached) {
+        setCashStatus(cached);
+        setClosingAmount(cached.currentSession?.expectedCashAmount || "0,00");
+      } else {
+        throw new Error("Não foi possível carregar o status do caixa.");
+      }
     }
   }, []);
 
@@ -239,8 +255,14 @@ export default function CashRegisterPage() {
         void saveCashStatus(status);
       }
       Toast.success("Caixa aberto. Frente de caixa liberada para venda.");
-    } catch (error) {
-      Toast.error(error instanceof Error ? error.message : "Não foi possível abrir o caixa.");
+    } catch (onlineError) {
+      try {
+        const localStatus = await openCashLocal(openingAmount, loggedUser?.id, loggedUser?.name);
+        setCashStatus(localStatus);
+        Toast.info("Caixa aberto localmente (modo offline). Será sincronizado ao reconectar.");
+      } catch (err) {
+        Toast.error(onlineError instanceof Error ? onlineError.message : "Não foi possível abrir o caixa.");
+      }
     } finally {
       setSaving(false);
     }
@@ -272,8 +294,25 @@ export default function CashRegisterPage() {
         setClosingSummary(status.lastSession);
       }
       Toast.success("Caixa fechado. Vendas bloqueadas até nova abertura.");
-    } catch (error) {
-      Toast.error(error instanceof Error ? error.message : "Não foi possível fechar o caixa.");
+    } catch (onlineError) {
+      try {
+        const localStatus = await closeCashLocal(
+          closingAmount,
+          closingNote,
+          hasDifference ? differenceReason.trim() : undefined,
+          loggedUser?.id,
+          loggedUser?.name,
+        );
+        setCashStatus(localStatus);
+        setClosingNote("");
+        setDifferenceReason("");
+        if (localStatus?.lastSession) {
+          setClosingSummary(localStatus.lastSession);
+        }
+        Toast.info("Caixa fechado localmente (modo offline). O encerramento será sincronizado ao reconectar.");
+      } catch (err) {
+        Toast.error(onlineError instanceof Error ? onlineError.message : "Não foi possível fechar o caixa.");
+      }
     } finally {
       setSaving(false);
     }
@@ -285,8 +324,21 @@ export default function CashRegisterPage() {
       setCashStatus(status ?? null);
       setMovementModalType(null);
       Toast.success(tipo === "Sangria" ? "Sangria registrada." : "Reforço registrado.");
-    } catch (error) {
-      Toast.error(error instanceof Error ? error.message : "Não foi possível registrar o movimento.");
+    } catch (onlineError) {
+      try {
+        const localStatus = await registerMovementLocal(
+          tipo,
+          valor,
+          motivo,
+          loggedUser?.id,
+          loggedUser?.name,
+        );
+        setCashStatus(localStatus);
+        setMovementModalType(null);
+        Toast.info(`${tipo} registrado localmente (modo offline).`);
+      } catch (err) {
+        Toast.error(onlineError instanceof Error ? onlineError.message : "Não foi possível registrar o movimento.");
+      }
     }
   };
 

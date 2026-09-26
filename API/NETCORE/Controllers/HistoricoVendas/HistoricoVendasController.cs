@@ -8,6 +8,7 @@ using HORUSPDV_API.Models.Response;
 using HORUSPDV_API.Repositories.DatabaseAccess;
 using HORUSPDV_API.Services.Caixa;
 using HORUSPDV_API.Services.Security;
+using HORUSPDV_API.Services.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HORUSPDV_API.Controllers.HistoricoVendas;
@@ -48,8 +49,43 @@ public class HistoricoVendasController(
 
         try
         {
-            caixaService.EnsureVendaPermitida(currentUser);
+            bool isOfflineSync = !string.IsNullOrWhiteSpace(request.EventId) || request.OccurredAt.HasValue;
+            if (!isOfflineSync)
+            {
+                caixaService.EnsureVendaPermitida(currentUser);
+            }
+            else
+            {
+                try
+                {
+                    caixaService.EnsureVendaPermitida(currentUser);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning("Venda sincronizada offline com aviso de caixa ({Message}). EventId: {EventId}", ex.Message, request.EventId);
+                }
+            }
+
             var result = await historicoVendasAB.RegistrarAsync(currentUser.CompanyId, request);
+
+            if (result.IsReplay)
+            {
+                logger.LogInformation("Venda retornada via replay idempotente. EventId: {EventId}, SaleNumber: {SaleNumber}", request.EventId, result.SaleNumber);
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Venda já processada anteriormente (idempotente).",
+                    Data = new
+                    {
+                        saleNumber = result.SaleNumber,
+                        clientSaleId = result.ClientSaleId ?? request.ClientSaleId,
+                        vendaId = result.VendaId,
+                        rows = result.Rows,
+                        fiscalQueued = false,
+                        isReplay = true
+                    }
+                });
+            }
 
             // A nota fiscal é enfileirada fora da transação da venda — a venda já está
             // confirmada e liberada para o caixa; a emissão em si acontece em segundo plano
@@ -69,7 +105,25 @@ public class HistoricoVendasController(
             {
                 Success = true,
                 Message = "Venda registrada com sucesso.",
-                Data = new { saleNumber = result.SaleNumber, rows = result.Rows, fiscalQueued }
+                Data = new
+                {
+                    saleNumber = result.SaleNumber,
+                    clientSaleId = result.ClientSaleId ?? request.ClientSaleId,
+                    vendaId = result.VendaId,
+                    rows = result.Rows,
+                    fiscalQueued,
+                    isReplay = false,
+                    warnings = result.Warnings
+                }
+            });
+        }
+        catch (IdempotencyConflictException ex)
+        {
+            logger.LogWarning(ex, "Conflito de idempotência no registro de venda. EventId: {EventId}", request.EventId);
+            return StatusCode(StatusCodes.Status409Conflict, new ApiResponse<object>
+            {
+                Success = false,
+                Message = ex.Message
             });
         }
         catch (InvalidOperationException ex)

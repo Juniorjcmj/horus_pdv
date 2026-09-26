@@ -21,6 +21,8 @@ export type SaleHistoryDto = {
   unitPrice: string;
   itemTotal: string;
   saleDate: string;
+  clientSaleId?: string;
+  offlineReference?: string;
 };
 
 export type SalePaymentDto = {
@@ -31,6 +33,12 @@ export type SalePaymentDto = {
 };
 
 export type RegisterSalePayload = {
+  clientSaleId?: string;
+  eventId?: string;
+  eventType?: string;
+  occurredAt?: string;
+  offlineReference?: string;
+  payloadHash?: string;
   customerName: string;
   customerCpf: string;
   paymentType: string;
@@ -48,13 +56,22 @@ export type RegisterSalePayload = {
   payments?: SalePaymentDto[];
 };
 
+export type RegisterSaleResponse = {
+  saleNumber: string;
+  clientSaleId?: string;
+  vendaId?: string;
+  rows?: SaleHistoryDto[];
+  fiscalQueued?: boolean;
+  isReplay?: boolean;
+};
+
 export const salesHistoryService = {
   async list() {
     const response = await apiRequest<SaleHistoryDto[]>(HISTORICO_VENDAS_API_URL);
     return response.data ?? [];
   },
   async register(payload: RegisterSalePayload) {
-    const response = await apiRequest<{ saleNumber: string }>(HISTORICO_VENDAS_API_URL, {
+    const response = await apiRequest<RegisterSaleResponse>(HISTORICO_VENDAS_API_URL, {
       method: "POST",
       body: JSON.stringify(payload),
     });

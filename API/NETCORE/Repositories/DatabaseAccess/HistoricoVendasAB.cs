@@ -6,6 +6,7 @@
  * TotalAmount/UnitPrice/ItemTotal são DECIMAL nativo no banco (migração 01) — a formatação
  * pt-BR do contrato HTTP acontece aqui, na borda, via HorusMoneyFormat.
  */
+using System.Text.Json;
 using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Repositories.DataAccess;
 using HORUSPDV_API.Services.Shared;
@@ -15,11 +16,13 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogAB auditLogAb)
 {
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
     public async Task<List<VendaHistoricoAD>> ListarAsync(string companyId, string? saleNumber = null)
     {
         const string sql = """
             SELECT v.SaleNumber, v.CustomerName, v.CustomerCpf, v.PaymentType,
-                   v.TotalAmount, v.OperatorName, v.SaleDate,
+                   v.TotalAmount, v.OperatorName, v.SaleDate, v.ClientSaleId, v.OfflineReference,
                    i.ProductCode, i.ProductName, i.Quantity, i.UnitPrice, i.ItemTotal,
                    i.Desconto, i.PromocaoId
             FROM VendaItens i
@@ -78,6 +81,47 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 
         try
         {
+            var eventId = request.EventId?.Trim();
+            if (!string.IsNullOrWhiteSpace(eventId))
+            {
+                const string checkEventSql = """
+                    SELECT PayloadHash, ResponsePayload
+                    FROM ProcessedEvents WITH (UPDLOCK, ROWLOCK)
+                    WHERE CompanyId = @CompanyId AND EventId = @EventId;
+                    """;
+
+                await using var checkCmd = new SqlCommand(checkEventSql, db, transaction);
+                checkCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                checkCmd.Parameters.AddWithValue("@EventId", eventId);
+
+                await using var checkReader = await checkCmd.ExecuteReaderAsync();
+                if (await checkReader.ReadAsync())
+                {
+                    var storedHash = checkReader.GetString(0);
+                    var responsePayloadJson = checkReader.GetString(1);
+                    await checkReader.CloseAsync();
+
+                    var currentHash = !string.IsNullOrWhiteSpace(request.PayloadHash)
+                        ? request.PayloadHash.Trim().ToLowerInvariant()
+                        : HorusPayloadHash.ComputeHash(request);
+
+                    if (!string.Equals(storedHash, currentHash, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new IdempotencyConflictException(
+                            eventId,
+                            $"Conflito de idempotência: o EventId '{eventId}' já foi processado anteriormente com um payload diferente.");
+                    }
+
+                    var cached = JsonSerializer.Deserialize<VendaRegistroResultadoAD>(responsePayloadJson, JsonOptions)
+                        ?? throw new InvalidOperationException("Falha ao recuperar payload de resposta do evento processado.");
+
+                    cached.IsReplay = true;
+                    await transaction.CommitAsync();
+                    return cached;
+                }
+                await checkReader.CloseAsync();
+            }
+
             var customerName = string.IsNullOrWhiteSpace(request.CustomerName) ? "Consumidor" : request.CustomerName.Trim();
             var customerCpf = string.IsNullOrWhiteSpace(request.CustomerCpf) ? "-" : request.CustomerCpf.Trim();
             var paymentType = string.IsNullOrWhiteSpace(request.PaymentType) ? "-" : request.PaymentType.Trim();
@@ -142,11 +186,18 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 }
             }
 
+            var isOfflineSync = !string.IsNullOrWhiteSpace(request.EventId) 
+                || !string.IsNullOrWhiteSpace(request.OfflineReference) 
+                || request.OccurredAt.HasValue;
+
             // A venda e a baixa de estoque compartilham a mesma transação para evitar histórico sem estoque atualizado.
-            var saleItems = await BaixarEstoqueAsync(db, transaction, companyId, request.Items);
+            var (saleItems, rupturas) = await BaixarEstoqueAsync(db, transaction, companyId, request.Items, isOfflineSync);
 
             var result = await InserirVendaAsync(
-                db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, payments);
+                db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, payments,
+                request.ClientSaleId, request.OfflineReference, request.OccurredAt);
+
+            result.Warnings = rupturas;
 
             FiadoMovimentoAD? fiadoMov = null;
             if (fiadoPayment is not null && fiadoPayment.Amount > 0 && fiadoClienteId is not null)
@@ -154,7 +205,46 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 fiadoMov = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteId, fiadoPayment.Amount, result.VendaId, operatorName);
             }
 
+            if (!string.IsNullOrWhiteSpace(eventId))
+            {
+                var payloadHash = !string.IsNullOrWhiteSpace(request.PayloadHash)
+                    ? request.PayloadHash.Trim().ToLowerInvariant()
+                    : HorusPayloadHash.ComputeHash(request);
+
+                var responseJson = JsonSerializer.Serialize(result, JsonOptions);
+                const string insertEventSql = """
+                    INSERT INTO ProcessedEvents
+                        (Id, CompanyId, EventId, EventType, ClientSaleId, PayloadHash, ProcessedAt, ResponsePayload)
+                    VALUES
+                        (@Id, @CompanyId, @EventId, @EventType, @ClientSaleId, @PayloadHash, @ProcessedAt, @ResponsePayload);
+                    """;
+
+                await using var eventCmd = new SqlCommand(insertEventSql, db, transaction);
+                eventCmd.Parameters.AddWithValue("@Id", $"pe-{Guid.NewGuid():N}");
+                eventCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                eventCmd.Parameters.AddWithValue("@EventId", eventId);
+                eventCmd.Parameters.AddWithValue("@EventType", request.EventType?.Trim() ?? "SALE_CREATED");
+                eventCmd.Parameters.AddWithValue("@ClientSaleId", (object?)request.ClientSaleId ?? DBNull.Value);
+                eventCmd.Parameters.AddWithValue("@PayloadHash", payloadHash);
+                eventCmd.Parameters.AddWithValue("@ProcessedAt", HorusDateTime.Now);
+                eventCmd.Parameters.AddWithValue("@ResponsePayload", responseJson);
+                await eventCmd.ExecuteNonQueryAsync();
+            }
+
             await transaction.CommitAsync();
+
+            if (rupturas.Count > 0)
+            {
+                foreach (var r in rupturas)
+                {
+                    _ = auditLogAb.RegistrarAsync(
+                        companyId, "", operatorName,
+                        AuditEventTypes.EstoqueRuptura,
+                        $"Ruptura de estoque na venda offline {result.SaleNumber}: {r.ProductName} (Cód. {r.ProductCode}). Estoque anterior: {HorusMoneyFormat.FormatQuantity(r.EstoqueAnterior)}, Vendido: {HorusMoneyFormat.FormatQuantity(r.QuantidadeVendida)}, Saldo resultante: {HorusMoneyFormat.FormatQuantity(r.SaldoResultante)}.",
+                        entityType: "Produto",
+                        entityId: r.ProductCode);
+                }
+            }
 
             if (fiadoMov is not null)
             {
@@ -295,18 +385,22 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         decimal totalAmount,
         string operatorName,
         List<VendaItemRecord> saleItems,
-        List<VendaPagamentoRequest>? payments)
+        List<VendaPagamentoRequest>? payments,
+        string? clientSaleId = null,
+        string? offlineReference = null,
+        DateTimeOffset? occurredAt = null)
     {
         var saleNumber = await NextSaleNumberAsync(db, transaction, companyId);
         var now = HorusDateTime.Now;
+        var saleDate = occurredAt ?? now;
         var saleId = $"sale-{companyId}-{saleNumber}";
 
         await using (var saleCommand = new SqlCommand(
                          """
                          INSERT INTO Vendas
-                             (Id, CompanyId, SaleNumber, CustomerName, CustomerCpf, PaymentType, TotalAmount, OperatorName, SaleDate)
+                             (Id, CompanyId, SaleNumber, CustomerName, CustomerCpf, PaymentType, TotalAmount, OperatorName, SaleDate, ClientSaleId, OfflineReference, SyncedAt)
                          VALUES
-                             (@Id, @CompanyId, @SaleNumber, @CustomerName, @CustomerCpf, @PaymentType, @TotalAmount, @OperatorName, @SaleDate);
+                             (@Id, @CompanyId, @SaleNumber, @CustomerName, @CustomerCpf, @PaymentType, @TotalAmount, @OperatorName, @SaleDate, @ClientSaleId, @OfflineReference, @SyncedAt);
                          """,
                          db,
                          transaction))
@@ -319,7 +413,10 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             saleCommand.Parameters.AddWithValue("@PaymentType", paymentType);
             saleCommand.Parameters.AddWithValue("@TotalAmount", totalAmount);
             saleCommand.Parameters.AddWithValue("@OperatorName", operatorName);
-            saleCommand.Parameters.AddWithValue("@SaleDate", now);
+            saleCommand.Parameters.AddWithValue("@SaleDate", saleDate);
+            saleCommand.Parameters.AddWithValue("@ClientSaleId", (object?)clientSaleId ?? DBNull.Value);
+            saleCommand.Parameters.AddWithValue("@OfflineReference", (object?)offlineReference ?? DBNull.Value);
+            saleCommand.Parameters.AddWithValue("@SyncedAt", now);
             await saleCommand.ExecuteNonQueryAsync();
         }
 
@@ -442,11 +539,21 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 Desconto = item.Desconto,
                 PromocaoId = item.PromocaoId,
                 ItemTotal = HorusMoneyFormat.Format(itemTotal),
-                SaleDate = HorusDateTime.Format(now)
+                SaleDate = HorusDateTime.Format(saleDate),
+                ClientSaleId = clientSaleId,
+                OfflineReference = offlineReference
             });
         }
 
-        return new VendaRegistroResultadoAD { SaleNumber = saleNumber, VendaId = saleId, Rows = rows, Payments = pagamentosAD };
+        return new VendaRegistroResultadoAD
+        {
+            SaleNumber = saleNumber,
+            VendaId = saleId,
+            ClientSaleId = clientSaleId,
+            IsReplay = false,
+            Rows = rows,
+            Payments = pagamentosAD
+        };
     }
 
     private static async Task<string> NextSaleNumberAsync(SqlConnection db, SqlTransaction transaction, string companyId)
@@ -466,11 +573,12 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         return string.IsNullOrWhiteSpace(next) ? (defaultBase + 1).ToString() : next;
     }
 
-    private static async Task<List<VendaItemRecord>> BaixarEstoqueAsync(
+    private static async Task<(List<VendaItemRecord> Items, List<EstoqueRupturaAvisoAD> Rupturas)> BaixarEstoqueAsync(
         SqlConnection db,
         SqlTransaction transaction,
         string companyId,
-        IEnumerable<VendaItemRequest> items)
+        IEnumerable<VendaItemRequest> items,
+        bool allowNegativeStock = false)
     {
         var itemList = items.ToList();
         if (itemList.Count == 0)
@@ -483,6 +591,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity), StringComparer.OrdinalIgnoreCase);
 
         var pricesByCode = new Dictionary<string, (string Id, string ProductName, decimal SalePrice, decimal CostPrice)>(StringComparer.OrdinalIgnoreCase);
+        var rupturas = new List<EstoqueRupturaAvisoAD>();
 
         foreach (var (code, totalQty) in stockByCode)
         {
@@ -517,8 +626,20 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 
             if (currentStock < totalQty)
             {
-                throw new InvalidOperationException(
-                    $"Estoque insuficiente para {productName}. Disponível: {HorusMoneyFormat.FormatQuantity(currentStock)}.");
+                if (!allowNegativeStock)
+                {
+                    throw new InvalidOperationException(
+                        $"Estoque insuficiente para {productName}. Disponível: {HorusMoneyFormat.FormatQuantity(currentStock)}.");
+                }
+
+                rupturas.Add(new EstoqueRupturaAvisoAD
+                {
+                    ProductCode = code,
+                    ProductName = productName,
+                    EstoqueAnterior = currentStock,
+                    QuantidadeVendida = totalQty,
+                    SaldoResultante = currentStock - totalQty
+                });
             }
 
             var nextStock = currentStock - totalQty;
@@ -556,7 +677,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             });
         }
 
-        return saleItems;
+        return (saleItems, rupturas);
     }
 
     /// <summary>
@@ -650,13 +771,28 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         Desconto = reader.GetDecimal(reader.GetOrdinal("Desconto")),
         PromocaoId = reader.IsDBNull(reader.GetOrdinal("PromocaoId")) ? null : reader.GetString(reader.GetOrdinal("PromocaoId")),
         ItemTotal = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("ItemTotal"))),
-        SaleDate = HorusDateTime.Format(reader.GetDateTimeOffset(reader.GetOrdinal("SaleDate")))
+        SaleDate = HorusDateTime.Format(reader.GetDateTimeOffset(reader.GetOrdinal("SaleDate"))),
+        ClientSaleId = ReadNullableString(reader, "ClientSaleId"),
+        OfflineReference = ReadNullableString(reader, "OfflineReference")
     };
 
     private static string ReadString(SqlDataReader reader, string name)
     {
         var ordinal = reader.GetOrdinal(name);
         return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+    }
+
+    private static string? ReadNullableString(SqlDataReader reader, string name)
+    {
+        try
+        {
+            var ordinal = reader.GetOrdinal(name);
+            return reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);
+        }
+        catch (IndexOutOfRangeException)
+        {
+            return null;
+        }
     }
 
     public async Task<List<VendaPagamentoAD>> ObterPagamentosVendaAsync(string companyId, string vendaId)

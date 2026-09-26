@@ -5,6 +5,7 @@
  */
 import { apiRequest } from "./apiClient";
 import type { AuthenticatedUser } from "@/utils/authStorage";
+import { userRepository } from "@/infrastructure/database/repositories/UserRepository";
 
 const AUTH_API_URL = import.meta.env.VITE_AUTH_API_URL ?? "http://localhost:5260/api/Auth";
 
@@ -41,12 +42,43 @@ export type ForgotPasswordResponse = {
 
 export const authService = {
   async login(payload: LoginPayload) {
-    const response = await apiRequest<LoginResponse>(`${AUTH_API_URL}/login`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      skipAuth: true,
-    });
-    return response.data;
+    try {
+      const response = await apiRequest<LoginResponse>(`${AUTH_API_URL}/login`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        skipAuth: true,
+      });
+
+      if (response.data?.user) {
+        // Salva hash local para permitir login offline posterior
+        void userRepository.saveUserForOfflineAuth(response.data.user, payload.password);
+      }
+
+      return response.data;
+    } catch (onlineError) {
+      // Se for falha de conectividade ou rede indisponível, tenta login offline local
+      const isNetworkError =
+        onlineError instanceof Error &&
+        (onlineError.message.includes("Failed to fetch") ||
+          onlineError.message.includes("NetworkError") ||
+          onlineError.message.includes("Network Error") ||
+          onlineError.message.includes("Load failed") ||
+          onlineError.message.includes("timeout") ||
+          onlineError.message.includes("servidor") ||
+          (typeof navigator !== "undefined" && !navigator.onLine));
+
+      if (isNetworkError) {
+        const offlineUser = await userRepository.authenticateOffline(payload.email, payload.password);
+        return {
+          tokenType: "Bearer" as const,
+          expiresInSeconds: 86400,
+          sessionId: `sess-offline-${Date.now()}`,
+          user: offlineUser,
+        };
+      }
+
+      throw onlineError;
+    }
   },
 
   async me() {

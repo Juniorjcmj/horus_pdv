@@ -62,7 +62,10 @@ import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { useProducts } from "@/hooks/useProducts";
 import { queueSaleToOutbox } from "@/application/sales/SaleOutboxAdapter";
-import { usePendingSalesCount } from "@/hooks/usePendingSalesCount";
+import { computeSalePayloadHash } from "@/utils/cryptoHash";
+import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
+import { useOutboxStatus } from "@/hooks/useOutboxStatus";
+import OutboxStatusModal from "@/components/Admin/OutboxStatusModal";
 import { buildDanfePrintHtml } from "@/utils/danfePrint";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
@@ -219,7 +222,8 @@ export default function SalesStartPage({
     getPrintPreviewEnabled(),
   );
   const [isConfirmingSale, setIsConfirmingSale] = useState(false);
-  const pendingOfflineCount = usePendingSalesCount();
+  const { pendingCount, failedCount } = useOutboxStatus();
+  const [outboxModalOpen, setOutboxModalOpen] = useState(false);
 
   const [quickCustomerModalOpen, setQuickCustomerModalOpen] = useState(false);
   const [quickCustomerInitialDoc, setQuickCustomerInitialDoc] = useState("");
@@ -1198,7 +1202,20 @@ export default function SalesStartPage({
         changeAmount: p.changeAmount,
       }));
 
+      const clientSaleId =
+        typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `cs-${Date.now()}`;
+      const eventId =
+        typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `ev-${Date.now()}`;
+      const occurredAt = new Date().toISOString();
+      const localDevice = getCachedDeviceId() || "CX01";
+      const offlineReference = `OFF-${localDevice.slice(0, 4).toUpperCase()}-${Date.now().toString().slice(-6)}`;
+
       const registerPayload = {
+        clientSaleId,
+        eventId,
+        eventType: "SALE_CREATED",
+        occurredAt,
+        offlineReference,
         customerName: selectedCustomer ? selectedCustomer.customerName : "Consumidor",
         customerCpf: selectedCustomer ? selectedCustomer.document : (cpfNota || "-"),
         paymentType: primaryPaymentType,
@@ -1214,7 +1231,14 @@ export default function SalesStartPage({
           promocaoId: item.promocaoId ?? null,
         })),
         payments: payloadPayments,
+        payloadHash: "",
       };
+
+      try {
+        registerPayload.payloadHash = await computeSalePayloadHash(registerPayload);
+      } catch {
+        // Fallback caso crypto.subtle não esteja disponível
+      }
 
       let saleNumber: string;
       let isOfflineSale = false;
@@ -1225,7 +1249,7 @@ export default function SalesStartPage({
           ? await pedidoService.finalize(activePedido.orderNumber, primaryPaymentType, payloadPayments)
           : await salesHistoryService.register(registerPayload);
 
-        saleNumber = result?.saleNumber || `PDV-${Date.now()}`;
+        saleNumber = result?.saleNumber || offlineReference;
 
         // Aguarda brevemente a autorização da SEFAZ pelo outbox worker (polling ágil de até 1.5s)
         if (result?.saleNumber) {
@@ -1353,9 +1377,7 @@ export default function SalesStartPage({
       };
 
       setCheckoutOpen(false);
-      if (!isOfflineSale) {
-        await reloadProducts().catch(() => { /* ignora falha de reload pós-venda */ });
-      }
+      await reloadProducts().catch(() => { /* ignora falha de reload pós-venda */ });
       saveLastReceipt(receipt);
 
       // Impressão automática na impressora padrão (Blob garante UTF-8)
@@ -1480,11 +1502,28 @@ export default function SalesStartPage({
               <p className="text-sm italic leading-none md:text-lg">Frente de Caixa</p>
             </div>
             <div className="flex items-center gap-2.5 md:gap-4">
-              {pendingOfflineCount > 0 && (
-                <span className="inline-flex items-center gap-1.5 rounded-lg border border-yellow-400/40 bg-yellow-500/20 px-3 py-1.5 text-xs font-semibold text-yellow-100 shadow-sm">
+              {(pendingCount > 0 || failedCount > 0) && (
+                <button
+                  type="button"
+                  onClick={() => setOutboxModalOpen(true)}
+                  title="Clique para abrir detalhes da sincronização offline"
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 ${
+                    failedCount > 0
+                      ? "border-rose-400/60 bg-rose-500/30 text-rose-100 hover:bg-rose-500/40"
+                      : "border-yellow-400/40 bg-yellow-500/20 text-yellow-100 hover:bg-yellow-500/30"
+                  }`}
+                >
                   <AlertTriangle size={14} />
-                  {pendingOfflineCount} venda{pendingOfflineCount > 1 ? "s" : ""} offline pendente{pendingOfflineCount > 1 ? "s" : ""}
-                </span>
+                  {failedCount > 0 ? (
+                    <span>
+                      {failedCount} falha{failedCount > 1 ? "s" : ""} no envio
+                    </span>
+                  ) : (
+                    <span>
+                      {pendingCount} venda{pendingCount > 1 ? "s" : ""} pendente{pendingCount > 1 ? "s" : ""}
+                    </span>
+                  )}
+                </button>
               )}
               <button
                 type="button"
@@ -2813,6 +2852,12 @@ export default function SalesStartPage({
         initialName={quickCustomerInitialName}
         onClose={() => setQuickCustomerModalOpen(false)}
         onSuccess={handleCustomerCreated}
+      />
+
+      {/* Modal de Status e Auditoria da Fila de Sincronização (Outbox) */}
+      <OutboxStatusModal
+        isOpen={outboxModalOpen}
+        onClose={() => setOutboxModalOpen(false)}
       />
 
       {statusDialog.Dialog}
