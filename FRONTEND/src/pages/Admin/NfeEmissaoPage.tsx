@@ -4,8 +4,10 @@
  * e preenchendo os dados do destinatário (CNPJ, IE, endereço).
  */
 import {
+  AlertOctagon,
   Building2,
   CheckCircle2,
+  FileCode,
   FileText,
   Loader2,
   MapPin,
@@ -16,6 +18,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PageHeader from "@/components/Admin/PageHeader";
+import PdvNfceCancelModal from "@/components/Admin/PdvNfceCancelModal";
 import TablePagination from "@/components/Pagination/TablePagination";
 import { Toast } from "@/hooks/Dialog";
 import PageLayout from "@/layout/PageLayout";
@@ -24,6 +27,7 @@ import {
   type CustomerDto,
 } from "@/services/api/customerService";
 import {
+  FISCAL_STATUS,
   fiscalStatusBadgeClass,
   fiscalStatusLabel,
   nfeService,
@@ -97,6 +101,7 @@ export default function NfeEmissaoPage() {
   // Emitted NF-e list
   const [nfeList, setNfeList] = useState<FiscalDocumentDto[]>([]);
   const [nfeLoading, setNfeLoading] = useState(false);
+  const [docToCancel, setDocToCancel] = useState<FiscalDocumentDto | null>(null);
 
   // Emission form
   const [selectedSale, setSelectedSale] = useState<SaleRow | null>(null);
@@ -148,6 +153,15 @@ export default function NfeEmissaoPage() {
       setNfeLoading(false);
     }
   }, []);
+
+  const handleDownloadXml = async (doc: FiscalDocumentDto) => {
+    try {
+      await nfeService.downloadXml(doc.id, doc.chaveAcesso || doc.id);
+      Toast.success("XML da NF-e baixado com sucesso!");
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Erro ao baixar XML.");
+    }
+  };
 
   useEffect(() => {
     loadSales();
@@ -875,6 +889,7 @@ export default function NfeEmissaoPage() {
                     <th className="px-4 py-2">Chave de Acesso</th>
                     <th className="px-4 py-2">Autorização</th>
                     <th className="px-4 py-2 text-right">Valor</th>
+                    <th className="px-4 py-2 text-center">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-primary">
@@ -904,6 +919,35 @@ export default function NfeEmissaoPage() {
                       <td className="whitespace-nowrap px-4 py-2.5 text-right text-sm font-semibold">
                         {doc.totalAmount ?? "—"}
                       </td>
+                      <td className="whitespace-nowrap px-4 py-2.5 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          {doc.status === FISCAL_STATUS.Autorizado && (
+                            <button
+                              type="button"
+                              onClick={() => setDocToCancel({ ...doc, modelo: 55 })}
+                              className="inline-flex items-center gap-1 rounded-lg border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger hover:bg-danger hover:text-white transition-colors"
+                              title="Cancelar esta NF-e na SEFAZ"
+                            >
+                              <AlertOctagon size={13} />
+                              <span>Cancelar</span>
+                            </button>
+                          )}
+                          {doc.chaveAcesso && (
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadXml(doc)}
+                              className="inline-flex items-center gap-1 rounded-lg border border-border-secondary bg-bg-light px-2 py-1 text-xs font-medium text-text-secondary hover:text-text-primary transition-colors"
+                              title="Baixar XML da NF-e"
+                            >
+                              <FileCode size={13} />
+                              <span>XML</span>
+                            </button>
+                          )}
+                          {doc.status !== FISCAL_STATUS.Autorizado && !doc.chaveAcesso && (
+                            <span className="text-xs text-text-secondary">—</span>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -911,6 +955,19 @@ export default function NfeEmissaoPage() {
             </div>
           )}
         </section>
+      )}
+
+      {/* Modal de Cancelamento / Devolução (mesmas regras de supervisor e prazo) */}
+      {docToCancel && (
+        <PdvNfceCancelModal
+          isOpen={Boolean(docToCancel)}
+          initialDocument={docToCancel}
+          onClose={() => setDocToCancel(null)}
+          onSuccess={() => {
+            setDocToCancel(null);
+            loadNfeList();
+          }}
+        />
       )}
     </PageLayout>
   );

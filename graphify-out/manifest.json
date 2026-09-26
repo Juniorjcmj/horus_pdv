@@ -2490,9 +2490,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfeController.cs": {
-    "mtime": 1790462825.0497499,
-    "seen": 1790462977.7386289,
-    "ast_hash": "ece12ec52bb7c228ae56ba72dad9291b",
+    "mtime": 1790464068.4956875,
+    "seen": 1790464167.415435,
+    "ast_hash": "ceb1e18ae4a0e5c3c417550bab5deefb",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfeEmissaoRequest.cs": {
@@ -2526,9 +2526,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/NfeEmissaoPage.tsx": {
-    "mtime": 1790349143.2301917,
-    "seen": 1790389445.5249696,
-    "ast_hash": "a7b58812188ce1170dbad70809e7aa52",
+    "mtime": 1790464100.1219902,
+    "seen": 1790464167.4502866,
+    "ast_hash": "ac5d490291007030b01c7a12708362dd",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/purchaseOrderService.ts": {

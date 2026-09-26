@@ -110,9 +110,8 @@ public class NfeController(
             return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
 
         var rows = await documentoFiscalAB.ListarAsync(currentUser.CompanyId);
-        // Filtra apenas NF-e modelo 55 (a listagem geral inclui ambos)
-        // Como ListarAsync não filtra por modelo, filtramos aqui pelo prefixo do Id
-        var nfeRows = rows.Where(r => r.Id.StartsWith("nfe-")).ToList();
+        // Filtra documentos modelo 55 (NF-e mercantil e devoluções)
+        var nfeRows = rows.Where(r => r.Modelo == 55 || r.Id.StartsWith("nfe-")).ToList();
         return Ok(new ApiResponse<List<DocumentoFiscalResumo>>
         {
             Success = true,
