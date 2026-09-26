@@ -19,6 +19,8 @@ import type { RegisterFormPayload } from "@/pages/Auth/types";
 import { authService } from "@/services/api/authService";
 import { cashRegisterService } from "@/services/api/cashRegisterService";
 import { startOfflineSync } from "@/services/offlineSync";
+import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
+import SyncStatus from "@/components/SyncStatus";
 import { companyService } from "@/services/api/companyService";
 import {
   clearAuthSession,
@@ -671,7 +673,12 @@ export default function App() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    return startOfflineSync();
+    connectivityService.start();
+    const stopSync = startOfflineSync();
+    return () => {
+      stopSync();
+      connectivityService.stop();
+    };
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -805,6 +812,9 @@ export default function App() {
 
   return (
     <div className="relative flex h-screen overflow-hidden bg-bg-primary text-text-primary font-sans">
+      <div className="fixed bottom-3 right-3 z-50">
+        <SyncStatus />
+      </div>
       <header className="lg:hidden fixed top-0 left-0 right-0 z-layer-mobile-header h-14 bg-bg-light border-b border-border-primary px-3 shadow-sm">
         <div className="h-full flex items-center justify-between">
           <button
