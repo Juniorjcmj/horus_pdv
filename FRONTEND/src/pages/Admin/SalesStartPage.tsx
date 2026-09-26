@@ -56,9 +56,9 @@ import {
   type NfeDestinatario,
 } from "@/services/api/fiscalService";
 import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
-import { productService } from "@/services/api/productService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
-import { saveProductsCache, loadProductsCache, queueSale, getPendingSalesCount } from "@/services/offlineStore";
+import { queueSale, getPendingSalesCount } from "@/services/offlineStore";
+import { useProducts } from "@/hooks/useProducts";
 import { buildDanfePrintHtml } from "@/utils/danfePrint";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
@@ -181,7 +181,7 @@ export default function SalesStartPage({
 
   const [now, setNow] = useState(new Date());
   const [productSearch, setProductSearch] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
+  const { products, reload: reloadProducts } = useProducts();
   const [categories, setCategories] = useState<CategoriaArvore[]>([]);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState<string | null>(null);
   const [company, setCompany] = useState<CompanyDto | null>(null);
@@ -515,37 +515,6 @@ export default function SalesStartPage({
     return products.find((item) => item.id === lastItem.id) ?? null;
   }, [selectedProduct, products, cart]);
 
-  const loadProducts = useCallback(async () => {
-    try {
-      const items = await productService.list();
-      const mapped = items.map((item) => ({
-        id: item.id,
-        name: item.productName,
-        code: item.productCode,
-        stock: parseMoneyBr(item.productQnt || "0"),
-        salePrice: parseMoneyBr(item.productSalePrice || "0"),
-        imageUrl: item.productImageUrl,
-        unit: item.unidadeComercial || "UN",
-        marca: item.marca,
-        categoriaId: item.categoriaId,
-        dataValidade: item.dataValidade,
-        controlaValidade: item.controlaValidade,
-        diasAlertaValidade: item.diasAlertaValidade,
-        diasRestantes: item.diasRestantes,
-      }));
-      setProducts(mapped);
-      saveProductsCache(mapped);
-    } catch {
-      const cached = loadProductsCache();
-      if (cached && cached.length > 0) {
-        setProducts(cached);
-        Toast.info("Produtos carregados do cache offline.");
-      } else {
-        throw new Error("Sem conexão e sem cache de produtos disponível.");
-      }
-    }
-  }, [parseMoneyBr]);
-
   const loadCashStatus = useCallback(async () => {
     try {
       const status = await cashRegisterService.status();
@@ -580,12 +549,8 @@ export default function SalesStartPage({
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadProducts().catch((err) => {
-      Toast.error(err instanceof Error ? err.message : "Não foi possível carregar produtos.");
-    });
     loadCategories();
-  }, [loadProducts, loadCategories]);
+  }, [loadCategories]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -1404,7 +1369,7 @@ export default function SalesStartPage({
 
       setCheckoutOpen(false);
       if (!isOfflineSale) {
-        await loadProducts().catch(() => { /* ignora falha de reload pós-venda */ });
+        await reloadProducts().catch(() => { /* ignora falha de reload pós-venda */ });
       }
       saveLastReceipt(receipt);
 
