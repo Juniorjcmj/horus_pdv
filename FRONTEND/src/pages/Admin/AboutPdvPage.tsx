@@ -12,16 +12,23 @@ export default function AboutPdvPage() {
   return (
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
-        title="Sobre PDV"
-        description="História, propósito e modelo de uso do projeto Quack PDV."
+        title="Sobre o Sistema"
+        description="História, propósito e visão do Quack Sistemas - Soluções para seu Negócio."
       />
 
       <section className="card overflow-hidden">
-        <div className="border-b border-border-primary bg-gradient-to-r from-secondary/8 via-bg-light to-accent/8 px-4 py-4 md:px-5">
-          <h2 className="text-lg font-semibold text-text-primary">Projeto open source</h2>
-          <p className="mt-1 text-sm text-text-secondary">
-            O Quack PDV é um projeto pessoal, aberto para estudo e uso da comunidade.
-          </p>
+        <div className="border-b border-border-primary bg-gradient-to-r from-secondary/8 via-bg-light to-accent/8 px-4 py-4 md:px-5 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-text-primary">Quack Sistemas</h2>
+            <p className="mt-1 text-sm text-text-secondary">
+              Soluções inteligentes para seu negócio, frente de caixa e gestão comercial.
+            </p>
+          </div>
+          <img
+            src="/logo-quack.jpg"
+            alt="Quack Sistemas"
+            className="h-12 w-auto rounded-xl object-contain border border-border-primary shadow-sm hidden sm:block"
+          />
         </div>
 
         <div className="space-y-4 p-4 md:p-5">

@@ -3,7 +3,7 @@
  * Objetivo: padroniza o layout visual das telas públicas de login, cadastro e recuperação de senha.
  * Entradas esperadas: recebe conteúdo filho e textos de apoio exibidos no painel institucional.
  */
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 
 type AuthLayoutProps = {
@@ -32,11 +32,22 @@ export default function AuthLayout({
         <section className="card auth-login-card grid w-full overflow-hidden border-white/45 bg-white/85 backdrop-blur-sm lg:grid-cols-[0.9fr_1.1fr]">
           <div className="hidden bg-gradient-to-br from-secondary to-accent p-8 text-white lg:flex lg:flex-col lg:justify-between">
             <div>
-              <p className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-white/80">
-                <ShieldCheck size={13} />
-                Quack PDV
-              </p>
-              <h1 className="mt-4 text-3xl font-bold leading-tight">
+              <div className="flex items-center gap-3">
+                <img
+                  src="/logo-quack.jpg"
+                  alt="Quack Sistemas"
+                  className="h-12 w-auto max-w-[140px] rounded-xl object-contain border border-white/30 shadow-lg bg-slate-900/40"
+                />
+                <div>
+                  <span className="text-xl font-bold tracking-tight text-white block leading-none">
+                    Quack Sistemas
+                  </span>
+                  <span className="text-[11px] text-white/80 uppercase tracking-widest mt-1 block">
+                    Soluções para seu negócio
+                  </span>
+                </div>
+              </div>
+              <h1 className="mt-6 text-3xl font-bold leading-tight">
                 Gestão de vendas com fluxo rápido para operação de balcão.
               </h1>
             </div>
@@ -48,6 +59,21 @@ export default function AuthLayout({
 
           <div className="auth-login-reveal-1 bg-bg-light/92 p-6 sm:p-8">
             <div className="mx-auto w-full max-w-md">
+              <div className="lg:hidden flex items-center gap-2.5 mb-6 pb-4 border-b border-border-primary">
+                <img
+                  src="/logo-quack.jpg"
+                  alt="Quack Sistemas"
+                  className="h-9 w-auto rounded-lg object-contain border border-border-primary shadow-xs bg-slate-900/40"
+                />
+                <div>
+                  <span className="text-base font-bold text-text-primary block leading-none">
+                    Quack Sistemas
+                  </span>
+                  <span className="text-[11px] text-text-secondary uppercase tracking-widest mt-0.5 block">
+                    Soluções para seu negócio
+                  </span>
+                </div>
+              </div>
               {onBackToLogin ? (
                 <button
                   type="button"

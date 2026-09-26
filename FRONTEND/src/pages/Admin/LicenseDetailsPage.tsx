@@ -13,14 +13,14 @@ export default function LicenseDetailsPage() {
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
         title="Detalhes da Licença"
-        description="Informações de uso do Quack PDV como projeto open source."
+        description="Informações de uso do Quack Sistemas."
       />
 
       <section className="card overflow-hidden">
         <div className="border-b border-border-primary bg-gradient-to-r from-secondary/8 via-bg-light to-accent/8 px-4 py-4 md:px-5">
           <h2 className="text-lg font-semibold text-text-primary">Licença de uso da versão atual</h2>
           <p className="mt-1 text-sm text-text-secondary">
-            Esta instalação está vinculada ao modelo gratuito com atribuição de créditos.
+            Esta instalação do Quack Sistemas está vinculada ao modelo com atribuição de créditos.
           </p>
         </div>
 
@@ -31,8 +31,7 @@ export default function LicenseDetailsPage() {
               Modelo
             </p>
             <p className="mt-2 text-sm text-text-secondary">
-              O Quack PDV pode ser utilizado gratuitamente nesta versão, para estudo, operação
-              e evolução do projeto.
+              O Quack Sistemas pode ser utilizado para estudo, operação e evolução do projeto.
             </p>
           </article>
 

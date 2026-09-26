@@ -709,10 +709,10 @@ export default function App() {
 
   useEffect(() => {
     if (activePage === "vendas" && isStandalonePos) {
-      document.title = "Quack PDV - Frente de caixa grátis";
+      document.title = "Quack Sistemas - Frente de Caixa";
       return;
     }
-    document.title = "Quack PDV - PDV grátis e frente de caixa";
+    document.title = "Quack Sistemas - Soluções para seu Negócio";
   }, [activePage, isStandalonePos]);
 
   useEffect(() => {
@@ -824,14 +824,21 @@ export default function App() {
       </div>
       <header className="lg:hidden fixed top-0 left-0 right-0 z-layer-mobile-header h-14 bg-bg-light border-b border-border-primary px-3 shadow-sm">
         <div className="h-full flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setMobileSidebarOpen(true)}
-            className="p-2 rounded-lg border border-border-primary bg-bg-light shadow-sm"
-            aria-label="Abrir menu"
-          >
-            <Menu size={20} className="text-accent" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="p-2 rounded-lg border border-border-primary bg-bg-light shadow-sm"
+              aria-label="Abrir menu"
+            >
+              <Menu size={20} className="text-accent" />
+            </button>
+            <img
+              src="/logo-quack.jpg"
+              alt="Quack Sistemas"
+              className="h-8 w-auto rounded-md object-contain border border-accent/20"
+            />
+          </div>
 
           <h1 className="text-sm font-semibold text-text-primary truncate px-2">
             {pageTitleByKey[activePage]}

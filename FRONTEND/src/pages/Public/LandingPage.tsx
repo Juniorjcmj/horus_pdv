@@ -368,15 +368,17 @@ export default function LandingPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/25 border border-sky-400/30">
-              <ShieldCheck className="text-white h-6 w-6" />
-            </div>
+            <img
+              src="/logo-quack.jpg"
+              alt="Quack Sistemas"
+              className="h-11 w-auto max-w-[130px] rounded-xl object-contain shadow-lg shadow-sky-500/25 border border-sky-400/30 bg-slate-900/40"
+            />
             <div>
               <span className="text-2xl font-black tracking-tight text-white font-display flex items-center gap-1.5">
-                Quack <span className="text-sky-400">PDV</span>
+                Quack <span className="text-sky-400">Sistemas</span>
               </span>
               <span className="block text-[10px] uppercase font-semibold tracking-widest text-slate-400">
-                Ponto de Venda & Gestão
+                Soluções para seu negócio
               </span>
             </div>
           </div>
@@ -1549,13 +1551,15 @@ export default function LandingPage({
       <footer className="border-t border-slate-800/80 bg-slate-950 py-12 text-slate-400 text-xs sm:text-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-sky-500 flex items-center justify-center text-white font-bold">
-              Q
-            </div>
+            <img
+              src="/logo-quack.jpg"
+              alt="Quack Sistemas"
+              className="h-9 w-auto rounded-lg object-contain border border-slate-700 bg-slate-900/40"
+            />
             <div>
-              <p className="font-bold text-white text-base">Quack PDV</p>
+              <p className="font-bold text-white text-base">Quack Sistemas</p>
               <p className="text-xs text-slate-500">
-                Ponto de Venda & Gestão Comercial
+                Soluções para seu negócio
               </p>
             </div>
           </div>
@@ -1583,7 +1587,7 @@ export default function LandingPage({
           </div>
 
           <p className="text-xs text-slate-500 text-center sm:text-right">
-            © {new Date().getFullYear()} Quack PDV. Todos os direitos reservados.
+            © {new Date().getFullYear()} Quack Sistemas. Todos os direitos reservados.
           </p>
         </div>
       </footer>

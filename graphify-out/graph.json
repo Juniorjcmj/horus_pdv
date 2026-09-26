@@ -23728,7 +23728,7 @@
       "file_type": "code",
       "norm_label": "barchart2icon()",
       "source_file": "FRONTEND/src/pages/Public/LandingPage.tsx",
-      "source_location": "L1594"
+      "source_location": "L1598"
     },
     {
       "id": "frontend_src_pages_public_landingpage_landingpage",
@@ -157003,7 +157003,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Public/LandingPage.tsx",
-      "source_location": "L1594",
+      "source_location": "L1598",
       "weight": 1.0
     },
     {
@@ -185010,5 +185010,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "4fe5fefbc6137fcf3c1f57aecaca01b47f84c4f0"
+  "built_at_commit": "b6ea6dfa48dab1a8fed1f134cf78f0ad01e9a94f"
 }

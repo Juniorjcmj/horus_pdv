@@ -1521,9 +1521,20 @@ export default function SalesStartPage({
       >
         <header className="relative border-b border-border-secondary bg-accent px-4 py-3 text-text-light">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="font-display text-2xl font-bold italic leading-none md:text-4xl">Quack PDV</h1>
-              <p className="text-sm italic leading-none md:text-lg">Frente de Caixa</p>
+            <div className="flex items-center gap-3">
+              <img
+                src="/logo-quack.jpg"
+                alt="Quack Sistemas"
+                className="h-10 md:h-12 w-auto max-w-[120px] rounded-xl object-contain border border-white/20 shadow-md bg-slate-900/40"
+              />
+              <div>
+                <h1 className="font-display text-xl md:text-3xl font-bold italic leading-none text-white">
+                  Quack Sistemas
+                </h1>
+                <p className="text-xs md:text-sm text-white/90 leading-tight mt-0.5">
+                  Frente de Caixa • Soluções para seu negócio
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2.5 md:gap-4">
               {(pendingCount > 0 || failedCount > 0) && (

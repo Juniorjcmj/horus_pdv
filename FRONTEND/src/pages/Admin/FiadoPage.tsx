@@ -225,7 +225,7 @@ export default function FiadoPage() {
   const handleImprimirExtrato = () => {
     if (!extratoCliente) return;
 
-    const companyName = company?.fantasyName || company?.corporateName || "HORUS PDV";
+    const companyName = company?.fantasyName || company?.corporateName || "Quack Sistemas";
     const companyCnpj = company?.cnpj ? `CNPJ: ${company.cnpj}` : "";
     const companyPhone = company?.phone ? `Tel: ${company.phone}` : "";
     const companyAddress = company?.address
@@ -322,7 +322,7 @@ export default function FiadoPage() {
           Assinatura do Cliente
         </div>
         <div style="margin-top: 12px; font-size: 9px; color: #666;">
-          HORUS PDV - Sistema de Gestão Comercial
+          Quack Sistemas - Soluções para seu Negócio
         </div>
       </section>
     </main>

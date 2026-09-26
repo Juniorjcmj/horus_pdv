@@ -169,13 +169,30 @@ export default function AppSidebar({
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 lg:static`}
       >
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-border-primary">
-          {!collapsed && (
-            <div className="min-w-0 pr-2">
-              <h1 className="text-lg font-bold tracking-tight text-accent truncate">Quack PDV</h1>
-              <p className="text-[11px] text-text-secondary truncate" title={companyName || "Painel operacional"}>
-                {companyName || "Painel operacional"}
-              </p>
+        <div className="flex items-center justify-between p-3.5 border-b border-border-primary">
+          {!collapsed ? (
+            <div className="flex items-center gap-2.5 min-w-0 pr-2">
+              <img
+                src="/logo-quack.jpg"
+                alt="Quack Sistemas"
+                className="h-9 w-9 rounded-lg object-cover border border-accent/20 shadow-xs shrink-0"
+              />
+              <div className="min-w-0">
+                <h1 className="text-base font-bold tracking-tight text-accent truncate leading-tight">
+                  Quack Sistemas
+                </h1>
+                <p className="text-[11px] text-text-secondary truncate" title={companyName || "Soluções para seu negócio"}>
+                  {companyName || "Soluções para seu negócio"}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="mx-auto py-0.5">
+              <img
+                src="/logo-quack.jpg"
+                alt="Quack Sistemas"
+                className="h-8 w-8 rounded-lg object-cover border border-accent/20 shadow-xs"
+              />
             </div>
           )}
 

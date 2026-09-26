@@ -1,7 +1,7 @@
 {
-  "name": "Horus PDV - Ponto de Venda Offline-First",
-  "short_name": "Horus PDV",
-  "description": "Sistema de Ponto de Venda Offline-First de alta disponibilidade para varejo.",
+  "name": "Quack Sistemas - Soluções para seu Negócio",
+  "short_name": "Quack Sistemas",
+  "description": "Quack Sistemas - Sistema de Ponto de Venda e Gestão Comercial.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "any",
@@ -10,9 +10,9 @@
   "categories": ["business", "finance", "productivity"],
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "/logo-quack.jpg",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     }
   ]

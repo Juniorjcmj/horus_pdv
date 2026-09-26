@@ -119,7 +119,7 @@ export function buildReceiptPrintHtml(
   fiscal?: FiscalDocumentDetailDto | null
 ) {
   const companyName =
-    receipt.company?.fantasyName || receipt.company?.corporateName || "Quack PDV";
+    receipt.company?.fantasyName || receipt.company?.corporateName || "Quack Sistemas";
   const companyAddress = [
     receipt.company?.address,
     receipt.company?.number,
@@ -326,7 +326,7 @@ export default function ReceiptPreviewModal({
   );
 
   const companyName =
-    receipt.company?.fantasyName || receipt.company?.corporateName || "Quack PDV";
+    receipt.company?.fantasyName || receipt.company?.corporateName || "Quack Sistemas";
   const companyAddress = [
     receipt.company?.address,
     receipt.company?.number,

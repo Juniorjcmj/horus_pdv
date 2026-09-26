@@ -77,7 +77,7 @@ export default function LoginPage({
             onClick={onOpenLanding}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-hover-accent transition cursor-pointer"
           >
-            ← Conhecer o Quack PDV (Apresentação do Sistema)
+            ← Conhecer o Quack Sistemas (Apresentação do Sistema)
           </button>
         </div>
       ) : null}
