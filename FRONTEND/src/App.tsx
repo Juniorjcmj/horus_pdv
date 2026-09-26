@@ -18,8 +18,8 @@ import LandingPage from "@/pages/Public/LandingPage";
 import type { RegisterFormPayload } from "@/pages/Auth/types";
 import { authService } from "@/services/api/authService";
 import { cashRegisterService } from "@/services/api/cashRegisterService";
-import { startOfflineSync } from "@/services/offlineSync";
 import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
+import { syncEngine } from "@/infrastructure/synchronization/SyncEngine";
 import SyncStatus from "@/components/SyncStatus";
 import { companyService } from "@/services/api/companyService";
 import {
@@ -674,7 +674,7 @@ export default function App() {
   useEffect(() => {
     if (!isAuthenticated) return;
     connectivityService.start();
-    const stopSync = startOfflineSync();
+    const stopSync = syncEngine.start();
     return () => {
       stopSync();
       connectivityService.stop();

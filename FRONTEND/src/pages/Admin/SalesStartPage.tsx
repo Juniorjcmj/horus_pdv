@@ -57,8 +57,9 @@ import {
 } from "@/services/api/fiscalService";
 import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
-import { queueSale, getPendingSalesCount } from "@/services/offlineStore";
 import { useProducts } from "@/hooks/useProducts";
+import { queueSaleToOutbox } from "@/application/sales/SaleOutboxAdapter";
+import { usePendingSalesCount } from "@/hooks/usePendingSalesCount";
 import { buildDanfePrintHtml } from "@/utils/danfePrint";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
@@ -217,7 +218,7 @@ export default function SalesStartPage({
     getPrintPreviewEnabled(),
   );
   const [isConfirmingSale, setIsConfirmingSale] = useState(false);
-  const [pendingOfflineCount, setPendingOfflineCount] = useState(() => getPendingSalesCount());
+  const pendingOfflineCount = usePendingSalesCount();
 
   const [quickCustomerModalOpen, setQuickCustomerModalOpen] = useState(false);
   const [quickCustomerInitialDoc, setQuickCustomerInitialDoc] = useState("");
@@ -563,7 +564,6 @@ export default function SalesStartPage({
   useEffect(() => {
     const onSyncSuccess = (e: Event) => {
       const detail = (e as CustomEvent).detail as { localSaleNumber: string };
-      setPendingOfflineCount(getPendingSalesCount());
       Toast.success(`Venda offline ${detail.localSaleNumber} sincronizada com sucesso.`);
     };
     window.addEventListener("offline-sync-success", onSyncSuccess);
@@ -1313,7 +1313,7 @@ export default function SalesStartPage({
           Toast.error("Sem conexão. Pedidos só podem ser finalizados online.");
           return;
         }
-        saleNumber = queueSale(registerPayload);
+        saleNumber = await queueSaleToOutbox(registerPayload);
         isOfflineSale = true;
       }
 
@@ -1393,7 +1393,6 @@ export default function SalesStartPage({
         setReceiptPreview(receipt);
       }
       if (isOfflineSale) {
-        setPendingOfflineCount(getPendingSalesCount());
         Toast.info(`Venda ${saleNumber} salva offline. Será sincronizada automaticamente.`);
       } else if (fiscalModel === "nfe") {
         Toast.success(`Venda ${receipt.saleNumber} confirmada! NF-e modelo 55 enfileirada para emissão.`);
