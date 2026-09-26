@@ -10,10 +10,10 @@ export const AUTH_REMEMBER_STORAGE_KEY = "horuspdv.auth.remember";
 export type AuthenticatedUser = {
   id: string;
   companyId: string;
-  cpf: string;
+  cpf?: string;
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
   role: string;
   status: string;
   createdAt: string;
@@ -37,13 +37,25 @@ export function getStoredAuthUser() {
 }
 
 export function setAuthSession(user: AuthenticatedUser, remember = true) {
+  // Higieniza para não persistir PII desnecessária (CPF, telefone) no storage do navegador
+  const sanitizedUser: AuthenticatedUser = {
+    id: user.id,
+    companyId: user.companyId,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    status: user.status,
+    createdAt: user.createdAt,
+    lastLoginAt: user.lastLoginAt,
+    mustChangePassword: Boolean(user.mustChangePassword),
+  };
   const primaryStorage = remember ? window.localStorage : window.sessionStorage;
   const secondaryStorage = remember ? window.sessionStorage : window.localStorage;
   secondaryStorage.removeItem(LEGACY_AUTH_TOKEN_STORAGE_KEY);
   secondaryStorage.removeItem(AUTH_USER_STORAGE_KEY);
-  primaryStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(user));
+  primaryStorage.setItem(AUTH_USER_STORAGE_KEY, JSON.stringify(sanitizedUser));
   window.localStorage.setItem(AUTH_REMEMBER_STORAGE_KEY, remember ? "1" : "0");
-  window.dispatchEvent(new CustomEvent("horuspdv-auth-change", { detail: { user } }));
+  window.dispatchEvent(new CustomEvent("horuspdv-auth-change", { detail: { user: sanitizedUser } }));
 }
 
 export function clearAuthSession() {

@@ -62,4 +62,37 @@ public static class HorusPayloadHash
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
+
+    public static string ComputeHash(AbrirCaixaRequest request)
+    {
+        var canonical = new
+        {
+            openingAmount = HorusMoneyFormat.ParseDecimal(request.OpeningAmount)
+        };
+
+        var json = JsonSerializer.Serialize(canonical);
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
+
+    public static string ComputeHash(FecharCaixaRequest request)
+    {
+        var canonical = new
+        {
+            closingAmount = HorusMoneyFormat.ParseDecimal(request.ClosingAmount),
+            note = request.Note?.Trim() ?? string.Empty,
+            differenceReason = request.DifferenceReason?.Trim() ?? string.Empty
+        };
+
+        var json = JsonSerializer.Serialize(canonical);
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
+
+    public static string ComputeHash(object payload)
+    {
+        var json = JsonSerializer.Serialize(payload);
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
 }

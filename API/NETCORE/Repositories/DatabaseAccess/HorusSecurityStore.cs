@@ -147,9 +147,9 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         return ToDto(user);
     }
 
-    public SecurityUserDto? UpdateOwnProfile(string userId, string name, string email, string phone)
+    public SecurityUserDto? UpdateOwnProfile(string userId, string companyId, string name, string email, string phone)
     {
-        var user = FindUserById(userId);
+        var user = FindUserById(userId, companyId);
         if (user is null || user.Status != "ativo") return null;
 
         var request = new UsuarioRequest
@@ -265,9 +265,11 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         return LoginResult.Ok(ToDto(user), session);
     }
 
-    public SecurityUserDto? GetActiveUser(string id)
+    public SecurityUserDto? GetActiveUser(string id, string? companyId = null)
     {
-        var user = FindUserById(id);
+        var user = !string.IsNullOrWhiteSpace(companyId)
+            ? FindUserById(id, companyId)
+            : FindUserById(id);
         return user is null || user.Status != "ativo" ? null : ToDto(user);
     }
 
@@ -321,11 +323,11 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         command.ExecuteNonQuery();
     }
 
-    public bool ChangePassword(string userId, string currentPassword, string nextPassword)
+    public bool ChangePassword(string userId, string companyId, string currentPassword, string nextPassword)
     {
         if (nextPassword.Length < 8) throw new InvalidOperationException("A nova senha deve ter no minimo 8 caracteres.");
 
-        var user = FindUserById(userId);
+        var user = FindUserById(userId, companyId);
         if (user is null || user.Status != "ativo") return false;
         if (!PasswordHasher.Verify(currentPassword, user.PasswordHash)) return false;
 

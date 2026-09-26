@@ -59,17 +59,17 @@ export const cashRegisterService = {
     const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/status`);
     return response.data;
   },
-  async open(openingAmount: string) {
+  async open(openingAmount: string, eventId?: string, payloadHash?: string) {
     const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/abrir`, {
       method: "POST",
-      body: JSON.stringify({ openingAmount }),
+      body: JSON.stringify({ openingAmount, eventId, payloadHash }),
     });
     return response.data;
   },
-  async close(closingAmount: string, note = "", differenceReason?: string) {
+  async close(closingAmount: string, note = "", differenceReason?: string, eventId?: string, payloadHash?: string) {
     const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/fechar`, {
       method: "POST",
-      body: JSON.stringify({ closingAmount, note, differenceReason: differenceReason || null }),
+      body: JSON.stringify({ closingAmount, note, differenceReason: differenceReason || null, eventId, payloadHash }),
     });
     return response.data;
   },

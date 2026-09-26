@@ -53,6 +53,7 @@ services:
       Security__EncryptionKey: "${ENCRYPTION_KEY:?defina ENCRYPTION_KEY no ambiente do stack — string aleatória longa e ESTÁVEL, nunca troque depois de configurar CSC ou certificado}"
       Security__CorsOrigins: "https://pdv.wootchat.com.br"
       Security__TrustForwardedHeaders: "true"
+      AllowedHosts: "${ALLOWED_HOSTS:-localhost;127.0.0.1;api-pdv.wootchat.com.br;pdv.wootchat.com.br;api.horuspdv.local}"
       Email__FrontendBaseUrl: "https://pdv.wootchat.com.br"
       Email__Enabled: "${EMAIL_ENABLED:-false}"
       Email__Host: "${EMAIL_HOST:-smtp-mail.outlook.com}"

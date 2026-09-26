@@ -15,9 +15,9 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public class CaixaAB(Connection connection)
 {
-    public async Task<List<CaixaSessionAD>> ListarSessoesAsync(string companyId)
+    public async Task<List<CaixaSessionAD>> ListarSessoesAsync(string companyId, CancellationToken cancellationToken = default)
     {
-        await using var db = await connection.OpenConnectionAsync();
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
         await using var command = new SqlCommand(
             """
             SELECT Id, OpenedAt, ClosedAt, OpeningAmount, ClosingAmount, OperatorId, OperatorName, ClosedById, ClosedByName, Note,
@@ -28,9 +28,9 @@ public class CaixaAB(Connection connection)
             """,
             db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
-        await using var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         var rows = new List<CaixaSessionAD>();
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(cancellationToken))
         {
             rows.Add(Map(reader));
         }
@@ -38,8 +38,27 @@ public class CaixaAB(Connection connection)
         return rows;
     }
 
-    public async Task<CaixaSessionAD?> ObterSessaoAbertaAsync(string companyId)
-        => (await ListarSessoesAsync(companyId)).FirstOrDefault(item => item.ClosedAt is null);
+    public async Task<CaixaSessionAD?> ObterSessaoAbertaAsync(string companyId, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT TOP 1 Id, OpenedAt, ClosedAt, OpeningAmount, ClosingAmount, OperatorId, OperatorName, ClosedById, ClosedByName, Note,
+                   ExpectedCashAmount, DifferenceAmount, DifferenceReason
+            FROM CaixaSessoes
+            WHERE CompanyId = @CompanyId AND ClosedAt IS NULL
+            ORDER BY OpenedAt DESC;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            return Map(reader);
+        }
+
+        return null;
+    }
 
     public async Task AbrirAsync(
         string id,
@@ -47,9 +66,10 @@ public class CaixaAB(Connection connection)
         DateTimeOffset openedAt,
         decimal openingAmount,
         string operatorId,
-        string operatorName)
+        string operatorName,
+        CancellationToken cancellationToken = default)
     {
-        await using var db = await connection.OpenConnectionAsync();
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
         await using var command = new SqlCommand(
             """
             INSERT INTO CaixaSessoes
@@ -64,7 +84,171 @@ public class CaixaAB(Connection connection)
         command.Parameters.AddWithValue("@OpeningAmount", openingAmount);
         command.Parameters.AddWithValue("@OperatorId", operatorId);
         command.Parameters.AddWithValue("@OperatorName", operatorName);
-        await command.ExecuteNonQueryAsync();
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async Task<CaixaStatusDto> AbrirIdempotenteAsync(
+        string id,
+        string companyId,
+        DateTimeOffset openedAt,
+        decimal openingAmount,
+        string operatorId,
+        string operatorName,
+        string? eventId,
+        string? payloadHash,
+        Func<DateTimeOffset, Task<CaixaStatusDto>> statusBuilderAsync,
+        CancellationToken cancellationToken = default)
+    {
+        var now = openedAt;
+        eventId = eventId?.Trim();
+        var currentHash = !string.IsNullOrWhiteSpace(payloadHash)
+            ? payloadHash.Trim().ToLowerInvariant()
+            : (!string.IsNullOrWhiteSpace(eventId) ? HorusPayloadHash.ComputeHash(new { openingAmount = HorusMoneyFormat.Format(openingAmount) }) : string.Empty);
+
+        if (!string.IsNullOrWhiteSpace(eventId))
+        {
+            var existing = await ObterEventoProcessadoAsync(companyId, eventId, currentHash, cancellationToken);
+            if (existing is not null)
+            {
+                return existing;
+            }
+        }
+
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(eventId))
+            {
+                const string checkSql = """
+                    SELECT PayloadHash, ResponsePayload
+                    FROM ProcessedEvents WITH (UPDLOCK, ROWLOCK)
+                    WHERE CompanyId = @CompanyId AND EventId = @EventId;
+                    """;
+
+                await using var checkCmd = new SqlCommand(checkSql, db, transaction);
+                checkCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                checkCmd.Parameters.AddWithValue("@EventId", eventId);
+
+                await using (var reader = await checkCmd.ExecuteReaderAsync(cancellationToken))
+                {
+                    if (await reader.ReadAsync(cancellationToken))
+                    {
+                        var storedHash = reader.GetString(0);
+                        var responseJson = reader.GetString(1);
+                        await reader.CloseAsync();
+
+                        if (!string.Equals(storedHash, currentHash, StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new IdempotencyConflictException(
+                                eventId,
+                                $"Conflito de idempotência: o EventId '{eventId}' já foi processado anteriormente com um payload diferente.");
+                        }
+
+                        var cached = JsonSerializer.Deserialize<CaixaStatusDto>(responseJson, JsonOptions)
+                            ?? throw new InvalidOperationException("Falha ao recuperar payload de resposta do evento processado.");
+
+                        cached.IsReplay = true;
+                        await transaction.CommitAsync(cancellationToken);
+                        return cached;
+                    }
+                }
+            }
+
+            const string checkOpenSql = """
+                SELECT TOP 1 Id
+                FROM CaixaSessoes WITH (UPDLOCK, ROWLOCK)
+                WHERE CompanyId = @CompanyId AND ClosedAt IS NULL;
+                """;
+            await using (var checkOpenCmd = new SqlCommand(checkOpenSql, db, transaction))
+            {
+                checkOpenCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                var existingOpen = await checkOpenCmd.ExecuteScalarAsync(cancellationToken);
+                if (existingOpen is not null)
+                {
+                    throw new InvalidOperationException("Já existe um caixa aberto para venda.");
+                }
+            }
+
+            const string insertSessionSql = """
+                INSERT INTO CaixaSessoes
+                    (Id, CompanyId, OpenedAt, OpeningAmount, ClosingAmount, OperatorId, OperatorName, ClosedById, ClosedByName, Note)
+                VALUES
+                    (@Id, @CompanyId, @OpenedAt, @OpeningAmount, 0, @OperatorId, @OperatorName, N'', N'', N'');
+                """;
+            await using (var cmd = new SqlCommand(insertSessionSql, db, transaction))
+            {
+                cmd.Parameters.AddWithValue("@Id", id);
+                cmd.Parameters.AddWithValue("@CompanyId", companyId);
+                cmd.Parameters.AddWithValue("@OpenedAt", openedAt);
+                cmd.Parameters.AddWithValue("@OpeningAmount", openingAmount);
+                cmd.Parameters.AddWithValue("@OperatorId", operatorId);
+                cmd.Parameters.AddWithValue("@OperatorName", operatorName);
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            var processedEventId = (string?)null;
+            if (!string.IsNullOrWhiteSpace(eventId))
+            {
+                processedEventId = $"pe-{Guid.NewGuid():N}";
+                const string insertEventSql = """
+                    INSERT INTO ProcessedEvents
+                        (Id, CompanyId, EventId, EventType, ClientSaleId, PayloadHash, ProcessedAt, ResponsePayload)
+                    VALUES
+                        (@Id, @CompanyId, @EventId, @EventType, @ClientSaleId, @PayloadHash, @ProcessedAt, @ResponsePayload);
+                    """;
+
+                await using (var eventCmd = new SqlCommand(insertEventSql, db, transaction))
+                {
+                    eventCmd.Parameters.AddWithValue("@Id", processedEventId);
+                    eventCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                    eventCmd.Parameters.AddWithValue("@EventId", eventId);
+                    eventCmd.Parameters.AddWithValue("@EventType", "CASH_OPEN");
+                    eventCmd.Parameters.AddWithValue("@ClientSaleId", DBNull.Value);
+                    eventCmd.Parameters.AddWithValue("@PayloadHash", currentHash);
+                    eventCmd.Parameters.AddWithValue("@ProcessedAt", now);
+                    eventCmd.Parameters.AddWithValue("@ResponsePayload", "{}");
+                    await eventCmd.ExecuteNonQueryAsync(cancellationToken);
+                }
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+
+            var updatedStatus = await statusBuilderAsync(now);
+            updatedStatus.IsReplay = false;
+
+            if (processedEventId is not null)
+            {
+                try
+                {
+                    var responseJson = JsonSerializer.Serialize(updatedStatus, JsonOptions);
+                    const string updateSql = "UPDATE ProcessedEvents SET ResponsePayload = @Payload WHERE Id = @Id;";
+                    await using var db2 = await connection.OpenConnectionAsync(cancellationToken);
+                    await using var updateCmd = new SqlCommand(updateSql, db2);
+                    updateCmd.Parameters.AddWithValue("@Id", processedEventId);
+                    updateCmd.Parameters.AddWithValue("@Payload", responseJson);
+                    await updateCmd.ExecuteNonQueryAsync(cancellationToken);
+                }
+                catch
+                {
+                }
+            }
+
+            return updatedStatus;
+        }
+        catch (SqlException ex) when (ex.Number is 2627 or 2601)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            var replay = await ObterEventoProcessadoAsync(companyId, eventId!, currentHash, cancellationToken);
+            if (replay is not null) return replay;
+            throw;
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task FecharAsync(
@@ -77,9 +261,10 @@ public class CaixaAB(Connection connection)
         string note,
         decimal expectedCashAmount,
         decimal differenceAmount,
-        string? differenceReason)
+        string? differenceReason,
+        CancellationToken cancellationToken = default)
     {
-        await using var db = await connection.OpenConnectionAsync();
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
         await using var command = new SqlCommand(
             """
             UPDATE CaixaSessoes
@@ -104,12 +289,195 @@ public class CaixaAB(Connection connection)
         command.Parameters.AddWithValue("@DifferenceAmount", differenceAmount);
         command.Parameters.AddWithValue("@DifferenceReason", (object?)differenceReason ?? DBNull.Value);
         command.Parameters.AddWithValue("@Id", id);
-        await command.ExecuteNonQueryAsync();
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async Task<CaixaStatusDto> FecharIdempotenteAsync(
+        string id,
+        string companyId,
+        DateTimeOffset closedAt,
+        decimal closingAmount,
+        string closedById,
+        string closedByName,
+        string note,
+        decimal expectedCashAmount,
+        decimal differenceAmount,
+        string? differenceReason,
+        string? eventId,
+        string? payloadHash,
+        Func<DateTimeOffset, Task<CaixaStatusDto>> statusBuilderAsync,
+        CancellationToken cancellationToken = default)
+    {
+        var now = closedAt;
+        eventId = eventId?.Trim();
+        var currentHash = !string.IsNullOrWhiteSpace(payloadHash)
+            ? payloadHash.Trim().ToLowerInvariant()
+            : (!string.IsNullOrWhiteSpace(eventId) ? HorusPayloadHash.ComputeHash(new { closingAmount = HorusMoneyFormat.Format(closingAmount), note, differenceReason }) : string.Empty);
+
+        if (!string.IsNullOrWhiteSpace(eventId))
+        {
+            var existing = await ObterEventoProcessadoAsync(companyId, eventId, currentHash, cancellationToken);
+            if (existing is not null)
+            {
+                return existing;
+            }
+        }
+
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync(cancellationToken);
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(eventId))
+            {
+                const string checkSql = """
+                    SELECT PayloadHash, ResponsePayload
+                    FROM ProcessedEvents WITH (UPDLOCK, ROWLOCK)
+                    WHERE CompanyId = @CompanyId AND EventId = @EventId;
+                    """;
+
+                await using var checkCmd = new SqlCommand(checkSql, db, transaction);
+                checkCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                checkCmd.Parameters.AddWithValue("@EventId", eventId);
+
+                await using (var reader = await checkCmd.ExecuteReaderAsync(cancellationToken))
+                {
+                    if (await reader.ReadAsync(cancellationToken))
+                    {
+                        var storedHash = reader.GetString(0);
+                        var responseJson = reader.GetString(1);
+                        await reader.CloseAsync();
+
+                        if (!string.Equals(storedHash, currentHash, StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new IdempotencyConflictException(
+                                eventId,
+                                $"Conflito de idempotência: o EventId '{eventId}' já foi processado anteriormente com um payload diferente.");
+                        }
+
+                        var cached = JsonSerializer.Deserialize<CaixaStatusDto>(responseJson, JsonOptions)
+                            ?? throw new InvalidOperationException("Falha ao recuperar payload de resposta do evento processado.");
+
+                        cached.IsReplay = true;
+                        await transaction.CommitAsync(cancellationToken);
+                        return cached;
+                    }
+                }
+            }
+
+            const string checkSessionSql = """
+                SELECT ClosedAt
+                FROM CaixaSessoes WITH (UPDLOCK, ROWLOCK)
+                WHERE Id = @Id AND CompanyId = @CompanyId;
+                """;
+            await using (var checkSessionCmd = new SqlCommand(checkSessionSql, db, transaction))
+            {
+                checkSessionCmd.Parameters.AddWithValue("@Id", id);
+                checkSessionCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                var closedVal = await checkSessionCmd.ExecuteScalarAsync(cancellationToken);
+                if (closedVal == null)
+                {
+                    throw new InvalidOperationException("Sessão de caixa não encontrada.");
+                }
+                if (closedVal != DBNull.Value && closedVal is not null)
+                {
+                    throw new InvalidOperationException("O caixa atual já foi fechado.");
+                }
+            }
+
+            const string updateSessionSql = """
+                UPDATE CaixaSessoes
+                   SET ClosedAt = @ClosedAt,
+                       ClosingAmount = @ClosingAmount,
+                       ClosedById = @ClosedById,
+                       ClosedByName = @ClosedByName,
+                       Note = @Note,
+                       ExpectedCashAmount = @ExpectedCashAmount,
+                       DifferenceAmount = @DifferenceAmount,
+                       DifferenceReason = @DifferenceReason
+                 WHERE Id = @Id AND CompanyId = @CompanyId;
+                """;
+            await using (var cmd = new SqlCommand(updateSessionSql, db, transaction))
+            {
+                cmd.Parameters.AddWithValue("@ClosedAt", closedAt);
+                cmd.Parameters.AddWithValue("@CompanyId", companyId);
+                cmd.Parameters.AddWithValue("@ClosingAmount", closingAmount);
+                cmd.Parameters.AddWithValue("@ClosedById", closedById);
+                cmd.Parameters.AddWithValue("@ClosedByName", closedByName);
+                cmd.Parameters.AddWithValue("@Note", note);
+                cmd.Parameters.AddWithValue("@ExpectedCashAmount", expectedCashAmount);
+                cmd.Parameters.AddWithValue("@DifferenceAmount", differenceAmount);
+                cmd.Parameters.AddWithValue("@DifferenceReason", (object?)differenceReason ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Id", id);
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            var processedEventId = (string?)null;
+            if (!string.IsNullOrWhiteSpace(eventId))
+            {
+                processedEventId = $"pe-{Guid.NewGuid():N}";
+                const string insertEventSql = """
+                    INSERT INTO ProcessedEvents
+                        (Id, CompanyId, EventId, EventType, ClientSaleId, PayloadHash, ProcessedAt, ResponsePayload)
+                    VALUES
+                        (@Id, @CompanyId, @EventId, @EventType, @ClientSaleId, @PayloadHash, @ProcessedAt, @ResponsePayload);
+                    """;
+
+                await using (var eventCmd = new SqlCommand(insertEventSql, db, transaction))
+                {
+                    eventCmd.Parameters.AddWithValue("@Id", processedEventId);
+                    eventCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                    eventCmd.Parameters.AddWithValue("@EventId", eventId);
+                    eventCmd.Parameters.AddWithValue("@EventType", "CASH_CLOSE");
+                    eventCmd.Parameters.AddWithValue("@ClientSaleId", DBNull.Value);
+                    eventCmd.Parameters.AddWithValue("@PayloadHash", currentHash);
+                    eventCmd.Parameters.AddWithValue("@ProcessedAt", now);
+                    eventCmd.Parameters.AddWithValue("@ResponsePayload", "{}");
+                    await eventCmd.ExecuteNonQueryAsync(cancellationToken);
+                }
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+
+            var updatedStatus = await statusBuilderAsync(now);
+            updatedStatus.IsReplay = false;
+
+            if (processedEventId is not null)
+            {
+                try
+                {
+                    var responseJson = JsonSerializer.Serialize(updatedStatus, JsonOptions);
+                    const string updateSql = "UPDATE ProcessedEvents SET ResponsePayload = @Payload WHERE Id = @Id;";
+                    await using var db2 = await connection.OpenConnectionAsync(cancellationToken);
+                    await using var updateCmd = new SqlCommand(updateSql, db2);
+                    updateCmd.Parameters.AddWithValue("@Id", processedEventId);
+                    updateCmd.Parameters.AddWithValue("@Payload", responseJson);
+                    await updateCmd.ExecuteNonQueryAsync(cancellationToken);
+                }
+                catch
+                {
+                }
+            }
+
+            return updatedStatus;
+        }
+        catch (SqlException ex) when (ex.Number is 2627 or 2601)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            var replay = await ObterEventoProcessadoAsync(companyId, eventId!, currentHash, cancellationToken);
+            if (replay is not null) return replay;
+            throw;
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 
     /// <summary>Soma as vendas da empresa por forma de pagamento entre duas datas — usado na conferência do fechamento de caixa.</summary>
     public async Task<Dictionary<string, decimal>> ObterTotaisPorFormaPagamentoAsync(
-        string companyId, DateTimeOffset desde, DateTimeOffset ate)
+        string companyId, DateTimeOffset desde, DateTimeOffset ate, CancellationToken cancellationToken = default)
     {
         const string sql = """
             SELECT Combined.PaymentType, SUM(Combined.Amount) AS Total
@@ -129,14 +497,14 @@ public class CaixaAB(Connection connection)
             GROUP BY Combined.PaymentType;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
         await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Desde", desde);
         command.Parameters.AddWithValue("@Ate", ate);
-        await using var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(cancellationToken))
         {
             var paymentType = ReadString(reader, "PaymentType");
             var total = reader.IsDBNull(reader.GetOrdinal("Total")) ? 0m : reader.GetDecimal(reader.GetOrdinal("Total"));
@@ -173,9 +541,9 @@ public class CaixaAB(Connection connection)
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    public async Task<CaixaStatusDto?> ObterEventoProcessadoAsync(string companyId, string eventId, string currentHash)
+    public async Task<CaixaStatusDto?> ObterEventoProcessadoAsync(string companyId, string eventId, string? currentHash = null, CancellationToken cancellationToken = default)
     {
-        await using var db = await connection.OpenConnectionAsync();
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
         const string checkSql = """
             SELECT PayloadHash, ResponsePayload
             FROM ProcessedEvents
@@ -186,14 +554,14 @@ public class CaixaAB(Connection connection)
         cmd.Parameters.AddWithValue("@CompanyId", companyId);
         cmd.Parameters.AddWithValue("@EventId", eventId);
 
-        await using var reader = await cmd.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
         {
             var storedHash = reader.GetString(0);
             var responseJson = reader.GetString(1);
             await reader.CloseAsync();
 
-            if (!string.Equals(storedHash, currentHash, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(currentHash) && !string.Equals(storedHash, currentHash, StringComparison.OrdinalIgnoreCase))
             {
                 throw new IdempotencyConflictException(
                     eventId,
@@ -217,7 +585,8 @@ public class CaixaAB(Connection connection)
         Func<DateTimeOffset, CaixaStatusDto> statusBuilder,
         Func<string, CaixaSessionAD, DateTimeOffset, decimal> computeExpectedCash,
         Action<CaixaSessionAD, AuthenticatedUser> ensureResponsavel,
-        string? ip = null)
+        string? ip = null,
+        CancellationToken cancellationToken = default)
     {
         var now = HorusDateTime.Now;
         var eventId = request.EventId?.Trim();
@@ -228,7 +597,7 @@ public class CaixaAB(Connection connection)
         // 1. Verificação preliminar de replay se EventId foi fornecido
         if (!string.IsNullOrWhiteSpace(eventId))
         {
-            var existing = await ObterEventoProcessadoAsync(companyId, eventId, currentHash);
+            var existing = await ObterEventoProcessadoAsync(companyId, eventId, currentHash, cancellationToken);
             if (existing is not null)
             {
                 return existing;
@@ -236,7 +605,7 @@ public class CaixaAB(Connection connection)
         }
 
         // 2. Validações de regra de negócio antes de abrir a transação
-        var openSession = await ObterSessaoAbertaAsync(companyId);
+        var openSession = await ObterSessaoAbertaAsync(companyId, cancellationToken);
         if (openSession is null)
         {
             throw new InvalidOperationException("Não existe caixa aberto para lançar movimento.");
@@ -271,8 +640,8 @@ public class CaixaAB(Connection connection)
         }
 
         // 3. Bloco transacional com proteção de concorrência e integridade referencial
-        await using var db = await connection.OpenConnectionAsync();
-        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync(cancellationToken);
 
         try
         {
@@ -289,9 +658,9 @@ public class CaixaAB(Connection connection)
                 checkCmd.Parameters.AddWithValue("@CompanyId", companyId);
                 checkCmd.Parameters.AddWithValue("@EventId", eventId);
 
-                await using (var reader = await checkCmd.ExecuteReaderAsync())
+                await using (var reader = await checkCmd.ExecuteReaderAsync(cancellationToken))
                 {
-                    if (await reader.ReadAsync())
+                    if (await reader.ReadAsync(cancellationToken))
                     {
                         var storedHash = reader.GetString(0);
                         var responseJson = reader.GetString(1);
@@ -431,7 +800,7 @@ public class CaixaAB(Connection connection)
         }
     }
 
-    public async Task<List<CaixaMovimentoAD>> ListarMovimentosAsync(string companyId, string caixaSessaoId)
+    public async Task<List<CaixaMovimentoAD>> ListarMovimentosAsync(string companyId, string caixaSessaoId, CancellationToken cancellationToken = default)
     {
         const string sql = """
             SELECT Id, CaixaSessaoId, Tipo, Valor, Motivo, CreatedAt, OperatorId, OperatorName
@@ -440,13 +809,13 @@ public class CaixaAB(Connection connection)
             ORDER BY CreatedAt ASC;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
         await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@CaixaSessaoId", caixaSessaoId);
-        await using var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         var rows = new List<CaixaMovimentoAD>();
-        while (await reader.ReadAsync())
+        while (await reader.ReadAsync(cancellationToken))
         {
             rows.Add(MapMovimento(reader));
         }

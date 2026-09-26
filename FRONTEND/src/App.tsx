@@ -114,7 +114,7 @@ function toCurrentUser(user: AuthenticatedUser): CurrentUser {
     companyId: user.companyId || "",
     name: user.name,
     email: user.email,
-    phone: user.phone,
+    phone: user.phone || "",
     role: user.role,
     permission: formatRole(user.role),
     avatarUrl:

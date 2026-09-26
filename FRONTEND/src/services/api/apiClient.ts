@@ -12,6 +12,17 @@ export type ApiResponse<T> = {
   data?: T;
 };
 
+export class ApiError extends Error {
+  status: number;
+  data?: unknown;
+  constructor(message: string, status: number, data?: unknown) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.data = data;
+  }
+}
+
 type ApiRequestOptions = RequestInit & {
   skipAuth?: boolean;
   /** Timeout em milissegundos (padrão: 5 000 ms). Operações longas como consulta SEFAZ devem usar valor maior. */
@@ -79,7 +90,7 @@ export async function apiRequest<T>(
   }
 
   if (!response.ok || !payload.success) {
-    throw new Error(payload.message || "Erro ao comunicar com a API.");
+    throw new ApiError(payload.message || "Erro ao comunicar com a API.", response.status, payload);
   }
 
   return payload;

@@ -7,15 +7,6 @@ import { db } from "../dexie";
 import type { OutboxEvent, OutboxStatus } from "@/shared/types/sync";
 import { getCachedDeviceId } from "../deviceId";
 
-let sequenceCounter = 0;
-
-/** Inicializa o contador de sequência baseado no maior valor existente. */
-async function ensureSequence(): Promise<void> {
-  if (sequenceCounter > 0) return;
-  const last = await db.outbox.orderBy("sequence").last();
-  sequenceCounter = last ? last.sequence : 0;
-}
-
 /** Cria um novo evento no outbox. Retorna o ID gerado (EventId). */
 export async function enqueueEvent(params: {
   id?: string;
@@ -29,35 +20,37 @@ export async function enqueueEvent(params: {
   tenantId?: string;
   storeId?: string;
 }): Promise<string> {
-  await ensureSequence();
-  sequenceCounter += 1;
-
   const id = params.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `evt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
   const now = new Date().toISOString();
   const eventOccurredAt = params.occurredAt || now;
 
-  const event: OutboxEvent = {
-    id,
-    deviceId: getCachedDeviceId() || "unknown",
-    tenantId: params.tenantId || "",
-    storeId: params.storeId || "",
-    eventType: params.eventType,
-    aggregateType: params.aggregateType,
-    aggregateId: params.aggregateId,
-    clientSaleId: params.clientSaleId,
-    payloadHash: params.payloadHash,
-    payload: JSON.stringify(params.payload),
-    sequence: sequenceCounter,
-    occurredAt: eventOccurredAt,
-    createdAt: now,
-    status: "PENDING" as OutboxStatus,
-    retryCount: 0,
-    lastAttemptAt: null,
-    lastError: null,
-  };
+  return await db.transaction("rw", db.outbox, async () => {
+    const last = await db.outbox.orderBy("sequence").last();
+    const sequence = (last ? last.sequence : 0) + 1;
 
-  await db.outbox.put(event);
-  return id;
+    const event: OutboxEvent = {
+      id,
+      deviceId: getCachedDeviceId() || "unknown",
+      tenantId: params.tenantId || "",
+      storeId: params.storeId || "",
+      eventType: params.eventType,
+      aggregateType: params.aggregateType,
+      aggregateId: params.aggregateId,
+      clientSaleId: params.clientSaleId,
+      payloadHash: params.payloadHash,
+      payload: JSON.stringify(params.payload),
+      sequence,
+      occurredAt: eventOccurredAt,
+      createdAt: now,
+      status: "PENDING" as OutboxStatus,
+      retryCount: 0,
+      lastAttemptAt: null,
+      lastError: null,
+    };
+
+    await db.outbox.put(event);
+    return id;
+  });
 }
 
 /** Retorna todos os eventos pendentes, ordenados por sequência. */

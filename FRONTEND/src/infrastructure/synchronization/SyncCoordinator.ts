@@ -61,7 +61,7 @@ class SyncCoordinator {
       }
 
       // 3. Checkpoint
-      await this.updateCheckpoint();
+      await this.updateCheckpoint(!hasError);
 
       this.lastPullAt = Date.now();
       return true;
@@ -94,15 +94,16 @@ class SyncCoordinator {
    * Atualiza o checkpoint do dispositivo com a sequência contígua processada.
    * Garante que lacunas/eventos com falha não permitam avançar indevidamente o checkpoint.
    */
-  async updateCheckpoint(): Promise<void> {
+  async updateCheckpoint(success: boolean = true): Promise<void> {
     const deviceId = getCachedDeviceId() || "unknown";
     const contiguousSeq = await getContiguousProcessedSequence();
+    const existing = await db.syncCheckpoint.get(deviceId);
 
     await db.syncCheckpoint.put({
       deviceId,
       lastUploadedSequence: contiguousSeq,
-      lastDownloadedSequence: 0,
-      lastSuccessfulSyncAt: new Date().toISOString(),
+      lastDownloadedSequence: existing?.lastDownloadedSequence ?? 0,
+      lastSuccessfulSyncAt: success ? new Date().toISOString() : (existing?.lastSuccessfulSyncAt ?? ""),
     });
   }
 

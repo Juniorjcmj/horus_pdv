@@ -24,8 +24,11 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
     private const string FormaPagamentoDinheiro = "dinheiro";
 
     public CaixaStatusDto GetStatus(AuthenticatedUser currentUser, DateTimeOffset? reference = null)
+        => GetStatusAsync(currentUser, reference).GetAwaiter().GetResult();
+
+    public async Task<CaixaStatusDto> GetStatusAsync(AuthenticatedUser currentUser, DateTimeOffset? reference = null, CancellationToken cancellationToken = default)
     {
-        var status = BuildStatus(currentUser.CompanyId, reference ?? HorusDateTime.Now);
+        var status = await BuildStatusAsync(currentUser.CompanyId, reference ?? HorusDateTime.Now, cancellationToken);
         if (HorusRoles.IsGerenteOuAdmin(currentUser.Role))
         {
             return status;
@@ -44,29 +47,27 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         return status;
     }
 
-    public CaixaStatusDto Abrir(AbrirCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
+    public async Task<CaixaStatusDto> AbrirAsync(AbrirCaixaRequest request, AuthenticatedUser currentUser, string? ip = null, CancellationToken cancellationToken = default)
     {
         var now = HorusDateTime.Now;
-        var openSession = caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId).GetAwaiter().GetResult();
-        if (openSession is not null)
-        {
-            var status = BuildStatus(currentUser.CompanyId, now);
-            if (status.CanSell)
-            {
-                throw new InvalidOperationException("Já existe um caixa aberto para venda.");
-            }
-
-            throw new InvalidOperationException(
-                "Existe um caixa aberto fora do período permitido. Feche o caixa atual antes de abrir um novo.");
-        }
-
         var openingAmount = HorusMoneyFormat.ParseDecimal(request.OpeningAmount);
         var sessionId = $"cx-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
-        caixaAB.AbrirAsync(sessionId, currentUser.CompanyId, now, openingAmount, currentUser.Id, currentUser.Name)
-            .GetAwaiter()
-            .GetResult();
 
-        auditLogAB.RegistrarAsync(
+        var status = await caixaAB.AbrirIdempotenteAsync(
+            sessionId,
+            currentUser.CompanyId,
+            now,
+            openingAmount,
+            currentUser.Id,
+            currentUser.Name,
+            request.EventId,
+            request.PayloadHash,
+            t => BuildStatusAsync(currentUser.CompanyId, t, cancellationToken),
+            cancellationToken);
+
+        if (!status.IsReplay)
+        {
+            await auditLogAB.RegistrarAsync(
                 currentUser.CompanyId,
                 currentUser.Id,
                 currentUser.Name,
@@ -74,14 +75,16 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
                 $"Abriu o caixa com {HorusMoneyFormat.Format(openingAmount)} de fundo de troco.",
                 entityType: "CaixaSessao",
                 entityId: sessionId,
-                ip: ip)
-            .GetAwaiter()
-            .GetResult();
+                ip: ip);
+        }
 
-        return BuildStatus(currentUser.CompanyId, now);
+        return status;
     }
 
-    public async Task<CaixaStatusDto> RegistrarMovimentoAsync(RegistrarMovimentoCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
+    public CaixaStatusDto Abrir(AbrirCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
+        => AbrirAsync(request, currentUser, ip).GetAwaiter().GetResult();
+
+    public async Task<CaixaStatusDto> RegistrarMovimentoAsync(RegistrarMovimentoCaixaRequest request, AuthenticatedUser currentUser, string? ip = null, CancellationToken cancellationToken = default)
     {
         return await caixaAB.RegistrarMovimentoIdempotenteAsync(
             currentUser.CompanyId,
@@ -90,25 +93,34 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             now => BuildStatus(currentUser.CompanyId, now),
             (companyId, session, now) => ComputeExpectedCash(companyId, session, now),
             EnsureResponsavelPeloCaixa,
-            ip);
+            ip,
+            cancellationToken);
     }
 
     public CaixaStatusDto RegistrarMovimento(RegistrarMovimentoCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
         => RegistrarMovimentoAsync(request, currentUser, ip).GetAwaiter().GetResult();
 
-    public CaixaStatusDto Fechar(FecharCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
+    public async Task<CaixaStatusDto> FecharAsync(FecharCaixaRequest request, AuthenticatedUser currentUser, string? ip = null, CancellationToken cancellationToken = default)
     {
         var now = HorusDateTime.Now;
-        var openSession = caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId).GetAwaiter().GetResult();
+        var openSession = await caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId, cancellationToken);
         if (openSession is null)
         {
+            if (!string.IsNullOrWhiteSpace(request.EventId))
+            {
+                var existing = await caixaAB.ObterEventoProcessadoAsync(currentUser.CompanyId, request.EventId, request.PayloadHash, cancellationToken);
+                if (existing != null)
+                {
+                    return existing;
+                }
+            }
             throw new InvalidOperationException("Não existe caixa aberto para fechamento.");
         }
 
         EnsureResponsavelPeloCaixa(openSession, currentUser);
 
         var closingAmount = HorusMoneyFormat.ParseDecimal(request.ClosingAmount);
-        var expectedCashAmount = ComputeExpectedCash(currentUser.CompanyId, openSession, now);
+        var expectedCashAmount = await ComputeExpectedCashAsync(currentUser.CompanyId, openSession, now, cancellationToken);
         var differenceAmount = Math.Round(closingAmount - expectedCashAmount, 2);
         var differenceReason = request.DifferenceReason?.Trim();
 
@@ -120,24 +132,28 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
                 $"({HorusMoneyFormat.Format(expectedCashAmount)}). Informe uma justificativa antes de fechar o caixa.");
         }
 
-        caixaAB.FecharAsync(
-                openSession.Id,
-                currentUser.CompanyId,
-                now,
-                closingAmount,
-                currentUser.Id,
-                currentUser.Name,
-                request.Note.Trim(),
-                expectedCashAmount,
-                differenceAmount,
-                differenceAmount == 0 ? null : differenceReason)
-            .GetAwaiter()
-            .GetResult();
+        var status = await caixaAB.FecharIdempotenteAsync(
+            openSession.Id,
+            currentUser.CompanyId,
+            now,
+            closingAmount,
+            currentUser.Id,
+            currentUser.Name,
+            request.Note?.Trim() ?? string.Empty,
+            expectedCashAmount,
+            differenceAmount,
+            differenceAmount == 0 ? null : differenceReason,
+            request.EventId,
+            request.PayloadHash,
+            t => BuildStatusAsync(currentUser.CompanyId, t, cancellationToken),
+            cancellationToken);
 
-        var descricao = $"Fechou o caixa: esperado {HorusMoneyFormat.Format(expectedCashAmount)}, " +
-                         $"contado {HorusMoneyFormat.Format(closingAmount)}, diferença {HorusMoneyFormat.Format(differenceAmount)}." +
-                         (differenceAmount != 0 ? $" Motivo: {differenceReason}" : string.Empty);
-        auditLogAB.RegistrarAsync(
+        if (!status.IsReplay)
+        {
+            var descricao = $"Fechou o caixa: esperado {HorusMoneyFormat.Format(expectedCashAmount)}, " +
+                             $"contado {HorusMoneyFormat.Format(closingAmount)}, diferença {HorusMoneyFormat.Format(differenceAmount)}." +
+                             (differenceAmount != 0 ? $" Motivo: {differenceReason}" : string.Empty);
+            await auditLogAB.RegistrarAsync(
                 currentUser.CompanyId,
                 currentUser.Id,
                 currentUser.Name,
@@ -145,12 +161,14 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
                 descricao,
                 entityType: "CaixaSessao",
                 entityId: openSession.Id,
-                ip: ip)
-            .GetAwaiter()
-            .GetResult();
+                ip: ip);
+        }
 
-        return BuildStatus(currentUser.CompanyId, now);
+        return status;
     }
+
+    public CaixaStatusDto Fechar(FecharCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
+        => FecharAsync(request, currentUser, ip).GetAwaiter().GetResult();
 
     public void EnsureVendaPermitida(AuthenticatedUser currentUser, string? ip = null)
     {
@@ -186,23 +204,27 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
     }
 
     /// <summary>Dinheiro esperado na gaveta agora: abertura + vendas em dinheiro do turno + reforços - sangrias.</summary>
-    private decimal ComputeExpectedCash(string companyId, CaixaSessionAD session, DateTimeOffset now)
+    public async Task<decimal> ComputeExpectedCashAsync(string companyId, CaixaSessionAD session, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
-        var vendasPorFormaPagamento = caixaAB.ObterTotaisPorFormaPagamentoAsync(companyId, session.OpenedAt, now)
-            .GetAwaiter()
-            .GetResult();
+        var vendasPorFormaPagamento = await caixaAB.ObterTotaisPorFormaPagamentoAsync(companyId, session.OpenedAt, now, cancellationToken);
         var vendasDinheiro = vendasPorFormaPagamento.GetValueOrDefault(FormaPagamentoDinheiro, 0m);
 
-        var movimentos = caixaAB.ListarMovimentosAsync(companyId, session.Id).GetAwaiter().GetResult();
+        var movimentos = await caixaAB.ListarMovimentosAsync(companyId, session.Id, cancellationToken);
         var totalReforcos = movimentos.Where(item => item.Tipo == TipoMovimentoCaixa.Reforco).Sum(item => item.Valor);
         var totalSangrias = movimentos.Where(item => item.Tipo == TipoMovimentoCaixa.Sangria).Sum(item => item.Valor);
 
         return session.OpeningAmount + vendasDinheiro + totalReforcos - totalSangrias;
     }
 
+    private decimal ComputeExpectedCash(string companyId, CaixaSessionAD session, DateTimeOffset now)
+        => ComputeExpectedCashAsync(companyId, session, now).GetAwaiter().GetResult();
+
     private CaixaStatusDto BuildStatus(string companyId, DateTimeOffset now)
+        => BuildStatusAsync(companyId, now).GetAwaiter().GetResult();
+
+    private async Task<CaixaStatusDto> BuildStatusAsync(string companyId, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
-        var sessions = caixaAB.ListarSessoesAsync(companyId).GetAwaiter().GetResult();
+        var sessions = await caixaAB.ListarSessoesAsync(companyId, cancellationToken);
         var openSession = sessions.FirstOrDefault(item => item.ClosedAt is null);
         var lastSession = openSession ?? sessions.FirstOrDefault();
         var canSell = false;
@@ -232,10 +254,10 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
 
         // Calcula o DTO da sessão aberta uma única vez (consulta ao vivo de vendas/movimentos) e
         // reaproveita nas três seções da resposta, em vez de repetir a mesma consulta 3x.
-        var openSessionDto = openSession is null ? null : ToDto(companyId, openSession, now, isCurrent: true);
+        var openSessionDto = openSession is null ? null : await ToDtoAsync(companyId, openSession, now, isCurrent: true, cancellationToken);
 
         CaixaSessionDto BuildDto(CaixaSessionAD session) =>
-            session == openSession && openSessionDto is not null ? openSessionDto : ToDto(companyId, session, now, isCurrent: false);
+            session == openSession && openSessionDto is not null ? openSessionDto : BuildHistoricalDto(session);
 
         return new CaixaStatusDto
         {
@@ -249,12 +271,39 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         };
     }
 
-    private CaixaSessionDto ToDto(string companyId, CaixaSessionAD source, DateTimeOffset now, bool isCurrent)
+    private static CaixaSessionDto BuildHistoricalDto(CaixaSessionAD source)
+    {
+        var closedAt = source.ClosedAt;
+        var elapsed = (closedAt ?? HorusDateTime.Now) - source.OpenedAt;
+
+        return new CaixaSessionDto
+        {
+            Id = source.Id,
+            Status = closedAt is null ? "Aberto" : "Fechado",
+            OpenedAt = HorusDateTime.FormatIso(source.OpenedAt),
+            ClosedAt = source.ClosedAt.HasValue ? HorusDateTime.FormatIso(source.ClosedAt.Value) : null,
+            OpeningAmount = HorusMoneyFormat.Format(source.OpeningAmount),
+            ClosingAmount = HorusMoneyFormat.Format(source.ClosingAmount),
+            OperatorId = source.OperatorId,
+            OperatorName = source.OperatorName,
+            ClosedById = source.ClosedById,
+            ClosedByName = source.ClosedByName,
+            Note = source.Note,
+            ElapsedMinutes = Math.Max(0, (int)Math.Floor(elapsed.TotalMinutes)),
+            ExpectedCashAmount = source.ExpectedCashAmount is { } exp ? HorusMoneyFormat.Format(exp) : null,
+            DifferenceAmount = source.DifferenceAmount is { } diff ? HorusMoneyFormat.Format(diff) : null,
+            DifferenceReason = source.DifferenceReason,
+            Movimentos = [],
+            PaymentBreakdown = null,
+        };
+    }
+
+    private async Task<CaixaSessionDto> ToDtoAsync(string companyId, CaixaSessionAD source, DateTimeOffset now, bool isCurrent, CancellationToken cancellationToken = default)
     {
         var closedAt = source.ClosedAt;
         var elapsed = (closedAt ?? now) - source.OpenedAt;
 
-        var movimentos = caixaAB.ListarMovimentosAsync(companyId, source.Id).GetAwaiter().GetResult();
+        var movimentos = await caixaAB.ListarMovimentosAsync(companyId, source.Id, cancellationToken);
         var movimentosDto = movimentos.Select(item => new CaixaMovimentoDto
         {
             Id = item.Id,
@@ -269,11 +318,12 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         string? expectedCashPreview = null;
         if (isCurrent && closedAt is null)
         {
-            var totals = caixaAB.ObterTotaisPorFormaPagamentoAsync(companyId, source.OpenedAt, now).GetAwaiter().GetResult();
+            var totals = await caixaAB.ObterTotaisPorFormaPagamentoAsync(companyId, source.OpenedAt, now, cancellationToken);
             paymentBreakdown = totals
                 .Select(item => new PaymentBreakdownDto { PaymentType = item.Key, Total = HorusMoneyFormat.Format(item.Value) })
                 .ToList();
-            expectedCashPreview = HorusMoneyFormat.Format(ComputeExpectedCash(companyId, source, now));
+            var expected = await ComputeExpectedCashAsync(companyId, source, now, cancellationToken);
+            expectedCashPreview = HorusMoneyFormat.Format(expected);
         }
 
         return new CaixaSessionDto

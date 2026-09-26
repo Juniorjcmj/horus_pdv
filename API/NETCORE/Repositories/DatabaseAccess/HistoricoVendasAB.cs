@@ -125,7 +125,11 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             var customerName = string.IsNullOrWhiteSpace(request.CustomerName) ? "Consumidor" : request.CustomerName.Trim();
             var customerCpf = string.IsNullOrWhiteSpace(request.CustomerCpf) ? "-" : request.CustomerCpf.Trim();
             var paymentType = string.IsNullOrWhiteSpace(request.PaymentType) ? "-" : request.PaymentType.Trim();
-            var totalAmount = HorusMoneyFormat.ParseDecimal(request.TotalAmount);
+            var totalAmount = HorusMoneyFormat.ParseDecimalStrict(request.TotalAmount, nameof(request.TotalAmount));
+            if (totalAmount < 0)
+            {
+                throw new ArgumentException("O valor total da venda não pode ser negativo.");
+            }
             var operatorName = string.IsNullOrWhiteSpace(request.OperatorName) ? "Operador" : request.OperatorName.Trim();
 
             var payments = request.Payments ?? [];

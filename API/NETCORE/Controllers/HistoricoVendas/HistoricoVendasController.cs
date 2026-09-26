@@ -126,6 +126,10 @@ public class HistoricoVendasController(
                 Message = ex.Message
             });
         }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });

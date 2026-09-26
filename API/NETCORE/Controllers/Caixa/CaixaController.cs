@@ -19,23 +19,24 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
     private string ResolveIp() => HorusClientIpResolver.Resolve(HttpContext, securityOptions);
 
     [HttpGet("status")]
-    public IActionResult Status()
+    public async Task<IActionResult> Status(CancellationToken cancellationToken)
     {
         if (HttpContext.Items["CurrentUser"] is not AuthenticatedUser currentUser)
         {
             return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
         }
 
+        var status = await caixaService.GetStatusAsync(currentUser, cancellationToken: cancellationToken);
         return Ok(new ApiResponse<object>
         {
             Success = true,
             Message = "Status do caixa obtido com sucesso.",
-            Data = caixaService.GetStatus(currentUser)
+            Data = status
         });
     }
 
     [HttpPost("abrir")]
-    public IActionResult Abrir([FromBody] AbrirCaixaRequest request)
+    public async Task<IActionResult> Abrir([FromBody] AbrirCaixaRequest request, CancellationToken cancellationToken)
     {
         if (HttpContext.Items["CurrentUser"] is not AuthenticatedUser currentUser)
         {
@@ -44,11 +45,30 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
 
         try
         {
+            var result = await caixaService.AbrirAsync(request, currentUser, ResolveIp(), cancellationToken);
+            if (result.IsReplay)
+            {
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Abertura de caixa já processada anteriormente (idempotente).",
+                    Data = result
+                });
+            }
+
             return Ok(new ApiResponse<object>
             {
                 Success = true,
                 Message = "Caixa aberto com sucesso.",
-                Data = caixaService.Abrir(request, currentUser, ResolveIp())
+                Data = result
+            });
+        }
+        catch (IdempotencyConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status409Conflict, new ApiResponse<object>
+            {
+                Success = false,
+                Message = ex.Message
             });
         }
         catch (InvalidOperationException ex)
@@ -58,7 +78,7 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
     }
 
     [HttpPost("fechar")]
-    public IActionResult Fechar([FromBody] FecharCaixaRequest request)
+    public async Task<IActionResult> Fechar([FromBody] FecharCaixaRequest request, CancellationToken cancellationToken)
     {
         if (HttpContext.Items["CurrentUser"] is not AuthenticatedUser currentUser)
         {
@@ -67,11 +87,30 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
 
         try
         {
+            var result = await caixaService.FecharAsync(request, currentUser, ResolveIp(), cancellationToken);
+            if (result.IsReplay)
+            {
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Fechamento de caixa já processado anteriormente (idempotente).",
+                    Data = result
+                });
+            }
+
             return Ok(new ApiResponse<object>
             {
                 Success = true,
                 Message = "Caixa fechado com sucesso.",
-                Data = caixaService.Fechar(request, currentUser, ResolveIp())
+                Data = result
+            });
+        }
+        catch (IdempotencyConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status409Conflict, new ApiResponse<object>
+            {
+                Success = false,
+                Message = ex.Message
             });
         }
         catch (InvalidOperationException ex)
@@ -81,7 +120,7 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
     }
 
     [HttpPost("movimento")]
-    public async Task<IActionResult> Movimento([FromBody] RegistrarMovimentoCaixaRequest request)
+    public async Task<IActionResult> Movimento([FromBody] RegistrarMovimentoCaixaRequest request, CancellationToken cancellationToken)
     {
         if (HttpContext.Items["CurrentUser"] is not AuthenticatedUser currentUser)
         {
@@ -90,7 +129,7 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
 
         try
         {
-            var result = await caixaService.RegistrarMovimentoAsync(request, currentUser, ResolveIp());
+            var result = await caixaService.RegistrarMovimentoAsync(request, currentUser, ResolveIp(), cancellationToken);
             if (result.IsReplay)
             {
                 return Ok(new ApiResponse<object>

@@ -24,7 +24,7 @@ public class HorusAuthMiddleware(RequestDelegate next)
         var authenticatedUser = string.IsNullOrWhiteSpace(token) ? null : jwtService.ValidateToken(token);
         if (authenticatedUser is null ||
             !securityStore.IsSessionActive(authenticatedUser.SessionId) ||
-            securityStore.GetActiveUser(authenticatedUser.Id) is null)
+            securityStore.GetActiveUser(authenticatedUser.Id, authenticatedUser.CompanyId) is null)
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsJsonAsync(new ApiResponse<object>

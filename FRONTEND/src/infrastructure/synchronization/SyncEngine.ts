@@ -43,6 +43,48 @@ function backoffDelay(retryCount: number): number {
   return delay + jitter;
 }
 
+const LS_SYNC_LOCK_KEY = "horus-pdv-sync-lock";
+const SYNC_LOCK_TIMEOUT_MS = 60_000;
+
+async function acquireStorageLock(): Promise<boolean> {
+  if (typeof window === "undefined" || !window.localStorage) return true;
+  const now = Date.now();
+  const raw = window.localStorage.getItem(LS_SYNC_LOCK_KEY);
+  if (raw) {
+    try {
+      const lockData = JSON.parse(raw) as { expiresAt: number; id: string };
+      if (now < lockData.expiresAt) {
+        return false;
+      }
+    } catch {
+      // Ignora dados corrompidos
+    }
+  }
+
+  const myLock = { expiresAt: now + SYNC_LOCK_TIMEOUT_MS, id: `${now}-${Math.random().toString(36).slice(2, 8)}` };
+  window.localStorage.setItem(LS_SYNC_LOCK_KEY, JSON.stringify(myLock));
+  await new Promise((res) => setTimeout(res, 20));
+  const verified = window.localStorage.getItem(LS_SYNC_LOCK_KEY);
+  if (verified) {
+    try {
+      const parsed = JSON.parse(verified) as { id: string };
+      return parsed.id === myLock.id;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function releaseStorageLock(): void {
+  if (typeof window === "undefined" || !window.localStorage) return;
+  try {
+    window.localStorage.removeItem(LS_SYNC_LOCK_KEY);
+  } catch {
+    // Ignora
+  }
+}
+
 class SyncEngine {
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private syncing = false;
@@ -118,7 +160,7 @@ class SyncEngine {
     if (this.syncing) return;
     if (!connectivityService.isOnline()) return;
 
-    // Garante que apenas uma aba processe o outbox por vez (lock cross-tab)
+    // Garante que apenas uma aba processe o outbox por vez (lock cross-tab via Web Locks ou Storage Lease)
     if (typeof navigator !== "undefined" && navigator.locks) {
       try {
         await navigator.locks.request("horus-pdv-sync-engine", { ifAvailable: true }, async (lock) => {
@@ -131,7 +173,13 @@ class SyncEngine {
       }
     }
 
-    await this.doProcessOutbox();
+    const acquired = await acquireStorageLock();
+    if (!acquired) return;
+    try {
+      await this.doProcessOutbox();
+    } finally {
+      releaseStorageLock();
+    }
   }
 
   private async doProcessOutbox(): Promise<void> {
@@ -198,9 +246,32 @@ class SyncEngine {
           );
         } catch (err) {
           const msg = err instanceof Error ? err.message : "Erro desconhecido";
+          const status = (err && typeof err === "object" && "status" in err) ? Number((err as { status?: unknown }).status) : 0;
+          const isClientPermanentError = status >= 400 && status < 500 && status !== 408 && status !== 429;
+
+          if (isClientPermanentError) {
+            // Erro 4xx permanente (validação de domínio, dados inválidos, etc.)
+            // Marca imediatamente como FAILED para não travar a fila
+            await markFailed(event.id, msg, 1);
+            window.dispatchEvent(
+              new CustomEvent("offline-sync-error", {
+                detail: {
+                  eventId: event.id,
+                  aggregateId: event.aggregateId,
+                  eventType: event.eventType,
+                  error: msg,
+                  permanent: true,
+                },
+              }),
+            );
+            // Continua processando os demais eventos pendentes da fila
+            continue;
+          }
+
+          // Erro transitório (5xx, timeout, falha de rede)
           pushError = msg;
           await markFailed(event.id, msg);
-          // Para de processar — a API provavelmente está fora
+          // Para de processar — aguarda restabelecimento da API
           break;
         }
       }
@@ -214,7 +285,7 @@ class SyncEngine {
       }
 
       // Atualiza o checkpoint contíguo seguro no IndexedDB
-      await syncCoordinator.updateCheckpoint();
+      await syncCoordinator.updateCheckpoint(!pushError);
       await this.notifyListeners();
     }
   }
@@ -235,7 +306,7 @@ class SyncEngine {
       case "CASH_OPEN": {
         const payload = JSON.parse(payloadJson) as { openingAmount: string };
         try {
-          await cashRegisterService.open(payload.openingAmount);
+          await cashRegisterService.open(payload.openingAmount, eventId, payloadHash);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           // Se já existe caixa aberto no servidor, considera resolvido de forma idempotente
@@ -257,6 +328,8 @@ class SyncEngine {
             payload.closingAmount,
             payload.note,
             payload.differenceReason,
+            eventId,
+            payloadHash,
           );
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);

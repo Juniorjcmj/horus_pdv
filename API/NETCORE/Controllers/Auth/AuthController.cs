@@ -270,7 +270,7 @@ public class AuthController(
             return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
         }
 
-        var user = securityStore.GetActiveUser(currentUser.Id);
+        var user = securityStore.GetActiveUser(currentUser.Id, currentUser.CompanyId);
         if (user is null)
         {
             return Unauthorized(new ApiResponse<object> { Success = false, Message = "Usuario inativo ou inexistente." });
@@ -296,6 +296,7 @@ public class AuthController(
         {
             var user = securityStore.UpdateOwnProfile(
                 currentUser.Id,
+                currentUser.CompanyId,
                 request.Name,
                 request.Email,
                 request.Phone);
@@ -343,7 +344,7 @@ public class AuthController(
 
         try
         {
-            var changed = securityStore.ChangePassword(currentUser.Id, request.CurrentPassword, request.NextPassword);
+            var changed = securityStore.ChangePassword(currentUser.Id, currentUser.CompanyId, request.CurrentPassword, request.NextPassword);
             if (!changed)
             {
                 return BadRequest(new ApiResponse<object>
