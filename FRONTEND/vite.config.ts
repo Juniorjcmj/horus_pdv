@@ -98,6 +98,7 @@ export default defineConfig({
     outDir: "dist",
     assetsInlineLimit: 4096,
     cssCodeSplit: true,
+    modulePreload: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
