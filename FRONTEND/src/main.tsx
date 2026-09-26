@@ -13,6 +13,10 @@ import { registerServiceWorker } from "./registerServiceWorker";
 // Registra o Service Worker do PWA para operação Offline-First
 registerServiceWorker();
 
+if (import.meta.env.DEV) {
+  import("./infrastructure/testHarness").then((m) => m.setupTestHarness());
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ToastContainer />

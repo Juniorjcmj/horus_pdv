@@ -3,7 +3,12 @@
  * Objetivo: concentra comandos SQL e persistência de abertura, fechamento e status de caixa.
  * Entradas esperadas: recebe conexão configurada, parâmetros normalizados e executa leitura/escrita no SQL Server.
  */
+using System.Text.Json;
+using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Repositories.DataAccess;
+using HORUSPDV_API.Services.Caixa;
+using HORUSPDV_API.Services.Security;
+using HORUSPDV_API.Services.Shared;
 using Microsoft.Data.SqlClient;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
@@ -160,6 +165,270 @@ public class CaixaAB(Connection connection)
         command.Parameters.AddWithValue("@OperatorId", movimento.OperatorId);
         command.Parameters.AddWithValue("@OperatorName", movimento.OperatorName);
         await command.ExecuteNonQueryAsync();
+    }
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    public async Task<CaixaStatusDto?> ObterEventoProcessadoAsync(string companyId, string eventId, string currentHash)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        const string checkSql = """
+            SELECT PayloadHash, ResponsePayload
+            FROM ProcessedEvents
+            WHERE CompanyId = @CompanyId AND EventId = @EventId;
+            """;
+
+        await using var cmd = new SqlCommand(checkSql, db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        cmd.Parameters.AddWithValue("@EventId", eventId);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            var storedHash = reader.GetString(0);
+            var responseJson = reader.GetString(1);
+            await reader.CloseAsync();
+
+            if (!string.Equals(storedHash, currentHash, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new IdempotencyConflictException(
+                    eventId,
+                    $"Conflito de idempotência: o EventId '{eventId}' já foi processado anteriormente com um payload diferente.");
+            }
+
+            var cached = JsonSerializer.Deserialize<CaixaStatusDto>(responseJson, JsonOptions)
+                ?? throw new InvalidOperationException("Falha ao recuperar payload de resposta do evento processado.");
+
+            cached.IsReplay = true;
+            return cached;
+        }
+
+        return null;
+    }
+
+    public async Task<CaixaStatusDto> RegistrarMovimentoIdempotenteAsync(
+        string companyId,
+        RegistrarMovimentoCaixaRequest request,
+        AuthenticatedUser currentUser,
+        Func<DateTimeOffset, CaixaStatusDto> statusBuilder,
+        Func<string, CaixaSessionAD, DateTimeOffset, decimal> computeExpectedCash,
+        Action<CaixaSessionAD, AuthenticatedUser> ensureResponsavel,
+        string? ip = null)
+    {
+        var now = HorusDateTime.Now;
+        var eventId = request.EventId?.Trim();
+        var currentHash = !string.IsNullOrWhiteSpace(request.PayloadHash)
+            ? request.PayloadHash.Trim().ToLowerInvariant()
+            : HorusPayloadHash.ComputeHash(request);
+
+        // 1. Verificação preliminar de replay se EventId foi fornecido
+        if (!string.IsNullOrWhiteSpace(eventId))
+        {
+            var existing = await ObterEventoProcessadoAsync(companyId, eventId, currentHash);
+            if (existing is not null)
+            {
+                return existing;
+            }
+        }
+
+        // 2. Validações de regra de negócio antes de abrir a transação
+        var openSession = await ObterSessaoAbertaAsync(companyId);
+        if (openSession is null)
+        {
+            throw new InvalidOperationException("Não existe caixa aberto para lançar movimento.");
+        }
+
+        ensureResponsavel(openSession, currentUser);
+
+        if (!Enum.TryParse<TipoMovimentoCaixa>(request.Tipo, ignoreCase: true, out var tipo))
+        {
+            throw new InvalidOperationException("Tipo de movimento inválido — use \"Reforco\" ou \"Sangria\".");
+        }
+
+        var valor = HorusMoneyFormat.ParseDecimal(request.Valor);
+        if (valor <= 0)
+        {
+            throw new InvalidOperationException("Valor do movimento deve ser maior que zero.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Motivo) || request.Motivo.Trim().Length < 3)
+        {
+            throw new InvalidOperationException("Informe o motivo do movimento (mínimo 3 caracteres).");
+        }
+
+        if (tipo == TipoMovimentoCaixa.Sangria)
+        {
+            var caixaAtual = computeExpectedCash(companyId, openSession, now);
+            if (valor > caixaAtual)
+            {
+                throw new InvalidOperationException(
+                    $"Sangria maior que o dinheiro em caixa (disponível: {HorusMoneyFormat.Format(caixaAtual)}).");
+            }
+        }
+
+        // 3. Bloco transacional com proteção de concorrência e integridade referencial
+        await using var db = await connection.OpenConnectionAsync();
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+
+        try
+        {
+            // Checagem com lock exclusivo caso outra transação esteja em andamento para a mesma chave
+            if (!string.IsNullOrWhiteSpace(eventId))
+            {
+                const string checkSql = """
+                    SELECT PayloadHash, ResponsePayload
+                    FROM ProcessedEvents WITH (UPDLOCK, ROWLOCK)
+                    WHERE CompanyId = @CompanyId AND EventId = @EventId;
+                    """;
+
+                await using var checkCmd = new SqlCommand(checkSql, db, transaction);
+                checkCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                checkCmd.Parameters.AddWithValue("@EventId", eventId);
+
+                await using (var reader = await checkCmd.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        var storedHash = reader.GetString(0);
+                        var responseJson = reader.GetString(1);
+                        await reader.CloseAsync();
+
+                        if (!string.Equals(storedHash, currentHash, StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new IdempotencyConflictException(
+                                eventId,
+                                $"Conflito de idempotência: o EventId '{eventId}' já foi processado anteriormente com um payload diferente.");
+                        }
+
+                        var cached = JsonSerializer.Deserialize<CaixaStatusDto>(responseJson, JsonOptions)
+                            ?? throw new InvalidOperationException("Falha ao recuperar payload de resposta do evento processado.");
+
+                        cached.IsReplay = true;
+                        await transaction.CommitAsync();
+                        return cached;
+                    }
+                }
+            }
+
+            var movId = $"cxm-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            const string insertMovSql = """
+                INSERT INTO CaixaMovimentos (Id, CompanyId, CaixaSessaoId, Tipo, Valor, Motivo, CreatedAt, OperatorId, OperatorName)
+                VALUES (@Id, @CompanyId, @CaixaSessaoId, @Tipo, @Valor, @Motivo, @CreatedAt, @OperatorId, @OperatorName);
+                """;
+
+            await using (var movCmd = new SqlCommand(insertMovSql, db, transaction))
+            {
+                movCmd.Parameters.AddWithValue("@Id", movId);
+                movCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                movCmd.Parameters.AddWithValue("@CaixaSessaoId", openSession.Id);
+                movCmd.Parameters.AddWithValue("@Tipo", (byte)tipo);
+                movCmd.Parameters.AddWithValue("@Valor", valor);
+                movCmd.Parameters.AddWithValue("@Motivo", request.Motivo.Trim());
+                movCmd.Parameters.AddWithValue("@CreatedAt", now);
+                movCmd.Parameters.AddWithValue("@OperatorId", currentUser.Id);
+                movCmd.Parameters.AddWithValue("@OperatorName", currentUser.Name);
+                await movCmd.ExecuteNonQueryAsync();
+            }
+
+            var eventType = tipo == TipoMovimentoCaixa.Reforco ? AuditEventTypes.CaixaReforco : AuditEventTypes.CaixaSangria;
+            var acao = tipo == TipoMovimentoCaixa.Reforco ? "Reforço" : "Sangria";
+            const string insertAuditSql = """
+                INSERT INTO AuditLog (CompanyId, UserId, UserName, EventType, EntityType, EntityId, Description, Ip)
+                VALUES (@CompanyId, @UserId, @UserName, @EventType, @EntityType, @EntityId, @Description, @Ip);
+                """;
+
+            await using (var auditCmd = new SqlCommand(insertAuditSql, db, transaction))
+            {
+                auditCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                auditCmd.Parameters.AddWithValue("@UserId", currentUser.Id);
+                auditCmd.Parameters.AddWithValue("@UserName", currentUser.Name);
+                auditCmd.Parameters.AddWithValue("@EventType", eventType);
+                auditCmd.Parameters.AddWithValue("@EntityType", "CaixaSessao");
+                auditCmd.Parameters.AddWithValue("@EntityId", openSession.Id);
+                auditCmd.Parameters.AddWithValue("@Description", $"{acao} de {HorusMoneyFormat.Format(valor)} — {request.Motivo.Trim()}");
+                auditCmd.Parameters.AddWithValue("@Ip", (object?)ip ?? DBNull.Value);
+                await auditCmd.ExecuteNonQueryAsync();
+            }
+
+            // Insere placeholder no ProcessedEvents DENTRO da transação para proteção de
+            // concorrência (UPDLOCK acima + unique constraint). O ResponsePayload é atualizado
+            // depois do commit, pois statusBuilder abre nova conexão que bloquearia nas linhas
+            // ainda travadas por esta transação (deadlock de callback).
+            var processedEventId = (string?)null;
+            if (!string.IsNullOrWhiteSpace(eventId))
+            {
+                processedEventId = $"pe-{Guid.NewGuid():N}";
+                const string insertEventSql = """
+                    INSERT INTO ProcessedEvents
+                        (Id, CompanyId, EventId, EventType, ClientSaleId, PayloadHash, ProcessedAt, ResponsePayload)
+                    VALUES
+                        (@Id, @CompanyId, @EventId, @EventType, @ClientSaleId, @PayloadHash, @ProcessedAt, @ResponsePayload);
+                    """;
+
+                await using (var eventCmd = new SqlCommand(insertEventSql, db, transaction))
+                {
+                    eventCmd.Parameters.AddWithValue("@Id", processedEventId);
+                    eventCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                    eventCmd.Parameters.AddWithValue("@EventId", eventId);
+                    eventCmd.Parameters.AddWithValue("@EventType", "CASH_MOVEMENT");
+                    eventCmd.Parameters.AddWithValue("@ClientSaleId", DBNull.Value);
+                    eventCmd.Parameters.AddWithValue("@PayloadHash", currentHash);
+                    eventCmd.Parameters.AddWithValue("@ProcessedAt", now);
+                    eventCmd.Parameters.AddWithValue("@ResponsePayload", "{}"); // placeholder
+                    await eventCmd.ExecuteNonQueryAsync();
+                }
+            }
+
+            await transaction.CommitAsync();
+
+            // Computa o status completo APÓS o commit (statusBuilder abre nova conexão)
+            var updatedStatus = statusBuilder(now);
+            updatedStatus.IsReplay = false;
+
+            // Atualiza o ResponsePayload com o status real para replays futuros
+            if (processedEventId is not null)
+            {
+                try
+                {
+                    var responseJson = JsonSerializer.Serialize(updatedStatus, JsonOptions);
+                    const string updateSql = "UPDATE ProcessedEvents SET ResponsePayload = @Payload WHERE Id = @Id;";
+                    await using var db2 = await connection.OpenConnectionAsync();
+                    await using var updateCmd = new SqlCommand(updateSql, db2);
+                    updateCmd.Parameters.AddWithValue("@Id", processedEventId);
+                    updateCmd.Parameters.AddWithValue("@Payload", responseJson);
+                    await updateCmd.ExecuteNonQueryAsync();
+                }
+                catch
+                {
+                    // Falha ao atualizar payload não é crítica — o movimento já foi comitado
+                    // e o replay retornará o status ao vivo na próxima tentativa.
+                }
+            }
+
+            return updatedStatus;
+        }
+        catch (SqlException ex) when (ex.Number is 2627 or 2601)
+        {
+            // Concorrência: outra requisição com o mesmo (CompanyId, EventId) comitou no mesmo instante
+            await transaction.RollbackAsync();
+
+            var replay = await ObterEventoProcessadoAsync(companyId, eventId!, currentHash);
+            if (replay is not null)
+            {
+                return replay;
+            }
+
+            throw;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<List<CaixaMovimentoAD>> ListarMovimentosAsync(string companyId, string caixaSessaoId)

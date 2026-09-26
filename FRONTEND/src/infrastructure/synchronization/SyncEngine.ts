@@ -170,7 +170,12 @@ class SyncEngine {
         await markProcessing(event.id);
 
         try {
-          const result = await this.dispatchEvent(event.eventType, event.payload);
+          const result = await this.dispatchEvent(
+            event.eventType,
+            event.payload,
+            event.id,
+            event.payloadHash,
+          );
 
           // Registra na tabela de dedup
           await db.processedEvents.put({
@@ -218,6 +223,8 @@ class SyncEngine {
   private async dispatchEvent(
     eventType: string,
     payloadJson: string,
+    eventId?: string,
+    payloadHash?: string,
   ): Promise<{ saleNumber?: string; isReplay?: boolean } | void> {
     switch (eventType) {
       case "SALE_CREATED": {
@@ -267,8 +274,14 @@ class SyncEngine {
           valor: string;
           motivo: string;
         };
-        await cashRegisterService.registrarMovimento(payload.tipo, payload.valor, payload.motivo);
-        return;
+        const res = await cashRegisterService.registrarMovimento(
+          payload.tipo,
+          payload.valor,
+          payload.motivo,
+          eventId,
+          payloadHash,
+        );
+        return { isReplay: res?.isReplay ?? false };
       }
       default:
         throw new Error(`Tipo de evento desconhecido: ${eventType}`);

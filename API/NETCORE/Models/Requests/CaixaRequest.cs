@@ -21,6 +21,9 @@ public class FecharCaixaRequest
 
 public class RegistrarMovimentoCaixaRequest
 {
+    public string? EventId { get; set; }
+    public string? PayloadHash { get; set; }
+
     /// <summary>"Reforco" ou "Sangria".</summary>
     public string Tipo { get; set; } = "";
     public string Valor { get; set; } = "0,00";

@@ -51,6 +51,25 @@ export async function computeSalePayloadHash(payload: RegisterSalePayload): Prom
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+export async function computeCashMovementPayloadHash(payload: {
+  tipo: string;
+  valor: string;
+  motivo: string;
+}): Promise<string> {
+  const canonical = {
+    tipo: (payload.tipo || "").trim().toLowerCase(),
+    valor: parseMoneyBr(payload.valor),
+    motivo: (payload.motivo || "").trim(),
+  };
+
+  const json = JSON.stringify(canonical);
+  const encoder = new TextEncoder();
+  const data = encoder.encode(json);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 /**
  * Calcula o hash seguro de senha para autenticação offline usando PBKDF2 com SHA-256 e 100.000 iterações.
  * O salt deriva do email normalizado para evitar dicionários pré-computados (rainbow tables).

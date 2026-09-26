@@ -63,16 +63,30 @@ export type LocalCustomerRecord = {
   version: number;
 };
 
+export type CashSessionMovementItem = {
+  id: string;
+  tipo: "Reforco" | "Sangria" | string;
+  valor: string;
+  motivo: string;
+  createdAt: string;
+  operatorName: string;
+};
+
 export type CashSessionRecord = {
   id: string;
+  actualSessionId?: string;
   deviceId: string;
   tenantId: string;
   userId: string;
+  operatorName?: string;
   status: "OPEN" | "CLOSED";
   openingAmount: number;
   closingAmount: number | null;
   openedAt: string;
   closedAt: string | null;
+  note?: string;
+  differenceReason?: string | null;
+  movimentos?: CashSessionMovementItem[];
 };
 
 export type SaleRecord = {

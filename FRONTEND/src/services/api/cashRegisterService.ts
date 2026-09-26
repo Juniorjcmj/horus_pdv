@@ -51,6 +51,7 @@ export type CashRegisterStatusDto = {
   currentSession?: CashRegisterSessionDto | null;
   lastSession?: CashRegisterSessionDto | null;
   history: CashRegisterSessionDto[];
+  isReplay?: boolean;
 };
 
 export const cashRegisterService = {
@@ -72,10 +73,16 @@ export const cashRegisterService = {
     });
     return response.data;
   },
-  async registrarMovimento(tipo: CashMovementType, valor: string, motivo: string) {
+  async registrarMovimento(
+    tipo: CashMovementType,
+    valor: string,
+    motivo: string,
+    eventId?: string,
+    payloadHash?: string,
+  ) {
     const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/movimento`, {
       method: "POST",
-      body: JSON.stringify({ tipo, valor, motivo }),
+      body: JSON.stringify({ tipo, valor, motivo, eventId, payloadHash }),
     });
     return response.data;
   },

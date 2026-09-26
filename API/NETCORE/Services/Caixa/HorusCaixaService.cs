@@ -81,72 +81,20 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         return BuildStatus(currentUser.CompanyId, now);
     }
 
-    public CaixaStatusDto RegistrarMovimento(RegistrarMovimentoCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
+    public async Task<CaixaStatusDto> RegistrarMovimentoAsync(RegistrarMovimentoCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
     {
-        var now = HorusDateTime.Now;
-        var openSession = caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId).GetAwaiter().GetResult();
-        if (openSession is null)
-        {
-            throw new InvalidOperationException("Não existe caixa aberto para lançar movimento.");
-        }
-
-        EnsureResponsavelPeloCaixa(openSession, currentUser);
-
-        if (!Enum.TryParse<TipoMovimentoCaixa>(request.Tipo, ignoreCase: true, out var tipo))
-        {
-            throw new InvalidOperationException("Tipo de movimento inválido — use \"Reforco\" ou \"Sangria\".");
-        }
-
-        var valor = HorusMoneyFormat.ParseDecimal(request.Valor);
-        if (valor <= 0)
-        {
-            throw new InvalidOperationException("Valor do movimento deve ser maior que zero.");
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Motivo) || request.Motivo.Trim().Length < 3)
-        {
-            throw new InvalidOperationException("Informe o motivo do movimento (mínimo 3 caracteres).");
-        }
-
-        if (tipo == TipoMovimentoCaixa.Sangria)
-        {
-            var caixaAtual = ComputeExpectedCash(currentUser.CompanyId, openSession, now);
-            if (valor > caixaAtual)
-            {
-                throw new InvalidOperationException(
-                    $"Sangria maior que o dinheiro em caixa (disponível: {HorusMoneyFormat.Format(caixaAtual)}).");
-            }
-        }
-
-        var movimento = new CaixaMovimentoAD
-        {
-            Id = $"cxm-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
-            CaixaSessaoId = openSession.Id,
-            Tipo = tipo,
-            Valor = valor,
-            Motivo = request.Motivo.Trim(),
-            CreatedAt = now,
-            OperatorId = currentUser.Id,
-            OperatorName = currentUser.Name,
-        };
-        caixaAB.RegistrarMovimentoAsync(currentUser.CompanyId, movimento).GetAwaiter().GetResult();
-
-        var eventType = tipo == TipoMovimentoCaixa.Reforco ? AuditEventTypes.CaixaReforco : AuditEventTypes.CaixaSangria;
-        var acao = tipo == TipoMovimentoCaixa.Reforco ? "Reforço" : "Sangria";
-        auditLogAB.RegistrarAsync(
-                currentUser.CompanyId,
-                currentUser.Id,
-                currentUser.Name,
-                eventType,
-                $"{acao} de {HorusMoneyFormat.Format(valor)} — {movimento.Motivo}",
-                entityType: "CaixaSessao",
-                entityId: openSession.Id,
-                ip: ip)
-            .GetAwaiter()
-            .GetResult();
-
-        return BuildStatus(currentUser.CompanyId, now);
+        return await caixaAB.RegistrarMovimentoIdempotenteAsync(
+            currentUser.CompanyId,
+            request,
+            currentUser,
+            now => BuildStatus(currentUser.CompanyId, now),
+            (companyId, session, now) => ComputeExpectedCash(companyId, session, now),
+            EnsureResponsavelPeloCaixa,
+            ip);
     }
+
+    public CaixaStatusDto RegistrarMovimento(RegistrarMovimentoCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
+        => RegistrarMovimentoAsync(request, currentUser, ip).GetAwaiter().GetResult();
 
     public CaixaStatusDto Fechar(FecharCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
     {
@@ -360,6 +308,7 @@ public class CaixaStatusDto
     public CaixaSessionDto? CurrentSession { get; set; }
     public CaixaSessionDto? LastSession { get; set; }
     public List<CaixaSessionDto> History { get; set; } = [];
+    public bool IsReplay { get; set; }
 }
 
 public class CaixaSessionDto

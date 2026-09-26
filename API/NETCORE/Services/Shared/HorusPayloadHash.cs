@@ -48,4 +48,18 @@ public static class HorusPayloadHash
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }
+
+    public static string ComputeHash(RegistrarMovimentoCaixaRequest request)
+    {
+        var canonical = new
+        {
+            tipo = request.Tipo?.Trim().ToLowerInvariant() ?? string.Empty,
+            valor = HorusMoneyFormat.ParseDecimal(request.Valor),
+            motivo = request.Motivo?.Trim() ?? string.Empty
+        };
+
+        var json = JsonSerializer.Serialize(canonical);
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
+        return Convert.ToHexString(bytes).ToLowerInvariant();
+    }
 }

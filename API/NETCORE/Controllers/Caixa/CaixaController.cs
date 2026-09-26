@@ -7,6 +7,7 @@ using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Models.Response;
 using HORUSPDV_API.Services.Caixa;
 using HORUSPDV_API.Services.Security;
+using HORUSPDV_API.Services.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HORUSPDV_API.Controllers.Caixa;
@@ -80,7 +81,7 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
     }
 
     [HttpPost("movimento")]
-    public IActionResult Movimento([FromBody] RegistrarMovimentoCaixaRequest request)
+    public async Task<IActionResult> Movimento([FromBody] RegistrarMovimentoCaixaRequest request)
     {
         if (HttpContext.Items["CurrentUser"] is not AuthenticatedUser currentUser)
         {
@@ -89,11 +90,30 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
 
         try
         {
-            return Ok(new ApiResponse<object>
+            var result = await caixaService.RegistrarMovimentoAsync(request, currentUser, ResolveIp());
+            if (result.IsReplay)
+            {
+                return Ok(new ApiResponse<object>
+                {
+                    Success = true,
+                    Message = "Movimento de caixa já processado anteriormente (idempotente).",
+                    Data = result
+                });
+            }
+
+            return StatusCode(StatusCodes.Status201Created, new ApiResponse<object>
             {
                 Success = true,
                 Message = "Movimento de caixa registrado com sucesso.",
-                Data = caixaService.RegistrarMovimento(request, currentUser, ResolveIp())
+                Data = result
+            });
+        }
+        catch (IdempotencyConflictException ex)
+        {
+            return StatusCode(StatusCodes.Status409Conflict, new ApiResponse<object>
+            {
+                Success = false,
+                Message = ex.Message
             });
         }
         catch (InvalidOperationException ex)
