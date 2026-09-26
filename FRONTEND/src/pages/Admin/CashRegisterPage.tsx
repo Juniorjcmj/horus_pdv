@@ -36,6 +36,7 @@ import {
   type CashRegisterSessionDto,
   type CashRegisterStatusDto,
 } from "@/services/api/cashRegisterService";
+import { saveCashStatus } from "@/infrastructure/database/repositories/CashSessionRepository";
 import { companyService } from "@/services/api/companyService";
 import { getStoredAuthUser } from "@/utils/authStorage";
 
@@ -195,7 +196,7 @@ export default function CashRegisterPage() {
     setCashStatus(status ?? null);
     setClosingAmount(status?.currentSession?.expectedCashAmount || "0,00");
     if (status) {
-      window.localStorage.setItem("horus-pdv-cash-status", JSON.stringify(status));
+      void saveCashStatus(status);
     }
   }, []);
 
@@ -235,7 +236,7 @@ export default function CashRegisterPage() {
       const status = await cashRegisterService.open(openingAmount);
       setCashStatus(status ?? null);
       if (status) {
-        window.localStorage.setItem("horus-pdv-cash-status", JSON.stringify(status));
+        void saveCashStatus(status);
       }
       Toast.success("Caixa aberto. Frente de caixa liberada para venda.");
     } catch (error) {
@@ -263,7 +264,7 @@ export default function CashRegisterPage() {
       );
       setCashStatus(status ?? null);
       if (status) {
-        window.localStorage.setItem("horus-pdv-cash-status", JSON.stringify(status));
+        void saveCashStatus(status);
       }
       setClosingNote("");
       setDifferenceReason("");

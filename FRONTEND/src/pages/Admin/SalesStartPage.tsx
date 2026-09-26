@@ -38,6 +38,7 @@ import {
   cashRegisterService,
   type CashRegisterStatusDto,
 } from "@/services/api/cashRegisterService";
+import { saveCashStatus, loadCachedCashStatus } from "@/infrastructure/database/repositories/CashSessionRepository";
 import ReceiptPreviewModal, {
   buildReceiptPrintHtml,
   type PaymentType,
@@ -128,7 +129,6 @@ const PAYMENT_OPTIONS: Array<{ value: PaymentType; label: string }> = [
 ];
 
 const LAST_RECEIPT_STORAGE_KEY = "horus-pdv-last-receipt";
-const CASH_STATUS_STORAGE_KEY = "horus-pdv-cash-status";
 
 function formatDateTime(date: Date) {
   return {
@@ -512,19 +512,14 @@ export default function SalesStartPage({
       const result = status ?? null;
       setCashStatus(result);
       if (result) {
-        window.localStorage.setItem(CASH_STATUS_STORAGE_KEY, JSON.stringify(result));
+        void saveCashStatus(result);
       }
       return result;
     } catch {
-      const cached = window.localStorage.getItem(CASH_STATUS_STORAGE_KEY);
+      const cached = await loadCachedCashStatus();
       if (cached) {
-        try {
-          const parsed = JSON.parse(cached) as CashRegisterStatusDto;
-          setCashStatus(parsed);
-          return parsed;
-        } catch {
-          /* cache corrompido, ignora */
-        }
+        setCashStatus(cached);
+        return cached;
       }
       throw new Error("Não foi possível verificar o status do caixa.");
     }
