@@ -48,6 +48,8 @@ import { promocaoService, type Promocao } from "@/services/api/promocaoService";
 import { applyPromotions } from "@/utils/promotionEngine";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
 import { customerService, type CustomerDto } from "@/services/api/customerService";
+import { useCustomers } from "@/hooks/useCustomers";
+import { upsertCustomerLocal } from "@/application/customers/CustomerSyncAdapter";
 import {
   FISCAL_STATUS,
   fiscalService,
@@ -209,9 +211,8 @@ export default function SalesStartPage({
   const [cpfNota, setCpfNota] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDto | null>(null);
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
-  const [customerList, setCustomerList] = useState<CustomerDto[]>([]);
+  const { customers: customerList, loading: loadingCustomers, reload: reloadCustomers } = useCustomers();
   const [customerFilter, setCustomerFilter] = useState("");
-  const [loadingCustomers, setLoadingCustomers] = useState(false);
   const [lastReceipt, setLastReceipt] = useState<SaleReceipt | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<SaleReceipt | null>(null);
   const [printPreviewEnabled, setPrintPreviewEnabled] = useState(() =>
@@ -254,18 +255,10 @@ export default function SalesStartPage({
       }
       setCustomerModalOpen(true);
       if (customerList.length === 0) {
-        setLoadingCustomers(true);
-        try {
-          const data = await customerService.list();
-          setCustomerList(data);
-        } catch {
-          Toast.error("Não foi possível carregar a lista de clientes.");
-        } finally {
-          setLoadingCustomers(false);
-        }
+        await reloadCustomers();
       }
     },
-    [customerList.length],
+    [customerList.length, reloadCustomers],
   );
 
   const handleOpenQuickCustomerRegister = (initialVal = "") => {
@@ -282,11 +275,8 @@ export default function SalesStartPage({
   };
 
   const handleCustomerCreated = (newCustomer: CustomerDto) => {
-    setCustomerList((prev) => {
-      const exists = prev.some((c) => c.id === newCustomer.id);
-      if (exists) return prev;
-      return [newCustomer, ...prev];
-    });
+    // Persiste no IndexedDB para disponibilidade offline
+    void upsertCustomerLocal(newCustomer);
     setSelectedCustomer(newCustomer);
     setCpfNota(newCustomer.document);
     setQuickCustomerModalOpen(false);
@@ -1046,9 +1036,8 @@ export default function SalesStartPage({
 
     setNfeCnpjLoading(true);
     try {
-      const list = customerList.length > 0 ? customerList : await customerService.list();
-      if (customerList.length === 0) setCustomerList(list);
-      const found = list.find((c) => onlyDigits(c.document) === digits);
+      // customerList já carregado pelo hook useCustomers no mount
+      const found = customerList.find((c) => onlyDigits(c.document) === digits);
       if (found) {
         setNfeMatchedCustomer(found);
         setNfeDest((prev) => ({
@@ -1281,7 +1270,7 @@ export default function SalesStartPage({
             // Cadastra cliente automaticamente se não existia
             if (!nfeMatchedCustomer) {
               try {
-                await customerService.create({
+                const created = await customerService.create({
                   customerName: nfeDest.nome,
                   document: cnpjDigits,
                   birthDate: "",
@@ -1298,6 +1287,7 @@ export default function SalesStartPage({
                   cellphone: nfeDest.fone ?? "",
                   email: nfeDest.email ?? "",
                 });
+                if (created) void upsertCustomerLocal(created);
               } catch {
                 // Cadastro secundário — não impede a venda
               }
