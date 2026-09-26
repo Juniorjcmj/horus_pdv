@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1790458186.0062315,
-    "seen": 1790458304.1485062,
-    "ast_hash": "ce4715e66d825fc8362b97bcae2be9db",
+    "mtime": 1790459722.6242237,
+    "seen": 1790459964.5579402,
+    "ast_hash": "09a07cd93ecb32c6acd75bfdb77a9ce7",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -510,9 +510,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalContracts.cs": {
-    "mtime": 1790454758.9254766,
-    "seen": 1790455470.8913143,
-    "ast_hash": "78e08db8bbbf0f6ba83541a40535857e",
+    "mtime": 1790459393.057973,
+    "seen": 1790459964.5616193,
+    "ast_hash": "f82fc06637e4f33ef6e1c596274afd4f",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/NfceOutboxWorker.cs": {
@@ -996,9 +996,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiscalPage.tsx": {
-    "mtime": 1789322638.6275766,
-    "seen": 1789322723.8552854,
-    "ast_hash": "7165b45fd3d650d2a1dab0d309d80d36",
+    "mtime": 1790459854.7416391,
+    "seen": 1790459964.5814946,
+    "ast_hash": "76f513ab6ae3f6fbc67cb60368b3b60b",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/HomePage.tsx": {
@@ -1170,9 +1170,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiscalService.ts": {
-    "mtime": 1790455238.881222,
-    "seen": 1790455470.9234228,
-    "ast_hash": "5c49875ee13a4efdc8d03dd1df99b13e",
+    "mtime": 1790459761.4881628,
+    "seen": 1790459964.5866845,
+    "ast_hash": "6aedbe828f456e9002d14fd639f7eab6",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/homeService.ts": {
@@ -2106,9 +2106,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/FiscalDetailModal.tsx": {
-    "mtime": 1789320883.0763369,
-    "seen": 1789320942.5204778,
-    "ast_hash": "358f3d20f73b39d70687f9a4bbdc1308",
+    "mtime": 1790459897.8201075,
+    "seen": 1790459964.568493,
+    "ast_hash": "dba47bded2d2b73985e5e5de412df585",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/SefazDFeDownloadService.cs": {

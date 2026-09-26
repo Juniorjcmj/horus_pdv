@@ -19,6 +19,7 @@ export const FISCAL_STATUS = {
   Cancelado: 6,
   Inutilizado: 7,
   ContingenciaPendente: 8,
+  Devolvido: 9,
 } as const;
 
 export type FiscalStatus = (typeof FISCAL_STATUS)[keyof typeof FISCAL_STATUS];
@@ -41,6 +42,11 @@ export type FiscalDocumentDto = {
   paymentType?: string | null;
   hasXml?: boolean;
   hasCancelXml?: boolean;
+  modelo?: number;
+  documentoOrigemId?: string | null;
+  chaveReferenciada?: string | null;
+  devolvida?: boolean;
+  numeroNfeDevolucao?: number | null;
 };
 
 export type FiscalDocumentItemDto = {
@@ -105,23 +111,35 @@ export type DevolverNfceResult = {
   destinatarioNome: string;
 };
 
-export function fiscalStatusLabel(status: FiscalStatus): string {
+export function fiscalStatusLabel(
+  status: FiscalStatus,
+  modelo?: number,
+  isDevolucao?: boolean
+): string {
+  if (status === FISCAL_STATUS.Devolvido) {
+    return "Devolvida";
+  }
+  if (status === FISCAL_STATUS.Cancelado) {
+    return "Cancelada";
+  }
+  if (status === FISCAL_STATUS.Autorizado) {
+    if (modelo === 55 || isDevolucao) {
+      return "Devolução (NF-e)";
+    }
+    return "Autorizada";
+  }
   switch (status) {
     case FISCAL_STATUS.Rascunho:
       return "Rascunho";
     case FISCAL_STATUS.Assinado:
     case FISCAL_STATUS.Transmitindo:
       return "Transmitindo";
-    case FISCAL_STATUS.Autorizado:
-      return "Autorizado";
     case FISCAL_STATUS.Rejeitado:
-      return "Rejeitado";
+      return "Rejeitada";
     case FISCAL_STATUS.Denegado:
-      return "Denegado";
-    case FISCAL_STATUS.Cancelado:
-      return "Cancelado";
+      return "Denegada";
     case FISCAL_STATUS.Inutilizado:
-      return "Inutilizado";
+      return "Inutilizada";
     case FISCAL_STATUS.ContingenciaPendente:
       return "Contingência";
     default:
@@ -129,18 +147,31 @@ export function fiscalStatusLabel(status: FiscalStatus): string {
   }
 }
 
-export function fiscalStatusBadgeClass(status: FiscalStatus): string {
+export function fiscalStatusBadgeClass(
+  status: FiscalStatus,
+  modelo?: number,
+  isDevolucao?: boolean
+): string {
+  if (status === FISCAL_STATUS.Devolvido) {
+    return "border border-purple-500/40 bg-purple-500/15 text-purple-400 font-semibold";
+  }
+  if (status === FISCAL_STATUS.Cancelado) {
+    return "border border-rose-500/40 bg-rose-500/15 text-rose-400 font-semibold";
+  }
+  if (status === FISCAL_STATUS.Autorizado) {
+    if (modelo === 55 || isDevolucao) {
+      return "border border-indigo-500/40 bg-indigo-500/15 text-indigo-300 font-semibold";
+    }
+    return "border border-emerald-500/30 bg-emerald-500/15 text-emerald-400";
+  }
   switch (status) {
-    case FISCAL_STATUS.Autorizado:
-      return "border border-success/30 bg-success/15 text-success";
     case FISCAL_STATUS.Rejeitado:
     case FISCAL_STATUS.Denegado:
-      return "border border-primary/30 bg-primary/15 text-primary";
-    case FISCAL_STATUS.Cancelado:
+      return "border border-red-500/30 bg-red-500/15 text-red-400";
     case FISCAL_STATUS.Inutilizado:
       return "border border-border-secondary bg-bg-primary text-text-secondary";
     default:
-      return "border border-accent/30 bg-accent/15 text-accent";
+      return "border border-amber-500/30 bg-amber-500/15 text-amber-400";
   }
 }
 

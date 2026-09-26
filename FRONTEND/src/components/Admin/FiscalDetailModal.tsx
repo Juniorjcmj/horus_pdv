@@ -18,6 +18,7 @@ import {
   Printer,
   Receipt,
   RefreshCw,
+  RotateCcw,
   X,
 } from "lucide-react";
 import {
@@ -103,10 +104,12 @@ export default function FiscalDetailModal({
     ? `${getSefazConsultaUrl()}?p=${document.chaveAcesso}`
     : null;
 
-  const isAutorizado =
-    document.status === FISCAL_STATUS.Autorizado ||
-    document.status === FISCAL_STATUS.ContingenciaPendente;
+  const isDevolvido = document.status === FISCAL_STATUS.Devolvido || Boolean(document.devolvida);
+  const isDevolucaoNfe = document.modelo === 55 && Boolean(document.chaveReferenciada);
   const isCancelado = document.status === FISCAL_STATUS.Cancelado;
+  const isAutorizado =
+    (document.status === FISCAL_STATUS.Autorizado ||
+    document.status === FISCAL_STATUS.ContingenciaPendente) && !isDevolvido;
   const isRejeitado = document.status === FISCAL_STATUS.Rejeitado;
 
   return (
@@ -121,14 +124,16 @@ export default function FiscalDetailModal({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-text-primary">
-                  Nota Fiscal NFC-e Nº {document.numeroNf}
+                  {document.modelo === 55 ? "Nota Fiscal NF-e (Mod. 55)" : "Nota Fiscal NFC-e (Mod. 65)"} Nº {document.numeroNf}
                 </h2>
                 <span
                   className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${fiscalStatusBadgeClass(
                     document.status,
+                    document.modelo,
+                    isDevolucaoNfe,
                   )}`}
                 >
-                  {fiscalStatusLabel(document.status)}
+                  {fiscalStatusLabel(document.status, document.modelo, isDevolucaoNfe)}
                 </span>
               </div>
               <p className="text-xs text-text-secondary">
@@ -149,11 +154,42 @@ export default function FiscalDetailModal({
         {/* Corpo rolável */}
         <div className="overflow-y-auto p-5 space-y-4 flex-1">
           {/* Alerta de Status / SEFAZ */}
+          {isDevolvido && (
+            <div className="rounded-xl border border-purple-500/30 bg-purple-500/10 p-3.5 text-xs space-y-1">
+              <div className="flex items-center gap-2 font-bold text-purple-400">
+                <RotateCcw size={16} />
+                Nota Fiscal Devolvida (Estorno Homologado)
+              </div>
+              <p className="text-text-secondary leading-relaxed">
+                {document.numeroNfeDevolucao
+                  ? `Esta nota fiscal foi devolvida perante a SEFAZ através da NF-e Modelo 55 Nº ${document.numeroNfeDevolucao}. O estoque físico foi devolvido e a venda cancelada.`
+                  : (document.motivoStatus || "Esta nota foi estornada através da emissão de uma NF-e de Devolução (Modelo 55).")}
+              </p>
+            </div>
+          )}
+
+          {isDevolucaoNfe && (
+            <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-3.5 text-xs space-y-1">
+              <div className="flex items-center gap-2 font-bold text-indigo-300">
+                <FileCode size={16} />
+                NF-e de Devolução de Entrada (Modelo 55)
+              </div>
+              <p className="text-text-secondary leading-relaxed">
+                Documento fiscal emitido para formalizar a devolução da mercadoria ao estoque e regularização fiscal.
+              </p>
+              {document.chaveReferenciada && (
+                <p className="font-mono text-[11px] text-text-secondary mt-1">
+                  Chave Referenciada: {document.chaveReferenciada}
+                </p>
+              )}
+            </div>
+          )}
+
           {isCancelado && (
-            <div className="rounded-xl border border-border-secondary bg-bg-primary p-3.5 text-xs space-y-1">
-              <div className="flex items-center gap-2 font-bold text-text-primary">
-                <AlertOctagon size={16} className="text-primary" />
-                Nota Fiscal Cancelada
+            <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs space-y-1">
+              <div className="flex items-center gap-2 font-bold text-rose-400">
+                <AlertOctagon size={16} />
+                Nota Fiscal Cancelada na SEFAZ
               </div>
               <p className="text-text-secondary leading-relaxed">
                 {document.motivoStatus || "Documento fiscal homologado como cancelado perante a SEFAZ."}

@@ -58,7 +58,7 @@ import { getStoredAuthUser } from "@/utils/authStorage";
 import { getSefazConsultaUrl } from "@/utils/danfePrint";
 
 type FiscalTab = "notas" | "inutilizacao";
-type StatusFilter = "todos" | "autorizado" | "cancelado" | "rejeitado" | "contingencia";
+type StatusFilter = "todos" | "autorizado" | "cancelado" | "devolvido" | "rejeitado" | "contingencia";
 type PeriodFilter = "todos" | "hoje" | "7dias" | "mes";
 
 function formatDate(value: string) {
@@ -152,6 +152,8 @@ export default function FiscalPage() {
     let valorAutorizadas = 0;
     let qtdCanceladas = 0;
     let valorCanceladas = 0;
+    let qtdDevolvidas = 0;
+    let valorDevolvidas = 0;
     let qtdRejeitadas = 0;
     let qtdContingencia = 0;
 
@@ -159,12 +161,17 @@ export default function FiscalPage() {
       const val = doc.totalAmount ? parseMoneyBr(doc.totalAmount) : 0;
       totalValor += val;
 
-      if (doc.status === FISCAL_STATUS.Autorizado) {
-        qtdAutorizadas++;
-        valorAutorizadas += val;
+      const isDevolvido = doc.status === FISCAL_STATUS.Devolvido || Boolean(doc.devolvida);
+
+      if (isDevolvido) {
+        qtdDevolvidas++;
+        valorDevolvidas += val;
       } else if (doc.status === FISCAL_STATUS.Cancelado) {
         qtdCanceladas++;
         valorCanceladas += val;
+      } else if (doc.status === FISCAL_STATUS.Autorizado) {
+        qtdAutorizadas++;
+        valorAutorizadas += val;
       } else if (doc.status === FISCAL_STATUS.Rejeitado || Boolean(doc.motivoStatus)) {
         qtdRejeitadas++;
       } else if (
@@ -183,6 +190,8 @@ export default function FiscalPage() {
       valorAutorizadas,
       qtdCanceladas,
       valorCanceladas,
+      qtdDevolvidas,
+      valorDevolvidas,
       qtdRejeitadas,
       qtdContingencia,
     };
@@ -194,14 +203,27 @@ export default function FiscalPage() {
 
     // 1. Filtro por status
     if (statusFilter === "autorizado") {
-      list = list.filter((d) => d.status === FISCAL_STATUS.Autorizado);
+      list = list.filter((d) => d.status === FISCAL_STATUS.Autorizado && !d.devolvida);
     } else if (statusFilter === "cancelado") {
       list = list.filter((d) => d.status === FISCAL_STATUS.Cancelado);
+    } else if (statusFilter === "devolvido") {
+      list = list.filter(
+        (d) =>
+          d.status === FISCAL_STATUS.Devolvido ||
+          Boolean(d.devolvida) ||
+          (d.modelo === 55 && Boolean(d.chaveReferenciada)),
+      );
     } else if (statusFilter === "rejeitado") {
       list = list.filter(
         (d) =>
           d.status === FISCAL_STATUS.Rejeitado ||
-          Boolean(d.motivoStatus && d.status !== FISCAL_STATUS.Autorizado && d.status !== FISCAL_STATUS.Cancelado),
+          Boolean(
+            d.motivoStatus &&
+              d.status !== FISCAL_STATUS.Autorizado &&
+              d.status !== FISCAL_STATUS.Cancelado &&
+              d.status !== FISCAL_STATUS.Devolvido &&
+              !d.devolvida,
+          ),
       );
     } else if (statusFilter === "contingencia") {
       list = list.filter(
@@ -515,23 +537,23 @@ export default function FiscalPage() {
           </div>
         </div>
 
-        {/* Canceladas */}
+        {/* Canceladas & Devolvidas */}
         <div
-          onClick={() => setStatusFilter("cancelado")}
+          onClick={() => setStatusFilter(statusFilter === "cancelado" ? "devolvido" : "cancelado")}
           className={`card p-4 cursor-pointer transition-all border ${
-            statusFilter === "cancelado" ? "ring-2 ring-primary border-primary" : "hover:border-border-secondary"
+            statusFilter === "cancelado" || statusFilter === "devolvido" ? "ring-2 ring-primary border-primary" : "hover:border-border-secondary"
           }`}
         >
           <div className="flex items-center justify-between text-text-secondary">
-            <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">Canceladas</span>
-            <XCircle size={16} className="text-text-secondary" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-rose-400">Canceladas / Devolvidas</span>
+            <XCircle size={16} className="text-rose-400" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-xl font-bold text-text-secondary">{metrics.qtdCanceladas}</span>
-            <span className="text-xs text-text-secondary font-medium">estornadas</span>
+            <span className="text-xl font-bold text-text-primary">{metrics.qtdCanceladas + metrics.qtdDevolvidas}</span>
+            <span className="text-xs text-text-secondary font-medium">({metrics.qtdCanceladas} canc. · {metrics.qtdDevolvidas} dev.)</span>
           </div>
           <div className="mt-1 text-xs font-semibold text-text-secondary">
-            R$ {formatMoneyBr(metrics.valorCanceladas)}
+            R$ {formatMoneyBr(metrics.valorCanceladas + metrics.valorDevolvidas)}
           </div>
         </div>
 
@@ -693,11 +715,22 @@ export default function FiscalPage() {
                 onClick={() => setStatusFilter("cancelado")}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                   statusFilter === "cancelado"
-                    ? "bg-primary text-white font-semibold"
+                    ? "bg-rose-600 text-white font-semibold"
                     : "bg-bg-secondary text-text-secondary hover:bg-hover-light hover:text-text-primary"
                 }`}
               >
                 Canceladas ({metrics.qtdCanceladas})
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("devolvido")}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  statusFilter === "devolvido"
+                    ? "bg-purple-600 text-white font-semibold"
+                    : "bg-bg-secondary text-text-secondary hover:bg-hover-light hover:text-text-primary"
+                }`}
+              >
+                Devolvidas ({metrics.qtdDevolvidas})
               </button>
               <button
                 type="button"
@@ -775,9 +808,13 @@ export default function FiscalPage() {
 
                   {!loading &&
                     paginatedDocuments.map((doc) => {
-                      const isAutorizado = doc.status === FISCAL_STATUS.Autorizado;
+                      const isDevolvido = doc.status === FISCAL_STATUS.Devolvido || Boolean(doc.devolvida);
+                      const isDevolucaoNfe = doc.modelo === 55 && Boolean(doc.chaveReferenciada);
                       const isCancelado = doc.status === FISCAL_STATUS.Cancelado;
-                      const isRejeitado = doc.status === FISCAL_STATUS.Rejeitado || Boolean(doc.motivoStatus && !isAutorizado && !isCancelado);
+                      const isAutorizado = doc.status === FISCAL_STATUS.Autorizado && !isDevolvido;
+                      const isRejeitado =
+                        doc.status === FISCAL_STATUS.Rejeitado ||
+                        Boolean(doc.motivoStatus && !isAutorizado && !isCancelado && !isDevolvido && !isDevolucaoNfe);
 
                       return (
                         <tr key={doc.id} className="hover:bg-accent/5 transition-colors">
@@ -790,8 +827,20 @@ export default function FiscalPage() {
                           </td>
 
                           {/* Série / Número */}
-                          <td className="px-4 py-3 font-mono font-semibold text-text-primary">
-                            Série {doc.serie} · Nº {doc.numeroNf}
+                          <td className="px-4 py-3 font-mono text-text-primary">
+                            <span className="font-semibold block">
+                              {doc.modelo === 55 ? "NF-e (Mod. 55)" : "NFC-e"} · Série {doc.serie} · Nº {doc.numeroNf}
+                            </span>
+                            {isDevolvido && doc.numeroNfeDevolucao && (
+                              <span className="text-[11px] text-purple-400 font-normal mt-0.5 flex items-center gap-1">
+                                <RotateCcw size={10} /> Devolvida via NF-e nº {doc.numeroNfeDevolucao}
+                              </span>
+                            )}
+                            {isDevolucaoNfe && (
+                              <span className="text-[11px] text-indigo-400 font-normal mt-0.5 flex items-center gap-1">
+                                <FileCode size={10} /> Devolução de Entrada
+                              </span>
+                            )}
                           </td>
 
                           {/* Valor Total */}
@@ -845,26 +894,53 @@ export default function FiscalPage() {
                               <button
                                 type="button"
                                 onClick={() => setErrorModalDoc(doc)}
-                                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer transition-transform hover:scale-105 ${fiscalStatusBadgeClass(
+                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer transition-transform hover:scale-105 ${fiscalStatusBadgeClass(
                                   doc.status,
+                                  doc.modelo,
+                                  isDevolucaoNfe,
                                 )}`}
                                 title="Ver motivo exato da rejeição na SEFAZ"
                               >
                                 <AlertCircle size={12} />
-                                {fiscalStatusLabel(doc.status)}
+                                {fiscalStatusLabel(doc.status, doc.modelo, isDevolucaoNfe)}
+                              </button>
+                            ) : isDevolvido ? (
+                              <button
+                                type="button"
+                                onClick={() => setDocToDetail(doc)}
+                                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer transition-transform hover:scale-105 border border-purple-500/40 bg-purple-500/15 text-purple-400"
+                                title={
+                                  doc.numeroNfeDevolucao
+                                    ? `Devolvida via NF-e nº ${doc.numeroNfeDevolucao}`
+                                    : "Nota fiscal devolvida (estorno homologado)"
+                                }
+                              >
+                                <RotateCcw size={12} />
+                                <span>Devolvida</span>
+                              </button>
+                            ) : isCancelado ? (
+                              <button
+                                type="button"
+                                onClick={() => setDocToDetail(doc)}
+                                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer transition-transform hover:scale-105 border border-rose-500/40 bg-rose-500/15 text-rose-400"
+                                title="Nota fiscal cancelada perante a SEFAZ"
+                              >
+                                <AlertOctagon size={12} />
+                                <span>Cancelada</span>
                               </button>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => setDocToDetail(doc)}
-                                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer transition-transform hover:scale-105 ${fiscalStatusBadgeClass(
+                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold cursor-pointer transition-transform hover:scale-105 ${fiscalStatusBadgeClass(
                                   doc.status,
+                                  doc.modelo,
+                                  isDevolucaoNfe,
                                 )}`}
                                 title="Clique para ver detalhes completos da nota"
                               >
                                 {isAutorizado && <Check size={11} />}
-                                {isCancelado && <AlertOctagon size={11} />}
-                                {fiscalStatusLabel(doc.status)}
+                                {fiscalStatusLabel(doc.status, doc.modelo, isDevolucaoNfe)}
                               </button>
                             )}
                           </td>

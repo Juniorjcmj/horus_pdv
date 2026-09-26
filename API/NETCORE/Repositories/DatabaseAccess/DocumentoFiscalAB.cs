@@ -354,11 +354,18 @@ public class DocumentoFiscalAB(
         const string sql = """
             SELECT d.Id, v.SaleNumber, d.Serie, d.NumeroNf, d.Status, d.ChaveAcesso, d.Protocolo,
                    d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas,
+                   d.Modelo, d.DocumentoOrigemId, d.ChaveReferenciada,
                    v.TotalAmount, v.CustomerName, v.CustomerCpf, v.PaymentType,
                    CASE WHEN d.XmlProtocolado IS NOT NULL OR d.XmlAssinado IS NOT NULL THEN 1 ELSE 0 END AS HasXml,
-                   CASE WHEN d.XmlCancelamento IS NOT NULL THEN 1 ELSE 0 END AS HasCancelXml
+                   CASE WHEN d.XmlCancelamento IS NOT NULL THEN 1 ELSE 0 END AS HasCancelXml,
+                   dev.Id AS DevolucaoDocId,
+                   dev.NumeroNf AS DevolucaoNumeroNf
             FROM DocumentosFiscais d
             LEFT JOIN Vendas v ON v.Id = d.VendaId
+            LEFT JOIN DocumentosFiscais dev ON dev.CompanyId = d.CompanyId
+                  AND dev.Modelo = 55
+                  AND dev.Status IN (1, 2, 3)
+                  AND (dev.DocumentoOrigemId = d.Id OR (d.ChaveAcesso IS NOT NULL AND dev.ChaveReferenciada = d.ChaveAcesso))
             WHERE d.CompanyId = @CompanyId
             ORDER BY d.CriadoEm DESC;
             """;
@@ -371,15 +378,44 @@ public class DocumentoFiscalAB(
         while (await reader.ReadAsync())
         {
             var totalOrdinal = reader.GetOrdinal("TotalAmount");
-            var totalAmount = reader.IsDBNull(totalOrdinal) ? null : HorusMoneyFormat.Format(reader.GetDecimal(totalOrdinal));
+            string? totalAmount = null;
+            if (!reader.IsDBNull(totalOrdinal))
+            {
+                var totalAmountRaw = reader.GetValue(totalOrdinal);
+                totalAmount = totalAmountRaw switch
+                {
+                    decimal dec => HorusMoneyFormat.Format(dec),
+                    double dbl => HorusMoneyFormat.Format((decimal)dbl),
+                    string str when decimal.TryParse(str, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var dec) => HorusMoneyFormat.Format(dec),
+                    string str when decimal.TryParse(str, System.Globalization.NumberStyles.Any, new System.Globalization.CultureInfo("pt-BR"), out var dec) => HorusMoneyFormat.Format(dec),
+                    _ => totalAmountRaw?.ToString()
+                };
+            }
+
+            var status = (StatusDocumentoFiscal)ReadInt(reader, "Status");
+            var devDocId = ReadNullableString(reader, "DevolucaoDocId");
+            var devOrdinal = reader.GetOrdinal("DevolucaoNumeroNf");
+            int? devolucaoNumeroNf = reader.IsDBNull(devOrdinal) ? null : reader.GetInt32(devOrdinal);
+            var devolvida = status == StatusDocumentoFiscal.Devolvido || !string.IsNullOrWhiteSpace(devDocId);
+
+            if (devolvida && status == StatusDocumentoFiscal.Autorizado)
+            {
+                status = StatusDocumentoFiscal.Devolvido;
+            }
+
+            var saleNumber = ReadNullableString(reader, "SaleNumber");
+            if (string.IsNullOrWhiteSpace(saleNumber))
+            {
+                saleNumber = $"NF-{ReadInt(reader, "NumeroNf")}";
+            }
 
             rows.Add(new DocumentoFiscalResumo
             {
                 Id = ReadString(reader, "Id"),
-                SaleNumber = ReadString(reader, "SaleNumber"),
+                SaleNumber = saleNumber,
                 Serie = ReadInt(reader, "Serie"),
                 NumeroNf = ReadInt(reader, "NumeroNf"),
-                Status = (StatusDocumentoFiscal)ReadInt(reader, "Status"),
+                Status = status,
                 ChaveAcesso = ReadNullableString(reader, "ChaveAcesso"),
                 Protocolo = ReadNullableString(reader, "Protocolo"),
                 MotivoStatus = ReadNullableString(reader, "MotivoStatus"),
@@ -391,7 +427,12 @@ public class DocumentoFiscalAB(
                 CustomerCpf = ReadNullableString(reader, "CustomerCpf"),
                 PaymentType = ReadNullableString(reader, "PaymentType"),
                 HasXml = reader.GetInt32(reader.GetOrdinal("HasXml")) == 1,
-                HasCancelXml = reader.GetInt32(reader.GetOrdinal("HasCancelXml")) == 1
+                HasCancelXml = reader.GetInt32(reader.GetOrdinal("HasCancelXml")) == 1,
+                Modelo = (short)ReadInt(reader, "Modelo"),
+                DocumentoOrigemId = ReadNullableString(reader, "DocumentoOrigemId"),
+                ChaveReferenciada = ReadNullableString(reader, "ChaveReferenciada"),
+                Devolvida = devolvida,
+                NumeroNfeDevolucao = devolucaoNumeroNf
             });
         }
 
@@ -1123,7 +1164,26 @@ public class DocumentoFiscalAB(
                 await cmdVenda.ExecuteNonQueryAsync(ct);
             }
 
-            // 3. Estorno automático de estoque dos produtos da venda
+            // 3. Atualiza o status da NFC-e de origem para Devolvido (9)
+            await using (var cmdOrigem = new SqlCommand(
+                """
+                UPDATE DocumentosFiscais
+                   SET Status = 9,
+                       MotivoStatus = 'Devolvida via NF-e Modelo 55',
+                       AtualizadoEm = SYSDATETIMEOFFSET()
+                 WHERE CompanyId = @CompanyId
+                   AND (Id = @DocumentoOrigemId OR (ChaveAcesso IS NOT NULL AND ChaveAcesso = @ChaveReferenciada));
+                """,
+                db,
+                transaction))
+            {
+                cmdOrigem.Parameters.AddWithValue("@CompanyId", companyId);
+                cmdOrigem.Parameters.AddWithValue("@DocumentoOrigemId", (object?)nfceOrigemId ?? DBNull.Value);
+                cmdOrigem.Parameters.AddWithValue("@ChaveReferenciada", (object?)chaveNfceOrigem ?? DBNull.Value);
+                await cmdOrigem.ExecuteNonQueryAsync(ct);
+            }
+
+            // 4. Estorno automático de estoque dos produtos da venda
             await using (var cmdEstorno = new SqlCommand(
                 """
                 UPDATE p
@@ -1432,6 +1492,11 @@ public record DocumentoFiscalResumo
     public string? PaymentType { get; init; }
     public bool HasXml { get; init; }
     public bool HasCancelXml { get; init; }
+    public short Modelo { get; init; } = 65;
+    public string? DocumentoOrigemId { get; init; }
+    public string? ChaveReferenciada { get; init; }
+    public bool Devolvida { get; init; }
+    public int? NumeroNfeDevolucao { get; init; }
 }
 
 /// <summary>Item de produto vinculado ao documento fiscal.</summary>

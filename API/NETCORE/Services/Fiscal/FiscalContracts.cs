@@ -21,7 +21,8 @@ public enum StatusDocumentoFiscal
     Denegado = 5,
     Cancelado = 6,
     Inutilizado = 7,
-    ContingenciaPendente = 8
+    ContingenciaPendente = 8,
+    Devolvido = 9
 }
 
 public enum TipoEmissaoFiscal
