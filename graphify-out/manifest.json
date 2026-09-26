@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
-    "mtime": 1790420509.1901603,
-    "seen": 1790421619.6115158,
-    "ast_hash": "3dac6f8d1015374deac0688b4c579c71",
+    "mtime": 1790445602.2331922,
+    "seen": 1790453042.4251974,
+    "ast_hash": "cb54aa1a4903a97c99723a335d446c6b",
     "semantic_hash": ""
   },
   ".codex/hooks.json": {
@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfceController.cs": {
-    "mtime": 1789320736.3435812,
-    "seen": 1789320942.507739,
-    "ast_hash": "fa0b8506611151a182286f81b84c41d0",
+    "mtime": 1790452761.8253067,
+    "seen": 1790453042.4266522,
+    "ast_hash": "4380814e95d2e2a3ead13ee40ed6837a",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fornecedores/FornecedorController.cs": {
@@ -114,9 +114,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Usuario/UsuarioController.cs": {
-    "mtime": 1789174311.615646,
-    "seen": 1789174379.095252,
-    "ast_hash": "36f3be207ac44d6fcbe1716e242c3741",
+    "mtime": 1790452609.6203196,
+    "seen": 1790453042.4280982,
+    "ast_hash": "a28ccf90bde8307e7a2a8946094a2518",
     "semantic_hash": ""
   },
   "API/NETCORE/HORUSPDV-API.csproj": {
@@ -252,9 +252,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfceRequest.cs": {
-    "mtime": 1788675483.6151302,
-    "seen": 1788888974.3518476,
-    "ast_hash": "c1751ae8ccb368308f29bb008fae7185",
+    "mtime": 1790452740.8689153,
+    "seen": 1790453042.431855,
+    "ast_hash": "097457fc584f820d607318c25ff9c912",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfeImportRequest.cs": {
@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1790195067.732026,
-    "seen": 1790200166.1363523,
-    "ast_hash": "040e43cf45130cfa30ea1790b9ca4f3c",
+    "mtime": 1790452708.1239374,
+    "seen": 1790453042.43579,
+    "ast_hash": "c1a8fdf4677c5fa49df112946cd20582",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HorusSecurityStore.cs": {
-    "mtime": 1790424784.4926147,
-    "seen": 1790426295.5434315,
-    "ast_hash": "2b08b705175dcf773a794ecc46287dfd",
+    "mtime": 1790452592.439541,
+    "seen": 1790453042.4365458,
+    "ast_hash": "1eb08ae178b176705197e81c38c5db95",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ModuloMercadoAB.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1790425937.6455438,
-    "seen": 1790426295.5441573,
-    "ast_hash": "0dca0132bec398a6cb2004a6db6ac36f",
+    "mtime": 1790452658.9161315,
+    "seen": 1790453042.4372804,
+    "ast_hash": "bed50528ee0c25195604edd472482a64",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -630,9 +630,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/package.json": {
-    "mtime": 1790421566.5079112,
-    "seen": 1790421619.6410434,
-    "ast_hash": "b403d67c384bd3e061d3451390edade2",
+    "mtime": 1790440261.3124251,
+    "seen": 1790453042.4422803,
+    "ast_hash": "fe6c14365f9240651cb60a8dac6d9299",
     "semantic_hash": ""
   },
   "FRONTEND/playwright.config.ts": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1790421566.54213,
-    "seen": 1790421619.6596541,
-    "ast_hash": "95ab6f55230c4642a647c2d9c652624f",
+    "mtime": 1790452930.107674,
+    "seen": 1790453042.4561477,
+    "ast_hash": "86fca7fbf4dbe56602674e6c6cc614b2",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1170,9 +1170,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiscalService.ts": {
-    "mtime": 1790421566.5516758,
-    "seen": 1790421619.6612957,
-    "ast_hash": "7b71b4d84459bfd5d1acf5d2d38681b2",
+    "mtime": 1790452829.3913894,
+    "seen": 1790453042.458547,
+    "ast_hash": "05498096fd9384db145b366f5b9cd3a5",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/homeService.ts": {
@@ -1230,9 +1230,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/userService.ts": {
-    "mtime": 1790421566.5642693,
-    "seen": 1790421619.6613185,
-    "ast_hash": "29b7780f0b951ff10b14554ecb6d52c0",
+    "mtime": 1790452806.330815,
+    "seen": 1790453042.4605107,
+    "ast_hash": "04dbd13e6b8f34b66832b5ccbc473c3d",
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/authStorage.ts": {
@@ -1272,9 +1272,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/.last-run.json": {
-    "mtime": 1790426254.3302023,
-    "seen": 1790426295.568993,
-    "ast_hash": "f196824657d8858bc7fa44eecbba38b1",
+    "mtime": 1790445989.769218,
+    "seen": 1790453042.4626913,
+    "ast_hash": "fdfc650a352a1a69d9a9a80b3f0ea418",
     "semantic_hash": ""
   },
   "FRONTEND/tests/demo/horus-pdv.demo.spec.ts": {
@@ -2829,6 +2829,162 @@
     "mtime": 1790426158.3147292,
     "seen": 1790426295.569478,
     "ast_hash": "8807b8665cd9a31e77a7e8fe76d30cb1",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.homolog.config.ts": {
+    "mtime": 1790441151.5704887,
+    "seen": 1790453042.442627,
+    "ast_hash": "3b33daa456e6b880157e083cd084f8f4",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx": {
+    "mtime": 1790452860.5357187,
+    "seen": 1790453042.4452782,
+    "ast_hash": "0c44af58917045f8ffdb13a1988581b2",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/A-login.spec.ts": {
+    "mtime": 1790441249.9280384,
+    "seen": 1790453042.4643779,
+    "ast_hash": "ffb73bf166b2d31fde01bde055157512",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/B-products.spec.ts": {
+    "mtime": 1790446017.793716,
+    "seen": 1790453042.4643798,
+    "ast_hash": "7a3c0a4c61da112ab56eee84aec75e3b",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/C-fiado.spec.ts": {
+    "mtime": 1790439788.7640564,
+    "seen": 1790453042.4643812,
+    "ast_hash": "58584dc4816896e3895b36259a6e6a53",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/D-caixa.spec.ts": {
+    "mtime": 1790442136.844416,
+    "seen": 1790453042.4643826,
+    "ast_hash": "7e16d828b9ff0826b3cc6b9ddbd7add2",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/E-sales-multi-item.spec.ts": {
+    "mtime": 1790439862.7722726,
+    "seen": 1790453042.464384,
+    "ast_hash": "b98c48e0b466dd0f5910d769bafa3def",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/F-mixed-payment.spec.ts": {
+    "mtime": 1790445271.9591491,
+    "seen": 1790453042.4643855,
+    "ast_hash": "757a81ca57af31fb9d9ffbf568faa462",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/G-offline-stock.spec.ts": {
+    "mtime": 1790439941.040004,
+    "seen": 1790453042.4643872,
+    "ast_hash": "f160183f085083cb9a7cdd068b42a6a5",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/H-fiscal.spec.ts": {
+    "mtime": 1790442061.318264,
+    "seen": 1790453042.4643886,
+    "ast_hash": "26181f72bfab0c93bd5d7372dcb95015",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/I-full-offline-flow.spec.ts": {
+    "mtime": 1790440023.7962613,
+    "seen": 1790453042.4643896,
+    "ast_hash": "6d47d373d8b3a25ef47a0d16fd533505",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/J-idempotency.spec.ts": {
+    "mtime": 1790446043.8226228,
+    "seen": 1790453042.4643915,
+    "ast_hash": "99ce4e5917adbe088728d9fc827fb5d0",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/K-concurrency.spec.ts": {
+    "mtime": 1790440099.7935266,
+    "seen": 1790453042.464393,
+    "ast_hash": "16b9637ae94992ff66aba33a57b08535",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/L-pwa.spec.ts": {
+    "mtime": 1790445252.0464077,
+    "seen": 1790453042.4643943,
+    "ast_hash": "9027c07054086097c12693ae125b624e",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/M-connection-recovery.spec.ts": {
+    "mtime": 1790440170.6431816,
+    "seen": 1790453042.4643958,
+    "ast_hash": "cf60f7800cb03f3ce9e8b56b1fec04ca",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/N-financial-rounding.spec.ts": {
+    "mtime": 1790445261.4216907,
+    "seen": 1790453042.4643974,
+    "ast_hash": "039b4007d9ab5c73cfbd7105ad973b19",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/homologation/helpers/setup.ts": {
+    "mtime": 1790445808.46519,
+    "seen": 1790453042.464399,
+    "ast_hash": "fc51f362d356bf2eae5e6ba09196c97f",
+    "semantic_hash": ""
+  },
+  "FRONTEND/test-results/B-products-B-\u2014-Produtos-B0-1b631-utilizando-c\u00f3digo-de-barras-chromium/error-context.md": {
+    "mtime": 1790445894.6496272,
+    "seen": 1790453042.4757302,
+    "ast_hash": "eabb49dd3228ff74a7edcf73526673b6",
+    "semantic_hash": ""
+  },
+  "FRONTEND/test-results/J-idempotency-J-\u2014-Idempot\u00ea-31193--payload-diferente-conflito-chromium/error-context.md": {
+    "mtime": 1790445938.8929405,
+    "seen": 1790453042.4757338,
+    "ast_hash": "23c20c92be8063934d0cf0a72222ff2e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cancelamento-nfce-caixa-gerente/.openspec.yaml": {
+    "mtime": 1790451975.8635418,
+    "seen": 1790453042.4784863,
+    "ast_hash": "eeedaec07b367e2e21bda1c2c5a1be80",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cancelamento-nfce-caixa-gerente/design.md": {
+    "mtime": 1790452289.264994,
+    "seen": 1790453042.478489,
+    "ast_hash": "a44708443d270b837ad5aea48afaf4fd",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cancelamento-nfce-caixa-gerente/proposal.md": {
+    "mtime": 1790452271.5242202,
+    "seen": 1790453042.4784913,
+    "ast_hash": "d58c16c3751d7e5edcfc9e69582f3cfa",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cancelamento-nfce-caixa-gerente/specs/pdv/cancelamento-nfce/spec.md": {
+    "mtime": 1790452279.8840916,
+    "seen": 1790453042.4784935,
+    "ast_hash": "61dbbe620b2ff1d47be8e0e229113df4",
+    "semantic_hash": ""
+  },
+  "openspec/changes/cancelamento-nfce-caixa-gerente/tasks.md": {
+    "mtime": 1790452976.942293,
+    "seen": 1790453042.478495,
+    "ast_hash": "1df29d60df16fb49fa876088e819d13d",
+    "semantic_hash": ""
+  },
+  "FRONTEND/test-results/B-products-B-\u2014-Produtos-B0-1b631-utilizando-c\u00f3digo-de-barras-chromium/test-failed-1.png": {
+    "mtime": 1790445891.7893205,
+    "seen": 1790453042.4818683,
+    "ast_hash": "bc1a155c3f76e1070e866856563b4266",
+    "semantic_hash": ""
+  },
+  "FRONTEND/test-results/B-products-B-\u2014-Produtos-B0-1b631-utilizando-c\u00f3digo-de-barras-chromium/video.webm": {
+    "mtime": 1790445893.5794625,
+    "seen": 1790453042.4848354,
+    "ast_hash": "0962f150eb29b8e1bb1fb5f43cd67f14",
     "semantic_hash": ""
   }
 }

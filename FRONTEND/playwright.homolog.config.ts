@@ -9,6 +9,7 @@ export default defineConfig({
     timeout: 15_000,
   },
   fullyParallel: false,
+  workers: 1,
   retries: 0,
   reporter: [["list"]],
   use: {
@@ -26,7 +27,7 @@ export default defineConfig({
   webServer: [
     {
       command:
-        "bash -lc 'Recaptcha__Enabled=false Email__Enabled=false dotnet run --project ../API/NETCORE/HORUSPDV-API.csproj --urls http://localhost:5260'",
+        `bash -lc 'Recaptcha__Enabled=false Email__Enabled=false HORUSPDV_CONNECTION_STRING="${process.env.HORUSPDV_CONNECTION_STRING ?? "Server=localhost,1433;Database=HorusPdv;User Id=sa;Password=Senha@12345;TrustServerCertificate=True;MultipleActiveResultSets=True;"}" dotnet run --project ../API/NETCORE/HORUSPDV-API.csproj --urls http://localhost:5260'`,
       url: "http://localhost:5260/swagger/index.html",
       reuseExistingServer: true,
       timeout: 120_000,

@@ -26,7 +26,8 @@ namespace HORUSPDV_API.Controllers.Fiscal;
 public class NfceController(
     DocumentoFiscalAB documentoFiscalAB,
     EmitenteFiscalStore emitenteFiscalStore,
-    IFiscalProvider fiscalProvider) : ControllerBase
+    IFiscalProvider fiscalProvider,
+    HorusSecurityStore securityStore) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Listar()
@@ -53,6 +54,26 @@ public class NfceController(
         if (detalhe is null)
         {
             return NotFound(new ApiResponse<object> { Success = false, Message = "Documento fiscal não encontrado para esta venda." });
+        }
+
+        return Ok(new ApiResponse<DocumentoFiscalDetalhe>
+        {
+            Success = true,
+            Message = "Documento fiscal obtido com sucesso.",
+            Data = detalhe
+        });
+    }
+
+    [HttpGet("buscar/{codigo}")]
+    public async Task<IActionResult> ObterPorCodigo(string codigo)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        var detalhe = await documentoFiscalAB.ObterDetalhePorCodigoAsync(currentUser.CompanyId, codigo);
+        if (detalhe is null)
+        {
+            return NotFound(new ApiResponse<object> { Success = false, Message = "Nenhum documento fiscal encontrado para o código/chave informado." });
         }
 
         return Ok(new ApiResponse<DocumentoFiscalDetalhe>
@@ -116,6 +137,82 @@ public class NfceController(
 
         await documentoFiscalAB.MarcarCanceladoAsync(id, resultado);
         return Ok(new ApiResponse<object> { Success = true, Message = "NFC-e cancelada com sucesso." });
+    }
+
+    [HttpPost("{id}/cancelar-com-supervisor")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
+    public async Task<IActionResult> CancelarComSupervisor(string id, [FromBody] CancelamentoComSupervisorRequest request)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        if (string.IsNullOrWhiteSpace(request.Justificativa) || request.Justificativa.Trim().Length < 15)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Justificativa deve ter no mínimo 15 caracteres." });
+        }
+
+        // Valida credenciais do supervisor
+        var (valido, msgSupervisor, supervisor) = securityStore.ValidateSupervisorCredentials(
+            request.SupervisorId,
+            request.SupervisorPassword,
+            currentUser.CompanyId);
+
+        if (!valido || supervisor is null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
+            {
+                Success = false,
+                Message = msgSupervisor
+            });
+        }
+
+        var dados = await documentoFiscalAB.ObterParaCancelamentoAsync(currentUser.CompanyId, id);
+        if (dados is null)
+        {
+            return NotFound(new ApiResponse<object> { Success = false, Message = "Documento não encontrado ou não está autorizado." });
+        }
+
+        var emitente = await emitenteFiscalStore.ObterAsync(currentUser.CompanyId);
+        if (emitente is null)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Empresa sem certificado ou CSC configurado." });
+        }
+
+        var resultado = await fiscalProvider.CancelarAsync(new CancelamentoRequest
+        {
+            Emitente = emitente,
+            ChaveAcesso = dados.Value.ChaveAcesso,
+            Protocolo = dados.Value.Protocolo,
+            Justificativa = request.Justificativa.Trim(),
+            SequenciaEvento = 1
+        });
+
+        if (resultado.Status != StatusDocumentoFiscal.Cancelado)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = resultado.MotivoStatus });
+        }
+
+        await documentoFiscalAB.MarcarCanceladoComAuditoriaAsync(
+            currentUser.CompanyId,
+            id,
+            resultado,
+            supervisor.Id,
+            supervisor.Name,
+            currentUser.Name,
+            request.Justificativa.Trim());
+
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = "NFC-e cancelada com sucesso perante a SEFAZ.",
+            Data = new
+            {
+                documentoId = id,
+                protocoloCancelamento = resultado.Protocolo,
+                motivoStatus = resultado.MotivoStatus,
+                supervisorNome = supervisor.Name
+            }
+        });
     }
 
     [HttpPost("inutilizar")]

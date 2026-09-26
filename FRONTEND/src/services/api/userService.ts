@@ -9,7 +9,17 @@ import { apiRequest, requireEnvUrl } from "./apiClient";
 
 const USUARIOS_API_URL = requireEnvUrl("VITE_USUARIOS_API_URL");
 
+export type SupervisorDto = {
+  id: string;
+  name: string;
+  role: string;
+};
+
 export const userService = {
+  async listSupervisores() {
+    const response = await apiRequest<SupervisorDto[]>(`${USUARIOS_API_URL}/supervisores`);
+    return response.data ?? [];
+  },
   async list() {
     const response = await apiRequest<AdminUser[]>(USUARIOS_API_URL);
     return response.data ?? [];

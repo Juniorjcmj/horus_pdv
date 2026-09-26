@@ -40,6 +40,68 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         return rows;
     }
 
+    public List<SupervisorResumoDto> ListSupervisores(string companyId)
+    {
+        using var db = connection.OpenConnection();
+        using var command = new SqlCommand(
+            """
+            SELECT Id, Name, Role
+            FROM Usuarios
+            WHERE CompanyId = @CompanyId
+              AND Status = 'ativo'
+              AND Role IN ('administrador', 'gerente')
+            ORDER BY Name;
+            """,
+            db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        using var reader = command.ExecuteReader();
+        var rows = new List<SupervisorResumoDto>();
+        while (reader.Read())
+        {
+            rows.Add(new SupervisorResumoDto
+            {
+                Id = ReadString(reader, "Id"),
+                Name = ReadString(reader, "Name"),
+                Role = ReadString(reader, "Role")
+            });
+        }
+
+        return rows;
+    }
+
+    public (bool Valid, string Message, SecurityUserDto? Supervisor) ValidateSupervisorCredentials(string supervisorId, string password, string companyId)
+    {
+        if (string.IsNullOrWhiteSpace(supervisorId) || string.IsNullOrWhiteSpace(password))
+        {
+            return (false, "Identificação e senha do gerente/supervisor são obrigatórias.", null);
+        }
+
+        var user = FindUserById(supervisorId, companyId);
+        if (user is null || user.Status != "ativo")
+        {
+            return (false, "Gerente não encontrado ou com cadastro inativo.", null);
+        }
+
+        var normalizedRole = user.Role.Trim().ToLowerInvariant();
+        if (normalizedRole != "administrador" && normalizedRole != "gerente")
+        {
+            return (false, "Usuário selecionado não possui perfil de gerente ou administrador.", null);
+        }
+
+        if (user.LockoutEnd is not null && user.LockoutEnd > DateTimeOffset.UtcNow)
+        {
+            return (false, "Conta do gerente temporariamente bloqueada por excesso de tentativas.", null);
+        }
+
+        if (!PasswordHasher.Verify(password, user.PasswordHash))
+        {
+            RegisterFailedAttemptDb(user.Id, DateTimeOffset.UtcNow);
+            return (false, "Senha do gerente incorreta.", null);
+        }
+
+        return (true, "Gerente validado com sucesso.", ToDto(user));
+    }
+
     public SecurityUserDto CreateUser(UsuarioRequest request, string companyId)
     {
         var user = MapRequest($"usr-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", request, true);
@@ -1628,6 +1690,13 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         Current = current,
         Platform = source.Platform
     };
+}
+
+public class SupervisorResumoDto
+{
+    public string Id { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
 }
 
 public class SecurityUserDto

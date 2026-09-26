@@ -499,6 +499,80 @@ public class DocumentoFiscalAB(
         };
     }
 
+    /// <summary>
+    /// Busca documento fiscal por código da venda, número da nota ou chave de 44 dígitos.
+    /// Utilizado na frente de caixa para conferência rápida e cancelamento de NFC-e emitida.
+    /// </summary>
+    public async Task<DocumentoFiscalDetalhe?> ObterDetalhePorCodigoAsync(string companyId, string codigo)
+    {
+        if (string.IsNullOrWhiteSpace(codigo)) return null;
+
+        var codigoTrim = codigo.Trim();
+        var termoLimpo = codigoTrim.Replace(" ", "").Replace("-", "");
+        var isNumero = int.TryParse(codigoTrim, out var numeroNf);
+
+        const string sql = """
+            SELECT TOP 1 d.Id, v.SaleNumber, d.Serie, d.NumeroNf, d.Status, d.ChaveAcesso, d.Protocolo,
+                   d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas, d.XmlProtocolado, d.XmlAssinado,
+                   v.TotalAmount, v.CustomerName, v.CustomerCpf, v.PaymentType,
+                   CASE WHEN d.XmlProtocolado IS NOT NULL OR d.XmlAssinado IS NOT NULL THEN 1 ELSE 0 END AS HasXml,
+                   CASE WHEN d.XmlCancelamento IS NOT NULL THEN 1 ELSE 0 END AS HasCancelXml
+            FROM DocumentosFiscais d
+            INNER JOIN Vendas v ON v.Id = d.VendaId
+            WHERE d.CompanyId = @CompanyId
+              AND (
+                  v.SaleNumber = @Codigo
+                  OR d.ChaveAcesso = @TermoLimpo
+                  OR (@IsNumero = 1 AND d.NumeroNf = @NumeroNf)
+                  OR d.Id = @Codigo
+              )
+            ORDER BY d.CriadoEm DESC;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Codigo", codigoTrim);
+        command.Parameters.AddWithValue("@TermoLimpo", termoLimpo);
+        command.Parameters.AddWithValue("@IsNumero", isNumero ? 1 : 0);
+        command.Parameters.AddWithValue("@NumeroNf", isNumero ? numeroNf : 0);
+
+        await using var reader = await command.ExecuteReaderAsync();
+        if (!await reader.ReadAsync()) return null;
+
+        var xmlProtocolado = ReadNullableString(reader, "XmlProtocolado");
+        var xmlAssinado = ReadNullableString(reader, "XmlAssinado");
+        var totalAmountRaw = reader.GetValue(reader.GetOrdinal("TotalAmount"));
+        var totalAmount = totalAmountRaw switch
+        {
+            decimal dec => HorusMoneyFormat.Format(dec),
+            string str when decimal.TryParse(str, out var dec) => HorusMoneyFormat.Format(dec),
+            _ => totalAmountRaw?.ToString() ?? "0,00"
+        };
+
+        return new DocumentoFiscalDetalhe
+        {
+            Id = ReadString(reader, "Id"),
+            SaleNumber = ReadString(reader, "SaleNumber"),
+            Serie = ReadInt(reader, "Serie"),
+            NumeroNf = ReadInt(reader, "NumeroNf"),
+            Status = (StatusDocumentoFiscal)ReadInt(reader, "Status"),
+            ChaveAcesso = ReadNullableString(reader, "ChaveAcesso"),
+            Protocolo = ReadNullableString(reader, "Protocolo"),
+            MotivoStatus = ReadNullableString(reader, "MotivoStatus"),
+            DhAutorizacao = ReadNullableDateTimeOffset(reader, "DhAutorizacao"),
+            CriadoEm = reader.GetDateTimeOffset(reader.GetOrdinal("CriadoEm")),
+            Tentativas = ReadInt(reader, "Tentativas"),
+            TotalAmount = totalAmount,
+            CustomerName = ReadNullableString(reader, "CustomerName"),
+            CustomerCpf = ReadNullableString(reader, "CustomerCpf"),
+            PaymentType = ReadNullableString(reader, "PaymentType"),
+            HasXml = reader.GetInt32(reader.GetOrdinal("HasXml")) == 1,
+            HasCancelXml = reader.GetInt32(reader.GetOrdinal("HasCancelXml")) == 1,
+            QrCodeUrl = ExtrairQrCode(xmlProtocolado) ?? ExtrairQrCode(xmlAssinado)
+        };
+    }
+
     /// <summary>Retorna os XMLs das notas autorizadas e canceladas de um mês para geração do pacote ZIP contábil.</summary>
     public async Task<List<DocumentoFiscalExportacaoXml>> ObterXmlsPorMesAsync(string companyId, int ano, int mes, CancellationToken ct = default)
     {
@@ -684,6 +758,132 @@ public class DocumentoFiscalAB(
         command.Parameters.AddWithValue("@MotivoStatus", Truncar(resultado.MotivoStatus, 500));
         command.Parameters.AddWithValue("@XmlCancelamento", (object?)resultado.XmlProtocolado ?? DBNull.Value);
         await command.ExecuteNonQueryAsync(ct);
+    }
+
+    /// <summary>
+    /// Marca o documento fiscal como cancelado com registro de auditoria do supervisor e operador,
+    /// atualiza o status da venda para cancelada e estorna automaticamente as quantidades vendidas no estoque.
+    /// Executado em transação atômica.
+    /// </summary>
+    public async Task MarcarCanceladoComAuditoriaAsync(
+        string companyId,
+        string id,
+        ResultadoFiscal resultado,
+        string supervisorId,
+        string supervisorNome,
+        string operadorNome,
+        string justificativa,
+        CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync(ct);
+        try
+        {
+            // 1. Atualiza DocumentosFiscais com dados da SEFAZ e auditoria de cancelamento
+            await using (var cmdDoc = new SqlCommand(
+                """
+                UPDATE DocumentosFiscais
+                   SET Status = @Status,
+                       CodigoStatus = @CodigoStatus,
+                       MotivoStatus = @MotivoStatus,
+                       XmlCancelamento = @XmlCancelamento,
+                       CanceladoPorSupervisorId = @SupervisorId,
+                       CanceladoPorSupervisorNome = @SupervisorNome,
+                       CanceladoPorOperador = @OperadorNome,
+                       CanceladoJustificativa = @Justificativa,
+                       AtualizadoEm = SYSDATETIMEOFFSET()
+                 WHERE Id = @Id AND CompanyId = @CompanyId;
+                """,
+                db,
+                transaction))
+            {
+                cmdDoc.Parameters.AddWithValue("@Id", id);
+                cmdDoc.Parameters.AddWithValue("@CompanyId", companyId);
+                cmdDoc.Parameters.AddWithValue("@Status", (int)StatusDocumentoFiscal.Cancelado);
+                cmdDoc.Parameters.AddWithValue("@CodigoStatus", resultado.CodigoStatus);
+                cmdDoc.Parameters.AddWithValue("@MotivoStatus", Truncar(resultado.MotivoStatus, 500));
+                cmdDoc.Parameters.AddWithValue("@XmlCancelamento", (object?)resultado.XmlProtocolado ?? DBNull.Value);
+                cmdDoc.Parameters.AddWithValue("@SupervisorId", (object?)supervisorId ?? DBNull.Value);
+                cmdDoc.Parameters.AddWithValue("@SupervisorNome", (object?)supervisorNome ?? DBNull.Value);
+                cmdDoc.Parameters.AddWithValue("@OperadorNome", (object?)operadorNome ?? DBNull.Value);
+                cmdDoc.Parameters.AddWithValue("@Justificativa", (object?)justificativa ?? DBNull.Value);
+                await cmdDoc.ExecuteNonQueryAsync(ct);
+            }
+
+            // 2. Recupera a Venda vinculada
+            string? vendaId = null;
+            string? saleNumber = null;
+            await using (var cmdGetVenda = new SqlCommand(
+                "SELECT d.VendaId, v.SaleNumber FROM DocumentosFiscais d LEFT JOIN Vendas v ON v.Id = d.VendaId WHERE d.Id = @Id AND d.CompanyId = @CompanyId;",
+                db,
+                transaction))
+            {
+                cmdGetVenda.Parameters.AddWithValue("@Id", id);
+                cmdGetVenda.Parameters.AddWithValue("@CompanyId", companyId);
+                await using var reader = await cmdGetVenda.ExecuteReaderAsync(ct);
+                if (await reader.ReadAsync(ct))
+                {
+                    vendaId = ReadNullableString(reader, "VendaId");
+                    saleNumber = ReadNullableString(reader, "SaleNumber");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(vendaId))
+            {
+                // 3. Atualiza o status da Venda para cancelada
+                await using (var cmdVenda = new SqlCommand(
+                    "UPDATE Vendas SET Status = 'cancelada' WHERE Id = @VendaId AND CompanyId = @CompanyId;",
+                    db,
+                    transaction))
+                {
+                    cmdVenda.Parameters.AddWithValue("@VendaId", vendaId);
+                    cmdVenda.Parameters.AddWithValue("@CompanyId", companyId);
+                    await cmdVenda.ExecuteNonQueryAsync(ct);
+                }
+
+                // 4. Estorno automático de estoque dos itens vendidos
+                await using (var cmdEstorno = new SqlCommand(
+                    """
+                    UPDATE p
+                       SET p.ProductQnt = p.ProductQnt + vi.Quantity,
+                           p.TotalPriceOnProduct = p.ProductUnitPrice * (p.ProductQnt + vi.Quantity)
+                      FROM Produtos p
+                      INNER JOIN VendaItens vi ON vi.ProductCode = p.ProductCode AND p.CompanyId = @CompanyId
+                     WHERE vi.VendaId = @VendaId;
+                    """,
+                    db,
+                    transaction))
+                {
+                    cmdEstorno.Parameters.AddWithValue("@VendaId", vendaId);
+                    cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
+                    await cmdEstorno.ExecuteNonQueryAsync(ct);
+                }
+
+                // 5. Registra na trilha genérica AuditLog
+                await using (var cmdAudit = new SqlCommand(
+                    """
+                    INSERT INTO AuditLog (CompanyId, UserId, UserName, EventType, EntityType, EntityId, Description, Ip)
+                    VALUES (@CompanyId, @UserId, @UserName, 'NfceCancelamento', 'DocumentosFiscais', @EntityId, @Description, 'PDV');
+                    """,
+                    db,
+                    transaction))
+                {
+                    cmdAudit.Parameters.AddWithValue("@CompanyId", companyId);
+                    cmdAudit.Parameters.AddWithValue("@UserId", supervisorId);
+                    cmdAudit.Parameters.AddWithValue("@UserName", supervisorNome);
+                    cmdAudit.Parameters.AddWithValue("@EntityId", id);
+                    cmdAudit.Parameters.AddWithValue("@Description", $"NFC-e cancelada no PDV para a venda {saleNumber ?? vendaId}. Caixa: {operadorNome}. Motivo: {justificativa}");
+                    await cmdAudit.ExecuteNonQueryAsync(ct);
+                }
+            }
+
+            await transaction.CommitAsync(ct);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(ct);
+            throw;
+        }
     }
 
     /// <summary>Extração leve do link do QR Code já embutido no XML autorizado (nfeProc/infNFeSupl) ou assinado.</summary>

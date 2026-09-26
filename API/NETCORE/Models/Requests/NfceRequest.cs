@@ -11,6 +11,14 @@ public class CancelamentoNfceRequest
     public string Justificativa { get; set; } = string.Empty;
 }
 
+public class CancelamentoComSupervisorRequest
+{
+    public string SupervisorId { get; set; } = string.Empty;
+    public string SupervisorPassword { get; set; } = string.Empty;
+    /// <summary>Mínimo 15 caracteres, exigência da SEFAZ.</summary>
+    public string Justificativa { get; set; } = string.Empty;
+}
+
 public class InutilizacaoNfceRequest
 {
     public int Serie { get; set; } = 1;

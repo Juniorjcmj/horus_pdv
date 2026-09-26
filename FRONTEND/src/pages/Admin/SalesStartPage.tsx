@@ -5,6 +5,7 @@
  */
 
 import {
+  AlertOctagon,
   AlertTriangle,
   Building2,
   CheckCircle2,
@@ -72,6 +73,7 @@ import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
 import { QuickCustomerRegisterModal } from "@/components/Admin/QuickCustomerRegisterModal";
 import { lookupAddressByCep } from "@/utils/cepLookup";
 import { onlyDigits } from "@/utils/inputMasks";
+import PdvNfceCancelModal from "@/components/Admin/PdvNfceCancelModal";
 
 type SalesStartPageProps = {
   onExit?: () => void;
@@ -224,6 +226,7 @@ export default function SalesStartPage({
   const [isConfirmingSale, setIsConfirmingSale] = useState(false);
   const { pendingCount, failedCount } = useOutboxStatus();
   const [outboxModalOpen, setOutboxModalOpen] = useState(false);
+  const [nfceCancelModalOpen, setNfceCancelModalOpen] = useState(false);
 
   const [quickCustomerModalOpen, setQuickCustomerModalOpen] = useState(false);
   const [quickCustomerInitialDoc, setQuickCustomerInitialDoc] = useState("");
@@ -1439,6 +1442,13 @@ export default function SalesStartPage({
       const target = event.target as HTMLElement | null;
       const isInput = target?.tagName === "INPUT";
 
+      if (event.key === "F7" || ((event.altKey || event.metaKey) && event.key.toLowerCase() === "c")) {
+        event.preventDefault();
+        setNfceCancelModalOpen(true);
+        return;
+      }
+      if (nfceCancelModalOpen) return;
+
       if (event.key === "F2") {
         event.preventDefault();
         productInputRef.current?.focus();
@@ -1472,7 +1482,7 @@ export default function SalesStartPage({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [addItem, cancelSale, checkoutOpen, openPayment, quantity, selectedProductId, cart.length, showProductOptions]);
+  }, [addItem, cancelSale, checkoutOpen, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen]);
 
   const { dateLabel, timeLabel } = formatDateTime(now);
   const cashCanSell = cashStatus?.canSell === true;
@@ -1525,6 +1535,15 @@ export default function SalesStartPage({
                   )}
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => setNfceCancelModalOpen(true)}
+                title="Cancelar NFC-e emitida perante a SEFAZ (Alt+C ou F7)"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-danger/80 hover:bg-danger px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 focus:outline-none"
+              >
+                <AlertOctagon size={16} />
+                <span className="hidden sm:inline">Cancelar NFC-e (F7)</span>
+              </button>
               <button
                 type="button"
                 onClick={toggleFullscreen}
@@ -2858,6 +2877,18 @@ export default function SalesStartPage({
       <OutboxStatusModal
         isOpen={outboxModalOpen}
         onClose={() => setOutboxModalOpen(false)}
+      />
+
+      {/* Modal de Cancelamento de NFC-e com Autorização de Supervisor */}
+      <PdvNfceCancelModal
+        isOpen={nfceCancelModalOpen}
+        onClose={() => {
+          setNfceCancelModalOpen(false);
+          window.setTimeout(() => productInputRef.current?.focus(), 100);
+        }}
+        onSuccess={() => {
+          void reloadProducts().catch(() => {});
+        }}
       />
 
       {statusDialog.Dialog}

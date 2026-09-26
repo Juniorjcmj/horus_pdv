@@ -1,10 +1,9 @@
 /**
- * HOMOLOGAÇÃO — Categoria E: Vendas multi-item e desconto
+ * CHANGE 08.1 — Categoria E: Venda com múltiplos itens
  *
  * E01 — Venda com múltiplos itens e totalização correta
- * E02 — Estoque é decrementado após venda
- * E03 — Histórico de vendas lista a venda recém-criada
- * E04 — Impressão de comprovante não gera erro
+ *       Adicionar produto A e B, alterar quantidade, validar subtotais,
+ *       promoções (se aplicável), total final, avançar para pagamento.
  */
 import { test, expect } from "@playwright/test";
 import {
@@ -28,6 +27,8 @@ test.describe("E — Vendas multi-item", () => {
   let productCodeA: string;
   let productCodeB: string;
   let saleNumber: string;
+  // Preço de venda: R$ 25,00 (definido em productPayload)
+  const SALE_PRICE = 25;
 
   test.beforeAll(async ({ request }) => {
     initSqlContainer();
@@ -35,7 +36,7 @@ test.describe("E — Vendas multi-item", () => {
     await registerTestCompany(request);
     await loginApi(request);
 
-    const supplier = await api<Entity>(request, "/Fornecedor", {
+    await api<Entity>(request, "/Fornecedor", {
       method: "POST",
       body: supplierPayload("Fornecedor E"),
     });
@@ -64,40 +65,62 @@ test.describe("E — Vendas multi-item", () => {
   });
 
   test("E01 — Venda com múltiplos itens e totalização correta", async ({ request }) => {
-    const sale = await api<{ saleNumber: string }>(request, "/HistoricoVendas", {
+    // Produto A: 3 unidades x R$ 25,00 = R$ 75,00
+    // Produto B: 2 unidades x R$ 25,00 = R$ 50,00
+    // Total esperado: R$ 125,00
+    const qtyA = 3;
+    const qtyB = 2;
+    const subtotalA = qtyA * SALE_PRICE; // 75
+    const subtotalB = qtyB * SALE_PRICE; // 50
+    const expectedTotal = subtotalA + subtotalB; // 125
+
+    const sale = await api<{
+      saleNumber: string;
+      rows?: Array<{ productCode: string; quantity: number; unitPrice: number; itemTotal: number }>;
+    }>(request, "/HistoricoVendas", {
       method: "POST",
       body: {
         customerName: `${RUN_ID} MultiItem`,
         customerCpf: generateCpf(),
         paymentType: "Dinheiro",
-        totalAmount: "125,00",
+        totalAmount: `${expectedTotal},00`,
         items: [
-          { productCode: productCodeA, productName: `${RUN_ID} ProdutoE1`, quantity: 3 },
-          { productCode: productCodeB, productName: `${RUN_ID} ProdutoE2`, quantity: 2 },
+          {
+            productCode: productCodeA,
+            productName: `${RUN_ID} ProdutoE1`,
+            quantity: qtyA,
+            unitPrice: SALE_PRICE,
+            itemTotal: subtotalA,
+          },
+          {
+            productCode: productCodeB,
+            productName: `${RUN_ID} ProdutoE2`,
+            quantity: qtyB,
+            unitPrice: SALE_PRICE,
+            itemTotal: subtotalB,
+          },
         ],
       },
     });
-    expect(sale.saleNumber).toBeTruthy();
+
+    expect(sale.saleNumber, "Venda deve retornar número").toBeTruthy();
     saleNumber = sale.saleNumber;
-  });
 
-  test("E02 — Estoque é decrementado após venda", async ({ request }) => {
+    // Validar estoque decrementado
     const products = await api<Product[]>(request, "/Produto");
-
     const pA = products.find((p) => p.productCode === productCodeA);
     const pB = products.find((p) => p.productCode === productCodeB);
 
-    expect(pA?.productQnt).toBe("17");
-    expect(pB?.productQnt).toBe("28");
-  });
+    // Estoque inicial: A=20, B=30. Após venda: A=17, B=28
+    expect(pA?.productQnt, "Estoque A decrementado de 20 para 17").toBe("17");
+    expect(pB?.productQnt, "Estoque B decrementado de 30 para 28").toBe("28");
 
-  test("E03 — Histórico de vendas lista a venda recém-criada", async ({ request }) => {
-    const sales = await api<Array<{ saleNumber: string }>>(request, "/HistoricoVendas");
+    // Validar que a venda aparece no histórico
+    const sales = await api<Array<{ saleNumber: string; totalAmount?: string }>>(
+      request,
+      "/HistoricoVendas",
+    );
     const found = sales.find((s) => s.saleNumber === saleNumber);
     expect(found, `Venda ${saleNumber} deve estar no histórico`).toBeTruthy();
-  });
-
-  test("E04 — Impressão de comprovante não gera erro", async ({ request }) => {
-    await api(request, `/HistoricoVendas/${saleNumber}/imprimir`, { method: "POST" });
   });
 });

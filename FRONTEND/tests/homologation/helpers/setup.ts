@@ -24,12 +24,13 @@ export function initSqlContainer(): void {
 
 function resolveSqlContainer(): string {
   const configured = process.env.SMOKE_SQL_CONTAINER;
-  const candidates = configured ? [configured] : ["sqlserver2025"];
+  const candidates = configured ? [configured] : ["horus-sqlserver", "sqlserver2025"];
   for (const name of candidates) {
     try {
       const isRunning = execFileSync("docker", ["inspect", "-f", "{{.State.Running}}", name], {
         encoding: "utf8",
         stdio: ["ignore", "pipe", "ignore"],
+        env: { ...process.env, MSYS_NO_PATHCONV: "1" },
       }).trim();
       if (isRunning === "true") return name;
     } catch {
@@ -44,11 +45,22 @@ function resolveSqlContainer(): string {
 function sqlcmdPath(): string {
   if (!sqlContainer) return "/opt/mssql-tools18/bin/sqlcmd";
   try {
-    execFileSync("docker", ["exec", sqlContainer, "test", "-x", "/opt/mssql-tools18/bin/sqlcmd"]);
+    execFileSync("docker", ["exec", sqlContainer, "test", "-x", "/opt/mssql-tools18/bin/sqlcmd"], {
+      env: { ...process.env, MSYS_NO_PATHCONV: "1" },
+    });
     return "/opt/mssql-tools18/bin/sqlcmd";
   } catch {
     return "/opt/mssql-tools/bin/sqlcmd";
   }
+}
+
+// No Windows com Git Bash (MSYS), paths como /opt/... são convertidos para C:/Program Files/Git/opt/...
+// Definir MSYS_NO_PATHCONV=1 no env das chamadas Docker evita essa conversão.
+const dockerEnv = { ...process.env, MSYS_NO_PATHCONV: "1" };
+
+// Collapse multi-line SQL to a single line to avoid Windows/Docker argument splitting
+function toSingleLine(sql: string): string {
+  return `SET QUOTED_IDENTIFIER ON; ${sql.replace(/\s+/g, " ").trim()}`;
 }
 
 export function runSql(sql: string): void {
@@ -56,9 +68,14 @@ export function runSql(sql: string): void {
   const args = [
     "exec", sqlContainer, sqlcmdPath(),
     "-S", "localhost", "-U", "sa", "-P", SQL_PASSWORD,
-    "-C", "-d", SQL_DATABASE, "-b", "-Q", sql,
+    "-C", "-d", SQL_DATABASE, "-b", "-Q", toSingleLine(sql),
   ];
-  execFileSync("docker", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  try {
+    execFileSync("docker", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env: dockerEnv });
+  } catch (err: unknown) {
+    const e = err as { stderr?: string; stdout?: string; message?: string };
+    throw new Error(`runSql failed: ${e.stderr || e.stdout || e.message}`);
+  }
 }
 
 export function querySqlScalar(sql: string): string | null {
@@ -66,9 +83,9 @@ export function querySqlScalar(sql: string): string | null {
   const args = [
     "exec", sqlContainer, sqlcmdPath(),
     "-S", "localhost", "-U", "sa", "-P", SQL_PASSWORD,
-    "-C", "-d", SQL_DATABASE, "-h", "-1", "-W", "-Q", sql,
+    "-C", "-d", SQL_DATABASE, "-h", "-1", "-W", "-Q", toSingleLine(sql),
   ];
-  const output = execFileSync("docker", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  const output = execFileSync("docker", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env: dockerEnv });
   return output.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)[0] ?? null;
 }
 
@@ -80,16 +97,15 @@ export function escapeSql(value: string): string {
 
 export function cleanupHomologData(): void {
   const like = `${escapeSql(SQL_PREFIX)}%`;
+  // Subquery to find Vendas IDs matching the run prefix
+  const vendaSubquery = `(SELECT v.Id FROM Vendas v WHERE v.CustomerName LIKE N'${like}' OR EXISTS (SELECT 1 FROM VendaItens i WHERE i.VendaId = v.Id AND i.ProductCode LIKE N'${like}'))`;
   runSql(`
-    DELETE FROM VendaItens
-      WHERE VendaId IN (
-        SELECT v.Id FROM Vendas v
-        WHERE v.CustomerName LIKE N'${like}'
-           OR EXISTS (SELECT 1 FROM VendaItens i WHERE i.VendaId = v.Id AND i.ProductCode LIKE N'${like}')
-      );
-    DELETE FROM Vendas
-      WHERE CustomerName LIKE N'${like}'
-         OR Id IN (SELECT VendaId FROM VendaItens WHERE ProductCode LIKE N'${like}');
+    DELETE FROM DocumentosFiscais WHERE VendaId IN ${vendaSubquery};
+    DELETE FROM VendaPagamentos WHERE VendaId IN ${vendaSubquery};
+    DELETE FROM VendaItens WHERE VendaId IN ${vendaSubquery};
+    DELETE FROM FiadoMovimentos WHERE ClienteId IN (SELECT Id FROM Clientes WHERE CustomerName LIKE N'${like}' OR Email LIKE N'${like.toLowerCase()}');
+    DELETE FROM Vendas WHERE CustomerName LIKE N'${like}' OR Id IN (SELECT VendaId FROM VendaItens WHERE ProductCode LIKE N'${like}');
+    DELETE FROM ProcessedEvents WHERE EventId LIKE N'${like}' OR ClientSaleId LIKE N'${like}';
     DELETE FROM Produtos WHERE ProductCode LIKE N'${like}' OR ProductName LIKE N'${like}';
     DELETE FROM Clientes WHERE CustomerName LIKE N'${like}' OR Email LIKE N'${like.toLowerCase()}';
     DELETE FROM Fornecedores WHERE FantasyName LIKE N'${like}' OR CompanyName LIKE N'${like}';
@@ -181,6 +197,13 @@ export type ApiResponse<T> = {
 
 const PASSWORD = `Hom@${Date.now().toString().slice(-6)}Aa`;
 let registeredEmail: string | null = null;
+let authCookie: string | null = null;
+
+export function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (authCookie) headers["Cookie"] = authCookie;
+  return headers;
+}
 
 export function getCredentials() {
   return {
@@ -250,6 +273,20 @@ export async function loginApi(request: APIRequestContext): Promise<LoginData> {
   const payload = raw ? (JSON.parse(raw) as ApiResponse<LoginData>) : null;
   expect(res.ok(), `Login failed: ${raw}`).toBeTruthy();
   expect(payload?.success, `Login failed: ${raw}`).toBeTruthy();
+
+  // Extract auth cookie from Set-Cookie header for reuse across request contexts
+  // Playwright excludes set-cookie from headers(), must use headersArray()
+  const headersArr = res.headersArray();
+  for (const h of headersArr) {
+    if (h.name.toLowerCase() === "set-cookie") {
+      const match = h.value.match(/horuspdv\.auth=([^;]+)/);
+      if (match) {
+        authCookie = `horuspdv.auth=${match[1]}`;
+        break;
+      }
+    }
+  }
+
   return payload!.data!;
 }
 
@@ -301,10 +338,15 @@ export async function api<T>(
     allowFailure?: boolean;
   } = {},
 ): Promise<T> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (authCookie) {
+    headers["Cookie"] = authCookie;
+  }
+
   const response = await request.fetch(`${API_URL}${path}`, {
     method: options.method ?? "GET",
     data: options.body,
-    headers: { "Content-Type": "application/json" },
+    headers,
   });
 
   const raw = await response.text();

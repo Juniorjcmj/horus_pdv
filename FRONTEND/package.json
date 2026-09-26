@@ -17,7 +17,9 @@
     "smoke:keep": "SMOKE_RUN_ID=SMOKE_CONFERE SMOKE_KEEP_DATA=1 playwright test --config playwright.config.ts --headed",
     "smoke:install": "playwright install chromium",
     "demo:video": "playwright test --config playwright.demo.config.ts",
-    "test:arch": "playwright test --config playwright.arch.config.ts"
+    "test:arch": "playwright test --config playwright.arch.config.ts",
+    "test:homolog": "playwright test --config playwright.homolog.config.ts",
+    "test:homolog:headed": "playwright test --config playwright.homolog.config.ts --headed"
   },
   "dependencies": {
     "@types/jsbarcode": "^3.11.4",

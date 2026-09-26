@@ -38,6 +38,24 @@ public class UsuarioController(
         });
     }
 
+    [HttpGet("supervisores")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
+    public IActionResult ListarSupervisores()
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null)
+        {
+            return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+        }
+
+        return Ok(new ApiResponse<List<SupervisorResumoDto>>
+        {
+            Success = true,
+            Message = "Supervisores obtidos com sucesso.",
+            Data = securityStore.ListSupervisores(currentUser.CompanyId)
+        });
+    }
+
     [HttpPost]
     public IActionResult Criar([FromBody] UsuarioRequest request)
     {

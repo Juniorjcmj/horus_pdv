@@ -59,6 +59,19 @@ export type FiscalDocumentDetailDto = FiscalDocumentDto & {
   qrCodeUrl: string | null;
 };
 
+export type CancelarComSupervisorPayload = {
+  supervisorId: string;
+  supervisorPassword: string;
+  justificativa: string;
+};
+
+export type CancelarComSupervisorResult = {
+  documentoId: string;
+  protocoloCancelamento?: string;
+  motivoStatus?: string;
+  supervisorNome?: string;
+};
+
 export function fiscalStatusLabel(status: FiscalStatus): string {
   switch (status) {
     case FISCAL_STATUS.Rascunho:
@@ -111,6 +124,16 @@ export const fiscalService = {
       return null;
     }
   },
+  async buscarPorCodigo(codigo: string) {
+    try {
+      const response = await apiRequest<FiscalDocumentDetailDto>(
+        `${NFCE_API_URL}/buscar/${encodeURIComponent(codigo.trim())}`
+      );
+      return response.data ?? null;
+    } catch {
+      return null;
+    }
+  },
   async reemitir(id: string) {
     const response = await apiRequest<object>(`${NFCE_API_URL}/${id}/reemitir`, { method: "POST" });
     return response.message;
@@ -121,6 +144,16 @@ export const fiscalService = {
       body: JSON.stringify({ justificativa }),
     });
     return response.message;
+  },
+  async cancelarComSupervisor(id: string, payload: CancelarComSupervisorPayload) {
+    const response = await apiRequest<CancelarComSupervisorResult>(
+      `${NFCE_API_URL}/${encodeURIComponent(id)}/cancelar-com-supervisor`,
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }
+    );
+    return response;
   },
   async inutilizar(payload: {
     serie: number;
