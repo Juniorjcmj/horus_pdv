@@ -16,24 +16,63 @@ using HORUSPDV_API.Services.Fornecedores;
 using HORUSPDV_API.Services.Produtos;
 using HORUSPDV_API.Services.Promocoes;
 using HORUSPDV_API.Services.Security;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var corsOrigins = (builder.Configuration["Security:CorsOrigins"] ??
-                   "http://localhost:5173,https://localhost:5173,http://127.0.0.1:5173,https://127.0.0.1:5173,http://localhost:4173,https://localhost:4173,http://127.0.0.1:4173,https://127.0.0.1:4173")
-    .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+var configuredCors = builder.Configuration["Security:CorsOrigins"];
+var rawCors = !string.IsNullOrWhiteSpace(configuredCors)
+    ? configuredCors
+    : "https://pdv.wootchat.com.br,http://pdv.wootchat.com.br,http://localhost:5173,https://localhost:5173,http://127.0.0.1:5173,https://127.0.0.1:5173,http://localhost:4173,https://localhost:4173,http://127.0.0.1:4173,https://127.0.0.1:4173";
+
+var explicitOrigins = rawCors
+    .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+    .Select(o => o.TrimEnd('/'))
+    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+// Sempre assegura https://pdv.wootchat.com.br e variantes na lista
+explicitOrigins.Add("https://pdv.wootchat.com.br");
+explicitOrigins.Add("http://pdv.wootchat.com.br");
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.Configure<HorusEmailOptions>(builder.Configuration.GetSection("Email"));
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                             | ForwardedHeaders.XForwardedProto
+                             | ForwardedHeaders.XForwardedHost;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("HorusPdvCorsPolicy", policyBuilder =>
     {
         policyBuilder
-            .WithOrigins(corsOrigins)
+            .SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrWhiteSpace(origin)) return false;
+                var trimmed = origin.TrimEnd('/');
+                if (explicitOrigins.Contains(trimmed)) return true;
+
+                if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                {
+                    var host = uri.Host;
+                    if (host.Equals("wootchat.com.br", StringComparison.OrdinalIgnoreCase) ||
+                        host.EndsWith(".wootchat.com.br", StringComparison.OrdinalIgnoreCase) ||
+                        host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                        host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            })
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -105,13 +144,12 @@ else
     app.UseHsts();
 }
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseHttpsRedirection();
-}
+app.UseForwardedHeaders();
+
 app.UseRouting();
-app.UseMiddleware<HorusSecurityHeadersMiddleware>();
 app.UseCors("HorusPdvCorsPolicy");
+
+app.UseMiddleware<HorusSecurityHeadersMiddleware>();
 app.UseMiddleware<HorusRequestTelemetryMiddleware>();
 app.UseMiddleware<HorusRequestBodyLimitMiddleware>();
 app.UseMiddleware<HorusRateLimitMiddleware>();

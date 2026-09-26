@@ -14,7 +14,7 @@ public class HorusSecurityHeadersMiddleware(RequestDelegate next)
         context.Response.Headers.TryAdd("Referrer-Policy", "no-referrer");
         context.Response.Headers.TryAdd("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
         context.Response.Headers.TryAdd("X-Permitted-Cross-Domain-Policies", "none");
-        context.Response.Headers.TryAdd("Cross-Origin-Resource-Policy", "same-site");
+        context.Response.Headers.TryAdd("Cross-Origin-Resource-Policy", "cross-origin");
         context.Response.Headers.TryAdd("Cache-Control", "no-store");
         context.Response.Headers.Remove("Server");
         context.Response.Headers.Remove("X-Powered-By");
