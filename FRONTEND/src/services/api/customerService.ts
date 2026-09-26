@@ -3,10 +3,9 @@
  * Objetivo: encapsula chamadas HTTP de cadastro e manutenção de clientes.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const CLIENTE_API_URL =
-  import.meta.env.VITE_CLIENTE_API_URL ?? "http://localhost:5260/api/Cliente";
+const CLIENTE_API_URL = requireEnvUrl("VITE_CLIENTE_API_URL");
 
 export type CustomerDto = {
   id: string;

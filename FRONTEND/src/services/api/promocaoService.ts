@@ -2,10 +2,9 @@
  * Arquivo: src/services/api/promocaoService.ts
  * Objetivo: encapsula chamadas HTTP para promoções e preços dinâmicos.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const PROMOCAO_API_URL =
-  import.meta.env.VITE_PROMOCAO_API_URL ?? "http://localhost:5260/api/Promocao";
+const PROMOCAO_API_URL = requireEnvUrl("VITE_PROMOCAO_API_URL");
 
 export type TipoPromocao =
   | "desconto_percentual"

@@ -5,10 +5,9 @@
  */
 import type { AdminUser } from "@/components/Admin/UsersPage";
 import type { UserFormState, UserStatus } from "@/components/Admin/UsersPage";
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const USUARIOS_API_URL =
-  import.meta.env.VITE_USUARIOS_API_URL ?? "http://localhost:5260/api/Usuario";
+const USUARIOS_API_URL = requireEnvUrl("VITE_USUARIOS_API_URL");
 
 export const userService = {
   async list() {

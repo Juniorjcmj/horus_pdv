@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Caixa/CaixaController.cs": {
-    "mtime": 1790393343.6287298,
-    "seen": 1790393498.5735483,
-    "ast_hash": "1fa450545af7059a6ad93ee56594833d",
+    "mtime": 1788754745.7843404,
+    "seen": 1788888974.3517733,
+    "ast_hash": "53d9384984d9b558bbe32b2185ee3327",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Clientes/ClienteController.cs": {
@@ -204,9 +204,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/CaixaRequest.cs": {
-    "mtime": 1790393243.402769,
-    "seen": 1790393498.5789685,
-    "ast_hash": "45de97dbdb1940ffa8ed9896ead39132",
+    "mtime": 1788717520.3325665,
+    "seen": 1788888974.3518333,
+    "ast_hash": "e0eba13a9d6a43b6ca7a96f00d399ffb",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ChangePasswordRequest.cs": {
@@ -390,9 +390,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/CaixaAB.cs": {
-    "mtime": 1790393302.9569173,
-    "seen": 1790393498.584609,
-    "ast_hash": "afd10029c9fcc35d9351582897aabb9b",
+    "mtime": 1788754674.2849076,
+    "seen": 1788888974.3519037,
+    "ast_hash": "6960bfa86b48d20c6c96c78549c33e6c",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ClienteAB.cs": {
@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
-    "mtime": 1790393322.58188,
-    "seen": 1790393498.5869644,
-    "ast_hash": "f73748baaa349ccd4d919f57e652c0a0",
+    "mtime": 1789173605.8449497,
+    "seen": 1789173793.808791,
+    "ast_hash": "18c96f6097cd136b2c54099f53c441f5",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Clientes/ClienteService.cs": {
@@ -1158,9 +1158,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/cashRegisterService.ts": {
-    "mtime": 1790393405.1195383,
-    "seen": 1790393498.6111987,
-    "ast_hash": "024356837fb20e02eea3b12029f707d1",
+    "mtime": 1788754834.5576248,
+    "seen": 1788888974.3522213,
+    "ast_hash": "8f24ecf389f27036979ccb5a7081f031",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/companyService.ts": {
@@ -2544,9 +2544,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Shared/HorusPayloadHash.cs": {
-    "mtime": 1790393260.4763713,
-    "seen": 1790393498.5909457,
-    "ast_hash": "d32d2af5ebdd702e08314bc90fd10fba",
+    "mtime": 1790389074.5961576,
+    "seen": 1790389445.5156772,
+    "ast_hash": "aa6e8c894c7a227d949ea26ece79279f",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Shared/IdempotencyConflictException.cs": {
@@ -2628,9 +2628,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CashSessionRepository.ts": {
-    "mtime": 1790393430.9088888,
-    "seen": 1790393498.6050925,
-    "ast_hash": "c23564224f450616db443d33840a463a",
+    "mtime": 1790392555.615438,
+    "seen": 1790392604.011269,
+    "ast_hash": "8ebd392305a0ec065a5f8f501e345a73",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CustomerRepository.ts": {
@@ -2664,9 +2664,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/synchronization/SyncEngine.ts": {
-    "mtime": 1790393446.9731328,
-    "seen": 1790393498.6059377,
-    "ast_hash": "0c9a5e6fbee5d888ebe27f104b274eb7",
+    "mtime": 1790392126.070914,
+    "seen": 1790392604.0122254,
+    "ast_hash": "5fd2107c42eae6d5dae2e07b61b2980d",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/offlineStore.ts": {
@@ -2694,9 +2694,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/cryptoHash.ts": {
-    "mtime": 1790393389.6735573,
-    "seen": 1790393498.61449,
-    "ast_hash": "fb9dbb4a9ad4f715af7a78e21e4da749",
+    "mtime": 1790390949.1888037,
+    "seen": 1790391057.186229,
+    "ast_hash": "d8b2a00fb4842704319626b6286e1850",
     "semantic_hash": ""
   },
   "FRONTEND/public/sw.js": {

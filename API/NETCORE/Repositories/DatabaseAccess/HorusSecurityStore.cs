@@ -17,8 +17,6 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
     private const int MaxFailedAttempts = 5;
     private static readonly TimeSpan AttemptWindow = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan LockDuration = TimeSpan.FromMinutes(10);
-    private static readonly object AttemptSyncRoot = new();
-    private static readonly Dictionary<string, LoginAttemptBucket> Attempts = new(StringComparer.OrdinalIgnoreCase);
 
     public List<SecurityUserDto> ListUsers(string companyId)
     {
@@ -180,72 +178,91 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
     {
         var normalizedEmail = email.Trim().ToLowerInvariant();
         var now = DateTimeOffset.UtcNow;
-        var attemptKey = $"{ip}|{normalizedEmail}";
 
-        lock (AttemptSyncRoot)
+        var user = FindUserByEmail(normalizedEmail);
+
+        // Verificar lockout persistente no banco
+        if (user is not null)
         {
-            var bucket = GetAttemptBucket(attemptKey, now);
-            if (bucket.LockedUntil is not null && bucket.LockedUntil > now)
+            if (user.LockoutEnd is not null && user.LockoutEnd > now)
             {
-                return LoginResult.Fail("Muitas tentativas inválidas. Aguarde alguns minutos para tentar novamente.", bucket.LockedUntil);
+                return LoginResult.Fail("Muitas tentativas inválidas. Aguarde alguns minutos para tentar novamente.", user.LockoutEnd);
             }
 
-            var user = FindUserByEmail(normalizedEmail);
-            if (user is null || user.Status != "ativo" || !PasswordHasher.Verify(password, user.PasswordHash))
+            // Resetar janela de tentativas se expirou
+            if (user.FirstFailedLoginAt is not null && now - user.FirstFailedLoginAt.Value > AttemptWindow)
             {
-                RegisterFailedAttempt(bucket, now);
-                return LoginResult.Fail("E-mail ou senha inválidos.", bucket.LockedUntil);
+                ResetLockoutState(user.Id);
+                user.FailedLoginAttempts = 0;
+                user.FirstFailedLoginAt = null;
+                user.LockoutEnd = null;
             }
+        }
 
-            if (!string.Equals(user.CompanyId, "empresa-principal", StringComparison.OrdinalIgnoreCase))
+        if (user is null || user.Status != "ativo" || !PasswordHasher.Verify(password, user.PasswordHash))
+        {
+            DateTimeOffset? lockedUntil = null;
+            if (user is not null)
             {
-                var companyInfo = GetCompanyStatusInfo(user.CompanyId);
-                if (companyInfo != null)
+                lockedUntil = RegisterFailedAttemptDb(user.Id, now);
+            }
+            return LoginResult.Fail("E-mail ou senha inválidos.", lockedUntil);
+        }
+
+        if (!string.Equals(user.CompanyId, "empresa-principal", StringComparison.OrdinalIgnoreCase))
+        {
+            var companyInfo = GetCompanyStatusInfo(user.CompanyId);
+            if (companyInfo != null)
+            {
+                if (string.Equals(companyInfo.Value.Status, "pendente", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(companyInfo.Value.Status, "pendente", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return LoginResult.Fail("O cadastro da sua empresa está em análise e aguarda aprovação pelo administrador do sistema.");
-                    }
-                    if (string.Equals(companyInfo.Value.Status, "rejeitada", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var motivo = !string.IsNullOrWhiteSpace(companyInfo.Value.RejectionReason) ? $" Motivo: {companyInfo.Value.RejectionReason}" : "";
-                        return LoginResult.Fail($"O cadastro da sua empresa foi recusado.{motivo}");
-                    }
-                    if (string.Equals(companyInfo.Value.Status, "bloqueada", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var motivo = !string.IsNullOrWhiteSpace(companyInfo.Value.RejectionReason) ? $" Motivo: {companyInfo.Value.RejectionReason}" : "";
-                        return LoginResult.Fail($"O acesso da sua empresa está suspenso/bloqueado.{motivo}");
-                    }
+                    return LoginResult.Fail("O cadastro da sua empresa está em análise e aguarda aprovação pelo administrador do sistema.");
+                }
+                if (string.Equals(companyInfo.Value.Status, "rejeitada", StringComparison.OrdinalIgnoreCase))
+                {
+                    var motivo = !string.IsNullOrWhiteSpace(companyInfo.Value.RejectionReason) ? $" Motivo: {companyInfo.Value.RejectionReason}" : "";
+                    return LoginResult.Fail($"O cadastro da sua empresa foi recusado.{motivo}");
+                }
+                if (string.Equals(companyInfo.Value.Status, "bloqueada", StringComparison.OrdinalIgnoreCase))
+                {
+                    var motivo = !string.IsNullOrWhiteSpace(companyInfo.Value.RejectionReason) ? $" Motivo: {companyInfo.Value.RejectionReason}" : "";
+                    return LoginResult.Fail($"O acesso da sua empresa está suspenso/bloqueado.{motivo}");
                 }
             }
-
-            Attempts.Remove(attemptKey);
-            user.LastLoginAt = now.UtcDateTime.ToString("o");
-            var session = CreateSession(user, ip, userAgent, now);
-
-            using var db = connection.OpenConnection();
-            using var transaction = db.BeginTransaction();
-            try
-            {
-                using var updateUser = new SqlCommand(
-                    "UPDATE Usuarios SET LastLoginAt = @LastLoginAt WHERE Id = @Id;",
-                    db,
-                    transaction);
-                updateUser.Parameters.AddWithValue("@LastLoginAt", user.LastLoginAt);
-                updateUser.Parameters.AddWithValue("@Id", user.Id);
-                updateUser.ExecuteNonQuery();
-
-                InsertSession(db, transaction, session);
-                transaction.Commit();
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
-
-            return LoginResult.Ok(ToDto(user), session);
         }
+
+        user.LastLoginAt = now.UtcDateTime.ToString("o");
+        var session = CreateSession(user, ip, userAgent, now);
+
+        using var db = connection.OpenConnection();
+        using var transaction = db.BeginTransaction();
+        try
+        {
+            using var updateUser = new SqlCommand(
+                """
+                UPDATE Usuarios
+                   SET LastLoginAt = @LastLoginAt,
+                       FailedLoginAttempts = 0,
+                       FirstFailedLoginAt = NULL,
+                       LockoutEnd = NULL
+                 WHERE Id = @Id;
+                """,
+                db,
+                transaction);
+            updateUser.Parameters.AddWithValue("@LastLoginAt", user.LastLoginAt);
+            updateUser.Parameters.AddWithValue("@Id", user.Id);
+            updateUser.ExecuteNonQuery();
+
+            InsertSession(db, transaction, session);
+            transaction.Commit();
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+
+        return LoginResult.Ok(ToDto(user), session);
     }
 
     public SecurityUserDto? GetActiveUser(string id)
@@ -618,25 +635,40 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         }
     }
 
-    private LoginAttemptBucket GetAttemptBucket(string key, DateTimeOffset now)
+    private DateTimeOffset? RegisterFailedAttemptDb(string userId, DateTimeOffset now)
     {
-        if (!Attempts.TryGetValue(key, out var bucket) || now - bucket.FirstAttemptAt > AttemptWindow)
-        {
-            bucket = new LoginAttemptBucket { FirstAttemptAt = now };
-            Attempts[key] = bucket;
-        }
+        using var db = connection.OpenConnection();
+        using var cmd = new SqlCommand(
+            """
+            UPDATE Usuarios
+               SET FailedLoginAttempts = FailedLoginAttempts + 1,
+                   FirstFailedLoginAt = ISNULL(FirstFailedLoginAt, @Now),
+                   LockoutEnd = CASE
+                       WHEN FailedLoginAttempts + 1 >= @MaxAttempts THEN @LockoutEnd
+                       ELSE LockoutEnd
+                   END
+             WHERE Id = @Id;
 
-        return bucket;
+            SELECT LockoutEnd FROM Usuarios WHERE Id = @Id;
+            """,
+            db);
+        cmd.Parameters.AddWithValue("@Id", userId);
+        cmd.Parameters.AddWithValue("@Now", now);
+        cmd.Parameters.AddWithValue("@MaxAttempts", MaxFailedAttempts);
+        cmd.Parameters.AddWithValue("@LockoutEnd", now.Add(LockDuration));
+
+        var result = cmd.ExecuteScalar();
+        return result is DateTimeOffset dto ? dto : null;
     }
 
-    private static void RegisterFailedAttempt(LoginAttemptBucket bucket, DateTimeOffset now)
+    private void ResetLockoutState(string userId)
     {
-        bucket.Count += 1;
-        bucket.LastAttemptAt = now;
-        if (bucket.Count >= MaxFailedAttempts)
-        {
-            bucket.LockedUntil = now.Add(LockDuration);
-        }
+        using var db = connection.OpenConnection();
+        using var cmd = new SqlCommand(
+            "UPDATE Usuarios SET FailedLoginAttempts = 0, FirstFailedLoginAt = NULL, LockoutEnd = NULL WHERE Id = @Id;",
+            db);
+        cmd.Parameters.AddWithValue("@Id", userId);
+        cmd.ExecuteNonQuery();
     }
 
     private static SecuritySession CreateSession(SecurityUserRecord user, string ip, string userAgent, DateTimeOffset now)
@@ -1683,6 +1715,9 @@ internal sealed class SecurityUserRecord
     public string LastLoginAt { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public bool MustChangePassword { get; set; }
+    public int FailedLoginAttempts { get; set; }
+    public DateTimeOffset? FirstFailedLoginAt { get; set; }
+    public DateTimeOffset? LockoutEnd { get; set; }
 }
 
 internal sealed record PasswordResetTokenRecord(

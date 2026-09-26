@@ -12,6 +12,7 @@ import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import PageLayout from "@/layout/PageLayout";
 import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { productService } from "@/services/api/productService";
+import { round2 } from "@/utils/promotionEngine";
 
 type Product = {
   id: string;
@@ -91,7 +92,7 @@ export default function NovoPedidoPage() {
   }, [products, productSearch]);
 
   const total = useMemo(
-    () => cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
+    () => round2(cart.reduce((sum, item) => sum + round2(item.unitPrice * item.quantity), 0)),
     [cart],
   );
 

@@ -3,10 +3,9 @@
  * Objetivo: encapsula chamadas HTTP de histórico de vendas, registro de venda e recibos.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const HISTORICO_VENDAS_API_URL =
-  import.meta.env.VITE_HISTORICO_VENDAS_API_URL ?? "http://localhost:5260/api/HistoricoVendas";
+const HISTORICO_VENDAS_API_URL = requireEnvUrl("VITE_HISTORICO_VENDAS_API_URL");
 
 export type SaleHistoryDto = {
   saleNumber: string;

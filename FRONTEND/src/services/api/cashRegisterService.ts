@@ -3,9 +3,9 @@
  * Objetivo: encapsula chamadas HTTP de abertura, fechamento, sangria/reforço e status de caixa.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const CAIXA_API_URL = import.meta.env.VITE_CAIXA_API_URL ?? "http://localhost:5260/api/Caixa";
+const CAIXA_API_URL = requireEnvUrl("VITE_CAIXA_API_URL");
 
 export type CashMovementType = "Reforco" | "Sangria";
 

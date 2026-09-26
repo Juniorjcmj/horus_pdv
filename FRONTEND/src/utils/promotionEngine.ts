@@ -18,7 +18,7 @@ export type CartItemPromo = {
   [key: string]: unknown;
 };
 
-function round2(val: number): number {
+export function round2(val: number): number {
   return Math.round((val + Number.EPSILON) * 100) / 100;
 }
 

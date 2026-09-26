@@ -44,6 +44,7 @@ import {
   type ReplenishmentSuggestionDto,
 } from "@/services/api/purchaseOrderService";
 import { supplierService, type SupplierDto } from "@/services/api/supplierService";
+import { round2 } from "@/utils/promotionEngine";
 
 // ---------------------------------------------------------------------------
 // Types & Helpers
@@ -389,7 +390,7 @@ export default function PurchasesPage() {
     setCart((prev) => prev.filter((c) => c.productCode !== code));
   }
 
-  const subtotalCart = cart.reduce((sum, c) => sum + c.quantity * c.unitCost, 0);
+  const subtotalCart = round2(cart.reduce((sum, c) => sum + round2(c.quantity * c.unitCost), 0));
   const numFrete = Number(freteInput) || 0;
   const numDesconto = Number(descontoInput) || 0;
   const cartTotal = Math.max(0, subtotalCart + numFrete - numDesconto);

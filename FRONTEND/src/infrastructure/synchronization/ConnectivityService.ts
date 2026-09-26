@@ -4,6 +4,7 @@
  *           o health da API periodicamente. Expõe estado reativo para o React.
  */
 import type { ConnectionStatus } from "@/shared/types/sync";
+import { requireEnvUrl } from "@/services/api/apiClient";
 
 type Listener = (status: ConnectionStatus) => void;
 
@@ -18,8 +19,7 @@ class ConnectivityService {
   private _started = false;
 
   constructor() {
-    const base = import.meta.env.VITE_AUTH_API_URL ?? "http://localhost:5260/api/Auth";
-    this._healthUrl = `${base}/me`;
+    this._healthUrl = `${requireEnvUrl("VITE_AUTH_API_URL")}/me`;
   }
 
   get status(): ConnectionStatus {

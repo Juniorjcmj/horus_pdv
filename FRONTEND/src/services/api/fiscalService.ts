@@ -3,10 +3,10 @@
  * Objetivo: encapsula chamadas HTTP de consulta, reemissão, cancelamento e inutilização de NFC-e.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const NFCE_API_URL = import.meta.env.VITE_NFCE_API_URL ?? "http://localhost:5260/api/Nfce";
-const NFE_API_URL = import.meta.env.VITE_NFE_API_URL ?? "http://localhost:5260/api/Nfe";
+const NFCE_API_URL = requireEnvUrl("VITE_NFCE_API_URL");
+const NFE_API_URL = requireEnvUrl("VITE_NFE_API_URL");
 
 /** Espelha StatusDocumentoFiscal (API/NETCORE/Services/Fiscal/FiscalContracts.cs). */
 export const FISCAL_STATUS = {

@@ -3,10 +3,9 @@
  * Objetivo: encapsula chamadas HTTP de cadastro e manutenção de fornecedores.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const FORNECEDOR_API_URL =
-  import.meta.env.VITE_FORNECEDOR_API_URL ?? "http://localhost:5260/api/Fornecedor";
+const FORNECEDOR_API_URL = requireEnvUrl("VITE_FORNECEDOR_API_URL");
 
 export type SupplierDto = {
   id: string;

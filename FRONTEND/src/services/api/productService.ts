@@ -3,10 +3,9 @@
  * Objetivo: encapsula chamadas HTTP de cadastro, estoque e manutenção de produtos.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const PRODUTO_API_URL =
-  import.meta.env.VITE_PRODUTO_API_URL ?? "http://localhost:5260/api/Produto";
+const PRODUTO_API_URL = requireEnvUrl("VITE_PRODUTO_API_URL");
 
 export type ProductDto = {
   id: string;

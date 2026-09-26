@@ -369,13 +369,8 @@ public class GerenciamentoEmpresasController(
             return null;
         }
 
-        var isSuperAdmin =
-            string.Equals(user.CompanyId, "empresa-principal", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(user.Email, "jotacfs2010@hotmail.com", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(user.Email, "jotanaval2009@gmail.com", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(user.Email, "flavio@hpdv.com.br", StringComparison.OrdinalIgnoreCase);
-
-        if (!isSuperAdmin || !string.Equals(user.Role, "administrador", StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(user.CompanyId, "empresa-principal", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(user.Role, "administrador", StringComparison.OrdinalIgnoreCase))
         {
             errorResult = StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
             {

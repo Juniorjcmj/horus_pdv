@@ -2,10 +2,9 @@
  * Arquivo: src/services/api/categoriaService.ts
  * Objetivo: encapsula chamadas HTTP de categorias e departamentos de produtos.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const CATEGORIA_API_URL =
-  import.meta.env.VITE_CATEGORIA_API_URL ?? "http://localhost:5260/api/Categoria";
+const CATEGORIA_API_URL = requireEnvUrl("VITE_CATEGORIA_API_URL");
 
 export type Categoria = {
   id: string;

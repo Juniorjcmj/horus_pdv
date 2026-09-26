@@ -402,7 +402,7 @@ public class ProdutoAB(Connection connection)
         return await command.ExecuteNonQueryAsync() > 0;
     }
 
-    public async Task BaixarEstoqueAsync(IEnumerable<(string ProductCode, decimal Quantity)> items)
+    public async Task BaixarEstoqueAsync(string companyId, IEnumerable<(string ProductCode, decimal Quantity)> items)
     {
         var groupedItems = items
             .GroupBy(item => item.ProductCode.Trim(), StringComparer.OrdinalIgnoreCase)
@@ -426,10 +426,11 @@ public class ProdutoAB(Connection connection)
                     """
                     SELECT Id, ProductName, ProductQnt, ProductUnitPrice
                     FROM Produtos WITH (UPDLOCK, ROWLOCK)
-                    WHERE ProductCode = @ProductCode;
+                    WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;
                     """,
                     db,
                     transaction);
+                select.Parameters.AddWithValue("@CompanyId", companyId);
                 select.Parameters.AddWithValue("@ProductCode", item.ProductCode);
                 await using var reader = await select.ExecuteReaderAsync();
                 if (!await reader.ReadAsync())
@@ -455,13 +456,14 @@ public class ProdutoAB(Connection connection)
                     UPDATE Produtos
                        SET ProductQnt = @ProductQnt,
                            TotalPriceOnProduct = @TotalPriceOnProduct
-                     WHERE Id = @Id;
+                     WHERE Id = @Id AND CompanyId = @CompanyId;
                     """,
                     db,
                     transaction);
                 update.Parameters.AddWithValue("@ProductQnt", nextStock);
                 update.Parameters.AddWithValue("@TotalPriceOnProduct", unitPrice * nextStock);
                 update.Parameters.AddWithValue("@Id", productId);
+                update.Parameters.AddWithValue("@CompanyId", companyId);
                 await update.ExecuteNonQueryAsync();
             }
 

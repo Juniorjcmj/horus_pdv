@@ -46,7 +46,7 @@ import ReceiptPreviewModal, {
 } from "@/components/Admin/ReceiptPreviewModal";
 import { categoriaService, type CategoriaArvore } from "@/services/api/categoriaService";
 import { promocaoService, type Promocao } from "@/services/api/promocaoService";
-import { applyPromotions } from "@/utils/promotionEngine";
+import { applyPromotions, round2 } from "@/utils/promotionEngine";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
 import { customerService, type CustomerDto } from "@/services/api/customerService";
 import { useCustomers } from "@/hooks/useCustomers";
@@ -383,15 +383,15 @@ export default function SalesStartPage({
   }, [rawCart, promocoes, produtoCategoriaMap]);
 
   const grossSubtotal = useMemo(
-    () => cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
+    () => round2(cart.reduce((sum, item) => sum + round2(item.unitPrice * item.quantity), 0)),
     [cart],
   );
   const totalDiscount = useMemo(
-    () => cart.reduce((sum, item) => sum + (item.discount ?? 0), 0),
+    () => round2(cart.reduce((sum, item) => sum + (item.discount ?? 0), 0)),
     [cart],
   );
   const subtotal = useMemo(
-    () => Math.max(0, grossSubtotal - totalDiscount),
+    () => round2(Math.max(0, grossSubtotal - totalDiscount)),
     [grossSubtotal, totalDiscount],
   );
   const totalVolumes = useMemo(

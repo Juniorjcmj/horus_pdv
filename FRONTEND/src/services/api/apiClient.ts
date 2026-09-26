@@ -20,6 +20,18 @@ type ApiRequestOptions = RequestInit & {
 
 const API_TIMEOUT_MS = 5_000;
 
+/**
+ * Retorna o valor de uma variável de ambiente VITE_*.
+ * Em produção, falha explicitamente se a variável não estiver configurada.
+ */
+export function requireEnvUrl(envVar: string): string {
+  const value = import.meta.env[envVar] as string | undefined;
+  if (!value) {
+    throw new Error(`Variável de ambiente ${envVar} não configurada.`);
+  }
+  return value;
+}
+
 export async function apiRequest<T>(
   endpointUrl: string,
   options: ApiRequestOptions = {},

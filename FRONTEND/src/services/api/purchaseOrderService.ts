@@ -2,10 +2,9 @@
  * Arquivo: src/services/api/purchaseOrderService.ts
  * Objetivo: encapsula chamadas HTTP de ordens de compra e sugestões de reposição.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const OC_API_URL =
-  import.meta.env.VITE_ORDEM_COMPRA_API_URL ?? "http://localhost:5260/api/OrdemCompra";
+const OC_API_URL = requireEnvUrl("VITE_ORDEM_COMPRA_API_URL");
 
 export type PurchaseOrderDto = {
   id: string;

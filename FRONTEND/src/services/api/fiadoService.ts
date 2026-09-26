@@ -2,10 +2,9 @@
  * Arquivo: src/services/api/fiadoService.ts
  * Objetivo: encapsula chamadas HTTP para controle de fiado, conta corrente, devedores e extrato.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const FIADO_API_URL =
-  import.meta.env.VITE_FIADO_API_URL ?? "http://localhost:5260/api/Fiado";
+const FIADO_API_URL = requireEnvUrl("VITE_FIADO_API_URL");
 
 export type FiadoMovimento = {
   id: string;

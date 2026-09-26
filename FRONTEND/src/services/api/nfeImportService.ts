@@ -4,10 +4,9 @@
  * Entradas esperadas: recebe o XML lido do arquivo escolhido pelo usuário e os itens revisados
  *           antes de confirmar a gravação.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const NFE_IMPORT_API_URL =
-  import.meta.env.VITE_NFE_IMPORT_API_URL ?? "http://localhost:5260/api/NfeImport";
+const NFE_IMPORT_API_URL = requireEnvUrl("VITE_NFE_IMPORT_API_URL");
 
 export type NfeImportFornecedorPreview = {
   jaExiste: boolean;

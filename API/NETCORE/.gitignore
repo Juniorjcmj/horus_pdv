@@ -19,6 +19,7 @@ obj/
 
 # Local user-specific files
 appsettings.local.json
+appsettings.Development.json
 launchSettings.json
 
 # IDE

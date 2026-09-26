@@ -3,10 +3,9 @@
  * Objetivo: encapsula chamadas HTTP de dados da empresa e configuração de e-mail.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const EMPRESA_API_URL =
-  import.meta.env.VITE_EMPRESA_API_URL ?? "http://localhost:5260/api/Empresa";
+const EMPRESA_API_URL = requireEnvUrl("VITE_EMPRESA_API_URL");
 
 export type CompanyDto = {
   fantasyName: string;

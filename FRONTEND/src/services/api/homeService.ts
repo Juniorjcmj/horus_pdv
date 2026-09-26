@@ -3,9 +3,9 @@
  * Objetivo: encapsula chamadas HTTP dos indicadores e atalhos da página inicial.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const HOME_API_URL = import.meta.env.VITE_HOME_API_URL ?? "http://localhost:5260/api/Home";
+const HOME_API_URL = requireEnvUrl("VITE_HOME_API_URL");
 
 export type HomeKpiDto = {
   label: string;

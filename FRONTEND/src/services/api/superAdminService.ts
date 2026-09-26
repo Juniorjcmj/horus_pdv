@@ -3,10 +3,9 @@
  * Objetivo: encapsula requisições para os endpoints de SuperAdmin de Gerenciamento Geral de Empresas.
  * Acesso restrito a administradores da empresa-principal.
  */
-import { apiRequest, type ApiResponse } from "./apiClient";
+import { apiRequest, requireEnvUrl, type ApiResponse } from "./apiClient";
 
-const SUPER_ADMIN_API_URL =
-  import.meta.env.VITE_SUPER_ADMIN_API_URL ?? "http://localhost:5260/api/Admin/Empresas";
+const SUPER_ADMIN_API_URL = requireEnvUrl("VITE_SUPER_ADMIN_API_URL");
 
 export type EmpresaStatus = "pendente" | "aprovada" | "rejeitada" | "bloqueada";
 

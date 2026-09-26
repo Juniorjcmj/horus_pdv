@@ -4,10 +4,9 @@
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
 import type { MarketModuleConfig, MarketModuleRecordPayload } from "@/components/Admin/MarketModulePage";
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 
-const MODULOS_MERCADO_API_URL =
-  import.meta.env.VITE_MODULOS_MERCADO_API_URL ?? "http://localhost:5260/api/ModuloMercado";
+const MODULOS_MERCADO_API_URL = requireEnvUrl("VITE_MODULOS_MERCADO_API_URL");
 
 export const marketModuleService = {
   async get(id: string) {

@@ -3,10 +3,10 @@
  * Objetivo: encapsula chamadas HTTP de criação, consulta, finalização e cancelamento de pedidos.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
-import { apiRequest } from "./apiClient";
+import { apiRequest, requireEnvUrl } from "./apiClient";
 import type { SalePaymentDto } from "./salesHistoryService";
 
-const PEDIDO_API_URL = import.meta.env.VITE_PEDIDO_API_URL ?? "http://localhost:5260/api/Pedido";
+const PEDIDO_API_URL = requireEnvUrl("VITE_PEDIDO_API_URL");
 
 export type PedidoItemDto = {
   productCode: string;

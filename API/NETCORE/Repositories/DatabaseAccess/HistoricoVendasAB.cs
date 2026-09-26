@@ -648,13 +648,14 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 UPDATE Produtos
                    SET ProductQnt = @ProductQnt,
                        TotalPriceOnProduct = @TotalPriceOnProduct
-                 WHERE Id = @Id;
+                 WHERE Id = @Id AND CompanyId = @CompanyId;
                 """,
                 db,
                 transaction);
             update.Parameters.AddWithValue("@ProductQnt", nextStock);
             update.Parameters.AddWithValue("@TotalPriceOnProduct", unitCost * nextStock);
             update.Parameters.AddWithValue("@Id", productId);
+            update.Parameters.AddWithValue("@CompanyId", companyId);
             await update.ExecuteNonQueryAsync();
 
             pricesByCode[code] = (productId, productName, effectivePrice, unitCost);
@@ -743,13 +744,14 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 UPDATE Produtos
                    SET ProductQnt = @ProductQnt,
                        TotalPriceOnProduct = @TotalPriceOnProduct
-                 WHERE Id = @Id;
+                 WHERE Id = @Id AND CompanyId = @CompanyId;
                 """,
                 db,
                 transaction);
             update.Parameters.AddWithValue("@ProductQnt", nextStock);
             update.Parameters.AddWithValue("@TotalPriceOnProduct", costUnitPrice * nextStock);
             update.Parameters.AddWithValue("@Id", productId);
+            update.Parameters.AddWithValue("@CompanyId", companyId);
             await update.ExecuteNonQueryAsync();
         }
 
