@@ -1410,7 +1410,7 @@ function ProductFormDrawer({
 }
 
 export default function ProductRegisterPage() {
-  const { parseMoneyBr, maskMoneyBr, sanitizeDecimalInput } = useInputMasks();
+  const { parseMoneyBr, formatMoneyBr, maskMoneyBr, sanitizeDecimalInput } = useInputMasks();
   const statusDialog = useStatusDialog();
   const [products, setProducts] = useState<Product[]>([]);
   const [supplierOptions, setSupplierOptions] = useState<string[]>([]);
@@ -1622,10 +1622,27 @@ export default function ProductRegisterPage() {
     setInlineSaving(true);
     try {
       const payload: ProductFormData = { ...product };
-      if (field === "productQnt") payload.productQnt = inlineEditValue;
-      else if (field === "productSalePrice") payload.productSalePrice = inlineEditValue;
-      else if (field === "productUnitPrice") payload.productUnitPrice = inlineEditValue;
-      else if (field === "margemDesejadaPercentual") payload.margemDesejadaPercentual = inlineEditValue || null;
+      if (field === "productQnt") {
+        payload.productQnt = inlineEditValue;
+      } else if (field === "productSalePrice") {
+        payload.productSalePrice = inlineEditValue;
+      } else if (field === "productUnitPrice") {
+        payload.productUnitPrice = inlineEditValue;
+        // Se tem margem desejada, recalcula preço de venda a partir do novo custo
+        const margem = parseMoneyBr(product.margemDesejadaPercentual ?? "0");
+        if (margem > 0) {
+          const novoCusto = parseMoneyBr(inlineEditValue);
+          payload.productSalePrice = formatMoneyBr(novoCusto * (1 + margem / 100));
+        }
+      } else if (field === "margemDesejadaPercentual") {
+        payload.margemDesejadaPercentual = inlineEditValue || null;
+        // Recalcula preço de venda = custo * (1 + margem/100)
+        const margem = parseMoneyBr(inlineEditValue || "0");
+        if (margem > 0) {
+          const custo = parseMoneyBr(product.productUnitPrice);
+          payload.productSalePrice = formatMoneyBr(custo * (1 + margem / 100));
+        }
+      }
 
       const updated = await productService.update(product.id, payload);
       if (updated) {
