@@ -890,12 +890,12 @@ public class DocumentoFiscalAB(
     /// Obtém dados da NFC-e original para emissão da NF-e de Entrada (Devolução),
     /// verificando se está autorizada e se não possui devolução anterior.
     /// </summary>
-    public async Task<(string DocId, string VendaId, string ChaveAcesso, string Protocolo, List<ItemFiscal> Itens, decimal TotalVenda, string? CustomerCpf, string? CustomerName, string? CustomerPhone)?> ObterParaDevolucaoNfceAsync(
+    public async Task<(string DocId, string VendaId, string ChaveAcesso, string Protocolo, List<ItemFiscal> Itens, decimal TotalVenda, string? CustomerCpf, string? CustomerName)?> ObterParaDevolucaoNfceAsync(
         string companyId, string idOrChave, CancellationToken ct = default)
     {
         const string sql = """
             SELECT TOP 1 d.Id, d.VendaId, d.ChaveAcesso, d.Protocolo, d.Status,
-                   v.CustomerCpf, v.CustomerName, v.CustomerPhone, v.TotalAmount, v.Status AS VendaStatus
+                   v.CustomerCpf, v.CustomerName, v.TotalAmount, v.Status AS VendaStatus
             FROM DocumentosFiscais d
             INNER JOIN Vendas v ON v.Id = d.VendaId
             WHERE d.CompanyId = @CompanyId
@@ -909,7 +909,7 @@ public class DocumentoFiscalAB(
         command.Parameters.AddWithValue("@Termo", idOrChave.Trim());
 
         string docId, vendaId, chave, protocolo;
-        string? custCpf, custName, custPhone;
+        string? custCpf, custName;
         decimal totalVenda;
         StatusDocumentoFiscal status;
         string? vendaStatus;
@@ -925,8 +925,13 @@ public class DocumentoFiscalAB(
             status = (StatusDocumentoFiscal)ReadInt(reader, "Status");
             custCpf = ReadNullableString(reader, "CustomerCpf");
             custName = ReadNullableString(reader, "CustomerName");
-            custPhone = ReadNullableString(reader, "CustomerPhone");
-            totalVenda = reader.GetDecimal(reader.GetOrdinal("TotalAmount"));
+            var totalRaw = reader.GetValue(reader.GetOrdinal("TotalAmount"));
+            totalVenda = totalRaw switch
+            {
+                decimal dec => dec,
+                string str => HorusMoneyFormat.ParseDecimal(str),
+                _ => 0m
+            };
             vendaStatus = ReadNullableString(reader, "VendaStatus");
         }
 
@@ -999,7 +1004,7 @@ public class DocumentoFiscalAB(
             });
         }
 
-        return (docId, vendaId, chave, protocolo, itens, totalVenda, custCpf, custName, custPhone);
+        return (docId, vendaId, chave, protocolo, itens, totalVenda, custCpf, custName);
     }
 
     /// <summary>Aloca o próximo número e série de NF-e (Modelo 55) para emissão imediata.</summary>

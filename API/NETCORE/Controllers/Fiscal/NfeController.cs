@@ -197,7 +197,7 @@ public class NfeController(
             });
         }
 
-        (string DocId, string VendaId, string ChaveAcesso, string Protocolo, List<ItemFiscal> Itens, decimal TotalVenda, string? CustomerCpf, string? CustomerName, string? CustomerPhone)? dadosOrigem;
+        (string DocId, string VendaId, string ChaveAcesso, string Protocolo, List<ItemFiscal> Itens, decimal TotalVenda, string? CustomerCpf, string? CustomerName)? dadosOrigem;
         try
         {
             dadosOrigem = await documentoFiscalAB.ObterParaDevolucaoNfceAsync(currentUser.CompanyId, nfceId);
@@ -261,7 +261,7 @@ public class NfeController(
                 NomeMunicipio = emitente.NomeMunicipio,
                 Uf = emitente.Uf,
                 Cep = emitente.Cep,
-                Fone = dadosOrigem.Value.CustomerPhone
+                Fone = emitente.Fone
             };
         }
         else
