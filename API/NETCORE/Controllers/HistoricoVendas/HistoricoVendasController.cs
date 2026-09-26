@@ -23,16 +23,61 @@ public class HistoricoVendasController(
 {
     [HttpGet]
     [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
-    public async Task<IActionResult> Listar()
+    public async Task<IActionResult> Listar([FromQuery] string? desde = null)
     {
         var currentUser = GetCurrentUser();
         if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
-        var rows = await historicoVendasAB.ListarAsync(currentUser.CompanyId);
+
+        DateTimeOffset? dtDesde = null;
+        if (!string.IsNullOrWhiteSpace(desde) && DateTimeOffset.TryParse(desde, out var parsedDesde))
+        {
+            dtDesde = parsedDesde;
+        }
+
+        var rows = await historicoVendasAB.ListarAsync(currentUser.CompanyId, desde: dtDesde);
         return Ok(new ApiResponse<object>
         {
             Success = true,
             Message = "Historico de vendas obtido com sucesso.",
             Data = rows
+        });
+    }
+
+    [HttpGet("{saleNumber}")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+    public async Task<IActionResult> ObterDetalhes(string saleNumber)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        var venda = await historicoVendasAB.ObterDetalheCompletoAsync(currentUser.CompanyId, saleNumber);
+        if (venda is null)
+        {
+            return NotFound(new ApiResponse<object> { Success = false, Message = "Venda não encontrada." });
+        }
+
+        var docFiscal = await documentoFiscalAB.ObterDetalhePorCodigoAsync(currentUser.CompanyId, saleNumber);
+
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = "Detalhes da venda obtidos com sucesso.",
+            Data = new
+            {
+                venda.VendaId,
+                venda.SaleNumber,
+                venda.CustomerName,
+                venda.CustomerCpf,
+                venda.PaymentType,
+                venda.TotalAmount,
+                venda.OperatorName,
+                venda.SaleDate,
+                venda.ClientSaleId,
+                venda.OfflineReference,
+                venda.Items,
+                venda.Payments,
+                DocumentoFiscal = docFiscal
+            }
         });
     }
 

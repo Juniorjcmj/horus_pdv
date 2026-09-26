@@ -16,6 +16,7 @@ import {
   Minimize2,
   Plus,
   Printer,
+  Receipt,
   Search,
   Trash2,
   UserPlus,
@@ -74,6 +75,8 @@ import { QuickCustomerRegisterModal } from "@/components/Admin/QuickCustomerRegi
 import { lookupAddressByCep } from "@/utils/cepLookup";
 import { onlyDigits } from "@/utils/inputMasks";
 import PdvNfceCancelModal from "@/components/Admin/PdvNfceCancelModal";
+import PdvSaleDetailModal from "@/components/Admin/PdvSaleDetailModal";
+import PdvCurrentSessionSalesModal from "@/components/Admin/PdvCurrentSessionSalesModal";
 
 type SalesStartPageProps = {
   onExit?: () => void;
@@ -227,6 +230,10 @@ export default function SalesStartPage({
   const { pendingCount, failedCount } = useOutboxStatus();
   const [outboxModalOpen, setOutboxModalOpen] = useState(false);
   const [nfceCancelModalOpen, setNfceCancelModalOpen] = useState(false);
+  const [nfceCancelInitialDoc, setNfceCancelInitialDoc] = useState<FiscalDocumentDetailDto | null>(null);
+  const [sessionSalesModalOpen, setSessionSalesModalOpen] = useState(false);
+  const [selectedSaleNumberForDetail, setSelectedSaleNumberForDetail] = useState<string | null>(null);
+  const [saleDetailModalOpen, setSaleDetailModalOpen] = useState(false);
 
   const [quickCustomerModalOpen, setQuickCustomerModalOpen] = useState(false);
   const [quickCustomerInitialDoc, setQuickCustomerInitialDoc] = useState("");
@@ -1442,12 +1449,19 @@ export default function SalesStartPage({
       const target = event.target as HTMLElement | null;
       const isInput = target?.tagName === "INPUT";
 
+      if (event.key === "F9" || ((event.altKey || event.metaKey) && event.key.toLowerCase() === "v")) {
+        event.preventDefault();
+        setSessionSalesModalOpen((prev) => !prev);
+        return;
+      }
+
       if (event.key === "F7" || ((event.altKey || event.metaKey) && event.key.toLowerCase() === "c")) {
         event.preventDefault();
+        setNfceCancelInitialDoc(null);
         setNfceCancelModalOpen(true);
         return;
       }
-      if (nfceCancelModalOpen) return;
+      if (nfceCancelModalOpen || sessionSalesModalOpen || saleDetailModalOpen) return;
 
       if (event.key === "F2") {
         event.preventDefault();
@@ -1482,7 +1496,7 @@ export default function SalesStartPage({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [addItem, cancelSale, checkoutOpen, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen]);
+  }, [addItem, cancelSale, checkoutOpen, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen, sessionSalesModalOpen, saleDetailModalOpen]);
 
   const { dateLabel, timeLabel } = formatDateTime(now);
   const cashCanSell = cashStatus?.canSell === true;
@@ -1537,7 +1551,19 @@ export default function SalesStartPage({
               )}
               <button
                 type="button"
-                onClick={() => setNfceCancelModalOpen(true)}
+                onClick={() => setSessionSalesModalOpen(true)}
+                title="Visualizar todas as vendas deste caixa/turno (F9 ou Alt+V)"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 focus:outline-none"
+              >
+                <Receipt size={16} />
+                <span className="hidden sm:inline">Vendas do Caixa (F9)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setNfceCancelInitialDoc(null);
+                  setNfceCancelModalOpen(true);
+                }}
                 title="Cancelar NFC-e emitida perante a SEFAZ (Alt+C ou F7)"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-danger/80 hover:bg-danger px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 focus:outline-none"
               >
@@ -2879,14 +2905,45 @@ export default function SalesStartPage({
         onClose={() => setOutboxModalOpen(false)}
       />
 
+      {/* Modal de Listagem de Vendas do Caixa Atual */}
+      <PdvCurrentSessionSalesModal
+        isOpen={sessionSalesModalOpen}
+        onClose={() => setSessionSalesModalOpen(false)}
+        cashSessionOpenedAt={cashStatus?.currentSession?.openedAt}
+        operatorName={operatorName || cashStatus?.currentSession?.operatorName}
+        onSelectSale={(saleNum) => {
+          setSelectedSaleNumberForDetail(saleNum);
+          setSaleDetailModalOpen(true);
+        }}
+      />
+
+      {/* Modal de Detalhes da Venda Selecionada */}
+      <PdvSaleDetailModal
+        isOpen={saleDetailModalOpen}
+        onClose={() => {
+          setSaleDetailModalOpen(false);
+          setSelectedSaleNumberForDetail(null);
+        }}
+        saleNumber={selectedSaleNumberForDetail}
+        onCancelFiscalDocument={(doc) => {
+          setNfceCancelInitialDoc(doc);
+          setSaleDetailModalOpen(false);
+          setSessionSalesModalOpen(false);
+          setNfceCancelModalOpen(true);
+        }}
+      />
+
       {/* Modal de Cancelamento de NFC-e com Autorização de Supervisor */}
       <PdvNfceCancelModal
         isOpen={nfceCancelModalOpen}
+        initialDocument={nfceCancelInitialDoc}
         onClose={() => {
           setNfceCancelModalOpen(false);
+          setNfceCancelInitialDoc(null);
           window.setTimeout(() => productInputRef.current?.focus(), 100);
         }}
         onSuccess={() => {
+          setNfceCancelInitialDoc(null);
           void reloadProducts().catch(() => {});
         }}
       />

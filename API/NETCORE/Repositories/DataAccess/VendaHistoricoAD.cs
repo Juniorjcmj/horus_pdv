@@ -29,6 +29,28 @@ public class VendaHistoricoAD
     public string SaleDate { get; set; } = string.Empty;
     public string? ClientSaleId { get; set; }
     public string? OfflineReference { get; set; }
+    public string? FiscalDocId { get; set; }
+    public int? FiscalModelo { get; set; }
+    public int? FiscalNumeroNf { get; set; }
+    public int? FiscalSerie { get; set; }
+    public int? FiscalStatus { get; set; }
+    public string? FiscalChaveAcesso { get; set; }
+}
+
+public class VendaDetalheCompletoAD
+{
+    public string VendaId { get; set; } = string.Empty;
+    public string SaleNumber { get; set; } = string.Empty;
+    public string CustomerName { get; set; } = string.Empty;
+    public string CustomerCpf { get; set; } = string.Empty;
+    public string PaymentType { get; set; } = string.Empty;
+    public string TotalAmount { get; set; } = string.Empty;
+    public string OperatorName { get; set; } = string.Empty;
+    public string SaleDate { get; set; } = string.Empty;
+    public string? ClientSaleId { get; set; }
+    public string? OfflineReference { get; set; }
+    public List<VendaHistoricoAD> Items { get; set; } = [];
+    public List<VendaPagamentoAD> Payments { get; set; } = [];
 }
 
 public class VendaRegistroResultadoAD

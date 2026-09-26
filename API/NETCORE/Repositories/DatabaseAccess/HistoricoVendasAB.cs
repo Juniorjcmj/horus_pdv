@@ -18,17 +18,26 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-    public async Task<List<VendaHistoricoAD>> ListarAsync(string companyId, string? saleNumber = null)
+    public async Task<List<VendaHistoricoAD>> ListarAsync(string companyId, string? saleNumber = null, DateTimeOffset? desde = null)
     {
         const string sql = """
             SELECT v.SaleNumber, v.CustomerName, v.CustomerCpf, v.PaymentType,
                    v.TotalAmount, v.OperatorName, v.SaleDate, v.ClientSaleId, v.OfflineReference,
                    i.ProductCode, i.ProductName, i.Quantity, i.UnitPrice, i.ItemTotal,
-                   i.Desconto, i.PromocaoId
+                   i.Desconto, i.PromocaoId,
+                   d.Id AS FiscalDocId, d.Modelo AS FiscalModelo, d.NumeroNf AS FiscalNumeroNf,
+                   d.Serie AS FiscalSerie, d.Status AS FiscalStatus, d.ChaveAcesso AS FiscalChaveAcesso
             FROM VendaItens i
             INNER JOIN Vendas v ON v.Id = i.VendaId
+            OUTER APPLY (
+                SELECT TOP 1 doc.Id, doc.Modelo, doc.NumeroNf, doc.Serie, doc.Status, doc.ChaveAcesso
+                FROM DocumentosFiscais doc
+                WHERE doc.CompanyId = v.CompanyId AND doc.VendaId = v.Id
+                ORDER BY doc.CriadoEm DESC
+            ) d
             WHERE v.CompanyId = @CompanyId
               AND (@SaleNumber IS NULL OR v.SaleNumber = @SaleNumber)
+              AND (@Desde IS NULL OR v.SaleDate >= @Desde)
             ORDER BY v.SaleDate DESC;
             """;
 
@@ -36,6 +45,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@SaleNumber", string.IsNullOrWhiteSpace(saleNumber) ? DBNull.Value : saleNumber);
+        command.Parameters.AddWithValue("@Desde", desde.HasValue ? desde.Value : DBNull.Value);
         await using var reader = await command.ExecuteReaderAsync();
         var rows = new List<VendaHistoricoAD>();
         while (await reader.ReadAsync())
@@ -44,6 +54,42 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         }
 
         return rows;
+    }
+
+    public async Task<VendaDetalheCompletoAD?> ObterDetalheCompletoAsync(string companyId, string saleNumber)
+    {
+        var rows = await ListarAsync(companyId, saleNumber);
+        if (rows.Count == 0) return null;
+
+        var first = rows[0];
+
+        const string sqlVendaId = "SELECT Id FROM Vendas WHERE CompanyId = @CompanyId AND SaleNumber = @SaleNumber;";
+        await using var db = await connection.OpenConnectionAsync();
+        await using var cmdVenda = new SqlCommand(sqlVendaId, db);
+        cmdVenda.Parameters.AddWithValue("@CompanyId", companyId);
+        cmdVenda.Parameters.AddWithValue("@SaleNumber", saleNumber);
+        var vendaIdObj = await cmdVenda.ExecuteScalarAsync();
+        var vendaId = vendaIdObj?.ToString() ?? string.Empty;
+
+        var payments = !string.IsNullOrEmpty(vendaId)
+            ? await ObterPagamentosVendaAsync(companyId, vendaId)
+            : [];
+
+        return new VendaDetalheCompletoAD
+        {
+            VendaId = vendaId,
+            SaleNumber = first.SaleNumber,
+            CustomerName = first.CustomerName,
+            CustomerCpf = first.CustomerCpf,
+            PaymentType = first.PaymentType,
+            TotalAmount = first.TotalAmount,
+            OperatorName = first.OperatorName,
+            SaleDate = first.SaleDate,
+            ClientSaleId = first.ClientSaleId,
+            OfflineReference = first.OfflineReference,
+            Items = rows,
+            Payments = payments
+        };
     }
 
     /// <summary>Usada pelo módulo fiscal (DocumentoFiscalAB) para montar o item da NFC-e a partir do VendaId.</summary>
@@ -779,7 +825,13 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         ItemTotal = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("ItemTotal"))),
         SaleDate = HorusDateTime.Format(reader.GetDateTimeOffset(reader.GetOrdinal("SaleDate"))),
         ClientSaleId = ReadNullableString(reader, "ClientSaleId"),
-        OfflineReference = ReadNullableString(reader, "OfflineReference")
+        OfflineReference = ReadNullableString(reader, "OfflineReference"),
+        FiscalDocId = ReadNullableString(reader, "FiscalDocId"),
+        FiscalModelo = ReadNullableInt(reader, "FiscalModelo"),
+        FiscalNumeroNf = ReadNullableInt(reader, "FiscalNumeroNf"),
+        FiscalSerie = ReadNullableInt(reader, "FiscalSerie"),
+        FiscalStatus = ReadNullableInt(reader, "FiscalStatus"),
+        FiscalChaveAcesso = ReadNullableString(reader, "FiscalChaveAcesso")
     };
 
     private static string ReadString(SqlDataReader reader, string name)
@@ -794,6 +846,19 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         {
             var ordinal = reader.GetOrdinal(name);
             return reader.IsDBNull(ordinal) ? null : reader.GetString(ordinal);
+        }
+        catch (IndexOutOfRangeException)
+        {
+            return null;
+        }
+    }
+
+    private static int? ReadNullableInt(SqlDataReader reader, string name)
+    {
+        try
+        {
+            var ordinal = reader.GetOrdinal(name);
+            return reader.IsDBNull(ordinal) ? null : reader.GetInt32(ordinal);
         }
         catch (IndexOutOfRangeException)
         {
