@@ -20,7 +20,8 @@ public class NfeController(
     DocumentoFiscalAB documentoFiscalAB,
     EmitenteFiscalStore emitenteFiscalStore,
     IFiscalProvider fiscalProvider,
-    HorusSecurityStore securityStore) : ControllerBase
+    HorusSecurityStore securityStore,
+    ILogger<NfeController> logger) : ControllerBase
 {
     /// <summary>
     /// Enfileira uma NF-e modelo 55 para emissão a partir de uma venda já registrada.
@@ -222,9 +223,6 @@ public class NfeController(
             });
         }
 
-        // Aloca o próximo número para NF-e modelo 55
-        var (numeroNfe, serieNfe, ambiente) = await documentoFiscalAB.AlocarNumeroNfeAsync(currentUser.CompanyId);
-
         // Regra híbrida para destinatário/remetente:
         DestinatarioFiscal destFiscal;
         var dReq = request.Destinatario;
@@ -285,25 +283,56 @@ public class NfeController(
             };
         }
 
-        var emissaoRequest = new EmissaoNfeRequest
-        {
-            Emitente = emitente,
-            Serie = serieNfe,
-            NumeroNf = numeroNfe,
-            TipoEmissao = TipoEmissaoFiscal.Normal,
-            TipoOperacao = 0, // Entrada
-            Finalidade = 4,   // Devolução
-            NaturezaOperacao = "DEVOLUCAO DE VENDA",
-            ChavesReferenciadas = [dadosOrigem.Value.ChaveAcesso],
-            ConsumidorFinal = true,
-            Destinatario = destFiscal,
-            Itens = dadosOrigem.Value.Itens,
-            Pagamentos = [new PagamentoFiscal { Tipo = "90", Valor = 0m }], // 90 = Sem Pagamento (estorno fiscal: regra 904 da SEFAZ exige vPag = 0.00)
-            ValorTroco = 0,
-            ModalidadeFrete = 9 // Sem frete
-        };
+        // Tenta emitir a NF-e de Devolução. Se a SEFAZ acusar duplicidade (cStat 539) por colisão com
+        // numerações emitidas no passado, aloca o próximo número e tenta novamente automaticamente (até 5x).
+        int numeroNfe = 0;
+        int serieNfe = 0;
+        byte ambiente = 2;
+        ResultadoFiscal resultado = null!;
 
-        var resultado = await fiscalProvider.EmitirNfeAsync(emissaoRequest);
+        const int maxTentativasDuplicidade = 5;
+        for (var tentativa = 1; tentativa <= maxTentativasDuplicidade; tentativa++)
+        {
+            var alocacao = await documentoFiscalAB.AlocarNumeroNfeAsync(currentUser.CompanyId);
+            numeroNfe = alocacao.Numero;
+            serieNfe = alocacao.Serie;
+            ambiente = alocacao.Ambiente;
+
+            var emissaoRequest = new EmissaoNfeRequest
+            {
+                Emitente = emitente,
+                Serie = serieNfe,
+                NumeroNf = numeroNfe,
+                TipoEmissao = TipoEmissaoFiscal.Normal,
+                TipoOperacao = 0, // Entrada
+                Finalidade = 4,   // Devolução
+                NaturezaOperacao = "DEVOLUCAO DE VENDA",
+                ChavesReferenciadas = [dadosOrigem.Value.ChaveAcesso],
+                ConsumidorFinal = true,
+                Destinatario = destFiscal,
+                Itens = dadosOrigem.Value.Itens,
+                Pagamentos = [new PagamentoFiscal { Tipo = "90", Valor = 0m }], // 90 = Sem Pagamento (regra 904 exige vPag = 0.00)
+                ValorTroco = 0,
+                ModalidadeFrete = 9 // Sem frete
+            };
+
+            resultado = await fiscalProvider.EmitirNfeAsync(emissaoRequest);
+
+            if (resultado.Status == StatusDocumentoFiscal.Autorizado)
+            {
+                break;
+            }
+
+            if (resultado.CodigoStatus == 539 && tentativa < maxTentativasDuplicidade)
+            {
+                logger.LogWarning(
+                    "NF-e número {Numero} na série {Serie} já existe na SEFAZ (duplicidade 539). Avançando para o próximo número (tentativa {Tentativa}/{Max})...",
+                    numeroNfe, serieNfe, tentativa, maxTentativasDuplicidade);
+                continue;
+            }
+
+            break;
+        }
 
         if (resultado.Status != StatusDocumentoFiscal.Autorizado)
         {

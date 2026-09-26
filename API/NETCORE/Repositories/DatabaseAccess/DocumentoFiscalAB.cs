@@ -216,16 +216,16 @@ public class DocumentoFiscalAB(
         SqlConnection db, SqlTransaction transaction, string companyId, CancellationToken ct)
     {
         await using var command = new SqlCommand(
-            "SELECT AmbienteFiscal, ISNULL(SerieNfe, 1) FROM Empresas WHERE Id = @CompanyId;", db, transaction);
+            "SELECT AmbienteFiscal, ISNULL(SerieNfe, 2) FROM Empresas WHERE Id = @CompanyId;", db, transaction);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         await using var reader = await command.ExecuteReaderAsync(ct);
         if (await reader.ReadAsync(ct))
         {
             var amb = reader.IsDBNull(0) ? (byte)2 : reader.GetByte(0);
-            var serie = reader.IsDBNull(1) ? 1 : Convert.ToInt32(reader.GetValue(1));
+            var serie = reader.IsDBNull(1) ? 2 : Convert.ToInt32(reader.GetValue(1));
             return (amb, serie);
         }
-        return (2, 1);
+        return (2, 2);
     }
 
     public async Task<List<DocumentoFiscalPendente>> ObterPendentesAsync(int lote, CancellationToken ct = default)
