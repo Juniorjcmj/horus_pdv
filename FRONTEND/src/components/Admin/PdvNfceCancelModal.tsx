@@ -36,6 +36,7 @@ import {
   type CancelarComSupervisorResult,
   type DevolverNfceResult,
   type FiscalDocumentDetailDto,
+  type FiscalDocumentDto,
 } from "@/services/api/fiscalService";
 import { userService, type SupervisorDto } from "@/services/api/userService";
 import { formatChaveAcesso, formatNumeroNf } from "@/utils/danfePrint";
@@ -44,6 +45,7 @@ type PdvNfceCancelModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  initialDocument?: FiscalDocumentDto | FiscalDocumentDetailDto | null;
 };
 
 type ModalOperationMode = "cancelar" | "devolver";
@@ -84,7 +86,10 @@ function getMinutesElapsed(dhAutorizacao?: string | null, criadoEm?: string | nu
   return Math.max(0, Math.floor((Date.now() - date.getTime()) / (1000 * 60)));
 }
 
-function isOver30Minutes(dhAutorizacao?: string | null, criadoEm?: string | null): boolean {
+function isOver30Minutes(dhAutorizacao?: string | null, criadoEm?: string | null, modelo?: number): boolean {
+  if (modelo === 55) {
+    return getMinutesElapsed(dhAutorizacao, criadoEm) > 1440;
+  }
   return getMinutesElapsed(dhAutorizacao, criadoEm) > 30;
 }
 
@@ -389,6 +394,7 @@ export default function PdvNfceCancelModal({
   isOpen,
   onClose,
   onSuccess,
+  initialDocument,
 }: PdvNfceCancelModalProps) {
   const [mode, setMode] = useState<ModalOperationMode>("cancelar");
   const [codigoInput, setCodigoInput] = useState("");
@@ -426,10 +432,11 @@ export default function PdvNfceCancelModal({
     isJustificativaValid &&
     !isSubmitting;
 
-  const expired30Min = documento ? isOver30Minutes(documento.dhAutorizacao, documento.criadoEm) : false;
+  const isModelo55 = documento?.modelo === 55;
+  const expiredPrazo = documento ? isOver30Minutes(documento.dhAutorizacao, documento.criadoEm, documento.modelo) : false;
   const minutosDecorridos = documento ? getMinutesElapsed(documento.dhAutorizacao, documento.criadoEm) : 0;
 
-  // Carrega supervisores ao abrir o modal
+  // Carrega supervisores e inicializa o documento (se fornecido) ao abrir o modal
   useEffect(() => {
     if (!isOpen) {
       setMode("cancelar");
@@ -465,11 +472,49 @@ export default function PdvNfceCancelModal({
         setLoadingSupervisores(false);
       });
 
-    const timer = setTimeout(() => {
-      codigoInputRef.current?.focus();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [isOpen]);
+    if (initialDocument) {
+      const term = initialDocument.saleNumber || initialDocument.chaveAcesso || initialDocument.id;
+      setCodigoInput(term);
+      const docDetail: FiscalDocumentDetailDto = {
+        ...initialDocument,
+        qrCodeUrl: (initialDocument as FiscalDocumentDetailDto).qrCodeUrl ?? null,
+      };
+      setDocumento(docDetail);
+      if (docDetail.customerCpf && docDetail.customerCpf !== "-") setClienteCpf(docDetail.customerCpf);
+      if (docDetail.customerName && docDetail.customerName !== "Consumidor Final") setClienteNome(docDetail.customerName);
+
+      const isOver = isOver30Minutes(docDetail.dhAutorizacao, docDetail.criadoEm, docDetail.modelo);
+      if (isOver) {
+        setMode("devolver");
+        setJustificativa(MOTIVOS_DEVOLUCAO[1]);
+      } else {
+        setMode("cancelar");
+        setJustificativa(MOTIVOS_CANCELAMENTO[0]);
+      }
+
+      // Busca dados completos atualizados em segundo plano
+      fiscalService
+        .buscarPorCodigo(term)
+        .then((detail) => {
+          if (detail) {
+            setDocumento(detail);
+            if (detail.customerCpf && detail.customerCpf !== "-") setClienteCpf(detail.customerCpf);
+            if (detail.customerName && detail.customerName !== "Consumidor Final") setClienteNome(detail.customerName);
+          }
+        })
+        .catch(() => {});
+
+      const timer = setTimeout(() => {
+        passwordInputRef.current?.focus();
+      }, 150);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(() => {
+        codigoInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, initialDocument]);
 
   const handleSearch = useCallback(async () => {
     const termo = codigoInput.trim();
@@ -692,7 +737,9 @@ export default function PdvNfceCancelModal({
               <h2 className="text-sm font-bold text-text-primary">
                 {mode === "devolver"
                   ? "Devolução Fiscal (NF-e 55 Entrada)"
-                  : "Cancelar NFC-e no Caixa"}
+                  : isModelo55
+                    ? "Cancelar NF-e (Modelo 55)"
+                    : "Cancelar NFC-e (Modelo 65)"}
               </h2>
               <p className="text-[11px] text-text-secondary">
                 {mode === "devolver"
@@ -954,13 +1001,17 @@ export default function PdvNfceCancelModal({
                   </div>
                 )}
 
-                {/* Banner de Aviso de Prazo de 30 minutos Expirado */}
-                {isAuthorized && expired30Min && (
+                {/* Banner de Aviso de Prazo Expirado */}
+                {isAuthorized && expiredPrazo && (
                   <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs space-y-2">
                     <div className="flex items-start gap-2 text-amber-700 dark:text-amber-300 font-semibold">
                       <Clock size={16} className="shrink-0 mt-0.5" />
                       <div>
-                        <span>Prazo legal de 30 minutos expirado ({minutosDecorridos} min desde a autorização).</span>
+                        <span>
+                          {isModelo55
+                            ? `Prazo legal de 24 horas para cancelamento da NF-e expirado (${Math.floor(minutosDecorridos / 60)}h decorridas).`
+                            : `Prazo legal de 30 minutos expirado (${minutosDecorridos} min desde a autorização).`}
+                        </span>
                         <p className="font-normal text-[11px] text-text-secondary mt-0.5">
                           A SEFAZ rejeitará o cancelamento direto. Para anular os tributos e reverter o estoque conforme a legislação, emita uma <strong>NF-e de Devolução (Modelo 55)</strong>.
                         </p>
@@ -1000,7 +1051,7 @@ export default function PdvNfceCancelModal({
                       }`}
                     >
                       <AlertOctagon size={13} />
-                      Cancelar NFC-e {expired30Min ? "(Prazo Expirado)" : "(Até 30 min)"}
+                      Cancelar {isModelo55 ? "NF-e" : "NFC-e"} {expiredPrazo ? "(Prazo Expirado)" : isModelo55 ? "(Até 24h)" : "(Até 30 min)"}
                     </button>
                     <button
                       type="button"
@@ -1015,7 +1066,7 @@ export default function PdvNfceCancelModal({
                       }`}
                     >
                       <ArrowLeftRight size={13} />
-                      Emitir Devolução (NF-e 55) {expired30Min ? "★ Recomendado" : ""}
+                      Emitir Devolução (NF-e 55) {expiredPrazo ? "★ Recomendado" : ""}
                     </button>
                   </div>
                 )}

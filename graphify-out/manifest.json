@@ -996,9 +996,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiscalPage.tsx": {
-    "mtime": 1790459854.7416391,
-    "seen": 1790459964.5814946,
-    "ast_hash": "76f513ab6ae3f6fbc67cb60368b3b60b",
+    "mtime": 1790461503.2951663,
+    "seen": 1790461544.5908275,
+    "ast_hash": "1978726fd4d4aa2da350164d4da7e614",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/HomePage.tsx": {
@@ -2838,9 +2838,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx": {
-    "mtime": 1790455387.6556103,
-    "seen": 1790455470.900147,
-    "ast_hash": "9f6d9cd35d6401bb80616950ce5faba8",
+    "mtime": 1790461393.7145875,
+    "seen": 1790461544.580912,
+    "ast_hash": "69ccb1765bfe9ee85e6b5ad820f98cba",
     "semantic_hash": ""
   },
   "FRONTEND/tests/homologation/A-login.spec.ts": {

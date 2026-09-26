@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import DanfePreviewModal from "@/components/Admin/DanfePreviewModal";
-import FiscalCancelModal from "@/components/Admin/FiscalCancelModal";
+import PdvNfceCancelModal from "@/components/Admin/PdvNfceCancelModal";
 import FiscalDetailModal from "@/components/Admin/FiscalDetailModal";
 import FiscalErrorModal from "@/components/Admin/FiscalErrorModal";
 import NfeImportModal from "@/components/Admin/NfeImportModal";
@@ -107,7 +107,6 @@ export default function FiscalPage() {
 
   // Modais
   const [docToCancel, setDocToCancel] = useState<FiscalDocumentDto | null>(null);
-  const [isCancelingDoc, setIsCancelingDoc] = useState(false);
   const [docToDetail, setDocToDetail] = useState<FiscalDocumentDto | null>(null);
   const [errorModalDoc, setErrorModalDoc] = useState<FiscalDocumentDto | null>(null);
   const [danfePreview, setDanfePreview] = useState<FiscalDocumentDetailDto | null>(null);
@@ -382,20 +381,6 @@ export default function FiscalPage() {
       Toast.error(error instanceof Error ? error.message : "Erro ao reemitir NFC-e.");
     } finally {
       setBusy(doc.id, false);
-    }
-  };
-
-  const handleConfirmCancel = async (doc: FiscalDocumentDto, justificativa: string) => {
-    setIsCancelingDoc(true);
-    try {
-      await fiscalService.cancelar(doc.id, justificativa);
-      Toast.success(`NFC-e Nº ${doc.numeroNf} cancelada com sucesso na SEFAZ!`);
-      setDocToCancel(null);
-      loadDocuments();
-    } catch (error) {
-      Toast.error(error instanceof Error ? error.message : "Erro ao cancelar NFC-e.");
-    } finally {
-      setIsCancelingDoc(false);
     }
   };
 
@@ -1186,13 +1171,16 @@ export default function FiscalPage() {
         </section>
       )}
 
-      {/* Modal de Cancelamento Estruturado */}
+      {/* Modal de Cancelamento/Devolução Estruturado (mesmas regras do caixa/PDV) */}
       {docToCancel && (
-        <FiscalCancelModal
-          document={docToCancel}
+        <PdvNfceCancelModal
+          isOpen={Boolean(docToCancel)}
+          initialDocument={docToCancel}
           onClose={() => setDocToCancel(null)}
-          onConfirm={handleConfirmCancel}
-          isCanceling={isCancelingDoc}
+          onSuccess={() => {
+            setDocToCancel(null);
+            loadDocuments();
+          }}
         />
       )}
 
