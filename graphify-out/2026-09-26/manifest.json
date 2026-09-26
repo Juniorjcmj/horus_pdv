@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1790452708.1239374,
-    "seen": 1790453042.43579,
-    "ast_hash": "c1a8fdf4677c5fa49df112946cd20582",
+    "mtime": 1790455094.9161499,
+    "seen": 1790455470.8852262,
+    "ast_hash": "494390717cbd6e71e09ab9a08ba67269",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1790452658.9161315,
-    "seen": 1790453042.4372804,
-    "ast_hash": "bed50528ee0c25195604edd472482a64",
+    "mtime": 1790455043.767408,
+    "seen": 1790455470.889697,
+    "ast_hash": "8f4cd88761be4fe42e0208427841a503",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -510,9 +510,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalContracts.cs": {
-    "mtime": 1790194888.0777178,
-    "seen": 1790200166.140714,
-    "ast_hash": "c34718c6aeb5fa5b9bb48f0190cb9d2a",
+    "mtime": 1790454758.9254766,
+    "seen": 1790455470.8913143,
+    "ast_hash": "78e08db8bbbf0f6ba83541a40535857e",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/NfceOutboxWorker.cs": {
@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs": {
-    "mtime": 1790196484.732787,
-    "seen": 1790200166.1409118,
-    "ast_hash": "fedfd8d1e68921ae51e50acfcdc86f0b",
+    "mtime": 1790454903.158357,
+    "seen": 1790455470.8916433,
+    "ast_hash": "615a577446c7f34994809f9fd07f6ba5",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/FornecedorService.cs": {
@@ -1170,9 +1170,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiscalService.ts": {
-    "mtime": 1790452829.3913894,
-    "seen": 1790453042.458547,
-    "ast_hash": "05498096fd9384db145b366f5b9cd3a5",
+    "mtime": 1790455238.881222,
+    "seen": 1790455470.9234228,
+    "ast_hash": "5c49875ee13a4efdc8d03dd1df99b13e",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/homeService.ts": {
@@ -2490,15 +2490,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfeController.cs": {
-    "mtime": 1790195624.061519,
-    "seen": 1790200166.120498,
-    "ast_hash": "7ece645e058385579eaa05005a9f43b1",
+    "mtime": 1790455159.157327,
+    "seen": 1790455470.8719835,
+    "ast_hash": "2eaa3df60857314ecc131458d6410460",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfeEmissaoRequest.cs": {
-    "mtime": 1790195612.1664042,
-    "seen": 1790200166.12976,
-    "ast_hash": "e7f17aa44b04e1b2665be244013ca0c3",
+    "mtime": 1790454767.7710688,
+    "seen": 1790455470.878873,
+    "ast_hash": "a0a2fa23d8e7242664ee818b8754d8b4",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/OrdemCompraRequests.cs": {
@@ -2838,9 +2838,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PdvNfceCancelModal.tsx": {
-    "mtime": 1790452860.5357187,
-    "seen": 1790453042.4452782,
-    "ast_hash": "0c44af58917045f8ffdb13a1988581b2",
+    "mtime": 1790455387.6556103,
+    "seen": 1790455470.900147,
+    "ast_hash": "9f6d9cd35d6401bb80616950ce5faba8",
     "semantic_hash": ""
   },
   "FRONTEND/tests/homologation/A-login.spec.ts": {
@@ -2985,6 +2985,36 @@
     "mtime": 1790445893.5794625,
     "seen": 1790453042.4848354,
     "ast_hash": "0962f150eb29b8e1bb1fb5f43cd67f14",
+    "semantic_hash": ""
+  },
+  "openspec/changes/emissao-nfe-devolucao-nfce/.openspec.yaml": {
+    "mtime": 1790454428.8550305,
+    "seen": 1790455470.965349,
+    "ast_hash": "eeedaec07b367e2e21bda1c2c5a1be80",
+    "semantic_hash": ""
+  },
+  "openspec/changes/emissao-nfe-devolucao-nfce/design.md": {
+    "mtime": 1790454680.305985,
+    "seen": 1790455470.965354,
+    "ast_hash": "12c436074466d3691746d4d6394ed607",
+    "semantic_hash": ""
+  },
+  "openspec/changes/emissao-nfe-devolucao-nfce/proposal.md": {
+    "mtime": 1790454454.083467,
+    "seen": 1790455470.965357,
+    "ast_hash": "ded23b8f9c35d9fe7916bb8165bdf7a2",
+    "semantic_hash": ""
+  },
+  "openspec/changes/emissao-nfe-devolucao-nfce/specs/fiscal/nfe-devolucao/spec.md": {
+    "mtime": 1790454671.5264957,
+    "seen": 1790455470.9653597,
+    "ast_hash": "70644074dfe0b2832b86fff3180e341a",
+    "semantic_hash": ""
+  },
+  "openspec/changes/emissao-nfe-devolucao-nfce/tasks.md": {
+    "mtime": 1790455192.513079,
+    "seen": 1790455470.9653633,
+    "ast_hash": "f87ab5991b8a07722205d8364f6f905a",
     "semantic_hash": ""
   }
 }
