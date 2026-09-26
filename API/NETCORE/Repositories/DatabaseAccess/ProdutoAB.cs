@@ -15,7 +15,7 @@ public class ProdutoAB(Connection connection)
     private const string Columns = """
         p.Id, p.ProductImageUrl, p.ProductImageName, p.ProductName, p.ProductCode, p.ProductSupplier,
         p.ProductDescription, p.ProductQnt, p.EstoqueMinimo, p.ProductUnitPrice, p.ProductSalePrice, p.TotalPriceOnProduct,
-        p.MargemDesejadaPercentual, p.CategoriaId, c.Nome AS CategoriaNome,
+        p.Lucro, p.MargemDesejadaPercentual, p.CategoriaId, c.Nome AS CategoriaNome,
         p.DataValidade, p.ControlaValidade, p.DiasAlertaValidade,
         p.UnidadeCompra, p.FatorConversao, p.QtdEmbalagem,
         p.Marca, p.Fabricante, p.ReferenciaFabricante,
@@ -186,15 +186,18 @@ public class ProdutoAB(Connection connection)
                    SET ProductQnt = @ProductQnt,
                        ProductUnitPrice = @ProductUnitPrice,
                        ProductSalePrice = @ProductSalePrice,
-                       TotalPriceOnProduct = @TotalPriceOnProduct
+                       TotalPriceOnProduct = @TotalPriceOnProduct,
+                       Lucro = @Lucro
                  WHERE Id = @Id AND CompanyId = @CompanyId;
                 """,
                 db,
                 transaction);
+            var nextLucro = nextSalePrice - custoUnitario;
             update.Parameters.AddWithValue("@ProductQnt", nextQuantity);
             update.Parameters.AddWithValue("@ProductUnitPrice", custoUnitario);
             update.Parameters.AddWithValue("@ProductSalePrice", nextSalePrice);
             update.Parameters.AddWithValue("@TotalPriceOnProduct", nextTotal);
+            update.Parameters.AddWithValue("@Lucro", nextLucro);
             update.Parameters.AddWithValue("@Id", productId);
             update.Parameters.AddWithValue("@CompanyId", companyId);
             await update.ExecuteNonQueryAsync();
@@ -205,6 +208,7 @@ public class ProdutoAB(Connection connection)
             current.ProductUnitPrice = custoUnitario;
             current.ProductSalePrice = nextSalePrice;
             current.TotalPriceOnProduct = nextTotal;
+            current.Lucro = nextLucro;
             return current;
         }
         catch
@@ -233,6 +237,7 @@ public class ProdutoAB(Connection connection)
                        ProductUnitPrice = @ProductUnitPrice,
                        ProductSalePrice = @ProductSalePrice,
                        TotalPriceOnProduct = @TotalPriceOnProduct,
+                       Lucro = @Lucro,
                        MargemDesejadaPercentual = @MargemDesejadaPercentual,
                        CategoriaId = @CategoriaId,
                        DataValidade = @DataValidade,
@@ -279,7 +284,7 @@ public class ProdutoAB(Connection connection)
                 INSERT INTO Produtos
                     (Id, CompanyId, ProductImageUrl, ProductImageName, ProductName, ProductCode, ProductSupplier, SupplierId,
                      ProductDescription, ProductQnt, EstoqueMinimo, ProductUnitPrice, ProductSalePrice, TotalPriceOnProduct,
-                     MargemDesejadaPercentual, CategoriaId, DataValidade, ControlaValidade, DiasAlertaValidade,
+                     Lucro, MargemDesejadaPercentual, CategoriaId, DataValidade, ControlaValidade, DiasAlertaValidade,
                      UnidadeCompra, FatorConversao, QtdEmbalagem,
                      Marca, Fabricante, ReferenciaFabricante,
                      PesoLiquidoKg, PesoBrutoKg, LarguraCm, AlturaCm, ComprimentoCm,
@@ -291,7 +296,7 @@ public class ProdutoAB(Connection connection)
                 VALUES
                     (@Id, @CompanyId, @ProductImageUrl, @ProductImageName, @ProductName, @ProductCode, @ProductSupplier, @SupplierId,
                      @ProductDescription, @ProductQnt, @EstoqueMinimo, @ProductUnitPrice, @ProductSalePrice, @TotalPriceOnProduct,
-                     @MargemDesejadaPercentual, @CategoriaId, @DataValidade, @ControlaValidade, @DiasAlertaValidade,
+                     @Lucro, @MargemDesejadaPercentual, @CategoriaId, @DataValidade, @ControlaValidade, @DiasAlertaValidade,
                      @UnidadeCompra, @FatorConversao, @QtdEmbalagem,
                      @Marca, @Fabricante, @ReferenciaFabricante,
                      @PesoLiquidoKg, @PesoBrutoKg, @LarguraCm, @AlturaCm, @ComprimentoCm,
@@ -500,6 +505,7 @@ public class ProdutoAB(Connection connection)
         command.Parameters.AddWithValue("@ProductUnitPrice", product.ProductUnitPrice);
         command.Parameters.AddWithValue("@ProductSalePrice", product.ProductSalePrice);
         command.Parameters.AddWithValue("@TotalPriceOnProduct", product.TotalPriceOnProduct);
+        command.Parameters.AddWithValue("@Lucro", product.Lucro);
         command.Parameters.AddWithValue("@MargemDesejadaPercentual", (object?)product.MargemDesejadaPercentual ?? DBNull.Value);
         command.Parameters.AddWithValue("@CategoriaId", (object?)product.CategoriaId ?? DBNull.Value);
         command.Parameters.AddWithValue("@DataValidade", (object?)product.DataValidade?.Date ?? DBNull.Value);
@@ -555,6 +561,7 @@ public class ProdutoAB(Connection connection)
         ProductUnitPrice = ReadDecimal(source, "ProductUnitPrice"),
         ProductSalePrice = ReadDecimal(source, "ProductSalePrice"),
         TotalPriceOnProduct = ReadDecimal(source, "TotalPriceOnProduct"),
+        Lucro = ReadDecimal(source, "Lucro"),
         MargemDesejadaPercentual = ReadNullableDecimal(source, "MargemDesejadaPercentual"),
         CategoriaId = ReadNullableString(source, "CategoriaId"),
         CategoriaNome = ReadNullableString(source, "CategoriaNome"),

@@ -53,6 +53,7 @@ type Product = {
   productUnitPrice: string;
   productSalePrice: string;
   totalPriceOnProduct: string;
+  lucro: string;
   margemDesejadaPercentual: string | null;
   categoriaId?: string | null;
   categoriaNome?: string | null;
@@ -137,6 +138,7 @@ const EMPTY_FORM: ProductFormData = {
   productUnitPrice: "",
   productSalePrice: "",
   totalPriceOnProduct: "",
+  lucro: "0,00",
   margemDesejadaPercentual: "",
   categoriaId: null,
   categoriaNome: null,
@@ -2128,7 +2130,7 @@ export default function ProductRegisterPage() {
           </div>
         ) : null}
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1100px] text-sm">
+          <table className="w-full min-w-[1200px] text-sm">
             <thead className="bg-bg-primary text-left text-text-secondary">
               <tr>
                 <th className="w-12 px-4 py-3">
@@ -2148,6 +2150,7 @@ export default function ProductRegisterPage() {
                 <th className="px-4 py-3">Preço Custo</th>
                 <th className="px-4 py-3">Preço Venda</th>
                 <th className="px-4 py-3">Margem %</th>
+                <th className="px-4 py-3">Lucro R$</th>
                 <th className="px-4 py-3">Ações</th>
               </tr>
             </thead>
@@ -2320,6 +2323,12 @@ export default function ProductRegisterPage() {
                         )}
                       </span>
                     )}
+                  </td>
+                  {/* Lucro R$ (somente leitura — calculado pelo backend) */}
+                  <td className="px-4 py-3">
+                    <span className={`font-semibold ${parseMoneyBr(product.lucro || "0") > 0 ? "text-emerald-600 dark:text-emerald-400" : parseMoneyBr(product.lucro || "0") < 0 ? "text-red-500" : "text-text-secondary"}`}>
+                      {product.lucro || "0,00"}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <RowActionsMenu

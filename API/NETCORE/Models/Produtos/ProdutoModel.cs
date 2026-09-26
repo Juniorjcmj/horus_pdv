@@ -20,6 +20,7 @@ public class ProdutoModel
     public string ProductUnitPrice { get; set; } = string.Empty;
     public string ProductSalePrice { get; set; } = string.Empty;
     public string TotalPriceOnProduct { get; set; } = string.Empty;
+    public string Lucro { get; set; } = "0,00";
     public string? MargemDesejadaPercentual { get; set; }
     public string? CategoriaId { get; set; }
     public string? CategoriaNome { get; set; }

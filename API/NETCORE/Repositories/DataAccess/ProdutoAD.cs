@@ -25,6 +25,9 @@ public class ProdutoAD
     public decimal ProductSalePrice { get; set; }
     public decimal TotalPriceOnProduct { get; set; }
 
+    /// <summary>Lucro unitário em R$ (ProductSalePrice − ProductUnitPrice). Persistido para relatórios.</summary>
+    public decimal Lucro { get; set; }
+
     /// <summary>% de lucro desejado sobre o custo (ex.: 30 = 30%). Null = não configurado.</summary>
     public decimal? MargemDesejadaPercentual { get; set; }
 

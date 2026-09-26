@@ -129,6 +129,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         var custoMedio = HorusMoneyFormat.ParseDecimal(request.CustoMedio);
         if (custoMedio == 0) custoMedio = custoUnitario;
         var markupPraticado = custoMedio > 0 ? (precoVenda - custoMedio) / custoMedio * 100m : 0m;
+        var lucro = precoVenda - custoUnitario;
 
         return new()
         {
@@ -144,6 +145,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
             ProductUnitPrice = custoUnitario,
             ProductSalePrice = precoVenda,
             TotalPriceOnProduct = HorusMoneyFormat.ParseDecimal(request.TotalPriceOnProduct),
+            Lucro = lucro,
             MargemDesejadaPercentual = string.IsNullOrWhiteSpace(request.MargemDesejadaPercentual)
                 ? null
                 : HorusMoneyFormat.ParseDecimal(request.MargemDesejadaPercentual),
@@ -202,6 +204,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         ProductUnitPrice = HorusMoneyFormat.Format(source.ProductUnitPrice),
         ProductSalePrice = HorusMoneyFormat.Format(source.ProductSalePrice),
         TotalPriceOnProduct = HorusMoneyFormat.Format(source.TotalPriceOnProduct),
+        Lucro = HorusMoneyFormat.Format(source.Lucro),
         MargemDesejadaPercentual = source.MargemDesejadaPercentual is { } margem ? HorusMoneyFormat.Format(margem) : null,
         CategoriaId = source.CategoriaId,
         CategoriaNome = source.CategoriaNome,

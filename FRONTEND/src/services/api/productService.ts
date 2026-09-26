@@ -21,6 +21,7 @@ export type ProductDto = {
   productUnitPrice: string;
   productSalePrice: string;
   totalPriceOnProduct: string;
+  lucro: string;
   margemDesejadaPercentual: string | null;
   categoriaId?: string | null;
   categoriaNome?: string | null;
