@@ -43,4 +43,7 @@ public sealed class GatewayEvent
     public string Status { get; set; } = GatewayEventStatus.PendingCloud;
     public string CreatedAt { get; set; } = string.Empty;
     public string? ProcessedAt { get; set; }
+
+    /// <summary>Número de tentativas de envio à cloud já registradas (ciclo de vida de retry).</summary>
+    public int RetryCount { get; set; }
 }

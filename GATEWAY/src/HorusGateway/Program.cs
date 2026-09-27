@@ -42,6 +42,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 
 // Identidade e persistência do Gateway.
+builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddSingleton<GatewayIdentity>();
 builder.Services.AddSingleton<GatewayDatabase>();
 builder.Services.AddSingleton<IEventStore, SqliteEventStore>();

@@ -84,9 +84,39 @@ public sealed class GatewayDatabase
                 LastSeenAt     TEXT NULL,
                 PRIMARY KEY (CompanyId, TerminalId)
             );
+
+            -- Ledger de idempotência dedicado, espelhando o modelo ProcessedEvents da cloud.
+            CREATE TABLE IF NOT EXISTS ProcessedEvents (
+                CompanyId   TEXT NOT NULL,
+                EventId     TEXT NOT NULL,
+                PayloadHash TEXT NOT NULL,
+                ProcessedAt TEXT NOT NULL,
+                PRIMARY KEY (CompanyId, EventId)
+            );
             """;
         command.ExecuteNonQuery();
 
+        // Colunas de ciclo de vida de retry (adicionadas de forma idempotente sobre a tabela do 02).
+        EnsureColumn(connection, "GatewayEvents", "RetryCount", "INTEGER NOT NULL DEFAULT 0");
+        EnsureColumn(connection, "GatewayEvents", "LastAttemptAt", "TEXT NULL");
+        EnsureColumn(connection, "GatewayEvents", "LastError", "TEXT NULL");
+        EnsureColumn(connection, "GatewayEvents", "NextAttemptAt", "TEXT NULL");
+
         _logger.LogInformation("Schema local do Gateway inicializado (SQLite).");
+    }
+
+    /// <summary>Adiciona uma coluna só se ela ainda não existir (SQLite não tem ADD COLUMN IF NOT EXISTS).</summary>
+    private static void EnsureColumn(SqliteConnection connection, string table, string column, string definition)
+    {
+        using (var check = connection.CreateCommand())
+        {
+            check.CommandText = $"SELECT COUNT(1) FROM pragma_table_info('{table}') WHERE name = $name;";
+            check.Parameters.AddWithValue("$name", column);
+            if (Convert.ToInt64(check.ExecuteScalar()) > 0) return;
+        }
+
+        using var alter = connection.CreateCommand();
+        alter.CommandText = $"ALTER TABLE {table} ADD COLUMN {column} {definition};";
+        alter.ExecuteNonQuery();
     }
 }

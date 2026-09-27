@@ -38,13 +38,16 @@
 - [x] Testes (18/18 no total: 9 do GATEWAY 02 + 9 do 03) e regressão zero (71/71 arch)
 - [ ] Descoberta client-side em 3 níveis (mDNS/hostname → URL → manual) e **armazenamento seguro da credencial no PWA** — **adiado para o CHANGE GATEWAY 07** (integração com o terminal/frontend); o lado servidor (registro + `/status`) está pronto
 
-## CHANGE GATEWAY 04 — Event Bus local
+## CHANGE GATEWAY 04 — Event Bus local (concluído)
 
-- [ ] Tabela `GatewayEvents` e `ProcessedEvents` local
-- [ ] `POST /api/gateway/events`: recebe → valida `CompanyId`/`TerminalId`/`PayloadHash` → persiste → commit → ACK
-- [ ] `EventId` preservado (nasce no terminal); dedup por `EventId`+`PayloadHash`
-- [ ] `409 Conflict` para mesmo `EventId` com `PayloadHash` diferente
-- [ ] Retry + backoff exponencial (reusar regras do `SyncEngine`)
+- [x] Tabela `GatewayEvents` e ledger dedicado `ProcessedEvents` (idempotência espelhando a cloud)
+- [x] `POST /api/gateway/events`: recebe → valida `CompanyId`/`TerminalId`/`PayloadHash` → persiste (evento + ledger, 1 transação) → commit → ACK
+- [x] `EventId` preservado (nasce no terminal); dedup por `EventId`+`PayloadHash` via `ProcessedEvents`
+- [x] `409 Conflict` para mesmo `EventId` com `PayloadHash` diferente
+- [x] Retry + backoff exponencial reutilizando as regras do `SyncEngine` (`BackoffPolicy`: base 5s, ×2, teto ~5min, jitter 30%, máx. 10)
+- [x] Ciclo de vida de reprocessamento: `RetryCount`/`LastAttemptAt`/`LastError`/`NextAttemptAt`, seleção de eventos devidos (`GetDueForDispatchAsync`), falha reagenda (`RecordDispatchFailureAsync`), esgotamento → `FAILED`, `MarkSyncedAsync` — base do dispatcher do GATEWAY 06
+- [x] Relógio injetável (`IClock`) para agendamento de retry determinístico nos testes
+- [x] Testes (31/31 no total) incluindo unitários de backoff e ciclo de vida do bus; regressão zero (71/71 arch)
 
 ## CHANGE GATEWAY 05 — Pedidos em tempo real
 

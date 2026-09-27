@@ -19,4 +19,16 @@ public interface IEventStore
 
     /// <summary>Total de eventos ainda não sincronizados com a cloud (para health/dashboard).</summary>
     Task<long> CountPendingCloudAsync(string companyId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Eventos prontos para envio à cloud (PENDING_CLOUD, tentativas não esgotadas e agendamento vencido).
+    /// Base do dispatcher Gateway → Cloud do CHANGE GATEWAY 06.
+    /// </summary>
+    Task<IReadOnlyList<GatewayEvent>> GetDueForDispatchAsync(string companyId, int limit, CancellationToken cancellationToken = default);
+
+    /// <summary>Registra uma falha de envio: incrementa RetryCount, guarda o erro e reagenda via backoff (ou marca FAILED).</summary>
+    Task RecordDispatchFailureAsync(long seq, string error, CancellationToken cancellationToken = default);
+
+    /// <summary>Marca o evento como sincronizado com a cloud.</summary>
+    Task MarkSyncedAsync(long seq, CancellationToken cancellationToken = default);
 }

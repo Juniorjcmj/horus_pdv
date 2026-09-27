@@ -15,11 +15,13 @@ namespace HorusGateway.Services;
 public sealed class SqliteEventStore : IEventStore
 {
     private readonly GatewayDatabase _database;
+    private readonly IClock _clock;
     private readonly ILogger<SqliteEventStore> _logger;
 
-    public SqliteEventStore(GatewayDatabase database, ILogger<SqliteEventStore> logger)
+    public SqliteEventStore(GatewayDatabase database, IClock clock, ILogger<SqliteEventStore> logger)
     {
         _database = database;
+        _clock = clock;
         _logger = logger;
     }
 
@@ -42,12 +44,12 @@ public sealed class SqliteEventStore : IEventStore
         using var connection = _database.OpenConnection();
         using var transaction = connection.BeginTransaction();
 
-        // 1. Idempotência: já existe evento com este (CompanyId, EventId)?
+        // 1. Idempotência: o ledger ProcessedEvents é a autoridade (espelha o modelo da cloud).
         using (var lookup = connection.CreateCommand())
         {
             lookup.Transaction = transaction;
             lookup.CommandText = """
-                SELECT PayloadHash FROM GatewayEvents
+                SELECT PayloadHash FROM ProcessedEvents
                 WHERE CompanyId = $companyId AND EventId = $eventId
                 LIMIT 1;
                 """;
@@ -73,17 +75,17 @@ public sealed class SqliteEventStore : IEventStore
             }
         }
 
-        // 2. Novo evento: persiste durável.
-        var createdAt = DateTimeOffset.UtcNow.ToString("o");
+        // 2. Novo evento: persiste durável (evento + ledger de idempotência) na mesma transação.
+        var createdAt = _clock.UtcNow.ToString("o");
         long seq;
         using (var insert = connection.CreateCommand())
         {
             insert.Transaction = transaction;
             insert.CommandText = """
                 INSERT INTO GatewayEvents
-                    (EventId, CompanyId, StoreId, TerminalId, EventType, OccurredAt, Payload, PayloadHash, ClientPayloadHash, Status, CreatedAt)
+                    (EventId, CompanyId, StoreId, TerminalId, EventType, OccurredAt, Payload, PayloadHash, ClientPayloadHash, Status, CreatedAt, RetryCount, NextAttemptAt)
                 VALUES
-                    ($eventId, $companyId, $storeId, $terminalId, $eventType, $occurredAt, $payload, $payloadHash, $clientHash, $status, $createdAt);
+                    ($eventId, $companyId, $storeId, $terminalId, $eventType, $occurredAt, $payload, $payloadHash, $clientHash, $status, $createdAt, 0, $createdAt);
                 SELECT last_insert_rowid();
                 """;
             insert.Parameters.AddWithValue("$eventId", request.EventId!);
@@ -98,6 +100,20 @@ public sealed class SqliteEventStore : IEventStore
             insert.Parameters.AddWithValue("$status", GatewayEventStatus.PendingCloud);
             insert.Parameters.AddWithValue("$createdAt", createdAt);
             seq = (long)insert.ExecuteScalar()!;
+        }
+
+        using (var ledger = connection.CreateCommand())
+        {
+            ledger.Transaction = transaction;
+            ledger.CommandText = """
+                INSERT INTO ProcessedEvents (CompanyId, EventId, PayloadHash, ProcessedAt)
+                VALUES ($companyId, $eventId, $payloadHash, $processedAt);
+                """;
+            ledger.Parameters.AddWithValue("$companyId", request.CompanyId!);
+            ledger.Parameters.AddWithValue("$eventId", request.EventId!);
+            ledger.Parameters.AddWithValue("$payloadHash", payloadHash);
+            ledger.Parameters.AddWithValue("$processedAt", createdAt);
+            ledger.ExecuteNonQuery();
         }
 
         transaction.Commit();
@@ -166,6 +182,101 @@ public sealed class SqliteEventStore : IEventStore
         command.Parameters.AddWithValue("$companyId", companyId);
         command.Parameters.AddWithValue("$status", GatewayEventStatus.PendingCloud);
         return Task.FromResult(Convert.ToInt64(command.ExecuteScalar()));
+    }
+
+    public Task<IReadOnlyList<GatewayEvent>> GetDueForDispatchAsync(string companyId, int limit, CancellationToken cancellationToken = default)
+    {
+        var now = _clock.UtcNow.ToString("o");
+        var events = new List<GatewayEvent>();
+        using var connection = _database.OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT Seq, EventId, CompanyId, StoreId, TerminalId, EventType, OccurredAt, Payload, PayloadHash, ClientPayloadHash, Status, CreatedAt, ProcessedAt, RetryCount
+            FROM GatewayEvents
+            WHERE CompanyId = $companyId
+              AND Status = $pending
+              AND RetryCount < $maxRetries
+              AND (NextAttemptAt IS NULL OR NextAttemptAt <= $now)
+            ORDER BY Seq ASC
+            LIMIT $limit;
+            """;
+        command.Parameters.AddWithValue("$companyId", companyId);
+        command.Parameters.AddWithValue("$pending", GatewayEventStatus.PendingCloud);
+        command.Parameters.AddWithValue("$maxRetries", BackoffPolicy.MaxRetries);
+        command.Parameters.AddWithValue("$now", now);
+        command.Parameters.AddWithValue("$limit", limit);
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var ev = Map(reader);
+            ev.RetryCount = reader.GetInt32(13);
+            events.Add(ev);
+        }
+
+        return Task.FromResult<IReadOnlyList<GatewayEvent>>(events);
+    }
+
+    public Task RecordDispatchFailureAsync(long seq, string error, CancellationToken cancellationToken = default)
+    {
+        using var connection = _database.OpenConnection();
+
+        int retryCount;
+        using (var read = connection.CreateCommand())
+        {
+            read.CommandText = "SELECT RetryCount FROM GatewayEvents WHERE Seq = $seq;";
+            read.Parameters.AddWithValue("$seq", seq);
+            var raw = read.ExecuteScalar();
+            if (raw is null) return Task.CompletedTask;
+            retryCount = Convert.ToInt32(raw) + 1;
+        }
+
+        var now = _clock.UtcNow;
+        var exhausted = BackoffPolicy.Exhausted(retryCount);
+        var nextAttempt = exhausted ? (string?)null : now.Add(BackoffPolicy.NextDelay(retryCount)).ToString("o");
+        var status = exhausted ? GatewayEventStatus.Failed : GatewayEventStatus.PendingCloud;
+
+        using var update = connection.CreateCommand();
+        update.CommandText = """
+            UPDATE GatewayEvents
+            SET RetryCount = $retryCount,
+                LastAttemptAt = $now,
+                LastError = $error,
+                NextAttemptAt = $nextAttempt,
+                Status = $status
+            WHERE Seq = $seq;
+            """;
+        update.Parameters.AddWithValue("$retryCount", retryCount);
+        update.Parameters.AddWithValue("$now", now.ToString("o"));
+        update.Parameters.AddWithValue("$error", (object?)error ?? DBNull.Value);
+        update.Parameters.AddWithValue("$nextAttempt", (object?)nextAttempt ?? DBNull.Value);
+        update.Parameters.AddWithValue("$status", status);
+        update.Parameters.AddWithValue("$seq", seq);
+        update.ExecuteNonQuery();
+
+        if (exhausted)
+        {
+            _logger.LogWarning("Evento Seq={Seq} atingiu o limite de tentativas ({Max}) e foi marcado como FAILED.",
+                seq, BackoffPolicy.MaxRetries);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task MarkSyncedAsync(long seq, CancellationToken cancellationToken = default)
+    {
+        using var connection = _database.OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            UPDATE GatewayEvents
+            SET Status = $status, ProcessedAt = $now, LastError = NULL, NextAttemptAt = NULL
+            WHERE Seq = $seq;
+            """;
+        command.Parameters.AddWithValue("$status", GatewayEventStatus.SyncedCloud);
+        command.Parameters.AddWithValue("$now", _clock.UtcNow.ToString("o"));
+        command.Parameters.AddWithValue("$seq", seq);
+        command.ExecuteNonQuery();
+        return Task.CompletedTask;
     }
 
     private static GatewayEvent? ReadByEventId(SqliteConnection connection, string companyId, string eventId)
