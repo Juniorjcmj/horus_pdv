@@ -1,0 +1,36 @@
+# Arquivo: GATEWAY/docker-compose.yml
+# Objetivo: executar o HorusGateway localmente na loja (ou em dev). Persiste os eventos num volume
+#           nomeado, de modo que sobrevivam a reinicialização/queda de energia.
+#
+# A localização física do Gateway é flexível (Opção A: roteador/servidor; Opção B: caixa;
+# Opção C: servidor dedicado). Este compose não assume que roda no caixa — é só o processo.
+
+services:
+  horus-gateway:
+    build:
+      context: .
+      dockerfile: src/HorusGateway/Dockerfile
+    image: horus-gateway:local
+    container_name: horus-gateway
+    restart: unless-stopped
+    ports:
+      - "5080:5080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:5080"
+      # Identidade da loja — ajuste por instalação:
+      Gateway__GatewayId: "${GATEWAY_ID:-}"
+      Gateway__CompanyId: "${GATEWAY_COMPANY_ID:?defina GATEWAY_COMPANY_ID (empresa vinculada ao Gateway)}"
+      Gateway__StoreId: "${GATEWAY_STORE_ID:-store-001}"
+      Gateway__DatabasePath: "/app/gateway-data/horus-gateway.db"
+    volumes:
+      - horus-gateway-data:/app/gateway-data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5080/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  horus-gateway-data:
