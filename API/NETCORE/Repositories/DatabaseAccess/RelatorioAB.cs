@@ -25,6 +25,12 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
             "vendas-periodo" => await GerarVendasPeriodoAsync(companyId, filters),
             "historico-vendas" => await GerarHistoricoVendasAsync(companyId, filters),
             "produtos-mais-vendidos" => await GerarProdutosMaisVendidosAsync(companyId, filters),
+            "produtos-por-valor" => await GerarProdutosPorValorAsync(companyId, filters),
+            "produtos-por-quantidade" => await GerarProdutosPorQuantidadeAsync(companyId, filters),
+            "produtos-por-lucro" => await GerarProdutosPorLucroAsync(companyId, filters),
+            "produtos-por-margem" => await GerarProdutosPorMargemAsync(companyId, filters),
+            "vendas-por-horario" => await GerarVendasPorHorarioAsync(companyId, filters),
+            "vendas-por-pagamento" => await GerarVendasPorPagamentoAsync(companyId, filters),
             "clientes-frequentes" => await GerarClientesFrequentesAsync(companyId, filters),
             "estoque-critico" => await GerarEstoqueCriticoAsync(companyId, filters),
             "compras-fornecedor" => await GerarComprasFornecedorAsync(companyId),
@@ -225,6 +231,125 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
                 ("margemPct", "Margem (%)")),
             reportRows);
     }
+
+    private async Task<object> GerarProdutosPorValorAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        var produtos = AgruparProdutosLucratividade(FilterSales(await ListarVendasAsync(companyId), filters, includeItems: true))
+            .OrderByDescending(item => item.Receita)
+            .ThenBy(item => item.Name);
+        return Result(ProdutoLucratividadeColumns(), produtos.Select(ProdutoLucratividadeRow).ToList());
+    }
+
+    private async Task<object> GerarProdutosPorQuantidadeAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        var produtos = AgruparProdutosLucratividade(FilterSales(await ListarVendasAsync(companyId), filters, includeItems: true))
+            .OrderByDescending(item => item.Quantidade)
+            .ThenBy(item => item.Name);
+        return Result(ProdutoLucratividadeColumns(), produtos.Select(ProdutoLucratividadeRow).ToList());
+    }
+
+    private async Task<object> GerarProdutosPorLucroAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        var produtos = AgruparProdutosLucratividade(FilterSales(await ListarVendasAsync(companyId), filters, includeItems: true))
+            .OrderByDescending(item => item.Lucro)
+            .ThenBy(item => item.Name);
+        return Result(ProdutoLucratividadeColumns(), produtos.Select(ProdutoLucratividadeRow).ToList());
+    }
+
+    private async Task<object> GerarProdutosPorMargemAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        // Só produtos com receita entram no ranking de %, senão a margem não tem denominador válido.
+        var produtos = AgruparProdutosLucratividade(FilterSales(await ListarVendasAsync(companyId), filters, includeItems: true))
+            .Where(item => item.Receita > 0)
+            .OrderByDescending(item => item.MargemPct)
+            .ThenByDescending(item => item.Lucro);
+        return Result(ProdutoLucratividadeColumns(), produtos.Select(ProdutoLucratividadeRow).ToList());
+    }
+
+    private async Task<object> GerarVendasPorHorarioAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        // includeItems:false já deduplica por venda, então cada linha representa uma venda distinta.
+        var vendas = FilterSales(await ListarVendasAsync(companyId), filters, includeItems: false);
+        var reportRows = vendas
+            .GroupBy(item => item.SaleDate.ToLocalTime().Hour)
+            .OrderBy(group => group.Key)
+            .Select(group =>
+            {
+                var total = group.Sum(item => item.TotalAmount);
+                var count = group.Count();
+                return Row(
+                    ("horario", $"{group.Key:00}:00 às {group.Key:00}:59"),
+                    ("vendas", count),
+                    ("faturamento", FormatMoney(total)),
+                    ("ticketMedio", FormatMoney(count == 0 ? 0 : total / count)));
+            })
+            .ToList();
+
+        return Result(
+            Columns(("horario", "Horário"), ("vendas", "Vendas"), ("faturamento", "Faturamento"), ("ticketMedio", "Ticket médio")),
+            reportRows);
+    }
+
+    private async Task<object> GerarVendasPorPagamentoAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        var vendas = FilterSales(await ListarVendasAsync(companyId), filters, includeItems: false);
+        var totalGeral = vendas.Sum(item => item.TotalAmount);
+        var reportRows = vendas
+            .GroupBy(item => item.PaymentType)
+            .Select(group =>
+            {
+                var total = group.Sum(item => item.TotalAmount);
+                var count = group.Count();
+                var pct = totalGeral == 0 ? 0m : Math.Round((total / totalGeral) * 100m, 2);
+                return (Total: total, Row: Row(
+                    ("pagamento", group.Key),
+                    ("vendas", count),
+                    ("faturamento", FormatMoney(total)),
+                    ("ticketMedio", FormatMoney(count == 0 ? 0 : total / count)),
+                    ("percentual", $"{pct:F2}%")));
+            })
+            .OrderByDescending(item => item.Total)
+            .Select(item => item.Row)
+            .ToList();
+
+        return Result(
+            Columns(("pagamento", "Forma de pagamento"), ("vendas", "Vendas"), ("faturamento", "Faturamento"), ("ticketMedio", "Ticket médio"), ("percentual", "% do total")),
+            reportRows);
+    }
+
+    private static List<ProdutoLucratividade> AgruparProdutosLucratividade(List<ReportSaleRow> rows)
+        => rows
+            .GroupBy(item => new { item.ProductCode, item.ProductName })
+            .Select(group =>
+            {
+                var quantidade = group.Sum(item => item.Quantity);
+                var receita = group.Sum(item => item.ItemTotal);
+                var custo = group.Sum(item => item.CostPrice * item.Quantity);
+                var lucro = receita - custo;
+                var margemPct = receita == 0 ? 0m : Math.Round((lucro / receita) * 100m, 2);
+                return new ProdutoLucratividade(group.Key.ProductCode, group.Key.ProductName, quantidade, receita, custo, lucro, margemPct);
+            })
+            .ToList();
+
+    private static object[] ProdutoLucratividadeColumns()
+        => Columns(
+            ("codigo", "Código"),
+            ("produto", "Produto"),
+            ("quantidade", "Qtd. vendida"),
+            ("faturamento", "Valor (Faturamento)"),
+            ("custo", "Custo (CMV)"),
+            ("lucro", "Lucro (R$)"),
+            ("margemPct", "Lucro (%)"));
+
+    private static Dictionary<string, object> ProdutoLucratividadeRow(ProdutoLucratividade item)
+        => Row(
+            ("codigo", item.Code),
+            ("produto", item.Name),
+            ("quantidade", item.Quantidade),
+            ("faturamento", FormatMoney(item.Receita)),
+            ("custo", FormatMoney(item.Custo)),
+            ("lucro", FormatMoney(item.Lucro)),
+            ("margemPct", $"{item.MargemPct:F2}%"));
 
     private async Task<object> GerarVencimentosAsync(string companyId, Dictionary<string, JsonElement> filters)
     {
@@ -677,6 +802,15 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
         string? CategoriaPaiId,
         string? CategoriaNome,
         string DepartamentoNome);
+
+    private sealed record ProdutoLucratividade(
+        string Code,
+        string Name,
+        decimal Quantidade,
+        decimal Receita,
+        decimal Custo,
+        decimal Lucro,
+        decimal MargemPct);
 
     private sealed record ReportProductRow(
         string Code,
