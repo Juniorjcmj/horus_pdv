@@ -13,14 +13,20 @@
 - [x] Produzir proposta, design, spec e este plano — **sem alterar código, banco, API ou testes**
 - [ ] Aprovação do usuário para iniciar CHANGE GATEWAY 02
 
-## CHANGE GATEWAY 02 — Projeto e infraestrutura básica
+## CHANGE GATEWAY 02 — Projeto e infraestrutura básica (concluído)
 
-- [ ] Criar projeto `HorusGateway` (ASP.NET Core)
-- [ ] Configuração e identificação: `GatewayId`, `CompanyId`, `StoreId`
-- [ ] Armazenamento local (SQLite) e schema base
-- [ ] Health check (`/health`, `/health/live`, `/health/ready`)
-- [ ] Execução como Windows Service (alvo inicial) / systemd
-- [ ] Sem alterar fluxo de vendas
+- [x] Criar projeto `HorusGateway` (ASP.NET Core 8) em `GATEWAY/src/HorusGateway`
+- [x] Configuração por ambiente e identificação: `GatewayId`, `CompanyId`, `StoreId` (seção `Gateway`)
+- [x] Armazenamento local (SQLite via `Microsoft.Data.Sqlite`) e schema base idempotente
+- [x] Health check (`/health`, `/health/live`, `/health/ready`) + `/api/gateway/status` (descoberta)
+- [x] Event Bus local: ingestão `POST /api/gateway/events` (EventId + PayloadHash canônico, idempotência: replay/409) e recuperação `GET /api/gateway/events?after=` (cursor)
+- [x] Estrutura de tempo real (SignalR Hub `/hubs/events`) — PDV → Gateway → outros terminais/caixa
+- [x] Persistência durável e recuperação após reinicialização (SQLite; log de eventos recuperados no boot)
+- [x] Isolamento multi-tenant: `CompanyId` na chave lógica e em toda consulta (403 para outra empresa)
+- [x] Logs estruturados (JSON), Dockerfile, docker-compose e README
+- [x] Testes do Gateway (9/9 passando) cobrindo os 10 cenários exigidos + entrega em tempo real
+- [x] Regressão zero: nenhum arquivo existente alterado (SyncEngine/Outbox/PDV/caixa/NFC-e intactos)
+- [ ] Execução como Windows Service / systemd — **adiado** (estrutura pronta; empacotamento como serviço fica para a etapa de implantação, junto de GATEWAY 03/08)
 
 ## CHANGE GATEWAY 03 — Registro de terminais, heartbeat, descoberta, auth
 
