@@ -72,12 +72,19 @@
 - [x] Testes (50/50 no total) incl. dispatcher (sucesso, conflito, transitório→reagenda, permanente→FAILED, desabilitado, ordem); regressão zero (71/71 arch)
 - [ ] Endpoint de ingestão em lote na cloud (API central) — **fora do escopo GATEWAY** (evita alterar a API/SQL principal); o Gateway já envia preservando idempotência quando a URL for configurada
 
-## CHANGE GATEWAY 07 — Integração com o SyncEngine existente (fallback)
+## CHANGE GATEWAY 07 — Integração com o terminal (fallback offline) (concluído)
 
-- [ ] Generalizar Outbox atual com `Destination = GATEWAY | CLOUD` (sem `SyncEngine2`)
-- [ ] Decisão no terminal: Gateway disponível? → Gateway; senão Cloud; senão Offline Local
-- [ ] Fallback configurável por tipo de operação; Outbox atual intacta
-- [ ] Roteamento inserido em `apiClient.ts`; `ConnectivityService` passa a conhecer o Gateway
+> Contrato definido pelo usuário: **o ponto de comunicação é sempre a Cloud**; o terminal só
+> procura o Gateway **quando não há internet**, para os terminais falarem com o caixa. Fora disso,
+> nada muda. Portanto o fluxo homologado de vendas/caixa → cloud (Outbox/SyncEngine/apiClient)
+> permanece **intacto**; a camada do Gateway é aditiva.
+
+- [x] Decisão no terminal (`chooseOrderDestination`): COM internet → Cloud; SEM internet + Gateway → Gateway; senão → Offline Local (Outbox atual)
+- [x] Descoberta do Gateway na LAN (`gatewayDiscovery`): URL configurada/manual + verificação `/status` com validação de `CompanyId` (mDNS/hostname a cargo da config de rede)
+- [x] Armazenamento seguro da credencial no PWA (`gatewayConfig` em localStorage, protegido) + registro/heartbeat/publicação/recuperação (`gatewayClient`)
+- [x] Transporte de pedido offline (`publishOrderEventOffline`) preservando `EventId`+`PayloadHash`; se o Gateway cair, mantém na Outbox local (nada é perdido)
+- [x] Camada 100% aditiva: nenhum arquivo homologado alterado; 71/71 testes de arquitetura verdes; typecheck OK
+- [ ] Roteamento de vendas/caixa via Gateway e generalização da Outbox com `Destination` — **NÃO implementado por contrato** (vendas/caixa sempre falam com a Cloud; o Gateway não é rota dessas operações)
 
 ## CHANGE GATEWAY 08 — Interface de monitoramento
 
