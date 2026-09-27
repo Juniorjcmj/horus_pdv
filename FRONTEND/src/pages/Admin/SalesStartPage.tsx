@@ -1523,7 +1523,7 @@ export default function SalesStartPage({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src="/logo-quack.jpg"
+                src="/logo-quack-v2.jpg"
                 alt="Quack Sistemas"
                 className="h-10 md:h-12 w-auto max-w-[120px] rounded-xl object-contain border border-white/20 shadow-md bg-slate-900/40"
               />

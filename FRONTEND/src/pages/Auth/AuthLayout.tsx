@@ -34,7 +34,7 @@ export default function AuthLayout({
             <div>
               <div className="flex items-center gap-3">
                 <img
-                  src="/logo-quack.jpg"
+                  src="/logo-quack-v2.jpg"
                   alt="Quack Sistemas"
                   className="h-12 w-auto max-w-[140px] rounded-xl object-contain border border-white/30 shadow-lg bg-slate-900/40"
                 />
@@ -61,7 +61,7 @@ export default function AuthLayout({
             <div className="mx-auto w-full max-w-md">
               <div className="lg:hidden flex items-center gap-2.5 mb-6 pb-4 border-b border-border-primary">
                 <img
-                  src="/logo-quack.jpg"
+                  src="/logo-quack-v2.jpg"
                   alt="Quack Sistemas"
                   className="h-9 w-auto rounded-lg object-contain border border-border-primary shadow-xs bg-slate-900/40"
                 />
