@@ -60,12 +60,17 @@
 - [x] Testes (44/44 no total) incl. máquina de estados unitária e fluxo end-to-end + tempo real; regressão zero (71/71 arch)
 - [ ] Registrar pagamento (Pix/PSP) e cache de catálogo (delta) — **adiados** para GATEWAY 06 (pagamento depende do PSP)
 
-## CHANGE GATEWAY 06 — Sincronização Gateway → Cloud
+## CHANGE GATEWAY 06 — Sincronização Gateway → Cloud (concluído)
 
-- [ ] Outbox do Gateway e `CLOUD_SYNC` na ordem correta
-- [ ] Estados `PENDING_CLOUD` / `SYNCED_CLOUD` / `FAILED`
-- [ ] Retry, recuperação após reboot/energia, idempotência ponta-a-ponta
-- [ ] Reusar idempotência da cloud (`ProcessedEvents`); nada de "segunda verdade"
+- [x] Dispatcher (`CloudSyncDispatcher`) + serviço em background que consome os eventos devidos e envia à cloud em ordem de `Seq`
+- [x] Estados `PENDING_CLOUD` → `SYNCED_CLOUD` (sucesso/conflito idempotente) / `FAILED` (permanente)
+- [x] Retry com backoff em falha transitória; recuperação automática após reboot/energia (pendentes vivem no SQLite)
+- [x] Idempotência ponta-a-ponta: `EventId` + `PayloadHash` preservados; 409 da cloud = replay = sincronizado
+- [x] Transporte HTTP desacoplado (`ICloudSyncClient`/`HttpCloudSyncClient`); `CloudSyncUrl` vazio ⇒ LAN-only (eventos acumulam)
+- [x] `/health` reflete `cloud` (`disabled`/`online`/`offline`) e `pendingEvents`; `CloudSyncState` observável
+- [x] Reusa a idempotência da cloud (`ProcessedEvents`); Gateway não cria segunda verdade
+- [x] Testes (50/50 no total) incl. dispatcher (sucesso, conflito, transitório→reagenda, permanente→FAILED, desabilitado, ordem); regressão zero (71/71 arch)
+- [ ] Endpoint de ingestão em lote na cloud (API central) — **fora do escopo GATEWAY** (evita alterar a API/SQL principal); o Gateway já envia preservando idempotência quando a URL for configurada
 
 ## CHANGE GATEWAY 07 — Integração com o SyncEngine existente (fallback)
 

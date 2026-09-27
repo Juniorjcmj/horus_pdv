@@ -279,6 +279,23 @@ public sealed class SqliteEventStore : IEventStore
         return Task.CompletedTask;
     }
 
+    public Task MarkFailedAsync(long seq, string error, CancellationToken cancellationToken = default)
+    {
+        using var connection = _database.OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            UPDATE GatewayEvents
+            SET Status = $status, LastError = $error, LastAttemptAt = $now, NextAttemptAt = NULL
+            WHERE Seq = $seq;
+            """;
+        command.Parameters.AddWithValue("$status", GatewayEventStatus.Failed);
+        command.Parameters.AddWithValue("$error", (object?)error ?? DBNull.Value);
+        command.Parameters.AddWithValue("$now", _clock.UtcNow.ToString("o"));
+        command.Parameters.AddWithValue("$seq", seq);
+        command.ExecuteNonQuery();
+        return Task.CompletedTask;
+    }
+
     public Task<bool> ExistsAsync(string companyId, string eventId, CancellationToken cancellationToken = default)
     {
         using var connection = _database.OpenConnection();

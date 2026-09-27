@@ -49,6 +49,15 @@ builder.Services.AddSingleton<IEventStore, SqliteEventStore>();
 builder.Services.AddSingleton<ITerminalStore, SqliteTerminalStore>();
 builder.Services.AddSingleton<IOrderStore, SqliteOrderStore>();
 
+// Sincronização Gateway → Cloud (CHANGE GATEWAY 06).
+builder.Services.AddSingleton<CloudSyncState>();
+builder.Services.AddHttpClient<ICloudSyncClient, HttpCloudSyncClient>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddScoped<CloudSyncDispatcher>();
+builder.Services.AddHostedService<CloudSyncBackgroundService>();
+
 var app = builder.Build();
 
 // Inicializa o schema local (idempotente) e registra a identidade + recuperação no boot.

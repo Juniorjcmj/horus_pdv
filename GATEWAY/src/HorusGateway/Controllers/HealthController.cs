@@ -2,8 +2,10 @@
  * Arquivo: Controllers/HealthController.cs
  * Objetivo: health checks do Gateway (liveness, readiness e status agregado com pendências de sync).
  */
+using HorusGateway.Configuration;
 using HorusGateway.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace HorusGateway.Controllers;
 
@@ -12,12 +14,21 @@ public sealed class HealthController : ControllerBase
 {
     private readonly GatewayIdentity _identity;
     private readonly IEventStore _eventStore;
+    private readonly CloudSyncState _cloudSync;
+    private readonly GatewayOptions _options;
     private readonly ILogger<HealthController> _logger;
 
-    public HealthController(GatewayIdentity identity, IEventStore eventStore, ILogger<HealthController> logger)
+    public HealthController(
+        GatewayIdentity identity,
+        IEventStore eventStore,
+        CloudSyncState cloudSync,
+        IOptions<GatewayOptions> options,
+        ILogger<HealthController> logger)
     {
         _identity = identity;
         _eventStore = eventStore;
+        _cloudSync = cloudSync;
+        _options = options.Value;
         _logger = logger;
     }
 
@@ -48,12 +59,15 @@ public sealed class HealthController : ControllerBase
         try
         {
             var pending = _identity.IsBound ? await _eventStore.CountPendingCloudAsync(_identity.CompanyId) : 0;
+            var cloudEnabled = !string.IsNullOrWhiteSpace(_options.CloudSyncUrl);
+            var cloud = !cloudEnabled ? "disabled" : (_cloudSync.Online ? "online" : "offline");
             return Ok(new
             {
                 gateway = "healthy",
                 storage = "healthy",
-                cloud = "unknown", // conectividade com a cloud será medida a partir do CHANGE GATEWAY 06
-                pendingEvents = pending
+                cloud,
+                pendingEvents = pending,
+                cloudSync = _cloudSync.Snapshot()
             });
         }
         catch (Exception ex)

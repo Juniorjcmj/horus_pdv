@@ -34,4 +34,7 @@ public interface IEventStore
 
     /// <summary>Marca o evento como sincronizado com a cloud.</summary>
     Task MarkSyncedAsync(long seq, CancellationToken cancellationToken = default);
+
+    /// <summary>Marca o evento como falha permanente (não reprocessável).</summary>
+    Task MarkFailedAsync(long seq, string error, CancellationToken cancellationToken = default);
 }

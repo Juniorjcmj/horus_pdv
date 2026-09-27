@@ -1,4 +1,4 @@
-# HorusGateway — CHANGE GATEWAY 02 + 03 + 04 + 05
+# HorusGateway — CHANGE GATEWAY 02 + 03 + 04 + 05 + 06
 
 Coordenador operacional local da loja (camada LAN **adicional**, nunca obrigatória). Permite que os terminais troquem eventos (ex.: pedidos) entre si — e com o caixa — mesmo sem internet, sincronizando com a cloud depois. Se o Gateway estiver indisponível, cada terminal volta ao comportamento offline-first atual (IndexedDB/Outbox → Cloud).
 
@@ -20,6 +20,10 @@ Coordenador operacional local da loja (camada LAN **adicional**, nunca obrigató
 | `Gateway:RegistrationToken` | Segredo compartilhado provisionado nos terminais para o registro (LAN não confiável) |
 | `Gateway:RequireTerminalAuth` | Exige credencial de terminal em ingestão/recuperação/heartbeat (padrão `true`) |
 | `Gateway:TerminalOnlineWindowSeconds` | Janela sem heartbeat para considerar um terminal OFFLINE (padrão 60s) |
+| `Gateway:CloudSyncUrl` | Endpoint de ingestão em lote da cloud. Vazio = sync desligado (LAN-only, eventos acumulam PENDING_CLOUD) |
+| `Gateway:CloudSyncIntervalSeconds` | Intervalo entre ciclos do dispatcher Gateway → Cloud (padrão 15s) |
+| `Gateway:CloudSyncBatchSize` | Máximo de eventos por ciclo (padrão 50) |
+| `Gateway:CloudSyncToken` | Token Bearer opcional enviado à cloud |
 
 Via variável de ambiente: `Gateway__CompanyId=empresa-1` etc.
 
@@ -38,6 +42,9 @@ Via variável de ambiente: `Gateway__CompanyId=empresa-1` etc.
 | POST | `/api/gateway/events` | Ingestão de evento (Terminal → Gateway), idempotente |
 | GET | `/api/gateway/events?companyId=&after=&limit=` | Recuperação incremental (terminal que ficou offline) |
 | WS | `/hubs/events` | SignalR — `Subscribe(companyId)` e callback `eventReceived` |
+
+## Sincronização Gateway → Cloud (CHANGE GATEWAY 06)
+Um dispatcher em background consome os eventos devidos (`GetDueForDispatchAsync`, com backoff do CHANGE 04) e os envia à `CloudSyncUrl`, preservando `EventId` + `PayloadHash` (idempotência ponta-a-ponta). Desfechos: **2xx** → `SYNCED_CLOUD`; **409** (a cloud já processou) → idempotente, também `SYNCED_CLOUD`; **5xx/timeout/rede** → reagenda com backoff; **4xx** → `FAILED`. Sem `CloudSyncUrl`, o sync fica desligado e o Gateway opera LAN-only (eventos acumulam `PENDING_CLOUD`). A recuperação após reinicialização é automática — os pendentes vivem no SQLite. O `/health` reflete `cloud` (`disabled`/`online`/`offline`) e `pendingEvents`. A cloud continua a autoridade; o Gateway não cria segunda verdade.
 
 ## Pedidos em tempo real (CHANGE GATEWAY 05)
 Pedidos são tratados como eventos operacionais (`ORDER_CREATED/UPDATED/RECEIVED/CONFIRMED/PREPARING/READY/DELIVERED/CANCELLED`). Uma projeção `Orders` (read model) é derivada dos eventos, aplicando a máquina de estados `CREATED → RECEIVED → CONFIRMED → PREPARING → READY → DELIVERED` (avanços podem pular etapas; cancelamento a partir de qualquer estado não terminal). Transições inválidas são rejeitadas com **409** e não gravam evento. Cada mudança gera evento — nunca se altera estado sem registrar a transição. Ao aceitar um evento de pedido, o Gateway atualiza a projeção e transmite `orderUpdated` via SignalR (PDV → Gateway → Caixa). O caixa **consulta** via `GET /orders`; para **aceitar/cancelar/finalizar** ele publica os eventos `ORDER_*` correspondentes. Confirmação de pagamento (Pix via PSP) fica para o CHANGE GATEWAY 06.

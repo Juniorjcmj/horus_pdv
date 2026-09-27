@@ -35,4 +35,19 @@ public sealed class GatewayOptions
 
     /// <summary>Janela (segundos) sem heartbeat após a qual um terminal é considerado OFFLINE no dashboard.</summary>
     public int TerminalOnlineWindowSeconds { get; set; } = 60;
+
+    /// <summary>
+    /// URL do endpoint de ingestão em lote da cloud (Gateway → Cloud). Vazio desliga a sincronização:
+    /// o Gateway opera LAN-only e os eventos acumulam PENDING_CLOUD até a URL ser configurada.
+    /// </summary>
+    public string CloudSyncUrl { get; set; } = string.Empty;
+
+    /// <summary>Intervalo (segundos) entre ciclos do dispatcher Gateway → Cloud.</summary>
+    public int CloudSyncIntervalSeconds { get; set; } = 15;
+
+    /// <summary>Máximo de eventos enviados por ciclo.</summary>
+    public int CloudSyncBatchSize { get; set; } = 50;
+
+    /// <summary>Token opcional enviado no header Authorization para a cloud (Bearer).</summary>
+    public string CloudSyncToken { get; set; } = string.Empty;
 }
