@@ -16,6 +16,7 @@ import type {
   ReportResultRow,
 } from "./reportResultTypes";
 import { reportService } from "@/services/api/reportService";
+import ReportChartView from "./ReportChartView";
 
 type FilterValue = string | string[] | boolean;
 
@@ -513,6 +514,8 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
             </div>
           ) : (
             <>
+              {report.chart && <ReportChartView chart={report.chart} rows={resultRows} />}
+
               <div className="overflow-x-auto rounded-xl border border-border-primary bg-bg-light">
                 <table className="min-w-full border-collapse text-sm">
                   <thead className="bg-bg-primary">

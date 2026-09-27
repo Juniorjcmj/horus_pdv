@@ -281,7 +281,11 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
                     ("horario", $"{group.Key:00}:00 às {group.Key:00}:59"),
                     ("vendas", count),
                     ("faturamento", FormatMoney(total)),
-                    ("ticketMedio", FormatMoney(count == 0 ? 0 : total / count)));
+                    ("ticketMedio", FormatMoney(count == 0 ? 0 : total / count)),
+                    // Valores numéricos crus para o gráfico do frontend; não entram em Columns,
+                    // então a tabela não os exibe.
+                    ("faturamentoValor", Math.Round(total, 2)),
+                    ("hora", group.Key));
             })
             .ToList();
 

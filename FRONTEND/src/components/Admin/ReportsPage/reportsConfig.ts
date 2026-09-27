@@ -39,12 +39,26 @@ export type ReportFilter = {
   options?: ReportFilterOption[];
 };
 
+export type ReportChartSeries = {
+  key: string;
+  label: string;
+};
+
+export type ReportChart = {
+  type: "bar";
+  xKey: string;
+  xLabel?: string;
+  series: ReportChartSeries[];
+  valueFormat?: "currency" | "number";
+};
+
 export type ReportDefinition = {
   id: string;
   title: string;
   description: string;
   icon: LucideIcon;
   filters: ReportFilter[];
+  chart?: ReportChart;
 };
 
 const periodFilters: ReportFilter[] = [
@@ -219,6 +233,13 @@ export const reportCatalog: ReportDefinition[] = [
       categoriaFilter,
       { id: "paymentMethod", label: "Forma de pagamento", type: "select", options: paymentMethodOptions },
     ],
+    chart: {
+      type: "bar",
+      xKey: "horario",
+      xLabel: "Horário",
+      series: [{ key: "faturamentoValor", label: "Faturamento" }],
+      valueFormat: "currency",
+    },
   },
   {
     id: "vendas-por-pagamento",
