@@ -93,6 +93,25 @@ public sealed class GatewayDatabase
                 ProcessedAt TEXT NOT NULL,
                 PRIMARY KEY (CompanyId, EventId)
             );
+
+            -- Projeção (read model) do estado atual dos pedidos, derivada dos eventos ORDER_*.
+            CREATE TABLE IF NOT EXISTS Orders (
+                CompanyId   TEXT NOT NULL,
+                OrderNumber TEXT NOT NULL,
+                StoreId     TEXT NOT NULL DEFAULT '',
+                TerminalId  TEXT NOT NULL DEFAULT '',
+                Status      TEXT NOT NULL,
+                TotalAmount TEXT NULL,
+                Payload     TEXT NOT NULL DEFAULT '{}',
+                Version     INTEGER NOT NULL DEFAULT 1,
+                CreatedAt   TEXT NOT NULL,
+                UpdatedAt   TEXT NOT NULL,
+                LastEventId TEXT NOT NULL DEFAULT '',
+                PRIMARY KEY (CompanyId, OrderNumber)
+            );
+
+            CREATE INDEX IF NOT EXISTS IX_Orders_Company_Status
+                ON Orders (CompanyId, Status);
             """;
         command.ExecuteNonQuery();
 

@@ -47,6 +47,7 @@ builder.Services.AddSingleton<GatewayIdentity>();
 builder.Services.AddSingleton<GatewayDatabase>();
 builder.Services.AddSingleton<IEventStore, SqliteEventStore>();
 builder.Services.AddSingleton<ITerminalStore, SqliteTerminalStore>();
+builder.Services.AddSingleton<IOrderStore, SqliteOrderStore>();
 
 var app = builder.Build();
 

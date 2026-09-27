@@ -279,6 +279,16 @@ public sealed class SqliteEventStore : IEventStore
         return Task.CompletedTask;
     }
 
+    public Task<bool> ExistsAsync(string companyId, string eventId, CancellationToken cancellationToken = default)
+    {
+        using var connection = _database.OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT COUNT(1) FROM ProcessedEvents WHERE CompanyId = $companyId AND EventId = $eventId;";
+        command.Parameters.AddWithValue("$companyId", companyId);
+        command.Parameters.AddWithValue("$eventId", eventId);
+        return Task.FromResult(Convert.ToInt64(command.ExecuteScalar()) > 0);
+    }
+
     private static GatewayEvent? ReadByEventId(SqliteConnection connection, string companyId, string eventId)
     {
         using var command = connection.CreateCommand();

@@ -49,13 +49,16 @@
 - [x] Relógio injetável (`IClock`) para agendamento de retry determinístico nos testes
 - [x] Testes (31/31 no total) incluindo unitários de backoff e ciclo de vida do bus; regressão zero (71/71 arch)
 
-## CHANGE GATEWAY 05 — Pedidos em tempo real
+## CHANGE GATEWAY 05 — Pedidos em tempo real (concluído)
 
-- [ ] Eventos `ORDER_CREATED`, `ORDER_UPDATED`, `ORDER_CANCELLED` (e demais estados)
-- [ ] Máquina de estados `CREATED → RECEIVED → CONFIRMED → PREPARING → READY → DELIVERED`
-- [ ] Canal tempo-real (SignalR): `Terminal → Gateway → Caixa`
-- [ ] Caixa: visualizar/aceitar/cancelar/finalizar/registrar pagamento
-- [ ] Cache de catálogo local com `version`/`updatedAt`/`source` (delta), se necessário
+- [x] Eventos `ORDER_CREATED/UPDATED/RECEIVED/CONFIRMED/PREPARING/READY/DELIVERED/CANCELLED`
+- [x] Máquina de estados `CREATED → RECEIVED → CONFIRMED → PREPARING → READY → DELIVERED` (avanço pode pular etapas; cancelamento de qualquer estado não terminal); transição inválida → 409 sem gravar
+- [x] Projeção `Orders` (read model) derivada dos eventos, versionada; nunca altera estado sem evento
+- [x] Canal tempo-real (SignalR): `Terminal → Gateway → Caixa` via `orderUpdated` (além do `eventReceived`)
+- [x] Caixa: visualizar (`GET /api/gateway/orders` e `/{orderNumber}`); aceitar/cancelar/finalizar via eventos `ORDER_*`
+- [x] Idempotência preservada: `ORDER_CREATED` repetido (mesmo EventId) continua replay, não conflito de transição
+- [x] Testes (44/44 no total) incl. máquina de estados unitária e fluxo end-to-end + tempo real; regressão zero (71/71 arch)
+- [ ] Registrar pagamento (Pix/PSP) e cache de catálogo (delta) — **adiados** para GATEWAY 06 (pagamento depende do PSP)
 
 ## CHANGE GATEWAY 06 — Sincronização Gateway → Cloud
 

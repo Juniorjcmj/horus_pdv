@@ -1,4 +1,4 @@
-# HorusGateway — CHANGE GATEWAY 02 + 03
+# HorusGateway — CHANGE GATEWAY 02 + 03 + 04 + 05
 
 Coordenador operacional local da loja (camada LAN **adicional**, nunca obrigatória). Permite que os terminais troquem eventos (ex.: pedidos) entre si — e com o caixa — mesmo sem internet, sincronizando com a cloud depois. Se o Gateway estiver indisponível, cada terminal volta ao comportamento offline-first atual (IndexedDB/Outbox → Cloud).
 
@@ -33,9 +33,14 @@ Via variável de ambiente: `Gateway__CompanyId=empresa-1` etc.
 | POST | `/api/gateway/register` | Registro/autorização de terminal (token compartilhado → emite `apiKey`) |
 | POST | `/api/gateway/heartbeat` | Heartbeat do terminal (headers `X-Terminal-Id`/`X-Terminal-Key`) → atualiza `LastSeenAt` |
 | GET | `/api/gateway/terminals` | Lista terminais com online/offline (dashboard) |
+| GET | `/api/gateway/orders` (+`?status=`) | Lista pedidos (visão do caixa) |
+| GET | `/api/gateway/orders/{orderNumber}` | Estado atual de um pedido |
 | POST | `/api/gateway/events` | Ingestão de evento (Terminal → Gateway), idempotente |
 | GET | `/api/gateway/events?companyId=&after=&limit=` | Recuperação incremental (terminal que ficou offline) |
 | WS | `/hubs/events` | SignalR — `Subscribe(companyId)` e callback `eventReceived` |
+
+## Pedidos em tempo real (CHANGE GATEWAY 05)
+Pedidos são tratados como eventos operacionais (`ORDER_CREATED/UPDATED/RECEIVED/CONFIRMED/PREPARING/READY/DELIVERED/CANCELLED`). Uma projeção `Orders` (read model) é derivada dos eventos, aplicando a máquina de estados `CREATED → RECEIVED → CONFIRMED → PREPARING → READY → DELIVERED` (avanços podem pular etapas; cancelamento a partir de qualquer estado não terminal). Transições inválidas são rejeitadas com **409** e não gravam evento. Cada mudança gera evento — nunca se altera estado sem registrar a transição. Ao aceitar um evento de pedido, o Gateway atualiza a projeção e transmite `orderUpdated` via SignalR (PDV → Gateway → Caixa). O caixa **consulta** via `GET /orders`; para **aceitar/cancelar/finalizar** ele publica os eventos `ORDER_*` correspondentes. Confirmação de pagamento (Pix via PSP) fica para o CHANGE GATEWAY 06.
 
 ## Autenticação de terminal (CHANGE GATEWAY 03)
 A LAN é tratada como **não confiável**. Fluxo: o admin provisiona o `RegistrationToken` nos terminais → o terminal chama `POST /register` (valida token + `CompanyId`) e recebe uma `apiKey` única (só o hash PBKDF2 fica no Gateway). Depois, ingestão/recuperação/heartbeat exigem os headers `X-Terminal-Id` + `X-Terminal-Key`. O Gateway autentica o **terminal** ("pertence a esta loja?"), nunca o usuário — a autenticação de usuário continua na cloud. A descoberta do Gateway (mDNS/URL/manual) e o armazenamento seguro da credencial no PWA são integrados no CHANGE GATEWAY 07.

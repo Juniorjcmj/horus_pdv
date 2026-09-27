@@ -23,6 +23,7 @@ public sealed class GatewayController : ControllerBase
     private readonly GatewayIdentity _identity;
     private readonly IEventStore _eventStore;
     private readonly ITerminalStore _terminals;
+    private readonly IOrderStore _orders;
     private readonly IHubContext<EventsHub> _hub;
     private readonly GatewayOptions _options;
     private readonly ILogger<GatewayController> _logger;
@@ -31,6 +32,7 @@ public sealed class GatewayController : ControllerBase
         GatewayIdentity identity,
         IEventStore eventStore,
         ITerminalStore terminals,
+        IOrderStore orders,
         IHubContext<EventsHub> hub,
         IOptions<GatewayOptions> options,
         ILogger<GatewayController> logger)
@@ -38,6 +40,7 @@ public sealed class GatewayController : ControllerBase
         _identity = identity;
         _eventStore = eventStore;
         _terminals = terminals;
+        _orders = orders;
         _hub = hub;
         _options = options.Value;
         _logger = logger;
@@ -95,6 +98,33 @@ public sealed class GatewayController : ControllerBase
             }
         }
 
+        // Pré-validação da transição de pedido: rejeita transição inválida ANTES de gravar o evento.
+        // Só para eventos NOVOS — um EventId já conhecido é replay idempotente e não revalida transição.
+        if (OrderEventType.IsOrderEvent(request.EventType))
+        {
+            var orderNumber = IOrderStore.ReadOrderNumber(request.Payload.ValueKind == System.Text.Json.JsonValueKind.Undefined ? "{}" : request.Payload.GetRawText());
+            if (string.IsNullOrWhiteSpace(orderNumber))
+            {
+                return BadRequest(new { error = "evento ORDER_* requer orderNumber/orderId no payload." });
+            }
+
+            var alreadyKnown = await _eventStore.ExistsAsync(_identity.CompanyId, request.EventId!, cancellationToken);
+            if (!alreadyKnown)
+            {
+                var current = await _orders.GetStatusAsync(_identity.CompanyId, orderNumber, cancellationToken);
+                if (!OrderStateMachine.TryNext(current, request.EventType!, out _))
+                {
+                    return Conflict(new
+                    {
+                        error = "transição de pedido inválida.",
+                        orderNumber,
+                        currentStatus = current,
+                        eventType = request.EventType
+                    });
+                }
+            }
+        }
+
         var result = await _eventStore.AppendAsync(request, cancellationToken);
 
         switch (result.Outcome)
@@ -111,10 +141,29 @@ public sealed class GatewayController : ControllerBase
 
             case IngestOutcome.Accepted:
                 var dto = DtoOf(result)!;
-                // Publica para os demais terminais da mesma empresa (tempo real).
+                // Publica o evento para os demais terminais da mesma empresa (tempo real).
                 await _hub.Clients.Group(EventsHub.GroupFor(_identity.CompanyId))
                     .SendAsync("eventReceived", dto, cancellationToken);
-                return Ok(new { status = "accepted", ack = true, event_ = dto });
+
+                // Atualiza a projeção de pedidos e notifica o caixa/terminais do estado atual.
+                OrderView? order = null;
+                if (OrderEventType.IsOrderEvent(request.EventType) && result.Event is not null)
+                {
+                    var applied = await _orders.ApplyAsync(result.Event, cancellationToken);
+                    if (applied.Ok)
+                    {
+                        order = applied.Order;
+                        await _hub.Clients.Group(EventsHub.GroupFor(_identity.CompanyId))
+                            .SendAsync("orderUpdated", order, cancellationToken);
+                    }
+                    else
+                    {
+                        // Pré-checagem passou mas a aplicação falhou (raro; ex.: corrida). Mantém o evento como auditoria.
+                        _logger.LogWarning("Evento ORDER aceito, mas projeção não aplicou: {Reason}", applied.Message);
+                    }
+                }
+
+                return Ok(new { status = "accepted", ack = true, event_ = dto, order });
 
             default:
                 return StatusCode(500, new { error = "desfecho de ingestão desconhecido." });

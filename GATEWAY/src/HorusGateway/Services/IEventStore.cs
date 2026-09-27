@@ -20,6 +20,9 @@ public interface IEventStore
     /// <summary>Total de eventos ainda não sincronizados com a cloud (para health/dashboard).</summary>
     Task<long> CountPendingCloudAsync(string companyId, CancellationToken cancellationToken = default);
 
+    /// <summary>Indica se um EventId já foi processado (consulta o ledger de idempotência).</summary>
+    Task<bool> ExistsAsync(string companyId, string eventId, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Eventos prontos para envio à cloud (PENDING_CLOUD, tentativas não esgotadas e agendamento vencido).
     /// Base do dispatcher Gateway → Cloud do CHANGE GATEWAY 06.
