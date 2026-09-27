@@ -23,12 +23,17 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         const string sql = """
             SELECT v.SaleNumber, v.CustomerName, v.CustomerCpf, v.PaymentType,
                    v.TotalAmount, v.OperatorName, v.SaleDate, v.ClientSaleId, v.OfflineReference,
-                   i.ProductCode, i.ProductName, i.Quantity, i.UnitPrice, i.ItemTotal,
-                   i.Desconto, i.PromocaoId,
+                   ISNULL(i.ProductCode, '') AS ProductCode,
+                   ISNULL(i.ProductName, 'Item') AS ProductName,
+                   ISNULL(i.Quantity, 1) AS Quantity,
+                   ISNULL(i.UnitPrice, v.TotalAmount) AS UnitPrice,
+                   ISNULL(i.ItemTotal, v.TotalAmount) AS ItemTotal,
+                   ISNULL(i.Desconto, 0) AS Desconto,
+                   i.PromocaoId,
                    d.Id AS FiscalDocId, d.Modelo AS FiscalModelo, d.NumeroNf AS FiscalNumeroNf,
                    d.Serie AS FiscalSerie, d.Status AS FiscalStatus, d.ChaveAcesso AS FiscalChaveAcesso
-            FROM VendaItens i
-            INNER JOIN Vendas v ON v.Id = i.VendaId
+            FROM Vendas v
+            LEFT JOIN VendaItens i ON v.Id = i.VendaId
             OUTER APPLY (
                 SELECT TOP 1 doc.Id, doc.Modelo, doc.NumeroNf, doc.Serie, doc.Status, doc.ChaveAcesso
                 FROM DocumentosFiscais doc
@@ -45,7 +50,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@SaleNumber", string.IsNullOrWhiteSpace(saleNumber) ? DBNull.Value : saleNumber);
-        command.Parameters.AddWithValue("@Desde", desde.HasValue ? desde.Value : DBNull.Value);
+        var pDesde = command.Parameters.Add("@Desde", System.Data.SqlDbType.DateTimeOffset);
+        pDesde.Value = desde.HasValue ? desde.Value : DBNull.Value;
         await using var reader = await command.ExecuteReaderAsync();
         var rows = new List<VendaHistoricoAD>();
         while (await reader.ReadAsync())
@@ -814,16 +820,16 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         CustomerName = ReadString(reader, "CustomerName"),
         CustomerCpf = ReadString(reader, "CustomerCpf"),
         PaymentType = ReadString(reader, "PaymentType"),
-        TotalAmount = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("TotalAmount"))),
+        TotalAmount = HorusMoneyFormat.Format(ReadDecimal(reader, "TotalAmount")),
         OperatorName = ReadString(reader, "OperatorName"),
         ProductCode = ReadString(reader, "ProductCode"),
         ProductName = ReadString(reader, "ProductName"),
-        Quantity = reader.GetDecimal(reader.GetOrdinal("Quantity")),
-        UnitPrice = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("UnitPrice"))),
-        Desconto = reader.GetDecimal(reader.GetOrdinal("Desconto")),
-        PromocaoId = reader.IsDBNull(reader.GetOrdinal("PromocaoId")) ? null : reader.GetString(reader.GetOrdinal("PromocaoId")),
-        ItemTotal = HorusMoneyFormat.Format(reader.GetDecimal(reader.GetOrdinal("ItemTotal"))),
-        SaleDate = HorusDateTime.Format(reader.GetDateTimeOffset(reader.GetOrdinal("SaleDate"))),
+        Quantity = ReadDecimal(reader, "Quantity"),
+        UnitPrice = HorusMoneyFormat.Format(ReadDecimal(reader, "UnitPrice")),
+        Desconto = ReadDecimal(reader, "Desconto"),
+        PromocaoId = ReadNullableString(reader, "PromocaoId"),
+        ItemTotal = HorusMoneyFormat.Format(ReadDecimal(reader, "ItemTotal")),
+        SaleDate = ReadSaleDate(reader, "SaleDate"),
         ClientSaleId = ReadNullableString(reader, "ClientSaleId"),
         OfflineReference = ReadNullableString(reader, "OfflineReference"),
         FiscalDocId = ReadNullableString(reader, "FiscalDocId"),
@@ -836,8 +842,60 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 
     private static string ReadString(SqlDataReader reader, string name)
     {
-        var ordinal = reader.GetOrdinal(name);
-        return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+        try
+        {
+            var ordinal = reader.GetOrdinal(name);
+            return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+        }
+        catch (IndexOutOfRangeException)
+        {
+            return string.Empty;
+        }
+    }
+
+    private static decimal ReadDecimal(SqlDataReader reader, string name)
+    {
+        try
+        {
+            var ordinal = reader.GetOrdinal(name);
+            if (reader.IsDBNull(ordinal)) return 0m;
+            var val = reader.GetValue(ordinal);
+            return val switch
+            {
+                decimal d => d,
+                double dbl => (decimal)dbl,
+                float flt => (decimal)flt,
+                int i => i,
+                long l => l,
+                string s when decimal.TryParse(s, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var parsed) => parsed,
+                _ => Convert.ToDecimal(val)
+            };
+        }
+        catch
+        {
+            return 0m;
+        }
+    }
+
+    private static string ReadSaleDate(SqlDataReader reader, string name)
+    {
+        try
+        {
+            var ordinal = reader.GetOrdinal(name);
+            if (reader.IsDBNull(ordinal)) return "-";
+            var val = reader.GetValue(ordinal);
+            return val switch
+            {
+                DateTimeOffset dto => HorusDateTime.Format(dto),
+                DateTime dt => HorusDateTime.Format(HorusDateTime.ToBrasilia(dt)),
+                string s when DateTimeOffset.TryParse(s, out var parsedDto) => HorusDateTime.Format(parsedDto),
+                _ => val.ToString() ?? "-"
+            };
+        }
+        catch
+        {
+            return "-";
+        }
     }
 
     private static string? ReadNullableString(SqlDataReader reader, string name)

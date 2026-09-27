@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1790425572.6217158,
-    "seen": 1790426295.5495436,
-    "ast_hash": "c58ca2bdd65f0f168782283c1a8c67d5",
+    "mtime": 1790466267.9311645,
+    "seen": 1790466496.8216076,
+    "ast_hash": "214c1c7a32da5c72038948fbdd739ad4",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -708,9 +708,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReceiptPreviewModal.tsx": {
-    "mtime": 1790347135.670537,
-    "seen": 1790389445.518615,
-    "ast_hash": "5baa0b4e05385539a784591e9d7cf493",
+    "mtime": 1790466361.2564678,
+    "seen": 1790466496.8243723,
+    "ast_hash": "a5ba79431446a1d99ab8f19773f25c92",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/ReportCardsGrid.tsx": {
@@ -804,9 +804,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/AppSidebar.tsx": {
-    "mtime": 1790195636.9495964,
-    "seen": 1790200166.153999,
-    "ast_hash": "eff0aad88f83fce51af1dc7b25a417c8",
+    "mtime": 1790466206.1872842,
+    "seen": 1790466496.8262923,
+    "ast_hash": "9a782223786e89d98cc13f1f8eec77aa",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/UserMenu.tsx": {
@@ -966,9 +966,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/AboutPdvPage.tsx": {
-    "mtime": 1789174204.190288,
-    "seen": 1789174379.112378,
-    "ast_hash": "0dc34ac4d021309c611b451b2473310b",
+    "mtime": 1790466301.9080586,
+    "seen": 1790466496.8318586,
+    "ast_hash": "32f06e2533af569b48a63967ac17bfe0",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/CashRegisterPage.tsx": {
@@ -1002,15 +1002,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/HomePage.tsx": {
-    "mtime": 1789328228.3292007,
-    "seen": 1789328505.856114,
-    "ast_hash": "5d79e5a15d3cf5e47406223182ecdf41",
+    "mtime": 1790466284.363433,
+    "seen": 1790466496.8325698,
+    "ast_hash": "6f22ad6c12b1da41ecda74c4b74bab25",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/LicenseDetailsPage.tsx": {
-    "mtime": 1789174195.4597108,
-    "seen": 1789174379.1127458,
-    "ast_hash": "f023ebf932025cd1ec0efaf3bad89c34",
+    "mtime": 1790466317.8450756,
+    "seen": 1790466496.8325717,
+    "ast_hash": "4f767b152515d36290c2d22c73a8975f",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/MyCompanyPage.tsx": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1790465463.0560775,
-    "seen": 1790465564.6580603,
-    "ast_hash": "135ced1903d994c137009c3218d84bb1",
+    "mtime": 1790466220.982876,
+    "seen": 1790466496.8338716,
+    "ast_hash": "42975eac3102144c95f82b6d1104c75a",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1104,9 +1104,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Auth/AuthLayout.tsx": {
-    "mtime": 1789174165.9059308,
-    "seen": 1789174379.1141999,
-    "ast_hash": "278e263d332f86ab5b3e626958103e19",
+    "mtime": 1790466447.6010983,
+    "seen": 1790466496.8344636,
+    "ast_hash": "b2f4d57a5f5d4d7bc333dfa498e015b2",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Auth/ForgotPasswordPage.tsx": {
@@ -1116,9 +1116,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Auth/LoginPage.tsx": {
-    "mtime": 1789591022.654119,
-    "seen": 1789591503.9253507,
-    "ast_hash": "2613399c2a1ae37df3b723dedc227719",
+    "mtime": 1790466248.977507,
+    "seen": 1790466496.8345828,
+    "ast_hash": "f8301016fbbd696ed2e7f743c947142c",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Auth/RegisterPage.tsx": {
@@ -1770,9 +1770,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/index.html": {
-    "mtime": 1790424023.3360403,
-    "seen": 1790426295.5801396,
-    "ast_hash": "3a9870b0510abb429fdd90e194bec1e7",
+    "mtime": 1790466182.7593193,
+    "seen": 1790466496.8576138,
+    "ast_hash": "60380054aa7f72030b3c2464799a2265",
     "semantic_hash": ""
   },
   "GEMINI.md": {
@@ -1992,9 +1992,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/danfePrint.ts": {
-    "mtime": 1790347130.1947594,
-    "seen": 1790389445.5294318,
-    "ast_hash": "b7f3e32d888541b380cbd17b7760fe5b",
+    "mtime": 1790466385.4545243,
+    "seen": 1790466496.8408308,
+    "ast_hash": "2ca9f2d06d841f8fbba571a9908be592",
     "semantic_hash": ""
   },
   "openspec/changes/imprimir-danfe-nfce-qrcode/.openspec.yaml": {
@@ -2262,9 +2262,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiadoPage.tsx": {
-    "mtime": 1789330699.5405915,
-    "seen": 1789334546.639542,
-    "ast_hash": "91de31abe8e332b67a37406df357edac",
+    "mtime": 1790466337.7358067,
+    "seen": 1790466496.8323328,
+    "ast_hash": "8b3ac3594b8acdbdbf2cd20b4404c0b8",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PromocoesPage.tsx": {
@@ -2400,9 +2400,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Public/LandingPage.tsx": {
-    "mtime": 1789591317.456818,
-    "seen": 1789591503.9258366,
-    "ast_hash": "aa1fb54ffec9a448818aa30737f55f13",
+    "mtime": 1790466406.7917476,
+    "seen": 1790466496.8349342,
+    "ast_hash": "04a48e00e36e2ad57b3ee73ab23a6700",
     "semantic_hash": ""
   },
   "FRONTEND/public/screenshots/fiado-credito.jpg": {
@@ -3027,6 +3027,18 @@
     "mtime": 1790465497.9736218,
     "seen": 1790465564.642975,
     "ast_hash": "2ed1925a8dd568059cc6f5c7ce2d19c9",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/logo-quack.jpg": {
+    "mtime": 1790465965.3103778,
+    "seen": 1790466496.8639212,
+    "ast_hash": "71a63b652e3aa60c04dd5d703f0685ed",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/logo.jpg": {
+    "mtime": 1790465965.3103778,
+    "seen": 1790466496.8639235,
+    "ast_hash": "71a63b652e3aa60c04dd5d703f0685ed",
     "semantic_hash": ""
   }
 }

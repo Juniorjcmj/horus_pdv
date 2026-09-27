@@ -24,6 +24,8 @@ import {
 import {
   salesHistoryService,
   type SaleDetailFullDto,
+  type SalePaymentItemDto,
+  type SaleHistoryDto,
 } from "@/services/api/salesHistoryService";
 import {
   FISCAL_STATUS,
@@ -31,6 +33,7 @@ import {
 } from "@/services/api/fiscalService";
 import { Toast } from "@/hooks/Dialog";
 import { formatChaveAcesso, formatNumeroNf } from "@/utils/danfePrint";
+import { db } from "@/infrastructure/database/dexie";
 
 type PdvSaleDetailModalProps = {
   isOpen: boolean;
@@ -89,12 +92,65 @@ export default function PdvSaleDetailModal({
       .getDetails(saleNumber)
       .then((res) => {
         if (!res) {
-          setError("Venda não encontrada.");
-        } else {
-          setData(res);
+          throw new Error("Venda não encontrada na API.");
         }
+        setData(res);
       })
-      .catch((err: any) => {
+      .catch(async (err: any) => {
+        try {
+          const localSale =
+            (await db.sales.where("saleNumber").equals(saleNumber).first()) ||
+            (await db.sales.get(saleNumber));
+          if (localSale) {
+            const items = await db.saleItems.where("saleId").equals(localSale.id).toArray();
+            const payments = await db.payments.where("saleId").equals(localSale.id).toArray();
+            const mappedItems: SaleHistoryDto[] = items.map((it) => ({
+              saleNumber: localSale.saleNumber,
+              customerName: localSale.customerName || "-",
+              customerCpf: localSale.customerId || "-",
+              paymentType: payments.map((p) => p.paymentType).join(" + ") || "Dinheiro",
+              totalAmount: localSale.totalAmount.toFixed(2).replace(".", ","),
+              operatorName: "Operador Local",
+              productCode: it.productCode,
+              productName: it.productName,
+              quantity: it.quantity,
+              unitPrice: it.unitPrice.toFixed(2).replace(".", ","),
+              desconto: it.discount,
+              itemTotal: it.total.toFixed(2).replace(".", ","),
+              saleDate: new Date(localSale.createdAt).toLocaleString("pt-BR"),
+              clientSaleId: localSale.id,
+              offlineReference: localSale.saleNumber,
+            }));
+            const mappedPayments: SalePaymentItemDto[] = payments.map((p, idx) => ({
+              id: p.id || `loc-pay-${idx}`,
+              companyId: "",
+              vendaId: localSale.id,
+              paymentType: p.paymentType,
+              amount: p.amount,
+              cashGiven: p.cashGiven || p.amount,
+              changeAmount: p.changeAmount || 0,
+              createdAt: localSale.createdAt,
+            }));
+            setData({
+              vendaId: localSale.id,
+              saleNumber: localSale.saleNumber,
+              customerName: localSale.customerName || "-",
+              customerCpf: localSale.customerId || "-",
+              paymentType: payments.map((p) => p.paymentType).join(" + ") || "Dinheiro",
+              totalAmount: localSale.totalAmount.toFixed(2).replace(".", ","),
+              operatorName: "Operador Local",
+              saleDate: new Date(localSale.createdAt).toLocaleString("pt-BR"),
+              clientSaleId: localSale.id,
+              offlineReference: localSale.saleNumber,
+              items: mappedItems,
+              payments: mappedPayments,
+              documentoFiscal: null,
+            });
+            return;
+          }
+        } catch (dexErr) {
+          console.warn("Falha no fallback Dexie em PdvSaleDetailModal:", dexErr);
+        }
         setError(err?.message || "Não foi possível carregar os detalhes da venda.");
       })
       .finally(() => {

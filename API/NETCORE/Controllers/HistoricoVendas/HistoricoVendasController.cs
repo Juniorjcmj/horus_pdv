@@ -22,7 +22,7 @@ public class HistoricoVendasController(
     ILogger<HistoricoVendasController> logger) : ControllerBase
 {
     [HttpGet]
-    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
     public async Task<IActionResult> Listar([FromQuery] string? desde = null)
     {
         var currentUser = GetCurrentUser();
@@ -44,7 +44,7 @@ public class HistoricoVendasController(
     }
 
     [HttpGet("{saleNumber}")]
-    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
     public async Task<IActionResult> ObterDetalhes(string saleNumber)
     {
         var currentUser = GetCurrentUser();

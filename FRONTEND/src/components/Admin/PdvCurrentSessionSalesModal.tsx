@@ -24,6 +24,7 @@ import {
 } from "@/services/api/salesHistoryService";
 import { FISCAL_STATUS } from "@/services/api/fiscalService";
 import { formatNumeroNf } from "@/utils/danfePrint";
+import { getLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
 
 type PdvCurrentSessionSalesModalProps = {
   isOpen: boolean;
@@ -73,30 +74,64 @@ export default function PdvCurrentSessionSalesModal({
   const [salesRows, setSalesRows] = useState<SaleHistoryDto[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
+  const [scopeFilter, setScopeFilter] = useState<"session" | "all">("session");
 
-  const loadSales = () => {
+  const loadSales = async (overrideScope?: "session" | "all") => {
     setLoading(true);
-    salesHistoryService
-      .list(cashSessionOpenedAt || undefined)
-      .then((rows) => {
-        setSalesRows(rows);
-      })
-      .catch(() => {
-        // Fallback: tenta buscar sem o filtro de data se falhar
-        salesHistoryService
-          .list()
-          .then((rows) => setSalesRows(rows))
-          .catch(() => setSalesRows([]));
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    const activeScope = overrideScope || scopeFilter;
+    try {
+      let rows: SaleHistoryDto[] = [];
+      const filterDate = activeScope === "session" ? cashSessionOpenedAt : undefined;
+
+      try {
+        rows = await salesHistoryService.list(filterDate || undefined);
+      } catch (err) {
+        console.warn("Falha ao buscar vendas na API com filtro:", err);
+      }
+
+      // Se filtrou por sessão mas não encontrou nada na API, tenta buscar todas da API
+      // para evitar que o operador fique sem visualização por desencontro de horário
+      if ((!rows || rows.length === 0) && activeScope === "session") {
+        try {
+          const allRows = await salesHistoryService.list();
+          if (allRows && allRows.length > 0) {
+            rows = allRows;
+          }
+        } catch (err) {
+          console.warn("Falha ao buscar todas as vendas da API:", err);
+        }
+      }
+
+      // Carrega também as vendas locais do Dexie (IndexedDB)
+      try {
+        const localRows = await getLocalSalesHistory();
+        if (localRows && localRows.length > 0) {
+          const seenNumbers = new Set(rows.map((r) => r.saleNumber || r.clientSaleId || r.offlineReference));
+          for (const lr of localRows) {
+            const key = lr.saleNumber || lr.clientSaleId || lr.offlineReference;
+            if (key && !seenNumbers.has(key)) {
+              rows.push(lr);
+              seenNumbers.add(key);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Falha ao ler vendas locais do Dexie:", err);
+      }
+
+      setSalesRows(rows || []);
+    } catch (e) {
+      console.error("Erro ao carregar vendas:", e);
+      setSalesRows([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     if (!isOpen) return;
     loadSales();
-  }, [isOpen, cashSessionOpenedAt]);
+  }, [isOpen, cashSessionOpenedAt, scopeFilter]);
 
   // Fechar com Escape
   useEffect(() => {
@@ -227,7 +262,7 @@ export default function PdvCurrentSessionSalesModal({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={loadSales}
+              onClick={() => loadSales()}
               disabled={loading}
               className="rounded-xl border border-border-primary bg-bg-primary p-2 text-text-secondary hover:text-text-primary hover:bg-bg-tertiary transition active:scale-95 disabled:opacity-50"
               title="Atualizar lista de vendas"
@@ -284,18 +319,54 @@ export default function PdvCurrentSessionSalesModal({
 
         {/* Barra de Filtros e Busca */}
         <div className="border-b border-border-primary bg-bg-secondary/30 px-5 py-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="relative flex-1 min-w-[220px]">
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
-            />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por nº da venda, cliente, CPF ou nota fiscal..."
-              className="w-full rounded-xl border border-border-primary bg-bg-primary pl-9 pr-3 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none transition shadow-xs"
-            />
+          <div className="flex items-center gap-2 flex-1 min-w-[280px]">
+            <div className="relative flex-1">
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
+              />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por nº da venda, cliente, CPF ou nota fiscal..."
+                className="w-full rounded-xl border border-border-primary bg-bg-primary pl-9 pr-3 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none transition shadow-xs"
+              />
+            </div>
+
+            {/* Alternador Turno Atual / Todas as Vendas */}
+            <div className="flex items-center gap-1 bg-bg-primary p-1 rounded-xl border border-border-primary text-xs shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setScopeFilter("session");
+                  loadSales("session");
+                }}
+                className={`rounded-lg px-2.5 py-1 font-semibold transition ${
+                  scopeFilter === "session"
+                    ? "bg-accent text-white shadow-xs"
+                    : "text-text-secondary hover:text-text-primary"
+                }`}
+                title="Mostrar apenas vendas abertas neste turno"
+              >
+                Deste Turno
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setScopeFilter("all");
+                  loadSales("all");
+                }}
+                className={`rounded-lg px-2.5 py-1 font-semibold transition ${
+                  scopeFilter === "all"
+                    ? "bg-accent text-white shadow-xs"
+                    : "text-text-secondary hover:text-text-primary"
+                }`}
+                title="Mostrar histórico geral de vendas"
+              >
+                Todas as Vendas
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
