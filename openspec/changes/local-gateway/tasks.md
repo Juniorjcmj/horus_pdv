@@ -28,13 +28,15 @@
 - [x] Regressão zero: nenhum arquivo existente alterado (SyncEngine/Outbox/PDV/caixa/NFC-e intactos)
 - [ ] Execução como Windows Service / systemd — **adiado** (estrutura pronta; empacotamento como serviço fica para a etapa de implantação, junto de GATEWAY 03/08)
 
-## CHANGE GATEWAY 03 — Registro de terminais, heartbeat, descoberta, auth
+## CHANGE GATEWAY 03 — Registro de terminais, heartbeat, descoberta, auth (concluído)
 
-- [ ] Endpoint de registro/autorização de terminal (valida `CompanyId`, emite credencial local)
-- [ ] Armazenamento seguro da credencial no terminal
-- [ ] Heartbeat (`POST /api/gateway/heartbeat`, 10–30s) atualizando `LastSeenAt`
-- [ ] Descoberta do Gateway em 3 níveis (mDNS/hostname → URL configurada → manual)
-- [ ] Validação do vínculo `Terminal → Store → Gateway → Company` em toda requisição
+- [x] Endpoint de registro/autorização de terminal `POST /api/gateway/register` (valida `CompanyId` + token compartilhado, emite `apiKey`; só o hash PBKDF2 é persistido)
+- [x] Heartbeat `POST /api/gateway/heartbeat` (headers `X-Terminal-Id`/`X-Terminal-Key`) atualizando `LastSeenAt`; listagem `GET /api/gateway/terminals` com online/offline
+- [x] Autenticação de terminal aplicada a ingestão/recuperação de eventos (`RequireTerminalAuth`, seguro por padrão); credencial ≠ terminalId do evento → 403 (anti-spoofing)
+- [x] Validação do vínculo `Terminal → Store → Gateway → Company` em toda requisição protegida
+- [x] `/api/gateway/status` expõe `registrationRequired`/`terminalAuthRequired` para descoberta de capacidade
+- [x] Testes (18/18 no total: 9 do GATEWAY 02 + 9 do 03) e regressão zero (71/71 arch)
+- [ ] Descoberta client-side em 3 níveis (mDNS/hostname → URL → manual) e **armazenamento seguro da credencial no PWA** — **adiado para o CHANGE GATEWAY 07** (integração com o terminal/frontend); o lado servidor (registro + `/status`) está pronto
 
 ## CHANGE GATEWAY 04 — Event Bus local
 

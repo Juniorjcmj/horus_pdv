@@ -4,11 +4,13 @@
  *           recuperação incremental de eventos (terminal que ficou offline). Após persistir um evento,
  *           publica-o em tempo real (SignalR) para os demais terminais da mesma empresa.
  */
+using HorusGateway.Configuration;
 using HorusGateway.Hubs;
 using HorusGateway.Models;
 using HorusGateway.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 
 namespace HorusGateway.Controllers;
 
@@ -20,18 +22,24 @@ public sealed class GatewayController : ControllerBase
 
     private readonly GatewayIdentity _identity;
     private readonly IEventStore _eventStore;
+    private readonly ITerminalStore _terminals;
     private readonly IHubContext<EventsHub> _hub;
+    private readonly GatewayOptions _options;
     private readonly ILogger<GatewayController> _logger;
 
     public GatewayController(
         GatewayIdentity identity,
         IEventStore eventStore,
+        ITerminalStore terminals,
         IHubContext<EventsHub> hub,
+        IOptions<GatewayOptions> options,
         ILogger<GatewayController> logger)
     {
         _identity = identity;
         _eventStore = eventStore;
+        _terminals = terminals;
         _hub = hub;
+        _options = options.Value;
         _logger = logger;
     }
 
@@ -45,6 +53,8 @@ public sealed class GatewayController : ControllerBase
         storeId = _identity.StoreId,
         bound = _identity.IsBound,
         realtimeHub = "/hubs/events",
+        registrationRequired = true,
+        terminalAuthRequired = _options.RequireTerminalAuth,
         serverTime = DateTimeOffset.UtcNow.ToString("o")
     });
 
@@ -68,6 +78,21 @@ public sealed class GatewayController : ControllerBase
         {
             _logger.LogWarning("Ingestão recusada: CompanyId {Received} ≠ {Expected}", request.CompanyId, _identity.CompanyId);
             return StatusCode(403, new { error = "CompanyId não pertence a este Gateway." });
+        }
+
+        // Autenticação de terminal (LAN não confiável): a credencial deve ser válida e o terminal
+        // autenticado precisa coincidir com o terminalId do evento (evita spoofing).
+        if (_options.RequireTerminalAuth)
+        {
+            var auth = await AuthenticateTerminalAsync(cancellationToken);
+            if (!auth.Authenticated)
+            {
+                return Unauthorized(new { error = "Credencial de terminal inválida.", reason = auth.Outcome.ToString() });
+            }
+            if (!string.Equals(auth.Terminal!.TerminalId, request.TerminalId?.Trim(), StringComparison.Ordinal))
+            {
+                return StatusCode(403, new { error = "terminalId do evento não corresponde ao terminal autenticado." });
+            }
         }
 
         var result = await _eventStore.AppendAsync(request, cancellationToken);
@@ -111,6 +136,15 @@ public sealed class GatewayController : ControllerBase
             return StatusCode(403, new { error = "CompanyId não pertence a este Gateway." });
         }
 
+        if (_options.RequireTerminalAuth)
+        {
+            var auth = await AuthenticateTerminalAsync(cancellationToken);
+            if (!auth.Authenticated)
+            {
+                return Unauthorized(new { error = "Credencial de terminal inválida.", reason = auth.Outcome.ToString() });
+            }
+        }
+
         var effectiveLimit = Math.Clamp(limit, 1, MaxRecoveryLimit);
         var events = await _eventStore.GetEventsAsync(company, after, effectiveLimit, cancellationToken);
         var items = events.Select(GatewayEventDto.From).ToList();
@@ -124,6 +158,13 @@ public sealed class GatewayController : ControllerBase
             nextCursor,
             events = items
         });
+    }
+
+    private Task<TerminalAuthResult> AuthenticateTerminalAsync(CancellationToken cancellationToken)
+    {
+        var terminalId = Request.Headers["X-Terminal-Id"].FirstOrDefault();
+        var apiKey = Request.Headers["X-Terminal-Key"].FirstOrDefault();
+        return _terminals.AuthenticateAsync(terminalId, apiKey, cancellationToken);
     }
 
     private static GatewayEventDto? DtoOf(IngestResult result)

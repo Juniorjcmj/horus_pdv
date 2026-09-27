@@ -45,6 +45,7 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<GatewayIdentity>();
 builder.Services.AddSingleton<GatewayDatabase>();
 builder.Services.AddSingleton<IEventStore, SqliteEventStore>();
+builder.Services.AddSingleton<ITerminalStore, SqliteTerminalStore>();
 
 var app = builder.Build();
 

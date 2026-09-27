@@ -72,6 +72,18 @@ public sealed class GatewayDatabase
 
             CREATE INDEX IF NOT EXISTS IX_GatewayEvents_Company_Seq
                 ON GatewayEvents (CompanyId, Seq);
+
+            CREATE TABLE IF NOT EXISTS Terminals (
+                CompanyId      TEXT NOT NULL,
+                TerminalId     TEXT NOT NULL,
+                StoreId        TEXT NOT NULL DEFAULT '',
+                TerminalType   TEXT NOT NULL DEFAULT 'ORDER',
+                CredentialHash TEXT NOT NULL,
+                Status         TEXT NOT NULL DEFAULT 'active',
+                RegisteredAt   TEXT NOT NULL,
+                LastSeenAt     TEXT NULL,
+                PRIMARY KEY (CompanyId, TerminalId)
+            );
             """;
         command.ExecuteNonQuery();
 

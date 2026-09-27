@@ -20,4 +20,19 @@ public sealed class GatewayOptions
 
     /// <summary>Caminho do arquivo SQLite de persistência local durável.</summary>
     public string DatabasePath { get; set; } = "gateway-data/horus-gateway.db";
+
+    /// <summary>
+    /// Segredo compartilhado que o administrador provisiona nos terminais para o registro inicial.
+    /// A LAN é considerada NÃO confiável: sem este token, o registro de terminais fica indisponível.
+    /// </summary>
+    public string RegistrationToken { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Quando true, ingestão/recuperação de eventos e heartbeat exigem credencial de terminal válida.
+    /// Seguro por padrão; testes de semântica de evento podem desligar para focar no fluxo.
+    /// </summary>
+    public bool RequireTerminalAuth { get; set; } = true;
+
+    /// <summary>Janela (segundos) sem heartbeat após a qual um terminal é considerado OFFLINE no dashboard.</summary>
+    public int TerminalOnlineWindowSeconds { get; set; } = 60;
 }
