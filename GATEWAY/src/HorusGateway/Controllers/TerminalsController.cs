@@ -50,26 +50,72 @@ public sealed class TerminalsController : ControllerBase
             return StatusCode(503, new { error = "Gateway não vinculado a uma empresa (CompanyId ausente)." });
         }
 
-        // Registro na LAN exige token compartilhado; sem ele configurado, o registro fica indisponível.
-        if (string.IsNullOrWhiteSpace(_options.RegistrationToken))
-        {
-            _logger.LogError("Registro recusado: RegistrationToken não configurado no Gateway.");
-            return StatusCode(503, new { error = "Registro de terminais indisponível (token não configurado)." });
-        }
-
-        if (!FixedTimeEquals(request.RegistrationToken, _options.RegistrationToken))
-        {
-            _logger.LogWarning("Registro recusado: token inválido para TerminalId={TerminalId}", request.TerminalId);
-            return Unauthorized(new { error = "Token de registro inválido." });
-        }
-
+        // A empresa é sempre validada (isolamento multi-tenant), em qualquer modo de registro.
         if (!_identity.Accepts(request.CompanyId))
         {
             _logger.LogWarning("Registro recusado: CompanyId {Received} ≠ {Expected}", request.CompanyId, _identity.CompanyId);
             return StatusCode(403, new { error = "CompanyId não pertence a este Gateway." });
         }
 
+        // Modo com token: exige o segredo compartilhado. Modo aberto (padrão): dispensa o token —
+        // qualquer terminal da empresa na LAN se registra e recebe a credencial na hora.
+        if (!_options.OpenRegistration)
+        {
+            if (string.IsNullOrWhiteSpace(_options.RegistrationToken))
+            {
+                _logger.LogError("Registro recusado: RegistrationToken não configurado e registro aberto desligado.");
+                return StatusCode(503, new { error = "Registro de terminais indisponível (token não configurado)." });
+            }
+            if (!FixedTimeEquals(request.RegistrationToken, _options.RegistrationToken))
+            {
+                _logger.LogWarning("Registro recusado: token inválido para TerminalId={TerminalId}", request.TerminalId);
+                return Unauthorized(new { error = "Token de registro inválido." });
+            }
+        }
+
         var result = await _terminals.RegisterAsync(request, _identity.GatewayId, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Pré-autoriza um terminal (painel do administrador): allowlist por IP e/ou token.</summary>
+    [HttpPost("terminals/provision")]
+    public async Task<IActionResult> Provision([FromBody] ProvisionTerminalRequest request, CancellationToken cancellationToken)
+    {
+        if (request is null || string.IsNullOrWhiteSpace(request.TerminalId))
+        {
+            return BadRequest(new { error = "terminalId é obrigatório." });
+        }
+        if (!_identity.IsBound)
+        {
+            return StatusCode(503, new { error = "Gateway não vinculado a uma empresa." });
+        }
+        if (!_identity.Accepts(request.CompanyId))
+        {
+            return StatusCode(403, new { error = "CompanyId não pertence a este Gateway." });
+        }
+
+        var result = await _terminals.ProvisionAsync(request, _identity.GatewayId, cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Auto-identificação do terminal: o Gateway o reconhece pelo IP de origem (ou por um token
+    /// apresentado) e devolve a credencial na hora — sem configuração no terminal.
+    /// </summary>
+    [HttpPost("identify")]
+    public async Task<IActionResult> Identify([FromBody] IdentifyTerminalRequest? request, CancellationToken cancellationToken)
+    {
+        if (!_identity.IsBound)
+        {
+            return StatusCode(503, new { error = "Gateway não vinculado a uma empresa." });
+        }
+
+        var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var result = await _terminals.IdentifyAsync(remoteIp, request?.ProvisionToken, _identity.GatewayId, cancellationToken);
+        if (result is null)
+        {
+            return Unauthorized(new { error = "Terminal não pré-autorizado nesta rede.", remoteIp });
+        }
         return Ok(result);
     }
 

@@ -86,6 +86,17 @@
 - [x] Camada 100% aditiva: nenhum arquivo homologado alterado; 71/71 testes de arquitetura verdes; typecheck OK
 - [ ] Roteamento de vendas/caixa via Gateway e generalização da Outbox com `Destination` — **NÃO implementado por contrato** (vendas/caixa sempre falam com a Cloud; o Gateway não é rota dessas operações)
 
+### Conexão automática dos terminais (refinamento do contrato)
+
+- [x] Sem limite de terminais (N terminais por empresa; concorrência já testada)
+- [x] Pré-autorização pelo admin (`POST /api/gateway/terminals/provision`): allowlist por **IP** e/ou **token** por terminal
+- [x] Auto-identificação (`POST /api/gateway/identify`): o Gateway reconhece o terminal pelo **IP de origem** (ou token) e emite credencial na hora — zero config no terminal
+- [x] Registro aberto opcional (`OpenRegistration`, padrão true) como alternativa; token compartilhado continua disponível
+- [x] Cliente do terminal: `gatewayClient.identify()` + `ensureConnected()` (auto-identifica ao ficar offline)
+- [x] Isolamento por empresa validado em provisionamento e identificação; credencial rotacionada a cada identify
+- [x] Testes (59/59 no total: +4 registro aberto, +5 provisionamento/identificação por token e IP); regressão zero (71/71 arch)
+- [ ] Painel do administrador (UI) para cadastrar terminais/IPs e o empacotamento como Windows Service — **CHANGE GATEWAY 08**
+
 ## CHANGE GATEWAY 08 — Interface de monitoramento
 
 - [ ] Dashboard local: Internet, Gateway, Cloud, terminais, eventos pendentes/erro, última sync, último heartbeat

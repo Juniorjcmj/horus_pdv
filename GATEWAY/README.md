@@ -34,7 +34,9 @@ Via variável de ambiente: `Gateway__CompanyId=empresa-1` etc.
 | GET | `/health/ready` | Readiness (storage) |
 | GET | `/health` | Status agregado (gateway/storage/cloud/pendingEvents) |
 | GET | `/api/gateway/status` | Descoberta/identidade (empresa/loja/hub) |
-| POST | `/api/gateway/register` | Registro/autorização de terminal (token compartilhado → emite `apiKey`) |
+| POST | `/api/gateway/terminals/provision` | Admin pré-autoriza um terminal por IP e/ou token (allowlist) |
+| POST | `/api/gateway/identify` | Terminal se auto-identifica pelo IP de origem (ou token) e recebe credencial |
+| POST | `/api/gateway/register` | Registro do terminal (token compartilhado, ou aberto) → emite `apiKey` |
 | POST | `/api/gateway/heartbeat` | Heartbeat do terminal (headers `X-Terminal-Id`/`X-Terminal-Key`) → atualiza `LastSeenAt` |
 | GET | `/api/gateway/terminals` | Lista terminais com online/offline (dashboard) |
 | GET | `/api/gateway/orders` (+`?status=`) | Lista pedidos (visão do caixa) |
@@ -48,6 +50,22 @@ Um dispatcher em background consome os eventos devidos (`GetDueForDispatchAsync`
 
 ## Pedidos em tempo real (CHANGE GATEWAY 05)
 Pedidos são tratados como eventos operacionais (`ORDER_CREATED/UPDATED/RECEIVED/CONFIRMED/PREPARING/READY/DELIVERED/CANCELLED`). Uma projeção `Orders` (read model) é derivada dos eventos, aplicando a máquina de estados `CREATED → RECEIVED → CONFIRMED → PREPARING → READY → DELIVERED` (avanços podem pular etapas; cancelamento a partir de qualquer estado não terminal). Transições inválidas são rejeitadas com **409** e não gravam evento. Cada mudança gera evento — nunca se altera estado sem registrar a transição. Ao aceitar um evento de pedido, o Gateway atualiza a projeção e transmite `orderUpdated` via SignalR (PDV → Gateway → Caixa). O caixa **consulta** via `GET /orders`; para **aceitar/cancelar/finalizar** ele publica os eventos `ORDER_*` correspondentes. Confirmação de pagamento (Pix via PSP) fica para o CHANGE GATEWAY 06.
+
+## Pré-autorização e auto-identificação de terminais
+Sem limite de terminais — quantos quiser, na mesma empresa. Modelo recomendado para conexão automática:
+o **administrador pré-autoriza** cada terminal no Gateway (`POST /terminals/provision`) informando o
+**IP** na LAN e/ou um **token**. Quando a internet cai, o terminal chama `POST /identify`: o Gateway o
+**reconhece pelo IP de origem** (ou pelo token apresentado) e devolve a credencial na hora — **zero
+configuração no terminal**. Cada terminal recebe credencial própria (auditável/revogável) e o
+isolamento por empresa é sempre validado. Alternativas: registro por token compartilhado, ou registro
+aberto (`Gateway:OpenRegistration=true`, padrão) em que qualquer terminal da empresa se registra sozinho.
+
+## Instalação nativa (sem Docker)
+O Gateway é ASP.NET Core 8 com **SQLite embutido** (nenhum banco a instalar — é um arquivo).
+- **Self-contained (não instala nada na máquina):** `dotnet publish -c Release -r win-x64 --self-contained true -o publish-win`, copie a pasta e rode `HorusGateway.exe`.
+- **Framework-dependent:** instale só o **ASP.NET Core Runtime 8** e rode `dotnet HorusGateway.dll`.
+- Nada de SQL Server, Node ou Docker. Libere a porta LAN (padrão 5080) no firewall.
+- Windows Service: registrável via `sc create` (integração dedicada com `UseWindowsService()` fica para o empacotamento).
 
 ## Autenticação de terminal (CHANGE GATEWAY 03)
 A LAN é tratada como **não confiável**. Fluxo: o admin provisiona o `RegistrationToken` nos terminais → o terminal chama `POST /register` (valida token + `CompanyId`) e recebe uma `apiKey` única (só o hash PBKDF2 fica no Gateway). Depois, ingestão/recuperação/heartbeat exigem os headers `X-Terminal-Id` + `X-Terminal-Key`. O Gateway autentica o **terminal** ("pertence a esta loja?"), nunca o usuário — a autenticação de usuário continua na cloud. A descoberta do Gateway (mDNS/URL/manual) e o armazenamento seguro da credencial no PWA são integrados no CHANGE GATEWAY 07.

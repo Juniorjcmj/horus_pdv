@@ -57,6 +57,7 @@ public sealed class GatewayController : ControllerBase
         bound = _identity.IsBound,
         realtimeHub = "/hubs/events",
         registrationRequired = true,
+        openRegistration = _options.OpenRegistration,
         terminalAuthRequired = _options.RequireTerminalAuth,
         serverTime = DateTimeOffset.UtcNow.ToString("o")
     });

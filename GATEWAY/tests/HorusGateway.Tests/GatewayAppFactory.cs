@@ -16,19 +16,22 @@ public sealed class GatewayAppFactory : WebApplicationFactory<Program>
     private readonly string _storeId;
     private readonly bool _requireTerminalAuth;
     private readonly string _registrationToken;
+    private readonly bool _openRegistration;
 
     public GatewayAppFactory(
         string databasePath,
         string companyId = "empresa-1",
         string storeId = "store-001",
         bool requireTerminalAuth = false,
-        string registrationToken = "test-registration-token")
+        string registrationToken = "test-registration-token",
+        bool openRegistration = false)
     {
         _databasePath = databasePath;
         _companyId = companyId;
         _storeId = storeId;
         _requireTerminalAuth = requireTerminalAuth;
         _registrationToken = registrationToken;
+        _openRegistration = openRegistration;
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -43,6 +46,7 @@ public sealed class GatewayAppFactory : WebApplicationFactory<Program>
                 ["Gateway:StoreId"] = _storeId,
                 ["Gateway:DatabasePath"] = _databasePath,
                 ["Gateway:RegistrationToken"] = _registrationToken,
+                ["Gateway:OpenRegistration"] = _openRegistration ? "true" : "false",
                 ["Gateway:RequireTerminalAuth"] = _requireTerminalAuth ? "true" : "false",
                 ["Gateway:TerminalOnlineWindowSeconds"] = "60"
             });
