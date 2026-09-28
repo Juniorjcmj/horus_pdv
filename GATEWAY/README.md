@@ -91,6 +91,15 @@ cd GATEWAY/src/HorusGateway
 dotnet run   # usa appsettings.Development.json (empresa-1 / store-001)
 ```
 
+## Executar com um clique (scripts `run-gateway`)
+Precisa apenas do **.NET SDK 8** instalado. Escutam em `0.0.0.0:5080` (toda a LAN).
+- **Windows:** duplo-clique em `GATEWAY\run-gateway.bat` (ou `run-gateway.ps1` — este ainda libera a porta 5080 no firewall se rodar como Administrador).
+- **Linux/macOS:** `./GATEWAY/run-gateway.sh`
+
+Personalize a empresa/loja/porta por variáveis de ambiente antes de executar:
+`GATEWAY_COMPANY_ID`, `GATEWAY_STORE_ID`, `GATEWAY_PORT` (ex.: `GATEWAY_COMPANY_ID=minha-empresa ./GATEWAY/run-gateway.sh`).
+Os dados ficam em `GATEWAY/gateway-data/horus-gateway.db` (persistem entre execuções).
+
 ## Testes
 ```bash
 cd GATEWAY
