@@ -916,9 +916,22 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         try
         {
             var ordinal = reader.GetOrdinal(name);
-            return reader.IsDBNull(ordinal) ? null : reader.GetInt32(ordinal);
+            if (reader.IsDBNull(ordinal)) return null;
+            // Colunas fiscais (Modelo/Serie/Status) são SMALLINT/TINYINT no banco; GetInt32 lançaria
+            // InvalidCastException. Lê o valor bruto e converte de qualquer tipo inteiro do provider.
+            var val = reader.GetValue(ordinal);
+            return val switch
+            {
+                int i => i,
+                short s => s,
+                byte b => b,
+                long l => (int)l,
+                decimal d => (int)d,
+                string str when int.TryParse(str, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var parsed) => parsed,
+                _ => Convert.ToInt32(val)
+            };
         }
-        catch (IndexOutOfRangeException)
+        catch
         {
             return null;
         }
