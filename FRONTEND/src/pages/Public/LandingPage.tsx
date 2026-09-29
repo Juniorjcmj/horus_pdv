@@ -369,7 +369,7 @@ export default function LandingPage({
           {/* Logo */}
           <div className="flex items-center gap-3">
             <img
-              src="/logo-quack-v2.jpg"
+              src="/logo-quack-v3.jpg"
               alt="Quack Sistemas"
               className="h-11 w-auto max-w-[130px] rounded-xl object-contain shadow-lg shadow-sky-500/25 border border-sky-400/30 bg-slate-900/40"
             />
@@ -1552,7 +1552,7 @@ export default function LandingPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <img
-              src="/logo-quack-v2.jpg"
+              src="/logo-quack-v3.jpg"
               alt="Quack Sistemas"
               className="h-9 w-auto rounded-lg object-contain border border-slate-700 bg-slate-900/40"
             />
