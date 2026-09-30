@@ -5,6 +5,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import {
+  GatewayMonitorCard,
   PrintSettingsCard,
   SecuritySessionsCard,
   ThemeSettingsCard,
@@ -89,6 +90,7 @@ export default function SettingsPage({
               printPreviewEnabled={printPreviewEnabled}
               onChangePrintPreview={handleChangePrintPreview}
             />
+            <GatewayMonitorCard />
             <SecuritySessionsCard
               sessions={sessions}
               isLoading={isLoading}

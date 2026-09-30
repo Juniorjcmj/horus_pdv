@@ -24,10 +24,11 @@ public sealed class GatewayApiTests : IDisposable
 
     public void Dispose()
     {
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
         foreach (var suffix in new[] { "", "-wal", "-shm" })
         {
             var f = _dbPath + suffix;
-            if (File.Exists(f)) File.Delete(f);
+            try { if (File.Exists(f)) File.Delete(f); } catch { }
         }
     }
 

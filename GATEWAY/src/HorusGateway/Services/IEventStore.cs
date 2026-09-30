@@ -20,6 +20,9 @@ public interface IEventStore
     /// <summary>Total de eventos ainda não sincronizados com a cloud (para health/dashboard).</summary>
     Task<long> CountPendingCloudAsync(string companyId, CancellationToken cancellationToken = default);
 
+    /// <summary>Métricas consolidadas de eventos para o dashboard e verificação de atualização.</summary>
+    Task<EventStoreMetrics> GetMetricsAsync(string companyId, CancellationToken cancellationToken = default);
+
     /// <summary>Indica se um EventId já foi processado (consulta o ledger de idempotência).</summary>
     Task<bool> ExistsAsync(string companyId, string eventId, CancellationToken cancellationToken = default);
 

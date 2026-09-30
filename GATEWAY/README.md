@@ -1,14 +1,15 @@
-# HorusGateway — CHANGE GATEWAY 02 + 03 + 04 + 05 + 06
+# HorusGateway — CHANGE GATEWAY 02 + 03 + 04 + 05 + 06 + 08
 
 Coordenador operacional local da loja (camada LAN **adicional**, nunca obrigatória). Permite que os terminais troquem eventos (ex.: pedidos) entre si — e com o caixa — mesmo sem internet, sincronizando com a cloud depois. Se o Gateway estiver indisponível, cada terminal volta ao comportamento offline-first atual (IndexedDB/Outbox → Cloud).
 
-> Esta é a **infraestrutura inicial** (CHANGE GATEWAY 02). Ainda **não** implementa pedidos completos, NFC-e, Pix, cancelamento, devolução, registro/heartbeat de terminais nem sync Gateway→Cloud — esses vêm nos próximos changes. Objetivo provado aqui: **Terminal A → Gateway → Terminal B** sem internet, com idempotência, isolamento multi-tenant e persistência durável.
+> Esta é a **infraestrutura do Gateway Local** (Changes GATEWAY 02 a 08 concluídas). Prova: **Terminal A → Gateway → Terminal B** sem internet, com idempotência, isolamento multi-tenant, persistência durável no SQLite, sincronização com a Cloud, dashboard local de monitoramento e verificação de atualização controlada.
 
 ## Tecnologia
 - ASP.NET Core 8 (mesmo padrão do backend Hórus)
 - SQLite (`Microsoft.Data.Sqlite`, ADO.NET) — persistência local durável
 - SignalR — distribuição de eventos em tempo real
 - Logs estruturados (JSON console)
+- Dashboard embutido (HTML5/CSS3/Vanilla JS responsivo)
 
 ## Configuração (seção `Gateway`)
 | Chave | Descrição |
@@ -30,6 +31,9 @@ Via variável de ambiente: `Gateway__CompanyId=empresa-1` etc.
 ## Endpoints
 | Método | Rota | Função |
 |--------|------|--------|
+| GET | `/` ou `/dashboard` | Dashboard Web de monitoramento local embutido |
+| GET | `/api/gateway/dashboard` | Resumo consolidado para monitoramento (KPIs, saúde, eventos, terminais) |
+| GET | `/api/gateway/system/update-check` | Verificação pré-atualização segura (bloqueia se pendingEvents > 0) |
 | GET | `/health/live` | Liveness |
 | GET | `/health/ready` | Readiness (storage) |
 | GET | `/health` | Status agregado (gateway/storage/cloud/pendingEvents) |
@@ -42,6 +46,9 @@ Via variável de ambiente: `Gateway__CompanyId=empresa-1` etc.
 | POST | `/api/gateway/events` | Ingestão de evento (Terminal → Gateway), idempotente |
 | GET | `/api/gateway/events?companyId=&after=&limit=` | Recuperação incremental (terminal que ficou offline) |
 | WS | `/hubs/events` | SignalR — `Subscribe(companyId)` e callback `eventReceived` |
+
+## Dashboard Local e Atualização Controlada (CHANGE GATEWAY 08)
+O Gateway expõe em `/` e `/dashboard` uma interface web responsiva que exibe o status de saúde do processo, armazenamento SQLite, conectividade com a Cloud, lista de terminais online/offline via heartbeat e métricas de eventos da fila. Além disso, o endpoint `/api/gateway/system/update-check` permite que scripts de implantação, rotinas de manutenção ou o próprio dashboard validem se o Gateway pode ser reiniciado ou atualizado com segurança (`pendingEvents == 0`), evitando que eventos da LAN sejam retidos sem sincronização com a Cloud.
 
 ## Sincronização Gateway → Cloud (CHANGE GATEWAY 06)
 Um dispatcher em background consome os eventos devidos (`GetDueForDispatchAsync`, com backoff do CHANGE 04) e os envia à `CloudSyncUrl`, preservando `EventId` + `PayloadHash` (idempotência ponta-a-ponta). Desfechos: **2xx** → `SYNCED_CLOUD`; **409** (a cloud já processou) → idempotente, também `SYNCED_CLOUD`; **5xx/timeout/rede** → reagenda com backoff; **4xx** → `FAILED`. Sem `CloudSyncUrl`, o sync fica desligado e o Gateway opera LAN-only (eventos acumulam `PENDING_CLOUD`). A recuperação após reinicialização é automática — os pendentes vivem no SQLite. O `/health` reflete `cloud` (`disabled`/`online`/`offline`) e `pendingEvents`. A cloud continua a autoridade; o Gateway não cria segunda verdade.

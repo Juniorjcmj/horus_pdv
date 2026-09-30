@@ -184,6 +184,52 @@ public sealed class SqliteEventStore : IEventStore
         return Task.FromResult(Convert.ToInt64(command.ExecuteScalar()));
     }
 
+    public Task<EventStoreMetrics> GetMetricsAsync(string companyId, CancellationToken cancellationToken = default)
+    {
+        using var connection = _database.OpenConnection();
+        long total = 0, pending = 0, synced = 0, failed = 0;
+        string? lastOccurred = null;
+        string? lastSynced = null;
+
+        using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = "SELECT Status, COUNT(1) FROM GatewayEvents WHERE CompanyId = $companyId GROUP BY Status;";
+            cmd.Parameters.AddWithValue("$companyId", companyId);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                var status = reader.GetString(0);
+                var count = reader.GetInt64(1);
+                total += count;
+                if (string.Equals(status, GatewayEventStatus.PendingCloud, StringComparison.OrdinalIgnoreCase))
+                    pending = count;
+                else if (string.Equals(status, GatewayEventStatus.SyncedCloud, StringComparison.OrdinalIgnoreCase))
+                    synced = count;
+                else if (string.Equals(status, GatewayEventStatus.Failed, StringComparison.OrdinalIgnoreCase))
+                    failed = count;
+            }
+        }
+
+        using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = "SELECT MAX(OccurredAt) FROM GatewayEvents WHERE CompanyId = $companyId;";
+            cmd.Parameters.AddWithValue("$companyId", companyId);
+            var raw = cmd.ExecuteScalar();
+            if (raw is not null && raw != DBNull.Value) lastOccurred = Convert.ToString(raw);
+        }
+
+        using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText = "SELECT MAX(ProcessedAt) FROM GatewayEvents WHERE CompanyId = $companyId AND Status = $status;";
+            cmd.Parameters.AddWithValue("$companyId", companyId);
+            cmd.Parameters.AddWithValue("$status", GatewayEventStatus.SyncedCloud);
+            var raw = cmd.ExecuteScalar();
+            if (raw is not null && raw != DBNull.Value) lastSynced = Convert.ToString(raw);
+        }
+
+        return Task.FromResult(new EventStoreMetrics(total, pending, synced, failed, lastOccurred, lastSynced));
+    }
+
     public Task<IReadOnlyList<GatewayEvent>> GetDueForDispatchAsync(string companyId, int limit, CancellationToken cancellationToken = default)
     {
         var now = _clock.UtcNow.ToString("o");

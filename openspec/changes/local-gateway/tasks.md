@@ -86,11 +86,11 @@
 - [x] Camada 100% aditiva: nenhum arquivo homologado alterado; 71/71 testes de arquitetura verdes; typecheck OK
 - [ ] Roteamento de vendas/caixa via Gateway e generalização da Outbox com `Destination` — **NÃO implementado por contrato** (vendas/caixa sempre falam com a Cloud; o Gateway não é rota dessas operações)
 
-## CHANGE GATEWAY 08 — Interface de monitoramento
+## CHANGE GATEWAY 08 — Interface de monitoramento (concluído)
 
-- [ ] Dashboard local: Internet, Gateway, Cloud, terminais, eventos pendentes/erro, última sync, último heartbeat
-- [ ] Indicadores em tempo real via heartbeat e health check
-- [ ] Mecanismo de atualização controlada do Gateway (checar eventos pendentes antes de atualizar)
+- [x] Dashboard local: Internet, Gateway, Cloud, terminais, eventos pendentes/erro, última sync, último heartbeat (servido em `/` e `/dashboard`)
+- [x] Indicadores em tempo real via heartbeat e health check (`/api/gateway/dashboard` consolidado e componente `GatewayMonitorCard`)
+- [x] Mecanismo de atualização controlada do Gateway (`/api/gateway/system/update-check`: valida `pendingEvents == 0` antes de autorizar atualização/manutenção)
 
 ## Validação transversal (em toda change 02–08)
 

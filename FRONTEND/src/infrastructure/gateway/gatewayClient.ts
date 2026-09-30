@@ -124,4 +124,76 @@ export const gatewayClient = {
       5000,
     );
   },
+
+  /** Obtém o resumo consolidado do dashboard local de monitoramento (CHANGE GATEWAY 08). */
+  async getDashboard(): Promise<GatewayDashboardSummary> {
+    return request<GatewayDashboardSummary>("/api/gateway/dashboard", { method: "GET" }, 4000);
+  },
+
+  /** Verifica se o Gateway está em estado seguro para atualização/reinicialização (0 pendências de sync). */
+  async checkSafeUpdate(): Promise<SafeUpdateCheckResult> {
+    return request<SafeUpdateCheckResult>("/api/gateway/system/update-check", { method: "GET" }, 4000);
+  },
 };
+
+export type GatewayDashboardSummary = {
+  identity: {
+    gatewayId: string;
+    companyId: string;
+    storeId: string;
+    bound: boolean;
+    serverTime: string;
+    uptimeSeconds: number;
+  };
+  health: {
+    gateway: string;
+    storage: string;
+    internet: string;
+    cloud: string;
+  };
+  sync: {
+    cloudSyncUrl?: string;
+    online: boolean;
+    lastSuccessAt?: string;
+    lastAttemptAt?: string;
+    lastError?: string;
+  };
+  events: {
+    total: number;
+    pendingCloud: number;
+    syncedCloud: number;
+    failed: number;
+    lastEventOccurredAt?: string;
+    lastSyncedAt?: string;
+  };
+  terminals: {
+    total: number;
+    online: number;
+    offline: number;
+    items: Array<{
+      terminalId: string;
+      terminalType: string;
+      status: string;
+      lastSeenAt?: string;
+      secondsSinceLastSeen: number;
+    }>;
+  };
+  activeOrdersCount: number;
+  updateReadiness: {
+    isSafe: boolean;
+    pendingEvents: number;
+    failedEvents: number;
+    message: string;
+    actionRecommended: string;
+  };
+};
+
+export type SafeUpdateCheckResult = {
+  safe: boolean;
+  pendingEvents: number;
+  failedEvents: number;
+  message: string;
+  actionRecommended: string;
+  timestamp: string;
+};
+
