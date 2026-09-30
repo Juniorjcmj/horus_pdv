@@ -7,7 +7,7 @@ set "SCRIPT_DIR=%~dp0"
 
 where dotnet >nul 2>nul
 if errorlevel 1 (
-  echo [HorusGateway] .NET SDK 8 nao encontrado.
+  echo [Quack Gateway] .NET SDK 8 nao encontrado.
   echo                Instale em: https://dotnet.microsoft.com/download/dotnet/8.0
   pause
   exit /b 1
@@ -24,7 +24,7 @@ set "Gateway__StoreId=%GATEWAY_STORE_ID%"
 set "Gateway__DatabasePath=%SCRIPT_DIR%gateway-data\horus-gateway.db"
 
 echo ======================================================
-echo  HorusGateway
+echo  Quack Gateway
 echo  Empresa : %Gateway__CompanyId%
 echo  Loja    : %Gateway__StoreId%
 echo  Porta   : %GATEWAY_PORT%

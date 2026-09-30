@@ -1,4 +1,8 @@
-# HorusGateway — CHANGE GATEWAY 02 + 03 + 04 + 05 + 06 + 07 + 08
+# Quack Gateway — CHANGE GATEWAY 02 + 03 + 04 + 05 + 06 + 07 + 08
+
+> **Nome do produto:** Quack Gateway. O nome técnico do processo/serviço/assembly permanece
+> `HorusGateway` (arquivos `HorusGateway.dll`/`HorusGateway.exe` e o serviço `sc` `HorusGateway`),
+> por ser identificador interno — a marca exibida (painel, banners e Serviço do Windows) é **Quack Gateway**.
 
 Coordenador operacional local da loja (camada LAN **adicional**, nunca obrigatória). Permite que os terminais troquem eventos (ex.: pedidos) entre si — e com o caixa — mesmo sem internet, sincronizando com a cloud depois. Se o Gateway estiver indisponível, cada terminal volta ao comportamento offline-first atual (IndexedDB/Outbox → Cloud).
 

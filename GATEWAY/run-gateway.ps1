@@ -13,7 +13,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectDir = Join-Path $ScriptDir "src/HorusGateway"
 
 if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
-    Write-Host "[HorusGateway] .NET SDK 8 nao encontrado." -ForegroundColor Red
+    Write-Host "[Quack Gateway] .NET SDK 8 nao encontrado." -ForegroundColor Red
     Write-Host "               Instale em: https://dotnet.microsoft.com/download/dotnet/8.0"
     exit 1
 }
@@ -22,10 +22,10 @@ if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
 try {
     if (-not (Get-NetFirewallRule -DisplayName "HorusGateway" -ErrorAction SilentlyContinue)) {
         New-NetFirewallRule -DisplayName "HorusGateway" -Direction Inbound -Protocol TCP -LocalPort $Port -Action Allow | Out-Null
-        Write-Host "[HorusGateway] Regra de firewall criada para a porta $Port."
+        Write-Host "[Quack Gateway] Regra de firewall criada para a porta $Port."
     }
 } catch {
-    Write-Host "[HorusGateway] Nao foi possivel criar a regra de firewall (rode como Administrador para liberar a porta $Port)." -ForegroundColor Yellow
+    Write-Host "[Quack Gateway] Nao foi possivel criar a regra de firewall (rode como Administrador para liberar a porta $Port)." -ForegroundColor Yellow
 }
 
 $env:ASPNETCORE_ENVIRONMENT = "Production"
@@ -35,7 +35,7 @@ $env:Gateway__StoreId = $StoreId
 $env:Gateway__DatabasePath = Join-Path $ScriptDir "gateway-data/horus-gateway.db"
 
 Write-Host "======================================================"
-Write-Host " HorusGateway"
+Write-Host " Quack Gateway"
 Write-Host " Empresa : $CompanyId"
 Write-Host " Loja    : $StoreId"
 Write-Host " Porta   : $Port"

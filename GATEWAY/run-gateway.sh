@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$SCRIPT_DIR/src/HorusGateway"
 
 if ! command -v dotnet >/dev/null 2>&1; then
-  echo "[HorusGateway] .NET SDK 8 não encontrado."
+  echo "[Quack Gateway] .NET SDK 8 não encontrado."
   echo "               Instale em: https://dotnet.microsoft.com/download/dotnet/8.0"
   exit 1
 fi
@@ -22,7 +22,7 @@ export Gateway__StoreId="${GATEWAY_STORE_ID:-store-001}"
 export Gateway__DatabasePath="${GATEWAY_DB_PATH:-$SCRIPT_DIR/gateway-data/horus-gateway.db}"
 
 echo "======================================================"
-echo " HorusGateway"
+echo " Quack Gateway"
 echo " Empresa : $Gateway__CompanyId"
 echo " Loja    : $Gateway__StoreId"
 echo " Porta   : $PORT"
