@@ -18,6 +18,8 @@ export type GatewayConfig = {
   terminalType: "ORDER" | "CASH";
   /** Credencial local emitida pelo Gateway no registro (apiKey). */
   apiKey: string;
+  /** Carimbo (ISO) do endereço aprendido da Cloud — usado para revalidação/cache. */
+  updatedAt?: string;
 };
 
 const EMPTY: GatewayConfig = {
@@ -28,6 +30,7 @@ const EMPTY: GatewayConfig = {
   terminalId: "",
   terminalType: "ORDER",
   apiKey: "",
+  updatedAt: "",
 };
 
 export function getGatewayConfig(): GatewayConfig {

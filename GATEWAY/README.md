@@ -76,6 +76,25 @@ que se atualiza a cada 5s consumindo os endpoints existentes. Mostra: estado do 
 no disco local. É a UI de quem opera a máquina do Gateway — o frontend homologado (que fala com a Cloud)
 não muda em nada.
 
+## Descoberta via Cloud + HTTPS na LAN (zero config no terminal)
+Como um PWA não faz mDNS/UDP/scan a partir do navegador, o endereço do Gateway **chega ao terminal pela
+Cloud**: o admin cadastra o endereço da loja no painel da Cloud (Configurações → *Local Gateway*), cada
+terminal o aprende automaticamente enquanto online e o guarda em cache; quando a internet cai, o terminal
+já sabe onde o Gateway está e cai no fluxo `identify` (por IP/token) — sem configurar cada terminal.
+
+**Mixed content (HTTPS → HTTP):** se o terminal roda em HTTPS, o navegador bloqueia `fetch` para
+`http://<ip>:5080`. Recomendado subir o Gateway em **HTTPS com um host**:
+1. Dê um nome ao Gateway na LAN — `quack-gateway.local` (mDNS do SO) ou um host interno via DNS/DHCP
+   reservation com IP fixo.
+2. Gere um certificado `.pfx` para esse host e suba o Gateway em HTTPS:
+   - **Linux/macOS:** `GATEWAY_HTTPS_CERT=/caminho/cert.pfx GATEWAY_HTTPS_CERT_PASSWORD=senha GATEWAY_PORT=5443 ./run-gateway.sh`
+   - **Windows:** `$env:GATEWAY_HTTPS_CERT="C:\cert.pfx"; $env:GATEWAY_PORT=5443; ./run-gateway.ps1`
+   (os scripts detectam `GATEWAY_HTTPS_CERT` e usam o Kestrel em HTTPS; sem ela, sobem em HTTP como antes.)
+3. Cadastre na Cloud o endereço `https://quack-gateway.local:5443`.
+
+Alternativa: manter HTTP com IP (`http://192.168.0.10:5080`) em redes/dispositivos que permitem conteúdo
+misto para IP privado — menos robusto.
+
 ## Instalação nativa (sem Docker)
 O Gateway é ASP.NET Core 8 com **SQLite embutido** (nenhum banco a instalar — é um arquivo).
 - **Self-contained (não instala nada na máquina):** `dotnet publish -c Release -r win-x64 --self-contained true -o publish-win`, copie a pasta e rode `HorusGateway.exe`.

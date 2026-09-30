@@ -6,3 +6,4 @@ export * from "./gatewayConfig";
 export * from "./gatewayClient";
 export * from "./gatewayDiscovery";
 export * from "./orderGatewayTransport";
+export * from "./cloudGatewayProvisioning";

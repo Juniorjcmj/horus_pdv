@@ -29,7 +29,20 @@ try {
 }
 
 $env:ASPNETCORE_ENVIRONMENT = "Production"
-$env:ASPNETCORE_URLS = "http://0.0.0.0:$Port"
+# HTTPS opcional (recomendado com um host, ex.: quack-gateway.local) para evitar bloqueio de
+# conteudo misto quando o terminal roda em HTTPS. Defina GATEWAY_HTTPS_CERT (.pfx) e, se houver,
+# GATEWAY_HTTPS_CERT_PASSWORD. Caso contrario, sobe em HTTP como antes.
+$Scheme = "http"
+if ($env:GATEWAY_HTTPS_CERT) {
+    $Scheme = "https"
+    $env:ASPNETCORE_URLS = "https://0.0.0.0:$Port"
+    $env:ASPNETCORE_Kestrel__Certificates__Default__Path = $env:GATEWAY_HTTPS_CERT
+    if ($env:GATEWAY_HTTPS_CERT_PASSWORD) {
+        $env:ASPNETCORE_Kestrel__Certificates__Default__Password = $env:GATEWAY_HTTPS_CERT_PASSWORD
+    }
+} else {
+    $env:ASPNETCORE_URLS = "http://0.0.0.0:$Port"
+}
 $env:Gateway__CompanyId = $CompanyId
 $env:Gateway__StoreId = $StoreId
 $env:Gateway__DatabasePath = Join-Path $ScriptDir "gateway-data/horus-gateway.db"
@@ -38,9 +51,9 @@ Write-Host "======================================================"
 Write-Host " Quack Gateway"
 Write-Host " Empresa : $CompanyId"
 Write-Host " Loja    : $StoreId"
-Write-Host " Porta   : $Port"
-Write-Host " Local   : http://localhost:$Port/health/live"
-Write-Host " LAN     : http://<IP-desta-maquina>:$Port"
+Write-Host " Porta   : $Port ($Scheme)"
+Write-Host " Local   : $Scheme`://localhost:$Port/health/live"
+Write-Host " LAN     : $Scheme`://<IP-desta-maquina>:$Port"
 Write-Host "======================================================"
 
 Set-Location $ProjectDir

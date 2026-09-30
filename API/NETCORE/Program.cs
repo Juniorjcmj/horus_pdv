@@ -92,6 +92,7 @@ builder.Services.AddScoped<CaixaAB>();
 builder.Services.AddScoped<AuditLogAB>();
 builder.Services.AddScoped<HomeAB>();
 builder.Services.AddScoped<RelatorioAB>();
+builder.Services.AddScoped<LojaGatewayConfigAB>();
 builder.Services.AddScoped<HorusCaixaService>();
 builder.Services.AddScoped<HorusSecurityStore>();
 builder.Services.AddSingleton<HorusSecurityOptions>();
