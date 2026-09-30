@@ -25,7 +25,7 @@ export default function AboutPdvPage() {
             </p>
           </div>
           <img
-            src="/logo-quack-v2.jpg"
+            src="/logo-quack-v4.png"
             alt="Quack Sistemas"
             className="h-12 w-auto rounded-xl object-contain border border-border-primary shadow-sm hidden sm:block"
           />

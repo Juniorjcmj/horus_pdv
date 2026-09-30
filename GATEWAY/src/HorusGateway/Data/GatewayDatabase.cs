@@ -121,6 +121,11 @@ public sealed class GatewayDatabase
         EnsureColumn(connection, "GatewayEvents", "LastError", "TEXT NULL");
         EnsureColumn(connection, "GatewayEvents", "NextAttemptAt", "TEXT NULL");
 
+        // Pré-autorização de terminais pelo administrador (auto-identificação por IP/token na LAN).
+        EnsureColumn(connection, "Terminals", "AllowedIp", "TEXT NULL");
+        EnsureColumn(connection, "Terminals", "ProvisionTokenHash", "TEXT NULL");
+        EnsureColumn(connection, "Terminals", "Provisioned", "INTEGER NOT NULL DEFAULT 0");
+
         _logger.LogInformation("Schema local do Gateway inicializado (SQLite).");
     }
 

@@ -66,8 +66,11 @@ export const gatewayClient = {
     return request<GatewayStatus>("/api/gateway/status", { method: "GET" }, 3000);
   },
 
-  /** Registra o terminal e persiste a credencial local retornada. */
-  async register(registrationToken: string): Promise<void> {
+  /**
+   * Registra o terminal e persiste a credencial local retornada. No modo de registro aberto
+   * (padrão do Gateway), o token é dispensado — passe-o apenas se o Gateway exigir.
+   */
+  async register(registrationToken = ""): Promise<void> {
     const config = getGatewayConfig();
     const result = await request<{ apiKey: string; terminalId: string }>(
       "/api/gateway/register",
@@ -85,6 +88,40 @@ export const gatewayClient = {
       5000,
     );
     saveGatewayConfig({ apiKey: result.apiKey });
+  },
+
+  /**
+   * Auto-identificação: o Gateway reconhece o terminal pelo IP de origem (ou por um token) e devolve
+   * a credencial. Persiste identidade + apiKey localmente. Zero configuração no terminal (caminho por IP).
+   */
+  async identify(provisionToken = ""): Promise<boolean> {
+    try {
+      const r = await request<{
+        terminalId: string;
+        companyId: string;
+        storeId: string;
+        terminalType: "ORDER" | "CASH";
+        apiKey: string;
+      }>(
+        "/api/gateway/identify",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ provisionToken }),
+        },
+        4000,
+      );
+      saveGatewayConfig({
+        terminalId: r.terminalId,
+        companyId: r.companyId,
+        storeId: r.storeId,
+        terminalType: r.terminalType,
+        apiKey: r.apiKey,
+      });
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   async heartbeat(): Promise<void> {

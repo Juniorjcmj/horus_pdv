@@ -23,9 +23,16 @@ public sealed class GatewayOptions
 
     /// <summary>
     /// Segredo compartilhado que o administrador provisiona nos terminais para o registro inicial.
-    /// A LAN é considerada NÃO confiável: sem este token, o registro de terminais fica indisponível.
+    /// Usado apenas quando OpenRegistration = false. Sem ele (e sem registro aberto), o registro fica indisponível.
     /// </summary>
     public string RegistrationToken { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Registro aberto: qualquer terminal na LAN que informe o CompanyId correto se registra e recebe
+    /// a credencial na hora, sem token pré-compartilhado. Facilita conectar N terminais sem provisionamento
+    /// manual. Continua isolado por empresa e cada terminal recebe credencial própria (auditável/revogável).
+    /// </summary>
+    public bool OpenRegistration { get; set; } = true;
 
     /// <summary>
     /// Quando true, ingestão/recuperação de eventos e heartbeat exigem credencial de terminal válida.

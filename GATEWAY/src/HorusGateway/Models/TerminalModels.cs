@@ -29,6 +29,25 @@ public sealed class RegisterTerminalRequest
     public string? RegistrationToken { get; set; }
 }
 
+/// <summary>Pré-autorização de um terminal pelo administrador (allowlist por IP e/ou token).</summary>
+public sealed class ProvisionTerminalRequest
+{
+    public string? CompanyId { get; set; }
+    public string? StoreId { get; set; }
+    public string? TerminalId { get; set; }
+    public string? TerminalType { get; set; }
+    /// <summary>IP do terminal na LAN — o Gateway o reconhece automaticamente por ele.</summary>
+    public string? AllowedIp { get; set; }
+    /// <summary>Token opcional que o terminal apresenta para ser identificado (alternativa ao IP).</summary>
+    public string? ProvisionToken { get; set; }
+}
+
+/// <summary>Pedido de auto-identificação do terminal (o Gateway usa o IP de origem e/ou o token).</summary>
+public sealed class IdentifyTerminalRequest
+{
+    public string? ProvisionToken { get; set; }
+}
+
 /// <summary>Resultado do registro — a apiKey em texto puro só é retornada aqui, uma vez.</summary>
 public sealed class TerminalRegistrationResult
 {
@@ -52,6 +71,8 @@ public sealed class TerminalInfo
     [JsonPropertyName("registeredAt")] public string RegisteredAt { get; set; } = string.Empty;
     [JsonPropertyName("lastSeenAt")] public string? LastSeenAt { get; set; }
     [JsonPropertyName("online")] public bool Online { get; set; }
+    [JsonPropertyName("allowedIp")] public string? AllowedIp { get; set; }
+    [JsonPropertyName("provisioned")] public bool Provisioned { get; set; }
 }
 
 /// <summary>Desfecho da autenticação de um terminal.</summary>

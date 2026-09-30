@@ -76,4 +76,54 @@ public sealed class HealthController : ControllerBase
             return StatusCode(503, new { gateway = "unhealthy", storage = "unhealthy" });
         }
     }
+
+    /// <summary>
+    /// Prontidão para atualização controlada (CHANGE GATEWAY 08): antes de parar/atualizar o Gateway,
+    /// o operador confirma que não há eventos ainda não sincronizados com a cloud — evitando perder
+    /// dados presos apenas no SQLite local. É seguro quando não há pendências (nada a drenar).
+    /// </summary>
+    [HttpGet("/health/update-readiness")]
+    public async Task<IActionResult> UpdateReadiness()
+    {
+        try
+        {
+            var pending = _identity.IsBound ? await _eventStore.CountPendingCloudAsync(_identity.CompanyId) : 0;
+            var cloudEnabled = !string.IsNullOrWhiteSpace(_options.CloudSyncUrl);
+            var cloud = !cloudEnabled ? "disabled" : (_cloudSync.Online ? "online" : "offline");
+            var safe = pending == 0;
+
+            string reason;
+            if (safe && !cloudEnabled)
+            {
+                reason = "Seguro: modo LAN-only (sync desligado) e sem eventos pendentes locais.";
+            }
+            else if (safe)
+            {
+                reason = "Seguro: todos os eventos já foram sincronizados com a cloud.";
+            }
+            else if (cloud == "online")
+            {
+                reason = $"Aguarde: {pending} evento(s) ainda drenando para a cloud. Atualize quando zerar.";
+            }
+            else
+            {
+                reason = $"NÃO atualize: {pending} evento(s) presos localmente e a cloud está {cloud}. " +
+                         "Restaure a conexão e aguarde a sincronização antes de parar o Gateway.";
+            }
+
+            return Ok(new
+            {
+                safeToUpdate = safe,
+                pendingEvents = pending,
+                cloud,
+                reason,
+                checkedAt = DateTimeOffset.UtcNow.ToString("o")
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Update-readiness falhou.");
+            return StatusCode(503, new { safeToUpdate = false, reason = "Falha ao consultar o storage local." });
+        }
+    }
 }

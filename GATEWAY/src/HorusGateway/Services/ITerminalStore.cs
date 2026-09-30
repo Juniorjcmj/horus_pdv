@@ -12,6 +12,15 @@ public interface ITerminalStore
     /// <summary>Registra (ou re-registra, rotacionando a credencial) um terminal e retorna a apiKey uma vez.</summary>
     Task<TerminalRegistrationResult> RegisterAsync(RegisterTerminalRequest request, string gatewayId, CancellationToken cancellationToken = default);
 
+    /// <summary>Pré-autoriza um terminal (admin): grava IP e/ou token de provisionamento; retorna a apiKey uma vez.</summary>
+    Task<TerminalRegistrationResult> ProvisionAsync(ProvisionTerminalRequest request, string gatewayId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Auto-identifica um terminal pré-autorizado pelo IP de origem e/ou token, rotaciona a credencial e a
+    /// retorna. Null quando nenhum terminal pré-autorizado corresponde (conexão não reconhecida).
+    /// </summary>
+    Task<TerminalRegistrationResult?> IdentifyAsync(string? remoteIp, string? provisionToken, string gatewayId, CancellationToken cancellationToken = default);
+
     /// <summary>Autentica um terminal pela apiKey e valida o vínculo com a empresa deste Gateway.</summary>
     Task<TerminalAuthResult> AuthenticateAsync(string? terminalId, string? apiKey, CancellationToken cancellationToken = default);
 

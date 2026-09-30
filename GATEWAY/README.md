@@ -1,4 +1,8 @@
-# HorusGateway — CHANGE GATEWAY 02 + 03 + 04 + 05 + 06 + 08
+# Quack Gateway — CHANGE GATEWAY 02 + 03 + 04 + 05 + 06 + 07 + 08
+
+> **Nome do produto:** Quack Gateway. O nome técnico do processo/serviço/assembly permanece
+> `HorusGateway` (arquivos `HorusGateway.dll`/`HorusGateway.exe` e o serviço `sc` `HorusGateway`),
+> por ser identificador interno — a marca exibida (painel, banners e Serviço do Windows) é **Quack Gateway**.
 
 Coordenador operacional local da loja (camada LAN **adicional**, nunca obrigatória). Permite que os terminais troquem eventos (ex.: pedidos) entre si — e com o caixa — mesmo sem internet, sincronizando com a cloud depois. Se o Gateway estiver indisponível, cada terminal volta ao comportamento offline-first atual (IndexedDB/Outbox → Cloud).
 
@@ -37,8 +41,12 @@ Via variável de ambiente: `Gateway__CompanyId=empresa-1` etc.
 | GET | `/health/live` | Liveness |
 | GET | `/health/ready` | Readiness (storage) |
 | GET | `/health` | Status agregado (gateway/storage/cloud/pendingEvents) |
+| GET | `/health/update-readiness` | Prontidão para atualização controlada (seguro só sem eventos pendentes) |
+| GET | `/` | Painel local de monitoramento/administração (dashboard estático) |
 | GET | `/api/gateway/status` | Descoberta/identidade (empresa/loja/hub) |
-| POST | `/api/gateway/register` | Registro/autorização de terminal (token compartilhado → emite `apiKey`) |
+| POST | `/api/gateway/terminals/provision` | Admin pré-autoriza um terminal por IP e/ou token (allowlist) |
+| POST | `/api/gateway/identify` | Terminal se auto-identifica pelo IP de origem (ou token) e recebe credencial |
+| POST | `/api/gateway/register` | Registro do terminal (token compartilhado, ou aberto) → emite `apiKey` |
 | POST | `/api/gateway/heartbeat` | Heartbeat do terminal (headers `X-Terminal-Id`/`X-Terminal-Key`) → atualiza `LastSeenAt` |
 | GET | `/api/gateway/terminals` | Lista terminais com online/offline (dashboard) |
 | GET | `/api/gateway/orders` (+`?status=`) | Lista pedidos (visão do caixa) |
@@ -55,6 +63,42 @@ Um dispatcher em background consome os eventos devidos (`GetDueForDispatchAsync`
 
 ## Pedidos em tempo real (CHANGE GATEWAY 05)
 Pedidos são tratados como eventos operacionais (`ORDER_CREATED/UPDATED/RECEIVED/CONFIRMED/PREPARING/READY/DELIVERED/CANCELLED`). Uma projeção `Orders` (read model) é derivada dos eventos, aplicando a máquina de estados `CREATED → RECEIVED → CONFIRMED → PREPARING → READY → DELIVERED` (avanços podem pular etapas; cancelamento a partir de qualquer estado não terminal). Transições inválidas são rejeitadas com **409** e não gravam evento. Cada mudança gera evento — nunca se altera estado sem registrar a transição. Ao aceitar um evento de pedido, o Gateway atualiza a projeção e transmite `orderUpdated` via SignalR (PDV → Gateway → Caixa). O caixa **consulta** via `GET /orders`; para **aceitar/cancelar/finalizar** ele publica os eventos `ORDER_*` correspondentes. Confirmação de pagamento (Pix via PSP) fica para o CHANGE GATEWAY 06.
+
+## Pré-autorização e auto-identificação de terminais
+Sem limite de terminais — quantos quiser, na mesma empresa. Modelo recomendado para conexão automática:
+o **administrador pré-autoriza** cada terminal no Gateway (`POST /terminals/provision`) informando o
+**IP** na LAN e/ou um **token**. Quando a internet cai, o terminal chama `POST /identify`: o Gateway o
+**reconhece pelo IP de origem** (ou pelo token apresentado) e devolve a credencial na hora — **zero
+configuração no terminal**. Cada terminal recebe credencial própria (auditável/revogável) e o
+isolamento por empresa é sempre validado. Alternativas: registro por token compartilhado, ou registro
+aberto (`Gateway:OpenRegistration=true`, padrão) em que qualquer terminal da empresa se registra sozinho.
+
+## Painel local de monitoramento/administração (CHANGE GATEWAY 08)
+O próprio Gateway serve um **dashboard** em `http://<ip-do-gateway>:5080/` — página única, **sem build/npm**,
+que se atualiza a cada 5s consumindo os endpoints existentes. Mostra: estado do **Gateway/Storage/Cloud
+(Internet)**, **eventos pendentes**, **última sincronização**, e a lista de **terminais** com online/offline
+(por heartbeat), IP autorizado e situação (pré-autorizado/registrado/revogado). Traz o formulário de
+**pré-autorização** de terminais (por **IP** e/ou **token**) e o painel de **atualização controlada**
+(verde/amarelo): antes de parar o Gateway para atualizar, ele confirma que não há eventos presos apenas
+no disco local. É a UI de quem opera a máquina do Gateway — o frontend homologado (que fala com a Cloud)
+não muda em nada.
+
+## Instalação nativa (sem Docker)
+O Gateway é ASP.NET Core 8 com **SQLite embutido** (nenhum banco a instalar — é um arquivo).
+- **Self-contained (não instala nada na máquina):** `dotnet publish -c Release -r win-x64 --self-contained true -o publish-win`, copie a pasta e rode `HorusGateway.exe`.
+- **Framework-dependent:** instale só o **ASP.NET Core Runtime 8** e rode `dotnet HorusGateway.dll`.
+- Nada de SQL Server, Node ou Docker. Libere a porta LAN (padrão 5080) no firewall.
+
+### Windows Service (inicia sozinho no boot — CHANGE GATEWAY 08)
+O host já usa `UseWindowsService()` (no-op fora do Windows). Para instalar como serviço com partida
+automática, publicação self-contained e liberação de firewall em um passo, rode como **Administrador**:
+```powershell
+# GATEWAY\install-service.ps1  (clique direito > Executar com o PowerShell, como Admin)
+pwsh -File .\install-service.ps1 -CompanyId minha-empresa -StoreId loja-01 -Port 5080
+```
+Gerencie depois com `sc.exe start HorusGateway` / `sc.exe stop HorusGateway` / `sc.exe delete HorusGateway`
+(pare antes de remover). **Atualização controlada:** antes de parar/atualizar, confira no painel que
+"Eventos pendentes" esteja **zero** (ou use `GET /health/update-readiness`).
 
 ## Autenticação de terminal (CHANGE GATEWAY 03)
 A LAN é tratada como **não confiável**. Fluxo: o admin provisiona o `RegistrationToken` nos terminais → o terminal chama `POST /register` (valida token + `CompanyId`) e recebe uma `apiKey` única (só o hash PBKDF2 fica no Gateway). Depois, ingestão/recuperação/heartbeat exigem os headers `X-Terminal-Id` + `X-Terminal-Key`. O Gateway autentica o **terminal** ("pertence a esta loja?"), nunca o usuário — a autenticação de usuário continua na cloud. A descoberta do Gateway (mDNS/URL/manual) e o armazenamento seguro da credencial no PWA são integrados no CHANGE GATEWAY 07.
@@ -80,12 +124,21 @@ cd GATEWAY/src/HorusGateway
 dotnet run   # usa appsettings.Development.json (empresa-1 / store-001)
 ```
 
+## Executar com um clique (scripts `run-gateway`)
+Precisa apenas do **.NET SDK 8** instalado. Escutam em `0.0.0.0:5080` (toda a LAN).
+- **Windows:** duplo-clique em `GATEWAY\run-gateway.bat` (ou `run-gateway.ps1` — este ainda libera a porta 5080 no firewall se rodar como Administrador).
+- **Linux/macOS:** `./GATEWAY/run-gateway.sh`
+
+Personalize a empresa/loja/porta por variáveis de ambiente antes de executar:
+`GATEWAY_COMPANY_ID`, `GATEWAY_STORE_ID`, `GATEWAY_PORT` (ex.: `GATEWAY_COMPANY_ID=minha-empresa ./GATEWAY/run-gateway.sh`).
+Os dados ficam em `GATEWAY/gateway-data/horus-gateway.db` (persistem entre execuções).
+
 ## Testes
 ```bash
 cd GATEWAY
 dotnet test
 ```
-Cobrem: start, health, ingestão, persistência, replay, conflito, isolamento multi-tenant, sobrevivência a reinicialização, recuperação por cursor, dois terminais na mesma empresa e entrega em tempo real via SignalR.
+Cobrem: start, health, ingestão, persistência, replay, conflito, isolamento multi-tenant, sobrevivência a reinicialização, recuperação por cursor, dois terminais na mesma empresa, entrega em tempo real via SignalR, provisionamento/auto-identificação de terminais (IP e token) e prontidão para atualização controlada (61 testes no total).
 
 ## Localização física (flexível)
 O Gateway não assume rodar no caixa. Suporta: (A) roteador/servidor LAN, (B) máquina do caixa, (C) servidor local dedicado — é apenas um processo ASP.NET Core acessível na LAN.

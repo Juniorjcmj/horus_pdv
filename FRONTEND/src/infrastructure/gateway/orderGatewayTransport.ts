@@ -15,6 +15,22 @@ import { gatewayClient, type GatewayEventInput } from "./gatewayClient";
 export type TerminalDestination = "CLOUD" | "GATEWAY" | "LOCAL";
 
 /**
+ * Garante conexão automática com o Gateway. Modelo preferido (pré-autorização): o administrador
+ * cadastra os terminais no Gateway por IP/token e o terminal se AUTO-IDENTIFICA ao conectar
+ * (o Gateway o reconhece pelo IP) — zero configuração no terminal, credencial emitida na hora.
+ * `provisionToken` é opcional (alternativa ao IP). Requer apenas a URL do Gateway configurada.
+ * Retorna true se há credencial válida ao final.
+ */
+export async function ensureConnected(provisionToken = ""): Promise<boolean> {
+  const config = getGatewayConfig();
+  if (!config.enabled || !config.url) return false;
+  if (config.apiKey) return true;
+
+  // Auto-identificação por IP/token (pré-autorizado pelo admin no Gateway).
+  return gatewayClient.identify(provisionToken);
+}
+
+/**
  * Escolhe o destino de uma operação de pedido. Cloud é sempre o ponto principal; o Gateway só entra
  * quando não há internet.
  */

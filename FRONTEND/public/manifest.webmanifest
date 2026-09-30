@@ -10,9 +10,9 @@
   "categories": ["business", "finance", "productivity"],
   "icons": [
     {
-      "src": "/logo-quack-v2.jpg",
+      "src": "/logo-quack-v4.png",
       "sizes": "any",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
