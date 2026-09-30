@@ -80,13 +80,13 @@ using (var scope = app.Services.CreateScope())
         var total = await store.CountAsync(identity.CompanyId);
         var pending = await store.CountPendingCloudAsync(identity.CompanyId);
         logger.LogInformation(
-            "HorusGateway iniciado. GatewayId={GatewayId} CompanyId={CompanyId} StoreId={StoreId} | eventos recuperados={Total} pendentes-cloud={Pending}",
+            "Quack Gateway iniciado. GatewayId={GatewayId} CompanyId={CompanyId} StoreId={StoreId} | eventos recuperados={Total} pendentes-cloud={Pending}",
             identity.GatewayId, identity.CompanyId, identity.StoreId, total, pending);
     }
     else
     {
         logger.LogWarning(
-            "HorusGateway iniciado SEM CompanyId configurado (GatewayId={GatewayId}). Ingestão de eventos ficará indisponível até configurar Gateway:CompanyId.",
+            "Quack Gateway iniciado SEM CompanyId configurado (GatewayId={GatewayId}). Ingestão de eventos ficará indisponível até configurar Gateway:CompanyId.",
             identity.GatewayId);
     }
 }
