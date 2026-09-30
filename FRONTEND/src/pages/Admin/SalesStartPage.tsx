@@ -1519,13 +1519,13 @@ export default function SalesStartPage({
             : "max-w-[1600px] rounded-2xl border border-border-primary"
         } flex-col overflow-visible bg-bg-light shadow-md md:h-full md:overflow-hidden`}
       >
-        <header className="relative border-b border-border-secondary bg-accent px-4 py-3 text-text-light">
+        <header className="relative border-b border-border-secondary bg-[linear-gradient(100deg,var(--color-accent),var(--color-hover-accent))] px-4 py-3 text-text-light shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
                 src="/logo-quack-v4.png"
                 alt="Quack Sistemas"
-                className="h-10 md:h-12 w-auto max-w-[120px] rounded-xl object-contain border border-white/20 shadow-md bg-slate-900/40"
+                className="h-10 md:h-12 w-auto max-w-[120px] rounded-xl object-contain bg-white/90 p-1 shadow-md"
               />
               <div>
                 <h1 className="font-display text-xl md:text-3xl font-bold italic leading-none text-white">
@@ -1831,7 +1831,7 @@ export default function SalesStartPage({
               <span className="mb-1 block text-xs font-semibold uppercase">Preço total:</span>
               <input
                 value={selectedProduct ? formatMoneyBr(selectedProduct.salePrice * quantity) : "0,00"}
-                className="input-field h-10 w-full text-lg font-semibold"
+                className="input-field h-11 w-full border-accent/40 bg-accent/5 text-xl font-bold text-accent"
                 disabled
               />
             </label>
@@ -1840,13 +1840,14 @@ export default function SalesStartPage({
               type="button"
               onClick={addItem}
               disabled={cartLocked}
-              className="btn-success h-10 w-full rounded-xl disabled:cursor-not-allowed disabled:opacity-40"
+              className="btn-success h-11 w-full rounded-xl shadow-md shadow-success/20 disabled:cursor-not-allowed disabled:opacity-40"
             >
               ADICIONAR ITEM (ENTER)
             </button>
 
-            <div className="mt-2 border-t border-border-primary pt-2 text-sm">
-              <p className="font-semibold">Total volumes: {String(totalVolumes).padStart(4, "0")}</p>
+            <div className="mt-3 flex items-center justify-between rounded-xl border border-border-primary bg-bg-light px-3 py-2 text-sm">
+              <span className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">Total volumes</span>
+              <span className="font-display text-lg font-bold text-text-primary">{String(totalVolumes).padStart(4, "0")}</span>
             </div>
 
             <div className="mt-3 hidden rounded-xl border border-border-primary bg-bg-light p-3 sm:block">
@@ -1879,18 +1880,27 @@ export default function SalesStartPage({
             </div>
 
             <div
-              className={`border-b px-3 py-2 text-xs font-semibold ${
+              className={`flex items-center gap-2 border-b px-3 py-2 text-xs font-semibold ${
                 cashCanSell
                   ? "border-success/20 bg-success/10 text-success"
                   : "border-primary/20 bg-primary/10 text-primary"
               }`}
             >
+              <span
+                className={`inline-block h-2 w-2 shrink-0 rounded-full ${
+                  cashCanSell ? "bg-success animate-pulse" : "bg-primary"
+                }`}
+              />
               {cashLabel}
             </div>
 
-            <div className="border-b border-border-primary px-3 py-3">
-              <p className="text-xs font-semibold">Nome produto:</p>
-              <h2 className="text-center font-display text-xl font-semibold leading-none tracking-tight text-text-primary md:text-3xl">
+            <div className="border-b border-border-primary bg-bg-gray-theme/40 px-3 py-4">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-text-tertiary">Nome produto</p>
+              <h2
+                className={`text-center font-display text-xl font-semibold leading-none tracking-tight md:text-3xl ${
+                  activeProductName ? "text-text-primary" : "text-text-tertiary/60"
+                }`}
+              >
                 {activeProductName || "AGUARDANDO PRODUTO"}
               </h2>
             </div>
@@ -1899,8 +1909,10 @@ export default function SalesStartPage({
               <p className="mb-1 text-sm font-semibold">Lista de itens:</p>
               <div className="min-h-[180px] flex-1 overflow-auto rounded-xl border border-dashed border-border-secondary bg-bg-primary md:min-h-0">
                 {cart.length === 0 ? (
-                  <div className="px-2 py-6 text-center text-sm text-text-secondary">
-                    Nenhum item no cupom.
+                  <div className="flex h-full min-h-[160px] flex-col items-center justify-center gap-2 px-2 py-8 text-center text-text-tertiary">
+                    <Receipt size={40} className="opacity-30" />
+                    <p className="text-sm font-medium">Nenhum item no cupom</p>
+                    <p className="text-xs text-text-tertiary/80">Busque um produto ou leia o código de barras para começar.</p>
                   </div>
                 ) : (
                   <>
@@ -2093,11 +2105,11 @@ export default function SalesStartPage({
                 </div>
               ) : null}
 
-              <div className="grid grid-cols-[1fr_160px] border-t border-border-primary md:grid-cols-[1fr_220px]">
-                <div className="bg-bg-gray-theme px-3 py-2 text-right text-sm font-semibold uppercase text-text-primary">
-                  SUB TOTAL:
+              <div className="grid grid-cols-[1fr_160px] border-t border-border-primary md:grid-cols-[1fr_240px]">
+                <div className="flex items-center justify-end bg-bg-gray-theme px-3 py-2 text-right text-sm font-semibold uppercase tracking-wide text-text-secondary">
+                  SUB TOTAL
                 </div>
-                <div className="bg-accent px-3 py-2 text-right font-display text-3xl font-bold text-text-light md:text-4xl">
+                <div className="bg-[linear-gradient(100deg,var(--color-accent),var(--color-hover-accent))] px-4 py-3 text-right font-display text-3xl font-bold text-text-light shadow-inner md:text-4xl">
                   R$ {formatMoneyBr(subtotal)}
                 </div>
               </div>
@@ -2121,7 +2133,7 @@ export default function SalesStartPage({
                 <button
                   type="button"
                   onClick={openPayment}
-                  className="btn-success h-11 w-full rounded-xl disabled:cursor-not-allowed disabled:opacity-60"
+                  className="btn-success h-11 w-full rounded-xl shadow-md shadow-success/20 disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={!cashCanSell}
                 >
                   PAGAMENTO (F12)
