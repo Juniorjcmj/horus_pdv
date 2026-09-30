@@ -53,6 +53,11 @@ builder.Services.AddSingleton<IEventStore, SqliteEventStore>();
 builder.Services.AddSingleton<ITerminalStore, SqliteTerminalStore>();
 builder.Services.AddSingleton<IOrderStore, SqliteOrderStore>();
 
+// Emissão e Contingência Fiscal Offline na LAN
+builder.Services.AddSingleton<GatewayCertificateService>();
+builder.Services.AddSingleton<LocalFiscalSigner>();
+builder.Services.AddSingleton<LocalFiscalStore>();
+
 // Sincronização Gateway → Cloud (CHANGE GATEWAY 06).
 builder.Services.AddSingleton<CloudSyncState>();
 builder.Services.AddHttpClient<ICloudSyncClient, HttpCloudSyncClient>(client =>

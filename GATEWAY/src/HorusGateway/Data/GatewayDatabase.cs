@@ -112,6 +112,37 @@ public sealed class GatewayDatabase
 
             CREATE INDEX IF NOT EXISTS IX_Orders_Company_Status
                 ON Orders (CompanyId, Status);
+
+            -- Controle de numeração sequencial de NFC-e emitida no Gateway local
+            CREATE TABLE IF NOT EXISTS LocalFiscalSequencias (
+                CompanyId     TEXT NOT NULL,
+                Serie         INTEGER NOT NULL,
+                ProximoNumero INTEGER NOT NULL DEFAULT 1,
+                PRIMARY KEY (CompanyId, Serie)
+            );
+
+            -- Tabela de persistência durável das NFC-e emitidas em contingência offline no Gateway
+            CREATE TABLE IF NOT EXISTS LocalNfceContingencias (
+                Id             TEXT PRIMARY KEY,
+                CompanyId      TEXT NOT NULL,
+                VendaId        TEXT NOT NULL,
+                TerminalId     TEXT NOT NULL,
+                Serie          INTEGER NOT NULL,
+                NumeroNf       INTEGER NOT NULL,
+                ChaveAcesso    TEXT NOT NULL,
+                DhContingencia TEXT NOT NULL,
+                Justificativa  TEXT NOT NULL,
+                XmlAssinado    TEXT NOT NULL,
+                QrCodeUrl      TEXT NOT NULL,
+                DigestValue    TEXT NOT NULL,
+                TotalVenda     REAL NOT NULL,
+                StatusSync     TEXT NOT NULL DEFAULT 'PENDING',
+                CreatedAt      TEXT NOT NULL,
+                SyncedAt       TEXT NULL
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS UX_LocalNfce_Chave ON LocalNfceContingencias (ChaveAcesso);
+            CREATE INDEX IF NOT EXISTS IX_LocalNfce_Company_Sync ON LocalNfceContingencias (CompanyId, StatusSync);
             """;
         command.ExecuteNonQuery();
 

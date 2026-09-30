@@ -79,7 +79,14 @@ public sealed class NfceOutboxWorker(
                 }
 
                 ResultadoFiscal resultado;
-                if (doc.Modelo == 55)
+                if (doc.Status == StatusDocumentoFiscal.ContingenciaPendente && !string.IsNullOrWhiteSpace(doc.XmlAssinado))
+                {
+                    logger.LogInformation(
+                        "Transmitindo NFC-e em contingência offline (tpEmis=9). Documento {Id} Chave {Chave}",
+                        doc.Id, doc.ChaveAcesso);
+                    resultado = await provider.TransmitirContingenciaAsync(emitente, doc.XmlAssinado, ct);
+                }
+                else if (doc.Modelo == 55)
                 {
                     var nfeRequest = await documentos.MontarRequisicaoNfeAsync(doc, emitente, ct);
                     resultado = await provider.EmitirNfeAsync(nfeRequest, ct);
@@ -105,21 +112,36 @@ public sealed class NfceOutboxWorker(
                         break;
 
                     case StatusDocumentoFiscal.Rejeitado when resultado.CodigoStatus == 539:
-                        // Duplicidade de NF-e com chave diferente — o número já foi queimado
-                        // na SEFAZ. Renumera automaticamente e recoloca na fila.
-                        await documentos.MarcarRejeitadoAsync(doc.Id, resultado, ct);
-                        var renumerou = await documentos.ReemitirAsync(doc.CompanyId, doc.Id);
-                        if (renumerou)
+                        // Em contingência offline (tpEmis=9), a nota já foi impressa para o cliente.
+                        // NUNCA renumerar nem alterar a chave! Registra e aguarda sincronização de protocolo.
+                        if (doc.Status == StatusDocumentoFiscal.ContingenciaPendente || doc.TipoEmissao == TipoEmissaoFiscal.ContingenciaOffline)
                         {
                             logger.LogWarning(
-                                "NFC-e rejeitada por duplicidade (539). Documento {Id} renumerado automaticamente e reenfileirado.",
-                                doc.Id);
+                                "NFC-e em contingência recebeu duplicidade (539). Preservando chave original {Chave} e agendando consulta.",
+                                doc.ChaveAcesso);
+                            await documentos.MarcarErroAsync(
+                                doc.Id,
+                                "SEFAZ retornou duplicidade (539) para nota em contingência. Aguardando sincronização de protocolo.",
+                                DateTimeOffset.UtcNow.AddMinutes(1),
+                                ct);
                         }
                         else
                         {
-                            logger.LogError(
-                                "NFC-e rejeitada por duplicidade (539). Documento {Id} não pôde ser renumerado — requer intervenção manual.",
-                                doc.Id);
+                            // Emissão normal: o número foi consumido. Renumera automaticamente e recoloca na fila.
+                            await documentos.MarcarRejeitadoAsync(doc.Id, resultado, ct);
+                            var renumerou = await documentos.ReemitirAsync(doc.CompanyId, doc.Id);
+                            if (renumerou)
+                            {
+                                logger.LogWarning(
+                                    "NFC-e rejeitada por duplicidade (539). Documento {Id} renumerado automaticamente e reenfileirado.",
+                                    doc.Id);
+                            }
+                            else
+                            {
+                                logger.LogError(
+                                    "NFC-e rejeitada por duplicidade (539). Documento {Id} não pôde ser renumerado — requer intervenção manual.",
+                                    doc.Id);
+                            }
                         }
                         break;
 
@@ -173,7 +195,7 @@ public sealed class NfceOutboxWorker(
                 await documentos.PromoverParaContingenciaAsync(
                     doc.Id,
                     justificativa: "SEFAZ indisponivel apos tentativas consecutivas de transmissao.",
-                    ct);
+                    ct: ct);
 
                 logger.LogWarning(
                     "Documento {Id} promovido para contingencia offline (empresa {CompanyId}).",
@@ -219,6 +241,9 @@ public sealed record DocumentoFiscalPendente
     public required int Tentativas { get; init; }
     public DateTimeOffset? DhContingencia { get; init; }
     public string? JustContingencia { get; init; }
+    public string? XmlAssinado { get; init; }
+    public string? ChaveAcesso { get; init; }
+    public StatusDocumentoFiscal Status { get; init; } = StatusDocumentoFiscal.Assinado;
 
     // Campos exclusivos de NF-e modelo 55
     public string? DestinatarioJson { get; init; }

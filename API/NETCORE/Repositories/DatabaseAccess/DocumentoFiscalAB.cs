@@ -232,11 +232,14 @@ public class DocumentoFiscalAB(
     {
         const string sql = """
             SELECT TOP (@Lote) Id, CompanyId, VendaId, Modelo, Serie, NumeroNf, TpEmis, Tentativas,
-                   DhContingencia, JustContingencia, DestinatarioJson, NaturezaOperacao, ModalidadeFrete
+                   DhContingencia, JustContingencia, DestinatarioJson, NaturezaOperacao, ModalidadeFrete,
+                   XmlAssinado, ChaveAcesso, Status
             FROM DocumentosFiscais
             WHERE Status IN (1, 2, 8)
               AND (ProximaTentativaEm IS NULL OR ProximaTentativaEm <= SYSDATETIMEOFFSET())
-            ORDER BY CriadoEm;
+            ORDER BY
+              CASE WHEN Status = 8 THEN 0 ELSE 1 END,
+              CriadoEm;
             """;
 
         await using var db = await connection.OpenConnectionAsync(ct);
@@ -260,7 +263,10 @@ public class DocumentoFiscalAB(
                 JustContingencia = ReadNullableString(reader, "JustContingencia"),
                 DestinatarioJson = ReadNullableString(reader, "DestinatarioJson"),
                 NaturezaOperacao = ReadNullableString(reader, "NaturezaOperacao"),
-                ModalidadeFrete = (byte)ReadInt(reader, "ModalidadeFrete")
+                ModalidadeFrete = (byte)ReadInt(reader, "ModalidadeFrete"),
+                XmlAssinado = ReadNullableString(reader, "XmlAssinado"),
+                ChaveAcesso = ReadNullableString(reader, "ChaveAcesso"),
+                Status = (StatusDocumentoFiscal)ReadInt(reader, "Status")
             });
         }
 
@@ -1091,6 +1097,25 @@ public class DocumentoFiscalAB(
         }
     }
 
+    /// <summary>Aloca o próximo número e série de NFC-e (Modelo 65) para emissão imediata (inclusive contingência).</summary>
+    public async Task<(int Numero, int Serie, byte Ambiente)> AlocarNumeroNfceAsync(string companyId, CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync(ct);
+        try
+        {
+            var (ambiente, serie) = await ObterConfigFiscalAsync(db, transaction, companyId, ct);
+            var numero = await AlocarProximoNumeroAsync(db, transaction, companyId, ModeloNfce, serie, ambiente, ct);
+            await transaction.CommitAsync(ct);
+            return (numero, serie, ambiente);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(ct);
+            throw;
+        }
+    }
+
     /// <summary>
     /// Grava a NF-e Modelo 55 autorizada de devolução, estorna os itens no estoque físico em Produtos,
     /// atualiza o status da venda e registra no AuditLog.
@@ -1295,26 +1320,247 @@ public class DocumentoFiscalAB(
         await command.ExecuteNonQueryAsync(ct);
     }
 
-    public async Task PromoverParaContingenciaAsync(string id, string justificativa, CancellationToken ct = default)
+    public async Task PromoverParaContingenciaAsync(
+        string id,
+        string justificativa,
+        string? chaveAcesso = null,
+        string? xmlAssinado = null,
+        string? qrCodeUrl = null,
+        CancellationToken ct = default)
     {
         await using var db = await connection.OpenConnectionAsync(ct);
-        await using var command = new SqlCommand(
-            """
+        const string sql = """
             UPDATE DocumentosFiscais
                SET Status = @Status,
                    TpEmis = 9,
-                   DhContingencia = SYSDATETIMEOFFSET(),
+                   DhContingencia = COALESCE(DhContingencia, SYSDATETIMEOFFSET()),
                    JustContingencia = @Justificativa,
+                   ChaveAcesso = COALESCE(@ChaveAcesso, ChaveAcesso),
+                   XmlAssinado = COALESCE(@XmlAssinado, XmlAssinado),
+                   QrCodeUrl = COALESCE(@QrCodeUrl, QrCodeUrl),
                    Tentativas = Tentativas + 1,
                    ProximaTentativaEm = NULL,
                    AtualizadoEm = SYSDATETIMEOFFSET()
              WHERE Id = @Id;
-            """,
-            db);
+            """;
+        await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@Id", id);
         command.Parameters.AddWithValue("@Status", (int)StatusDocumentoFiscal.ContingenciaPendente);
         command.Parameters.AddWithValue("@Justificativa", Truncar(justificativa, 256));
+        command.Parameters.AddWithValue("@ChaveAcesso", (object?)chaveAcesso ?? DBNull.Value);
+        command.Parameters.AddWithValue("@XmlAssinado", (object?)xmlAssinado ?? DBNull.Value);
+        command.Parameters.AddWithValue("@QrCodeUrl", (object?)qrCodeUrl ?? DBNull.Value);
         await command.ExecuteNonQueryAsync(ct);
+    }
+
+    /// <summary>
+    /// Enfileira diretamente uma NFC-e gerada e assinada em contingência offline (tpEmis = 9).
+    /// Persiste o XML assinado, a chave calculada e o QR Code, ficando pendente para transmissão SEFAZ.
+    /// </summary>
+    public async Task<string> EnfileirarContingenciaAsync(
+        string companyId,
+        string vendaId,
+        int serie,
+        int numeroNf,
+        byte ambiente,
+        string chaveAcesso,
+        string xmlAssinado,
+        string justificativa,
+        DateTimeOffset dhContingencia,
+        string? qrCodeUrl = null,
+        CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        var id = $"nfce-cont-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+
+        const string sql = """
+            INSERT INTO DocumentosFiscais
+                (Id, CompanyId, VendaId, Modelo, Serie, NumeroNf, Ambiente,
+                 ChaveAcesso, Status, TpEmis, DhContingencia, JustContingencia,
+                 XmlAssinado, QrCodeUrl)
+            VALUES
+                (@Id, @CompanyId, @VendaId, @Modelo, @Serie, @NumeroNf, @Ambiente,
+                 @ChaveAcesso, 8, 9, @DhContingencia, @JustContingencia,
+                 @XmlAssinado, @QrCodeUrl);
+            """;
+
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@Id", id);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@VendaId", vendaId);
+        command.Parameters.AddWithValue("@Modelo", ModeloNfce);
+        command.Parameters.AddWithValue("@Serie", serie);
+        command.Parameters.AddWithValue("@NumeroNf", numeroNf);
+        command.Parameters.AddWithValue("@Ambiente", ambiente);
+        command.Parameters.AddWithValue("@ChaveAcesso", chaveAcesso);
+        command.Parameters.AddWithValue("@DhContingencia", dhContingencia);
+        command.Parameters.AddWithValue("@JustContingencia", Truncar(justificativa, 256));
+        command.Parameters.AddWithValue("@XmlAssinado", xmlAssinado);
+        command.Parameters.AddWithValue("@QrCodeUrl", (object?)qrCodeUrl ?? DBNull.Value);
+
+        await command.ExecuteNonQueryAsync(ct);
+        return id;
+    }
+
+    /// <summary>
+    /// Lista os documentos em contingência pendente (Status = 8) com cálculo do prazo legal de 24 horas.
+    /// </summary>
+    public async Task<List<DocumentoFiscalContingenciaResumo>> ObterContingenciasPendentesAsync(
+        string companyId, CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT d.Id, d.VendaId, v.SaleNumber, d.Serie, d.NumeroNf, d.ChaveAcesso,
+                   d.DhContingencia, d.JustContingencia, d.Tentativas, d.UltimoErro, d.CriadoEm,
+                   CASE WHEN d.XmlAssinado IS NOT NULL THEN 1 ELSE 0 END AS TemXmlAssinado,
+                   v.TotalAmount
+            FROM DocumentosFiscais d
+            LEFT JOIN Vendas v ON v.Id = d.VendaId
+            WHERE d.CompanyId = @CompanyId AND d.Status = 8
+            ORDER BY d.CriadoEm ASC;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+
+        var agora = DateTimeOffset.UtcNow;
+        var rows = new List<DocumentoFiscalContingenciaResumo>();
+        while (await reader.ReadAsync(ct))
+        {
+            var criadoEm = reader.GetDateTimeOffset(reader.GetOrdinal("CriadoEm"));
+            var dhCont = ReadNullableDateTimeOffset(reader, "DhContingencia") ?? criadoEm;
+            var decorrido = agora - dhCont;
+            var restante = 24.0 - decorrido.TotalHours;
+
+            var totalAmountRaw = reader.GetValue(reader.GetOrdinal("TotalAmount"));
+            string? totalAmount = totalAmountRaw switch
+            {
+                decimal dec => HorusMoneyFormat.Format(dec),
+                string str when decimal.TryParse(str, out var dec) => HorusMoneyFormat.Format(dec),
+                _ => totalAmountRaw?.ToString()
+            };
+
+            rows.Add(new DocumentoFiscalContingenciaResumo
+            {
+                Id = ReadString(reader, "Id"),
+                VendaId = ReadNullableString(reader, "VendaId") ?? string.Empty,
+                SaleNumber = ReadNullableString(reader, "SaleNumber"),
+                Serie = ReadInt(reader, "Serie"),
+                NumeroNf = ReadInt(reader, "NumeroNf"),
+                ChaveAcesso = ReadNullableString(reader, "ChaveAcesso"),
+                DhContingencia = dhCont,
+                JustContingencia = ReadNullableString(reader, "JustContingencia"),
+                Tentativas = ReadInt(reader, "Tentativas"),
+                UltimoErro = ReadNullableString(reader, "UltimoErro"),
+                CriadoEm = criadoEm,
+                HorasRestantesPrazo = Math.Max(0, Math.Round(restante, 1)),
+                PrazoExpirado = restante <= 0,
+                TemXmlAssinado = reader.GetInt32(reader.GetOrdinal("TemXmlAssinado")) == 1,
+                TotalVenda = totalAmount
+            });
+        }
+
+        return rows;
+    }
+
+    /// <summary>
+    /// Transmite manualmente em lote todas as contingências pendentes de uma empresa.
+    /// </summary>
+    public async Task<TransmitirContingenciasResultado> TransmitirContingenciasAsync(
+        string companyId,
+        IFiscalProvider provider,
+        EmitenteFiscalStore emitenteFiscalStore,
+        CancellationToken ct = default)
+    {
+        var emitente = await emitenteFiscalStore.ObterAsync(companyId, ct);
+        if (emitente is null)
+        {
+            throw new InvalidOperationException("Empresa sem certificado digital A1 ou CSC configurado.");
+        }
+
+        const string sql = """
+            SELECT Id, ChaveAcesso, XmlAssinado, Status
+            FROM DocumentosFiscais
+            WHERE CompanyId = @CompanyId AND Status = 8;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+
+        var docsParaTransmitir = new List<(string Id, string? Chave, string? Xml)>();
+        while (await reader.ReadAsync(ct))
+        {
+            docsParaTransmitir.Add((
+                ReadString(reader, "Id"),
+                ReadNullableString(reader, "ChaveAcesso"),
+                ReadNullableString(reader, "XmlAssinado")));
+        }
+        await reader.CloseAsync();
+
+        var resultadoLote = new TransmitirContingenciasResultado
+        {
+            TotalProcessadas = docsParaTransmitir.Count
+        };
+
+        foreach (var (docId, chave, xml) in docsParaTransmitir)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            if (string.IsNullOrWhiteSpace(xml))
+            {
+                resultadoLote.TotalFalhas++;
+                resultadoLote.Detalhes.Add(new DocumentoFiscalContingenciaItemResultado
+                {
+                    DocumentoId = docId,
+                    ChaveAcesso = chave ?? string.Empty,
+                    Status = StatusDocumentoFiscal.Rejeitado,
+                    MotivoStatus = "Documento sem XML assinado gravado."
+                });
+                continue;
+            }
+
+            try
+            {
+                var resultado = await provider.TransmitirContingenciaAsync(emitente, xml, ct);
+                if (resultado.Status == StatusDocumentoFiscal.Autorizado)
+                {
+                    await MarcarAutorizadoAsync(docId, resultado, ct);
+                    resultadoLote.TotalAutorizadas++;
+                }
+                else
+                {
+                    resultadoLote.TotalFalhas++;
+                    await MarcarErroAsync(docId, resultado.MotivoStatus, DateTimeOffset.UtcNow.AddMinutes(1), ct);
+                }
+
+                resultadoLote.Detalhes.Add(new DocumentoFiscalContingenciaItemResultado
+                {
+                    DocumentoId = docId,
+                    ChaveAcesso = resultado.ChaveAcesso ?? chave ?? string.Empty,
+                    Status = resultado.Status,
+                    CodigoStatus = resultado.CodigoStatus,
+                    MotivoStatus = resultado.MotivoStatus,
+                    Protocolo = resultado.Protocolo
+                });
+            }
+            catch (Exception ex)
+            {
+                resultadoLote.TotalFalhas++;
+                await MarcarErroAsync(docId, ex.Message, DateTimeOffset.UtcNow.AddMinutes(1), ct);
+                resultadoLote.Detalhes.Add(new DocumentoFiscalContingenciaItemResultado
+                {
+                    DocumentoId = docId,
+                    ChaveAcesso = chave ?? string.Empty,
+                    Status = StatusDocumentoFiscal.Rejeitado,
+                    MotivoStatus = ex.Message
+                });
+            }
+        }
+
+        return resultadoLote;
     }
 
     private async Task AtualizarStatusAsync(

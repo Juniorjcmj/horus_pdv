@@ -16,6 +16,7 @@ using HORUSPDV_API.Models.Response;
 using HORUSPDV_API.Repositories.DatabaseAccess;
 using HORUSPDV_API.Services.Fiscal;
 using HORUSPDV_API.Services.Security;
+using HORUSPDV_API.Services.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HORUSPDV_API.Controllers.Fiscal;
@@ -362,6 +363,120 @@ public class NfceController(
         });
     }
 
+    [HttpGet("contingencia/pendentes")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
+    public async Task<IActionResult> ObterContingenciasPendentes(CancellationToken ct = default)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        var pendentes = await documentoFiscalAB.ObterContingenciasPendentesAsync(currentUser.CompanyId, ct);
+        return Ok(new ApiResponse<List<DocumentoFiscalContingenciaResumo>>
+        {
+            Success = true,
+            Message = "Documentos em contingência obtidos com sucesso.",
+            Data = pendentes
+        });
+    }
+
+    [HttpPost("contingencia/transmitir-pendentes")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
+    public async Task<IActionResult> TransmitirContingenciasPendentes(CancellationToken ct = default)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        var resultado = await documentoFiscalAB.TransmitirContingenciasAsync(
+            currentUser.CompanyId, fiscalProvider, emitenteFiscalStore, ct);
+
+        return Ok(new ApiResponse<TransmitirContingenciasResultado>
+        {
+            Success = true,
+            Message = $"Transmissão concluída. {resultado.TotalAutorizadas} autorizada(s), {resultado.TotalFalhas} falha(s).",
+            Data = resultado
+        });
+    }
+
+    [HttpPost("contingencia/emitir")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
+    public async Task<IActionResult> EmitirContingenciaManual(
+        [FromBody] EmitirContingenciaManualRequest request, CancellationToken ct = default)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        if (string.IsNullOrWhiteSpace(request.VendaId))
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Identificador da venda obrigatório." });
+        }
+
+        var emitente = await emitenteFiscalStore.ObterAsync(currentUser.CompanyId, ct);
+        if (emitente is null)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Empresa sem certificado digital A1 (.pfx) ou CSC configurado." });
+        }
+
+        var (numeroNf, serie, ambiente) = await documentoFiscalAB.AlocarNumeroNfceAsync(currentUser.CompanyId, ct);
+        var docPendente = new DocumentoFiscalPendente
+        {
+            Id = $"temp-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
+            CompanyId = currentUser.CompanyId,
+            VendaId = request.VendaId,
+            Modelo = 65,
+            Serie = serie,
+            NumeroNf = numeroNf,
+            TipoEmissao = TipoEmissaoFiscal.ContingenciaOffline,
+            Tentativas = 0,
+            DhContingencia = HorusDateTime.Now,
+            JustContingencia = request.Justificativa
+        };
+
+        var nfceRequest = await documentoFiscalAB.MontarRequisicaoAsync(docPendente, emitente, ct);
+        var reqComContingencia = nfceRequest with
+        {
+            TipoEmissao = TipoEmissaoFiscal.ContingenciaOffline,
+            DhContingencia = docPendente.DhContingencia,
+            JustificativaContingencia = docPendente.JustContingencia
+        };
+
+        var resultado = await fiscalProvider.EmitirContingenciaNfceAsync(reqComContingencia, ct);
+        if (resultado.Status == StatusDocumentoFiscal.ContingenciaPendente && !string.IsNullOrWhiteSpace(resultado.XmlAssinado))
+        {
+            var docId = await documentoFiscalAB.EnfileirarContingenciaAsync(
+                currentUser.CompanyId,
+                request.VendaId,
+                serie,
+                numeroNf,
+                ambiente,
+                resultado.ChaveAcesso ?? string.Empty,
+                resultado.XmlAssinado,
+                request.Justificativa ?? "Emissao em contingencia offline por indisponibilidade SEFAZ",
+                docPendente.DhContingencia.Value,
+                resultado.QrCodeUrl,
+                ct);
+
+            return Ok(new ApiResponse<ResultadoFiscal>
+            {
+                Success = true,
+                Message = "NFC-e emitida em contingência offline com sucesso.",
+                Data = resultado with { Protocolo = docId }
+            });
+        }
+
+        return BadRequest(new ApiResponse<object>
+        {
+            Success = false,
+            Message = resultado.MotivoStatus
+        });
+    }
+
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
 }
+
+public sealed record EmitirContingenciaManualRequest
+{
+    public required string VendaId { get; init; }
+    public string? Justificativa { get; init; }
+}
+

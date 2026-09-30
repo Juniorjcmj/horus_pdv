@@ -137,7 +137,7 @@ export function buildDanfePrintHtml(
   const totalTributosEstimados = receipt.subtotal * 0.3145;
 
   const isHomologacao = company?.ambienteFiscal === 2;
-  const isContingencia = fiscal.status === 8;
+  const isContingencia = fiscal.status === 8 || fiscal.tpEmis === 9;
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -302,7 +302,12 @@ export function buildDanfePrintHtml(
       }
       ${
         isContingencia
-          ? `<div class="warning-box">EMITIDA EM CONTINGÊNCIA<br />Pendente de autorização</div>`
+          ? `<div class="warning-box" style="border: 2px solid #000; padding: 5px; margin: 6px 0; text-align: center;">
+              <div class="bold" style="font-size: 13px; letter-spacing: 0.5px;">EMITIDA EM CONTINGÊNCIA</div>
+              <div class="bold" style="font-size: 10.5px;">Pendente de autorização</div>
+              ${fiscal.dhContingencia ? `<div style="font-size: 9px; margin-top: 2px;">Data/Hora Contingência: ${escapeHtml(formatDateTime(fiscal.dhContingencia))}</div>` : ""}
+              ${fiscal.justContingencia ? `<div style="font-size: 8.5px; margin-top: 2px; word-break: break-word;">Motivo: ${escapeHtml(fiscal.justContingencia)}</div>` : ""}
+            </div>`
           : ""
       }
 
@@ -384,7 +389,10 @@ export function buildDanfePrintHtml(
                 Protocolo de Autorização: <strong>${escapeHtml(fiscal.protocolo)}</strong><br />
                 Data de Autorização: ${escapeHtml(dataAutorizacao)}
               </div>`
-            : `<div class="center bold" style="margin-top: 2px;">Aguardando autorização SEFAZ</div>`
+            : isContingencia
+              ? `<div class="center bold" style="margin-top: 2px;">Forma de Emissão: CONTINGÊNCIA OFFLINE</div>
+                 <div class="center" style="font-size: 8.5px; margin-top: 1px;">Transmissão obrigatória em até 24 horas</div>`
+              : `<div class="center bold" style="margin-top: 2px;">Aguardando autorização SEFAZ</div>`
         }
       </section>
 
@@ -460,5 +468,250 @@ export function openDanfePrintWindow(
   if (!popup) return;
   popup.document.open();
   popup.document.write(buildDanfePrintHtml(receipt, fiscal, formatMoney));
+  popup.document.close();
+}
+
+export type DanfeThermalData = {
+  razaoSocial: string;
+  nomeFantasia?: string;
+  cnpj: string;
+  inscricaoEstadual?: string;
+  endereco?: string;
+  chaveAcesso: string;
+  serie: number;
+  numeroNf: number;
+  dhEmissao: string;
+  emissaoContingencia: boolean;
+  mensagemContingencia?: string;
+  justificativa?: string;
+  subtotal: number;
+  desconto: number;
+  totalLiquido: number;
+  valorTroco: number;
+  customerCpf?: string | null;
+  customerName?: string | null;
+  itens: Array<{
+    numero: number;
+    codigo: string;
+    descricao: string;
+    quantidade: number;
+    unidade?: string;
+    valorUnitario: number;
+    valorTotal: number;
+  }>;
+  pagamentos: Array<{
+    forma: string;
+    valor: number;
+  }>;
+  qrCodeUrl: string;
+  urlConsultaChave?: string;
+};
+
+export function buildDanfeFromThermalData(
+  data: DanfeThermalData,
+  formatMoney: (value: number) => string
+): string {
+  const qrSvg = generateQrCodeSvg(data.qrCodeUrl, 140);
+  const formattedChave = formatChaveAcesso(data.chaveAcesso);
+  const formattedNumero = formatNumeroNf(data.numeroNf);
+  const sefazUrl = data.urlConsultaChave || "http://www.fazenda.rj.gov.br/consultaNFCe";
+  const totalTributosEstimados = data.totalLiquido * 0.3145;
+
+  const itemsRows = data.itens
+    .map(
+      (item, index) => `
+        <div class="item">
+          <div class="line grid-item">
+            <span>${String(index + 1).padStart(2, "0")}</span>
+            <span class="item-name">${escapeHtml(item.descricao)}</span>
+            <span class="right">${item.quantidade}</span>
+            <span class="right">${formatMoney(item.valorTotal)}</span>
+          </div>
+          <div class="item-meta">${escapeHtml(item.codigo)} - ${escapeHtml(item.unidade || "UN")} ${formatMoney(item.valorUnitario)}</div>
+        </div>
+      `
+    )
+    .join("");
+
+  return `<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>DANFE NFC-e ${escapeHtml(formattedNumero)}</title>
+    <style>
+      @page { size: 80mm auto; margin: 2mm 3mm 4mm 3mm; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; padding: 0; color: #000; background: #fff;
+        font: 11px/1.25 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .receipt { width: 72mm; margin: 0 auto; }
+      .center { text-align: center; }
+      .right { text-align: right; }
+      .bold { font-weight: 800; }
+      .uppercase { text-transform: uppercase; }
+      .company-title { font-size: 13px; font-weight: 800; line-height: 1.2; }
+      .divider { border-top: 1px dashed #000; margin: 6px 0; }
+      .line { display: flex; justify-content: space-between; gap: 4px; }
+      .grid-item { display: grid; grid-template-columns: 20px 1fr 32px 52px; gap: 4px; }
+      .item { margin-top: 5px; }
+      .item-name { word-break: break-word; }
+      .item-meta { padding-left: 24px; font-size: 10px; color: #111; }
+      .danfe-banner { text-align: center; margin: 4px 0; }
+      .danfe-title { font-size: 12px; font-weight: 800; }
+      .danfe-subtitle { font-size: 9.5px; line-height: 1.2; }
+      .warning-box { border: 1px solid #000; padding: 3px; margin: 4px 0; font-weight: 800; text-align: center; font-size: 10.5px; }
+      .chave-box { font-size: 9.5px; font-weight: 800; letter-spacing: 0.4px; word-break: break-all; text-align: center; margin: 3px 0; }
+      .qrcode-wrapper { text-align: center; margin: 8px auto 4px auto; width: 100%; page-break-inside: avoid; }
+      .qrcode-box { display: inline-block; padding: 6px; background: #ffffff !important; }
+      .qrcode-wrapper svg { display: inline-block; margin: 0 auto; width: 140px !important; height: 140px !important; }
+      .qrcode-caption { font-size: 9px; margin-top: 4px; text-align: center; }
+      .fiscal-meta { font-size: 10px; line-height: 1.25; }
+    </style>
+  </head>
+  <body>
+    <main class="receipt">
+      <header class="center">
+        <div class="company-title uppercase">${escapeHtml(data.razaoSocial)}</div>
+        ${data.nomeFantasia && data.nomeFantasia !== data.razaoSocial ? `<div class="uppercase">${escapeHtml(data.nomeFantasia)}</div>` : ""}
+        <div>CNPJ: ${escapeHtml(data.cnpj)}</div>
+        ${data.inscricaoEstadual ? `<div>IE: ${escapeHtml(data.inscricaoEstadual)}</div>` : ""}
+        ${data.endereco ? `<div>${escapeHtml(data.endereco)}</div>` : ""}
+      </header>
+
+      <div class="divider"></div>
+
+      <section class="danfe-banner">
+        <div class="danfe-title">DANFE NFC-e</div>
+        <div class="danfe-subtitle">Documento Auxiliar da Nota Fiscal de Consumidor Eletrônica</div>
+        <div class="danfe-subtitle bold">Não permite aproveitamento de crédito de ICMS</div>
+      </section>
+
+      ${
+        data.emissaoContingencia
+          ? `<div class="warning-box" style="border: 2px solid #000; padding: 5px; margin: 6px 0; text-align: center;">
+              <div class="bold" style="font-size: 13px; letter-spacing: 0.5px;">EMITIDA EM CONTINGÊNCIA</div>
+              <div class="bold" style="font-size: 10.5px;">Pendente de autorização</div>
+              <div style="font-size: 9px; margin-top: 2px;">Data/Hora: ${escapeHtml(data.dhEmissao)}</div>
+              ${data.justificativa ? `<div style="font-size: 8.5px; margin-top: 2px; word-break: break-word;">Motivo: ${escapeHtml(data.justificativa)}</div>` : ""}
+            </div>`
+          : ""
+      }
+
+      <div class="divider"></div>
+
+      <section>
+        <div class="grid-item bold">
+          <span>#</span><span>ITEM</span><span class="right">QTD</span><span class="right">TOTAL</span>
+        </div>
+        ${itemsRows}
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <div class="line">
+          <span>Qtd. total de itens</span>
+          <span>${data.itens.length}</span>
+        </div>
+        <div class="line bold" style="font-size: 12px;">
+          <span>VALOR TOTAL R$</span>
+          <span>${formatMoney(data.totalLiquido)}</span>
+        </div>
+
+        <div style="margin-top: 4px;">
+          <div class="bold">FORMA DE PAGAMENTO</div>
+          ${data.pagamentos.map(p => `<div class="line"><span>${escapeHtml(p.forma)}</span><span>R$ ${formatMoney(p.valor)}</span></div>`).join("")}
+          ${data.valorTroco > 0 ? `<div class="line bold"><span>Troco</span><span>R$ ${formatMoney(data.valorTroco)}</span></div>` : ""}
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="center fiscal-meta">
+        <div>Tributos Totais Incidentes (Lei Fed. 12.741/2012):</div>
+        <div class="bold">R$ ${formatMoney(totalTributosEstimados)}</div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="fiscal-meta">
+        <div class="center bold">
+          NFC-e nº ${escapeHtml(formattedNumero)} &nbsp; Série ${data.serie}
+        </div>
+        <div class="center">
+          Data de Emissão: ${escapeHtml(data.dhEmissao)}
+        </div>
+        <div class="center bold" style="margin-top: 2px;">Forma de Emissão: CONTINGÊNCIA OFFLINE</div>
+        <div class="center" style="font-size: 8.5px; margin-top: 1px;">Transmissão obrigatória em até 24 horas</div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="fiscal-meta center">
+        <div>Consulte pela Chave de Acesso em:</div>
+        <div class="bold" style="font-size: 9.5px; word-break: break-all;">${escapeHtml(sefazUrl)}</div>
+        <div style="margin-top: 4px; font-size: 9px;">CHAVE DE ACESSO:</div>
+        <div class="chave-box">${escapeHtml(formattedChave)}</div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="fiscal-meta center">
+        <div>CONSUMIDOR:</div>
+        <div class="bold">
+          ${
+            data.customerCpf && data.customerCpf.trim().length > 0
+              ? `CPF: ${escapeHtml(data.customerCpf)}`
+              : "CONSUMIDOR NÃO IDENTIFICADO"
+          }
+        </div>
+      </section>
+
+      ${
+        qrSvg
+          ? `
+            <div class="divider"></div>
+            <section class="qrcode-wrapper">
+              <div class="qrcode-box">${qrSvg}</div>
+              <div class="qrcode-caption">Consulta via leitor de QR Code</div>
+            </section>
+          `
+          : ""
+      }
+
+      <div class="divider"></div>
+      <footer class="center fiscal-meta" style="font-size: 9px; color: #444;">
+        <div>Local Gateway Offline - Emissão em Contingência</div>
+        <div>Quack Sistemas - Soluções para seu Negócio</div>
+      </footer>
+    </main>
+
+    <script>
+      function triggerPrint() {
+        setTimeout(function () {
+          window.focus();
+          window.print();
+        }, 200);
+      }
+      if (document.readyState === "complete") {
+        triggerPrint();
+      } else {
+        window.addEventListener("load", triggerPrint);
+      }
+    </script>
+  </body>
+</html>`;
+}
+
+export function openDanfeThermalWindow(
+  data: DanfeThermalData,
+  formatMoney: (value: number) => string
+): void {
+  const popup = window.open("", "_blank", "width=420,height=720");
+  if (!popup) return;
+  popup.document.open();
+  popup.document.write(buildDanfeFromThermalData(data, formatMoney));
   popup.document.close();
 }

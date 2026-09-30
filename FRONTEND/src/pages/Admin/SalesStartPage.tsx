@@ -1279,6 +1279,38 @@ export default function SalesStartPage({
             }
             await new Promise((resolve) => setTimeout(resolve, 500));
           }
+
+          // Fallback suave de contingência na Cloud se a SEFAZ estiver em timeout
+          if (!fiscalDetail && fiscalModel !== "nfe" && result?.saleNumber) {
+            try {
+              const resCont = await fiscalService.emitirContingenciaManual(
+                result.saleNumber,
+                "Emissão em contingência offline por timeout de resposta SEFAZ"
+              );
+              if (resCont?.chaveAcesso) {
+                fiscalDetail = {
+                  id: resCont.protocolo || result.saleNumber,
+                  saleNumber: result.saleNumber,
+                  serie: resCont.serie || 2,
+                  numeroNf: resCont.numeroNf || 0,
+                  status: FISCAL_STATUS.ContingenciaPendente,
+                  chaveAcesso: resCont.chaveAcesso,
+                  protocolo: null,
+                  motivoStatus: "Emitida em Contingência Offline (tpEmis = 9)",
+                  dhAutorizacao: null,
+                  dhContingencia: resCont.dhContingencia || new Date().toISOString(),
+                  justContingencia: "Emissão em contingência offline por timeout de resposta SEFAZ",
+                  criadoEm: new Date().toISOString(),
+                  tentativas: 0,
+                  qrCodeUrl: resCont.qrCodeUrl,
+                  tpEmis: 9,
+                };
+                Toast.info("SEFAZ em timeout. NFC-e emitida em CONTINGÊNCIA OFFLINE.");
+              }
+            } catch (err) {
+              console.warn("Fallback de contingência na Cloud não concluído:", err);
+            }
+          }
         }
 
         // Emite NF-e modelo 55 quando selecionado (após a venda ser registrada)
@@ -1334,6 +1366,57 @@ export default function SalesStartPage({
         }
         saleNumber = await queueSaleToOutbox(registerPayload);
         isOfflineSale = true;
+
+        // Emissão de NFC-e em contingência offline pelo Local Gateway na LAN
+        try {
+          const gwUrl = localStorage.getItem("horus_gateway_url") || "http://localhost:5050";
+          const gwKey = localStorage.getItem("horus_gateway_key") || "";
+          const gwPayload = {
+            vendaId: saleNumber,
+            terminalId: localStorage.getItem("horus_terminal_id") || "caixa-01",
+            customerCpf: selectedCustomer ? selectedCustomer.document : (cpfNota || undefined),
+            customerName: selectedCustomer ? selectedCustomer.customerName : undefined,
+            justificativa: "EMISSAO EM CONTINGENCIA OFFLINE POR QUEDA DE REDE LOCAL",
+            itens: cart.map((item, idx) => ({
+              numero: idx + 1,
+              codigoProduto: item.code,
+              descricao: item.name,
+              quantidade: item.quantity,
+              valorUnitario: item.unitPrice,
+              valorTotal: item.itemTotal ?? Math.max(0, item.quantity * item.unitPrice - (item.discount ?? 0)),
+              desconto: item.discount ?? 0,
+            })),
+            pagamentos: finalPayments.map((p) => ({
+              tipo: p.paymentType === "dinheiro" ? "01" : p.paymentType === "credito" ? "03" : p.paymentType === "debito" ? "04" : "17",
+              valor: p.amount,
+            })),
+            valorTroco: totalChange,
+          };
+
+          const resGw = await fiscalService.emitirContingenciaGatewayLocal(gwUrl, gwKey, gwPayload);
+          if (resGw?.success && resGw.chaveAcesso) {
+            fiscalDetail = {
+              id: resGw.documentoId || `gw-${saleNumber}`,
+              saleNumber: saleNumber,
+              serie: resGw.serie || 900,
+              numeroNf: resGw.numeroNf || 0,
+              status: FISCAL_STATUS.ContingenciaPendente,
+              chaveAcesso: resGw.chaveAcesso,
+              protocolo: null,
+              motivoStatus: "Emitida em Contingência Offline no Local Gateway",
+              dhAutorizacao: null,
+              dhContingencia: resGw.dhContingencia || new Date().toISOString(),
+              justContingencia: "EMISSAO EM CONTINGENCIA OFFLINE POR QUEDA DE REDE LOCAL",
+              criadoEm: new Date().toISOString(),
+              tentativas: 0,
+              qrCodeUrl: resGw.qrCodeUrl,
+              tpEmis: 9,
+            };
+            Toast.info("Venda offline! NFC-e assinada pelo Local Gateway em CONTINGÊNCIA.");
+          }
+        } catch (gwErr) {
+          console.warn("Local Gateway não disponível para contingência offline:", gwErr);
+        }
       }
 
       const receipt: SaleReceipt = {
@@ -1391,7 +1474,7 @@ export default function SalesStartPage({
       saveLastReceipt(receipt);
 
       // Impressão automática na impressora padrão (Blob garante UTF-8)
-      const printHtml = (fiscalDetail && !isOfflineSale)
+      const printHtml = fiscalDetail
         ? buildDanfePrintHtml(receipt, fiscalDetail, formatMoneyBr)
         : buildReceiptPrintHtml(receipt, formatMoneyBr, fiscalDetail);
       const printBlob = new Blob([printHtml], { type: "text/html;charset=utf-8" });

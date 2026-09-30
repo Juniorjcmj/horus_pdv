@@ -11,6 +11,8 @@ import {
   AlertTriangle,
   Calendar,
   Check,
+  CheckCircle2,
+  Clock,
   Copy,
   Download,
   ExternalLink,
@@ -27,6 +29,9 @@ import {
   RefreshCw,
   RotateCcw,
   Search,
+  Send,
+  ShieldAlert,
+  WifiOff,
   X,
   XCircle,
 } from "lucide-react";
@@ -50,14 +55,15 @@ import {
   fiscalService,
   fiscalStatusBadgeClass,
   fiscalStatusLabel,
+  type FiscalContingenciaResumoDto,
   type FiscalDocumentDetailDto,
   type FiscalDocumentDto,
 } from "@/services/api/fiscalService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { getStoredAuthUser } from "@/utils/authStorage";
-import { getSefazConsultaUrl } from "@/utils/danfePrint";
+import { formatNumeroNf, getSefazConsultaUrl } from "@/utils/danfePrint";
 
-type FiscalTab = "notas" | "inutilizacao";
+type FiscalTab = "notas" | "contingencia" | "inutilizacao";
 type StatusFilter = "todos" | "autorizado" | "cancelado" | "devolvido" | "rejeitado" | "contingencia";
 type PeriodFilter = "todos" | "hoje" | "7dias" | "mes";
 
@@ -84,6 +90,39 @@ function formatChaveCurta(chave: string | null) {
   return `${chave.slice(0, 4)} ... ${chave.slice(-6)}`;
 }
 
+function formatPrazoRestante(horas: number, expirado: boolean) {
+  if (expirado || horas <= 0) {
+    return {
+      text: "Prazo Expirado (> 24h)",
+      colorClass: "text-red-500",
+      badgeClass: "bg-red-500/10 text-red-500 border border-red-500/30 animate-pulse font-bold",
+    };
+  }
+  if (horas < 2) {
+    const min = Math.max(1, Math.round(horas * 60));
+    return {
+      text: `Urgente: ${min} min restantes`,
+      colorClass: "text-rose-500",
+      badgeClass: "bg-rose-500/10 text-rose-500 border border-rose-500/30 font-bold",
+    };
+  }
+  if (horas <= 12) {
+    const h = Math.floor(horas);
+    const min = Math.round((horas - h) * 60);
+    return {
+      text: `${h}h ${min > 0 ? `${min}m` : ""} restantes`,
+      colorClass: "text-amber-500",
+      badgeClass: "bg-amber-500/10 text-amber-500 border border-amber-500/30 font-medium",
+    };
+  }
+  const h = Math.floor(horas);
+  return {
+    text: `${h}h restantes`,
+    colorClass: "text-emerald-500",
+    badgeClass: "bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 font-medium",
+  };
+}
+
 export default function FiscalPage() {
   const { prompt, PromptDialog } = usePromptDialog();
   const { formatMoneyBr, parseMoneyBr } = useInputMasks();
@@ -93,6 +132,11 @@ export default function FiscalPage() {
   const [company, setCompany] = useState<CompanyDto | null>(null);
   const [documents, setDocuments] = useState<FiscalDocumentDto[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Contingência Offline
+  const [contingencias, setContingencias] = useState<FiscalContingenciaResumoDto[]>([]);
+  const [loadingContingencias, setLoadingContingencias] = useState(false);
+  const [transmitindoContingencias, setTransmitindoContingencias] = useState(false);
 
   // Filtros
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todos");
@@ -127,13 +171,44 @@ export default function FiscalPage() {
   const [inutilizando, setInutilizando] = useState(false);
 
   // Carregamento de dados
+  const loadContingencias = () => {
+    setLoadingContingencias(true);
+    fiscalService
+      .getContingenciasPendentes()
+      .then(setContingencias)
+      .catch(() => {})
+      .finally(() => setLoadingContingencias(false));
+  };
+
   const loadDocuments = () => {
     setLoading(true);
+    loadContingencias();
     fiscalService
       .list()
       .then(setDocuments)
       .catch(() => Toast.error("Não foi possível carregar os documentos fiscais."))
       .finally(() => setLoading(false));
+  };
+
+  const handleTransmitirContingencias = async () => {
+    setTransmitindoContingencias(true);
+    try {
+      const res = await fiscalService.transmitirContingenciasPendentes();
+      if (res.totalProcessadas === 0) {
+        Toast.info("Nenhuma NFC-e pendente de transmissão em contingência.");
+      } else if (res.totalFalhas === 0) {
+        Toast.success(`Sucesso! ${res.totalAutorizadas} nota(s) em contingência autorizada(s) pela SEFAZ.`);
+      } else {
+        Toast.info(
+          `Transmissão concluída: ${res.totalAutorizadas} autorizada(s), ${res.totalFalhas} rejeitada(s) ou com erro. Verifique a lista.`
+        );
+      }
+      await Promise.all([loadContingencias(), loadDocuments()]);
+    } catch (err) {
+      Toast.error(err instanceof Error ? err.message : "Erro ao transmitir notas em contingência.");
+    } finally {
+      setTransmitindoContingencias(false);
+    }
   };
 
   useEffect(() => {
@@ -481,12 +556,15 @@ export default function FiscalPage() {
       )}
 
       {/* Cards de Métricas Operacionais (KPIs) */}
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {/* Total Emitido */}
         <div
-          onClick={() => setStatusFilter("todos")}
+          onClick={() => {
+            setActiveTab("notas");
+            setStatusFilter("todos");
+          }}
           className={`card p-4 cursor-pointer transition-all border ${
-            statusFilter === "todos" ? "ring-2 ring-accent border-accent" : "hover:border-border-secondary"
+            activeTab === "notas" && statusFilter === "todos" ? "ring-2 ring-accent border-accent" : "hover:border-border-secondary"
           }`}
         >
           <div className="flex items-center justify-between text-text-secondary">
@@ -504,9 +582,12 @@ export default function FiscalPage() {
 
         {/* Autorizadas */}
         <div
-          onClick={() => setStatusFilter("autorizado")}
+          onClick={() => {
+            setActiveTab("notas");
+            setStatusFilter("autorizado");
+          }}
           className={`card p-4 cursor-pointer transition-all border ${
-            statusFilter === "autorizado" ? "ring-2 ring-success border-success" : "hover:border-border-secondary"
+            activeTab === "notas" && statusFilter === "autorizado" ? "ring-2 ring-success border-success" : "hover:border-border-secondary"
           }`}
         >
           <div className="flex items-center justify-between text-text-secondary">
@@ -524,9 +605,12 @@ export default function FiscalPage() {
 
         {/* Canceladas & Devolvidas */}
         <div
-          onClick={() => setStatusFilter(statusFilter === "cancelado" ? "devolvido" : "cancelado")}
+          onClick={() => {
+            setActiveTab("notas");
+            setStatusFilter(statusFilter === "cancelado" ? "devolvido" : "cancelado");
+          }}
           className={`card p-4 cursor-pointer transition-all border ${
-            statusFilter === "cancelado" || statusFilter === "devolvido" ? "ring-2 ring-primary border-primary" : "hover:border-border-secondary"
+            activeTab === "notas" && (statusFilter === "cancelado" || statusFilter === "devolvido") ? "ring-2 ring-primary border-primary" : "hover:border-border-secondary"
           }`}
         >
           <div className="flex items-center justify-between text-text-secondary">
@@ -544,9 +628,12 @@ export default function FiscalPage() {
 
         {/* Rejeitadas / Pendências */}
         <div
-          onClick={() => setStatusFilter("rejeitado")}
+          onClick={() => {
+            setActiveTab("notas");
+            setStatusFilter("rejeitado");
+          }}
           className={`card p-4 cursor-pointer transition-all border ${
-            statusFilter === "rejeitado" ? "ring-2 ring-primary border-primary" : "hover:border-border-secondary"
+            activeTab === "notas" && statusFilter === "rejeitado" ? "ring-2 ring-primary border-primary" : "hover:border-border-secondary"
           }`}
         >
           <div className="flex items-center justify-between text-text-secondary">
@@ -561,6 +648,34 @@ export default function FiscalPage() {
           </div>
           <div className="mt-1 text-xs text-text-secondary">
             {metrics.qtdRejeitadas > 0 ? "Clique para corrigir" : "Nenhum erro pendente"}
+          </div>
+        </div>
+
+        {/* Contingência Offline */}
+        <div
+          onClick={() => setActiveTab("contingencia")}
+          className={`card p-4 cursor-pointer transition-all border ${
+            activeTab === "contingencia" ? "ring-2 ring-amber-500 border-amber-500" : "hover:border-border-secondary"
+          }`}
+        >
+          <div className="flex items-center justify-between text-text-secondary">
+            <span className="text-xs font-semibold uppercase tracking-wider text-amber-500">Contingência Offline</span>
+            <WifiOff size={16} className="text-amber-500" />
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className={`text-xl font-bold ${contingencias.length > 0 ? "text-amber-500" : "text-text-secondary"}`}>
+              {contingencias.length}
+            </span>
+            <span className="text-xs text-text-secondary font-medium">pendentes</span>
+          </div>
+          <div className="mt-1 text-xs text-text-secondary">
+            {contingencias.some((c) => c.prazoExpirado || c.horasRestantesPrazo < 2) ? (
+              <span className="text-rose-500 font-semibold animate-pulse">Prazo crítico (&lt; 2h)!</span>
+            ) : contingencias.length > 0 ? (
+              "Aguardando transmissão"
+            ) : (
+              "Nenhuma pendência"
+            )}
           </div>
         </div>
       </section>
@@ -578,6 +693,29 @@ export default function FiscalPage() {
         >
           <Layers size={14} />
           Painel de Notas Fiscais ({filteredDocuments.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("contingencia")}
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition-colors ${
+            activeTab === "contingencia"
+              ? "border-accent text-accent"
+              : "border-transparent text-text-secondary hover:text-text-primary"
+          }`}
+        >
+          <WifiOff size={14} />
+          Contingência Offline
+          {contingencias.length > 0 && (
+            <span
+              className={`ml-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                contingencias.some((c) => c.prazoExpirado || c.horasRestantesPrazo < 2)
+                  ? "bg-rose-500/20 text-rose-500 border border-rose-500/40 animate-pulse"
+                  : "bg-amber-500/20 text-amber-500 border border-amber-500/40"
+              }`}
+            >
+              {contingencias.length}
+            </span>
+          )}
         </button>
         <button
           type="button"
@@ -1096,6 +1234,269 @@ export default function FiscalPage() {
             </div>
           </section>
         </>
+      ) : activeTab === "contingencia" ? (
+        /* Aba de Contingência Offline */
+        <section className="space-y-4">
+          {/* Header e Ações da Contingência */}
+          <div className="card p-5 space-y-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                    <WifiOff size={18} />
+                  </div>
+                  <h2 className="text-base font-bold text-text-primary">
+                    Contingência Offline da NFC-e (Modelo 65 · tpEmis = 9)
+                  </h2>
+                </div>
+                <p className="text-xs text-text-secondary leading-relaxed max-w-2xl">
+                  Notas fiscais emitidas sem comunicação instantânea com a SEFAZ (por queda de conexão ou indisponibilidade estadual). O DANFE entregue ao consumidor possui plena validade jurídica, mas sua transmissão e autorização perante a SEFAZ é <strong className="text-text-primary">obrigatória em até 24 horas</strong> contadas a partir do momento da emissão.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={loadContingencias}
+                  disabled={loadingContingencias || transmitindoContingencias}
+                  className="btn-secondary inline-flex items-center gap-1.5 text-xs font-medium"
+                  title="Atualizar lista de contingências pendentes"
+                >
+                  <RefreshCw size={14} className={loadingContingencias ? "animate-spin" : ""} />
+                  Atualizar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleTransmitirContingencias}
+                  disabled={transmitindoContingencias || contingencias.length === 0}
+                  className="btn-primary inline-flex items-center gap-2 text-xs font-semibold shadow-md"
+                  title="Transmitir todas as notas pendentes de contingência para a SEFAZ agora"
+                >
+                  {transmitindoContingencias ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Transmitindo para SEFAZ...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={14} />
+                      Transmitir Pendentes Agora ({contingencias.length})
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Alerta de Prazo Crítico */}
+            {contingencias.some((c) => c.prazoExpirado || c.horasRestantesPrazo < 2) && (
+              <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-3.5 text-xs text-red-600 dark:text-red-400 flex items-start gap-3 animate-pulse">
+                <ShieldAlert size={18} className="shrink-0 mt-0.5 text-red-500" />
+                <div>
+                  <p className="font-bold">Atenção Crítica: Prazo Legal de 24h Próximo do Fim ou Expirado!</p>
+                  <p className="mt-0.5 opacity-90 leading-relaxed">
+                    Existem notas fiscais em contingência próximas de completar ou que já ultrapassaram o limite regulamentar de 24 horas da SEFAZ. Transmita imediatamente para evitar autuações fiscais estaduais.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cards Rápidos de Status */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="card p-4">
+              <div className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center justify-between">
+                <span>Notas Pendentes</span>
+                <Clock size={16} className="text-amber-500" />
+              </div>
+              <div className="mt-2 text-2xl font-bold text-text-primary">
+                {contingencias.length}
+              </div>
+              <div className="text-[11px] text-text-secondary mt-1">
+                Aguardando autorização da SEFAZ
+              </div>
+            </div>
+
+            <div className="card p-4">
+              <div className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center justify-between">
+                <span>Prazo Mais Próximo</span>
+                <AlertTriangle size={16} className="text-rose-500" />
+              </div>
+              <div className="mt-2 text-lg font-bold">
+                {contingencias.length === 0 ? (
+                  <span className="text-emerald-500 text-sm">Sem pendências</span>
+                ) : (
+                  (() => {
+                    const minHoras = Math.min(...contingencias.map((c) => c.horasRestantesPrazo));
+                    const expirado = contingencias.some((c) => c.prazoExpirado);
+                    const prazoInfo = formatPrazoRestante(minHoras, expirado);
+                    return <span className={prazoInfo.colorClass}>{prazoInfo.text}</span>;
+                  })()
+                )}
+              </div>
+              <div className="text-[11px] text-text-secondary mt-1">
+                Limite regulamentar: 24h da emissão
+              </div>
+            </div>
+
+            <div className="card p-4">
+              <div className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center justify-between">
+                <span>XMLs Assinados Localmente</span>
+                <FileCode size={16} className="text-accent" />
+              </div>
+              <div className="mt-2 text-2xl font-bold text-text-primary">
+                {contingencias.filter((c) => c.temXmlAssinado).length} / {contingencias.length}
+              </div>
+              <div className="text-[11px] text-text-secondary mt-1">
+                Prontos para transmissão sem alteração de chave
+              </div>
+            </div>
+          </div>
+
+          {/* Tabela de Notas em Contingência */}
+          <div className="card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-border-primary bg-bg-secondary text-text-secondary font-semibold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4">Venda / Doc</th>
+                    <th className="py-3 px-4">NFC-e</th>
+                    <th className="py-3 px-4">Chave de Acesso</th>
+                    <th className="py-3 px-4">Emissão Contingência</th>
+                    <th className="py-3 px-4">Prazo Legal (24h)</th>
+                    <th className="py-3 px-4">Tentativas / Status</th>
+                    <th className="py-3 px-4 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-secondary">
+                  {loadingContingencias ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-text-secondary">
+                        <Loader2 size={20} className="animate-spin inline mr-2 text-accent" />
+                        Carregando notas pendentes em contingência...
+                      </td>
+                    </tr>
+                  ) : contingencias.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+                            <CheckCircle2 size={24} />
+                          </div>
+                          <p className="font-semibold text-text-primary text-sm mt-1">
+                            Nenhuma NFC-e pendente em contingência
+                          </p>
+                          <p className="text-xs text-text-secondary max-w-sm">
+                            Todas as notas emitidas em contingência offline foram transmitidas com sucesso e regularizadas junto à SEFAZ.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    contingencias.map((item) => {
+                      const prazoInfo = formatPrazoRestante(item.horasRestantesPrazo, item.prazoExpirado);
+                      const chaveFormatada = formatChaveCurta(item.chaveAcesso);
+                      const isCopied = copiedChaveId === item.id;
+
+                      return (
+                        <tr key={item.id} className="hover:bg-bg-secondary/50 transition-colors">
+                          <td className="py-3 px-4 font-mono font-medium text-text-primary">
+                            <div>{item.saleNumber || item.vendaId}</div>
+                            <div className="text-[10px] text-text-tertiary font-mono">{item.id.slice(0, 8)}...</div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-semibold text-text-primary">
+                              Nº {formatNumeroNf(item.numeroNf)}
+                            </div>
+                            <div className="text-[10px] text-text-secondary">
+                              Série {item.serie} · Mod 65
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            {item.chaveAcesso ? (
+                              <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                                <span title={item.chaveAcesso}>{chaveFormatada}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopyChave({ id: item.id, chaveAcesso: item.chaveAcesso } as any)}
+                                  className="text-text-secondary hover:text-text-primary p-0.5 rounded"
+                                  title="Copiar chave de 44 dígitos"
+                                >
+                                  {isCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-text-tertiary">—</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-medium text-text-primary">
+                              {formatDate(item.dhContingencia || item.criadoEm)}
+                            </div>
+                            {item.justContingencia && (
+                              <div className="text-[10px] text-text-secondary truncate max-w-xs" title={item.justContingencia}>
+                                {item.justContingencia}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] ${prazoInfo.badgeClass}`}>
+                              <Clock size={12} />
+                              {prazoInfo.text}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`inline-block h-2 w-2 rounded-full ${
+                                  item.tentativas > 0 ? "bg-amber-500" : "bg-text-tertiary"
+                                }`}
+                              />
+                              <span className="font-medium">
+                                {item.tentativas} {item.tentativas === 1 ? "tentativa" : "tentativas"}
+                              </span>
+                            </div>
+                            {item.ultimoErro && (
+                              <div className="text-[10px] text-rose-500 truncate max-w-xs mt-0.5" title={item.ultimoErro}>
+                                {item.ultimoErro}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="inline-flex items-center gap-1">
+                              {item.temXmlAssinado && (
+                                <button
+                                  type="button"
+                                  onClick={() => fiscalService.downloadXml(item.id, item.chaveAcesso || item.id)}
+                                  className="btn-secondary p-1.5 text-xs"
+                                  title="Baixar XML assinado da contingência"
+                                >
+                                  <FileCode size={13} />
+                                </button>
+                              )}
+                              {item.saleNumber && (
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    const detail = await fiscalService.getBySaleNumber(item.saleNumber!);
+                                    if (detail) setDanfePreview(detail);
+                                  }}
+                                  className="btn-secondary p-1.5 text-xs"
+                                  title="Visualizar DANFE"
+                                >
+                                  <Eye size={13} />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       ) : (
         /* Aba de Inutilização de Faixa de Numeração */
         <section className="card p-5 space-y-4 max-w-2xl">

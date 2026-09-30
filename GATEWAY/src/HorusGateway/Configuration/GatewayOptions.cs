@@ -57,4 +57,53 @@ public sealed class GatewayOptions
 
     /// <summary>Token opcional enviado no header Authorization para a cloud (Bearer).</summary>
     public string CloudSyncToken { get; set; } = string.Empty;
+
+    /* --------------------------------------------------------------------- */
+    /* Configurações Fiscais de Contingência Offline (LAN)                   */
+    /* --------------------------------------------------------------------- */
+
+    /// <summary>Caminho do arquivo do Certificado Digital A1 (.pfx) para contingência offline no Gateway.</summary>
+    public string CertificadoPfxPath { get; set; } = string.Empty;
+
+    /// <summary>Certificado A1 em base64 (opcional, para provisionamento via config/env).</summary>
+    public string CertificadoPfxBase64 { get; set; } = string.Empty;
+
+    /// <summary>Senha do Certificado Digital A1.</summary>
+    public string CertificadoSenha { get; set; } = string.Empty;
+
+    /// <summary>CSC / Token de QR Code da NFC-e.</summary>
+    public string Csc { get; set; } = string.Empty;
+
+    /// <summary>Id do Token do CSC (ex: "1" ou "000001").</summary>
+    public string CscId { get; set; } = string.Empty;
+
+    /// <summary>Série dedicada para emissão no Gateway local (ex: 900).</summary>
+    public int SerieNfceContingencia { get; set; } = 900;
+
+    /// <summary>Ambiente fiscal: 1 Produção, 2 Homologação.</summary>
+    public byte AmbienteFiscal { get; set; } = 2;
+
+    /// <summary>CNPJ do emitente.</summary>
+    public string EmitenteCnpj { get; set; } = string.Empty;
+
+    /// <summary>Razão social do emitente.</summary>
+    public string EmitenteRazaoSocial { get; set; } = string.Empty;
+
+    /// <summary>Nome fantasia do emitente.</summary>
+    public string EmitenteNomeFantasia { get; set; } = string.Empty;
+
+    /// <summary>Inscrição Estadual do emitente.</summary>
+    public string EmitenteInscricaoEstadual { get; set; } = string.Empty;
+
+    /// <summary>Código do município IBGE do emitente (ex: 3304557 para Rio de Janeiro).</summary>
+    public string EmitenteCodigoMunicipioIbge { get; set; } = "3304557";
+
+    /// <summary>Código da UF do emitente (ex: 33 para RJ, 35 para SP).</summary>
+    public byte EmitenteCodigoUf { get; set; } = 33;
+
+    /// <summary>UF do emitente (ex: RJ, SP).</summary>
+    public string EmitenteUf { get; set; } = "RJ";
+
+    /// <summary>Regime tributário: 1 Simples, 3 Normal.</summary>
+    public byte EmitenteCrt { get; set; } = 1;
 }

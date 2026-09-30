@@ -63,6 +63,66 @@ export type FiscalDocumentItemDto = {
 
 export type FiscalDocumentDetailDto = FiscalDocumentDto & {
   qrCodeUrl: string | null;
+  dhContingencia?: string | null;
+  justContingencia?: string | null;
+  tpEmis?: number;
+};
+
+export type FiscalContingenciaResumoDto = {
+  id: string;
+  vendaId: string;
+  saleNumber: string | null;
+  serie: number;
+  numeroNf: number;
+  chaveAcesso: string | null;
+  dhContingencia: string | null;
+  justContingencia: string | null;
+  tentativas: number;
+  ultimoErro: string | null;
+  criadoEm: string;
+  horasRestantesPrazo: number;
+  prazoExpirado: boolean;
+  temXmlAssinado: boolean;
+  totalVenda: string | null;
+};
+
+export type TransmitirContingenciasResultDto = {
+  totalProcessadas: number;
+  totalAutorizadas: number;
+  totalFalhas: number;
+  detalhes: Array<{
+    documentoId: string;
+    chaveAcesso: string;
+    status: number;
+    codigoStatus?: number;
+    motivoStatus?: string;
+    protocolo?: string;
+  }>;
+};
+
+export type LocalNfceContingenciaPayload = {
+  vendaId: string;
+  terminalId: string;
+  customerCpf?: string | null;
+  customerName?: string | null;
+  justificativa?: string | null;
+  itens: Array<{
+    numero: number;
+    codigoProduto: string;
+    descricao: string;
+    ncm?: string;
+    cfop?: string;
+    unidadeComercial?: string;
+    quantidade: number;
+    valorUnitario: number;
+    valorTotal: number;
+    desconto: number;
+  }>;
+  pagamentos: Array<{
+    tipo: string;
+    valor: number;
+  }>;
+  valorTroco: number;
 };
 
 export type CancelarComSupervisorPayload = {
@@ -304,6 +364,43 @@ export const fiscalService = {
   async getItens(id: string): Promise<FiscalDocumentItemDto[]> {
     const response = await apiRequest<FiscalDocumentItemDto[]>(`${NFCE_API_URL}/${encodeURIComponent(id)}/itens`);
     return response.data ?? [];
+  },
+  async getContingenciasPendentes(): Promise<FiscalContingenciaResumoDto[]> {
+    const response = await apiRequest<FiscalContingenciaResumoDto[]>(`${NFCE_API_URL}/contingencia/pendentes`);
+    return response.data ?? [];
+  },
+  async transmitirContingenciasPendentes(): Promise<TransmitirContingenciasResultDto> {
+    const response = await apiRequest<TransmitirContingenciasResultDto>(`${NFCE_API_URL}/contingencia/transmitir-pendentes`, {
+      method: "POST",
+    });
+    return response.data ?? { totalProcessadas: 0, totalAutorizadas: 0, totalFalhas: 0, detalhes: [] };
+  },
+  async emitirContingenciaManual(vendaId: string, justificativa?: string) {
+    const response = await apiRequest<any>(`${NFCE_API_URL}/contingencia/emitir`, {
+      method: "POST",
+      body: JSON.stringify({ vendaId, justificativa }),
+    });
+    return response.data;
+  },
+  async emitirContingenciaGatewayLocal(gatewayBaseUrl: string, terminalKey: string, payload: LocalNfceContingenciaPayload) {
+    const cleanUrl = gatewayBaseUrl.replace(/\/+$/, "");
+    const res = await fetch(`${cleanUrl}/api/gateway/fiscal/nfce/contingencia`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Terminal-Key": terminalKey,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      let msg = "Falha ao emitir contingência no Local Gateway.";
+      try {
+        const json = await res.json();
+        if (json.message) msg = json.message;
+      } catch {}
+      throw new Error(msg);
+    }
+    return await res.json();
   },
 };
 

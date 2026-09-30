@@ -209,6 +209,212 @@ public sealed class ZeusFiscalProvider(
         }
     }
 
+    /// <summary>
+    /// Gera e assina localmente a NFC-e em contingência offline (tpEmis = 9) sem chamar a SEFAZ.
+    /// Retorna o XML assinado, Chave, QR Code e status ContingenciaPendente para impressão imediata.
+    /// </summary>
+    public Task<ResultadoFiscal> EmitirContingenciaNfceAsync(EmissaoNfceRequest request, CancellationToken ct = default)
+    {
+        var emitente = request.Emitente;
+        if (string.IsNullOrWhiteSpace(emitente.Csc) || string.IsNullOrWhiteSpace(emitente.CscId))
+        {
+            return Task.FromResult(new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = 0,
+                MotivoStatus = "Empresa sem CSC ou IdToken configurados em Minha Empresa (necessário para emissão e QR-Code de NFC-e).",
+                Retentavel = false
+            });
+        }
+
+        if (emitente.CertificadoPfx == null || emitente.CertificadoPfx.Length == 0)
+        {
+            return Task.FromResult(new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = 0,
+                MotivoStatus = "Certificado digital A1 (.pfx) não configurado para a empresa.",
+                Retentavel = false
+            });
+        }
+
+        using var certificado = CarregarCertificado(emitente);
+        var cfg = MontarConfiguracao(emitente, TipoEmissaoFiscal.ContingenciaOffline);
+
+        try
+        {
+            var reqContingencia = request with
+            {
+                TipoEmissao = TipoEmissaoFiscal.ContingenciaOffline,
+                DhContingencia = request.DhContingencia ?? HorusDateTime.Now,
+                JustificativaContingencia = ValidarOuPadronizarJustificativa(request.JustificativaContingencia)
+            };
+
+            var nfe = MontarNfe(reqContingencia);
+            nfe.Assina(cfg, certificado);
+
+            nfe.infNFeSupl = new infNFeSupl();
+            var cscIdPadded = int.TryParse(emitente.CscId, out var cscIdNum)
+                ? cscIdNum.ToString("D6")
+                : emitente.CscId.PadLeft(6, '0');
+
+            nfe.infNFeSupl.qrCode = nfe.infNFeSupl.ObterUrlQrCode(
+                nfe,
+                VersaoQrCode.QrCodeVersao2,
+                cscIdPadded,
+                emitente.Csc,
+                cfg.Certificado);
+            nfe.infNFeSupl.urlChave = ObterUrlConsultaChave(emitente.Ambiente);
+
+            if (cfg.ValidarSchemas)
+            {
+                nfe.Valida(cfg);
+            }
+
+            var xmlAssinado = nfe.ObterXmlString();
+            var chave = nfe.infNFe.Id?.Replace("NFe", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+            logger.LogInformation(
+                "NFC-e gerada em contingência offline (tpEmis=9). Empresa {CompanyId} serie {Serie} numero {Numero} chave {Chave}",
+                emitente.CompanyId, reqContingencia.Serie, reqContingencia.NumeroNf, chave);
+
+            return Task.FromResult(new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.ContingenciaPendente,
+                CodigoStatus = 9,
+                MotivoStatus = "NFC-e emitida em contingência offline (pendente de transmissão à SEFAZ).",
+                ChaveAcesso = chave,
+                XmlAssinado = xmlAssinado,
+                QrCodeUrl = nfe.infNFeSupl.qrCode,
+                DhAutorizacao = reqContingencia.DhContingencia
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao assinar NFC-e em contingência offline.");
+            return Task.FromResult(new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = 0,
+                MotivoStatus = "Falha ao gerar e assinar NFC-e em contingência: " + ex.Message,
+                Retentavel = false
+            });
+        }
+    }
+
+    /// <summary>
+    /// Transmite para a SEFAZ um documento fiscal previamente emitido em contingência (já assinado).
+    /// Preserva o XML, Chave e dados originais.
+    /// </summary>
+    public Task<ResultadoFiscal> TransmitirContingenciaAsync(ContextoEmitente emitente, string xmlAssinado, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(xmlAssinado))
+        {
+            return Task.FromResult(new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = 0,
+                MotivoStatus = "XML assinado não informado para transmissão em contingência.",
+                Retentavel = false
+            });
+        }
+
+        using var certificado = CarregarCertificado(emitente);
+        var cfg = MontarConfiguracao(emitente, TipoEmissaoFiscal.ContingenciaOffline);
+
+        try
+        {
+            var nfe = new NFe.Classes.NFe().CarregarDeXmlString(xmlAssinado);
+            var chave = nfe.infNFe.Id?.Replace("NFe", string.Empty, StringComparison.OrdinalIgnoreCase);
+
+            using var servico = new ServicosNFe(cfg, certificado);
+            var retorno = servico.NFeAutorizacao(
+                idLote: 1,
+                indSinc: IndicadorSincronizacao.Sincrono,
+                nFes: [nfe],
+                compactarMensagem: true);
+
+            var protNfe = retorno.Retorno?.protNFe;
+            var cStat = protNfe?.infProt?.cStat ?? retorno.Retorno?.cStat ?? 0;
+            var xMotivo = protNfe?.infProt?.xMotivo ?? retorno.Retorno?.xMotivo ?? "Sem retorno da SEFAZ.";
+
+            if (cStat is 100 or 150)
+            {
+                logger.LogInformation("NFC-e em contingência autorizada com sucesso na SEFAZ. Chave {Chave} Prot {Prot}", chave, protNfe?.infProt?.nProt);
+                return Task.FromResult(new ResultadoFiscal
+                {
+                    Status = StatusDocumentoFiscal.Autorizado,
+                    CodigoStatus = cStat,
+                    MotivoStatus = xMotivo,
+                    ChaveAcesso = protNfe?.infProt?.chNFe ?? chave,
+                    Protocolo = protNfe?.infProt?.nProt.ToString(),
+                    DhAutorizacao = protNfe?.infProt?.dhRecbto,
+                    XmlAssinado = xmlAssinado,
+                    XmlProtocolado = retorno.RetornoCompletoStr,
+                    QrCodeUrl = nfe.infNFeSupl?.qrCode
+                });
+            }
+
+            // cStat 539: Duplicidade de NF-e com diferença na Chave de Acesso
+            if (cStat == 539 && !string.IsNullOrWhiteSpace(chave))
+            {
+                logger.LogWarning("SEFAZ retornou duplicidade (539) para contingência. Consultando situação da chave {Chave}...", chave);
+                var consSit = servico.NfeConsultaProtocolo(chave);
+                var protCons = consSit.Retorno?.protNFe;
+                if (protCons?.infProt?.cStat is 100 or 150)
+                {
+                    logger.LogInformation("NFC-e recuperada da SEFAZ via consulta de protocolo. Chave {Chave} Prot {Prot}", chave, protCons.infProt.nProt);
+                    return Task.FromResult(new ResultadoFiscal
+                    {
+                        Status = StatusDocumentoFiscal.Autorizado,
+                        CodigoStatus = protCons.infProt.cStat,
+                        MotivoStatus = protCons.infProt.xMotivo,
+                        ChaveAcesso = protCons.infProt.chNFe ?? chave,
+                        Protocolo = protCons.infProt.nProt.ToString(),
+                        DhAutorizacao = protCons.infProt.dhRecbto,
+                        XmlAssinado = xmlAssinado,
+                        XmlProtocolado = consSit.RetornoCompletoStr,
+                        QrCodeUrl = nfe.infNFeSupl?.qrCode
+                    });
+                }
+            }
+
+            if (cStat is 110 or 301 or 302 or 303)
+            {
+                return Task.FromResult(new ResultadoFiscal
+                {
+                    Status = StatusDocumentoFiscal.Denegado,
+                    CodigoStatus = cStat,
+                    MotivoStatus = xMotivo,
+                    ChaveAcesso = chave,
+                    XmlAssinado = xmlAssinado,
+                    Retentavel = false
+                });
+            }
+
+            return Task.FromResult(new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.Rejeitado,
+                CodigoStatus = cStat,
+                MotivoStatus = xMotivo,
+                ChaveAcesso = chave,
+                XmlAssinado = xmlAssinado,
+                Retentavel = EhRejeicaoTransitoria(cStat)
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Falha de comunicação ao transmitir lote de contingência.");
+            return Task.FromResult(new ResultadoFiscal
+            {
+                Status = StatusDocumentoFiscal.ContingenciaPendente,
+                CodigoStatus = 0,
+                MotivoStatus = ex.Message,
+                Retentavel = true
+            });
+        }
+    }
+
     public Task<ResultadoFiscal> CancelarAsync(CancelamentoRequest request, CancellationToken ct = default)
         => Task.Run(() =>
         {
@@ -763,6 +969,16 @@ public sealed class ZeusFiscalProvider(
     /* Montagem do documento                                                  */
     /* --------------------------------------------------------------------- */
 
+    public static string ValidarOuPadronizarJustificativa(string? justificativa)
+    {
+        var trimmed = justificativa?.Trim();
+        if (string.IsNullOrWhiteSpace(trimmed) || trimmed.Length < 15)
+        {
+            return "Falha na comunicacao com a SEFAZ estadual";
+        }
+        return trimmed;
+    }
+
     private static NFe.Classes.NFe MontarNfe(EmissaoNfceRequest request)
     {
         var e = request.Emitente;
@@ -794,7 +1010,7 @@ public sealed class ZeusFiscalProvider(
         if (request.TipoEmissao == TipoEmissaoFiscal.ContingenciaOffline)
         {
             ide.dhCont = request.DhContingencia.HasValue ? HorusDateTime.ToBrasilia(request.DhContingencia.Value) : HorusDateTime.Now;
-            ide.xJust = request.JustificativaContingencia;
+            ide.xJust = ValidarOuPadronizarJustificativa(request.JustificativaContingencia);
         }
 
         var emit = new emit

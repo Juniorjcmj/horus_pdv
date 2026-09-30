@@ -46,6 +46,18 @@ public interface IFiscalProvider
     /// </summary>
     Task<ResultadoFiscal> EmitirNfeAsync(EmissaoNfeRequest request, CancellationToken ct = default);
 
+    /// <summary>
+    /// Gera e assina a NFC-e em contingência offline (tpEmis = 9) sem chamar webservice da SEFAZ.
+    /// Retorna o XML assinado, Chave, QR Code e status ContingenciaPendente para impressão imediata no PDV.
+    /// </summary>
+    Task<ResultadoFiscal> EmitirContingenciaNfceAsync(EmissaoNfceRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Transmite para a SEFAZ um documento fiscal previamente emitido em contingência (já assinado).
+    /// Preserva o XML, Chave e dados originais.
+    /// </summary>
+    Task<ResultadoFiscal> TransmitirContingenciaAsync(ContextoEmitente emitente, string xmlAssinado, CancellationToken ct = default);
+
     Task<ResultadoFiscal> CancelarAsync(CancelamentoRequest request, CancellationToken ct = default);
 
     Task<ResultadoFiscal> InutilizarAsync(InutilizacaoRequest request, CancellationToken ct = default);
@@ -65,6 +77,8 @@ public sealed record ResultadoFiscal
     public DateTimeOffset? DhAutorizacao { get; init; }
     public string? XmlAssinado { get; init; }
     public string? XmlProtocolado { get; init; }
+    public string? QrCodeUrl { get; init; }
+    public string? DigestValue { get; init; }
 
     /// <summary>
     /// True quando o erro é transitório (timeout, serviço fora, rejeição 108/109).
@@ -230,3 +244,43 @@ public sealed record InutilizacaoRequest
     public required int NumeroFinal { get; init; }
     public required string Justificativa { get; init; }  // mínimo 15 caracteres
 }
+
+/// <summary>Resumo de uma NFC-e emitida em contingência offline aguardando transmissão.</summary>
+public sealed record DocumentoFiscalContingenciaResumo
+{
+    public required string Id { get; init; }
+    public required string VendaId { get; init; }
+    public string? SaleNumber { get; init; }
+    public required int Serie { get; init; }
+    public required int NumeroNf { get; init; }
+    public string? ChaveAcesso { get; init; }
+    public DateTimeOffset? DhContingencia { get; init; }
+    public string? JustContingencia { get; init; }
+    public required int Tentativas { get; init; }
+    public string? UltimoErro { get; init; }
+    public DateTimeOffset CriadoEm { get; init; }
+    public double HorasRestantesPrazo { get; init; }
+    public bool PrazoExpirado { get; init; }
+    public bool TemXmlAssinado { get; init; }
+    public string? TotalVenda { get; init; }
+}
+
+/// <summary>Resultado do lote de transmissão de notas em contingência.</summary>
+public sealed record TransmitirContingenciasResultado
+{
+    public int TotalProcessadas { get; set; }
+    public int TotalAutorizadas { get; set; }
+    public int TotalFalhas { get; set; }
+    public List<DocumentoFiscalContingenciaItemResultado> Detalhes { get; set; } = [];
+}
+
+public sealed record DocumentoFiscalContingenciaItemResultado
+{
+    public required string DocumentoId { get; init; }
+    public required string ChaveAcesso { get; init; }
+    public required StatusDocumentoFiscal Status { get; init; }
+    public int? CodigoStatus { get; init; }
+    public string? MotivoStatus { get; init; }
+    public string? Protocolo { get; init; }
+}
+
