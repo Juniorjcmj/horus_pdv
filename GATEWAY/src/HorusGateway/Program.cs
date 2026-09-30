@@ -14,6 +14,10 @@ using HorusGateway.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Execução como Serviço do Windows (CHANGE GATEWAY 08). No-op fora do Windows/quando não é serviço,
+// então é seguro em qualquer plataforma. Permite `sc create` + partida automática no boot da máquina.
+builder.Host.UseWindowsService(options => options.ServiceName = "HorusGateway");
+
 // Logs estruturados (JSON) — prontos para coleta/observabilidade.
 builder.Logging.ClearProviders();
 builder.Logging.AddJsonConsole(options =>
@@ -94,6 +98,14 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors(LanCorsPolicy);
+
+// Dashboard local de monitoramento/administração (CHANGE GATEWAY 08): página estática servida pelo
+// próprio Gateway em `/`. Zero build/npm — consome os endpoints existentes (/health, /status,
+// /terminals, /terminals/provision, /update-readiness). Não afeta o frontend homologado (que fala
+// com a Cloud); é apenas a UI de quem opera a máquina do Gateway na LAN.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.MapControllers();
 app.MapHub<EventsHub>("/hubs/events");
 

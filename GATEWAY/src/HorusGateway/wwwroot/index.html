@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<!--
+  Arquivo: wwwroot/index.html
+  Objetivo: Dashboard local do HorusGateway (CHANGE GATEWAY 08). Página única, sem build/npm,
+            servida pelo próprio Gateway. Mostra estado (Gateway/Storage/Cloud/Internet), terminais
+            (online/offline por heartbeat), eventos pendentes, última sincronização e prontidão para
+            atualização controlada. Permite ao administrador pré-autorizar terminais por IP e/ou token.
+            Consome apenas endpoints existentes, mesma origem — nada muda no frontend homologado.
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HorusGateway — Painel Local</title>
+  <style>
+    :root {
+      --bg: #0b1220; --panel: #131c2e; --panel-2: #1b2740; --border: #233150;
+      --text: #e8eefc; --muted: #93a4c8; --accent: #38bdf8; --accent-2: #0369a1;
+      --ok: #22c55e; --warn: #f59e0b; --bad: #ef4444; --off: #64748b;
+      --radius: 14px; --shadow: 0 6px 24px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: radial-gradient(1200px 600px at 20% -10%, #16233d 0%, var(--bg) 60%);
+      color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+    }
+    header {
+      display: flex; align-items: center; gap: 14px; padding: 18px 24px;
+      background: linear-gradient(100deg, var(--accent-2), #075985); box-shadow: var(--shadow);
+      position: sticky; top: 0; z-index: 5;
+    }
+    header .logo { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,.12);
+      display: grid; place-items: center; font-size: 22px; }
+    header h1 { font-size: 18px; margin: 0; letter-spacing: .3px; }
+    header .sub { color: #cfeafc; font-size: 12.5px; }
+    header .live { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #dff1ff; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: var(--off); }
+    .dot.ok { background: var(--ok); box-shadow: 0 0 0 4px rgba(34,197,94,.18); animation: pulse 1.8s infinite; }
+    .dot.bad { background: var(--bad); box-shadow: 0 0 0 4px rgba(239,68,68,.18); }
+    .dot.warn { background: var(--warn); box-shadow: 0 0 0 4px rgba(245,158,11,.18); }
+    .dot.off { background: var(--off); }
+    @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow);
+    }
+    .card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted);
+      margin: 0 0 10px; font-weight: 700; }
+    .stat { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; }
+    .stat small { font-size: 12.5px; font-weight: 500; color: var(--muted); }
+    .metric { font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+    .metric.zero { color: var(--ok); }
+    .metric.pending { color: var(--warn); }
+    .muted { color: var(--muted); font-size: 12.5px; }
+    section { margin-top: 26px; }
+    section > h3 { font-size: 14px; letter-spacing: .04em; color: var(--muted); text-transform: uppercase;
+      margin: 0 0 12px; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; }
+    th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+    th { color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; }
+    tr:last-child td { border-bottom: none; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px;
+      font-size: 12px; font-weight: 600; background: rgba(148,164,200,.12); }
+    .pill.on { color: var(--ok); background: rgba(34,197,94,.12); }
+    .pill.offl { color: var(--off); background: rgba(100,116,139,.14); }
+    .pill.rev { color: var(--bad); background: rgba(239,68,68,.12); }
+    form.provision { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+      align-items: end; }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+    input, select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+      background: #0e1728; color: var(--text); font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56,189,248,.15); }
+    button { padding: 11px 18px; border-radius: 10px; border: none; font-weight: 700; font-size: 14px;
+      cursor: pointer; background: linear-gradient(100deg, var(--accent), #0ea5e9); color: #04283b;
+      box-shadow: 0 4px 14px rgba(56,189,248,.25); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--border); box-shadow: none; }
+    .banner { border-radius: var(--radius); padding: 14px 18px; font-weight: 600; display: flex; gap: 10px;
+      align-items: center; border: 1px solid var(--border); }
+    .banner.safe { background: rgba(34,197,94,.10); color: #bbf7d0; border-color: rgba(34,197,94,.3); }
+    .banner.unsafe { background: rgba(245,158,11,.10); color: #fde68a; border-color: rgba(245,158,11,.3); }
+    .banner.err { background: rgba(239,68,68,.10); color: #fecaca; border-color: rgba(239,68,68,.3); }
+    .msg { margin-top: 10px; font-size: 13px; min-height: 18px; }
+    .msg.ok { color: var(--ok); } .msg.err { color: var(--bad); }
+    .foot { text-align: center; color: var(--muted); font-size: 12px; margin-top: 34px; }
+    .row-actions { display: flex; gap: 8px; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🛰️</div>
+    <div>
+      <h1>HorusGateway — Painel Local</h1>
+      <div class="sub" id="identity">carregando identidade…</div>
+    </div>
+    <div class="live"><span class="dot" id="liveDot"></span><span id="liveText">conectando…</span></div>
+  </header>
+
+  <main>
+    <!-- Cartões de estado -->
+    <div class="grid">
+      <div class="card">
+        <h2>Gateway</h2>
+        <div class="stat"><span class="dot" id="dotGateway"></span><span id="valGateway">—</span></div>
+        <div class="muted" id="subGateway">serviço local</div>
+      </div>
+      <div class="card">
+        <h2>Storage (SQLite)</h2>
+        <div class="stat"><span class="dot" id="dotStorage"></span><span id="valStorage">—</span></div>
+        <div class="muted">persistência durável local</div>
+      </div>
+      <div class="card">
+        <h2>Cloud / Internet</h2>
+        <div class="stat"><span class="dot" id="dotCloud"></span><span id="valCloud">—</span></div>
+        <div class="muted" id="subCloud">sincronização Gateway → Cloud</div>
+      </div>
+      <div class="card">
+        <h2>Eventos pendentes</h2>
+        <div class="metric" id="valPending">—</div>
+        <div class="muted" id="subPending">aguardando envio à cloud</div>
+      </div>
+    </div>
+
+    <!-- Atualização controlada -->
+    <section>
+      <h3>Atualização controlada</h3>
+      <div class="banner" id="updateBanner">
+        <span class="dot" id="dotUpdate"></span>
+        <span id="updateReason">verificando prontidão para atualização…</span>
+      </div>
+      <div class="muted" style="margin-top:8px">
+        Antes de parar/atualizar o Gateway, confirme aqui que não há eventos presos apenas no disco local.
+        Última sincronização com a cloud: <strong id="lastSync">—</strong>.
+      </div>
+    </section>
+
+    <!-- Terminais -->
+    <section>
+      <h3>Terminais da loja <span class="muted" id="terminalCount"></span></h3>
+      <table>
+        <thead>
+          <tr><th>Terminal</th><th>Tipo</th><th>IP autorizado</th><th>Status</th><th>Último heartbeat</th><th>Situação</th></tr>
+        </thead>
+        <tbody id="terminalsBody">
+          <tr><td colspan="6" class="muted">carregando terminais…</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Pré-autorização (admin) -->
+    <section>
+      <h3>Pré-autorizar terminal (IP e/ou token)</h3>
+      <div class="card">
+        <form class="provision" id="provisionForm">
+          <div>
+            <label for="pTerminalId">ID do terminal *</label>
+            <input id="pTerminalId" placeholder="PDV-01" required />
+          </div>
+          <div>
+            <label for="pType">Tipo</label>
+            <select id="pType">
+              <option value="ORDER">ORDER (venda)</option>
+              <option value="CASH">CASH (caixa)</option>
+            </select>
+          </div>
+          <div>
+            <label for="pIp">IP na LAN (auto-identifica)</label>
+            <input id="pIp" placeholder="192.168.0.23" />
+          </div>
+          <div>
+            <label for="pToken">Token (alternativa ao IP)</label>
+            <input id="pToken" placeholder="opcional" />
+          </div>
+          <div>
+            <button type="submit" id="pSubmit">Autorizar terminal</button>
+          </div>
+        </form>
+        <div class="msg" id="provisionMsg"></div>
+        <div class="muted" style="margin-top:6px">
+          Informe o <strong>IP</strong> (o Gateway reconhece o terminal automaticamente ao cair a internet)
+          e/ou um <strong>token</strong>. Cada terminal recebe credencial própria no momento em que se identifica —
+          zero configuração no terminal.
+        </div>
+      </div>
+    </section>
+
+    <div class="foot">
+      HorusGateway • empresa <strong id="footCompany">—</strong> • loja <strong id="footStore">—</strong> •
+      atualiza a cada 5s • <a href="/health" target="_blank">/health</a> ·
+      <a href="/api/gateway/status" target="_blank">/status</a>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let lastOk = false;
+
+    function setDot(el, state) { el.className = 'dot ' + state; }
+    function fmtTime(iso) {
+      if (!iso) return '—';
+      try { return new Date(iso).toLocaleString('pt-BR'); } catch { return iso; }
+    }
+    function ago(iso) {
+      if (!iso) return 'nunca';
+      const s = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+      if (s < 60) return `há ${s}s`;
+      if (s < 3600) return `há ${Math.floor(s/60)}min`;
+      return `há ${Math.floor(s/3600)}h`;
+    }
+
+    async function getJson(url) {
+      const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!r.ok) throw new Error(url + ' → ' + r.status);
+      return r.json();
+    }
+
+    async function refreshStatus() {
+      try {
+        const s = await getJson('/api/gateway/status');
+        $('identity').textContent =
+          `GatewayId ${s.gatewayId} • empresa ${s.companyId || '(não vinculado)'} • loja ${s.storeId || '—'}`;
+        $('footCompany').textContent = s.companyId || '—';
+        $('footStore').textContent = s.storeId || '—';
+        $('subGateway').textContent = s.openRegistration ? 'registro aberto na LAN' : 'registro por token/IP';
+      } catch (_) { /* segue com health */ }
+    }
+
+    async function refreshHealth() {
+      try {
+        const h = await getJson('/health');
+        lastOk = true;
+        setDot($('liveDot'), 'ok'); $('liveText').textContent = 'ao vivo';
+        setDot($('dotGateway'), h.gateway === 'healthy' ? 'ok' : 'bad');
+        $('valGateway').textContent = h.gateway === 'healthy' ? 'Saudável' : 'Com falha';
+        setDot($('dotStorage'), h.storage === 'healthy' ? 'ok' : 'bad');
+        $('valStorage').textContent = h.storage === 'healthy' ? 'Saudável' : 'Com falha';
+
+        const cloud = h.cloud; // online | offline | disabled
+        setDot($('dotCloud'), cloud === 'online' ? 'ok' : cloud === 'offline' ? 'bad' : 'off');
+        $('valCloud').textContent = cloud === 'online' ? 'Online' : cloud === 'offline' ? 'Offline' : 'Desligado';
+        $('subCloud').textContent = cloud === 'disabled'
+          ? 'modo LAN-only (sync desligado)'
+          : (cloud === 'online' ? 'internet ok — drenando eventos' : 'sem internet — acumulando local');
+
+        const pending = h.pendingEvents ?? 0;
+        const pEl = $('valPending');
+        pEl.textContent = pending;
+        pEl.className = 'metric ' + (pending === 0 ? 'zero' : 'pending');
+        $('subPending').textContent = pending === 0 ? 'tudo sincronizado' : 'aguardando envio à cloud';
+
+        const cs = h.cloudSync || {};
+        $('lastSync').textContent = cs.lastSuccessAt ? `${fmtTime(cs.lastSuccessAt)} (${ago(cs.lastSuccessAt)})` : 'nunca';
+      } catch (e) {
+        lastOk = false;
+        setDot($('liveDot'), 'bad'); $('liveText').textContent = 'sem conexão com o Gateway';
+      }
+    }
+
+    async function refreshReadiness() {
+      try {
+        const u = await getJson('/health/update-readiness');
+        const b = $('updateBanner');
+        $('updateReason').textContent = u.reason;
+        if (u.safeToUpdate) { b.className = 'banner safe'; setDot($('dotUpdate'), 'ok'); }
+        else { b.className = 'banner unsafe'; setDot($('dotUpdate'), 'warn'); }
+      } catch (_) {
+        $('updateBanner').className = 'banner err';
+        $('updateReason').textContent = 'Não foi possível verificar a prontidão para atualização.';
+        setDot($('dotUpdate'), 'bad');
+      }
+    }
+
+    async function refreshTerminals() {
+      const body = $('terminalsBody');
+      try {
+        const data = await getJson('/api/gateway/terminals');
+        const list = data.terminals || [];
+        $('terminalCount').textContent = `(${list.length})`;
+        if (list.length === 0) {
+          body.innerHTML = '<tr><td colspan="6" class="muted">Nenhum terminal registrado/pré-autorizado ainda.</td></tr>';
+          return;
+        }
+        body.innerHTML = list.map(t => {
+          const online = t.online
+            ? '<span class="pill on"><span class="dot ok"></span>online</span>'
+            : '<span class="pill offl"><span class="dot off"></span>offline</span>';
+          const sit = t.status === 'revoked'
+            ? '<span class="pill rev">revogado</span>'
+            : (t.provisioned ? '<span class="pill">pré-autorizado</span>' : '<span class="pill">registrado</span>');
+          return `<tr>
+            <td><strong>${t.terminalId}</strong></td>
+            <td>${t.terminalType || '—'}</td>
+            <td>${t.allowedIp || '—'}</td>
+            <td>${online}</td>
+            <td>${t.lastSeenAt ? ago(t.lastSeenAt) : '—'}</td>
+            <td>${sit}</td>
+          </tr>`;
+        }).join('');
+      } catch (e) {
+        body.innerHTML = '<tr><td colspan="6" class="muted">Falha ao carregar terminais.</td></tr>';
+      }
+    }
+
+    $('provisionForm').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const msg = $('provisionMsg'); msg.textContent = ''; msg.className = 'msg';
+      const btn = $('pSubmit'); btn.disabled = true;
+      try {
+        const status = await getJson('/api/gateway/status');
+        const payload = {
+          companyId: status.companyId,
+          storeId: status.storeId,
+          terminalId: $('pTerminalId').value.trim(),
+          terminalType: $('pType').value,
+          allowedIp: $('pIp').value.trim() || null,
+          provisionToken: $('pToken').value.trim() || null,
+        };
+        const r = await fetch('/api/gateway/terminals/provision', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error || ('HTTP ' + r.status));
+        }
+        msg.textContent = `✓ Terminal "${payload.terminalId}" pré-autorizado.`; msg.className = 'msg ok';
+        $('provisionForm').reset();
+        refreshTerminals();
+      } catch (e) {
+        msg.textContent = '✗ ' + e.message; msg.className = 'msg err';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    async function tick() {
+      await Promise.all([refreshHealth(), refreshReadiness(), refreshTerminals()]);
+    }
+    refreshStatus();
+    tick();
+    setInterval(tick, 5000);
+    setInterval(refreshStatus, 30000);
+  </script>
+</body>
+</html>
