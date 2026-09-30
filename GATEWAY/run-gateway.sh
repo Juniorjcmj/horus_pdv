@@ -16,7 +16,18 @@ fi
 
 PORT="${GATEWAY_PORT:-5080}"
 export ASPNETCORE_ENVIRONMENT="${ASPNETCORE_ENVIRONMENT:-Production}"
-export ASPNETCORE_URLS="http://0.0.0.0:${PORT}"
+# HTTPS opcional (recomendado com um host, ex.: quack-gateway.local) para evitar bloqueio de
+# conteudo misto quando o terminal roda em HTTPS. Defina GATEWAY_HTTPS_CERT (.pfx) e, se houver,
+# GATEWAY_HTTPS_CERT_PASSWORD. Caso contrario, sobe em HTTP como antes.
+SCHEME="http"
+if [ -n "${GATEWAY_HTTPS_CERT:-}" ]; then
+  SCHEME="https"
+  export ASPNETCORE_URLS="https://0.0.0.0:${PORT}"
+  export ASPNETCORE_Kestrel__Certificates__Default__Path="${GATEWAY_HTTPS_CERT}"
+  [ -n "${GATEWAY_HTTPS_CERT_PASSWORD:-}" ] && export ASPNETCORE_Kestrel__Certificates__Default__Password="${GATEWAY_HTTPS_CERT_PASSWORD}"
+else
+  export ASPNETCORE_URLS="http://0.0.0.0:${PORT}"
+fi
 export Gateway__CompanyId="${GATEWAY_COMPANY_ID:-empresa-1}"
 export Gateway__StoreId="${GATEWAY_STORE_ID:-store-001}"
 export Gateway__DatabasePath="${GATEWAY_DB_PATH:-$SCRIPT_DIR/gateway-data/horus-gateway.db}"
@@ -25,9 +36,9 @@ echo "======================================================"
 echo " Quack Gateway"
 echo " Empresa : $Gateway__CompanyId"
 echo " Loja    : $Gateway__StoreId"
-echo " Porta   : $PORT"
-echo " Local   : http://localhost:$PORT/health/live"
-echo " LAN     : http://<IP-desta-maquina>:$PORT  (libere a porta $PORT no firewall)"
+echo " Porta   : $PORT ($SCHEME)"
+echo " Local   : $SCHEME://localhost:$PORT/health/live"
+echo " LAN     : $SCHEME://<IP-desta-maquina>:$PORT  (libere a porta $PORT no firewall)"
 echo " Dados   : $Gateway__DatabasePath"
 echo "======================================================"
 

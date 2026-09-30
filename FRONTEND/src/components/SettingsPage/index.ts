@@ -4,6 +4,7 @@
   * Entradas esperadas: não recebe props; reexporta componentes da página de configurações.
 */
 export { default as ThemeSettingsCard } from "./ThemeSettingsCard";
+export { default as GatewaySettingsCard } from "./GatewaySettingsCard";
 export { default as PrintSettingsCard } from "./PrintSettingsCard";
 export { default as GatewayMonitorCard } from "./GatewayMonitorCard";
 export {

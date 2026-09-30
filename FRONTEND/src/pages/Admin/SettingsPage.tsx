@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   GatewayMonitorCard,
+  GatewaySettingsCard,
   PrintSettingsCard,
   SecuritySessionsCard,
   ThemeSettingsCard,
@@ -14,6 +15,7 @@ import {
 import { Toast } from "@/hooks/Dialog";
 import PageLayout from "@/layout/PageLayout";
 import { sessionService } from "@/services/api/sessionService";
+import { getStoredAuthUser } from "@/utils/authStorage";
 import { getPrintPreviewEnabled, setPrintPreviewEnabled } from "@/utils/pdvPreferences";
 
 type ThemeMode = "light" | "dark";
@@ -32,6 +34,10 @@ export default function SettingsPage({
   const [printPreviewEnabled, setPrintPreviewEnabledState] = useState(() =>
     getPrintPreviewEnabled(),
   );
+  const isAdminOrManager = useMemo(() => {
+    const role = getStoredAuthUser()?.role?.toLowerCase() ?? "";
+    return role === "administrador" || role === "gerente";
+  }, []);
 
   useEffect(() => {
     sessionService.list().then(setSessions).catch(() => setSessions([]));
@@ -90,6 +96,7 @@ export default function SettingsPage({
               printPreviewEnabled={printPreviewEnabled}
               onChangePrintPreview={handleChangePrintPreview}
             />
+            {isAdminOrManager && <GatewaySettingsCard />}
             <GatewayMonitorCard />
             <SecuritySessionsCard
               sessions={sessions}

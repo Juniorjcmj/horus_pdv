@@ -20,6 +20,7 @@ import { authService } from "@/services/api/authService";
 import { cashRegisterService } from "@/services/api/cashRegisterService";
 import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
 import { syncEngine } from "@/infrastructure/synchronization/SyncEngine";
+import { startCloudGatewayProvisioning } from "@/infrastructure/gateway/cloudGatewayProvisioning";
 import SyncStatus from "@/components/SyncStatus";
 import { companyService } from "@/services/api/companyService";
 import {
@@ -682,8 +683,11 @@ export default function App() {
     if (!isAuthenticated) return;
     connectivityService.start();
     const stopSync = syncEngine.start();
+    // Aditivo: aprende o endereço do Gateway pela Cloud enquanto online (fallback offline zero-config).
+    const stopGatewayProvisioning = startCloudGatewayProvisioning();
     return () => {
       stopSync();
+      stopGatewayProvisioning();
       connectivityService.stop();
     };
   }, [isAuthenticated]);
