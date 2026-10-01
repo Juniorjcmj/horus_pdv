@@ -10,9 +10,9 @@ import { Toast } from "@/hooks/Dialog";
 import { companyThemeService } from "@/services/api/companyThemeService";
 import { type CompanyTheme } from "@/utils/companyTheme";
 
-// Padrões visuais (apenas para exibir no seletor quando a empresa ainda não escolheu).
-const DEFAULT_SYSTEM = "#0369a1";
-const DEFAULT_PDV = "#0369a1";
+// Cor padrão do design system (marinho Quack) — exibida no seletor quando a empresa ainda não escolheu.
+const DEFAULT_SYSTEM = "#152238";
+const DEFAULT_PDV = "#152238";
 
 export default function ThemeColorsCard() {
   const [systemAccent, setSystemAccent] = useState<string | null>(null);
