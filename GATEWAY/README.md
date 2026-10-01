@@ -102,6 +102,14 @@ já sabe onde o Gateway está e cai no fluxo `identify` (por IP/token) — sem c
 Alternativa: manter HTTP com IP (`http://192.168.0.10:5080`) em redes/dispositivos que permitem conteúdo
 misto para IP privado — menos robusto.
 
+**Atalho no Windows:** `setup-https.ps1` gera o certificado pronto (com o **IP como SAN**, dispensando DNS):
+```powershell
+pwsh -File .\setup-https.ps1 -IpAddress 192.168.0.10 -PfxPassword "umaSenhaForte"
+```
+Gera `certs\quack-gateway.pfx` (para o Gateway) e `certs\quack-gateway.cer` (instalar em cada terminal nas
+**Autoridades de Certificação Raiz Confiáveis**). Depois instale o serviço com `GATEWAY_HTTPS_CERT` apontando
+para o `.pfx` e cadastre na Cloud `https://192.168.0.10:5443`.
+
 ## Instalação nativa (sem Docker)
 O Gateway é ASP.NET Core 8 com **SQLite embutido** (nenhum banco a instalar — é um arquivo).
 - **Self-contained (não instala nada na máquina):** `dotnet publish -c Release -r win-x64 --self-contained true -o publish-win`, copie a pasta e rode `HorusGateway.exe`.
