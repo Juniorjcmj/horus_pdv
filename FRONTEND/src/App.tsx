@@ -885,7 +885,7 @@ export default function App() {
               <Menu size={20} className="text-accent" />
             </button>
             <img
-              src="/logo-quack-v4.png"
+              src="/quack-logo-v5.png"
               alt="Quack Sistemas"
               className="h-8 w-auto rounded-md object-contain border border-accent/20"
             />

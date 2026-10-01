@@ -1,0 +1,67 @@
+/*
+ * Arquivo: src/styles/components.css
+ * Objetivo: componentes do design system Rango (prefixo rg-) com as cores Quack dos tokens.css.
+ *           Use estes para telas novas; os componentes existentes seguem com as classes atuais,
+ *           que compartilham a mesma paleta via os tokens --color-* do index.css.
+ */
+
+.rg-btn {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  padding: 14px var(--space-4);
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+.rg-btn--primary { background: var(--brand); color: var(--on-brand); }
+.rg-btn--primary:hover { background: var(--brand-pressed); }
+.rg-btn--secondary { background: var(--surface); color: var(--brand-text); border-color: var(--brand-text); }
+.rg-btn--text { background: none; color: var(--brand-text); padding-left: 0; padding-right: 0; }
+.rg-btn:disabled { background: var(--surface-muted); color: var(--ink-muted); border-color: var(--surface-muted); cursor: not-allowed; }
+.rg-btn:focus-visible { outline: 2px solid var(--brand-text); outline-offset: 2px; }
+
+.rg-chip {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  padding: 8px var(--space-4);
+  background: var(--surface-muted);
+  color: var(--ink);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.rg-chip[aria-pressed="true"] { background: var(--brand-tint); color: var(--brand-text); border-color: var(--brand-text); }
+
+.rg-card {
+  font-family: var(--font-sans);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  padding: var(--space-4);
+}
+
+.rg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--highlight);
+  color: #152238;
+}
+
+.rg-star { color: var(--highlight); }
+.rg-free { color: var(--success); font-weight: 600; }

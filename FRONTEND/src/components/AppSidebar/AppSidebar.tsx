@@ -173,7 +173,7 @@ export default function AppSidebar({
           {!collapsed ? (
             <div className="flex items-center gap-2.5 min-w-0 pr-2">
               <img
-                src="/logo-quack-v4.png"
+                src="/quack-icon-v5.png"
                 alt="Quack Sistemas"
                 className="h-9 w-9 rounded-lg object-cover border border-accent/20 shadow-xs shrink-0"
               />
@@ -189,7 +189,7 @@ export default function AppSidebar({
           ) : (
             <div className="mx-auto py-0.5">
               <img
-                src="/logo-quack-v4.png"
+                src="/quack-icon-v5.png"
                 alt="Quack Sistemas"
                 className="h-8 w-8 rounded-lg object-cover border border-accent/20 shadow-xs"
               />

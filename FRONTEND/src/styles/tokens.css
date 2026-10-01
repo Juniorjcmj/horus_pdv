@@ -1,0 +1,60 @@
+/*
+ * Arquivo: src/styles/tokens.css
+ * Objetivo: tokens do design system (estrutura Rango) com as cores da marca Quack
+ *           (marinho + amarelo + laranja). Expõe os nomes Rango (--brand, --surface, --ink…)
+ *           e os mantém em sincronia com os tokens --color-* do index.css (fonte da verdade do
+ *           Tailwind), para que componentes novos (prefixo rg-) e os existentes compartilhem a
+ *           mesma paleta. Tema escuro via [data-theme="dark"] no <html>.
+ */
+
+:root,
+[data-theme="light"] {
+  /* marca (ação primária = marinho Quack; pop quente = amarelo/laranja) */
+  --brand: #152238;
+  --brand-pressed: #0c1726;
+  --brand-text: #152238;
+  --brand-tint: #fff4d6;
+  --on-brand: #ffffff;
+
+  /* superfícies e tinta */
+  --surface: #ffffff;
+  --surface-muted: #f5f6f8;
+  --border: #e5e7eb;
+  --ink: #152238;
+  --ink-muted: #5a6472;
+
+  /* estados / destaques */
+  --success: #2e7d4f;
+  --highlight: #ffc233; /* amarelo Quack — texto sobre ela sempre #152238 */
+  --highlight-strong: #f97316; /* laranja Quack */
+
+  /* tipografia, espaçamento, raios, sombra (Rango) */
+  --font-sans: Nunito, "Segoe UI", system-ui, sans-serif;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+  --shadow-card: 0 4px 16px rgba(21, 34, 56, 0.08);
+}
+
+[data-theme="dark"] {
+  --brand: #ffc233; /* no escuro a ação em preenchimento usa marinho claro; o pop é amarelo */
+  --brand-pressed: #e0a92b;
+  --brand-text: #ffc233;
+  --brand-tint: #3a2e12;
+  --on-brand: #152238;
+
+  --surface: #16243a;
+  --surface-muted: #1e2d44;
+  --border: #2a3a54;
+  --ink: #f2f4f8;
+  --ink-muted: #aeb8c8;
+
+  --success: #5cc98a;
+  --highlight: #ffc233;
+  --highlight-strong: #fb8a3c;
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.4);
+}

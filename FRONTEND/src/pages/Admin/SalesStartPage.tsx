@@ -1602,11 +1602,11 @@ export default function SalesStartPage({
             : "max-w-[1600px] rounded-2xl border border-border-primary"
         } flex-col overflow-visible bg-bg-light shadow-md md:h-full md:overflow-hidden`}
       >
-        <header className="relative border-b border-border-secondary bg-[linear-gradient(100deg,var(--color-accent),var(--color-hover-accent))] px-4 py-3 text-text-light shadow-lg">
+        <header className="relative border-b border-border-secondary bg-[linear-gradient(100deg,var(--color-action-accent),var(--color-action-hover-accent))] px-4 py-3 text-text-light shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src="/logo-quack-v4.png"
+                src="/quack-logo-v5.png"
                 alt="Quack Sistemas"
                 className="h-10 md:h-12 w-auto max-w-[120px] rounded-xl object-contain bg-white/90 p-1 shadow-md"
               />
@@ -2192,7 +2192,7 @@ export default function SalesStartPage({
                 <div className="flex items-center justify-end bg-bg-gray-theme px-3 py-2 text-right text-sm font-semibold uppercase tracking-wide text-text-secondary">
                   SUB TOTAL
                 </div>
-                <div className="bg-[linear-gradient(100deg,var(--color-accent),var(--color-hover-accent))] px-4 py-3 text-right font-display text-3xl font-bold text-text-light shadow-inner md:text-4xl">
+                <div className="bg-[linear-gradient(100deg,var(--color-action-accent),var(--color-action-hover-accent))] px-4 py-3 text-right font-display text-3xl font-bold text-text-light shadow-inner md:text-4xl">
                   R$ {formatMoneyBr(subtotal)}
                 </div>
               </div>

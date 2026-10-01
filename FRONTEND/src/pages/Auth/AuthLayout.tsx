@@ -30,11 +30,11 @@ export default function AuthLayout({
 
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-5xl items-center justify-center">
         <section className="card auth-login-card grid w-full overflow-hidden border-white/45 bg-white/85 backdrop-blur-sm lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="hidden bg-gradient-to-br from-secondary to-accent p-8 text-white lg:flex lg:flex-col lg:justify-between">
+          <div className="hidden bg-[linear-gradient(135deg,#152238,#0b1626)] p-8 text-white lg:flex lg:flex-col lg:justify-between">
             <div>
               <div className="flex items-center gap-3">
                 <img
-                  src="/logo-quack-v4.png"
+                  src="/quack-logo-negativo-v5.png"
                   alt="Quack Sistemas"
                   className="h-12 w-auto max-w-[140px] rounded-xl object-contain border border-white/30 shadow-lg bg-slate-900/40"
                 />
@@ -61,7 +61,7 @@ export default function AuthLayout({
             <div className="mx-auto w-full max-w-md">
               <div className="lg:hidden flex items-center gap-2.5 mb-6 pb-4 border-b border-border-primary">
                 <img
-                  src="/logo-quack-v4.png"
+                  src="/quack-logo-negativo-v5.png"
                   alt="Quack Sistemas"
                   className="h-9 w-auto rounded-lg object-contain border border-border-primary shadow-xs bg-slate-900/40"
                 />

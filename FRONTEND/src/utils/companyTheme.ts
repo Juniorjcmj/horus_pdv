@@ -62,10 +62,17 @@ export function darken(hex: string, factor = 0.18): string {
 export function applyAccent(accent: string | null): void {
   const root = document.documentElement;
   if (isHexColor(accent)) {
+    const hover = darken(accent);
     root.style.setProperty("--color-accent", accent);
-    root.style.setProperty("--color-hover-accent", darken(accent));
+    root.style.setProperty("--color-hover-accent", hover);
+    // Também dirige as superfícies preenchidas de marca (header do PDV, cabeçalhos com texto branco),
+    // para a cor escolhida pela empresa valer nelas — e não ficar presa ao marinho padrão.
+    root.style.setProperty("--color-action-accent", accent);
+    root.style.setProperty("--color-action-hover-accent", hover);
   } else {
     root.style.removeProperty("--color-accent");
     root.style.removeProperty("--color-hover-accent");
+    root.style.removeProperty("--color-action-accent");
+    root.style.removeProperty("--color-action-hover-accent");
   }
 }
