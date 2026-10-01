@@ -345,11 +345,11 @@ export default function LandingPage({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-sky-500 selection:text-white antialiased">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-amber-500 selection:text-white antialiased">
       {/* ========================================================================= */}
       {/* 1. TOP ANNOUNCEMENT BAR & NAVBAR                                          */}
       {/* ========================================================================= */}
-      <div className="bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-600 text-white text-xs py-2 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2">
+      <div className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-600 text-white text-xs py-2 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2">
         <Sparkles size={14} className="animate-pulse" />
         <span>
           <strong>Novo Modelo Multi-Segmento:</strong> Suporte completo a
@@ -358,7 +358,7 @@ export default function LandingPage({
         <button
           type="button"
           onClick={onOpenRegister}
-          className="underline hover:text-sky-200 transition font-semibold ml-2 cursor-pointer"
+          className="underline hover:text-amber-200 transition font-semibold ml-2 cursor-pointer"
         >
           Experimente Grátis →
         </button>
@@ -371,11 +371,11 @@ export default function LandingPage({
             <img
               src="/quack-logo-negativo-v5.png"
               alt="Quack Sistemas"
-              className="h-11 w-auto max-w-[130px] rounded-xl object-contain shadow-lg shadow-sky-500/25 border border-sky-400/30 bg-slate-900/40"
+              className="h-11 w-auto max-w-[130px] rounded-xl object-contain shadow-lg shadow-amber-500/25 border border-amber-400/30 bg-slate-900/40"
             />
             <div>
               <span className="text-2xl font-black tracking-tight text-white font-display flex items-center gap-1.5">
-                Quack <span className="text-sky-400">Sistemas</span>
+                Quack <span className="text-amber-400">Sistemas</span>
               </span>
               <span className="block text-[10px] uppercase font-semibold tracking-widest text-slate-400">
                 Soluções para seu negócio
@@ -387,37 +387,37 @@ export default function LandingPage({
           <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-300">
             <a
               href="#demonstracao"
-              className="hover:text-sky-400 transition cursor-pointer"
+              className="hover:text-amber-400 transition cursor-pointer"
             >
               Telas do Sistema
             </a>
             <a
               href="#funcionalidades"
-              className="hover:text-sky-400 transition cursor-pointer"
+              className="hover:text-amber-400 transition cursor-pointer"
             >
               Funcionalidades
             </a>
             <a
               href="#segmentos"
-              className="hover:text-sky-400 transition cursor-pointer"
+              className="hover:text-amber-400 transition cursor-pointer"
             >
               Segmentos
             </a>
             <a
               href="#calculadora"
-              className="hover:text-sky-400 transition cursor-pointer"
+              className="hover:text-amber-400 transition cursor-pointer"
             >
               Calculadora ROI
             </a>
             <a
               href="#depoimentos"
-              className="hover:text-sky-400 transition cursor-pointer"
+              className="hover:text-amber-400 transition cursor-pointer"
             >
               Depoimentos
             </a>
             <a
               href="#faq"
-              className="hover:text-sky-400 transition cursor-pointer"
+              className="hover:text-amber-400 transition cursor-pointer"
             >
               Dúvidas
             </a>
@@ -435,7 +435,7 @@ export default function LandingPage({
             <button
               type="button"
               onClick={onOpenRegister}
-              className="px-5 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 rounded-xl shadow-lg shadow-sky-500/20 hover:shadow-sky-500/35 transition cursor-pointer flex items-center gap-2 border border-sky-300/30 active:scale-95"
+              className="px-5 py-2.5 text-sm font-bold text-slate-900 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 rounded-xl shadow-lg shadow-amber-500/20 hover:shadow-amber-500/35 transition cursor-pointer flex items-center gap-2 border border-amber-300/30 active:scale-95"
             >
               <span>Testar Grátis</span>
               <ArrowRight size={16} />
@@ -449,13 +449,13 @@ export default function LandingPage({
       {/* ========================================================================= */}
       <section className="relative overflow-hidden pt-12 pb-20 lg:pt-16 lg:pb-28">
         {/* Efeitos de Iluminação de Fundo */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-sky-500/15 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute top-1/3 right-10 w-[500px] h-[350px] bg-indigo-500/15 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-amber-500/15 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-1/3 right-10 w-[500px] h-[350px] bg-orange-500/15 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             {/* Tag Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-sky-500/30 text-sky-400 text-xs sm:text-sm font-semibold mb-6 shadow-inner">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-amber-500/30 text-amber-400 text-xs sm:text-sm font-semibold mb-6 shadow-inner">
               <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
               <span>O Sistema Comercial Mais Ágil e Completo do Varejo</span>
             </div>
@@ -463,7 +463,7 @@ export default function LandingPage({
             {/* Headline Principal */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight font-display">
               Venda mais rápido no caixa.{" "}
-              <span className="bg-gradient-to-r from-sky-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-amber-400 via-orange-400 to-amber-300 bg-clip-text text-transparent">
                 Tenha o controle total
               </span>{" "}
               da sua loja.
@@ -482,7 +482,7 @@ export default function LandingPage({
               <button
                 type="button"
                 onClick={onOpenRegister}
-                className="w-full sm:w-auto px-8 py-4 text-base font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 rounded-2xl shadow-xl shadow-sky-500/30 hover:shadow-sky-500/50 transition cursor-pointer flex items-center justify-center gap-3 border border-sky-300/40 active:scale-95"
+                className="w-full sm:w-auto px-8 py-4 text-base font-bold text-slate-900 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 rounded-2xl shadow-xl shadow-amber-500/30 hover:shadow-amber-500/50 transition cursor-pointer flex items-center justify-center gap-3 border border-amber-300/40 active:scale-95"
               >
                 <span>Criar Conta Gratuita</span>
                 <ArrowRight size={19} />
@@ -491,7 +491,7 @@ export default function LandingPage({
                 href="#demonstracao"
                 className="w-full sm:w-auto px-7 py-4 text-base font-semibold text-slate-200 hover:text-white bg-slate-900/80 hover:bg-slate-800 rounded-2xl border border-slate-700/80 transition cursor-pointer flex items-center justify-center gap-2.5"
               >
-                <Monitor size={18} className="text-sky-400" />
+                <Monitor size={18} className="text-amber-400" />
                 <span>Explorar Telas do Sistema</span>
               </a>
             </div>
@@ -515,7 +515,7 @@ export default function LandingPage({
 
           {/* Imagem Principal de Destaque no Hero */}
           <div className="mt-14 relative mx-auto max-w-5xl">
-            <div className="relative rounded-3xl overflow-hidden border border-slate-700/70 bg-slate-900/80 shadow-2xl shadow-sky-950/60 group">
+            <div className="relative rounded-3xl overflow-hidden border border-slate-700/70 bg-slate-900/80 shadow-2xl shadow-amber-950/60 group">
               <img
                 src="/screenshots/hero-pos-showcase.jpg"
                 alt="Quack PDV - Ponto de Venda e Gestão Completa"
@@ -541,7 +541,7 @@ export default function LandingPage({
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/30">
+                  <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
                     <ShieldCheck size={20} />
                   </div>
                   <div>
@@ -557,7 +557,7 @@ export default function LandingPage({
                 <button
                   type="button"
                   onClick={onOpenRegister}
-                  className="px-4 py-2 text-xs font-bold text-white bg-sky-500 hover:bg-sky-400 rounded-xl transition cursor-pointer"
+                  className="px-4 py-2 text-xs font-bold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-xl transition cursor-pointer"
                 >
                   Experimentar Agora
                 </button>
@@ -574,7 +574,7 @@ export default function LandingPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800/60">
-              <p className="text-3xl sm:text-4xl font-black text-sky-400 font-display">
+              <p className="text-3xl sm:text-4xl font-black text-amber-400 font-display">
                 &lt; 1.2s
               </p>
               <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
@@ -590,7 +590,7 @@ export default function LandingPage({
               </p>
             </div>
             <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800/60">
-              <p className="text-3xl sm:text-4xl font-black text-indigo-400 font-display">
+              <p className="text-3xl sm:text-4xl font-black text-orange-400 font-display">
                 0%
               </p>
               <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
@@ -615,7 +615,7 @@ export default function LandingPage({
       <section id="demonstracao" className="py-20 lg:py-28 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="text-xs uppercase font-bold tracking-widest text-sky-400 bg-sky-950/70 border border-sky-500/30 px-3 py-1 rounded-full">
+            <span className="text-xs uppercase font-bold tracking-widest text-amber-400 bg-amber-950/70 border border-amber-500/30 px-3 py-1 rounded-full">
               Imagens Reais do Sistema
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-4 font-display">
@@ -634,7 +634,7 @@ export default function LandingPage({
               onClick={() => setActiveTab("pdv")}
               className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "pdv"
-                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/25 border border-sky-400"
+                  ? "bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/25 border border-amber-400"
                   : "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800"
               }`}
             >
@@ -647,7 +647,7 @@ export default function LandingPage({
               onClick={() => setActiveTab("dashboard")}
               className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "dashboard"
-                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/25 border border-sky-400"
+                  ? "bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/25 border border-amber-400"
                   : "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800"
               }`}
             >
@@ -660,7 +660,7 @@ export default function LandingPage({
               onClick={() => setActiveTab("estoque")}
               className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "estoque"
-                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/25 border border-sky-400"
+                  ? "bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/25 border border-amber-400"
                   : "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800"
               }`}
             >
@@ -673,7 +673,7 @@ export default function LandingPage({
               onClick={() => setActiveTab("fiscal")}
               className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "fiscal"
-                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/25 border border-sky-400"
+                  ? "bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/25 border border-amber-400"
                   : "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800"
               }`}
             >
@@ -686,7 +686,7 @@ export default function LandingPage({
               onClick={() => setActiveTab("fiado")}
               className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "fiado"
-                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/25 border border-sky-400"
+                  ? "bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/25 border border-amber-400"
                   : "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800"
               }`}
             >
@@ -699,7 +699,7 @@ export default function LandingPage({
               onClick={() => setActiveTab("pagamentos")}
               className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "pagamentos"
-                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/25 border border-sky-400"
+                  ? "bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/25 border border-amber-400"
                   : "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800"
               }`}
             >
@@ -712,7 +712,7 @@ export default function LandingPage({
               onClick={() => setActiveTab("relatorios")}
               className={`px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-2 ${
                 activeTab === "relatorios"
-                  ? "bg-sky-500 text-white shadow-lg shadow-sky-500/25 border border-sky-400"
+                  ? "bg-amber-500 text-slate-900 shadow-lg shadow-amber-500/25 border border-amber-400"
                   : "bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800"
               }`}
             >
@@ -727,7 +727,7 @@ export default function LandingPage({
               {/* Informações da Aba */}
               <div className="lg:col-span-5 flex flex-col justify-between">
                 <div>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/15 border border-sky-500/30 text-sky-400 text-xs font-bold uppercase tracking-wider mb-4">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4">
                     {currentTab.tag}
                   </span>
                   <h3 className="text-2xl sm:text-3xl font-extrabold text-white font-display">
@@ -742,7 +742,7 @@ export default function LandingPage({
                     {currentTab.highlights.map((h, i) => (
                       <span
                         key={i}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800/80 text-sky-300 border border-slate-700/60"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800/80 text-amber-300 border border-slate-700/60"
                       >
                         ✓ {h}
                       </span>
@@ -773,7 +773,7 @@ export default function LandingPage({
                   <button
                     type="button"
                     onClick={onOpenRegister}
-                    className="px-6 py-3 text-sm font-bold text-white bg-sky-500 hover:bg-sky-400 rounded-xl transition cursor-pointer flex items-center gap-2 shadow-lg shadow-sky-500/20"
+                    className="px-6 py-3 text-sm font-bold text-slate-900 bg-amber-500 hover:bg-amber-400 rounded-xl transition cursor-pointer flex items-center gap-2 shadow-lg shadow-amber-500/20"
                   >
                     <span>Começar com este Módulo</span>
                     <ArrowRight size={16} />
@@ -802,7 +802,7 @@ export default function LandingPage({
                         {activeTab}
                       </span>
                     </div>
-                    <span className="text-[10px] uppercase font-bold text-sky-400 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800/60">
+                    <span className="text-[10px] uppercase font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/60">
                       {currentTab.isRealScreenshot ? "Screenshot Real" : "Preview 3D"}
                     </span>
                   </div>
@@ -825,7 +825,7 @@ export default function LandingPage({
       <section id="funcionalidades" className="py-20 bg-slate-900/60 border-t border-slate-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs uppercase font-bold tracking-widest text-indigo-400 bg-indigo-950/70 border border-indigo-500/30 px-3 py-1 rounded-full">
+            <span className="text-xs uppercase font-bold tracking-widest text-orange-400 bg-orange-950/70 border border-orange-500/30 px-3 py-1 rounded-full">
               Poder Operacional Completo
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-4 font-display">
@@ -840,7 +840,7 @@ export default function LandingPage({
           {/* Grid de 3 Colunas com Imagens Ilustrativas */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Card 1: Estoque & Validade */}
-            <div className="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden hover:border-sky-500/50 transition-all group flex flex-col justify-between">
+            <div className="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden hover:border-amber-500/50 transition-all group flex flex-col justify-between">
               <div>
                 <div className="relative h-48 overflow-hidden">
                   <img
@@ -869,7 +869,7 @@ export default function LandingPage({
               </div>
               <div className="p-6 pt-0 border-t border-slate-800/60 mt-4 flex items-center justify-between text-xs text-slate-400">
                 <span>Fator de conversão fardo/unidade</span>
-                <span className="text-sky-400 font-bold">100% Automático</span>
+                <span className="text-amber-400 font-bold">100% Automático</span>
               </div>
             </div>
 
@@ -908,7 +908,7 @@ export default function LandingPage({
             </div>
 
             {/* Card 3: Fiado / Conta Corrente */}
-            <div className="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden hover:border-indigo-500/50 transition-all group flex flex-col justify-between">
+            <div className="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden hover:border-orange-500/50 transition-all group flex flex-col justify-between">
               <div>
                 <div className="relative h-48 overflow-hidden">
                   <img
@@ -917,12 +917,12 @@ export default function LandingPage({
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
-                  <span className="absolute top-3 left-3 text-xs font-bold text-indigo-300 bg-indigo-950/80 border border-indigo-500/30 px-2.5 py-1 rounded-lg">
+                  <span className="absolute top-3 left-3 text-xs font-bold text-orange-300 bg-orange-950/80 border border-orange-500/30 px-2.5 py-1 rounded-lg">
                     Fim do Caderninho
                   </span>
                 </div>
                 <div className="p-6">
-                  <div className="h-10 w-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center mb-4">
                     <Users size={20} />
                   </div>
                   <h3 className="text-xl font-bold text-white font-display">
@@ -937,12 +937,12 @@ export default function LandingPage({
               </div>
               <div className="p-6 pt-0 border-t border-slate-800/60 mt-4 flex items-center justify-between text-xs text-slate-400">
                 <span>Trava automática de limite</span>
-                <span className="text-indigo-400 font-bold">Zero Inadimplência</span>
+                <span className="text-orange-400 font-bold">Zero Inadimplência</span>
               </div>
             </div>
 
             {/* Card 4: PIX & Pagamentos */}
-            <div className="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden hover:border-sky-500/50 transition-all group flex flex-col justify-between">
+            <div className="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden hover:border-amber-500/50 transition-all group flex flex-col justify-between">
               <div>
                 <div className="relative h-48 overflow-hidden">
                   <img
@@ -951,12 +951,12 @@ export default function LandingPage({
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
-                  <span className="absolute top-3 left-3 text-xs font-bold text-sky-300 bg-sky-950/80 border border-sky-500/30 px-2.5 py-1 rounded-lg">
+                  <span className="absolute top-3 left-3 text-xs font-bold text-amber-300 bg-amber-950/80 border border-amber-500/30 px-2.5 py-1 rounded-lg">
                     Instantâneo
                   </span>
                 </div>
                 <div className="p-6">
-                  <div className="h-10 w-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
                     <QrCode size={20} />
                   </div>
                   <h3 className="text-xl font-bold text-white font-display">
@@ -971,7 +971,7 @@ export default function LandingPage({
               </div>
               <div className="p-6 pt-0 border-t border-slate-800/60 mt-4 flex items-center justify-between text-xs text-slate-400">
                 <span>Cálculo de Troco Integrado</span>
-                <span className="text-sky-400 font-bold">Caixa 100% Batido</span>
+                <span className="text-amber-400 font-bold">Caixa 100% Batido</span>
               </div>
             </div>
 
@@ -1012,7 +1012,7 @@ export default function LandingPage({
             {/* Card 6: Promoções & Preços Dinâmicos */}
             <div className="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden hover:border-rose-500/50 transition-all group flex flex-col justify-between">
               <div>
-                <div className="relative h-48 overflow-hidden bg-gradient-to-tr from-rose-950 via-slate-900 to-indigo-950 flex items-center justify-center p-6">
+                <div className="relative h-48 overflow-hidden bg-gradient-to-tr from-rose-950 via-slate-900 to-orange-950 flex items-center justify-center p-6">
                   <div className="w-full h-full rounded-xl border border-rose-500/30 bg-slate-900/80 p-4 flex flex-col justify-center items-center text-center">
                     <span className="text-xs uppercase font-bold text-rose-400">
                       Leve 3 Pague 2
@@ -1080,7 +1080,7 @@ export default function LandingPage({
                   onClick={() => setActiveSegment(idx)}
                   className={`p-6 rounded-2xl border cursor-pointer transition-all ${
                     isSelected
-                      ? "bg-slate-900 border-sky-500 shadow-xl shadow-sky-500/10 ring-1 ring-sky-500"
+                      ? "bg-slate-900 border-amber-500 shadow-xl shadow-amber-500/10 ring-1 ring-amber-500"
                       : "bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900/50"
                   }`}
                 >
@@ -1088,13 +1088,13 @@ export default function LandingPage({
                     <div
                       className={`h-12 w-12 rounded-xl flex items-center justify-center ${
                         isSelected
-                          ? "bg-sky-500 text-white"
+                          ? "bg-amber-500 text-slate-900"
                           : "bg-slate-800 text-slate-400"
                       }`}
                     >
                       <Icon size={24} />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-sky-400 bg-sky-950 px-2 py-0.5 rounded border border-sky-800/50">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-950 px-2 py-0.5 rounded border border-amber-800/50">
                       {seg.badge}
                     </span>
                   </div>
@@ -1118,7 +1118,7 @@ export default function LandingPage({
       <section id="calculadora" className="py-20 bg-gradient-to-b from-slate-900 to-slate-950 border-y border-slate-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs uppercase font-bold tracking-widest text-sky-400 bg-sky-950/80 border border-sky-500/30 px-3 py-1 rounded-full">
+            <span className="text-xs uppercase font-bold tracking-widest text-amber-400 bg-amber-950/80 border border-amber-500/30 px-3 py-1 rounded-full">
               Simule Seus Ganhos
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-4 font-display">
@@ -1139,7 +1139,7 @@ export default function LandingPage({
                     <label className="text-slate-300">
                       Vendas registradas por dia:
                     </label>
-                    <span className="text-sky-400 font-bold font-mono text-base">
+                    <span className="text-amber-400 font-bold font-mono text-base">
                       {dailySales} vendas/dia
                     </span>
                   </div>
@@ -1150,7 +1150,7 @@ export default function LandingPage({
                     step="10"
                     value={dailySales}
                     onChange={(e) => setDailySales(Number(e.target.value))}
-                    className="w-full accent-sky-500 cursor-pointer h-2 bg-slate-800 rounded-lg"
+                    className="w-full accent-amber-500 cursor-pointer h-2 bg-slate-800 rounded-lg"
                   />
                   <div className="flex justify-between text-[11px] text-slate-400 mt-1">
                     <span>30 (bairro)</span>
@@ -1194,9 +1194,9 @@ export default function LandingPage({
               </div>
 
               {/* Resultado da Calculadora */}
-              <div className="bg-gradient-to-br from-slate-900 via-slate-900/90 to-sky-950/40 p-6 sm:p-8 rounded-2xl border border-sky-500/30 flex flex-col justify-between">
+              <div className="bg-gradient-to-br from-slate-900 via-slate-900/90 to-amber-950/40 p-6 sm:p-8 rounded-2xl border border-amber-500/30 flex flex-col justify-between">
                 <div>
-                  <span className="text-xs uppercase font-bold tracking-wider text-sky-400">
+                  <span className="text-xs uppercase font-bold tracking-wider text-amber-400">
                     Economia Estimada para o seu Negócio
                   </span>
 
@@ -1224,7 +1224,7 @@ export default function LandingPage({
                     </div>
                     <div>
                       <p className="text-xs text-slate-400">Horas Salvas no Caixa:</p>
-                      <p className="text-base font-bold text-sky-400 font-mono mt-0.5">
+                      <p className="text-base font-bold text-amber-400 font-mono mt-0.5">
                         ~{hoursSavedPerMonth} horas/mês
                       </p>
                     </div>
@@ -1234,7 +1234,7 @@ export default function LandingPage({
                 <button
                   type="button"
                   onClick={onOpenRegister}
-                  className="mt-6 w-full py-3.5 text-sm font-bold text-white bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20 active:scale-95"
+                  className="mt-6 w-full py-3.5 text-sm font-bold text-slate-900 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 rounded-xl transition cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95"
                 >
                   <span>Garantir Essa Economia Agora</span>
                   <ArrowRight size={16} />
@@ -1251,7 +1251,7 @@ export default function LandingPage({
       <section className="py-20 relative">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <span className="text-xs uppercase font-bold tracking-widest text-indigo-400 bg-indigo-950/80 border border-indigo-500/30 px-3 py-1 rounded-full">
+            <span className="text-xs uppercase font-bold tracking-widest text-orange-400 bg-orange-950/80 border border-orange-500/30 px-3 py-1 rounded-full">
               Comparativo de Valor
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-4 font-display">
@@ -1272,7 +1272,7 @@ export default function LandingPage({
                   <th className="p-4 sm:p-5 font-bold text-red-400 bg-red-950/20 border-x border-slate-800">
                     Sistemas Antigos / Cadernos
                   </th>
-                  <th className="p-4 sm:p-5 font-bold text-sky-400 bg-sky-950/40">
+                  <th className="p-4 sm:p-5 font-bold text-amber-400 bg-amber-950/40">
                     Quack PDV
                   </th>
                 </tr>
@@ -1285,7 +1285,7 @@ export default function LandingPage({
                   <td className="p-4 sm:p-5 text-slate-400 bg-red-950/10 border-x border-slate-800">
                     Lento, exige cliques constantes de mouse
                   </td>
-                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-sky-950/20">
+                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-amber-950/20">
                     ⚡ 100% no teclado (F8, F12, Enter) em 1s
                   </td>
                 </tr>
@@ -1296,7 +1296,7 @@ export default function LandingPage({
                   <td className="p-4 sm:p-5 text-slate-400 bg-red-950/10 border-x border-slate-800">
                     Trava a fila e impede conclusão da venda
                   </td>
-                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-sky-950/20">
+                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-amber-950/20">
                     🛡️ Contingência offline automática sem parar
                   </td>
                 </tr>
@@ -1305,7 +1305,7 @@ export default function LandingPage({
                   <td className="p-4 sm:p-5 text-slate-400 bg-red-950/10 border-x border-slate-800">
                     Caderninho de papel sujeito a sumiço e calote
                   </td>
-                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-sky-950/20">
+                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-amber-950/20">
                     🔒 Limite de crédito e extrato com assinatura
                   </td>
                 </tr>
@@ -1316,7 +1316,7 @@ export default function LandingPage({
                   <td className="p-4 sm:p-5 text-slate-400 bg-red-950/10 border-x border-slate-800">
                     Visual manual, perda de produtos na prateleira
                   </td>
-                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-sky-950/20">
+                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-amber-950/20">
                     📦 Alerta antecipado para queima planejada
                   </td>
                 </tr>
@@ -1327,7 +1327,7 @@ export default function LandingPage({
                   <td className="p-4 sm:p-5 text-slate-400 bg-red-950/10 border-x border-slate-800">
                     Chave manual ou plaquinha com risco de golpe
                   </td>
-                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-sky-950/20">
+                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-amber-950/20">
                     📱 QR Code na tela com valor exato da compra
                   </td>
                 </tr>
@@ -1338,7 +1338,7 @@ export default function LandingPage({
                   <td className="p-4 sm:p-5 text-slate-400 bg-red-950/10 border-x border-slate-800">
                     "No olho" ou planilhas desatualizadas
                   </td>
-                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-sky-950/20">
+                  <td className="p-4 sm:p-5 font-bold text-emerald-400 bg-amber-950/20">
                     📈 Comparativo de markup cadastrado vs praticado
                   </td>
                 </tr>
@@ -1381,7 +1381,7 @@ export default function LandingPage({
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold font-display">
+                <div className="h-10 w-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold font-display">
                   RC
                 </div>
                 <div>
@@ -1409,7 +1409,7 @@ export default function LandingPage({
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold font-display">
+                <div className="h-10 w-10 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold font-display">
                   MS
                 </div>
                 <div>
@@ -1457,7 +1457,7 @@ export default function LandingPage({
       <section id="faq" className="py-20 relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
-            <span className="text-xs uppercase font-bold tracking-widest text-sky-400 bg-sky-950/80 border border-sky-500/30 px-3 py-1 rounded-full">
+            <span className="text-xs uppercase font-bold tracking-widest text-amber-400 bg-amber-950/80 border border-amber-500/30 px-3 py-1 rounded-full">
               Tire Suas Dúvidas
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-4 font-display">
@@ -1479,13 +1479,13 @@ export default function LandingPage({
                   <button
                     type="button"
                     onClick={() => setOpenFaqIndex(isOpen ? null : index)}
-                    className="w-full p-5 sm:p-6 text-left font-bold text-white flex items-center justify-between gap-4 cursor-pointer hover:text-sky-400 transition"
+                    className="w-full p-5 sm:p-6 text-left font-bold text-white flex items-center justify-between gap-4 cursor-pointer hover:text-amber-400 transition"
                   >
                     <span className="text-base sm:text-lg">{faq.question}</span>
                     <ChevronDown
                       size={20}
                       className={`text-slate-400 transition-transform duration-300 shrink-0 ${
-                        isOpen ? "rotate-180 text-sky-400" : ""
+                        isOpen ? "rotate-180 text-amber-400" : ""
                       }`}
                     />
                   </button>
@@ -1507,7 +1507,7 @@ export default function LandingPage({
       {/* ========================================================================= */}
       <section className="py-20 relative overflow-hidden">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="relative rounded-3xl p-8 sm:p-12 lg:p-16 bg-gradient-to-tr from-sky-600 via-indigo-700 to-sky-500 text-center shadow-2xl overflow-hidden border border-sky-300/30">
+          <div className="relative rounded-3xl p-8 sm:p-12 lg:p-16 bg-gradient-to-tr from-amber-600 via-orange-700 to-amber-500 text-center shadow-2xl overflow-hidden border border-amber-300/30">
             {/* Decorações no Fundo */}
             <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-64 h-64 bg-black/20 rounded-full blur-2xl pointer-events-none" />
@@ -1515,7 +1515,7 @@ export default function LandingPage({
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white font-display tracking-tight">
               Pronto para transformar as vendas do seu negócio?
             </h2>
-            <p className="mt-4 text-base sm:text-lg text-sky-100 max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-4 text-base sm:text-lg text-amber-100 max-w-2xl mx-auto leading-relaxed">
               Junte-se aos lojistas que aceleraram o atendimento no caixa,
               acabaram com as perdas e colocaram a gestão no piloto automático.
             </p>
@@ -1538,7 +1538,7 @@ export default function LandingPage({
               </button>
             </div>
 
-            <p className="mt-6 text-xs text-sky-200 font-medium">
+            <p className="mt-6 text-xs text-amber-200 font-medium">
               Sem taxa de adesão • Sem cartão de crédito • Suporte dedicado
             </p>
           </div>
@@ -1580,7 +1580,7 @@ export default function LandingPage({
             <button
               type="button"
               onClick={onOpenLogin}
-              className="hover:text-sky-400 transition font-semibold cursor-pointer"
+              className="hover:text-amber-400 transition font-semibold cursor-pointer"
             >
               Área do Cliente
             </button>
