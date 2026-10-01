@@ -23,14 +23,16 @@ var builder = WebApplication.CreateBuilder(args);
 var configuredCors = builder.Configuration["Security:CorsOrigins"];
 var rawCors = !string.IsNullOrWhiteSpace(configuredCors)
     ? configuredCors
-    : "https://pdv.wootchat.com.br,http://pdv.wootchat.com.br,http://localhost:5173,https://localhost:5173,http://127.0.0.1:5173,https://127.0.0.1:5173,http://localhost:4173,https://localhost:4173,http://127.0.0.1:4173,https://127.0.0.1:4173";
+    : "https://pdv.quacksistemas.com.br,http://pdv.quacksistemas.com.br,https://pdv.wootchat.com.br,http://pdv.wootchat.com.br,http://localhost:5173,https://localhost:5173,http://127.0.0.1:5173,https://127.0.0.1:5173,http://localhost:4173,https://localhost:4173,http://127.0.0.1:4173,https://127.0.0.1:4173";
 
 var explicitOrigins = rawCors
     .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
     .Select(o => o.TrimEnd('/'))
     .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-// Sempre assegura https://pdv.wootchat.com.br e variantes na lista
+// Sempre assegura domínios de produção na lista
+explicitOrigins.Add("https://pdv.quacksistemas.com.br");
+explicitOrigins.Add("http://pdv.quacksistemas.com.br");
 explicitOrigins.Add("https://pdv.wootchat.com.br");
 explicitOrigins.Add("http://pdv.wootchat.com.br");
 
@@ -62,7 +64,9 @@ builder.Services.AddCors(options =>
                 if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
                 {
                     var host = uri.Host;
-                    if (host.Equals("wootchat.com.br", StringComparison.OrdinalIgnoreCase) ||
+                    if (host.Equals("quacksistemas.com.br", StringComparison.OrdinalIgnoreCase) ||
+                        host.EndsWith(".quacksistemas.com.br", StringComparison.OrdinalIgnoreCase) ||
+                        host.Equals("wootchat.com.br", StringComparison.OrdinalIgnoreCase) ||
                         host.EndsWith(".wootchat.com.br", StringComparison.OrdinalIgnoreCase) ||
                         host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
                         host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase))

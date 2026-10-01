@@ -51,10 +51,10 @@ services:
       ConnectionStrings__HorusPdv: "Server=pdv-sqlserver,1433;Database=HorusPdv;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=True"
       Auth__JwtSecret: "${JWT_SECRET:?defina JWT_SECRET no ambiente do stack (string aleatória longa)}"
       Security__EncryptionKey: "${ENCRYPTION_KEY:?defina ENCRYPTION_KEY no ambiente do stack — string aleatória longa e ESTÁVEL, nunca troque depois de configurar CSC ou certificado}"
-      Security__CorsOrigins: "https://pdv.wootchat.com.br"
+      Security__CorsOrigins: "https://pdv.quacksistemas.com.br,https://pdv.wootchat.com.br"
       Security__TrustForwardedHeaders: "true"
-      AllowedHosts: "${ALLOWED_HOSTS:-localhost;127.0.0.1;api-pdv.wootchat.com.br;pdv.wootchat.com.br;api.horuspdv.local}"
-      Email__FrontendBaseUrl: "https://pdv.wootchat.com.br"
+      AllowedHosts: "${ALLOWED_HOSTS:-localhost;127.0.0.1;api-pdv.quacksistemas.com.br;pdv.quacksistemas.com.br;api-pdv.wootchat.com.br;pdv.wootchat.com.br;api.horuspdv.local}"
+      Email__FrontendBaseUrl: "https://pdv.quacksistemas.com.br"
       Email__Enabled: "${EMAIL_ENABLED:-false}"
       Email__Host: "${EMAIL_HOST:-smtp-mail.outlook.com}"
       Email__Port: "${EMAIL_PORT:-587}"
@@ -69,7 +69,7 @@ services:
       - OrionNet
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.pdv-api.rule=Host(`api-pdv.wootchat.com.br`)"
+      - "traefik.http.routers.pdv-api.rule=Host(`api-pdv.quacksistemas.com.br`)"
       - "traefik.http.routers.pdv-api.entrypoints=websecure"
       - "traefik.http.routers.pdv-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.pdv-api.loadbalancer.server.port=8080"
@@ -85,7 +85,7 @@ services:
       - OrionNet
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.pdv.rule=Host(`pdv.wootchat.com.br`)"
+      - "traefik.http.routers.pdv.rule=Host(`pdv.quacksistemas.com.br`)"
       - "traefik.http.routers.pdv.entrypoints=websecure"
       - "traefik.http.routers.pdv.tls.certresolver=letsencrypt"
       - "traefik.http.services.pdv.loadbalancer.server.port=8080"

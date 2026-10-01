@@ -10,7 +10,7 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-ARG VITE_API_ORIGIN=https://api.horuspdv.local
+ARG VITE_API_ORIGIN=https://api-pdv.quacksistemas.com.br
 ARG VITE_RECAPTCHA_SITE_KEY=
 
 COPY package.json package-lock.json ./
@@ -23,6 +23,7 @@ RUN if [ ! -f .env.prod ] && [ -f .env.production ]; then cp .env.production .en
     && if [ ! -f .env.production ] && [ -f .env.prod ]; then cp .env.prod .env.production; fi \
     && for f in .env.prod .env.production; do \
          [ -f "$f" ] && sed -i "s#https://api.horuspdv.local#${VITE_API_ORIGIN}#g" "$f" \
+                     && sed -i "s#https://api-pdv.quacksistemas.com.br#${VITE_API_ORIGIN}#g" "$f" \
                      && sed -i "s#^VITE_RECAPTCHA_SITE_KEY=.*#VITE_RECAPTCHA_SITE_KEY=${VITE_RECAPTCHA_SITE_KEY}#" "$f"; \
        done
 

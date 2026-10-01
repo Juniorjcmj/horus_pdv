@@ -19,9 +19,9 @@ Portainer puxa as imagens novas e recria os containers
    │
    ▼
 Traefik (já existente na rede OrionNet) expõe:
-   - https://pdv.wootchat.com.br       → container pdv-frontend (nginx, build estático)
-   - https://api-pdv.wootchat.com.br   → container pdv-api (.NET, porta 8080)
-                                          → container pdv-sqlserver (SQL Server, sem acesso externo)
+   - https://pdv.quacksistemas.com.br       → container pdv-frontend (nginx, build estático)
+   - https://api-pdv.quacksistemas.com.br   → container pdv-api (.NET, porta 8080)
+                                           → container pdv-sqlserver (SQL Server, sem acesso externo)
 ```
 
 Dois hostnames separados (frontend e API), conforme confirmado — não é um proxy único.
@@ -31,8 +31,8 @@ Dois hostnames separados (frontend e API), conforme confirmado — não é um pr
 Aponte os dois hostnames para o IP do seu servidor Docker (mesmo IP que já resolve o
 resto do que está atrás do Traefik):
 
-- `pdv.wootchat.com.br` → A/AAAA para o servidor
-- `api-pdv.wootchat.com.br` → A/AAAA para o servidor
+- `pdv.quacksistemas.com.br` → A/AAAA para o servidor
+- `api-pdv.quacksistemas.com.br` → A/AAAA para o servidor
 
 ## 2. GitHub — permitir o workflow publicar em ghcr.io
 
@@ -53,7 +53,7 @@ Settings → **Secrets and variables → Actions**:
 
 | Tipo     | Nome                          | Para quê |
 |----------|-------------------------------|----------|
-| Variable | `VITE_API_ORIGIN`              | Só se a API não for `https://api-pdv.wootchat.com.br` (esse já é o default no workflow). |
+| Variable | `VITE_API_ORIGIN`              | Só se a API não for `https://api-pdv.quacksistemas.com.br` (esse já é o default no workflow). |
 | Secret   | `RECAPTCHA_SITE_KEY`           | Site key pública do reCAPTCHA v3, se for usar. Vazio = reCAPTCHA desabilitado no frontend. |
 | Secret   | `PORTAINER_WEBHOOK_URL`        | Webhook de redeploy do Portainer (stack ou serviço da API) — ver passo 6. |
 | Secret   | `PORTAINER_WEBHOOK_URL_FRONTEND` | Um segundo webhook, só se sua versão do Portainer expõe um por serviço em vez de um por stack. |
@@ -107,7 +107,7 @@ só falta você clicar em "Pull and redeploy" no Portainer depois.
 2. No Portainer, confira os logs do `pdv-sqlserver` até aparecer pronto para aceitar
    conexões, e do `pdv-api` até aparecer "Script SQL DataBase/Resumo.sql executado com
    sucesso" — é o `HorusDatabaseInitializer` criando o schema na primeira vez.
-3. Acesse `https://pdv.wootchat.com.br` — login inicial padrão do seed (`Resumo.sql`) usa
+3. Acesse `https://pdv.quacksistemas.com.br` — login inicial padrão do seed (`Resumo.sql`) usa
    CPF `06.332.765/0001-05`; troque a senha e os dados da empresa assim que entrar.
 4. Configure os dados fiscais em **Minha Empresa** (CRT, ambiente, CSC, certificado) antes
    da primeira venda — ver `MODULO-FISCAL-E-PEDIDOS.md`.
