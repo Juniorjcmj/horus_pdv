@@ -10,7 +10,9 @@
 using HorusGateway.Configuration;
 using HorusGateway.Data;
 using HorusGateway.Hubs;
+using HorusGateway.Logging;
 using HorusGateway.Services;
+using Microsoft.Extensions.Hosting.WindowsServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,13 +20,25 @@ var builder = WebApplication.CreateBuilder(args);
 // então é seguro em qualquer plataforma. Permite `sc create` + partida automática no boot da máquina.
 builder.Host.UseWindowsService(options => options.ServiceName = "HorusGateway");
 
-// Logs estruturados (JSON) — prontos para coleta/observabilidade.
+// Logs estruturados (JSON) — prontos para coleta/observabilidade (console: dev/Docker).
 builder.Logging.ClearProviders();
 builder.Logging.AddJsonConsole(options =>
 {
     options.IncludeScopes = true;
     options.UseUtcTimestamp = true;
 });
+
+// Log em arquivo (sempre): como Serviço do Windows não há console, os logs iriam para o nada.
+// Grava em <dir-do-exe>/logs/gateway-YYYY-MM-DD.log, com rotação/retenção.
+builder.Logging.AddProvider(new FileLoggerProvider(new FileLoggerOptions(), AppContext.BaseDirectory));
+
+// Quando rodando como Serviço do Windows, também registra no Visualizador de Eventos do Windows.
+if (OperatingSystem.IsWindows() && WindowsServiceHelpers.IsWindowsService())
+{
+#pragma warning disable CA1416 // Guardado por OperatingSystem.IsWindows(); só executa no Windows.
+    builder.Logging.AddEventLog(options => options.SourceName = "HorusGateway");
+#pragma warning restore CA1416
+}
 
 // Configuração por ambiente: seção "Gateway" (appsettings + variáveis de ambiente).
 builder.Services.Configure<GatewayOptions>(builder.Configuration.GetSection(GatewayOptions.SectionName));

@@ -109,15 +109,25 @@ O Gateway é ASP.NET Core 8 com **SQLite embutido** (nenhum banco a instalar —
 - Nada de SQL Server, Node ou Docker. Libere a porta LAN (padrão 5080) no firewall.
 
 ### Windows Service (inicia sozinho no boot — CHANGE GATEWAY 08)
-O host já usa `UseWindowsService()` (no-op fora do Windows). Para instalar como serviço com partida
-automática, publicação self-contained e liberação de firewall em um passo, rode como **Administrador**:
+O host usa `UseWindowsService()` (no-op fora do Windows) e, como serviço, resolve o caminho do SQLite e os
+arquivos a partir da pasta do `.exe` (não do `System32`). O `install-service.ps1` faz tudo em um passo,
+como **Administrador**:
 ```powershell
 # GATEWAY\install-service.ps1  (clique direito > Executar com o PowerShell, como Admin)
 pwsh -File .\install-service.ps1 -CompanyId minha-empresa -StoreId loja-01 -Port 5080
+# HTTPS opcional:  $env:GATEWAY_HTTPS_CERT="C:\cert.pfx"; $env:GATEWAY_PORT=5443; .\install-service.ps1
 ```
-Gerencie depois com `sc.exe start HorusGateway` / `sc.exe stop HorusGateway` / `sc.exe delete HorusGateway`
-(pare antes de remover). **Atualização controlada:** antes de parar/atualizar, confira no painel que
-"Eventos pendentes" esteja **zero** (ou use `GET /health/update-readiness`).
+O instalador: publica **self-contained win-x64**, cria o serviço com **início automático**, configura
+**recuperação automática** (reinicia no crash em 5s/10s/30s via `sc failure`), cria a **fonte do Event Log**,
+grava as variáveis de ambiente (`Gateway__*`), libera a **porta no firewall** e sobe o serviço.
+
+**Logs** (como serviço não há console): arquivo em `publish-service\logs\gateway-YYYY-MM-DD.log` (rotação diária,
+retenção 14 dias) **e** no **Visualizador de Eventos** do Windows (origem `HorusGateway`).
+
+Gerencie com `sc.exe start HorusGateway` / `sc.exe stop HorusGateway`. Para remover, use
+`.\uninstall-service.ps1` (para, exclui e preserva os dados; `-RemoveFirewall`/`-RemoveEventSource` opcionais).
+**Atualização controlada:** antes de parar/atualizar, confira no painel que "Eventos pendentes" esteja **zero**
+(o uninstall também avisa via `GET /health/update-readiness`).
 
 ## Autenticação de terminal (CHANGE GATEWAY 03)
 A LAN é tratada como **não confiável**. Fluxo: o admin provisiona o `RegistrationToken` nos terminais → o terminal chama `POST /register` (valida token + `CompanyId`) e recebe uma `apiKey` única (só o hash PBKDF2 fica no Gateway). Depois, ingestão/recuperação/heartbeat exigem os headers `X-Terminal-Id` + `X-Terminal-Key`. O Gateway autentica o **terminal** ("pertence a esta loja?"), nunca o usuário — a autenticação de usuário continua na cloud. A descoberta do Gateway (mDNS/URL/manual) e o armazenamento seguro da credencial no PWA são integrados no CHANGE GATEWAY 07.

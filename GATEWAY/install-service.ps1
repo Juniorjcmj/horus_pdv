@@ -55,17 +55,43 @@ Write-Host "[Quack Gateway] Registrando servico '$ServiceName'..." -ForegroundCo
 New-Service -Name $ServiceName -BinaryPathName "`"$Exe`"" -DisplayName "Quack Gateway (LAN)" `
     -Description "Coordenador local da loja (offline-first) — Hórus PDV." -StartupType Automatic | Out-Null
 
+# HTTPS opcional (recomendado com um host, ex.: quack-gateway.local) para evitar bloqueio de
+# conteudo misto quando o terminal roda em HTTPS. Defina GATEWAY_HTTPS_CERT (.pfx) antes de instalar.
+$Scheme = "http"
+if ($env:GATEWAY_HTTPS_CERT) { $Scheme = "https" }
+
 # Variaveis de ambiente do servico (HKLM). O ASP.NET Core le a secao Gateway por Gateway__*.
 $envLines = @(
     "ASPNETCORE_ENVIRONMENT=Production",
-    "ASPNETCORE_URLS=http://0.0.0.0:$Port",
+    "ASPNETCORE_URLS=$Scheme`://0.0.0.0:$Port",
     "Gateway__CompanyId=$CompanyId",
     "Gateway__StoreId=$StoreId",
     "Gateway__DatabasePath=$([IO.Path]::Combine($DataDir,'horus-gateway.db'))"
 )
 if ($CloudSyncUrl) { $envLines += "Gateway__CloudSyncUrl=$CloudSyncUrl" }
+if ($env:GATEWAY_HTTPS_CERT) {
+    $envLines += "ASPNETCORE_Kestrel__Certificates__Default__Path=$($env:GATEWAY_HTTPS_CERT)"
+    if ($env:GATEWAY_HTTPS_CERT_PASSWORD) {
+        $envLines += "ASPNETCORE_Kestrel__Certificates__Default__Password=$($env:GATEWAY_HTTPS_CERT_PASSWORD)"
+    }
+}
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$ServiceName"
 New-ItemProperty -Path $regPath -Name "Environment" -PropertyType MultiString -Value $envLines -Force | Out-Null
+
+# Recuperacao automatica: reinicia o servico em caso de falha (5s, 10s, 30s); zera o contador por dia.
+# failureflag=1 tambem aciona a recuperacao quando o processo sai com codigo != 0.
+sc.exe failure $ServiceName reset= 86400 actions= restart/5000/restart/10000/restart/30000 | Out-Null
+sc.exe failureflag $ServiceName 1 | Out-Null
+
+# Fonte do Visualizador de Eventos (precisa de admin — por isso e criada aqui, na instalacao).
+try {
+    if (-not [System.Diagnostics.EventLog]::SourceExists("HorusGateway")) {
+        New-EventLog -LogName Application -Source "HorusGateway" -ErrorAction Stop
+        Write-Host "[Quack Gateway] Fonte de Event Log 'HorusGateway' criada."
+    }
+} catch {
+    Write-Host "[Quack Gateway] Nao foi possivel criar a fonte de Event Log (logs irao para arquivo)." -ForegroundColor Yellow
+}
 
 # 6) Libera a porta LAN no firewall.
 if (-not (Get-NetFirewallRule -DisplayName "HorusGateway" -ErrorAction SilentlyContinue)) {
@@ -80,15 +106,16 @@ $svc = Get-Service -Name $ServiceName
 
 Write-Host "======================================================" -ForegroundColor Green
 Write-Host " Quack Gateway instalado como Servico do Windows"
-Write-Host " Servico : $ServiceName ($($svc.Status))"
-Write-Host " Empresa : $CompanyId    Loja: $StoreId    Porta: $Port"
-Write-Host " Painel  : http://localhost:$Port/"
-Write-Host " LAN     : http://<IP-desta-maquina>:$Port/"
+Write-Host " Servico : $ServiceName ($($svc.Status)) — inicio automatico + recuperacao no crash"
+Write-Host " Empresa : $CompanyId    Loja: $StoreId    Porta: $Port ($Scheme)"
+Write-Host " Painel  : $Scheme`://localhost:$Port/"
+Write-Host " LAN     : $Scheme`://<IP-desta-maquina>:$Port/"
 Write-Host " Dados   : $DataDir\horus-gateway.db"
+Write-Host " Logs    : $PublishDir\logs\gateway-YYYY-MM-DD.log (+ Visualizador de Eventos)"
 Write-Host "------------------------------------------------------"
 Write-Host " Parar    : sc.exe stop $ServiceName"
 Write-Host " Iniciar  : sc.exe start $ServiceName"
-Write-Host " Remover  : sc.exe delete $ServiceName (pare antes)"
+Write-Host " Remover  : .\uninstall-service.ps1 (como Administrador)"
 Write-Host "======================================================" -ForegroundColor Green
 Write-Host " ATUALIZACAO CONTROLADA: antes de parar/atualizar, confira em" -ForegroundColor Yellow
 Write-Host " http://localhost:$Port/  que 'Eventos pendentes' esteja ZERO." -ForegroundColor Yellow

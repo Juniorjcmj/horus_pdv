@@ -17,8 +17,12 @@ public sealed class GatewayDatabase
     public GatewayDatabase(IOptions<GatewayOptions> options, ILogger<GatewayDatabase> logger)
     {
         _logger = logger;
-        var path = options.Value.DatabasePath;
-        var dir = Path.GetDirectoryName(Path.GetFullPath(path));
+        // Resolve o caminho do SQLite a partir do diretório do executável quando for relativo.
+        // Um Serviço do Windows inicia com o diretório de trabalho em System32, então um caminho
+        // relativo criaria o banco no lugar errado — ancoramos em AppContext.BaseDirectory.
+        var raw = options.Value.DatabasePath;
+        var path = Path.IsPathRooted(raw) ? raw : Path.Combine(AppContext.BaseDirectory, raw);
+        var dir = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(dir))
         {
             Directory.CreateDirectory(dir);

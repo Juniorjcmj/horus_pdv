@@ -26,7 +26,7 @@
 - [x] Logs estruturados (JSON), Dockerfile, docker-compose e README
 - [x] Testes do Gateway (9/9 passando) cobrindo os 10 cenários exigidos + entrega em tempo real
 - [x] Regressão zero: nenhum arquivo existente alterado (SyncEngine/Outbox/PDV/caixa/NFC-e intactos)
-- [ ] Execução como Windows Service / systemd — **adiado** (estrutura pronta; empacotamento como serviço fica para a etapa de implantação, junto de GATEWAY 03/08)
+- [x] Execução como Windows Service — **concluído**: `UseWindowsService()` + content-root/SQLite ancorados no `.exe`, logs em arquivo (rotação) + Event Log, `install-service.ps1` (publish self-contained, início automático, recuperação no crash, firewall, fonte de Event Log) e `uninstall-service.ps1`
 
 ## CHANGE GATEWAY 03 — Registro de terminais, heartbeat, descoberta, auth (concluído)
 
@@ -103,7 +103,7 @@
 - [x] Indicadores em tempo real via polling de `/health` + `/api/gateway/terminals` (heartbeat) a cada 5s e `/api/gateway/dashboard` consolidado; `online` derivado da janela de heartbeat
 - [x] Painel de pré-autorização de terminais (por **IP** e/ou **token**) consumindo `POST /terminals/provision`
 - [x] Mecanismo de atualização controlada: endpoints `GET /health/update-readiness` e `GET /api/gateway/system/update-check` (valida `pendingEvents == 0` antes de autorizar atualização/manutenção) + banner verde/amarelo no dashboard
-- [x] Empacotamento como **Windows Service**: `UseWindowsService()` no host (no-op fora do Windows) + `install-service.ps1` (publish self-contained + `New-Service` start automático + firewall)
+- [x] Empacotamento como **Windows Service (de verdade)**: `UseWindowsService()` + content-root/SQLite ancorados no diretório do `.exe`; logs em arquivo (rotação diária/retenção) + Visualizador de Eventos (sem perder log como serviço); `install-service.ps1` (publish self-contained win-x64, início automático, **recuperação automática no crash** via `sc failure`, fonte de Event Log, firewall, HTTPS opcional) + `uninstall-service.ps1`
 - [x] Camada 100% aditiva: mudanças contidas em `GATEWAY/`; nenhum arquivo homologado (FRONTEND/API/SQL) alterado → 71/71 arch verdes por construção; 61/61 testes do Gateway (+2 update-readiness)
 
 ## Validação transversal (em toda change 02–08)
