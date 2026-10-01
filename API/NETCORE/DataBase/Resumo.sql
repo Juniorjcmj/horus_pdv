@@ -335,6 +335,7 @@ BEGIN
         TotalAmount NVARCHAR(30) NOT NULL CONSTRAINT DF_Vendas_TotalAmount DEFAULT N'0,00',
         OperatorName NVARCHAR(180) NOT NULL CONSTRAINT DF_Vendas_OperatorName DEFAULT N'Operador',
         SaleDate DATETIMEOFFSET NOT NULL CONSTRAINT DF_Vendas_SaleDate DEFAULT SYSDATETIMEOFFSET(),
+        CaixaSessaoId NVARCHAR(40) NULL,
         CONSTRAINT UQ_Vendas_Company_SaleNumber UNIQUE (CompanyId, SaleNumber)
     );
 END;
@@ -353,18 +354,28 @@ IF COL_LENGTH(N'Vendas', N'OperatorName') IS NULL
 
 -- Multi-caixa: vincula cada venda à sessão de caixa que a registrou
 IF COL_LENGTH(N'Vendas', N'CaixaSessaoId') IS NULL
+BEGIN
     ALTER TABLE Vendas ADD CaixaSessaoId NVARCHAR(40) NULL;
+END;
+GO
+
 IF NOT EXISTS (
     SELECT 1 FROM sys.foreign_keys
     WHERE name = N'FK_Vendas_CaixaSessoes' AND parent_object_id = OBJECT_ID(N'Vendas')
 )
-    ALTER TABLE Vendas ADD CONSTRAINT FK_Vendas_CaixaSessoes
-        FOREIGN KEY (CaixaSessaoId) REFERENCES CaixaSessoes (Id);
+BEGIN
+    EXEC(N'ALTER TABLE Vendas ADD CONSTRAINT FK_Vendas_CaixaSessoes FOREIGN KEY (CaixaSessaoId) REFERENCES CaixaSessoes (Id);');
+END;
+GO
+
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes
     WHERE name = N'IX_Vendas_CaixaSessaoId' AND object_id = OBJECT_ID(N'Vendas')
 )
-    CREATE INDEX IX_Vendas_CaixaSessaoId ON Vendas (CaixaSessaoId) WHERE CaixaSessaoId IS NOT NULL;
+BEGIN
+    EXEC(N'CREATE INDEX IX_Vendas_CaixaSessaoId ON Vendas (CaixaSessaoId) WHERE CaixaSessaoId IS NOT NULL;');
+END;
+GO
 
 IF OBJECT_ID(N'VendaItens', N'U') IS NULL
 BEGIN
