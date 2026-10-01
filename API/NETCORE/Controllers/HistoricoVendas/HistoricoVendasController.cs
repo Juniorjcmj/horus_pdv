@@ -111,7 +111,16 @@ public class HistoricoVendasController(
                 }
             }
 
-            var result = await historicoVendasAB.RegistrarAsync(currentUser.CompanyId, request);
+            // Multi-caixa: vincula a venda à sessão de caixa do operador (null se offline ou sem caixa)
+            string? caixaSessaoId = null;
+            try
+            {
+                var sessaoAberta = await caixaService.ObterSessaoAbertaDoOperadorAsync(currentUser.CompanyId, currentUser.Id);
+                caixaSessaoId = sessaoAberta?.Id;
+            }
+            catch { /* venda offline ou caixa indisponível — segue sem vínculo */ }
+
+            var result = await historicoVendasAB.RegistrarAsync(currentUser.CompanyId, request, caixaSessaoId);
 
             if (result.IsReplay)
             {

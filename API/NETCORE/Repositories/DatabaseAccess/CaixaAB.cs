@@ -39,18 +39,32 @@ public class CaixaAB(Connection connection)
     }
 
     public async Task<CaixaSessionAD?> ObterSessaoAbertaAsync(string companyId, CancellationToken cancellationToken = default)
+        => await ObterSessaoAbertaAsync(companyId, operatorId: null, cancellationToken);
+
+    /// <summary>Busca a sessão aberta de um operador específico, ou qualquer sessão aberta da empresa se operatorId for null.</summary>
+    public async Task<CaixaSessionAD?> ObterSessaoAbertaAsync(string companyId, string? operatorId, CancellationToken cancellationToken = default)
     {
-        const string sql = """
-            SELECT TOP 1 Id, OpenedAt, ClosedAt, OpeningAmount, ClosingAmount, OperatorId, OperatorName, ClosedById, ClosedByName, Note,
-                   ExpectedCashAmount, DifferenceAmount, DifferenceReason
-            FROM CaixaSessoes
-            WHERE CompanyId = @CompanyId AND ClosedAt IS NULL
-            ORDER BY OpenedAt DESC;
-            """;
+        var sql = operatorId is not null
+            ? """
+              SELECT TOP 1 Id, OpenedAt, ClosedAt, OpeningAmount, ClosingAmount, OperatorId, OperatorName, ClosedById, ClosedByName, Note,
+                     ExpectedCashAmount, DifferenceAmount, DifferenceReason
+              FROM CaixaSessoes
+              WHERE CompanyId = @CompanyId AND OperatorId = @OperatorId AND ClosedAt IS NULL
+              ORDER BY OpenedAt DESC;
+              """
+            : """
+              SELECT TOP 1 Id, OpenedAt, ClosedAt, OpeningAmount, ClosingAmount, OperatorId, OperatorName, ClosedById, ClosedByName, Note,
+                     ExpectedCashAmount, DifferenceAmount, DifferenceReason
+              FROM CaixaSessoes
+              WHERE CompanyId = @CompanyId AND ClosedAt IS NULL
+              ORDER BY OpenedAt DESC;
+              """;
 
         await using var db = await connection.OpenConnectionAsync(cancellationToken);
         await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
+        if (operatorId is not null)
+            command.Parameters.AddWithValue("@OperatorId", operatorId);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         if (await reader.ReadAsync(cancellationToken))
         {
@@ -58,6 +72,30 @@ public class CaixaAB(Connection connection)
         }
 
         return null;
+    }
+
+    /// <summary>Lista todas as sessões abertas da empresa (visão gerencial de todos os caixas).</summary>
+    public async Task<List<CaixaSessionAD>> ListarSessoesAbertasAsync(string companyId, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT Id, OpenedAt, ClosedAt, OpeningAmount, ClosingAmount, OperatorId, OperatorName, ClosedById, ClosedByName, Note,
+                   ExpectedCashAmount, DifferenceAmount, DifferenceReason
+            FROM CaixaSessoes
+            WHERE CompanyId = @CompanyId AND ClosedAt IS NULL
+            ORDER BY OpenedAt ASC;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        var rows = new List<CaixaSessionAD>();
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(Map(reader));
+        }
+
+        return rows;
     }
 
     public async Task AbrirAsync(
@@ -156,18 +194,20 @@ public class CaixaAB(Connection connection)
                 }
             }
 
+            // Multi-caixa: cada operador pode ter no máximo 1 caixa aberto ao mesmo tempo.
             const string checkOpenSql = """
                 SELECT TOP 1 Id
                 FROM CaixaSessoes WITH (UPDLOCK, ROWLOCK)
-                WHERE CompanyId = @CompanyId AND ClosedAt IS NULL;
+                WHERE CompanyId = @CompanyId AND OperatorId = @OperatorId AND ClosedAt IS NULL;
                 """;
             await using (var checkOpenCmd = new SqlCommand(checkOpenSql, db, transaction))
             {
                 checkOpenCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                checkOpenCmd.Parameters.AddWithValue("@OperatorId", operatorId);
                 var existingOpen = await checkOpenCmd.ExecuteScalarAsync(cancellationToken);
                 if (existingOpen is not null)
                 {
-                    throw new InvalidOperationException("Já existe um caixa aberto para venda.");
+                    throw new InvalidOperationException("Você já possui um caixa aberto. Feche o caixa atual antes de abrir outro.");
                 }
             }
 
@@ -475,33 +515,65 @@ public class CaixaAB(Connection connection)
         }
     }
 
-    /// <summary>Soma as vendas da empresa por forma de pagamento entre duas datas — usado na conferência do fechamento de caixa.</summary>
+    /// <summary>
+    /// Soma as vendas por forma de pagamento — usado na conferência do fechamento de caixa.
+    /// Quando caixaSessaoId é fornecido, filtra por sessão (multi-caixa). Caso contrário, usa intervalo de datas (backward-compat).
+    /// </summary>
     public async Task<Dictionary<string, decimal>> ObterTotaisPorFormaPagamentoAsync(
         string companyId, DateTimeOffset desde, DateTimeOffset ate, CancellationToken cancellationToken = default)
+        => await ObterTotaisPorFormaPagamentoAsync(companyId, desde, ate, caixaSessaoId: null, cancellationToken);
+
+    public async Task<Dictionary<string, decimal>> ObterTotaisPorFormaPagamentoAsync(
+        string companyId, DateTimeOffset desde, DateTimeOffset ate, string? caixaSessaoId, CancellationToken cancellationToken = default)
     {
-        const string sql = """
-            SELECT Combined.PaymentType, SUM(Combined.Amount) AS Total
-            FROM (
-                SELECT vp.PaymentType, vp.Amount
-                FROM VendaPagamentos vp
-                INNER JOIN Vendas v ON v.Id = vp.VendaId AND v.CompanyId = vp.CompanyId
-                WHERE vp.CompanyId = @CompanyId AND v.SaleDate >= @Desde AND v.SaleDate <= @Ate
+        // Multi-caixa: quando temos CaixaSessaoId, filtramos por sessão (mais preciso).
+        // Fallback por datas para vendas legadas (sem CaixaSessaoId).
+        var sql = caixaSessaoId is not null
+            ? """
+              SELECT Combined.PaymentType, SUM(Combined.Amount) AS Total
+              FROM (
+                  SELECT vp.PaymentType, vp.Amount
+                  FROM VendaPagamentos vp
+                  INNER JOIN Vendas v ON v.Id = vp.VendaId AND v.CompanyId = vp.CompanyId
+                  WHERE vp.CompanyId = @CompanyId AND v.CaixaSessaoId = @CaixaSessaoId
 
-                UNION ALL
+                  UNION ALL
 
-                SELECT v.PaymentType, v.TotalAmount AS Amount
-                FROM Vendas v
-                WHERE v.CompanyId = @CompanyId AND v.SaleDate >= @Desde AND v.SaleDate <= @Ate
-                  AND NOT EXISTS (SELECT 1 FROM VendaPagamentos vp WHERE vp.VendaId = v.Id)
-            ) Combined
-            GROUP BY Combined.PaymentType;
-            """;
+                  SELECT v.PaymentType, v.TotalAmount AS Amount
+                  FROM Vendas v
+                  WHERE v.CompanyId = @CompanyId AND v.CaixaSessaoId = @CaixaSessaoId
+                    AND NOT EXISTS (SELECT 1 FROM VendaPagamentos vp WHERE vp.VendaId = v.Id)
+              ) Combined
+              GROUP BY Combined.PaymentType;
+              """
+            : """
+              SELECT Combined.PaymentType, SUM(Combined.Amount) AS Total
+              FROM (
+                  SELECT vp.PaymentType, vp.Amount
+                  FROM VendaPagamentos vp
+                  INNER JOIN Vendas v ON v.Id = vp.VendaId AND v.CompanyId = vp.CompanyId
+                  WHERE vp.CompanyId = @CompanyId AND v.SaleDate >= @Desde AND v.SaleDate <= @Ate
+
+                  UNION ALL
+
+                  SELECT v.PaymentType, v.TotalAmount AS Amount
+                  FROM Vendas v
+                  WHERE v.CompanyId = @CompanyId AND v.SaleDate >= @Desde AND v.SaleDate <= @Ate
+                    AND NOT EXISTS (SELECT 1 FROM VendaPagamentos vp WHERE vp.VendaId = v.Id)
+              ) Combined
+              GROUP BY Combined.PaymentType;
+              """;
 
         await using var db = await connection.OpenConnectionAsync(cancellationToken);
         await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
-        command.Parameters.AddWithValue("@Desde", desde);
-        command.Parameters.AddWithValue("@Ate", ate);
+        if (caixaSessaoId is not null)
+            command.Parameters.AddWithValue("@CaixaSessaoId", caixaSessaoId);
+        else
+        {
+            command.Parameters.AddWithValue("@Desde", desde);
+            command.Parameters.AddWithValue("@Ate", ate);
+        }
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         var totals = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
         while (await reader.ReadAsync(cancellationToken))
@@ -605,10 +677,11 @@ public class CaixaAB(Connection connection)
         }
 
         // 2. Validações de regra de negócio antes de abrir a transação
-        var openSession = await ObterSessaoAbertaAsync(companyId, cancellationToken);
+        // Multi-caixa: busca o caixa aberto deste operador
+        var openSession = await ObterSessaoAbertaAsync(companyId, currentUser.Id, cancellationToken);
         if (openSession is null)
         {
-            throw new InvalidOperationException("Não existe caixa aberto para lançar movimento.");
+            throw new InvalidOperationException("Você não possui caixa aberto para lançar movimento.");
         }
 
         ensureResponsavel(openSession, currentUser);

@@ -117,8 +117,18 @@ public class PedidoController(
             }
 
             var paymentType = string.IsNullOrWhiteSpace(request.PaymentType) ? "-" : request.PaymentType.Trim();
+
+            // Multi-caixa: vincula a venda ao caixa do operador
+            string? caixaSessaoId = null;
+            try
+            {
+                var sessaoAberta = await caixaService.ObterSessaoAbertaDoOperadorAsync(currentUser.CompanyId, currentUser.Id);
+                caixaSessaoId = sessaoAberta?.Id;
+            }
+            catch { }
+
             var result = await historicoVendasAB.RegistrarComPrecosFixosAsync(
-                currentUser.CompanyId, pedido.CustomerName, pedido.CustomerCpf, paymentType, currentUser.Name, pedido.Itens, request.Payments);
+                currentUser.CompanyId, pedido.CustomerName, pedido.CustomerCpf, paymentType, currentUser.Name, pedido.Itens, request.Payments, caixaSessaoId);
 
             await pedidoAB.MarcarFinalizadoAsync(currentUser.CompanyId, pedido.Id, result.VendaId);
 

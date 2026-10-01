@@ -28,7 +28,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
 
     public async Task<CaixaStatusDto> GetStatusAsync(AuthenticatedUser currentUser, DateTimeOffset? reference = null, CancellationToken cancellationToken = default)
     {
-        var status = await BuildStatusAsync(currentUser.CompanyId, reference ?? HorusDateTime.Now, cancellationToken);
+        var status = await BuildStatusAsync(currentUser.CompanyId, currentUser.Id, reference ?? HorusDateTime.Now, cancellationToken);
         if (HorusRoles.IsGerenteOuAdmin(currentUser.Role))
         {
             return status;
@@ -43,6 +43,9 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         {
             status.LastSession = null;
         }
+
+        // Atendente não precisa ver caixas de outros operadores
+        status.OpenSessions = status.OpenSessions.Where(PertenceAoUsuario).ToList();
 
         return status;
     }
@@ -62,7 +65,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             currentUser.Name,
             request.EventId,
             request.PayloadHash,
-            t => BuildStatusAsync(currentUser.CompanyId, t, cancellationToken),
+            t => BuildStatusAsync(currentUser.CompanyId, currentUser.Id, t, cancellationToken),
             cancellationToken);
 
         if (!status.IsReplay)
@@ -90,7 +93,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             currentUser.CompanyId,
             request,
             currentUser,
-            now => BuildStatus(currentUser.CompanyId, now),
+            now => BuildStatus(currentUser.CompanyId, currentUser.Id, now),
             (companyId, session, now) => ComputeExpectedCash(companyId, session, now),
             EnsureResponsavelPeloCaixa,
             ip,
@@ -103,7 +106,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
     public async Task<CaixaStatusDto> FecharAsync(FecharCaixaRequest request, AuthenticatedUser currentUser, string? ip = null, CancellationToken cancellationToken = default)
     {
         var now = HorusDateTime.Now;
-        var openSession = await caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId, cancellationToken);
+        var openSession = await caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId, currentUser.Id, cancellationToken);
         if (openSession is null)
         {
             if (!string.IsNullOrWhiteSpace(request.EventId))
@@ -114,7 +117,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
                     return existing;
                 }
             }
-            throw new InvalidOperationException("Não existe caixa aberto para fechamento.");
+            throw new InvalidOperationException("Você não possui caixa aberto para fechamento.");
         }
 
         EnsureResponsavelPeloCaixa(openSession, currentUser);
@@ -145,7 +148,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             differenceAmount == 0 ? null : differenceReason,
             request.EventId,
             request.PayloadHash,
-            t => BuildStatusAsync(currentUser.CompanyId, t, cancellationToken),
+            t => BuildStatusAsync(currentUser.CompanyId, currentUser.Id, t, cancellationToken),
             cancellationToken);
 
         if (!status.IsReplay)
@@ -172,7 +175,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
 
     public void EnsureVendaPermitida(AuthenticatedUser currentUser, string? ip = null)
     {
-        var status = BuildStatus(currentUser.CompanyId, HorusDateTime.Now);
+        var status = BuildStatus(currentUser.CompanyId, currentUser.Id, HorusDateTime.Now);
         if (status.CanSell) return;
 
         auditLogAB.RegistrarAsync(
@@ -187,6 +190,10 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
 
         throw new InvalidOperationException(status.BlockReason);
     }
+
+    /// <summary>Retorna a sessão aberta do operador (para vincular vendas ao caixa).</summary>
+    public async Task<CaixaSessionAD?> ObterSessaoAbertaDoOperadorAsync(string companyId, string operatorId, CancellationToken cancellationToken = default)
+        => await caixaAB.ObterSessaoAbertaAsync(companyId, operatorId, cancellationToken);
 
     /// <summary>
     /// Só quem abriu o caixa (ou um gerente/administrador, como cobertura) pode fechá-lo ou lançar
@@ -206,7 +213,8 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
     /// <summary>Dinheiro esperado na gaveta agora: abertura + vendas em dinheiro do turno + reforços - sangrias.</summary>
     public async Task<decimal> ComputeExpectedCashAsync(string companyId, CaixaSessionAD session, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
-        var vendasPorFormaPagamento = await caixaAB.ObterTotaisPorFormaPagamentoAsync(companyId, session.OpenedAt, now, cancellationToken);
+        // Multi-caixa: filtra vendas por CaixaSessaoId (mais preciso que intervalo de datas)
+        var vendasPorFormaPagamento = await caixaAB.ObterTotaisPorFormaPagamentoAsync(companyId, session.OpenedAt, now, session.Id, cancellationToken);
         var vendasDinheiro = vendasPorFormaPagamento.GetValueOrDefault(FormaPagamentoDinheiro, 0m);
 
         var movimentos = await caixaAB.ListarMovimentosAsync(companyId, session.Id, cancellationToken);
@@ -219,13 +227,16 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
     private decimal ComputeExpectedCash(string companyId, CaixaSessionAD session, DateTimeOffset now)
         => ComputeExpectedCashAsync(companyId, session, now).GetAwaiter().GetResult();
 
-    private CaixaStatusDto BuildStatus(string companyId, DateTimeOffset now)
-        => BuildStatusAsync(companyId, now).GetAwaiter().GetResult();
+    private CaixaStatusDto BuildStatus(string companyId, string operatorId, DateTimeOffset now)
+        => BuildStatusAsync(companyId, operatorId, now).GetAwaiter().GetResult();
 
-    private async Task<CaixaStatusDto> BuildStatusAsync(string companyId, DateTimeOffset now, CancellationToken cancellationToken = default)
+    private async Task<CaixaStatusDto> BuildStatusAsync(string companyId, string operatorId, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
         var sessions = await caixaAB.ListarSessoesAsync(companyId, cancellationToken);
-        var openSession = sessions.FirstOrDefault(item => item.ClosedAt is null);
+
+        // Multi-caixa: busca a sessão aberta DESTE operador (não qualquer uma da empresa)
+        var openSession = sessions.FirstOrDefault(item => item.ClosedAt is null && item.OperatorId == operatorId);
+        var allOpenSessions = sessions.Where(item => item.ClosedAt is null).ToList();
         var lastSession = openSession ?? sessions.FirstOrDefault();
         var canSell = false;
         var blockReason = "Abra o caixa do dia antes de iniciar vendas.";
@@ -256,6 +267,16 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         // reaproveita nas três seções da resposta, em vez de repetir a mesma consulta 3x.
         var openSessionDto = openSession is null ? null : await ToDtoAsync(companyId, openSession, now, isCurrent: true, cancellationToken);
 
+        // Multi-caixa: constrói DTOs de todas as sessões abertas (visão gerencial)
+        var openSessionsDtos = new List<CaixaSessionDto>();
+        foreach (var s in allOpenSessions)
+        {
+            if (s == openSession && openSessionDto is not null)
+                openSessionsDtos.Add(openSessionDto);
+            else
+                openSessionsDtos.Add(await ToDtoAsync(companyId, s, now, isCurrent: true, cancellationToken));
+        }
+
         CaixaSessionDto BuildDto(CaixaSessionAD session) =>
             session == openSession && openSessionDto is not null ? openSessionDto : BuildHistoricalDto(session);
 
@@ -267,7 +288,8 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             ServerNow = HorusDateTime.FormatIso(now),
             CurrentSession = openSessionDto,
             LastSession = lastSession is null ? null : BuildDto(lastSession),
-            History = sessions.Take(12).Select(BuildDto).ToList()
+            History = sessions.Take(12).Select(BuildDto).ToList(),
+            OpenSessions = openSessionsDtos
         };
     }
 
@@ -358,6 +380,8 @@ public class CaixaStatusDto
     public CaixaSessionDto? CurrentSession { get; set; }
     public CaixaSessionDto? LastSession { get; set; }
     public List<CaixaSessionDto> History { get; set; } = [];
+    /// <summary>Todas as sessões de caixa abertas na empresa neste momento (visão gerencial multi-caixa).</summary>
+    public List<CaixaSessionDto> OpenSessions { get; set; } = [];
     public bool IsReplay { get; set; }
 }
 

@@ -126,7 +126,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         return rows;
     }
 
-    public async Task<VendaRegistroResultadoAD> RegistrarAsync(string companyId, VendaRequest request)
+    public async Task<VendaRegistroResultadoAD> RegistrarAsync(string companyId, VendaRequest request, string? caixaSessaoId = null)
     {
         await using var db = await connection.OpenConnectionAsync();
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
@@ -251,7 +251,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, payments,
-                request.ClientSaleId, request.OfflineReference, request.OccurredAt);
+                request.ClientSaleId, request.OfflineReference, request.OccurredAt, caixaSessaoId);
 
             result.Warnings = rupturas;
 
@@ -333,7 +333,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         string paymentType,
         string operatorName,
         List<PedidoItemAD> pedidoItens,
-        List<VendaPagamentoRequest>? payments = null)
+        List<VendaPagamentoRequest>? payments = null,
+        string? caixaSessaoId = null)
     {
         await using var db = await connection.OpenConnectionAsync();
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
@@ -402,7 +403,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             }
 
             var result = await InserirVendaAsync(
-                db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, pagamentos);
+                db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, pagamentos,
+                caixaSessaoId: caixaSessaoId);
 
             FiadoMovimentoAD? fiadoMovFixo = null;
             if (fiadoPaymentFixo is not null && fiadoPaymentFixo.Amount > 0 && fiadoClienteIdFixo is not null)
@@ -444,7 +446,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         List<VendaPagamentoRequest>? payments,
         string? clientSaleId = null,
         string? offlineReference = null,
-        DateTimeOffset? occurredAt = null)
+        DateTimeOffset? occurredAt = null,
+        string? caixaSessaoId = null)
     {
         var saleNumber = await NextSaleNumberAsync(db, transaction, companyId);
         var now = HorusDateTime.Now;
@@ -454,9 +457,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         await using (var saleCommand = new SqlCommand(
                          """
                          INSERT INTO Vendas
-                             (Id, CompanyId, SaleNumber, CustomerName, CustomerCpf, PaymentType, TotalAmount, OperatorName, SaleDate, ClientSaleId, OfflineReference, SyncedAt)
+                             (Id, CompanyId, SaleNumber, CustomerName, CustomerCpf, PaymentType, TotalAmount, OperatorName, SaleDate, ClientSaleId, OfflineReference, SyncedAt, CaixaSessaoId)
                          VALUES
-                             (@Id, @CompanyId, @SaleNumber, @CustomerName, @CustomerCpf, @PaymentType, @TotalAmount, @OperatorName, @SaleDate, @ClientSaleId, @OfflineReference, @SyncedAt);
+                             (@Id, @CompanyId, @SaleNumber, @CustomerName, @CustomerCpf, @PaymentType, @TotalAmount, @OperatorName, @SaleDate, @ClientSaleId, @OfflineReference, @SyncedAt, @CaixaSessaoId);
                          """,
                          db,
                          transaction))
@@ -473,6 +476,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             saleCommand.Parameters.AddWithValue("@ClientSaleId", (object?)clientSaleId ?? DBNull.Value);
             saleCommand.Parameters.AddWithValue("@OfflineReference", (object?)offlineReference ?? DBNull.Value);
             saleCommand.Parameters.AddWithValue("@SyncedAt", now);
+            saleCommand.Parameters.AddWithValue("@CaixaSessaoId", (object?)caixaSessaoId ?? DBNull.Value);
             await saleCommand.ExecuteNonQueryAsync();
         }
 
