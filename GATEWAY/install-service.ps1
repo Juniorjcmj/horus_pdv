@@ -8,7 +8,10 @@ param(
     [string]$StoreId     = $(if ($env:GATEWAY_STORE_ID)   { $env:GATEWAY_STORE_ID }   else { "store-001" }),
     [int]$Port           = $(if ($env:GATEWAY_PORT)        { [int]$env:GATEWAY_PORT }  else { 5080 }),
     [string]$ServiceName = "HorusGateway",
-    [string]$CloudSyncUrl = $env:GATEWAY_CLOUD_SYNC_URL
+    [string]$CloudSyncUrl = $env:GATEWAY_CLOUD_SYNC_URL,
+    # Use -SkipPublish quando a pasta publish-service\ ja vem pronta (ex.: pendrive na visita ao cliente):
+    # dispensa o .NET SDK e a internet na maquina do cliente — so registra o servico.
+    [switch]$SkipPublish
 )
 
 $ErrorActionPreference = "Stop"
@@ -26,18 +29,27 @@ if (-not $isAdmin) {
     exit 1
 }
 
-# 2) Precisa do .NET SDK 8 para publicar (self-contained: a maquina alvo nao precisa de runtime).
-if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
-    Write-Host "[Quack Gateway] .NET SDK 8 nao encontrado. Instale em:" -ForegroundColor Red
-    Write-Host "               https://dotnet.microsoft.com/download/dotnet/8.0"
-    exit 1
+# 2+3) Publicacao self-contained (win-x64). Com -SkipPublish, usa a pasta publish-service\ que ja veio
+# pronta (pendrive) — nao precisa de .NET SDK nem internet na maquina do cliente.
+if ($SkipPublish) {
+    if (-not (Test-Path $Exe)) {
+        Write-Host "[Quack Gateway] -SkipPublish: '$Exe' nao encontrado." -ForegroundColor Red
+        Write-Host "               Copie a pasta 'publish-service' (gerada no seu PC) para junto deste script."
+        exit 1
+    }
+    Write-Host "[Quack Gateway] Usando build pronto em publish-service\ (sem publicar)." -ForegroundColor Cyan
+} else {
+    if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+        Write-Host "[Quack Gateway] .NET SDK 8 nao encontrado. Instale em:" -ForegroundColor Red
+        Write-Host "               https://dotnet.microsoft.com/download/dotnet/8.0"
+        Write-Host "               (ou gere a pasta publish-service no seu PC e rode com -SkipPublish)"
+        exit 1
+    }
+    Write-Host "[Quack Gateway] Publicando (self-contained win-x64)..." -ForegroundColor Cyan
+    dotnet publish $ProjectDir -c Release -r win-x64 --self-contained true `
+        -p:PublishSingleFile=false -o $PublishDir
+    if (-not (Test-Path $Exe)) { throw "Publicacao falhou: $Exe nao encontrado." }
 }
-
-# 3) Publica self-contained (win-x64) — um .exe que roda sem instalar nada.
-Write-Host "[Quack Gateway] Publicando (self-contained win-x64)..." -ForegroundColor Cyan
-dotnet publish $ProjectDir -c Release -r win-x64 --self-contained true `
-    -p:PublishSingleFile=false -o $PublishDir
-if (-not (Test-Path $Exe)) { throw "Publicacao falhou: $Exe nao encontrado." }
 
 New-Item -ItemType Directory -Force -Path $DataDir | Out-Null
 
