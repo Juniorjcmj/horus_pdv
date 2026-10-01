@@ -46,7 +46,6 @@ import ReceiptPreviewModal, {
   type PaymentType,
   type SaleReceipt,
 } from "@/components/Admin/ReceiptPreviewModal";
-import { categoriaService, type CategoriaArvore } from "@/services/api/categoriaService";
 import { promocaoService, type Promocao } from "@/services/api/promocaoService";
 import { applyPromotions, round2 } from "@/utils/promotionEngine";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
@@ -193,8 +192,6 @@ export default function SalesStartPage({
   const [now, setNow] = useState(new Date());
   const [productSearch, setProductSearch] = useState("");
   const { products, reload: reloadProducts } = useProducts();
-  const [categories, setCategories] = useState<CategoriaArvore[]>([]);
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string | null>(null);
   const [company, setCompany] = useState<CompanyDto | null>(null);
   const [cashStatus, setCashStatus] = useState<CashRegisterStatusDto | null>(null);
   const [selectedProductId, setSelectedProductId] = useState("");
@@ -327,24 +324,9 @@ export default function SalesStartPage({
     return quantityIsFractionable ? parsed : Math.floor(parsed);
   }, [quantityInput, quantityIsFractionable]);
 
-  const activeCategoryIds = useMemo(() => {
-    if (!selectedDepartmentId) return null;
-    const dep = categories.find((c) => c.id === selectedDepartmentId);
-    if (!dep) return new Set([selectedDepartmentId]);
-    const ids = new Set<string>([dep.id]);
-    dep.subcategorias?.forEach((sub) => {
-      ids.add(sub.id);
-      sub.subcategorias?.forEach((subsub) => ids.add(subsub.id));
-    });
-    return ids;
-  }, [categories, selectedDepartmentId]);
-
   const filteredProducts = useMemo(() => {
     const normalized = productSearch.trim().toLowerCase();
     let list = products;
-    if (activeCategoryIds) {
-      list = list.filter((item) => item.categoriaId && activeCategoryIds.has(item.categoriaId));
-    }
     if (normalized) {
       list = list.filter(
         (item) =>
@@ -354,7 +336,7 @@ export default function SalesStartPage({
       );
     }
     return list;
-  }, [products, productSearch, activeCategoryIds]);
+  }, [products, productSearch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -539,18 +521,6 @@ export default function SalesStartPage({
     }
   }, []);
 
-  const loadCategories = useCallback(async () => {
-    try {
-      const items = await categoriaService.list(false, true);
-      setCategories(items);
-    } catch {
-      setCategories([]);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -1741,7 +1711,7 @@ export default function SalesStartPage({
                   }}
                   onFocus={() => {
                     // Evita reabrir o autocomplete automaticamente após adicionar item no mobile.
-                    const hasSearch = productSearch.trim().length > 0 || selectedDepartmentId !== null;
+                    const hasSearch = productSearch.trim().length > 0;
                     setShowProductOptions(hasSearch);
                     if (hasSearch && filteredProducts.length > 0) setHighlightedProductIndex(0);
                   }}
@@ -1832,47 +1802,6 @@ export default function SalesStartPage({
                 )}
               </div>
             </label>
-
-            {categories.length > 0 && (
-              <div className="mb-3">
-                <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
-                    Departamentos
-                  </span>
-                  {selectedDepartmentId && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedDepartmentId(null)}
-                      className="text-[10px] font-medium text-accent hover:underline"
-                    >
-                      Limpar filtro
-                    </button>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto pr-0.5">
-                  {categories.map((dept) => {
-                    const isSelected = selectedDepartmentId === dept.id;
-                    return (
-                      <button
-                        key={dept.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedDepartmentId((current) => (current === dept.id ? null : dept.id));
-                          setShowProductOptions(true);
-                        }}
-                        className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${
-                          isSelected
-                            ? "bg-accent text-white shadow-sm ring-2 ring-accent/30"
-                            : "border border-border-primary bg-bg-light text-text-secondary hover:border-accent/40 hover:text-text-primary"
-                        }`}
-                      >
-                        {dept.nome}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             <label className="mb-2 block">
               <span className="mb-1 block text-xs font-semibold uppercase">
