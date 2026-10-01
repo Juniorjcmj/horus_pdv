@@ -5,7 +5,7 @@
  *           usando o endereço no fallback offline (zero config no terminal). Camada aditiva.
  */
 import { useEffect, useState } from "react";
-import { Router } from "lucide-react";
+import { Download, FileText, Router } from "lucide-react";
 import { YesNoSegmentedControl } from "@/components/Form";
 import { Toast } from "@/hooks/Dialog";
 import { gatewayConfigService } from "@/services/api/gatewayConfigService";
@@ -121,6 +121,30 @@ export default function GatewaySettingsCard() {
             Dica: prefira um <strong>host</strong> com HTTPS (ex.: <code>https://quack-gateway.local:5443</code>)
             para evitar bloqueio de conteúdo misto no navegador. IP com HTTP funciona em redes que permitem.
           </p>
+
+          <div className="mt-4 border-t border-border-secondary/50 pt-4">
+            <p className="text-sm font-medium text-text-primary">Instalar o Gateway na loja</p>
+            <p className="mt-1 text-xs text-text-tertiary">
+              Baixe o kit (scripts + guia) e siga o checklist para instalar como Serviço do Windows.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a
+                href="/gateway/quack-gateway-kit.zip"
+                download
+                className="inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-hover-accent"
+              >
+                <Download size={16} /> Baixar kit de instalação (.zip)
+              </a>
+              <a
+                href="/gateway/checklist.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg border border-border-secondary px-3 py-2 text-sm font-semibold text-text-secondary transition hover:border-accent/40 hover:text-text-primary"
+              >
+                <FileText size={16} /> Ver / imprimir checklist
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>

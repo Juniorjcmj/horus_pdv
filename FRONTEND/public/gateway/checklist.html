@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quack Gateway — Checklist de Instalação</title>
+<style>
+  :root { --navy:#152238; --yellow:#ffc233; --orange:#f97316; --ink:#1f2937; --muted:#5a6472; --line:#e5e7eb; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#eef0f3; color:var(--ink);
+    font:15px/1.55 "Segoe UI", system-ui, -apple-system, sans-serif; }
+  .sheet { max-width:820px; margin:18px auto; background:#fff; border:1px solid var(--line);
+    border-radius:14px; overflow:hidden; box-shadow:0 6px 24px rgba(21,34,56,.08); }
+  header { background:var(--navy); color:#fff; padding:20px 26px; display:flex; align-items:center; gap:14px; }
+  header .logo { width:40px;height:40px;border-radius:10px;background:var(--yellow);color:var(--navy);
+    display:grid;place-items:center;font-weight:800;font-size:20px; }
+  header h1 { margin:0; font-size:20px; }
+  header p { margin:2px 0 0; color:#c9d3e3; font-size:12.5px; }
+  main { padding:22px 26px 30px; }
+  h2 { font-size:15px; margin:22px 0 10px; color:var(--navy); text-transform:uppercase; letter-spacing:.04em;
+    border-bottom:2px solid var(--yellow); padding-bottom:5px; }
+  .badge { display:inline-block; background:var(--yellow); color:var(--navy); font-weight:700; font-size:12px;
+    padding:2px 10px; border-radius:999px; margin-left:6px; }
+  ol { margin:0; padding-left:0; counter-reset:step; list-style:none; }
+  li { position:relative; padding:8px 0 8px 40px; border-bottom:1px dashed var(--line); }
+  li:before { counter-increment:step; content:counter(step); position:absolute; left:0; top:7px;
+    width:26px;height:26px;border-radius:50%; background:var(--navy); color:#fff; font-weight:700; font-size:13px;
+    display:grid; place-items:center; }
+  .chk { padding-left:30px; }
+  .chk li:before { content:"\2610"; background:none; color:var(--navy); font-size:22px; top:4px; width:22px; }
+  code { background:#f3f4f6; border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-size:12.5px;
+    font-family:ui-monospace, "Cascadia Code", Consolas, monospace; }
+  pre { background:var(--navy); color:#eef2f8; padding:12px 14px; border-radius:10px; overflow-x:auto;
+    font-size:12.5px; font-family:ui-monospace, Consolas, monospace; margin:8px 0; }
+  pre .y { color:var(--yellow); }
+  .note { background:#fff8e6; border:1px solid #f3dd9a; border-radius:10px; padding:10px 14px; font-size:13px;
+    margin:10px 0; }
+  .warn { background:#fef2f2; border:1px solid #f6c3c3; border-radius:10px; padding:10px 14px; font-size:13px; margin:10px 0; }
+  .muted { color:var(--muted); font-size:12.5px; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .card { border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .card h3 { margin:0 0 6px; font-size:14px; color:var(--navy); }
+  .print-btn { position:fixed; top:14px; right:14px; background:var(--navy); color:#fff; border:none;
+    padding:10px 16px; border-radius:10px; font-weight:700; cursor:pointer; }
+  footer { padding:14px 26px 24px; color:var(--muted); font-size:12px; text-align:center; }
+  @media print {
+    body { background:#fff; } .sheet { box-shadow:none; border:none; margin:0; max-width:none; }
+    .print-btn { display:none; } h2 { page-break-after:avoid; } li { page-break-inside:avoid; }
+    .cols { grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:640px){ .cols{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+<div class="sheet">
+  <header>
+    <div class="logo">Q</div>
+    <div>
+      <h1>Quack Gateway — Checklist de Instalação</h1>
+      <p>Guia de campo para instalar o Gateway local na loja do cliente</p>
+    </div>
+  </header>
+  <main>
+    <div class="note">
+      <strong>Pré-requisito único:</strong> o Gateway é <strong>self-contained</strong> — a máquina do cliente
+      <strong>não precisa de .NET, SQL Server, Node nem Docker</strong>. Você leva tudo pronto no pendrive.
+    </div>
+
+    <h2>A. No seu PC (antes da visita) <span class="badge">precisa do .NET SDK 8</span></h2>
+    <ol>
+      <li>Abra o PowerShell na pasta <code>GATEWAY</code> e gere o build:
+        <pre><span class="y">dotnet</span> publish src/HorusGateway -c Release -r win-x64 --self-contained true -p:PublishSingleFile=false -o publish-service</pre>
+      </li>
+      <li>Copie para o pendrive a pasta <code>GATEWAY</code> com: <code>publish-service\</code>,
+        <code>install-service.ps1</code>, <code>uninstall-service.ps1</code>, <code>setup-https.ps1</code> e este checklist.</li>
+      <li>Anote o <strong>CompanyId</strong> real da empresa na Cloud (tem que bater — isolamento por empresa).</li>
+    </ol>
+
+    <h2>B. Na máquina do cliente (onde o Gateway vai ficar — ex.: PC do caixa)</h2>
+    <ol>
+      <li>Copie a pasta do pendrive para <code>C:\QuackGateway</code>.</li>
+      <li><strong>IP fixo:</strong> rode <code>ipconfig</code>, anote o IP e reserve no roteador (DHCP reservation).
+        Ex.: <code>192.168.0.10</code>.</li>
+      <li>Abra o <strong>PowerShell como Administrador</strong> e escolha UM cenário abaixo.</li>
+    </ol>
+
+    <div class="cols">
+      <div class="card">
+        <h3>Cenário 1 — Sistema em HTTP / app desktop</h3>
+        <p class="muted">O mais simples. Porta 5080.</p>
+        <pre>cd C:\QuackGateway
+.\install-service.ps1 -SkipPublish `
+  -CompanyId <span class="y">&lt;EMPRESA&gt;</span> -StoreId loja-01 -Port 5080</pre>
+        <p class="muted">Teste: <code>http://localhost:5080/</code> abre o painel.</p>
+      </div>
+      <div class="card">
+        <h3>Cenário 2 — Sistema em HTTPS</h3>
+        <p class="muted">O navegador exige HTTPS no Gateway. Porta 5443.</p>
+        <pre>cd C:\QuackGateway
+.\setup-https.ps1 -IpAddress <span class="y">192.168.0.10</span> `
+  -PfxPassword "umaSenhaForte"
+
+$env:GATEWAY_HTTPS_CERT="C:\QuackGateway\certs\quack-gateway.pfx"
+$env:GATEWAY_HTTPS_CERT_PASSWORD="umaSenhaForte"
+$env:GATEWAY_PORT=5443
+.\install-service.ps1 -SkipPublish -CompanyId <span class="y">&lt;EMPRESA&gt;</span> -StoreId loja-01</pre>
+        <p class="muted">Em CADA terminal: instale o <code>certs\quack-gateway.cer</code> em
+          “Autoridades de Certificação Raiz Confiáveis”.</p>
+      </div>
+    </div>
+
+    <h2>C. Configurar e validar</h2>
+    <ol>
+      <li>No painel do Gateway (<code>http(s)://&lt;IP&gt;:porta/</code>), <strong>pré-autorize os terminais</strong>
+        informando o IP de cada um (PDV-01, PDV-02, CAIXA…).</li>
+      <li>No sistema (Cloud) → <strong>Configurações → Local Gateway</strong>, cadastre o endereço:
+        <code>http://&lt;IP&gt;:5080</code> ou <code>https://&lt;IP&gt;:5443</code>. Salvar.</li>
+      <li>Os terminais aprendem o endereço sozinhos enquanto online — <strong>zero config no terminal</strong>.</li>
+    </ol>
+
+    <h2>D. Antes de sair — conferência final</h2>
+    <ul class="chk">
+      <li>Painel abre e mostra <strong>Gateway / Storage saudáveis</strong>.</li>
+      <li>Serviço com início automático: <code>sc.exe query HorusGateway</code> → RUNNING.</li>
+      <li>Terminais aparecem (pré-autorizados) e ficam <strong>online</strong> ao simular queda de internet.</li>
+      <li>Endereço cadastrado na Cloud (Configurações → Local Gateway).</li>
+      <li><strong>Eventos pendentes = 0</strong> no painel (nada preso localmente).</li>
+      <li>(HTTPS) <code>.cer</code> instalado em todos os terminais.</li>
+    </ul>
+
+    <div class="warn">
+      <strong>Atualização/parada controlada:</strong> antes de parar o serviço para atualizar, confira no painel
+      que <strong>“Eventos pendentes = 0”</strong>. Remover: <code>.\uninstall-service.ps1</code> (preserva os dados).
+    </div>
+
+    <h2>Comandos úteis</h2>
+    <pre>sc.exe start HorusGateway     <span class="y"># iniciar</span>
+sc.exe stop  HorusGateway     <span class="y"># parar</span>
+Logs: C:\QuackGateway\publish-service\logs\gateway-AAAA-MM-DD.log</pre>
+    <p class="muted">O arquivo <code>.pfx</code> contém a chave privada — mantenha só no Gateway. O <code>.cer</code>
+      é público (pode copiar para os terminais à vontade).</p>
+  </main>
+  <footer>Quack Sistemas · Gateway local (offline-first por loja)</footer>
+</div>
+</body>
+</html>
