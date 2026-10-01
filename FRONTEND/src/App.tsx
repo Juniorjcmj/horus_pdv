@@ -21,6 +21,14 @@ import { cashRegisterService } from "@/services/api/cashRegisterService";
 import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
 import { syncEngine } from "@/infrastructure/synchronization/SyncEngine";
 import { startCloudGatewayProvisioning } from "@/infrastructure/gateway/cloudGatewayProvisioning";
+import { companyThemeService } from "@/services/api/companyThemeService";
+import {
+  applyAccent,
+  cacheCompanyTheme,
+  getCachedCompanyTheme,
+  isHexColor,
+  type CompanyTheme,
+} from "@/utils/companyTheme";
 import SyncStatus from "@/components/SyncStatus";
 import { companyService } from "@/services/api/companyService";
 import {
@@ -181,6 +189,7 @@ export default function App() {
     const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
     return storedTheme === "dark" ? "dark" : "light";
   });
+  const [companyTheme, setCompanyTheme] = useState<CompanyTheme>(() => getCachedCompanyTheme());
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window === "undefined") return false;
     return Boolean(getStoredAuthUser());
@@ -710,6 +719,44 @@ export default function App() {
     document.documentElement.setAttribute("data-theme", themeMode);
     window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
   }, [themeMode]);
+
+  // Busca o tema (cores de acento) da empresa na Cloud ao autenticar; aplica do cache antes (sem flash).
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let active = true;
+    companyThemeService
+      .get()
+      .then((t) => {
+        if (!active || !t) return;
+        const next: CompanyTheme = { systemAccent: t.systemAccent ?? null, pdvAccent: t.pdvAccent ?? null };
+        setCompanyTheme(next);
+        cacheCompanyTheme(next);
+      })
+      .catch(() => {
+        /* offline/sem tema — mantém o cache/padrão */
+      });
+    // O card de Configurações emite este evento ao salvar, para aplicar na hora neste dispositivo.
+    const onThemeChange = (e: Event) => {
+      const detail = (e as CustomEvent<CompanyTheme>).detail;
+      if (!detail) return;
+      setCompanyTheme(detail);
+      cacheCompanyTheme(detail);
+    };
+    window.addEventListener("horuspdv-theme-change", onThemeChange);
+    return () => {
+      active = false;
+      window.removeEventListener("horuspdv-theme-change", onThemeChange);
+    };
+  }, [isAuthenticated]);
+
+  // Aplica a cor de acento: na frente de caixa usa a cor do PDV (se houver); senão a do sistema.
+  useEffect(() => {
+    const effective =
+      activePage === "vendas" && isHexColor(companyTheme.pdvAccent)
+        ? companyTheme.pdvAccent
+        : companyTheme.systemAccent;
+    applyAccent(effective);
+  }, [companyTheme, activePage]);
 
   useEffect(() => {
     if (activePage === "vendas" && isStandalonePos) {

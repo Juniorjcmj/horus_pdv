@@ -130,6 +130,9 @@ public static class HorusDatabaseInitializer
 
         await RunScriptFileAsync(
             sqlConnection, logger, Path.Combine("DataBase", "Migrations", "26_multi_caixa_operador.sql"));
+
+        await RunScriptFileAsync(
+            sqlConnection, logger, Path.Combine("DataBase", "Migrations", "27_empresa_tema.sql"));
     }
 
     private static async Task RunScriptFileAsync(SqlConnection sqlConnection, ILogger logger, string relativePath)

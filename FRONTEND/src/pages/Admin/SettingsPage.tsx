@@ -9,6 +9,7 @@ import {
   GatewaySettingsCard,
   PrintSettingsCard,
   SecuritySessionsCard,
+  ThemeColorsCard,
   ThemeSettingsCard,
   type ActiveSession,
 } from "@/components/SettingsPage";
@@ -92,6 +93,7 @@ export default function SettingsPage({
 
           <div className="space-y-4 px-6 py-6">
             <ThemeSettingsCard themeMode={themeMode} onToggleTheme={onToggleTheme} />
+            {isAdminOrManager && <ThemeColorsCard />}
             <PrintSettingsCard
               printPreviewEnabled={printPreviewEnabled}
               onChangePrintPreview={handleChangePrintPreview}
