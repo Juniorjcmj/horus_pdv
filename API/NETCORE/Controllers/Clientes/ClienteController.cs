@@ -14,7 +14,7 @@ namespace HORUSPDV_API.Controllers.Clientes;
 
 [ApiController]
 [Route("api/[controller]")]
-[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
 public class ClienteController(IClienteService clienteService) : ControllerBase
 {
     [HttpGet]
@@ -55,6 +55,7 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
     [ProducesResponseType(typeof(ApiResponse<ClienteModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Atualizar(string id, [FromBody] ClienteRequest request)
     {
@@ -82,6 +83,7 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Excluir(string id)
     {

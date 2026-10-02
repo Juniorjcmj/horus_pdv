@@ -13,10 +13,8 @@ public static class HorusRoles
     public const string Atendente = "atendente";
 
     /// <summary>
-    /// Perfil restrito à frente de caixa (vender + finalizar pedido) e à abertura/fechamento de
-    /// caixa — sem acesso a cadastros, relatórios, fiscal ou pedidos. Não aparece em nenhum
-    /// [HorusAuthorizeRoles]: fica de fora por não estar nas listas de administrador/gerente/
-    /// atendente dos controllers restritos (ver CaixaController, que fica aberto a todos).
+    /// Perfil da frente de caixa (vender, sincronizar catálogo/clientes, registrar cliente rápido,
+    /// fiado e abertura/fechamento de caixa). Não acessa relatórios gerenciais ou cadastros administrativos.
     /// </summary>
     public const string Caixa = "caixa";
 

@@ -15,7 +15,7 @@ namespace HORUSPDV_API.Controllers.Tema;
 
 [ApiController]
 [Route("api/company-theme")]
-[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
 public partial class CompanyThemeController(EmpresaTemaAB temaAB) : ControllerBase
 {
     [GeneratedRegex("^#[0-9a-fA-F]{6}$")]

@@ -15,7 +15,7 @@ namespace HORUSPDV_API.Controllers.Gateway;
 
 [ApiController]
 [Route("api/gateway-config")]
-[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
 public class GatewayConfigController(LojaGatewayConfigAB gatewayConfigAB) : ControllerBase
 {
     /// <summary>Terminal autenticado obtém o endereço do Gateway da sua empresa (ou nulo se não houver).</summary>

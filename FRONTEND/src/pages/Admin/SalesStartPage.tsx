@@ -249,8 +249,9 @@ export default function SalesStartPage({
         reloadProducts(false).catch(() => 0),
         reloadCustomers(false).catch(() => 0),
       ]);
+      const reason = err instanceof Error ? err.message : "Falha na comunicação com o servidor.";
       Toast.error(
-        "Não foi possível sincronizar com a nuvem. Verifique a conexão com a internet ou o servidor.",
+        `Não foi possível sincronizar com a nuvem: ${reason}`,
       );
     } finally {
       setIsSyncingCloud(false);

@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Clientes/ClienteController.cs": {
-    "mtime": 1788791035.4764519,
-    "seen": 1788888974.3517754,
-    "ast_hash": "41ffb6b2cd3f468858fef5e93f463313",
+    "mtime": 1790976492.3703275,
+    "seen": 1790976661.1898053,
+    "ast_hash": "a6df304c24badaeb30b17d9a720991be",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Empresa/EmpresaController.cs": {
@@ -588,9 +588,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusRoles.cs": {
-    "mtime": 1788791224.9961333,
-    "seen": 1788888974.3519697,
-    "ast_hash": "3e9686b39336c60b9cdbade269e544c5",
+    "mtime": 1790976531.289469,
+    "seen": 1790976661.2108846,
+    "ast_hash": "9d5ecf72bf502af96c6bc7d6247e0db9",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusSecretProtector.cs": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1790973213.037487,
-    "seen": 1790973295.1303253,
-    "ast_hash": "204ae31728fbb378740dd9be4d82852b",
+    "mtime": 1790976545.3396308,
+    "seen": 1790976661.2328658,
+    "ast_hash": "6934853f4c1a65688dea5cdb9dbdb67b",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -3564,9 +3564,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Gateway/GatewayConfigController.cs": {
-    "mtime": 1790783587.486281,
-    "seen": 1790871052.5853722,
-    "ast_hash": "c2930d6c427072429f8cc673f2cbb6eb",
+    "mtime": 1790976515.8205345,
+    "seen": 1790976661.1908844,
+    "ast_hash": "a2cf0a6951d4e4f3308ba48ea6722437",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/LojaGatewayConfigAB.cs": {
@@ -3594,9 +3594,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Tema/CompanyThemeController.cs": {
-    "mtime": 1790899547.5922859,
-    "seen": 1790909645.7783895,
-    "ast_hash": "a619585c91dbc75f796168b2d4687fbc",
+    "mtime": 1790976500.7235713,
+    "seen": 1790976661.1932127,
+    "ast_hash": "694482ad69ec5ca895d20e58be6b57c5",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmpresaTemaAB.cs": {
@@ -3678,9 +3678,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/RegrasEmissaoNfceController.cs": {
-    "mtime": 1790965233.030301,
-    "seen": 1790965934.3316126,
-    "ast_hash": "2136940954abd35038d95cb21febc899",
+    "mtime": 1790976508.269744,
+    "seen": 1790976661.190523,
+    "ast_hash": "b86f4e52afec9a9c85c508592a952e5b",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs": {

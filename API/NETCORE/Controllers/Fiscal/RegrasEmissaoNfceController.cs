@@ -11,7 +11,7 @@ namespace HORUSPDV_API.Controllers.Fiscal;
 
 [ApiController]
 [Route("api/regras-emissao-nfce")]
-[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
 public class RegrasEmissaoNfceController(RegrasEmissaoNfceAB regrasEmissaoNfceAB) : ControllerBase
 {
     [HttpGet]
