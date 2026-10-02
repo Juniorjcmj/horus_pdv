@@ -12,12 +12,10 @@ import LoadingButton from "@/components/Loading/LoadingButton";
 import TablePagination from "@/components/Pagination/TablePagination";
 import AddressContactFields from "@/components/Register/AddressContactFields";
 import { Toast, useStatusDialog } from "@/hooks/Dialog";
-import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import PageLayout from "@/layout/PageLayout";
 import { supplierService } from "@/services/api/supplierService";
 import { lookupAddressByCep } from "@/utils/cepLookup";
 import { onlyDigits } from "@/utils/inputMasks";
-import { isValidCnpj, isValidEmail } from "@/utils/validators";
 
 type Supplier = {
   id: string;
@@ -77,7 +75,6 @@ function SupplierFormDrawer({
   onSave: () => void;
   onFillAddressFromCep: () => void;
 }) {
-  const { maskCnpj } = useInputMasks();
   if (!open) return null;
 
   const setField = <K extends keyof SupplierFormData>(
@@ -114,7 +111,7 @@ function SupplierFormDrawer({
             <h4 className="text-sm font-semibold text-text-secondary">Dados do fornecedor</h4>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">Razão Social *</span>
+                <span className="mb-1.5 block text-sm text-text-secondary">Razão Social</span>
                 <input
                   value={value.companyName}
                   onChange={(event) => setField("companyName", event.target.value)}
@@ -123,7 +120,7 @@ function SupplierFormDrawer({
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">Nome Fantasia *</span>
+                <span className="mb-1.5 block text-sm text-text-secondary">Nome Fantasia</span>
                 <input
                   value={value.fantasyName}
                   onChange={(event) => setField("fantasyName", event.target.value)}
@@ -132,12 +129,12 @@ function SupplierFormDrawer({
                 />
               </label>
               <label className="block md:col-span-2">
-                <span className="mb-1.5 block text-sm text-text-secondary">CNPJ *</span>
+                <span className="mb-1.5 block text-sm text-text-secondary">CNPJ</span>
                 <input
                   value={value.cnpj}
-                  onChange={(event) => setField("cnpj", maskCnpj(event.target.value))}
+                  onChange={(event) => setField("cnpj", event.target.value)}
                   className="input-field w-full"
-                  placeholder="00.000.000/0000-00"
+                  placeholder="00.000.000/0000-00 ou documento"
                 />
               </label>
             </div>
@@ -364,42 +361,9 @@ export default function SupplierRegisterPage() {
   };
 
   const validateForm = () => {
-    const requiredFields: Array<keyof SupplierFormData> = [
-      "companyName",
-      "fantasyName",
-      "cnpj",
-      "cep",
-      "city",
-      "state",
-      "address",
-      "neighborhood",
-      "number",
-      "cellphone",
-    ];
-
-    const missing = requiredFields.some((field) => !String(form[field]).trim());
-    if (missing) {
-      Toast.error("Preencha os campos obrigatórios.");
-      return false;
-    }
-
-    if (form.companyName.trim().length < 3) {
-      Toast.error("A razão social deve ter no mínimo 3 caracteres.");
-      return false;
-    }
-
-    if (form.fantasyName.trim().length < 3) {
-      Toast.error("O nome fantasia deve ter no mínimo 3 caracteres.");
-      return false;
-    }
-
-    if (!isValidCnpj(form.cnpj)) {
-      Toast.error("CNPJ inválido.");
-      return false;
-    }
-
-    if (!isValidEmail(form.email)) {
-      Toast.error("E-mail inválido.");
+    const nome = form.companyName.trim() || form.fantasyName.trim();
+    if (!nome) {
+      Toast.error("Informe a Razão Social ou Nome Fantasia do fornecedor.");
       return false;
     }
 
@@ -409,17 +373,23 @@ export default function SupplierRegisterPage() {
   const handleSave = async () => {
     if (!validateForm()) return;
 
+    const payload: SupplierFormData = {
+      ...form,
+      companyName: form.companyName.trim() || form.fantasyName.trim(),
+      fantasyName: form.fantasyName.trim() || form.companyName.trim(),
+    };
+
     setSaving(true);
     try {
       if (editingId) {
-        const updated = await supplierService.update(editingId, form);
+        const updated = await supplierService.update(editingId, payload);
         if (!updated) return;
         setSuppliers((current) =>
           current.map((supplier) => (supplier.id === editingId ? updated : supplier)),
         );
         Toast.success("Fornecedor atualizado com sucesso.");
       } else {
-        const created = await supplierService.create(form);
+        const created = await supplierService.create(payload);
         if (!created) return;
         setSuppliers((current) => [created, ...current]);
         Toast.success("Fornecedor cadastrado com sucesso.");

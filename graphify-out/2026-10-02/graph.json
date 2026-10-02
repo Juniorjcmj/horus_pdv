@@ -9979,7 +9979,7 @@
       "file_type": "code",
       "norm_label": "cartitem",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L113"
+      "source_location": "L112"
     },
     {
       "id": "frontend_src_pages_admin_salesstartpage_product",
@@ -9992,7 +9992,7 @@
       "file_type": "code",
       "norm_label": "product",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L86"
+      "source_location": "L85"
     },
     {
       "id": "frontend_src_pages_admin_salesstartpage_salesstartpageprops",
@@ -10005,7 +10005,7 @@
       "file_type": "code",
       "norm_label": "salesstartpageprops",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L80"
+      "source_location": "L79"
     },
     {
       "id": "frontend_src_pages_admin_salesstartpage_splitpayment",
@@ -10018,7 +10018,7 @@
       "file_type": "code",
       "norm_label": "splitpayment",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L174"
+      "source_location": "L173"
     },
     {
       "id": "api_netcore_controllers_empresa_empresacontroller_horuspdv_api_controllers_empresa_empresacontroller",
@@ -40554,7 +40554,7 @@
       "file_type": "code",
       "norm_label": "formatcashelapsed()",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L166"
+      "source_location": "L165"
     },
     {
       "id": "frontend_src_pages_admin_salesstartpage_formatdatetime",
@@ -40566,7 +40566,7 @@
       "file_type": "code",
       "norm_label": "formatdatetime()",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L140"
+      "source_location": "L139"
     },
     {
       "id": "frontend_src_pages_admin_salesstartpage_formatquantitydisplay",
@@ -40578,7 +40578,7 @@
       "file_type": "code",
       "norm_label": "formatquantitydisplay()",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L109"
+      "source_location": "L108"
     },
     {
       "id": "frontend_src_pages_admin_salesstartpage_getpaymentlabel",
@@ -40590,7 +40590,7 @@
       "file_type": "code",
       "norm_label": "getpaymentlabel()",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L162"
+      "source_location": "L161"
     },
     {
       "id": "frontend_src_pages_admin_salesstartpage_isfractionableunit",
@@ -40602,7 +40602,7 @@
       "file_type": "code",
       "norm_label": "isfractionableunit()",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L104"
+      "source_location": "L103"
     },
     {
       "id": "frontend_src_pages_admin_salesstartpage_preventnondigitbeforeinput",
@@ -40614,7 +40614,7 @@
       "file_type": "code",
       "norm_label": "preventnondigitbeforeinput()",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L155"
+      "source_location": "L154"
     },
     {
       "id": "frontend_src_pages_admin_salesstartpage_salesstartpage",
@@ -40626,7 +40626,7 @@
       "file_type": "code",
       "norm_label": "salesstartpage()",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L182"
+      "source_location": "L181"
     },
     {
       "id": "api_netcore_controllers_empresa_empresacontroller_horuspdv_api_controllers_empresa_empresacontroller_atualizar",
@@ -93900,7 +93900,7 @@
       "file_type": "code",
       "norm_label": "payment_options",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L130"
+      "source_location": "L129"
     },
     {
       "id": "api_netcore_controllers_empresa_empresacontroller_cs_horusauthorizeroles",
@@ -115425,7 +115425,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L1415",
+      "source_location": "L1414",
       "weight": 1.0
     },
     {
@@ -115437,7 +115437,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L1554",
+      "source_location": "L1553",
       "weight": 1.0
     },
     {
@@ -115449,7 +115449,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L1558",
+      "source_location": "L1557",
       "weight": 1.0
     },
     {
@@ -115461,7 +115461,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L319",
+      "source_location": "L318",
       "weight": 1.0
     },
     {
@@ -115473,7 +115473,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L674",
+      "source_location": "L673",
       "weight": 1.0
     },
     {
@@ -196263,7 +196263,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L104",
+      "source_location": "L103",
       "weight": 1.0
     },
     {
@@ -196274,7 +196274,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L109",
+      "source_location": "L108",
       "weight": 1.0
     },
     {
@@ -196285,7 +196285,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L113",
+      "source_location": "L112",
       "weight": 1.0
     },
     {
@@ -196296,7 +196296,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L130",
+      "source_location": "L129",
       "weight": 1.0
     },
     {
@@ -196307,7 +196307,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L140",
+      "source_location": "L139",
       "weight": 1.0
     },
     {
@@ -196318,7 +196318,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L155",
+      "source_location": "L154",
       "weight": 1.0
     },
     {
@@ -196329,7 +196329,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L162",
+      "source_location": "L161",
       "weight": 1.0
     },
     {
@@ -196340,7 +196340,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L166",
+      "source_location": "L165",
       "weight": 1.0
     },
     {
@@ -196351,7 +196351,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L174",
+      "source_location": "L173",
       "weight": 1.0
     },
     {
@@ -196362,7 +196362,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L182",
+      "source_location": "L181",
       "weight": 1.0
     },
     {
@@ -196373,7 +196373,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L80",
+      "source_location": "L79",
       "weight": 1.0
     },
     {
@@ -196384,7 +196384,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L86",
+      "source_location": "L85",
       "weight": 1.0
     },
     {
@@ -234864,5 +234864,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ded7abff9e0b0118f01bf5e966d91164f9794db0"
+  "built_at_commit": "076492859a35adadc5737943abbb2a59d105f6a5"
 }

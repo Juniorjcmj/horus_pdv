@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1790909526.9036868,
-    "seen": 1790909645.7955632,
-    "ast_hash": "20b43de075417f6ed92943ddd6bb0810",
+    "mtime": 1790949303.3273454,
+    "seen": 1790949668.9228666,
+    "ast_hash": "34eac38cb5c49ba80f94560c75341b8a",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -528,9 +528,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/FornecedorService.cs": {
-    "mtime": 1788665266.5580294,
-    "seen": 1788888974.3519516,
-    "ast_hash": "901356bef06888b95bff95c604635e96",
+    "mtime": 1790949329.5535305,
+    "seen": 1790949668.9253175,
+    "ast_hash": "eaf20322edbb0fb23e4fae92320543b2",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/IFornecedorService.cs": {
@@ -1086,9 +1086,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SupplierRegisterPage.tsx": {
-    "mtime": 1788665266.6035607,
-    "seen": 1788888974.3521845,
-    "ast_hash": "c2cde9fa3e06f567159f3ed3bd4f6a13",
+    "mtime": 1790949570.2874897,
+    "seen": 1790949668.954271,
+    "ast_hash": "4efb2ac7689ecbf73379e92cb973803c",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/UserAccountsPage.tsx": {

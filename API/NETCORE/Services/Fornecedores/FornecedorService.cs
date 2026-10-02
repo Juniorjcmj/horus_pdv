@@ -17,6 +17,7 @@ public class FornecedorService(FornecedorAB fornecedoresAB, ProdutoAB produtosAB
 
     public async Task<FornecedorModel> CriarAsync(string companyId, FornecedorRequest request)
     {
+        NormalizeRequest(request);
         Validate(request);
         await ValidateDuplicatesAsync(companyId, request, null);
         var supplier = MapRequest($"fr-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", request);
@@ -25,6 +26,7 @@ public class FornecedorService(FornecedorAB fornecedoresAB, ProdutoAB produtosAB
 
     public async Task<FornecedorModel?> AtualizarAsync(string companyId, string id, FornecedorRequest request)
     {
+        NormalizeRequest(request);
         Validate(request);
         var current = await fornecedoresAB.ObterAsync(companyId, id);
         if (current is null)
@@ -52,44 +54,33 @@ public class FornecedorService(FornecedorAB fornecedoresAB, ProdutoAB produtosAB
         return await fornecedoresAB.ExcluirAsync(companyId, id);
     }
 
+    private static void NormalizeRequest(FornecedorRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.CompanyName) && !string.IsNullOrWhiteSpace(request.FantasyName))
+        {
+            request.CompanyName = request.FantasyName.Trim();
+        }
+        else if (string.IsNullOrWhiteSpace(request.FantasyName) && !string.IsNullOrWhiteSpace(request.CompanyName))
+        {
+            request.FantasyName = request.CompanyName.Trim();
+        }
+    }
+
     private static void Validate(FornecedorRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.CompanyName) || request.CompanyName.Trim().Length < 3)
+        if (string.IsNullOrWhiteSpace(request.CompanyName) && string.IsNullOrWhiteSpace(request.FantasyName))
         {
-            throw new InvalidOperationException("Razao social deve ter no minimo 3 caracteres.");
-        }
-
-        if (string.IsNullOrWhiteSpace(request.FantasyName) || request.FantasyName.Trim().Length < 3)
-        {
-            throw new InvalidOperationException("Nome fantasia deve ter no minimo 3 caracteres.");
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Cnpj))
-        {
-            throw new InvalidOperationException("CNPJ do fornecedor e obrigatorio.");
-        }
-
-        if (OnlyDigits(request.Cnpj).Length != 14)
-        {
-            throw new InvalidOperationException("CNPJ do fornecedor invalido.");
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Cellphone))
-        {
-            throw new InvalidOperationException("Celular do fornecedor e obrigatorio.");
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.Email) && !request.Email.Contains('@'))
-        {
-            throw new InvalidOperationException("E-mail do fornecedor invalido.");
+            throw new InvalidOperationException("Informe a Razão Social ou Nome Fantasia do fornecedor.");
         }
     }
 
     private async Task ValidateDuplicatesAsync(string companyId, FornecedorRequest request, string? currentId)
     {
+        if (string.IsNullOrWhiteSpace(request.Cnpj)) return;
+
+        var cnpj = request.Cnpj.Trim();
         var suppliers = await fornecedoresAB.ListarAsync(companyId);
-        var cnpj = OnlyDigits(request.Cnpj);
-        if (suppliers.Any(item => item.Id != currentId && OnlyDigits(item.Cnpj) == cnpj))
+        if (suppliers.Any(item => item.Id != currentId && !string.IsNullOrWhiteSpace(item.Cnpj) && string.Equals(item.Cnpj.Trim(), cnpj, StringComparison.OrdinalIgnoreCase)))
         {
             throw new InvalidOperationException("Já existe fornecedor com este CNPJ.");
         }
@@ -98,20 +89,20 @@ public class FornecedorService(FornecedorAB fornecedoresAB, ProdutoAB produtosAB
     private static FornecedorAD MapRequest(string id, FornecedorRequest request) => new()
     {
         Id = id,
-        CompanyName = request.CompanyName.Trim(),
-        FantasyName = request.FantasyName.Trim(),
-        Cnpj = request.Cnpj,
-        Cep = request.Cep,
-        City = request.City,
-        State = request.State,
-        Address = request.Address,
-        Neighborhood = request.Neighborhood,
-        StreetComplement = request.StreetComplement,
-        Number = request.Number,
-        ReferencePoint = request.ReferencePoint,
-        Telephone = request.Telephone,
-        Cellphone = request.Cellphone,
-        Email = request.Email
+        CompanyName = request.CompanyName?.Trim() ?? string.Empty,
+        FantasyName = request.FantasyName?.Trim() ?? string.Empty,
+        Cnpj = request.Cnpj?.Trim() ?? string.Empty,
+        Cep = request.Cep?.Trim() ?? string.Empty,
+        City = request.City?.Trim() ?? string.Empty,
+        State = request.State?.Trim() ?? string.Empty,
+        Address = request.Address?.Trim() ?? string.Empty,
+        Neighborhood = request.Neighborhood?.Trim() ?? string.Empty,
+        StreetComplement = request.StreetComplement?.Trim() ?? string.Empty,
+        Number = request.Number?.Trim() ?? string.Empty,
+        ReferencePoint = request.ReferencePoint?.Trim() ?? string.Empty,
+        Telephone = request.Telephone?.Trim() ?? string.Empty,
+        Cellphone = request.Cellphone?.Trim() ?? string.Empty,
+        Email = request.Email?.Trim() ?? string.Empty
     };
 
     private static FornecedorModel ToModel(FornecedorAD source) => new()
