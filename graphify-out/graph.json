@@ -11162,7 +11162,7 @@
       "file_type": "code",
       "norm_label": "productregisterpage()",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L1414"
+      "source_location": "L1482"
     },
     {
       "id": "frontend_src_pages_admin_useraccountspage_defaultform",
@@ -115335,7 +115335,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L240",
+      "source_location": "L241",
       "weight": 1.0
     },
     {
@@ -195999,7 +195999,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L1414",
+      "source_location": "L1482",
       "weight": 1.0
     },
     {
@@ -234908,5 +234908,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e931c84abf7eca875f9459e31b65b0067ab64a03"
+  "built_at_commit": "3f1ef6dac04486de7a476ce7348a0c1c9eeef6bd"
 }

@@ -237,7 +237,9 @@ function ProductFormDrawer({
     sanitizeIntegerInput,
     sanitizeDecimalInput,
   } = useInputMasks();
-  const quantityIsFractionable = isFractionableUnit(value.unidadeComercial);
+  const quantityIsFractionable =
+    isFractionableUnit(value.unidadeComercial || "UN") ||
+    isFractionableUnit(value.unidadeCompra || "UN");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragActive, setIsDragActive] = useState(false);
   const [supplierModalOpen, setSupplierModalOpen] = useState(false);
@@ -342,18 +344,60 @@ function ProductFormDrawer({
     onChange(next);
   };
 
+  const handleUnidadeComercialChange = (newUnit: string) => {
+    const prevUnit = value.unidadeComercial || "UN";
+    const next: ProductFormData = {
+      ...value,
+      unidadeComercial: newUnit,
+    };
+    if (!value.unidadeTributavel || value.unidadeTributavel === prevUnit || value.unidadeTributavel === "UN") {
+      next.unidadeTributavel = newUnit;
+    }
+    if (!value.unidadeCompra || value.unidadeCompra === prevUnit || value.unidadeCompra === "UN") {
+      next.unidadeCompra = newUnit;
+    }
+    onChange(next);
+  };
+
+  const handleUnidadeCompraChange = (newUnit: string) => {
+    const next: ProductFormData = {
+      ...value,
+      unidadeCompra: newUnit,
+    };
+    if ((!value.unidadeComercial || value.unidadeComercial === "UN") && newUnit !== "UN") {
+      next.unidadeComercial = newUnit;
+      if (!value.unidadeTributavel || value.unidadeTributavel === "UN") {
+        next.unidadeTributavel = newUnit;
+      }
+    }
+    onChange(next);
+  };
+
   const setQuantityField = (rawValue: string) => {
-    const sanitized = quantityIsFractionable
+    const isDecimal = rawValue.includes(",") || rawValue.includes(".");
+    const allowDecimal = quantityIsFractionable || isDecimal;
+    const sanitized = allowDecimal
       ? sanitizeDecimalInput(rawValue, 4).replace(".", ",")
       : sanitizeIntegerInput(rawValue).slice(0, 8);
     setField("productQnt", sanitized);
   };
 
   const setEstoqueMinimoField = (rawValue: string) => {
-    const sanitized = quantityIsFractionable
+    const isDecimal = rawValue.includes(",") || rawValue.includes(".");
+    const allowDecimal = quantityIsFractionable || isDecimal;
+    const sanitized = allowDecimal
       ? sanitizeDecimalInput(rawValue, 4).replace(".", ",")
       : sanitizeIntegerInput(rawValue).slice(0, 8);
     setField("estoqueMinimo", sanitized);
+  };
+
+  const setEstoqueMaximoField = (rawValue: string) => {
+    const isDecimal = rawValue.includes(",") || rawValue.includes(".");
+    const allowDecimal = quantityIsFractionable || isDecimal;
+    const sanitized = allowDecimal
+      ? sanitizeDecimalInput(rawValue, 4).replace(".", ",")
+      : sanitizeIntegerInput(rawValue).slice(0, 8);
+    setField("estoqueMaximo", sanitized);
   };
 
   const applyImage = (file: File | null) => {
@@ -716,20 +760,41 @@ function ProductFormDrawer({
             <h4 className="text-sm font-semibold text-text-secondary">Preço e estoque</h4>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <label className="block">
+                <span className="mb-1.5 block text-sm font-semibold text-text-primary">
+                  Unidade de Medida (Venda / Estoque) *
+                </span>
+                <select
+                  value={value.unidadeComercial || "UN"}
+                  onChange={(event) => handleUnidadeComercialChange(event.target.value)}
+                  className="input-field w-full font-bold text-accent"
+                >
+                  {SEFAZ_UNITS.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit} {unit === "UN" ? "(Unidade)" : unit === "KG" ? "(Quilograma)" : unit === "LT" ? "(Litro)" : unit === "MT" ? "(Metro)" : unit === "CX" ? "(Caixa)" : unit === "PC" ? "(Peça)" : ""}
+                    </option>
+                  ))}
+                </select>
+                <span className="mt-1 block text-xs text-text-secondary">
+                  Unidade de controle do estoque e vendas (ex.: KG para peso, UN para unidade).
+                </span>
+              </label>
+
+              <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
-                  Quantidade do Produto {quantityIsFractionable ? `(${value.unidadeComercial})` : ""} *
+                  Quantidade do Produto ({value.unidadeComercial || "UN"}) *
                 </span>
                 <input
                   value={value.productQnt}
                   inputMode="decimal"
                   onChange={(event) => setQuantityField(event.target.value)}
-                  className="input-field w-full"
-                  placeholder={quantityIsFractionable ? "0,000" : "Quantidade"}
+                  className="input-field w-full font-semibold"
+                  placeholder={quantityIsFractionable ? "Ex: 17,50" : "Quantidade"}
                 />
               </label>
+
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
-                  Estoque Mínimo {quantityIsFractionable ? `(${value.unidadeComercial})` : ""}
+                  Estoque Mínimo ({value.unidadeComercial || "UN"})
                 </span>
                 <input
                   value={value.estoqueMinimo}
@@ -742,23 +807,20 @@ function ProductFormDrawer({
                   Alerta no sistema quando o estoque estiver igual ou abaixo deste valor.
                 </span>
               </label>
+
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
-                  Estoque Máximo {quantityIsFractionable ? `(${value.unidadeComercial})` : ""}
+                  Estoque Máximo ({value.unidadeComercial || "UN"})
                 </span>
                 <input
                   value={value.estoqueMaximo}
                   inputMode="decimal"
-                  onChange={(event) => {
-                    const sanitized = quantityIsFractionable
-                      ? sanitizeDecimalInput(event.target.value, 4).replace(".", ",")
-                      : sanitizeIntegerInput(event.target.value).slice(0, 8);
-                    setField("estoqueMaximo", sanitized);
-                  }}
+                  onChange={(event) => setEstoqueMaximoField(event.target.value)}
                   className="input-field w-full"
                   placeholder={quantityIsFractionable ? "0,000" : "0"}
                 />
               </label>
+
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">Localização no Estoque</span>
                 <input
@@ -768,18 +830,23 @@ function ProductFormDrawer({
                   placeholder="Ex.: Corredor 3, Prateleira A"
                 />
               </label>
+
               <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">Unidade de Compra</span>
+                <span className="mb-1.5 block text-sm text-text-secondary">Unidade de Compra (Fornecedor)</span>
                 <select
                   value={value.unidadeCompra}
-                  onChange={(event) => setField("unidadeCompra", event.target.value)}
+                  onChange={(event) => handleUnidadeCompraChange(event.target.value)}
                   className="input-field w-full"
                 >
                   {SEFAZ_UNITS.map((unit) => (
                     <option key={unit} value={unit}>{unit}</option>
                   ))}
                 </select>
+                <span className="mt-1 block text-xs text-text-secondary">
+                  Unidade que consta na nota do fornecedor (ex.: CX ou KG).
+                </span>
               </label>
+
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">Fator de Conversão</span>
                 <input
@@ -793,6 +860,7 @@ function ProductFormDrawer({
                   Quantas unidades de venda por unidade de compra (ex.: 1 CX = 100 UN).
                 </span>
               </label>
+
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">Qtd por Embalagem</span>
                 <input
@@ -1200,7 +1268,7 @@ function ProductFormDrawer({
                 <span className="mb-1.5 block text-sm text-text-secondary">Unidade comercial (venda)</span>
                 <select
                   value={value.unidadeComercial}
-                  onChange={(event) => setField("unidadeComercial", event.target.value)}
+                  onChange={(event) => handleUnidadeComercialChange(event.target.value)}
                   className="input-field w-full"
                 >
                   {SEFAZ_UNITS.map((unit) => (
