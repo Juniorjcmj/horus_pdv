@@ -4833,7 +4833,7 @@ GO
 
 DECLARE @EmpresasDestino TABLE (CompanyId NVARCHAR(40));
 INSERT INTO @EmpresasDestino (CompanyId)
-SELECT Id FROM Empresas WHERE Ativa = 1
+SELECT Id FROM Empresas
 UNION
 SELECT N'empresa-principal';
 
