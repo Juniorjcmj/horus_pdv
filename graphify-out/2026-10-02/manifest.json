@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1790912296.2280452,
-    "seen": 1790912378.4442143,
-    "ast_hash": "d4b64bc23b3a2fda39928c57c1774298",
+    "mtime": 1790899547.6241345,
+    "seen": 1790909645.8404357,
+    "ast_hash": "a936828753260c67f3ba436b587d6582",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {

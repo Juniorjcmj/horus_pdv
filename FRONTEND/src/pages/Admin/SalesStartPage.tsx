@@ -33,7 +33,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { SearchableSelectField } from "@/components/Form";
 import { Toast, useStatusDialog } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import {
@@ -2634,24 +2633,28 @@ export default function SalesStartPage({
                   </div>
 
                   <div className="grid gap-2 sm:grid-cols-2">
-                    <SearchableSelectField
-                      label="Forma"
-                      value={currentPaymentType}
-                      options={PAYMENT_OPTIONS}
-                      onChange={(nextValue) => {
-                        const tipo = nextValue as PaymentType;
-                        setCurrentPaymentType(tipo);
-                        if (tipo === "dinheiro") {
-                          setCurrentCashGiven(currentPaymentAmount);
-                        } else if (tipo === "fiado" && !selectedCustomer) {
-                          void openCustomerModal();
-                        }
-                      }}
-                      getOptionValue={(option) => option.value}
-                      getOptionLabel={(option) => option.label}
-                      placeholder="Selecione a forma"
-                      emptyMessage="Forma de pagamento não encontrada."
-                    />
+                    <label className="block">
+                      <span className="mb-1.5 block text-sm text-text-secondary">Forma</span>
+                      <select
+                        value={currentPaymentType}
+                        onChange={(e) => {
+                          const tipo = e.target.value as PaymentType;
+                          setCurrentPaymentType(tipo);
+                          if (tipo === "dinheiro") {
+                            setCurrentCashGiven(currentPaymentAmount);
+                          } else if (tipo === "fiado" && !selectedCustomer) {
+                            void openCustomerModal();
+                          }
+                        }}
+                        className="select-field w-full"
+                      >
+                        {PAYMENT_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value} className="bg-bg-primary text-text-primary">
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
 
                     <label className="block">
                       <span className="mb-1.5 block text-sm text-text-secondary">Valor a pagar (R$)</span>
