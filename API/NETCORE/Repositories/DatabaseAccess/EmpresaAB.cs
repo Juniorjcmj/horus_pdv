@@ -35,9 +35,10 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
     public async Task<EmpresaAD?> ObterAsync(string companyId)
     {
         var sql = $"""
-            SELECT {Columns}
+            SELECT TOP 1 {Columns}
             FROM Empresas
-            WHERE Id = @Id;
+            WHERE Id = @Id OR Id = 'empresa-principal'
+            ORDER BY CASE WHEN Id = @Id THEN 0 ELSE 1 END;
             """;
 
         await using var db = await connection.OpenConnectionAsync();

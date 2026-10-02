@@ -11,6 +11,7 @@
  * ser revisado depois em Cadastro de Produto.
  */
 import {
+  AlertCircle,
   Check,
   Clipboard,
   FileUp,
@@ -65,6 +66,7 @@ export default function NfeImportModal({
   const [importMethod, setImportMethod] = useState<"sefaz" | "xml">("sefaz");
   const [chaveAcesso, setChaveAcesso] = useState("");
   const [loadingStatus, setLoadingStatus] = useState("Lendo dados...");
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -77,6 +79,7 @@ export default function NfeImportModal({
   const cleanKey = chaveAcesso.replace(/\D/g, "");
 
   const aplicarPreview = (preview: NfeImportPreview) => {
+    setErrorDetails(null);
     setNumeroNota(preview.numeroNota);
     setSerie(preview.serie);
     setFornecedor(preview.fornecedor);
@@ -108,17 +111,22 @@ export default function NfeImportModal({
     }
 
     setLoading(true);
+    setErrorDetails(null);
     setLoadingStatus("Consultando SEFAZ e baixando XML da NF-e...");
     try {
       const preview = await nfeImportService.previewPorChave(cleanKey);
       if (!preview) {
-        Toast.error("A SEFAZ não retornou os dados da nota fiscal.");
+        const msg = "A SEFAZ não retornou os dados da nota fiscal.";
+        setErrorDetails(msg);
+        Toast.error(msg);
         return;
       }
       aplicarPreview(preview);
       Toast.success(`NF-e nº ${preview.numeroNota} baixada da SEFAZ com sucesso!`);
     } catch (error) {
-      Toast.error(error instanceof Error ? error.message : "Erro ao consultar nota na SEFAZ.");
+      const msg = error instanceof Error ? error.message : "Erro ao consultar nota na SEFAZ.";
+      setErrorDetails(msg);
+      Toast.error(msg);
     } finally {
       setLoading(false);
       setLoadingStatus("Lendo dados...");
@@ -440,6 +448,35 @@ export default function NfeImportModal({
                       </button>
                     </div>
                   </div>
+
+                  {errorDetails && (
+                    <div className="rounded-xl border border-danger/40 bg-danger/10 p-4 text-xs">
+                      <div className="flex items-start gap-2.5">
+                        <AlertCircle size={18} className="mt-0.5 shrink-0 text-danger" />
+                        <div className="flex-1 space-y-2">
+                          <p className="font-semibold text-danger">Falha na consulta da SEFAZ:</p>
+                          <p className="text-text-primary whitespace-pre-wrap">{errorDetails}</p>
+                          <div className="rounded-lg bg-bg-primary/50 p-2.5 text-[11px] text-text-secondary space-y-1">
+                            <p><strong>💡 Dicas importantes:</strong></p>
+                            <p>• A consulta direta via SEFAZ exige que a NF-e tenha sido emitida para o <strong>mesmo CNPJ</strong> da empresa configurada no sistema e que o <strong>Certificado Digital A1</strong> esteja cadastrado em Minha Empresa.</p>
+                            <p>• Caso a SEFAZ retorne que não localizou a nota (cStat 137) ou haja demora no Ambiente Nacional, você pode <strong>importar diretamente o arquivo XML</strong> da nota de compra.</p>
+                          </div>
+                          <div className="pt-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setErrorDetails(null);
+                                setImportMethod("xml");
+                              }}
+                              className="btn-secondary inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-accent hover:bg-accent/10"
+                            >
+                              <FileUp size={14} /> Fazer Upload do Arquivo XML (Manual)
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {loading && (
                     <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-accent/20 bg-accent/5 p-8 text-center">

@@ -414,9 +414,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmpresaAB.cs": {
-    "mtime": 1788894176.6014347,
-    "seen": 1788894387.2973425,
-    "ast_hash": "c6834aa9d7333128cedeb95ffdadbaf0",
+    "mtime": 1790956411.020461,
+    "seen": 1790956635.560092,
+    "ast_hash": "8ba09b0e46440a1de04355887a9959ca",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/FornecedorAB.cs": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NfeImportModal.tsx": {
-    "mtime": 1789322677.229275,
-    "seen": 1789322723.8441846,
-    "ast_hash": "6ba22af36f47a9cf36b0c8fff0a7d969",
+    "mtime": 1790956514.9669154,
+    "seen": 1790956635.5735605,
+    "ast_hash": "1357f6a68b88d098deb9b295b66fc0cf",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {
@@ -2112,9 +2112,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/SefazDFeDownloadService.cs": {
-    "mtime": 1789322461.4009066,
-    "seen": 1789322723.8311863,
-    "ast_hash": "6cb55b149c6a805ff1fc1ae1d897682a",
+    "mtime": 1790956440.518355,
+    "seen": 1790956635.5644267,
+    "ast_hash": "0d514d7643f8d24c4c7b4c60176d7446",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Categorias/CategoriaController.cs": {

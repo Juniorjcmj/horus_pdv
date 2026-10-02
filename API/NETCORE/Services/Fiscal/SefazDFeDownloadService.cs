@@ -104,7 +104,9 @@ public class SefazDFeDownloadService(
             };
 
             using var servico = new ServicosNFe(cfg, certificado);
-            var ufAutor = empresa.Uf?.Trim().ToUpperInvariant() ?? "AN";
+            var ufAutor = !string.IsNullOrWhiteSpace(empresa.Uf) && Enum.TryParse<Estado>(empresa.Uf.Trim(), true, out var parsedUf)
+                ? parsedUf.ToString()
+                : cUf.ToString();
 
             logger.LogInformation(
                 "Consultando SEFAZ DFe para empresa {Cnpj} (UF: {Uf}, Amb: {Ambiente}) - Chave: {Chave}",
