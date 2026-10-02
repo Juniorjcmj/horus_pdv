@@ -56,7 +56,7 @@ type UseProductsReturn = {
   products: Product[];
   loading: boolean;
   error: string | null;
-  reload: () => Promise<void>;
+  reload: (forceOnline?: boolean) => Promise<number>;
 };
 
 export function useProducts(): UseProductsReturn {
@@ -64,16 +64,17 @@ export function useProducts(): UseProductsReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (forceOnline = false): Promise<number> => {
     setLoading(true);
     setError(null);
     try {
-      const isOnline = connectivityService.status === "ONLINE";
+      const isOnline = forceOnline || connectivityService.status === "ONLINE" || navigator.onLine;
 
       if (isOnline) {
         // Online: sincroniza da API → IndexedDB → retorna
         const records = await syncProductsFromApi();
         setProducts(records.map(toProduct));
+        return records.length;
       } else {
         // Offline: carrega do IndexedDB (com migração do localStorage se necessário)
         const records = await loadProductsLocal();
@@ -82,6 +83,7 @@ export function useProducts(): UseProductsReturn {
         } else {
           setError("Sem conexão e sem cache de produtos disponível.");
         }
+        return records.length;
       }
     } catch {
       // Falha na API — tenta carregar do IndexedDB
@@ -92,8 +94,10 @@ export function useProducts(): UseProductsReturn {
         } else {
           setError("Sem conexão e sem cache de produtos disponível.");
         }
+        return records.length;
       } catch {
         setError("Erro ao carregar produtos do cache local.");
+        return 0;
       }
     } finally {
       setLoading(false);

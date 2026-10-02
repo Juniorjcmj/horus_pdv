@@ -17,6 +17,7 @@ import {
   Plus,
   Printer,
   Receipt,
+  RefreshCw,
   Search,
   Trash2,
   UserPlus,
@@ -50,7 +51,11 @@ import { applyPromotions, round2 } from "@/utils/promotionEngine";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
 import { customerService, type CustomerDto } from "@/services/api/customerService";
 import { useCustomers } from "@/hooks/useCustomers";
-import { upsertCustomerLocal } from "@/application/customers/CustomerSyncAdapter";
+import {
+  syncCustomersFromApi,
+  upsertCustomerLocal,
+} from "@/application/customers/CustomerSyncAdapter";
+import { syncProductsFromApi } from "@/application/products/ProductSyncAdapter";
 import {
   FISCAL_STATUS,
   fiscalService,
@@ -217,6 +222,39 @@ export default function SalesStartPage({
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const { customers: customerList, loading: loadingCustomers, reload: reloadCustomers } = useCustomers();
   const [customerFilter, setCustomerFilter] = useState("");
+  const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+
+  const handleSyncCloud = useCallback(async () => {
+    if (isSyncingCloud) return;
+    setIsSyncingCloud(true);
+    try {
+      const [prodRecords, custRecords] = await Promise.all([
+        syncProductsFromApi(),
+        syncCustomersFromApi(),
+      ]);
+
+      await Promise.all([
+        reloadProducts(false),
+        reloadCustomers(false),
+      ]);
+
+      Toast.success(
+        `Nuvem sincronizada com sucesso! ${prodRecords.length} produtos e ${custRecords.length} clientes atualizados para o PDV e fiado.`,
+      );
+    } catch (err) {
+      console.error("Erro ao sincronizar com a nuvem:", err);
+      await Promise.all([
+        reloadProducts(false).catch(() => 0),
+        reloadCustomers(false).catch(() => 0),
+      ]);
+      Toast.error(
+        "Não foi possível sincronizar com a nuvem. Verifique a conexão com a internet ou o servidor.",
+      );
+    } finally {
+      setIsSyncingCloud(false);
+    }
+  }, [isSyncingCloud, reloadProducts, reloadCustomers]);
+
   const [lastReceipt, setLastReceipt] = useState<SaleReceipt | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<SaleReceipt | null>(null);
   const [printPreviewEnabled, setPrintPreviewEnabled] = useState(() =>
@@ -1513,6 +1551,11 @@ export default function SalesStartPage({
         setNfceCancelModalOpen(true);
         return;
       }
+      if (event.key === "F10" || ((event.altKey || event.metaKey) && event.key.toLowerCase() === "s")) {
+        event.preventDefault();
+        void handleSyncCloud();
+        return;
+      }
       if (nfceCancelModalOpen || sessionSalesModalOpen || saleDetailModalOpen) return;
 
       if (event.key === "F2") {
@@ -1548,7 +1591,7 @@ export default function SalesStartPage({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [addItem, cancelSale, checkoutOpen, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen, sessionSalesModalOpen, saleDetailModalOpen]);
+  }, [addItem, cancelSale, checkoutOpen, handleSyncCloud, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen, sessionSalesModalOpen, saleDetailModalOpen]);
 
   const { dateLabel, timeLabel } = formatDateTime(now);
   const cashCanSell = cashStatus?.canSell === true;
@@ -1612,6 +1655,18 @@ export default function SalesStartPage({
                   )}
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => void handleSyncCloud()}
+                disabled={isSyncingCloud}
+                title="Sincronizar produtos e clientes para fiado com a nuvem (F10 ou Alt+S)"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-60 focus:outline-none"
+              >
+                <RefreshCw size={15} className={isSyncingCloud ? "animate-spin" : ""} />
+                <span className="hidden sm:inline">
+                  {isSyncingCloud ? "Sincronizando..." : "Sincronizar Nuvem (F10)"}
+                </span>
+              </button>
               <button
                 type="button"
                 onClick={() => setSessionSalesModalOpen(true)}
@@ -2299,6 +2354,16 @@ export default function SalesStartPage({
                     >
                       <UserPlus size={13} /> Cadastrar
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleSyncCloud()}
+                      disabled={isSyncingCloud}
+                      className="btn-secondary inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-2 text-xs text-text-secondary hover:bg-hover-light disabled:opacity-60"
+                      title="Sincronizar clientes e produtos com a nuvem"
+                    >
+                      <RefreshCw size={13} className={isSyncingCloud ? "animate-spin" : ""} />
+                      Sincronizar
+                    </button>
                   </div>
                 )}
               </div>
@@ -2805,6 +2870,16 @@ export default function SalesStartPage({
                 </h3>
               </div>
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void handleSyncCloud()}
+                  disabled={isSyncingCloud}
+                  title="Sincronizar clientes e produtos com a nuvem agora"
+                  className="btn-secondary inline-flex items-center gap-1 border-border-primary px-2.5 py-1 text-xs font-semibold text-text-secondary hover:bg-hover-light disabled:opacity-60"
+                >
+                  <RefreshCw size={13} className={isSyncingCloud ? "animate-spin" : ""} />
+                  Sincronizar Nuvem
+                </button>
                 <button
                   type="button"
                   onClick={() => handleOpenQuickCustomerRegister(customerFilter)}

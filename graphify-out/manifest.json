@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1790912296.2280452,
-    "seen": 1790912378.4442143,
-    "ast_hash": "d4b64bc23b3a2fda39928c57c1774298",
+    "mtime": 1790963759.5420034,
+    "seen": 1790963817.552068,
+    "ast_hash": "ba8edc29085482d8eb1544d17754f1e4",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -2580,9 +2580,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useCustomers.ts": {
-    "mtime": 1790421566.520152,
-    "seen": 1790421619.6565206,
-    "ast_hash": "ea55cd8865e03f64859dcab486ce4138",
+    "mtime": 1790963623.81675,
+    "seen": 1790963817.5408618,
+    "ast_hash": "408a989a22b3f72facedb1c6a83337ff",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useDeviceId.ts": {
@@ -2598,9 +2598,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useProducts.ts": {
-    "mtime": 1790421566.522401,
-    "seen": 1790421619.6565318,
-    "ast_hash": "bc7975f1e401d2e971660965a6766198",
+    "mtime": 1790963610.6408799,
+    "seen": 1790963817.5415454,
+    "ast_hash": "aca818a71877223ea259fcb9018cf85a",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useSyncStatus.ts": {
