@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1790875929.098634,
-    "seen": 1790876154.610326,
-    "ast_hash": "f0c6d92e938a4ca33f5cba202ee05cd0",
+    "mtime": 1790899547.5956857,
+    "seen": 1790909645.7870295,
+    "ast_hash": "b7d33d9f6534936305f96ba215fdfd36",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1790870959.7067423,
-    "seen": 1790871052.5966237,
-    "ast_hash": "f4ba0d9df58a0d4043fb4efdbb760941",
+    "mtime": 1790909526.9036868,
+    "seen": 1790909645.7955632,
+    "ast_hash": "20b43de075417f6ed92943ddd6bb0810",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1790783587.4996908,
-    "seen": 1790871052.6036723,
-    "ast_hash": "64281ed1f8a42d68d7c2a84f53f2ec0a",
+    "mtime": 1790899547.6126764,
+    "seen": 1790909645.8067286,
+    "ast_hash": "3efdf86bdb0993812a448e561d229499",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -804,9 +804,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/AppSidebar.tsx": {
-    "mtime": 1790737115.9077196,
-    "seen": 1790739586.7440262,
-    "ast_hash": "2800c3841ddc196328a9568e5ad835a4",
+    "mtime": 1790899547.6126764,
+    "seen": 1790909645.8185058,
+    "ast_hash": "d5b6b0f6ee9442372b6b25ec71fe9d10",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/UserMenu.tsx": {
@@ -894,9 +894,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/index.ts": {
-    "mtime": 1790783587.5020204,
-    "seen": 1790871052.6112025,
-    "ast_hash": "3f65a7ad2b3d9035efc7d531bf9a817b",
+    "mtime": 1790899547.6188653,
+    "seen": 1790909645.8240843,
+    "ast_hash": "0f00358d0a0f42895d6726659c225317",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Tour/GuidedTour.tsx": {
@@ -966,9 +966,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/AboutPdvPage.tsx": {
-    "mtime": 1790737115.912836,
-    "seen": 1790739586.7500443,
-    "ast_hash": "a6bb701cf960f4605677cdcb61cf7319",
+    "mtime": 1790899547.6188653,
+    "seen": 1790909645.8357043,
+    "ast_hash": "68dd3c61717d84b255600d73109ded29",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/CashRegisterPage.tsx": {
@@ -1068,15 +1068,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1790739113.5001302,
-    "seen": 1790739586.7531254,
-    "ast_hash": "75e50308c525ef6e0c9fded63ca21c48",
+    "mtime": 1790899547.6241345,
+    "seen": 1790909645.8404357,
+    "ast_hash": "a936828753260c67f3ba436b587d6582",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
-    "mtime": 1790783642.532645,
-    "seen": 1790871052.6186943,
-    "ast_hash": "b7955e7009b052d1f6d810270b70f6e0",
+    "mtime": 1790899547.6248665,
+    "seen": 1790909645.8404393,
+    "ast_hash": "cadc48427437e3dfde33d612db4e225e",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/StockPage.tsx": {
@@ -1104,9 +1104,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Auth/AuthLayout.tsx": {
-    "mtime": 1790737115.9148426,
-    "seen": 1790739586.7537718,
-    "ast_hash": "87a9cc7b9e23c91ba7bf1a24515533f2",
+    "mtime": 1790899547.6257148,
+    "seen": 1790909645.8412719,
+    "ast_hash": "8a6a7ac70b596f6a90b4f4cf3123f3e3",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Auth/ForgotPasswordPage.tsx": {
@@ -1758,9 +1758,9 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1788715891.7247317,
-    "seen": 1788888974.3524523,
-    "ast_hash": "8a6643a420fdad6bfb583523bc6cef16",
+    "mtime": 1790901563.5733626,
+    "seen": 1790909645.882064,
+    "ast_hash": "3f07197971f9dbbc34215545b573711b",
     "semantic_hash": ""
   },
   "DEPLOY.md": {
@@ -1770,9 +1770,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/index.html": {
-    "mtime": 1790737115.9038293,
-    "seen": 1790739586.7789366,
-    "ast_hash": "9f60d54dd26ac14c17f97a8c9dd6a120",
+    "mtime": 1790899547.6073985,
+    "seen": 1790909645.8821924,
+    "ast_hash": "f1980d5ee5f75517b2097e08d7952505",
     "semantic_hash": ""
   },
   "GEMINI.md": {
@@ -2400,9 +2400,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Public/LandingPage.tsx": {
-    "mtime": 1790737115.9148426,
-    "seen": 1790739586.754482,
-    "ast_hash": "ca3e4b59862f2ff8570e7cc7be4eae2a",
+    "mtime": 1790899547.628214,
+    "seen": 1790909645.8425872,
+    "ast_hash": "e3dad306907460cce69cd2dda97fb9f1",
     "semantic_hash": ""
   },
   "FRONTEND/public/screenshots/fiado-credito.jpg": {
@@ -3096,9 +3096,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Data/GatewayDatabase.cs": {
-    "mtime": 1790738378.7042582,
-    "seen": 1790739586.7637393,
-    "ast_hash": "f976a568c1d8502e091d04aa167f20a1",
+    "mtime": 1790899547.6311963,
+    "seen": 1790909645.8619466,
+    "ast_hash": "7127efc69557c0d3db1f468fc4078f09",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/HorusGateway.csproj": {
@@ -3144,9 +3144,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Program.cs": {
-    "mtime": 1790738423.9883933,
-    "seen": 1790739586.7644079,
-    "ast_hash": "eea6b3d36d89f182707f10df33183033",
+    "mtime": 1790899547.6311963,
+    "seen": 1790909645.8634586,
+    "ast_hash": "8ad1e3c9e4b9b799a18f47b4d8f0fea6",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Properties/launchSettings.json": {
@@ -3366,9 +3366,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/README.md": {
-    "mtime": 1790783587.51262,
-    "seen": 1790871052.647445,
-    "ast_hash": "b6221f0b331d0cca1c8ab7b5336c18a7",
+    "mtime": 1790899547.6311963,
+    "seen": 1790909645.8827593,
+    "ast_hash": "2c1c5f916f738f2d47e6af586e0808d3",
     "semantic_hash": ""
   },
   "GATEWAY/docker-compose.yml": {
@@ -3402,9 +3402,9 @@
     "semantic_hash": ""
   },
   "openspec/changes/local-gateway/tasks.md": {
-    "mtime": 1790783506.2467186,
-    "seen": 1790871052.6538775,
-    "ast_hash": "b1e1123bc5962fab1fc202f29d2a9a43",
+    "mtime": 1790899547.6311963,
+    "seen": 1790909645.891487,
+    "ast_hash": "43790503d02b71ef3197a4b3a30e937b",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
@@ -3420,9 +3420,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/install-service.ps1": {
-    "mtime": 1790737115.9168506,
-    "seen": 1790739586.7634218,
-    "ast_hash": "4208daa074513168d0c0a9864b70aa0d",
+    "mtime": 1790899547.6311963,
+    "seen": 1790909645.8603501,
+    "ast_hash": "3f1c981ccf3d41bf8af60e5935072e67",
     "semantic_hash": ""
   },
   "GATEWAY/run-gateway.ps1": {
@@ -3527,12 +3527,6 @@
     "ast_hash": "e2bfd1b1edaa843d40a6ed9c16ec7372",
     "semantic_hash": ""
   },
-  "FRONTEND/public/logo-quack-v4.png": {
-    "mtime": 1790737115.9077196,
-    "seen": 1790739586.7865176,
-    "ast_hash": "19fe8bbacf0ab00762e639734f9a7455",
-    "semantic_hash": ""
-  },
   "openspec/changes/archive/2026-09-30-contingencia-offline-nfce/.openspec.yaml": {
     "mtime": 1790737294.1854966,
     "seen": 1790783445.60169,
@@ -3582,9 +3576,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/GatewaySettingsCard.tsx": {
-    "mtime": 1790783587.5009232,
-    "seen": 1790871052.610826,
-    "ast_hash": "f4da76ad35f99f950eedb41bf6e3136b",
+    "mtime": 1790901563.8611755,
+    "seen": 1790909645.8225963,
+    "ast_hash": "060bc8cfbe3049a75884f0aa64aed2ed",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/gateway/cloudGatewayProvisioning.ts": {
@@ -3597,6 +3591,90 @@
     "mtime": 1790783587.5073137,
     "seen": 1790871052.6211534,
     "ast_hash": "48f9c27484d4306dac07efe82cc3e0f3",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Tema/CompanyThemeController.cs": {
+    "mtime": 1790899547.5922859,
+    "seen": 1790909645.7783895,
+    "ast_hash": "a619585c91dbc75f796168b2d4687fbc",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/EmpresaTemaAB.cs": {
+    "mtime": 1790899547.5956857,
+    "seen": 1790909645.7928593,
+    "ast_hash": "d5f220a60d8c9244aca99391e9a35dcc",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/SettingsPage/ThemeColorsCard.tsx": {
+    "mtime": 1790899547.6188653,
+    "seen": 1790909645.8235009,
+    "ast_hash": "e09d7001ad0b0e324deccfe7628a6f77",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/services/api/companyThemeService.ts": {
+    "mtime": 1790899547.628214,
+    "seen": 1790909645.8441718,
+    "ast_hash": "28d94eed3fc452577709aaf7bf32fe33",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/companyTheme.ts": {
+    "mtime": 1790899547.6311963,
+    "seen": 1790909645.8503563,
+    "ast_hash": "161c22620e4465a0e6a444e204e896b3",
+    "semantic_hash": ""
+  },
+  "GATEWAY/build-installer.sh": {
+    "mtime": 1790901563.8611755,
+    "seen": 1790909645.8603458,
+    "ast_hash": "045bed19b8e91e3b28e703bb11a3f693",
+    "semantic_hash": ""
+  },
+  "GATEWAY/setup-https.ps1": {
+    "mtime": 1790899547.6311963,
+    "seen": 1790909645.8607137,
+    "ast_hash": "acd320da3036d17af8616a286fcc96c3",
+    "semantic_hash": ""
+  },
+  "GATEWAY/src/HorusGateway/Logging/FileLoggerProvider.cs": {
+    "mtime": 1790899547.6311963,
+    "seen": 1790909645.8623478,
+    "ast_hash": "ade6d0c056a35616479c886c55c5a6cc",
+    "semantic_hash": ""
+  },
+  "GATEWAY/uninstall-service.ps1": {
+    "mtime": 1790899547.6311963,
+    "seen": 1790909645.8693235,
+    "ast_hash": "32441b44021e53141475386bfbe6f87c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/gateway/checklist.html": {
+    "mtime": 1790899547.608973,
+    "seen": 1790909645.882195,
+    "ast_hash": "cac56c79a94c63d953719c1b21e3ec60",
+    "semantic_hash": ""
+  },
+  "docs/design-system.md": {
+    "mtime": 1790899547.6311963,
+    "seen": 1790909645.8836977,
+    "ast_hash": "a8d1f55f86854cca609651e36ef64439",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/quack-icon-v5.png": {
+    "mtime": 1790899547.6126764,
+    "seen": 1790909645.8946428,
+    "ast_hash": "5065cc621d608b4d2373b363aee9dbfc",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/quack-logo-negativo-v5.png": {
+    "mtime": 1790899547.6126764,
+    "seen": 1790909645.8946455,
+    "ast_hash": "10c797602f776c707821433bd332c91e",
+    "semantic_hash": ""
+  },
+  "FRONTEND/public/quack-logo-v5.png": {
+    "mtime": 1790899547.6126764,
+    "seen": 1790909645.8946474,
+    "ast_hash": "99a3b2c5d552d61bd38ac8ba9a1847c6",
     "semantic_hash": ""
   }
 }

@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_gateway_uninstall_service_ps1", "label": "uninstall-service.ps1", "file_type": "code", "source_file": "GATEWAY/uninstall-service.ps1", "source_location": "L1"}], "edges": [], "raw_calls": []}

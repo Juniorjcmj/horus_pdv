@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/HistoricoVendas/HistoricoVendasController.cs": {
-    "mtime": 1790472030.9385166,
-    "seen": 1790472279.964548,
-    "ast_hash": "8b588889655860ec5bf1d6f3a7ecd8f9",
+    "mtime": 1790869706.586883,
+    "seen": 1790871052.5853767,
+    "ast_hash": "8a2291d925eb95be6400eb25fb6b4f0c",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Home/HomeController.cs": {
@@ -84,9 +84,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Pedidos/PedidoController.cs": {
-    "mtime": 1789173622.3712664,
-    "seen": 1789173793.79589,
-    "ast_hash": "003e1b575ec222a3f1a60825fd34c3b5",
+    "mtime": 1790869734.3043575,
+    "seen": 1790871052.5856483,
+    "ast_hash": "11284db9786a23eba96f602fa2e0d059",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/NfeImportController.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1790422978.3016143,
-    "seen": 1790426295.5402448,
-    "ast_hash": "4ab070325bc34d9e2f63115aea3af467",
+    "mtime": 1790875929.098634,
+    "seen": 1790876154.610326,
+    "ast_hash": "f0c6d92e938a4ca33f5cba202ee05cd0",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -390,9 +390,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/CaixaAB.cs": {
-    "mtime": 1790425360.7735913,
-    "seen": 1790426295.5424414,
-    "ast_hash": "f0658509b6efa61111d7b4512f2872b5",
+    "mtime": 1790869621.14738,
+    "seen": 1790871052.5941885,
+    "ast_hash": "0bf46100bc51513ad4dfd451a852972b",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ClienteAB.cs": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs": {
-    "mtime": 1790737115.8981063,
-    "seen": 1790739586.7324736,
-    "ast_hash": "b9d5c78c09c6b87ec204dcca336946a3",
+    "mtime": 1790869757.334874,
+    "seen": 1790871052.595449,
+    "ast_hash": "4fcd18121f6040b1e27d608b45cfe257",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HomeAB.cs": {
@@ -468,15 +468,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1790455043.767408,
-    "seen": 1790455470.889697,
-    "ast_hash": "8f4cd88761be4fe42e0208427841a503",
+    "mtime": 1790870959.7067423,
+    "seen": 1790871052.5966237,
+    "ast_hash": "f4ba0d9df58a0d4043fb4efdbb760941",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
-    "mtime": 1790425273.863538,
-    "seen": 1790426295.544159,
-    "ast_hash": "431c9d82dccd3fd6a75e4e6a53752586",
+    "mtime": 1790869604.3112972,
+    "seen": 1790871052.5966263,
+    "ast_hash": "c4d98ff150bd3e2b9cd5dd35a158ba52",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Clientes/ClienteService.cs": {
@@ -612,9 +612,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/appsettings.json": {
-    "mtime": 1790424696.406275,
-    "seen": 1790426295.5481875,
-    "ast_hash": "50d97bd9256ccdb2989dff83e370a9ab",
+    "mtime": 1790875936.010914,
+    "seen": 1790876154.6193624,
+    "ast_hash": "e3edf96d85f7888f47533d2367613997",
     "semantic_hash": ""
   },
   "FRONTEND/.vscode/settings.json": {
@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1790737115.9077196,
-    "seen": 1790739586.739116,
-    "ast_hash": "9d05ef7da04957f9ae83d8310e095fbb",
+    "mtime": 1790783587.4996908,
+    "seen": 1790871052.6036723,
+    "ast_hash": "64281ed1f8a42d68d7c2a84f53f2ec0a",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -894,9 +894,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/index.ts": {
-    "mtime": 1790736042.2954626,
-    "seen": 1790736222.2077482,
-    "ast_hash": "449d441b717f4e318993ca087659ea1e",
+    "mtime": 1790783587.5020204,
+    "seen": 1790871052.6112025,
+    "ast_hash": "3f65a7ad2b3d9035efc7d531bf9a817b",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Tour/GuidedTour.tsx": {
@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
-    "mtime": 1790736066.4455402,
-    "seen": 1790736222.2232194,
-    "ast_hash": "5dc8f2e07d00e037c84fb6de94b1ac55",
+    "mtime": 1790783642.532645,
+    "seen": 1790871052.6186943,
+    "ast_hash": "b7955e7009b052d1f6d810270b70f6e0",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/StockPage.tsx": {
@@ -1728,9 +1728,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/docker-publish.yml": {
-    "mtime": 1788702679.230462,
-    "seen": 1788888974.3524437,
-    "ast_hash": "cb1a05bc8e7c27eab9adda68c03f0e3d",
+    "mtime": 1790875975.3437676,
+    "seen": 1790876154.6639233,
+    "ast_hash": "2b757956d8c20129cec015047c22a35d",
     "semantic_hash": ""
   },
   ".github/workflows/pages.yml": {
@@ -1764,9 +1764,9 @@
     "semantic_hash": ""
   },
   "DEPLOY.md": {
-    "mtime": 1788702714.3539467,
-    "seen": 1788888974.3524547,
-    "ast_hash": "00c6bb5a3ec3c1a0897888cbc0175d9d",
+    "mtime": 1790876058.8673189,
+    "seen": 1790876154.6648571,
+    "ast_hash": "46ed77666ea7d7b5ddb616dd2cffc87c",
     "semantic_hash": ""
   },
   "FRONTEND/index.html": {
@@ -1800,9 +1800,9 @@
     "semantic_hash": ""
   },
   "docker-compose.yml": {
-    "mtime": 1790424710.7069173,
-    "seen": 1790426295.580591,
-    "ast_hash": "e092a3fc3aec218efb1beedf51334469",
+    "mtime": 1790875953.3035655,
+    "seen": 1790876154.6664865,
+    "ast_hash": "58b3139fb269a672b076be9298335a06",
     "semantic_hash": ""
   },
   "docs/index.html": {
@@ -3030,9 +3030,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/gateway/gatewayConfig.ts": {
-    "mtime": 1790548596.242562,
-    "seen": 1790736222.214965,
-    "ast_hash": "c36a07443a9abf2f2c4097049ba9bda4",
+    "mtime": 1790783587.5043154,
+    "seen": 1790871052.6144845,
+    "ast_hash": "9da8522fb76fb5b9877175c244b43865",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/gateway/gatewayDiscovery.ts": {
@@ -3042,9 +3042,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/gateway/index.ts": {
-    "mtime": 1790548596.2434187,
-    "seen": 1790736222.214971,
-    "ast_hash": "367eef73fb62ee09390e4426b9028b2c",
+    "mtime": 1790783587.5053113,
+    "seen": 1790871052.6146297,
+    "ast_hash": "1e8c28fee4cd21cdae4f9091873d72c8",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/gateway/orderGatewayTransport.ts": {
@@ -3366,9 +3366,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/README.md": {
-    "mtime": 1790737115.9148426,
-    "seen": 1790739586.7795186,
-    "ast_hash": "beb4caf951723d81923d7e765d8c6d8a",
+    "mtime": 1790783587.51262,
+    "seen": 1790871052.647445,
+    "ast_hash": "b6221f0b331d0cca1c8ab7b5336c18a7",
     "semantic_hash": ""
   },
   "GATEWAY/docker-compose.yml": {
@@ -3402,9 +3402,9 @@
     "semantic_hash": ""
   },
   "openspec/changes/local-gateway/tasks.md": {
-    "mtime": 1790737115.9256532,
-    "seen": 1790739586.7849038,
-    "ast_hash": "f8bef32f4c38e200e56d70aea09d5c85",
+    "mtime": 1790783506.2467186,
+    "seen": 1790871052.6538775,
+    "ast_hash": "b1e1123bc5962fab1fc202f29d2a9a43",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
@@ -3426,15 +3426,15 @@
     "semantic_hash": ""
   },
   "GATEWAY/run-gateway.ps1": {
-    "mtime": 1790737115.9168506,
-    "seen": 1790739586.7634244,
-    "ast_hash": "2d9c8ec29925b60bc87a41b8f662f120",
+    "mtime": 1790783587.5136175,
+    "seen": 1790871052.6293204,
+    "ast_hash": "f75c65558229ef88cc04b736161064dd",
     "semantic_hash": ""
   },
   "GATEWAY/run-gateway.sh": {
-    "mtime": 1790737115.9168506,
-    "seen": 1790739586.763426,
-    "ast_hash": "060af36479aa150841d2d42b81142fe3",
+    "mtime": 1790783587.514584,
+    "seen": 1790871052.6293225,
+    "ast_hash": "4a8175c6d8e2b2e13aa8e1d2707d2a46",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Controllers/GatewayFiscalController.cs": {
@@ -3522,9 +3522,9 @@
     "semantic_hash": ""
   },
   "openspec/changes/cloud-gateway-discovery/tasks.md": {
-    "mtime": 1790737115.9256532,
-    "seen": 1790739586.7830143,
-    "ast_hash": "1f9abb4aa2300a60e225a970465e2176",
+    "mtime": 1790783587.51579,
+    "seen": 1790871052.652129,
+    "ast_hash": "e2bfd1b1edaa843d40a6ed9c16ec7372",
     "semantic_hash": ""
   },
   "FRONTEND/public/logo-quack-v4.png": {
@@ -3567,6 +3567,36 @@
     "mtime": 1790783362.7635572,
     "seen": 1790783445.6099343,
     "ast_hash": "77d1371903b85090564a63de34c49764",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Gateway/GatewayConfigController.cs": {
+    "mtime": 1790783587.486281,
+    "seen": 1790871052.5853722,
+    "ast_hash": "c2930d6c427072429f8cc673f2cbb6eb",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/LojaGatewayConfigAB.cs": {
+    "mtime": 1790783587.4888122,
+    "seen": 1790871052.595743,
+    "ast_hash": "e6ea3fcabb6ed41ae3b3419a3695dd2c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/SettingsPage/GatewaySettingsCard.tsx": {
+    "mtime": 1790783587.5009232,
+    "seen": 1790871052.610826,
+    "ast_hash": "f4da76ad35f99f950eedb41bf6e3136b",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/infrastructure/gateway/cloudGatewayProvisioning.ts": {
+    "mtime": 1790783587.5033152,
+    "seen": 1790871052.6143548,
+    "ast_hash": "44f7daf7ef8981b5b0c27a475a94684c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/services/api/gatewayConfigService.ts": {
+    "mtime": 1790783587.5073137,
+    "seen": 1790871052.6211534,
+    "ast_hash": "48f9c27484d4306dac07efe82cc3e0f3",
     "semantic_hash": ""
   }
 }
