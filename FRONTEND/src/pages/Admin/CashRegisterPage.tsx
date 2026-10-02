@@ -21,7 +21,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { type ClipboardEvent, type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import CashClosingSummaryModal from "@/components/Admin/CashClosingSummaryModal";
+import CashClosingSummaryModal, { printCashClosingReceipt } from "@/components/Admin/CashClosingSummaryModal";
 import CashMovementModal from "@/components/Admin/CashMovementModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import LoadingBar from "@/components/Loading/LoadingBar";
@@ -43,7 +43,7 @@ import {
   closeCashLocal,
   registerMovementLocal,
 } from "@/infrastructure/database/repositories/CashSessionRepository";
-import { companyService } from "@/services/api/companyService";
+import { companyService, type CompanyDto } from "@/services/api/companyService";
 import { getStoredAuthUser } from "@/utils/authStorage";
 
 const MANAGER_ROLES = ["administrador", "gerente"];
@@ -155,6 +155,7 @@ export default function CashRegisterPage() {
   const { maskMoneyBr, parseMoneyBr, formatMoneyBr } = useInputMasks();
   const statusDialog = useStatusDialog();
   const [cashStatus, setCashStatus] = useState<CashRegisterStatusDto | null>(null);
+  const [company, setCompany] = useState<CompanyDto | null>(null);
   const [companyName, setCompanyName] = useState("Quack PDV");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -225,8 +226,11 @@ export default function CashRegisterPage() {
       .finally(() => setLoading(false));
     companyService
       .get()
-      .then((company) => {
-        if (company?.fantasyName) setCompanyName(company.fantasyName);
+      .then((comp) => {
+        if (comp) {
+          setCompany(comp);
+          if (comp.fantasyName) setCompanyName(comp.fantasyName);
+        }
       })
       .catch(() => {
         /* nome da empresa é só decorativo no resumo/impressão — sem empresa, mantém o padrão */
@@ -292,6 +296,7 @@ export default function CashRegisterPage() {
       setDifferenceReason("");
       if (status?.lastSession) {
         setClosingSummary(status.lastSession);
+        printCashClosingReceipt(status.lastSession, company, companyName);
       }
       Toast.success("Caixa fechado. Vendas bloqueadas até nova abertura.");
     } catch (onlineError) {
@@ -308,6 +313,7 @@ export default function CashRegisterPage() {
         setDifferenceReason("");
         if (localStatus?.lastSession) {
           setClosingSummary(localStatus.lastSession);
+          printCashClosingReceipt(localStatus.lastSession, company, companyName);
         }
         Toast.info("Caixa fechado localmente (modo offline). O encerramento será sincronizado ao reconectar.");
       } catch (err) {
@@ -708,6 +714,7 @@ export default function CashRegisterPage() {
       {closingSummary ? (
         <CashClosingSummaryModal
           session={closingSummary}
+          company={company}
           companyName={companyName}
           onClose={() => setClosingSummary(null)}
         />
@@ -716,6 +723,7 @@ export default function CashRegisterPage() {
       {viewingSession ? (
         <CashClosingSummaryModal
           session={viewingSession}
+          company={company}
           companyName={companyName}
           onClose={() => setViewingSession(null)}
         />

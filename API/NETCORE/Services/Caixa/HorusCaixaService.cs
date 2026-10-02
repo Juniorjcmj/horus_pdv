@@ -336,14 +336,15 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             OperatorName = item.OperatorName,
         }).ToList();
 
-        List<PaymentBreakdownDto>? paymentBreakdown = null;
+        var endTime = closedAt ?? now;
+        var totals = await caixaAB.ObterTotaisPorFormaPagamentoAsync(companyId, source.OpenedAt, endTime, source.Id, cancellationToken);
+        var paymentBreakdown = totals
+            .Select(item => new PaymentBreakdownDto { PaymentType = item.Key, Total = HorusMoneyFormat.Format(item.Value) })
+            .ToList();
+
         string? expectedCashPreview = null;
         if (isCurrent && closedAt is null)
         {
-            var totals = await caixaAB.ObterTotaisPorFormaPagamentoAsync(companyId, source.OpenedAt, now, cancellationToken);
-            paymentBreakdown = totals
-                .Select(item => new PaymentBreakdownDto { PaymentType = item.Key, Total = HorusMoneyFormat.Format(item.Value) })
-                .ToList();
             var expected = await ComputeExpectedCashAsync(companyId, source, now, cancellationToken);
             expectedCashPreview = HorusMoneyFormat.Format(expected);
         }
