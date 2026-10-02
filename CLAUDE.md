@@ -12,3 +12,11 @@ Rules:
 Use sempre `docs/design-system.md` (Quack sobre estrutura Rango). Cores, fontes, espaçamentos e raios só
 via tokens CSS: `FRONTEND/src/index.css` (`--color-*`, Tailwind) e `FRONTEND/src/styles/tokens.css`
 (nomes Rango `--brand/--surface/--ink…`). Componentes novos usam o prefixo `rg-` (`src/styles/components.css`).
+
+## Gateway — instalador para download (IMPORTANTE)
+O sistema oferece, em Configurações → Local Gateway, o download do instalador completo em
+`FRONTEND/public/gateway/quack-gateway-completo.zip` (programa publicado + scripts + checklist).
+**Sempre que você alterar qualquer coisa em `GATEWAY/src/`, regenere esse instalador** rodando
+`GATEWAY/build-installer.sh` e **commite** o `quack-gateway-completo.zip` atualizado — senão o
+download fica desatualizado em relação ao código do Gateway. (No ambiente de nuvem sem `dotnet`
+nativo, rode o script dentro do container SDK 8.0 — ver cabeçalho do próprio script.)
