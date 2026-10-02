@@ -23,6 +23,7 @@ public class PedidoController(
     PedidoAB pedidoAB,
     HistoricoVendasAB historicoVendasAB,
     DocumentoFiscalAB documentoFiscalAB,
+    RegrasEmissaoNfceAB regrasEmissaoNfceAB,
     HorusCaixaService caixaService,
     ILogger<PedidoController> logger) : ControllerBase
 {
@@ -132,23 +133,39 @@ public class PedidoController(
 
             await pedidoAB.MarcarFinalizadoAsync(currentUser.CompanyId, pedido.Id, result.VendaId);
 
-            // Mesma regra da venda direta: falha ao enfileirar não pode derrubar um pedido já pago.
-            var fiscalQueued = true;
-            try
+            // Avalia se esta finalização de pedido deve emitir NFC-e conforme as regras da empresa
+            var listaFormas = request.Payments.Select(p => p.PaymentType).Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
+            if (listaFormas.Count == 0 && !string.IsNullOrWhiteSpace(paymentType))
             {
-                await documentoFiscalAB.EnfileirarAsync(currentUser.CompanyId, result.VendaId);
+                listaFormas.Add(paymentType);
             }
-            catch (Exception ex)
+
+            var deveEmitirFiscal = await regrasEmissaoNfceAB.AvaliarEmissaoEIncrementarAsync(
+                currentUser.CompanyId,
+                paymentType,
+                listaFormas,
+                pedido.CustomerCpf);
+
+            var fiscalQueued = false;
+            if (deveEmitirFiscal)
             {
-                fiscalQueued = false;
-                logger.LogError(ex, "Falha ao enfileirar NFC-e do pedido {OrderNumber}.", orderNumber);
+                try
+                {
+                    await documentoFiscalAB.EnfileirarAsync(currentUser.CompanyId, result.VendaId);
+                    fiscalQueued = true;
+                }
+                catch (Exception ex)
+                {
+                    fiscalQueued = false;
+                    logger.LogError(ex, "Falha ao enfileirar NFC-e do pedido {OrderNumber}.", orderNumber);
+                }
             }
 
             return Ok(new ApiResponse<object>
             {
                 Success = true,
                 Message = "Pedido finalizado com sucesso.",
-                Data = new { saleNumber = result.SaleNumber, rows = result.Rows, fiscalQueued }
+                Data = new { saleNumber = result.SaleNumber, rows = result.Rows, fiscalQueued, emitirFiscal = deveEmitirFiscal }
             });
         }
         catch (InvalidOperationException ex)

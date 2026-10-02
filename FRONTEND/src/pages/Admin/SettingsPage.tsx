@@ -5,6 +5,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import {
+  FiscalEmissionRulesCard,
   GatewayMonitorCard,
   GatewaySettingsCard,
   PrintSettingsCard,
@@ -98,6 +99,7 @@ export default function SettingsPage({
               printPreviewEnabled={printPreviewEnabled}
               onChangePrintPreview={handleChangePrintPreview}
             />
+            {isAdminOrManager && <FiscalEmissionRulesCard />}
             {isAdminOrManager && <GatewaySettingsCard />}
             <GatewayMonitorCard />
             <SecuritySessionsCard

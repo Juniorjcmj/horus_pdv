@@ -19,6 +19,7 @@ public class HistoricoVendasController(
     HistoricoVendasAB historicoVendasAB,
     HorusCaixaService caixaService,
     DocumentoFiscalAB documentoFiscalAB,
+    RegrasEmissaoNfceAB regrasEmissaoNfceAB,
     ILogger<HistoricoVendasController> logger) : ControllerBase
 {
     [HttpGet]
@@ -141,18 +142,32 @@ public class HistoricoVendasController(
                 });
             }
 
-            // A nota fiscal é enfileirada fora da transação da venda — a venda já está
-            // confirmada e liberada para o caixa; a emissão em si acontece em segundo plano
-            // pelo NfceOutboxWorker. Falha aqui não pode derrubar uma venda já registrada.
-            var fiscalQueued = true;
-            try
+            // Avalia se esta venda deve emitir NFC-e conforme as regras da empresa (formas de pagamento e intervalo de notas)
+            var listaFormas = request.Payments.Select(p => p.PaymentType).Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
+            if (listaFormas.Count == 0 && !string.IsNullOrWhiteSpace(request.PaymentType))
             {
-                await documentoFiscalAB.EnfileirarAsync(currentUser.CompanyId, result.VendaId);
+                listaFormas.Add(request.PaymentType);
             }
-            catch (Exception ex)
+
+            var deveEmitirFiscal = await regrasEmissaoNfceAB.AvaliarEmissaoEIncrementarAsync(
+                currentUser.CompanyId,
+                request.PaymentType,
+                listaFormas,
+                request.CustomerCpf);
+
+            var fiscalQueued = false;
+            if (deveEmitirFiscal)
             {
-                fiscalQueued = false;
-                logger.LogError(ex, "Falha ao enfileirar NFC-e da venda {VendaId}.", result.VendaId);
+                try
+                {
+                    await documentoFiscalAB.EnfileirarAsync(currentUser.CompanyId, result.VendaId);
+                    fiscalQueued = true;
+                }
+                catch (Exception ex)
+                {
+                    fiscalQueued = false;
+                    logger.LogError(ex, "Falha ao enfileirar NFC-e da venda {VendaId}.", result.VendaId);
+                }
             }
 
             return StatusCode(StatusCodes.Status201Created, new ApiResponse<object>
@@ -166,6 +181,7 @@ public class HistoricoVendasController(
                     vendaId = result.VendaId,
                     rows = result.Rows,
                     fiscalQueued,
+                    emitirFiscal = deveEmitirFiscal,
                     isReplay = false,
                     warnings = result.Warnings
                 }

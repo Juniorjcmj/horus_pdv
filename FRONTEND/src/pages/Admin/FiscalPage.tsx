@@ -31,6 +31,7 @@ import {
   Search,
   Send,
   ShieldAlert,
+  SlidersHorizontal,
   WifiOff,
   X,
   XCircle,
@@ -45,6 +46,7 @@ import PageHeader from "@/components/Admin/PageHeader";
 import ReceiptPreviewModal, { type SaleReceipt } from "@/components/Admin/ReceiptPreviewModal";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
 import TablePagination from "@/components/Pagination/TablePagination";
+import { FiscalEmissionRulesCard } from "@/components/SettingsPage";
 import { Toast } from "@/hooks/Dialog";
 import { usePromptDialog } from "@/hooks/Dialog/usePromptDialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
@@ -63,7 +65,7 @@ import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { getStoredAuthUser } from "@/utils/authStorage";
 import { formatNumeroNf, getSefazConsultaUrl } from "@/utils/danfePrint";
 
-type FiscalTab = "notas" | "contingencia" | "inutilizacao";
+type FiscalTab = "notas" | "contingencia" | "inutilizacao" | "regras";
 type StatusFilter = "todos" | "autorizado" | "cancelado" | "devolvido" | "rejeitado" | "contingencia";
 type PeriodFilter = "todos" | "hoje" | "7dias" | "mes";
 
@@ -728,6 +730,18 @@ export default function FiscalPage() {
         >
           <RotateCcw size={14} />
           Inutilização de Numeração
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("regras")}
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition-colors ${
+            activeTab === "regras"
+              ? "border-accent text-accent"
+              : "border-transparent text-text-secondary hover:text-text-primary"
+          }`}
+        >
+          <SlidersHorizontal size={14} />
+          Regras de Emissão
         </button>
       </div>
 
@@ -1497,7 +1511,7 @@ export default function FiscalPage() {
             </div>
           </div>
         </section>
-      ) : (
+      ) : activeTab === "inutilizacao" ? (
         /* Aba de Inutilização de Faixa de Numeração */
         <section className="card p-5 space-y-4 max-w-2xl">
           <div className="space-y-1">
@@ -1570,6 +1584,11 @@ export default function FiscalPage() {
             </button>
           </div>
         </section>
+      ) : (
+        /* Aba de Regras de Emissão Fiscal */
+        <div className="max-w-4xl">
+          <FiscalEmissionRulesCard />
+        </div>
       )}
 
       {/* Modal de Cancelamento/Devolução Estruturado (mesmas regras do caixa/PDV) */}

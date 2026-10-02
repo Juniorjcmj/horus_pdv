@@ -1268,8 +1268,10 @@ export default function SalesStartPage({
 
         saleNumber = result?.saleNumber || offlineReference;
 
-        // Aguarda brevemente a autorização da SEFAZ pelo outbox worker (polling ágil de até 1.5s)
-        if (result?.saleNumber) {
+        // Aguarda brevemente a autorização da SEFAZ pelo outbox worker se a venda foi qualificada para emissão fiscal
+        const shouldEmitNfce = (result as any)?.emitirFiscal !== false && (result as any)?.fiscalQueued !== false;
+
+        if (shouldEmitNfce && result?.saleNumber) {
           for (let attempt = 0; attempt < 3; attempt++) {
             try {
               const doc = await fiscalService.getBySaleNumber(result.saleNumber);
