@@ -22,7 +22,7 @@ public class PromocaoAB(Connection connection)
         var sql = $"""
             SELECT {Columns}
             FROM Promocoes p
-            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId
             WHERE p.CompanyId = @CompanyId
             ORDER BY p.CriadoEm DESC;
             """;
@@ -47,7 +47,7 @@ public class PromocaoAB(Connection connection)
         var sql = $"""
             SELECT {Columns}
             FROM Promocoes p
-            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId
             WHERE p.CompanyId = @CompanyId
               AND p.Ativa = 1
               AND SYSDATETIMEOFFSET() BETWEEN p.InicioVigencia AND p.FimVigencia
@@ -74,7 +74,7 @@ public class PromocaoAB(Connection connection)
         var sql = $"""
             SELECT {Columns}
             FROM Promocoes p
-            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId
             WHERE p.CompanyId = @CompanyId AND p.Id = @Id;
             """;
 

@@ -364,7 +364,7 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
             SELECT p.ProductCode, p.ProductName, p.ProductQnt, p.ProductUnitPrice, p.DataValidade,
                    c.Nome AS CategoriaNome, c.Id AS CategoriaId, c.CategoriaPaiId
             FROM Produtos p
-            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId
             WHERE p.CompanyId = @CompanyId
               AND p.ControlaValidade = 1
               AND p.DataValidade IS NOT NULL
@@ -554,8 +554,8 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
             FROM Vendas v
             LEFT JOIN VendaItens i ON i.VendaId = v.Id
             LEFT JOIN Produtos p ON p.ProductCode = i.ProductCode AND p.CompanyId = v.CompanyId
-            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = v.CompanyId
-            LEFT JOIN Categorias pai ON pai.Id = c.CategoriaPaiId AND pai.CompanyId = v.CompanyId
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId
+            LEFT JOIN Categorias pai ON pai.Id = c.CategoriaPaiId
             WHERE v.CompanyId = @CompanyId
             ORDER BY v.SaleDate DESC;
             """;
@@ -595,7 +595,7 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
             SELECT p.ProductCode, p.ProductName, p.ProductSupplier, p.ProductQnt, p.ProductUnitPrice, p.ProductSalePrice,
                    p.CategoriaId, c.Nome AS CategoriaNome, c.CategoriaPaiId
             FROM Produtos p
-            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId
             WHERE p.CompanyId = @CompanyId
             ORDER BY p.ProductName;
             """;

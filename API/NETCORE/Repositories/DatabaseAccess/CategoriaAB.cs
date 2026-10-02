@@ -14,15 +14,15 @@ public class CategoriaAB(Connection connection)
         SELECT c.Id, c.CompanyId, c.Nome, c.CategoriaPaiId, pai.Nome AS CategoriaPaiNome, c.Ordem, c.Ativa,
                COUNT(p.Id) AS QuantidadeProdutos
         FROM Categorias c
-        LEFT JOIN Categorias pai ON pai.Id = c.CategoriaPaiId AND pai.CompanyId = c.CompanyId
-        LEFT JOIN Produtos p ON p.CategoriaId = c.Id AND p.CompanyId = c.CompanyId
+        LEFT JOIN Categorias pai ON pai.Id = c.CategoriaPaiId
+        LEFT JOIN Produtos p ON p.CategoriaId = c.Id AND p.CompanyId = @CompanyId
         """;
 
     public async Task<List<CategoriaAD>> ListarArvoreAsync(string companyId, bool apenasAtivas = false)
     {
         var sql = $"""
             {BaseSelect}
-            WHERE c.CompanyId = @CompanyId
+            WHERE (c.CompanyId = @CompanyId OR c.CompanyId = 'empresa-principal')
               AND (@ApenasAtivas = 0 OR c.Ativa = 1)
             GROUP BY c.Id, c.CompanyId, c.Nome, c.CategoriaPaiId, pai.Nome, c.Ordem, c.Ativa
             ORDER BY c.Ordem, c.Nome;
@@ -72,7 +72,7 @@ public class CategoriaAB(Connection connection)
     {
         var sql = $"""
             {BaseSelect}
-            WHERE c.CompanyId = @CompanyId
+            WHERE (c.CompanyId = @CompanyId OR c.CompanyId = 'empresa-principal')
               AND (@ApenasAtivas = 0 OR c.Ativa = 1)
             GROUP BY c.Id, c.CompanyId, c.Nome, c.CategoriaPaiId, pai.Nome, c.Ordem, c.Ativa
             ORDER BY c.Ordem, c.Nome;
@@ -97,7 +97,7 @@ public class CategoriaAB(Connection connection)
     {
         var sql = $"""
             {BaseSelect}
-            WHERE c.Id = @Id AND c.CompanyId = @CompanyId
+            WHERE c.Id = @Id AND (c.CompanyId = @CompanyId OR c.CompanyId = 'empresa-principal')
             GROUP BY c.Id, c.CompanyId, c.Nome, c.CategoriaPaiId, pai.Nome, c.Ordem, c.Ativa;
             """;
 
