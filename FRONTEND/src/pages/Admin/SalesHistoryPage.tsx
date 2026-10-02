@@ -4,13 +4,14 @@
  * Entradas esperadas: não recebe props; processa filtro textual e renderiza dados vindos da API.
  */
 
-import { AlertCircle, AlertTriangle, FileText, QrCode, RefreshCw, Search } from "lucide-react";
+import { AlertCircle, AlertTriangle, Ban, FileText, QrCode, RefreshCw, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import DanfePreviewModal from "@/components/Admin/DanfePreviewModal";
 import FiscalErrorModal from "@/components/Admin/FiscalErrorModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import ReceiptPreviewModal, { type SaleReceipt } from "@/components/Admin/ReceiptPreviewModal";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
+import SaleCancelModal from "@/components/Admin/SaleCancelModal";
 import TablePagination from "@/components/Pagination/TablePagination";
 import { Toast } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
@@ -74,6 +75,8 @@ export default function SalesHistoryPage() {
   const [errorFiscalModal, setErrorFiscalModal] = useState<FiscalDocumentDto | null>(null);
   const [loadingDanfeSaleNumber, setLoadingDanfeSaleNumber] = useState<string | null>(null);
   const [reemitindoIds, setReemitindoIds] = useState<Set<string>>(() => new Set());
+  const [saleToCancel, setSaleToCancel] = useState<SaleHistoryRow | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"todas" | "finalizadas" | "canceladas">("todas");
 
   const loadFiscalStatus = () => {
     fiscalService
@@ -108,16 +111,21 @@ export default function SalesHistoryPage() {
   }, []);
 
   const filteredSales = useMemo(() => {
-    // Busca local por número da venda ou nome do cliente.
+    // Busca local por número da venda ou nome do cliente e filtro de status.
     const normalized = search.trim().toLowerCase();
-    if (!normalized) return salesHistory;
 
-    return salesHistory.filter(
-      (sale) =>
+    return salesHistory.filter((sale) => {
+      const isCancelled = sale.status?.toLowerCase() === "cancelada";
+      if (statusFilter === "finalizadas" && isCancelled) return false;
+      if (statusFilter === "canceladas" && !isCancelled) return false;
+
+      if (!normalized) return true;
+      return (
         sale.saleNumber.toLowerCase().includes(normalized) ||
-        sale.customerName.toLowerCase().includes(normalized),
-    );
-  }, [salesHistory, search]);
+        sale.customerName.toLowerCase().includes(normalized)
+      );
+    });
+  }, [salesHistory, search, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredSales.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -246,22 +254,69 @@ export default function SalesHistoryPage() {
         description="Consulta de vendas com detalhes por cliente e itens vendidos."
       />
 
-      <section className="card p-4 md:p-5">
-        <label className="relative mx-auto block w-full max-w-xl">
-          <Search
-            size={16}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
-          />
-          <input
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setCurrentPage(1);
-            }}
-            className="input-field w-full pl-9"
-            placeholder="Pesquise pelo número da venda ou cliente"
-          />
-        </label>
+      <section className="card p-4 md:p-5 space-y-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <label className="relative block w-full sm:max-w-md">
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
+            />
+            <input
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="input-field w-full pl-9"
+              placeholder="Pesquise pelo número da venda ou cliente"
+            />
+          </label>
+
+          <div className="flex items-center gap-1.5 self-stretch sm:self-auto rounded-lg bg-bg-primary p-1 border border-border-primary">
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("todas");
+                setCurrentPage(1);
+              }}
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+                statusFilter === "todas"
+                  ? "bg-bg-card text-brand-primary shadow-xs"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              Todas ({salesHistory.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("finalizadas");
+                setCurrentPage(1);
+              }}
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+                statusFilter === "finalizadas"
+                  ? "bg-bg-card text-emerald-500 shadow-xs"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              Concluídas ({salesHistory.filter((s) => s.status?.toLowerCase() !== "cancelada").length})
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("canceladas");
+                setCurrentPage(1);
+              }}
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-all ${
+                statusFilter === "canceladas"
+                  ? "bg-bg-card text-rose-500 shadow-xs"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              Canceladas ({salesHistory.filter((s) => s.status?.toLowerCase() === "cancelada").length})
+            </button>
+          </div>
+        </div>
       </section>
 
       <section className="card overflow-hidden">
@@ -285,15 +340,40 @@ export default function SalesHistoryPage() {
             <tbody>
               {paginatedSales.map((sale) => {
                 const fiscal = fiscalBySale.get(sale.saleNumber);
+                const isCancelled = sale.status?.toLowerCase() === "cancelada";
                 return (
-                <tr key={`${sale.saleNumber}-${sale.productCode}`} className="border-t border-border-primary">
-                  <td className="px-3 py-3 font-semibold text-text-primary">{sale.saleNumber}</td>
+                <tr
+                  key={`${sale.saleNumber}-${sale.productCode}`}
+                  className={`border-t border-border-primary transition-colors ${
+                    isCancelled ? "bg-rose-500/[0.04] dark:bg-rose-500/[0.07]" : ""
+                  }`}
+                >
+                  <td className="px-3 py-3 font-semibold text-text-primary">
+                    <div className="flex flex-col gap-1">
+                      <span className={isCancelled ? "line-through text-text-tertiary" : ""}>
+                        {sale.saleNumber}
+                      </span>
+                      {isCancelled && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 border border-rose-500/20 w-fit"
+                          title={`Cancelada por ${sale.canceladoPorSupervisorNome || "Supervisor"}${
+                            sale.canceladoJustificativa ? `: ${sale.canceladoJustificativa}` : ""
+                          }`}
+                        >
+                          <Ban size={10} /> Cancelada
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-3 py-3">
-                    <span className="block break-words leading-snug" title={sale.customerName}>
+                    <span
+                      className={`block break-words leading-snug ${isCancelled ? "line-through text-text-tertiary" : ""}`}
+                      title={sale.customerName}
+                    >
                       {sale.customerName}
                     </span>
                   </td>
-                  <td className="px-3 py-3 break-words">{sale.customerCpf}</td>
+                  <td className="px-3 py-3 break-words text-text-secondary">{sale.customerCpf}</td>
                   <td className="px-3 py-3">
                     <span className="block break-all font-medium leading-snug text-text-primary" title={sale.productCode}>
                       {sale.productCode}
@@ -309,7 +389,9 @@ export default function SalesHistoryPage() {
                     R$ {formatMoneyBr(getUnitPrice(sale))}
                   </td>
                   <td className="px-3 py-3 text-right font-semibold text-text-primary">
-                    R$ {formatMoneyBr(getItemTotal(sale))}
+                    <span className={isCancelled ? "line-through text-text-tertiary" : ""}>
+                      R$ {formatMoneyBr(getItemTotal(sale))}
+                    </span>
                   </td>
                   <td className="px-3 py-3">
                     <span className="block whitespace-nowrap">{splitSaleDate(sale.saleDate).date}</span>
@@ -359,6 +441,13 @@ export default function SalesHistoryPage() {
                           loading: loadingDanfeSaleNumber === sale.saleNumber,
                           loadingLabel: "Carregando...",
                           onClick: () => openDanfe(sale.saleNumber),
+                        },
+                        {
+                          key: "cancelSale",
+                          label: isCancelled ? "Venda Cancelada" : "Cancelar Venda (Supervisor)",
+                          icon: <Ban size={13} className={isCancelled ? "text-text-tertiary" : "text-rose-500"} />,
+                          disabled: isCancelled,
+                          onClick: () => setSaleToCancel(sale),
                         },
                         ...(fiscal && (fiscal.status === FISCAL_STATUS.Rejeitado || fiscal.motivoStatus)
                           ? [
@@ -436,6 +525,23 @@ export default function SalesHistoryPage() {
             setErrorFiscalModal(null);
           }}
           isReemitindo={reemitindoIds.has(errorFiscalModal.id)}
+        />
+      ) : null}
+
+      {saleToCancel ? (
+        <SaleCancelModal
+          isOpen={Boolean(saleToCancel)}
+          saleNumber={saleToCancel.saleNumber}
+          customerName={saleToCancel.customerName}
+          totalAmount={saleToCancel.totalAmount || formatMoneyBr(getItemTotal(saleToCancel))}
+          paymentType={saleToCancel.paymentType}
+          saleDate={saleToCancel.saleDate}
+          onClose={() => setSaleToCancel(null)}
+          onSuccess={() => {
+            setSaleToCancel(null);
+            void loadSalesHistory();
+            loadFiscalStatus();
+          }}
         />
       ) : null}
     </PageLayout>

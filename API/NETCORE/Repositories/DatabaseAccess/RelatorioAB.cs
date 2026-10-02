@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
-public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB fiadoAB)
+public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB fiadoAB, HistoricoVendasAB historicoVendasAB)
 {
     private static readonly CultureInfo PtBr = new("pt-BR");
 
@@ -40,6 +40,7 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
             "inadimplencia" => await GerarInadimplenciaAsync(companyId, filters),
             "desempenho-caixa" => await GerarDesempenhoCaixaAsync(companyId, filters),
             "log-atividades" => await GerarLogAtividadesAsync(companyId, filters, restrictToUserId),
+            "cancelamentos" => await GerarCancelamentosAsync(companyId, filters),
             _ => throw new InvalidOperationException("Relatório não encontrado.")
         };
 
@@ -541,6 +542,40 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
             rows);
     }
 
+    private async Task<object> GerarCancelamentosAsync(string companyId, Dictionary<string, JsonElement> filters)
+    {
+        var startDate = GetDate(filters, "startDate") ?? DateTimeOffset.Now.AddDays(-30).Date;
+        var endDate = (GetDate(filters, "endDate") ?? DateTimeOffset.Now.Date).AddDays(1);
+
+        var cancelamentos = await historicoVendasAB.ListarCancelamentosAsync(companyId, startDate, endDate);
+
+        var reportRows = cancelamentos.Select(item => Row(
+            ("saleNumber", item.SaleNumber),
+            ("dataVenda", item.SaleDate),
+            ("dataCancelamento", item.CanceladoEm),
+            ("valor", item.TotalAmount),
+            ("cliente", string.IsNullOrWhiteSpace(item.CustomerName) ? "Consumidor Final" : item.CustomerName),
+            ("pagamento", NormalizePaymentType(item.PaymentType)),
+            ("operador", item.OperatorName),
+            ("supervisor", item.CanceladoPorSupervisorNome),
+            ("motivo", item.CanceladoJustificativa),
+            ("itens", item.ItensResumo))).ToList();
+
+        return Result(
+            Columns(
+                ("saleNumber", "Venda #"),
+                ("dataVenda", "Data da Venda"),
+                ("dataCancelamento", "Data do Cancelamento"),
+                ("valor", "Valor (R$)"),
+                ("cliente", "Cliente"),
+                ("pagamento", "Forma Pgto"),
+                ("operador", "Operador"),
+                ("supervisor", "Supervisor Autorizador"),
+                ("motivo", "Motivo do Cancelamento"),
+                ("itens", "Itens Cancelados")),
+            reportRows);
+    }
+
     private async Task<List<ReportSaleRow>> ListarVendasAsync(string companyId)
     {
         const string sql = """
@@ -557,6 +592,7 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
             LEFT JOIN Categorias c ON c.Id = p.CategoriaId
             LEFT JOIN Categorias pai ON pai.Id = c.CategoriaPaiId
             WHERE v.CompanyId = @CompanyId
+              AND ISNULL(v.Status, 'finalizada') <> 'cancelada'
             ORDER BY v.SaleDate DESC;
             """;
 

@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
-    "mtime": 1790869604.3112972,
-    "seen": 1790871052.5966263,
-    "ast_hash": "c4d98ff150bd3e2b9cd5dd35a158ba52",
+    "mtime": 1790970727.8579698,
+    "seen": 1790971082.3009963,
+    "ast_hash": "e867797b4efc63608d0f6145433b403e",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Clientes/ClienteService.cs": {
@@ -654,9 +654,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
-    "mtime": 1788729462.4755933,
-    "seen": 1788888974.3519926,
-    "ast_hash": "c43005034c0286ce5ec155b76c6f3251",
+    "mtime": 1790970909.52188,
+    "seen": 1790971082.3075747,
+    "ast_hash": "a2996348fce4968f7b38581384b44fb5",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashMovementModal.tsx": {
@@ -972,9 +972,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/CashRegisterPage.tsx": {
-    "mtime": 1790421566.5344627,
-    "seen": 1790421619.6569993,
-    "ast_hash": "be566d9efe43b92ed595206373f4446a",
+    "mtime": 1790970993.9947803,
+    "seen": 1790971082.319662,
+    "ast_hash": "3c362faac94bfdb0d0fe1354933470a2",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/CrmLoyaltyPage.tsx": {

@@ -21,8 +21,10 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
     public async Task<List<VendaHistoricoAD>> ListarAsync(string companyId, string? saleNumber = null, DateTimeOffset? desde = null)
     {
         const string sql = """
-            SELECT v.SaleNumber, v.CustomerName, v.CustomerCpf, v.PaymentType,
+            SELECT v.SaleNumber, ISNULL(v.Status, 'finalizada') AS Status,
+                   v.CustomerName, v.CustomerCpf, v.PaymentType,
                    v.TotalAmount, v.OperatorName, v.SaleDate, v.ClientSaleId, v.OfflineReference,
+                   v.CanceladoEm, v.CanceladoPorOperadorNome, v.CanceladoPorSupervisorNome, v.CanceladoJustificativa,
                    ISNULL(i.ProductCode, '') AS ProductCode,
                    ISNULL(i.ProductName, 'Item') AS ProductName,
                    ISNULL(i.Quantity, 1) AS Quantity,
@@ -85,6 +87,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         {
             VendaId = vendaId,
             SaleNumber = first.SaleNumber,
+            Status = first.Status,
             CustomerName = first.CustomerName,
             CustomerCpf = first.CustomerCpf,
             PaymentType = first.PaymentType,
@@ -93,6 +96,10 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             SaleDate = first.SaleDate,
             ClientSaleId = first.ClientSaleId,
             OfflineReference = first.OfflineReference,
+            CanceladoEm = first.CanceladoEm,
+            CanceladoPorOperadorNome = first.CanceladoPorOperadorNome,
+            CanceladoPorSupervisorNome = first.CanceladoPorSupervisorNome,
+            CanceladoJustificativa = first.CanceladoJustificativa,
             Items = rows,
             Payments = payments
         };
@@ -821,6 +828,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
     private static VendaHistoricoAD Map(SqlDataReader reader) => new()
     {
         SaleNumber = ReadString(reader, "SaleNumber"),
+        Status = ReadString(reader, "Status", "finalizada"),
         CustomerName = ReadString(reader, "CustomerName"),
         CustomerCpf = ReadString(reader, "CustomerCpf"),
         PaymentType = ReadString(reader, "PaymentType"),
@@ -841,19 +849,44 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         FiscalNumeroNf = ReadNullableInt(reader, "FiscalNumeroNf"),
         FiscalSerie = ReadNullableInt(reader, "FiscalSerie"),
         FiscalStatus = ReadNullableInt(reader, "FiscalStatus"),
-        FiscalChaveAcesso = ReadNullableString(reader, "FiscalChaveAcesso")
+        FiscalChaveAcesso = ReadNullableString(reader, "FiscalChaveAcesso"),
+        CanceladoEm = ReadNullableSaleDate(reader, "CanceladoEm"),
+        CanceladoPorOperadorNome = ReadNullableString(reader, "CanceladoPorOperadorNome"),
+        CanceladoPorSupervisorNome = ReadNullableString(reader, "CanceladoPorSupervisorNome"),
+        CanceladoJustificativa = ReadNullableString(reader, "CanceladoJustificativa")
     };
 
-    private static string ReadString(SqlDataReader reader, string name)
+    private static string ReadString(SqlDataReader reader, string name, string fallback = "")
     {
         try
         {
             var ordinal = reader.GetOrdinal(name);
-            return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+            return reader.IsDBNull(ordinal) ? fallback : reader.GetString(ordinal);
         }
         catch (IndexOutOfRangeException)
         {
-            return string.Empty;
+            return fallback;
+        }
+    }
+
+    private static string? ReadNullableSaleDate(SqlDataReader reader, string name)
+    {
+        try
+        {
+            var ordinal = reader.GetOrdinal(name);
+            if (reader.IsDBNull(ordinal)) return null;
+            var val = reader.GetValue(ordinal);
+            return val switch
+            {
+                DateTimeOffset dto => HorusDateTime.Format(dto),
+                DateTime dt => HorusDateTime.Format(HorusDateTime.ToBrasilia(dt)),
+                string s when DateTimeOffset.TryParse(s, out var parsedDto) => HorusDateTime.Format(parsedDto),
+                _ => val.ToString()
+            };
+        }
+        catch
+        {
+            return null;
         }
     }
 
@@ -972,6 +1005,297 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         }
 
         return list;
+    }
+
+    public async Task<(bool Sucesso, string Mensagem, int ItensEstornados, string? CanceladoEm)> CancelarVendaComSupervisorAsync(
+        string companyId,
+        string saleNumber,
+        string supervisorId,
+        string supervisorNome,
+        string operadorId,
+        string operadorNome,
+        string justificativa)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+
+        string vendaId;
+        string? clienteIdFiado = null;
+        decimal valorFiado = 0m;
+        var itensParaEstornar = new List<(string ProductCode, decimal Quantity)>();
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        decimal totalVenda = 0m;
+
+        try
+        {
+            // 1. Localiza a venda com bloqueio exclusivo
+            const string sqlVenda = """
+                SELECT Id, ISNULL(Status, 'finalizada') AS Status, TotalAmount, PaymentType
+                FROM Vendas WITH (UPDLOCK, ROWLOCK)
+                WHERE CompanyId = @CompanyId AND SaleNumber = @SaleNumber;
+                """;
+            await using (var cmdVenda = new SqlCommand(sqlVenda, db, transaction))
+            {
+                cmdVenda.Parameters.AddWithValue("@CompanyId", companyId);
+                cmdVenda.Parameters.AddWithValue("@SaleNumber", saleNumber);
+                await using var readerVenda = await cmdVenda.ExecuteReaderAsync();
+                if (!await readerVenda.ReadAsync())
+                {
+                    await readerVenda.CloseAsync();
+                    await transaction.RollbackAsync();
+                    return (false, "Venda não encontrada.", 0, null);
+                }
+
+                vendaId = readerVenda.GetString(readerVenda.GetOrdinal("Id"));
+                var statusAtual = readerVenda.GetString(readerVenda.GetOrdinal("Status"));
+                totalVenda = readerVenda.GetDecimal(readerVenda.GetOrdinal("TotalAmount"));
+                await readerVenda.CloseAsync();
+
+                if (statusAtual.Equals("cancelada", StringComparison.OrdinalIgnoreCase))
+                {
+                    await transaction.RollbackAsync();
+                    return (false, "Esta venda já está cancelada.", 0, null);
+                }
+            }
+
+            // 2. Atualiza a venda para Status = 'cancelada' com dados de auditoria
+            const string sqlUpdateVenda = """
+                UPDATE Vendas
+                SET Status = 'cancelada',
+                    CanceladoEm = @CanceladoEm,
+                    CanceladoPorOperadorId = @OperadorId,
+                    CanceladoPorOperadorNome = @OperadorNome,
+                    CanceladoPorSupervisorId = @SupervisorId,
+                    CanceladoPorSupervisorNome = @SupervisorNome,
+                    CanceladoJustificativa = @Justificativa
+                WHERE Id = @VendaId AND CompanyId = @CompanyId;
+                """;
+            await using (var cmdUpdate = new SqlCommand(sqlUpdateVenda, db, transaction))
+            {
+                cmdUpdate.Parameters.AddWithValue("@CanceladoEm", now);
+                cmdUpdate.Parameters.AddWithValue("@OperadorId", operadorId);
+                cmdUpdate.Parameters.AddWithValue("@OperadorNome", operadorNome);
+                cmdUpdate.Parameters.AddWithValue("@SupervisorId", supervisorId);
+                cmdUpdate.Parameters.AddWithValue("@SupervisorNome", supervisorNome);
+                cmdUpdate.Parameters.AddWithValue("@Justificativa", justificativa.Trim());
+                cmdUpdate.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdUpdate.Parameters.AddWithValue("@CompanyId", companyId);
+                await cmdUpdate.ExecuteNonQueryAsync();
+            }
+
+            // 3. Busca os itens da venda para estornar o estoque
+            const string sqlItens = """
+                SELECT ProductCode, Quantity
+                FROM VendaItens
+                WHERE VendaId = @VendaId AND CompanyId = @CompanyId;
+                """;
+            await using (var cmdItens = new SqlCommand(sqlItens, db, transaction))
+            {
+                cmdItens.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdItens.Parameters.AddWithValue("@CompanyId", companyId);
+                await using var readerItens = await cmdItens.ExecuteReaderAsync();
+                while (await readerItens.ReadAsync())
+                {
+                    var code = readerItens.GetString(readerItens.GetOrdinal("ProductCode"));
+                    var qty = readerItens.GetDecimal(readerItens.GetOrdinal("Quantity"));
+                    if (!string.IsNullOrWhiteSpace(code) && qty > 0)
+                    {
+                        itensParaEstornar.Add((code.Trim(), qty));
+                    }
+                }
+            }
+
+            // 4. Estorna os produtos no estoque
+            foreach (var (pCode, pQty) in itensParaEstornar)
+            {
+                const string sqlEstorno = """
+                    UPDATE Produtos
+                    SET ProductQnt = ProductQnt + @Quantity,
+                        TotalPriceOnProduct = ProductUnitPrice * (ProductQnt + @Quantity)
+                    WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;
+                    """;
+                await using var cmdEstorno = new SqlCommand(sqlEstorno, db, transaction);
+                cmdEstorno.Parameters.AddWithValue("@Quantity", pQty);
+                cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
+                cmdEstorno.Parameters.AddWithValue("@ProductCode", pCode);
+                await cmdEstorno.ExecuteNonQueryAsync();
+            }
+
+            // 5. Verifica se há débito em FiadoMovimentos associado à venda
+            const string sqlCheckFiado = """
+                SELECT TOP 1 ClienteId, Valor
+                FROM FiadoMovimentos
+                WHERE VendaId = @VendaId AND CompanyId = @CompanyId AND Tipo = 1;
+                """;
+            await using (var cmdFiado = new SqlCommand(sqlCheckFiado, db, transaction))
+            {
+                cmdFiado.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdFiado.Parameters.AddWithValue("@CompanyId", companyId);
+                await using var readerFiado = await cmdFiado.ExecuteReaderAsync();
+                if (await readerFiado.ReadAsync())
+                {
+                    clienteIdFiado = readerFiado.GetString(readerFiado.GetOrdinal("ClienteId"));
+                    valorFiado = readerFiado.GetDecimal(readerFiado.GetOrdinal("Valor"));
+                }
+            }
+
+            // 6. Atualiza documentos fiscais associados para cancelado
+            const string sqlDocFiscal = """
+                UPDATE DocumentosFiscais
+                SET Status = 3, -- Cancelado
+                    CanceladoPorSupervisorId = @SupervisorId,
+                    CanceladoPorSupervisorNome = @SupervisorNome,
+                    CanceladoPorOperador = @OperadorNome,
+                    CanceladoJustificativa = @Justificativa,
+                    AtualizadoEm = @Now
+                WHERE VendaId = @VendaId AND CompanyId = @CompanyId AND Status <> 3;
+                """;
+            await using (var cmdDocFiscal = new SqlCommand(sqlDocFiscal, db, transaction))
+            {
+                cmdDocFiscal.Parameters.AddWithValue("@SupervisorId", supervisorId);
+                cmdDocFiscal.Parameters.AddWithValue("@SupervisorNome", supervisorNome);
+                cmdDocFiscal.Parameters.AddWithValue("@OperadorNome", operadorNome);
+                cmdDocFiscal.Parameters.AddWithValue("@Justificativa", justificativa.Trim());
+                cmdDocFiscal.Parameters.AddWithValue("@Now", now);
+                cmdDocFiscal.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdDocFiscal.Parameters.AddWithValue("@CompanyId", companyId);
+                await cmdDocFiscal.ExecuteNonQueryAsync();
+            }
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return (false, $"Erro ao cancelar venda: {ex.Message}", 0, null);
+        }
+
+        // 7. Se houve fiado, estorna o saldo devedor do cliente de forma consistente
+        if (!string.IsNullOrEmpty(clienteIdFiado) && valorFiado > 0)
+        {
+            try
+            {
+                await fiadoAb.RegistrarCreditoAsync(
+                    companyId,
+                    clienteIdFiado,
+                    valorFiado,
+                    "Estorno",
+                    $"Cancelamento da Venda #{saleNumber}. Motivo: {justificativa.Trim()} (Aut: {supervisorNome})",
+                    operadorNome);
+            }
+            catch
+            {
+                // Não impede a conclusão do cancelamento caso o estorno financeiro secundário falhe
+            }
+        }
+
+        // 8. Grava na trilha de auditoria
+        try
+        {
+            await auditLogAb.RegistrarAsync(
+                companyId,
+                operadorId,
+                operadorNome,
+                AuditEventTypes.VendaCancelada,
+                $"Venda #{saleNumber} cancelada. Total: R$ {HorusMoneyFormat.Format(totalVenda)}. Supervisor: {supervisorNome} ({supervisorId}). Motivo: {justificativa.Trim()}",
+                "Vendas",
+                vendaId);
+        }
+        catch
+        {
+            // Trilha de auditoria não deve lançar exceção ao usuário
+        }
+
+        var canceladoEmStr = HorusDateTime.Format(now);
+        return (true, "Venda cancelada e mercadorias estornadas ao estoque com sucesso.", itensParaEstornar.Count, canceladoEmStr);
+    }
+
+    public async Task<List<VendaCanceladaResumoAD>> ListarCancelamentosAsync(
+        string companyId,
+        DateTimeOffset? de = null,
+        DateTimeOffset? ate = null)
+    {
+        const string sql = """
+            SELECT v.Id AS VendaId, v.SaleNumber, ISNULL(v.Status, 'finalizada') AS Status,
+                   v.CustomerName, v.CustomerCpf, v.PaymentType, v.TotalAmount, v.OperatorName,
+                   v.SaleDate, v.CanceladoEm, v.CanceladoPorOperadorNome, v.CanceladoPorSupervisorNome,
+                   v.CanceladoJustificativa,
+                   ISNULL(i.ProductCode, '') AS ProductCode,
+                   ISNULL(i.ProductName, 'Item') AS ProductName,
+                   ISNULL(i.Quantity, 1) AS Quantity,
+                   ISNULL(i.UnitPrice, v.TotalAmount) AS UnitPrice,
+                   ISNULL(i.ItemTotal, v.TotalAmount) AS ItemTotal
+            FROM Vendas v
+            LEFT JOIN VendaItens i ON v.Id = i.VendaId
+            WHERE v.CompanyId = @CompanyId
+              AND v.Status = 'cancelada'
+              AND (@De IS NULL OR v.CanceladoEm >= @De OR (v.CanceladoEm IS NULL AND v.SaleDate >= @De))
+              AND (@Ate IS NULL OR v.CanceladoEm <= @Ate OR (v.CanceladoEm IS NULL AND v.SaleDate <= @Ate))
+            ORDER BY COALESCE(v.CanceladoEm, v.SaleDate) DESC;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        var pDe = command.Parameters.Add("@De", System.Data.SqlDbType.DateTimeOffset);
+        pDe.Value = de.HasValue ? de.Value : DBNull.Value;
+        var pAte = command.Parameters.Add("@Ate", System.Data.SqlDbType.DateTimeOffset);
+        pAte.Value = ate.HasValue ? ate.Value : DBNull.Value;
+
+        await using var reader = await command.ExecuteReaderAsync();
+        var dict = new Dictionary<string, VendaCanceladaResumoAD>();
+
+        while (await reader.ReadAsync())
+        {
+            var saleNumber = ReadString(reader, "SaleNumber");
+            if (!dict.TryGetValue(saleNumber, out var resumo))
+            {
+                resumo = new VendaCanceladaResumoAD
+                {
+                    VendaId = ReadString(reader, "VendaId"),
+                    SaleNumber = saleNumber,
+                    CustomerName = ReadString(reader, "CustomerName"),
+                    CustomerCpf = ReadString(reader, "CustomerCpf"),
+                    PaymentType = ReadString(reader, "PaymentType"),
+                    TotalAmount = HorusMoneyFormat.Format(ReadDecimal(reader, "TotalAmount")),
+                    OperatorName = ReadString(reader, "OperatorName"),
+                    SaleDate = ReadSaleDate(reader, "SaleDate"),
+                    CanceladoEm = ReadNullableSaleDate(reader, "CanceladoEm") ?? "-",
+                    CanceladoPorOperadorNome = ReadNullableString(reader, "CanceladoPorOperadorNome") ?? "-",
+                    CanceladoPorSupervisorNome = ReadNullableString(reader, "CanceladoPorSupervisorNome") ?? "-",
+                    CanceladoJustificativa = ReadNullableString(reader, "CanceladoJustificativa") ?? "-",
+                    TotalItens = 0,
+                    TotalQuantidadeItens = 0,
+                    Items = []
+                };
+                dict[saleNumber] = resumo;
+            }
+
+            var productCode = ReadString(reader, "ProductCode");
+            if (!string.IsNullOrEmpty(productCode))
+            {
+                var qty = ReadDecimal(reader, "Quantity");
+                var item = new VendaHistoricoAD
+                {
+                    SaleNumber = saleNumber,
+                    ProductCode = productCode,
+                    ProductName = ReadString(reader, "ProductName"),
+                    Quantity = qty,
+                    UnitPrice = HorusMoneyFormat.Format(ReadDecimal(reader, "UnitPrice")),
+                    ItemTotal = HorusMoneyFormat.Format(ReadDecimal(reader, "ItemTotal")),
+                };
+                resumo.Items.Add(item);
+                resumo.TotalItens++;
+                resumo.TotalQuantidadeItens += qty;
+            }
+        }
+
+        foreach (var r in dict.Values)
+        {
+            r.ItensResumo = string.Join("; ", r.Items.Select(x => $"{x.Quantity}x {x.ProductName}"));
+        }
+
+        return dict.Values.ToList();
     }
 
     private sealed class VendaItemRecord

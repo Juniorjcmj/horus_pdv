@@ -20,6 +20,7 @@ public class HistoricoVendasController(
     HorusCaixaService caixaService,
     DocumentoFiscalAB documentoFiscalAB,
     RegrasEmissaoNfceAB regrasEmissaoNfceAB,
+    HorusSecurityStore securityStore,
     ILogger<HistoricoVendasController> logger) : ControllerBase
 {
     [HttpGet]
@@ -228,6 +229,82 @@ public class HistoricoVendasController(
                 items = saleRows.Count,
                 rows = saleRows
             }
+        });
+    }
+
+    [HttpPost("{saleNumber}/cancelar")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
+    public async Task<IActionResult> CancelarComSupervisor(string saleNumber, [FromBody] CancelamentoVendaComSupervisorRequest request)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        if (string.IsNullOrWhiteSpace(request.Justificativa) || request.Justificativa.Trim().Length < 5)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Informe uma justificativa de no mínimo 5 caracteres." });
+        }
+
+        // Valida credenciais do supervisor
+        var (valido, msgSupervisor, supervisor) = securityStore.ValidateSupervisorCredentials(
+            request.SupervisorId,
+            request.SupervisorPassword,
+            currentUser.CompanyId);
+
+        if (!valido || supervisor is null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
+            {
+                Success = false,
+                Message = msgSupervisor
+            });
+        }
+
+        var (sucesso, mensagem, itensEstornados, canceladoEm) = await historicoVendasAB.CancelarVendaComSupervisorAsync(
+            currentUser.CompanyId,
+            saleNumber,
+            supervisor.Id,
+            supervisor.Name,
+            currentUser.Id,
+            currentUser.Name,
+            request.Justificativa.Trim());
+
+        if (!sucesso)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = mensagem });
+        }
+
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = mensagem,
+            Data = new
+            {
+                saleNumber,
+                canceladoEm,
+                supervisorNome = supervisor.Name,
+                itensEstornados
+            }
+        });
+    }
+
+    [HttpGet("cancelamentos")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
+    public async Task<IActionResult> ListarCancelamentos([FromQuery] string? de = null, [FromQuery] string? ate = null)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        DateTimeOffset? dtDe = null;
+        DateTimeOffset? dtAte = null;
+        if (!string.IsNullOrWhiteSpace(de) && DateTimeOffset.TryParse(de, out var pDe)) dtDe = pDe;
+        if (!string.IsNullOrWhiteSpace(ate) && DateTimeOffset.TryParse(ate, out var pAte)) dtAte = pAte.AddDays(1);
+
+        var cancelamentos = await historicoVendasAB.ListarCancelamentosAsync(currentUser.CompanyId, dtDe, dtAte);
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = "Cancelamentos obtidos com sucesso.",
+            Data = cancelamentos
         });
     }
 

@@ -5,6 +5,7 @@
  */
 
 import {
+  Ban,
   BarChart3,
   Boxes,
   CalendarClock,
@@ -342,6 +343,15 @@ export const reportCatalog: ReportDefinition[] = [
     filters: [
       ...periodFilters,
       { id: "eventType", label: "Tipo de evento", type: "select", options: auditEventTypeOptions },
+    ],
+  },
+  {
+    id: "cancelamentos",
+    title: "Relatório de Cancelamentos",
+    description: "Histórico detalhado de vendas canceladas com operador, supervisor autorizador, motivo e estorno de estoque.",
+    icon: Ban,
+    filters: [
+      ...periodFilters,
     ],
   },
 ];

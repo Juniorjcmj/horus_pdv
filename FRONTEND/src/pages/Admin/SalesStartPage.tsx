@@ -80,6 +80,8 @@ import { onlyDigits } from "@/utils/inputMasks";
 import PdvNfceCancelModal from "@/components/Admin/PdvNfceCancelModal";
 import PdvSaleDetailModal from "@/components/Admin/PdvSaleDetailModal";
 import PdvCurrentSessionSalesModal from "@/components/Admin/PdvCurrentSessionSalesModal";
+import SaleCancelModal from "@/components/Admin/SaleCancelModal";
+import { type SaleDetailFullDto } from "@/services/api/salesHistoryService";
 
 type SalesStartPageProps = {
   onExit?: () => void;
@@ -268,6 +270,7 @@ export default function SalesStartPage({
   const [sessionSalesModalOpen, setSessionSalesModalOpen] = useState(false);
   const [selectedSaleNumberForDetail, setSelectedSaleNumberForDetail] = useState<string | null>(null);
   const [saleDetailModalOpen, setSaleDetailModalOpen] = useState(false);
+  const [saleToCancel, setSaleToCancel] = useState<SaleDetailFullDto | null>(null);
 
   const [quickCustomerModalOpen, setQuickCustomerModalOpen] = useState(false);
   const [quickCustomerInitialDoc, setQuickCustomerInitialDoc] = useState("");
@@ -3046,7 +3049,34 @@ export default function SalesStartPage({
           setSessionSalesModalOpen(false);
           setNfceCancelModalOpen(true);
         }}
+        onCancelSale={(sale) => {
+          setSaleToCancel(sale);
+          setSaleDetailModalOpen(false);
+          setSessionSalesModalOpen(false);
+        }}
       />
+
+      {/* Modal de Cancelamento de Venda Completa com Autorização de Supervisor */}
+      {saleToCancel && (
+        <SaleCancelModal
+          isOpen={Boolean(saleToCancel)}
+          saleNumber={saleToCancel.saleNumber}
+          customerName={saleToCancel.customerName}
+          totalAmount={saleToCancel.totalAmount}
+          paymentType={saleToCancel.paymentType}
+          saleDate={saleToCancel.saleDate}
+          itemsCount={saleToCancel.items?.length}
+          onClose={() => {
+            setSaleToCancel(null);
+            window.setTimeout(() => productInputRef.current?.focus(), 100);
+          }}
+          onSuccess={() => {
+            setSaleToCancel(null);
+            void reloadProducts().catch(() => {});
+            window.setTimeout(() => productInputRef.current?.focus(), 100);
+          }}
+        />
+      )}
 
       {/* Modal de Cancelamento de NFC-e com Autorização de Supervisor */}
       <PdvNfceCancelModal

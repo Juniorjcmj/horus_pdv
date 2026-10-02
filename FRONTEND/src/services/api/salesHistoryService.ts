@@ -26,12 +26,43 @@ export type SaleHistoryDto = {
   saleDate: string;
   clientSaleId?: string;
   offlineReference?: string;
+  status?: string;
+  canceladoEm?: string | null;
+  canceladoPorOperadorNome?: string | null;
+  canceladoPorSupervisorNome?: string | null;
+  canceladoJustificativa?: string | null;
   fiscalDocId?: string | null;
   fiscalModelo?: number | null;
   fiscalNumeroNf?: number | null;
   fiscalSerie?: number | null;
   fiscalStatus?: number | null;
   fiscalChaveAcesso?: string | null;
+};
+
+export type CancelledSaleDto = {
+  vendaId: string;
+  saleNumber: string;
+  status: string;
+  customerName: string;
+  customerCpf: string;
+  paymentType: string;
+  totalAmount: string;
+  operatorName: string;
+  saleDate: string;
+  canceladoEm: string;
+  canceladoPorOperadorNome: string;
+  canceladoPorSupervisorNome: string;
+  canceladoJustificativa: string;
+  totalItens: number;
+  totalQuantidadeItens: number;
+  itensResumo: string;
+  items: SaleHistoryDto[];
+};
+
+export type CancelSalePayload = {
+  supervisorId: string;
+  supervisorPassword: string;
+  justificativa: string;
 };
 
 export type SalePaymentItemDto = {
@@ -48,6 +79,7 @@ export type SalePaymentItemDto = {
 export type SaleDetailFullDto = {
   vendaId: string;
   saleNumber: string;
+  status?: string;
   customerName: string;
   customerCpf: string;
   paymentType: string;
@@ -56,6 +88,10 @@ export type SaleDetailFullDto = {
   saleDate: string;
   clientSaleId?: string;
   offlineReference?: string;
+  canceladoEm?: string | null;
+  canceladoPorOperadorNome?: string | null;
+  canceladoPorSupervisorNome?: string | null;
+  canceladoJustificativa?: string | null;
   items: SaleHistoryDto[];
   payments: SalePaymentItemDto[];
   documentoFiscal?: FiscalDocumentDetailDto | null;
@@ -132,5 +168,26 @@ export const salesHistoryService = {
       method: "POST",
     });
     return response.data;
+  },
+  async cancel(saleNumber: string, payload: CancelSalePayload) {
+    const response = await apiRequest<{
+      saleNumber: string;
+      canceladoEm: string;
+      supervisorNome: string;
+      itensEstornados: number;
+    }>(`${HISTORICO_VENDAS_API_URL}/${encodeURIComponent(saleNumber)}/cancelar`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return response;
+  },
+  async listCancellations(params?: { de?: string; ate?: string }) {
+    const query = new URLSearchParams();
+    if (params?.de) query.set("de", params.de);
+    if (params?.ate) query.set("ate", params.ate);
+    const qs = query.toString();
+    const url = `${HISTORICO_VENDAS_API_URL}/cancelamentos${qs ? `?${qs}` : ""}`;
+    const response = await apiRequest<CancelledSaleDto[]>(url);
+    return response.data ?? [];
   },
 };

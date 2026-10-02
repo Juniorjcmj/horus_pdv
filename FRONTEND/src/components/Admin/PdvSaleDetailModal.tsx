@@ -8,6 +8,7 @@ import {
   X,
   FileText,
   AlertOctagon,
+  Ban,
   Printer,
   Copy,
   Check,
@@ -40,6 +41,7 @@ type PdvSaleDetailModalProps = {
   onClose: () => void;
   saleNumber: string | null;
   onCancelFiscalDocument: (doc: FiscalDocumentDetailDto) => void;
+  onCancelSale?: (sale: SaleDetailFullDto) => void;
   onPrintReceipt?: (saleNumber: string) => void;
 };
 
@@ -69,6 +71,7 @@ export default function PdvSaleDetailModal({
   onClose,
   saleNumber,
   onCancelFiscalDocument,
+  onCancelSale,
   onPrintReceipt,
 }: PdvSaleDetailModalProps) {
   const [loading, setLoading] = useState(false);
@@ -202,6 +205,7 @@ export default function PdvSaleDetailModal({
   const isAuthorized = doc?.status === FISCAL_STATUS.Autorizado;
   const isCancelled = doc?.status === FISCAL_STATUS.Cancelado;
   const isReturned = doc?.status === FISCAL_STATUS.Devolvido;
+  const isSaleCancelled = data?.status?.toLowerCase() === "cancelada";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-xs animate-in fade-in duration-150 sm:p-4">
@@ -217,6 +221,12 @@ export default function PdvSaleDetailModal({
                 <h2 className="text-lg font-bold text-text-primary">
                   Venda #{saleNumber || "—"}
                 </h2>
+                {isSaleCancelled && (
+                  <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
+                    <Ban size={12} />
+                    Venda Cancelada
+                  </span>
+                )}
                 {doc && (
                   <span
                     className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
@@ -277,6 +287,26 @@ export default function PdvSaleDetailModal({
 
           {data && !loading && (
             <>
+              {/* Banner de Cancelamento se a Venda foi cancelada */}
+              {isSaleCancelled && (
+                <div className="flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs text-rose-700 dark:text-rose-300">
+                  <Ban size={18} className="shrink-0 mt-0.5 text-rose-500" />
+                  <div className="space-y-1">
+                    <p className="font-bold text-sm">Esta venda foi cancelada no sistema</p>
+                    <p className="text-[11px] text-text-secondary">
+                      {data.canceladoEm ? `Cancelada em: ${data.canceladoEm}` : ""}
+                      {data.canceladoPorSupervisorNome ? ` • Supervisor: ${data.canceladoPorSupervisorNome}` : ""}
+                      {data.canceladoPorOperadorNome ? ` • Operador: ${data.canceladoPorOperadorNome}` : ""}
+                    </p>
+                    {data.canceladoJustificativa && (
+                      <p className="text-[11px] font-medium bg-bg-primary/60 rounded p-1.5 mt-1 border border-border-primary">
+                        Motivo: &quot;{data.canceladoJustificativa}&quot;
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Card de Cliente e Resumo */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-xl border border-border-primary bg-bg-secondary p-3.5 text-xs">
@@ -498,6 +528,23 @@ export default function PdvSaleDetailModal({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Botão de Cancelamento de Venda com Supervisor */}
+            {data && !isSaleCancelled && onCancelSale && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (data) {
+                    onCancelSale(data);
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 px-3.5 py-2 text-xs font-semibold shadow-xs transition active:scale-95"
+                title="Cancelar a venda completa (estorno de estoque, fiado e caixa)"
+              >
+                <Ban size={15} />
+                <span>Cancelar Venda</span>
+              </button>
+            )}
+
             {/* Botão de Cancelamento de Nota Fiscal */}
             {doc && isAuthorized && (
               <button

@@ -536,12 +536,14 @@ public class CaixaAB(Connection connection)
                   FROM VendaPagamentos vp
                   INNER JOIN Vendas v ON v.Id = vp.VendaId AND v.CompanyId = vp.CompanyId
                   WHERE vp.CompanyId = @CompanyId AND v.CaixaSessaoId = @CaixaSessaoId
+                    AND ISNULL(v.Status, 'finalizada') <> 'cancelada'
 
                   UNION ALL
 
                   SELECT v.PaymentType, v.TotalAmount AS Amount
                   FROM Vendas v
                   WHERE v.CompanyId = @CompanyId AND v.CaixaSessaoId = @CaixaSessaoId
+                    AND ISNULL(v.Status, 'finalizada') <> 'cancelada'
                     AND NOT EXISTS (SELECT 1 FROM VendaPagamentos vp WHERE vp.VendaId = v.Id)
               ) Combined
               GROUP BY Combined.PaymentType;
@@ -553,12 +555,14 @@ public class CaixaAB(Connection connection)
                   FROM VendaPagamentos vp
                   INNER JOIN Vendas v ON v.Id = vp.VendaId AND v.CompanyId = vp.CompanyId
                   WHERE vp.CompanyId = @CompanyId AND v.SaleDate >= @Desde AND v.SaleDate <= @Ate
+                    AND ISNULL(v.Status, 'finalizada') <> 'cancelada'
 
                   UNION ALL
 
                   SELECT v.PaymentType, v.TotalAmount AS Amount
                   FROM Vendas v
                   WHERE v.CompanyId = @CompanyId AND v.SaleDate >= @Desde AND v.SaleDate <= @Ate
+                    AND ISNULL(v.Status, 'finalizada') <> 'cancelada'
                     AND NOT EXISTS (SELECT 1 FROM VendaPagamentos vp WHERE vp.VendaId = v.Id)
               ) Combined
               GROUP BY Combined.PaymentType;
