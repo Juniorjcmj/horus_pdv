@@ -186,9 +186,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/NfeImportModels.cs": {
-    "mtime": 1788705428.6626709,
-    "seen": 1788888974.3518274,
-    "ast_hash": "81ea6328a8f404de905125c57b7c7503",
+    "mtime": 1790969081.6829717,
+    "seen": 1790969442.0367024,
+    "ast_hash": "91fe43efb33496924ebf63152683ef67",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/ProdutoModel.cs": {
@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfeImportRequest.cs": {
-    "mtime": 1789322316.917073,
-    "seen": 1789322723.8174226,
-    "ast_hash": "5925307c60ce56540cba582a1e3ed25b",
+    "mtime": 1790969088.7210107,
+    "seen": 1790969442.0390139,
+    "ast_hash": "ff9fff41489b341ac4722d75c1b80c91",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/PedidoRequest.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1790965265.3206563,
-    "seen": 1790965934.3402433,
-    "ast_hash": "fa983deb6cd7ce4cb7d804c795b6d6f8",
+    "mtime": 1790969064.558414,
+    "seen": 1790969442.0400307,
+    "ast_hash": "0e3af2c344402ebd29994658b00af2dc",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1790965199.4138863,
-    "seen": 1790965934.345115,
-    "ast_hash": "ef2e8b0d009500568f5008a76d0cf0c5",
+    "mtime": 1790969032.739293,
+    "seen": 1790969442.0448303,
+    "ast_hash": "045b0f51a0acdc3647c4229b25cfa1f3",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -546,9 +546,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
-    "mtime": 1789322332.4156134,
-    "seen": 1789322723.8325374,
-    "ast_hash": "99ce472cbcba9f322979bfcc9117a932",
+    "mtime": 1790969181.0020707,
+    "seen": 1790969442.0474055,
+    "ast_hash": "fe8f6db4ecff2fe62323a3008293371e",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeXmlParser.cs": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NfeImportModal.tsx": {
-    "mtime": 1790956514.9669154,
-    "seen": 1790956635.5735605,
-    "ast_hash": "1357f6a68b88d098deb9b295b66fc0cf",
+    "mtime": 1790969379.4256546,
+    "seen": 1790969442.0542529,
+    "ast_hash": "b40572809c10518f79779a1517b79150",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/nfeImportService.ts": {
-    "mtime": 1790421566.5542932,
-    "seen": 1790421619.6613,
-    "ast_hash": "e2b300be1212eb78e50f3a9bd024ab10",
+    "mtime": 1790969218.0881298,
+    "seen": 1790969442.0729659,
+    "ast_hash": "7535862b31d8a063753b2ee5caf1b1db",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/pedidoService.ts": {
@@ -3699,6 +3699,12 @@
     "mtime": 1790965808.9361598,
     "seen": 1790965934.3735418,
     "ast_hash": "de8b1e3ecbe9e638385afd4e5360bbe2",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/MapeamentoProdutoFornecedorAB.cs": {
+    "mtime": 1790969047.5504017,
+    "seen": 1790969442.0440059,
+    "ast_hash": "1f07ad74cacd9842e87847bfc8ae980b",
     "semantic_hash": ""
   }
 }

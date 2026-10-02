@@ -26,6 +26,7 @@ export type NfeImportItemPreview = {
   numeroItem: number;
   produtoExistenteId: string | null;
   produtoExistenteNome: string | null;
+  codigoFornecedor?: string | null;
   productCode: string;
   productName: string;
   gtin: string;
@@ -47,6 +48,8 @@ export type NfeImportPreview = {
 export type NfeImportItemInput = {
   numeroItem: number;
   produtoExistenteId: string | null;
+  produtoExistenteNome?: string | null;
+  codigoFornecedor?: string | null;
   productCode: string;
   productName: string;
   gtin: string;

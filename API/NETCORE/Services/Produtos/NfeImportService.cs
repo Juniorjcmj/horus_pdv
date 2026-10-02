@@ -24,6 +24,7 @@ namespace HORUSPDV_API.Services.Produtos;
 public class NfeImportService(
     ProdutoAB produtosAB,
     FornecedorAB fornecedoresAB,
+    MapeamentoProdutoFornecedorAB mapeamentoAB,
     SefazDFeDownloadService sefazDownloadService)
 {
     public async Task<NfeImportPreviewModel> PreVisualizarAsync(string companyId, NfeImportPreviewRequest request)
@@ -91,12 +92,29 @@ public class NfeImportService(
                 Telephone = parsed.Emitente.Telefone ?? string.Empty,
             };
 
+        var fornecedorCnpj = parsed.Emitente.Cnpj;
+
         var itens = new List<NfeImportItemPreview>();
         foreach (var item in parsed.Itens)
         {
-            var existente = item.Gtin is not null
-                ? await produtosAB.ObterPorGtinAsync(companyId, item.Gtin)
-                : null;
+            ProdutoAD? existente = null;
+
+            // 1. Tenta achar por De-Para previamente gravado para este fornecedor (ex: presunto de balança)
+            if (!string.IsNullOrWhiteSpace(fornecedorCnpj))
+            {
+                var mapeadoId = await mapeamentoAB.ObterProdutoMapeadoIdAsync(
+                    companyId, fornecedorCnpj, item.CodigoFornecedor, item.Gtin);
+                if (!string.IsNullOrWhiteSpace(mapeadoId))
+                {
+                    existente = await produtosAB.ObterAsync(companyId, mapeadoId);
+                }
+            }
+
+            // 2. Se não achou mapeamento, tenta achar por GTIN direto no cadastro de produtos
+            if (existente is null && item.Gtin is not null)
+            {
+                existente = await produtosAB.ObterPorGtinAsync(companyId, item.Gtin);
+            }
 
             // Se o produto já existente tem margem desejada configurada, EntradaEstoqueAsync vai
             // recalcular o preço de venda sozinho a partir do novo custo — a prévia já mostra esse
@@ -110,12 +128,13 @@ public class NfeImportService(
                 NumeroItem = item.NumeroItem,
                 ProdutoExistenteId = existente?.Id,
                 ProdutoExistenteNome = existente?.ProductName,
+                CodigoFornecedor = item.CodigoFornecedor,
                 ProductCode = existente?.ProductCode ?? (item.Gtin ?? item.CodigoFornecedor),
                 ProductName = item.Descricao,
                 Gtin = item.Gtin ?? "SEM GTIN",
                 Ncm = item.Ncm,
                 Cest = item.Cest,
-                UnidadeComercial = item.UnidadeComercial,
+                UnidadeComercial = existente?.UnidadeComercial ?? item.UnidadeComercial,
                 Quantidade = HorusMoneyFormat.FormatQuantity(item.Quantidade),
                 PrecoCusto = HorusMoneyFormat.Format(item.ValorUnitario),
                 PrecoVendaSugerido = HorusMoneyFormat.Format(precoVendaSugerido),
@@ -235,6 +254,23 @@ public class NfeImportService(
             {
                 await produtosAB.EntradaEstoqueAsync(companyId, item.ProdutoExistenteId, quantidade, precoCusto);
                 resultado.ProdutosAtualizados++;
+
+                // Grava ou atualiza o De-Para para que futuras notas deste fornecedor já venham vinculadas
+                var codFornec = !string.IsNullOrWhiteSpace(item.CodigoFornecedor)
+                    ? item.CodigoFornecedor
+                    : (!string.IsNullOrWhiteSpace(item.Gtin) && item.Gtin != "SEM GTIN" ? item.Gtin : null);
+
+                if (!string.IsNullOrWhiteSpace(codFornec))
+                {
+                    await mapeamentoAB.SalvarMapeamentoAsync(
+                        companyId,
+                        cnpjDigits,
+                        codFornec,
+                        item.Gtin,
+                        item.ProductName,
+                        item.ProdutoExistenteId);
+                }
+
                 continue;
             }
 

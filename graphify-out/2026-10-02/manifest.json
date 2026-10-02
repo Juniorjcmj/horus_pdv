@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/HistoricoVendas/HistoricoVendasController.cs": {
-    "mtime": 1790869706.586883,
-    "seen": 1790871052.5853767,
-    "ast_hash": "8a2291d925eb95be6400eb25fb6b4f0c",
+    "mtime": 1790965334.5935302,
+    "seen": 1790965934.3319266,
+    "ast_hash": "58dd320af0eec66533f68919f66b849d",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Home/HomeController.cs": {
@@ -84,9 +84,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Pedidos/PedidoController.cs": {
-    "mtime": 1790869734.3043575,
-    "seen": 1790871052.5856483,
-    "ast_hash": "11284db9786a23eba96f602fa2e0d059",
+    "mtime": 1790965374.285792,
+    "seen": 1790965934.3323925,
+    "ast_hash": "278b9a4c1bf5264c5798c4b144e6cce8",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/NfeImportController.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1790899547.5956857,
-    "seen": 1790909645.7870295,
-    "ast_hash": "b7d33d9f6534936305f96ba215fdfd36",
+    "mtime": 1790965265.3206563,
+    "seen": 1790965934.3402433,
+    "ast_hash": "fa983deb6cd7ce4cb7d804c795b6d6f8",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1790949303.3273454,
-    "seen": 1790949668.9228666,
-    "ast_hash": "34eac38cb5c49ba80f94560c75341b8a",
+    "mtime": 1790965199.4138863,
+    "seen": 1790965934.345115,
+    "ast_hash": "ef2e8b0d009500568f5008a76d0cf0c5",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -894,9 +894,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/index.ts": {
-    "mtime": 1790899547.6188653,
-    "seen": 1790909645.8240843,
-    "ast_hash": "0f00358d0a0f42895d6726659c225317",
+    "mtime": 1790965470.5355327,
+    "seen": 1790965934.3606327,
+    "ast_hash": "a719029fe8775daac962d8785fcb73f2",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Tour/GuidedTour.tsx": {
@@ -996,9 +996,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiscalPage.tsx": {
-    "mtime": 1790739095.4807196,
-    "seen": 1790739586.750634,
-    "ast_hash": "e470e2b34ed8c56fef2b2e28b577709c",
+    "mtime": 1790965679.9851115,
+    "seen": 1790965934.3672576,
+    "ast_hash": "86f958bc9e265a113ed38e01084987c6",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/HomePage.tsx": {
@@ -1068,15 +1068,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1790963759.5420034,
-    "seen": 1790963817.552068,
-    "ast_hash": "ba8edc29085482d8eb1544d17754f1e4",
+    "mtime": 1790965691.4225,
+    "seen": 1790965934.3695896,
+    "ast_hash": "e21bcf321b5218cb9754323f4581a73c",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
-    "mtime": 1790899547.6248665,
-    "seen": 1790909645.8404393,
-    "ast_hash": "cadc48427437e3dfde33d612db4e225e",
+    "mtime": 1790965516.0393353,
+    "seen": 1790965934.3695917,
+    "ast_hash": "9ad705bb81907f8c2be032974da653cf",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/StockPage.tsx": {
@@ -3675,6 +3675,30 @@
     "mtime": 1790899547.6126764,
     "seen": 1790909645.8946474,
     "ast_hash": "99a3b2c5d552d61bd38ac8ba9a1847c6",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Fiscal/RegrasEmissaoNfceController.cs": {
+    "mtime": 1790965233.030301,
+    "seen": 1790965934.3316126,
+    "ast_hash": "2136940954abd35038d95cb21febc899",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs": {
+    "mtime": 1790965222.2732399,
+    "seen": 1790965934.3449728,
+    "ast_hash": "06bb6bf1f6d038985f3b7be352799e4f",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx": {
+    "mtime": 1790965801.5538814,
+    "seen": 1790965934.3598516,
+    "ast_hash": "84988e614de4ec75d47f7e7f45a435e8",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/services/api/regrasEmissaoNfceService.ts": {
+    "mtime": 1790965808.9361598,
+    "seen": 1790965934.3735418,
+    "ast_hash": "de8b1e3ecbe9e638385afd4e5360bbe2",
     "semantic_hash": ""
   }
 }

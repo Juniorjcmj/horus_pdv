@@ -39,8 +39,10 @@ public class NfeImportItemInput
 {
     public int NumeroItem { get; set; }
 
-    /// <summary>Preenchido quando o item já bate com um produto existente (mesmo GTIN) — nesse caso o item vira entrada de estoque, não um cadastro novo.</summary>
+    /// <summary>Preenchido quando o item já bate com um produto existente (mesmo GTIN ou vinculado pelo operador) — nesse caso o item vira entrada de estoque, não um cadastro novo.</summary>
     public string? ProdutoExistenteId { get; set; }
+    public string? ProdutoExistenteNome { get; set; }
+    public string? CodigoFornecedor { get; set; }
 
     public string ProductCode { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;

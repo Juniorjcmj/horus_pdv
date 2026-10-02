@@ -13,18 +13,22 @@
 import {
   AlertCircle,
   Check,
+  CheckCircle2,
   Clipboard,
   FileUp,
   KeyRound,
+  Link2,
   Loader2,
   PackageSearch,
   RotateCcw,
+  Scale,
   Search,
   ShieldCheck,
+  Unlink,
   UploadCloud,
   X,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import LoadingButton from "@/components/Loading/LoadingButton";
 import { Toast } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
@@ -34,6 +38,7 @@ import {
   type NfeImportItemPreview,
   type NfeImportPreview,
 } from "@/services/api/nfeImportService";
+import { productService, type ProductDto } from "@/services/api/productService";
 
 type EditableItem = NfeImportItemPreview & {
   quantidade: string;
@@ -44,6 +49,7 @@ type EditableItem = NfeImportItemPreview & {
   precoCustoOriginal: number;
   precoVendaOriginal: number;
   unidadeOriginal: string;
+  productCodeOriginal: string;
 };
 
 export default function NfeImportModal({
@@ -75,6 +81,13 @@ export default function NfeImportModal({
   const [fornecedor, setFornecedor] = useState<NfeImportFornecedorPreview | null>(null);
   const [itens, setItens] = useState<EditableItem[]>([]);
 
+  // Vínculo manual de produto (ex.: presunto fatiado / balança)
+  const [itemParaVincular, setItemParaVincular] = useState<EditableItem | null>(null);
+  const [produtosCadastrados, setProdutosCadastrados] = useState<ProductDto[]>([]);
+  const [loadingProdutos, setLoadingProdutos] = useState(false);
+  const [buscaProdutoModal, setBuscaProdutoModal] = useState("");
+  const [filtroBalancaModal, setFiltroBalancaModal] = useState(false);
+
   const hasPreview = fornecedor !== null;
   const cleanKey = chaveAcesso.replace(/\D/g, "");
 
@@ -99,10 +112,88 @@ export default function NfeImportModal({
           precoVendaOriginal: vendaOriginal,
           unidadeOriginal: item.unidadeComercial || "UN",
           unidadeComercial: item.unidadeComercial || "UN",
+          productCodeOriginal: item.productCode,
         };
       }),
     );
   };
+
+  const handleAbrirVincular = (item: EditableItem) => {
+    setItemParaVincular(item);
+    setBuscaProdutoModal("");
+    setFiltroBalancaModal(false);
+    if (produtosCadastrados.length === 0) {
+      setLoadingProdutos(true);
+      productService
+        .list()
+        .then((data) => setProdutosCadastrados(data || []))
+        .catch(() => Toast.error("Não foi possível carregar a lista de produtos."))
+        .finally(() => setLoadingProdutos(false));
+    }
+  };
+
+  const handleSelecionarProdutoExistente = (produto: ProductDto) => {
+    if (!itemParaVincular) return;
+    const targetNumero = itemParaVincular.numeroItem;
+    setItens((current) =>
+      current.map((it) => {
+        if (it.numeroItem !== targetNumero) return it;
+        return {
+          ...it,
+          produtoExistenteId: produto.id,
+          produtoExistenteNome: produto.productName,
+          productCode: produto.productCode,
+          unidadeComercial: produto.unidadeComercial || "UN",
+          precoVenda: formatMoneyBr(parseMoneyBr(produto.productSalePrice)),
+        };
+      }),
+    );
+    setItemParaVincular(null);
+    Toast.success(`Item atrelado ao produto "${produto.productName}"`);
+  };
+
+  const handleDesvincular = (numeroItem: number) => {
+    setItens((current) =>
+      current.map((it) => {
+        if (it.numeroItem !== numeroItem) return it;
+        return {
+          ...it,
+          produtoExistenteId: null,
+          produtoExistenteNome: null,
+          productCode: it.productCodeOriginal,
+          unidadeComercial: it.unidadeOriginal,
+          precoVenda: formatMoneyBr(it.precoVendaOriginal),
+        };
+      }),
+    );
+    Toast.info("Item desvinculado. Será cadastrado como produto novo.");
+  };
+
+  const produtosFiltrados = useMemo(() => {
+    if (!itemParaVincular) return [];
+    const termo = buscaProdutoModal.trim().toLowerCase();
+    return produtosCadastrados.filter((p) => {
+      const isKg = (p.unidadeComercial || "").toUpperCase() === "KG";
+      const hasBalancaWord =
+        (p.productName || "").toLowerCase().includes("balança") ||
+        (p.productName || "").toLowerCase().includes("fatiado") ||
+        (p.productName || "").toLowerCase().includes("presunto") ||
+        (p.productName || "").toLowerCase().includes("queijo") ||
+        (p.productName || "").toLowerCase().includes("kg");
+
+      if (filtroBalancaModal && !isKg && !hasBalancaWord) {
+        return false;
+      }
+
+      if (!termo) return true;
+      return (
+        p.productName.toLowerCase().includes(termo) ||
+        p.productCode.toLowerCase().includes(termo) ||
+        (p.gtin && p.gtin.toLowerCase().includes(termo)) ||
+        (p.categoriaNome && p.categoriaNome.toLowerCase().includes(termo))
+      );
+    });
+  }, [produtosCadastrados, buscaProdutoModal, filtroBalancaModal, itemParaVincular]);
 
   const handleBuscarSefaz = async () => {
     if (cleanKey.length !== 44) {
@@ -256,6 +347,8 @@ export default function NfeImportModal({
         itens: itens.map((item) => ({
           numeroItem: item.numeroItem,
           produtoExistenteId: item.produtoExistenteId,
+          produtoExistenteNome: item.produtoExistenteNome,
+          codigoFornecedor: item.codigoFornecedor,
           productCode: item.productCode,
           productName: item.productName,
           gtin: item.gtin,
@@ -609,10 +702,15 @@ export default function NfeImportModal({
 
                         return (
                           <tr key={item.numeroItem} className="hover:bg-hover-light/40 transition-colors">
-                            <td className="px-3 py-2">
-                              <p className="font-medium text-text-primary">{item.productName}</p>
-                              <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs text-text-tertiary">
+                            <td className="px-3 py-2 max-w-xs">
+                              <p className="font-semibold text-text-primary text-xs">{item.productName}</p>
+                              <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[11px] text-text-tertiary">
                                 <span>NCM {item.ncm}</span>
+                                {item.codigoFornecedor && (
+                                  <span className="font-mono text-[10px] bg-bg-secondary px-1.5 py-0.5 rounded">
+                                    Cód. Fornec: {item.codigoFornecedor}
+                                  </span>
+                                )}
                                 {isConverted ? (
                                   <span className="inline-flex items-center rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-500">
                                     1 {item.unidadeOriginal} = {item.fatorConversao} UN
@@ -621,6 +719,46 @@ export default function NfeImportModal({
                                   <span>Unid. {item.unidadeOriginal}</span>
                                 )}
                               </div>
+
+                              {/* Vínculo com Produto Existente */}
+                              {existente ? (
+                                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
+                                    <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />
+                                    <span className="truncate max-w-[200px]">
+                                      Vinculado a: <strong>[{item.productCode}] {item.produtoExistenteNome || item.productName}</strong>
+                                    </span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAbrirVincular(item)}
+                                    className="text-[10px] text-accent hover:underline font-semibold"
+                                    title="Trocar produto associado"
+                                  >
+                                    Trocar
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDesvincular(item.numeroItem)}
+                                    className="text-[10px] text-rose-500 hover:underline font-semibold inline-flex items-center gap-0.5"
+                                    title="Desvincular e cadastrar como produto novo"
+                                  >
+                                    <Unlink size={10} /> Desvincular
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="mt-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAbrirVincular(item)}
+                                    className="inline-flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent hover:bg-accent/20 transition-all shadow-sm"
+                                    title="Atrelar a um produto já existente no sistema (ex: presunto de balança)"
+                                  >
+                                    <Link2 size={12} />
+                                    Atrelar a produto existente...
+                                  </button>
+                                </div>
+                              )}
                             </td>
                             <td className="px-3 py-2">
                               <input
@@ -699,13 +837,23 @@ export default function NfeImportModal({
                             </td>
                             <td className="px-3 py-2">
                               {existente ? (
-                                <span className="inline-flex rounded-full bg-secondary/10 px-2 py-1 text-xs font-semibold text-secondary">
-                                  Entrada de estoque
-                                </span>
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                                    <Check size={11} /> Entrada de estoque
+                                  </span>
+                                  <span className="text-[10px] text-text-tertiary">
+                                    Soma ao estoque atual
+                                  </span>
+                                </div>
                               ) : (
-                                <span className="inline-flex rounded-full bg-accent/10 px-2 py-1 text-xs font-semibold text-accent">
-                                  Produto novo
-                                </span>
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="inline-flex items-center rounded-full bg-accent/10 border border-accent/30 px-2 py-0.5 text-[11px] font-semibold text-accent">
+                                    Produto novo
+                                  </span>
+                                  <span className="text-[10px] text-text-tertiary">
+                                    Cadastrará novo item
+                                  </span>
+                                </div>
                               )}
                             </td>
                           </tr>
@@ -736,6 +884,163 @@ export default function NfeImportModal({
           ) : null}
         </div>
       </div>
+
+      {/* Modal de Busca e Seleção de Produto para Vínculo */}
+      {itemParaVincular && (
+        <div className="fixed inset-0 z-layer-dialog flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+          <div className="flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border-primary bg-bg-light shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-border-primary px-5 py-4 bg-bg-primary/40">
+              <div className="space-y-0.5">
+                <h3 className="text-base font-bold text-text-primary flex items-center gap-2">
+                  <Link2 size={18} className="text-accent" />
+                  Atrelar Item a Produto Existente
+                </h3>
+                <p className="text-xs text-text-secondary">
+                  Item da Nota: <strong className="text-text-primary">{itemParaVincular.productName}</strong> (Cód. XML: {itemParaVincular.productCodeOriginal || itemParaVincular.productCode} · Qtd: {itemParaVincular.quantidade} {itemParaVincular.unidadeOriginal})
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setItemParaVincular(null)}
+                className="rounded-lg p-1.5 text-text-secondary hover:bg-hover-light hover:text-text-primary"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Barra de Busca e Filtros */}
+            <div className="p-4 border-b border-border-secondary space-y-3 bg-bg-light">
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                <input
+                  type="text"
+                  autoFocus
+                  value={buscaProdutoModal}
+                  onChange={(e) => setBuscaProdutoModal(e.target.value)}
+                  placeholder="Pesquise por nome (ex: presunto), código da balança (ex: 00025, 200025) ou código de barras..."
+                  className="input-field w-full pl-9 text-xs"
+                />
+                {buscaProdutoModal && (
+                  <button
+                    type="button"
+                    onClick={() => setBuscaProdutoModal("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Filtro Rápido */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFiltroBalancaModal(false)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                    !filtroBalancaModal
+                      ? "bg-accent text-white"
+                      : "bg-bg-secondary text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  Todos ({produtosCadastrados.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFiltroBalancaModal(true)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                    filtroBalancaModal
+                      ? "bg-amber-500 text-white"
+                      : "bg-bg-secondary text-text-secondary hover:text-text-primary border border-amber-500/30"
+                  }`}
+                >
+                  <Scale size={13} />
+                  Balança / Peso (KG)
+                </button>
+              </div>
+            </div>
+
+            {/* Lista de Resultados */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2 divide-y divide-border-secondary/50">
+              {loadingProdutos ? (
+                <div className="py-12 text-center text-text-secondary">
+                  <Loader2 size={24} className="animate-spin inline mr-2 text-accent" />
+                  Carregando catálogo de produtos...
+                </div>
+              ) : produtosFiltrados.length === 0 ? (
+                <div className="py-12 text-center text-text-secondary space-y-1">
+                  <p className="font-semibold text-text-primary">Nenhum produto encontrado</p>
+                  <p className="text-xs">Tente buscar por outro termo ou desative o filtro de balança.</p>
+                </div>
+              ) : (
+                produtosFiltrados.map((prod) => {
+                  const isKg = (prod.unidadeComercial || "").toUpperCase() === "KG";
+                  return (
+                    <div
+                      key={prod.id}
+                      className="pt-2 pb-2 first:pt-0 flex items-center justify-between gap-4 hover:bg-hover-light/40 px-2 rounded-xl transition-colors"
+                    >
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono text-xs font-bold text-accent bg-accent/10 px-2 py-0.5 rounded">
+                            #{prod.productCode}
+                          </span>
+                          <span className="font-semibold text-sm text-text-primary truncate">
+                            {prod.productName}
+                          </span>
+                          {isKg && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">
+                              <Scale size={11} /> Balança (KG)
+                            </span>
+                          )}
+                          {prod.categoriaNome && (
+                            <span className="text-[10px] text-text-tertiary bg-bg-secondary px-2 py-0.5 rounded">
+                              {prod.categoriaNome}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-text-secondary">
+                          <span>
+                            Estoque atual: <strong className="text-text-primary">{prod.productQnt} {prod.unidadeComercial || "UN"}</strong>
+                          </span>
+                          <span>
+                            Venda: <strong className="text-emerald-600 dark:text-emerald-400">R$ {formatMoneyBr(parseMoneyBr(prod.productSalePrice))}</strong>
+                          </span>
+                          {prod.gtin && prod.gtin !== "SEM GTIN" && (
+                            <span className="font-mono text-[11px] text-text-tertiary">
+                              GTIN: {prod.gtin}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSelecionarProdutoExistente(prod)}
+                        className="btn-primary inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold shrink-0"
+                      >
+                        <Check size={13} />
+                        Vincular
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end border-t border-border-primary px-4 py-3 bg-bg-primary/20">
+              <button
+                type="button"
+                onClick={() => setItemParaVincular(null)}
+                className="btn-secondary text-xs"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

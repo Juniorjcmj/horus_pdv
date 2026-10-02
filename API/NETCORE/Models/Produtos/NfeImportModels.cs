@@ -27,6 +27,7 @@ public class NfeImportItemPreview
     /// <summary>Quando preenchido, o item já existe no cadastro (mesmo GTIN) e a importação vai somar ao estoque em vez de criar produto novo.</summary>
     public string? ProdutoExistenteId { get; set; }
     public string? ProdutoExistenteNome { get; set; }
+    public string? CodigoFornecedor { get; set; }
 
     public string ProductCode { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
