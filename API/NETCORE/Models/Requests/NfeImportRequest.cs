@@ -55,6 +55,9 @@ public class NfeImportItemInput
     public string Quantidade { get; set; } = "0";
     public string PrecoCusto { get; set; } = "0";
     public string PrecoVenda { get; set; } = "0";
+
+    /// <summary>Validade do lote recebido (AAAA-MM-DD), opcional. Sem ela, usa o prazo padrão da categoria do produto, se houver.</summary>
+    public string? DataValidade { get; set; }
 }
 
 public class NfeImportConfirmRequest

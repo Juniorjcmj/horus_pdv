@@ -6,6 +6,7 @@
 import {
   Building2,
   BadgeDollarSign,
+  CalendarClock,
   ChevronRight,
   ClipboardList,
   CreditCard,
@@ -38,6 +39,7 @@ export type PageKey =
   | "cadastro-fornecedor"
   | "cadastro-produto"
   | "promocoes"
+  | "validade"
   | "fiado"
   | "historico-vendas"
   | "relatorios"
@@ -317,6 +319,13 @@ export default function AppSidebar({
                   active={activePage === "promocoes"}
                   collapsed={collapsed}
                   onClick={() => handleChangePage("promocoes")}
+                />
+                <SidebarItem
+                  icon={<CalendarClock size={20} />}
+                  label="Controle de Validade"
+                  active={activePage === "validade"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("validade")}
                 />
                 <SidebarItem
                   icon={<Landmark size={20} />}

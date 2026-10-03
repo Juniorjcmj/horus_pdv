@@ -50,6 +50,7 @@ type EditableItem = NfeImportItemPreview & {
   precoVendaOriginal: number;
   unidadeOriginal: string;
   productCodeOriginal: string;
+  dataValidade: string;
 };
 
 // Custo unitário de itens convertidos (caixa -> unidade): até 4 casas, igual ao DECIMAL(15,4) do banco.
@@ -125,6 +126,7 @@ export default function NfeImportModal({
           unidadeOriginal: item.unidadeComercial || "UN",
           unidadeComercial: item.unidadeComercial || "UN",
           productCodeOriginal: item.productCode,
+          dataValidade: "",
         };
       }),
     );
@@ -373,6 +375,7 @@ export default function NfeImportModal({
           quantidade: item.quantidade,
           precoCusto: item.precoCusto,
           precoVenda: item.precoVenda,
+          dataValidade: item.dataValidade || null,
         })),
       });
       if (!resultado) return;
@@ -706,6 +709,9 @@ export default function NfeImportModal({
                         <th className="px-3 py-2">Qtd.</th>
                         <th className="px-3 py-2">Custo unit.</th>
                         <th className="px-3 py-2">Preço venda</th>
+                        <th className="px-3 py-2" title="Validade do lote recebido. Em branco, usa o prazo padrão da categoria do produto (se houver).">
+                          Validade
+                        </th>
                         <th className="px-3 py-2">Situação</th>
                       </tr>
                     </thead>
@@ -852,6 +858,14 @@ export default function NfeImportModal({
                                 onChange={(event) =>
                                   setItemField(item.numeroItem, "precoVenda", maskMoneyBr(event.target.value))
                                 }
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="date"
+                                className="input-field w-36 text-xs"
+                                value={item.dataValidade}
+                                onChange={(event) => setItemField(item.numeroItem, "dataValidade", event.target.value)}
                               />
                             </td>
                             <td className="px-3 py-2">

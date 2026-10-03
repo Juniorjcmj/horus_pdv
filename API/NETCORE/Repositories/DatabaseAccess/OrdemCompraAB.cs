@@ -8,7 +8,7 @@ using Microsoft.Data.SqlClient;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
-public class OrdemCompraAB(Connection connection, ProdutoAB produtoAb)
+public class OrdemCompraAB(Connection connection, ProdutoAB produtoAb, LoteAB loteAb)
 {
     private const string SelectColumns = """
         Id, CompanyId, OrderNumber, SupplierId, SupplierName, SupplierCnpj,
@@ -394,11 +394,17 @@ public class OrdemCompraAB(Connection connection, ProdutoAB produtoAb)
             // Entrada de estoque (atualiza custo e recalcula preço de venda se margem configurada)
             await produtoAb.EntradaEstoqueAsync(companyId, produto.Id, recvData.QuantityReceived, item.UnitCost);
 
-            // Se foi informada data de validade para produto que controla validade
-            if (recvData.DataValidade.HasValue)
-            {
-                await produtoAb.AtualizarValidadeAsync(companyId, produto.Id, recvData.DataValidade.Value.Date);
-            }
+            // Cada recebimento vira um lote (validade informada ou sugerida pelo prazo padrão da categoria).
+            // Produtos.DataValidade passa a refletir o lote que vence primeiro, em vez de ser sobrescrita
+            // pela data da última entrada.
+            await loteAb.RegistrarEntradaAsync(
+                companyId,
+                produto.Id,
+                recvData.DataValidade?.Date,
+                recvData.QuantityReceived,
+                null,
+                "compra",
+                receivedByName);
 
             // Atualiza QuantityReceived e DataValidade no item da OC
             await using var updItem = new SqlCommand(

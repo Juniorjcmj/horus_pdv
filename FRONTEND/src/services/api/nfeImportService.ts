@@ -59,6 +59,8 @@ export type NfeImportItemInput = {
   quantidade: string;
   precoCusto: string;
   precoVenda: string;
+  /** AAAA-MM-DD, opcional. Sem ela vale o prazo padrão da categoria (se existir). */
+  dataValidade?: string | null;
 };
 
 export type NfeImportConfirmPayload = {

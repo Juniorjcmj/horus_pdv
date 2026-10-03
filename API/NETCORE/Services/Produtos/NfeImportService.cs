@@ -25,8 +25,24 @@ public class NfeImportService(
     ProdutoAB produtosAB,
     FornecedorAB fornecedoresAB,
     MapeamentoProdutoFornecedorAB mapeamentoAB,
-    SefazDFeDownloadService sefazDownloadService)
+    SefazDFeDownloadService sefazDownloadService,
+    LoteAB loteAB)
 {
+    private const string OrigemLoteNfe = "nfe";
+    private const string CriadoPorImportacao = "Importação NF-e";
+
+    private static DateTime? ParseValidade(NfeImportItemInput item)
+    {
+        if (string.IsNullOrWhiteSpace(item.DataValidade)) return null;
+
+        if (!DateTime.TryParseExact(item.DataValidade.Trim(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var validade))
+        {
+            throw new InvalidOperationException($"Data de validade inválida no item \"{item.ProductName}\".");
+        }
+
+        return validade;
+    }
+
     public async Task<NfeImportPreviewModel> PreVisualizarAsync(string companyId, NfeImportPreviewRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.XmlBase64))
@@ -209,6 +225,12 @@ public class NfeImportService(
                 $"Já existe produto cadastrado com o código \"{codigoJaCadastrado}\" — ajuste antes de confirmar.");
         }
 
+        // Valida as datas de validade antes de gravar qualquer coisa.
+        foreach (var item in request.Itens)
+        {
+            _ = ParseValidade(item);
+        }
+
         var fantasyName = string.IsNullOrWhiteSpace(request.Fornecedor.FantasyName)
             ? request.Fornecedor.CompanyName.Trim()
             : request.Fornecedor.FantasyName.Trim();
@@ -254,6 +276,8 @@ public class NfeImportService(
             {
                 await produtosAB.EntradaEstoqueAsync(companyId, item.ProdutoExistenteId, quantidade, precoCusto);
                 resultado.ProdutosAtualizados++;
+                await loteAB.RegistrarEntradaAsync(
+                    companyId, item.ProdutoExistenteId, ParseValidade(item), quantidade, null, OrigemLoteNfe, CriadoPorImportacao);
 
                 // Grava ou atualiza o De-Para para que futuras notas deste fornecedor já venham vinculadas
                 var codFornec = !string.IsNullOrWhiteSpace(item.CodigoFornecedor)
@@ -313,6 +337,8 @@ public class NfeImportService(
             };
             await produtosAB.SalvarAsync(companyId, novoProduto);
             resultado.ProdutosCriados++;
+            await loteAB.RegistrarEntradaAsync(
+                companyId, novoProduto.Id, ParseValidade(item), quantidade, null, OrigemLoteNfe, CriadoPorImportacao);
         }
 
         return resultado;
