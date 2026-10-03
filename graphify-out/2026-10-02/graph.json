@@ -27216,13 +27216,13 @@
             "callee": "ExecuteScalarAsync",
             "receiver_type": "SqlCommand",
             "lang": "csharp",
-            "line": "L241"
+            "line": "L244"
           }
         ]
       },
       "norm_label": ".iscolumnstilltextasync()",
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L234"
+      "source_location": "L237"
     },
     {
       "id": "api_netcore_repositories_horusdatabaseinitializer_horuspdv_api_repositories_horusdatabaseinitializer_runscriptfileasync",
@@ -27242,85 +27242,85 @@
             "callee": "Combine",
             "receiver_type": "Path",
             "lang": "csharp",
-            "line": "L155"
+            "line": "L158"
           },
           {
             "callee": "Exists",
             "receiver_type": "File",
             "lang": "csharp",
-            "line": "L156"
+            "line": "L159"
           },
           {
             "callee": "GetCurrentDirectory",
             "receiver_type": "Directory",
             "lang": "csharp",
-            "line": "L158"
+            "line": "L161"
           },
           {
             "callee": "LogWarning",
             "receiver_type": "ILogger",
             "lang": "csharp",
-            "line": "L163"
+            "line": "L166"
           },
           {
             "callee": "ReadAllTextAsync",
             "receiver_type": "File",
             "lang": "csharp",
-            "line": "L167"
+            "line": "L170"
           },
           {
             "callee": "Split",
             "receiver_type": "Regex",
             "lang": "csharp",
-            "line": "L168"
+            "line": "L171"
           },
           {
             "callee": "Replace",
             "receiver_type": "Regex",
             "lang": "csharp",
-            "line": "L188"
+            "line": "L191"
           },
           {
             "callee": "BeginTransactionAsync",
             "receiver_type": "SqlConnection",
             "lang": "csharp",
-            "line": "L193"
+            "line": "L196"
           },
           {
             "callee": "CommitAsync",
             "receiver_type": "SqlTransaction",
             "lang": "csharp",
-            "line": "L203"
+            "line": "L206"
           },
           {
             "callee": "DisposeAsync",
             "receiver_type": "SqlTransaction",
             "lang": "csharp",
-            "line": "L204"
+            "line": "L207"
           },
           {
             "callee": "ExecuteNonQueryAsync",
             "receiver_type": "SqlCommand",
             "lang": "csharp",
-            "line": "L214"
+            "line": "L217"
           },
           {
             "callee": "RollbackAsync",
             "receiver_type": "SqlTransaction",
             "lang": "csharp",
-            "line": "L221"
+            "line": "L224"
           },
           {
             "callee": "LogInformation",
             "receiver_type": "ILogger",
             "lang": "csharp",
-            "line": "L227"
+            "line": "L230"
           }
         ]
       },
       "norm_label": ".runscriptfileasync()",
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L153"
+      "source_location": "L156"
     },
     {
       "id": "frontend_src_components_admin_purchaseorderprintmodal_escapehtml",
@@ -172787,7 +172787,7 @@
         "ref_token": "ILogger"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L153",
+      "source_location": "L156",
       "weight": 1.0
     },
     {
@@ -175007,7 +175007,7 @@
         "ref_token": "SqlConnection"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L234",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
@@ -175022,7 +175022,7 @@
         "ref_token": "SqlConnection"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L153",
+      "source_location": "L156",
       "weight": 1.0
     },
     {
@@ -183224,7 +183224,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L234",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
@@ -183239,7 +183239,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L153",
+      "source_location": "L156",
       "weight": 1.0
     },
     {
@@ -221773,7 +221773,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L153",
+      "source_location": "L156",
       "weight": 1.0
     },
     {
@@ -221784,7 +221784,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L234",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
@@ -239558,5 +239558,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "fdc267ce6193cbae10e065195b71bc4d736aaf28"
+  "built_at_commit": "ea5fa2425233d708969765d2caad8b4a7f24f11d"
 }

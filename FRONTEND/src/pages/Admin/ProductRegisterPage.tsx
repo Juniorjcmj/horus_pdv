@@ -6,15 +6,22 @@
 
 import {
   AlertTriangle,
+  Barcode,
   Calendar,
   ChevronDown,
+  ChevronUp,
   Database,
+  DollarSign,
   FileUp,
+  Filter,
   Loader2,
+  PackageX,
   Pencil,
   Plus,
+  RotateCcw,
   Scale,
   Search,
+  SlidersHorizontal,
   Tag,
   Trash2,
   UploadCloud,
@@ -1492,8 +1499,22 @@ export default function ProductRegisterPage() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [balancaModalOpen, setBalancaModalOpen] = useState(false);
   const [isImportingMercado, setIsImportingMercado] = useState(false);
-  const [filterLowStockOnly, setFilterLowStockOnly] = useState(false);
-  const [filterLocation, setFilterLocation] = useState("");
+
+  type PriceFilter = "todos" | "sem-preco-venda" | "com-preco-venda" | "sem-preco-custo" | "margem-zerada-negativa";
+  type StockFilter = "todos" | "estoque-baixo" | "sem-estoque" | "com-estoque";
+  type FiscalFilter = "todos" | "sem-gtin" | "sem-ncm" | "balanca" | "unidade";
+  type ValidityFilter = "todos" | "com-controle" | "vencidos-alerta";
+
+  const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
+  const [filterPrice, setFilterPrice] = useState<PriceFilter>("todos");
+  const [filterMinPrice, setFilterMinPrice] = useState<string>("");
+  const [filterMaxPrice, setFilterMaxPrice] = useState<string>("");
+  const [filterStock, setFilterStock] = useState<StockFilter>("todos");
+  const [filterFiscal, setFilterFiscal] = useState<FiscalFilter>("todos");
+  const [filterCategory, setFilterCategory] = useState<string>("todas");
+  const [filterSupplier, setFilterSupplier] = useState<string>("todos");
+  const [filterLocation, setFilterLocation] = useState<string>("");
+  const [filterValidity, setFilterValidity] = useState<ValidityFilter>("todos");
 
   const locationOptions = useMemo(() => {
     const locs = new Set<string>();
@@ -1576,36 +1597,202 @@ export default function ProductRegisterPage() {
     loadCategories();
   }, []);
 
-  const lowStockCount = useMemo(() => {
-    return products.filter((p) => {
-      const min = parseMoneyBr(p.estoqueMinimo || "0");
+  const flatCategoryOptions = useMemo(() => {
+    const result: { id: string; nome: string }[] = [];
+    function traverse(list: CategoriaArvore[], prefix = "") {
+      for (const item of list) {
+        const fullLabel = prefix ? `${prefix} > ${item.nome}` : item.nome;
+        result.push({ id: item.id, nome: fullLabel });
+        if (item.subcategorias && item.subcategorias.length > 0) {
+          traverse(item.subcategorias, fullLabel);
+        }
+      }
+    }
+    traverse(categories);
+    return result;
+  }, [categories]);
+
+  const metrics = useMemo(() => {
+    let noSalePrice = 0;
+    let noCostPrice = 0;
+    let lowStock = 0;
+    let zeroStock = 0;
+    let noGtin = 0;
+    let noCategory = 0;
+    let noNcm = 0;
+
+    for (const p of products) {
+      const sale = parseMoneyBr(p.productSalePrice || "0");
+      const cost = parseMoneyBr(p.productUnitPrice || "0");
       const current = parseMoneyBr(p.productQnt || "0");
-      return min > 0 && current <= min;
-    }).length;
+      const min = parseMoneyBr(p.estoqueMinimo || "0");
+      const gtin = (p.gtin || "").trim().toUpperCase();
+      const ncm = (p.ncm || "").trim();
+
+      if (sale <= 0) noSalePrice++;
+      if (cost <= 0) noCostPrice++;
+      if (min > 0 && current <= min) lowStock++;
+      if (current <= 0) zeroStock++;
+      if (!gtin || gtin === "SEM GTIN") noGtin++;
+      if (!p.categoriaId && !p.categoriaNome) noCategory++;
+      if (!ncm || ncm === "00000000") noNcm++;
+    }
+
+    return {
+      noSalePrice,
+      noCostPrice,
+      lowStock,
+      zeroStock,
+      noGtin,
+      noCategory,
+      noNcm,
+    };
   }, [products, parseMoneyBr]);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (filterPrice !== "todos") count++;
+    if (filterMinPrice.trim() !== "") count++;
+    if (filterMaxPrice.trim() !== "") count++;
+    if (filterStock !== "todos") count++;
+    if (filterFiscal !== "todos") count++;
+    if (filterCategory !== "todas") count++;
+    if (filterSupplier !== "todos") count++;
+    if (filterLocation.trim() !== "") count++;
+    if (filterValidity !== "todos") count++;
+    return count;
+  }, [
+    filterPrice,
+    filterMinPrice,
+    filterMaxPrice,
+    filterStock,
+    filterFiscal,
+    filterCategory,
+    filterSupplier,
+    filterLocation,
+    filterValidity,
+  ]);
+
+  const clearAllFilters = () => {
+    setSearch("");
+    setFilterPrice("todos");
+    setFilterMinPrice("");
+    setFilterMaxPrice("");
+    setFilterStock("todos");
+    setFilterFiscal("todos");
+    setFilterCategory("todas");
+    setFilterSupplier("todos");
+    setFilterLocation("");
+    setFilterValidity("todos");
+    setCurrentPage(1);
+    setSelectedProductIds(new Set());
+  };
 
   const filteredProducts = useMemo(() => {
     const normalized = search.trim().toLowerCase();
-    let list = products;
-    if (normalized) {
-      list = list.filter(
-        (product) =>
-          product.productName.toLowerCase().includes(normalized) ||
-          product.productCode.toLowerCase().includes(normalized),
-      );
-    }
-    if (filterLowStockOnly) {
-      list = list.filter((product) => {
-        const min = parseMoneyBr(product.estoqueMinimo || "0");
-        const current = parseMoneyBr(product.productQnt || "0");
-        return min > 0 && current <= min;
-      });
-    }
-    if (filterLocation) {
-      list = list.filter((product) => product.localizacaoEstoque === filterLocation);
-    }
-    return list;
-  }, [products, search, filterLowStockOnly, filterLocation, parseMoneyBr]);
+    const minPriceNum = filterMinPrice.trim() ? parseMoneyBr(filterMinPrice) : null;
+    const maxPriceNum = filterMaxPrice.trim() ? parseMoneyBr(filterMaxPrice) : null;
+
+    return products.filter((product) => {
+      // 1. Busca textual ampla
+      if (normalized) {
+        const matchName = product.productName.toLowerCase().includes(normalized);
+        const matchCode = product.productCode.toLowerCase().includes(normalized);
+        const matchGtin = (product.gtin || "").toLowerCase().includes(normalized);
+        const matchSupplier = (product.productSupplier || "").toLowerCase().includes(normalized);
+        const matchCategory = (product.categoriaNome || "").toLowerCase().includes(normalized);
+        if (!matchName && !matchCode && !matchGtin && !matchSupplier && !matchCategory) {
+          return false;
+        }
+      }
+
+      // 2. Preço de venda e custo
+      const salePrice = parseMoneyBr(product.productSalePrice || "0");
+      const costPrice = parseMoneyBr(product.productUnitPrice || "0");
+      const lucro = parseMoneyBr(product.lucro || "0");
+
+      if (filterPrice === "sem-preco-venda" && salePrice > 0) return false;
+      if (filterPrice === "com-preco-venda" && salePrice <= 0) return false;
+      if (filterPrice === "sem-preco-custo" && costPrice > 0) return false;
+      if (filterPrice === "margem-zerada-negativa" && lucro > 0) return false;
+
+      // Faixa de preço de venda
+      if (minPriceNum !== null && salePrice < minPriceNum) return false;
+      if (maxPriceNum !== null && salePrice > maxPriceNum) return false;
+
+      // 3. Estoque
+      const minStock = parseMoneyBr(product.estoqueMinimo || "0");
+      const currentStock = parseMoneyBr(product.productQnt || "0");
+
+      if (filterStock === "estoque-baixo") {
+        if (minStock <= 0 || currentStock > minStock) return false;
+      } else if (filterStock === "sem-estoque") {
+        if (currentStock > 0) return false;
+      } else if (filterStock === "com-estoque") {
+        if (currentStock <= 0) return false;
+      }
+
+      // 4. Fiscal / Cadastro
+      const gtinVal = (product.gtin || "").trim().toUpperCase();
+      const hasGtin = gtinVal.length > 0 && gtinVal !== "SEM GTIN";
+      const ncmVal = (product.ncm || "").trim();
+      const hasNcm = ncmVal.length > 0 && ncmVal !== "00000000";
+      const isWeight = (product.unidadeComercial || "").toUpperCase() === "KG" || isFractionableUnit(product.unidadeComercial || "");
+
+      if (filterFiscal === "sem-gtin" && hasGtin) return false;
+      if (filterFiscal === "sem-ncm" && hasNcm) return false;
+      if (filterFiscal === "balanca" && !isWeight) return false;
+      if (filterFiscal === "unidade" && isWeight) return false;
+
+      // 5. Categoria
+      if (filterCategory === "sem-categoria") {
+        if (product.categoriaId || product.categoriaNome) return false;
+      } else if (filterCategory !== "todas") {
+        if (product.categoriaId !== filterCategory && product.categoriaNome !== filterCategory) {
+          return false;
+        }
+      }
+
+      // 6. Fornecedor
+      if (filterSupplier === "sem-fornecedor") {
+        if (product.productSupplier && product.productSupplier.trim() !== "") return false;
+      } else if (filterSupplier !== "todos") {
+        if (product.productSupplier !== filterSupplier) return false;
+      }
+
+      // 7. Localização
+      if (filterLocation && product.localizacaoEstoque !== filterLocation) {
+        return false;
+      }
+
+      // 8. Validade
+      if (filterValidity === "com-controle" && !product.controlaValidade) {
+        return false;
+      }
+      if (filterValidity === "vencidos-alerta") {
+        if (!product.controlaValidade) return false;
+        const alertDays = product.diasAlertaValidade ?? 15;
+        if (product.diasRestantes === null || product.diasRestantes === undefined || product.diasRestantes > alertDays) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [
+    products,
+    search,
+    filterPrice,
+    filterMinPrice,
+    filterMaxPrice,
+    filterStock,
+    filterFiscal,
+    filterCategory,
+    filterSupplier,
+    filterLocation,
+    filterValidity,
+    parseMoneyBr,
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -2116,9 +2303,10 @@ export default function ProductRegisterPage() {
         />
       ) : null}
 
-      <section className="card p-4 md:p-5">
+      <section className="card p-4 md:p-5 space-y-3.5">
+        {/* Linha superior: Input de busca + Botão de Filtros Avançados + Botão Limpar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <label className="relative block w-full max-w-xl">
+          <div className="relative flex-1 max-w-xl">
             <Search
               size={16}
               className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
@@ -2130,42 +2318,366 @@ export default function ProductRegisterPage() {
                 setCurrentPage(1);
                 setSelectedProductIds(new Set());
               }}
-              className="input-field w-full pl-9"
-              placeholder="Pesquise por nome ou código do produto"
+              className="input-field w-full pl-9 pr-8"
+              placeholder="Pesquise por nome, código, barras/GTIN ou categoria..."
             />
-          </label>
+            {search && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  setCurrentPage(1);
+                }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary transition"
+                title="Limpar busca"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setAdvancedFiltersOpen(!advancedFiltersOpen)}
+              className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all shadow-sm ${
+                advancedFiltersOpen || activeFiltersCount > 0
+                  ? "border-primary bg-primary/10 text-primary dark:text-accent shadow-primary/10"
+                  : "border-border-primary bg-bg-surface text-text-secondary hover:text-text-primary hover:border-border-secondary"
+              }`}
+              title="Abrir opções de filtros avançados"
+            >
+              <SlidersHorizontal size={14} className={advancedFiltersOpen || activeFiltersCount > 0 ? "text-primary dark:text-accent" : "text-text-tertiary"} />
+              <span>Filtros Avançados</span>
+              {activeFiltersCount > 0 && (
+                <span className="inline-flex items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold h-4.5 min-w-[18px] px-1">
+                  {activeFiltersCount}
+                </span>
+              )}
+              {advancedFiltersOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+
+            {(activeFiltersCount > 0 || search) && (
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-all shrink-0"
+                title="Limpar todos os filtros e busca"
+              >
+                <RotateCcw size={13} />
+                <span className="hidden sm:inline">Limpar</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Chips de Filtros Rápidos (Acesso com 1 clique) */}
+        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border-primary/60 text-xs">
+          <span className="text-[11px] font-medium text-text-tertiary uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+            <Filter size={12} />
+            Filtros Rápidos:
+          </span>
+
+          {/* 1. Sem Preço de Venda */}
           <button
             type="button"
             onClick={() => {
-              setFilterLowStockOnly(!filterLowStockOnly);
+              setFilterPrice((cur) => (cur === "sem-preco-venda" ? "todos" : "sem-preco-venda"));
               setCurrentPage(1);
             }}
-            className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all shrink-0 ${
-              filterLowStockOnly
-                ? "border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400"
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all ${
+              filterPrice === "sem-preco-venda"
+                ? "border-red-500 bg-red-500/20 text-red-600 dark:text-red-400 font-semibold ring-2 ring-red-500/20"
+                : metrics.noSalePrice > 0
+                ? "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/15"
                 : "border-border-primary bg-bg-surface text-text-secondary hover:text-text-primary"
             }`}
-            title="Filtrar apenas produtos com estoque igual ou abaixo do mínimo cadastrado"
+            title="Mostrar produtos que ainda não possuem preço de venda cadastrado"
           >
-            <AlertTriangle size={14} className={filterLowStockOnly ? "text-amber-500" : "text-text-tertiary"} />
-            Estoque Baixo ({lowStockCount})
+            <DollarSign size={13} className={filterPrice === "sem-preco-venda" || metrics.noSalePrice > 0 ? "text-red-500" : "text-text-tertiary"} />
+            Sem Preço de Venda ({metrics.noSalePrice})
           </button>
-          {locationOptions.length > 0 ? (
-            <select
-              value={filterLocation}
-              onChange={(event) => {
-                setFilterLocation(event.target.value);
-                setCurrentPage(1);
-              }}
-              className="input-field h-9 rounded-xl text-xs shrink-0"
-            >
-              <option value="">Todas localizações</option>
-              {locationOptions.map((loc) => (
-                <option key={loc} value={loc}>{loc}</option>
-              ))}
-            </select>
-          ) : null}
+
+          {/* 2. Sem Preço de Custo */}
+          <button
+            type="button"
+            onClick={() => {
+              setFilterPrice((cur) => (cur === "sem-preco-custo" ? "todos" : "sem-preco-custo"));
+              setCurrentPage(1);
+            }}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all ${
+              filterPrice === "sem-preco-custo"
+                ? "border-amber-500 bg-amber-500/20 text-amber-600 dark:text-amber-400 font-semibold ring-2 ring-amber-500/20"
+                : "border-border-primary bg-bg-surface text-text-secondary hover:text-text-primary"
+            }`}
+            title="Mostrar produtos que não possuem preço de custo informado"
+          >
+            Sem Preço de Custo ({metrics.noCostPrice})
+          </button>
+
+          {/* 3. Estoque Baixo */}
+          <button
+            type="button"
+            onClick={() => {
+              setFilterStock((cur) => (cur === "estoque-baixo" ? "todos" : "estoque-baixo"));
+              setCurrentPage(1);
+            }}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all ${
+              filterStock === "estoque-baixo"
+                ? "border-amber-500 bg-amber-500/20 text-amber-600 dark:text-amber-400 font-semibold ring-2 ring-amber-500/20"
+                : "border-border-primary bg-bg-surface text-text-secondary hover:text-text-primary"
+            }`}
+            title="Mostrar produtos com estoque atual menor ou igual ao estoque mínimo"
+          >
+            <AlertTriangle size={13} className={filterStock === "estoque-baixo" ? "text-amber-500" : "text-text-tertiary"} />
+            Estoque Baixo ({metrics.lowStock})
+          </button>
+
+          {/* 4. Zerados no Estoque */}
+          <button
+            type="button"
+            onClick={() => {
+              setFilterStock((cur) => (cur === "sem-estoque" ? "todos" : "sem-estoque"));
+              setCurrentPage(1);
+            }}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all ${
+              filterStock === "sem-estoque"
+                ? "border-orange-500 bg-orange-500/20 text-orange-600 dark:text-orange-400 font-semibold ring-2 ring-orange-500/20"
+                : "border-border-primary bg-bg-surface text-text-secondary hover:text-text-primary"
+            }`}
+            title="Mostrar produtos com estoque zerado ou negativo"
+          >
+            <PackageX size={13} className={filterStock === "sem-estoque" ? "text-orange-500" : "text-text-tertiary"} />
+            Sem Estoque ({metrics.zeroStock})
+          </button>
+
+          {/* 5. Sem Código de Barras / GTIN */}
+          <button
+            type="button"
+            onClick={() => {
+              setFilterFiscal((cur) => (cur === "sem-gtin" ? "todos" : "sem-gtin"));
+              setCurrentPage(1);
+            }}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all ${
+              filterFiscal === "sem-gtin"
+                ? "border-sky-500 bg-sky-500/20 text-sky-600 dark:text-sky-400 font-semibold ring-2 ring-sky-500/20"
+                : "border-border-primary bg-bg-surface text-text-secondary hover:text-text-primary"
+            }`}
+            title="Mostrar produtos sem código de barras (GTIN)"
+          >
+            <Barcode size={13} className={filterFiscal === "sem-gtin" ? "text-sky-500" : "text-text-tertiary"} />
+            Sem GTIN ({metrics.noGtin})
+          </button>
+
+          {/* 6. Sem Categoria */}
+          <button
+            type="button"
+            onClick={() => {
+              setFilterCategory((cur) => (cur === "sem-categoria" ? "todas" : "sem-categoria"));
+              setCurrentPage(1);
+            }}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all ${
+              filterCategory === "sem-categoria"
+                ? "border-purple-500 bg-purple-500/20 text-purple-600 dark:text-purple-400 font-semibold ring-2 ring-purple-500/20"
+                : "border-border-primary bg-bg-surface text-text-secondary hover:text-text-primary"
+            }`}
+            title="Mostrar produtos sem categoria vinculada"
+          >
+            Sem Categoria ({metrics.noCategory})
+          </button>
         </div>
+
+        {/* Painel Expansível de Filtros Avançados */}
+        {advancedFiltersOpen && (
+          <div className="rounded-2xl border border-border-primary/80 bg-bg-secondary/40 p-4 space-y-4 animate-in fade-in duration-200">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between border-b border-border-primary/60 pb-3">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal size={16} className="text-primary" />
+                <h4 className="text-sm font-semibold text-text-primary">Filtros Avançados Detalhados</h4>
+                <span className="text-xs text-text-tertiary">
+                  ({filteredProducts.length} de {products.length} produtos exibidos)
+                </span>
+              </div>
+              {activeFiltersCount > 0 && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-600 font-semibold transition"
+                >
+                  <RotateCcw size={12} />
+                  Redefinir filtros
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {/* 1. Preço de Venda / Custo */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-text-secondary">Situação de Preço</label>
+                <select
+                  value={filterPrice}
+                  onChange={(e) => {
+                    setFilterPrice(e.target.value as PriceFilter);
+                    setCurrentPage(1);
+                  }}
+                  className="input-field h-9 text-xs w-full rounded-xl"
+                >
+                  <option value="todos">Todos os preços</option>
+                  <option value="sem-preco-venda">⚠️ Sem Preço de Venda (R$ 0,00)</option>
+                  <option value="com-preco-venda">✅ Com Preço de Venda (&gt; R$ 0,00)</option>
+                  <option value="sem-preco-custo">Sem Preço de Custo (R$ 0,00)</option>
+                  <option value="margem-zerada-negativa">Margem ou Lucro ≤ 0%</option>
+                </select>
+              </div>
+
+              {/* 2. Faixa de Preço de Venda */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-text-secondary">Faixa de Preço Venda (R$)</label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Mín 0,00"
+                    value={filterMinPrice}
+                    onChange={(e) => {
+                      setFilterMinPrice(maskMoneyBr(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="input-field h-9 text-xs w-full rounded-xl"
+                  />
+                  <span className="text-xs text-text-tertiary">até</span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Máx 0,00"
+                    value={filterMaxPrice}
+                    onChange={(e) => {
+                      setFilterMaxPrice(maskMoneyBr(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="input-field h-9 text-xs w-full rounded-xl"
+                  />
+                </div>
+              </div>
+
+              {/* 3. Situação do Estoque */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-text-secondary">Situação do Estoque</label>
+                <select
+                  value={filterStock}
+                  onChange={(e) => {
+                    setFilterStock(e.target.value as StockFilter);
+                    setCurrentPage(1);
+                  }}
+                  className="input-field h-9 text-xs w-full rounded-xl"
+                >
+                  <option value="todos">Todos os estoques</option>
+                  <option value="estoque-baixo">⚠️ Estoque Baixo (≤ Mínimo)</option>
+                  <option value="sem-estoque">📦 Sem Estoque / Zerado (≤ 0)</option>
+                  <option value="com-estoque">🟢 Com Estoque Positivo (&gt; 0)</option>
+                </select>
+              </div>
+
+              {/* 4. Cadastro & Fiscal */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-text-secondary">Cadastro & Fiscal</label>
+                <select
+                  value={filterFiscal}
+                  onChange={(e) => {
+                    setFilterFiscal(e.target.value as FiscalFilter);
+                    setCurrentPage(1);
+                  }}
+                  className="input-field h-9 text-xs w-full rounded-xl"
+                >
+                  <option value="todos">Todos os cadastros</option>
+                  <option value="sem-gtin">🏷️ Sem Código de Barras (GTIN)</option>
+                  <option value="sem-ncm">📄 Sem NCM cadastrado</option>
+                  <option value="balanca">⚖️ Apenas Balança / Pesáveis (KG)</option>
+                  <option value="unidade">📦 Apenas Unidade (UN)</option>
+                </select>
+              </div>
+
+              {/* 5. Categoria / Departamento */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-text-secondary">Categoria / Departamento</label>
+                <select
+                  value={filterCategory}
+                  onChange={(e) => {
+                    setFilterCategory(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="input-field h-9 text-xs w-full rounded-xl"
+                >
+                  <option value="todas">Todas as categorias</option>
+                  <option value="sem-categoria">⚠️ Sem Categoria Vinculada</option>
+                  {flatCategoryOptions.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 6. Fornecedor */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-text-secondary">Fornecedor</label>
+                <select
+                  value={filterSupplier}
+                  onChange={(e) => {
+                    setFilterSupplier(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="input-field h-9 text-xs w-full rounded-xl"
+                >
+                  <option value="todos">Todos os fornecedores</option>
+                  <option value="sem-fornecedor">⚠️ Sem Fornecedor</option>
+                  {supplierOptions.map((supp) => (
+                    <option key={supp} value={supp}>
+                      {supp}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 7. Localização de Estoque */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-text-secondary">Localização / Gôndola</label>
+                <select
+                  value={filterLocation}
+                  onChange={(e) => {
+                    setFilterLocation(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="input-field h-9 text-xs w-full rounded-xl"
+                >
+                  <option value="">Todas localizações</option>
+                  {locationOptions.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 8. Validade */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-text-secondary">Controle de Validade</label>
+                <select
+                  value={filterValidity}
+                  onChange={(e) => {
+                    setFilterValidity(e.target.value as ValidityFilter);
+                    setCurrentPage(1);
+                  }}
+                  className="input-field h-9 text-xs w-full rounded-xl"
+                >
+                  <option value="todos">Todas situações</option>
+                  <option value="com-controle">Apenas com controle ativo</option>
+                  <option value="vencidos-alerta">⚠️ Vencidos ou em Alerta</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="card overflow-hidden">
@@ -2223,7 +2735,34 @@ export default function ProductRegisterPage() {
               </tr>
             </thead>
             <tbody>
-              {paginatedProducts.map((product) => (
+              {paginatedProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="py-16 text-center">
+                    <div className="flex flex-col items-center justify-center gap-2.5 text-text-secondary">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-bg-surface border border-border-primary text-text-tertiary shadow-sm">
+                        <Filter size={24} />
+                      </div>
+                      <p className="text-base font-semibold text-text-primary">
+                        Nenhum produto encontrado
+                      </p>
+                      <p className="max-w-md text-xs text-text-tertiary">
+                        Não encontramos produtos para os filtros ou termos de pesquisa aplicados.
+                      </p>
+                      {(activeFiltersCount > 0 || search) && (
+                        <button
+                          type="button"
+                          onClick={clearAllFilters}
+                          className="mt-2 inline-flex items-center gap-1.5 rounded-xl border border-border-primary bg-bg-surface px-3.5 py-2 text-xs font-semibold text-text-primary hover:bg-bg-primary transition shadow-sm"
+                        >
+                          <RotateCcw size={13} />
+                          Limpar todos os filtros
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                paginatedProducts.map((product) => (
                 <tr key={product.id} className="border-t border-border-primary">
                   <td className="px-4 py-3">
                     <input
@@ -2360,7 +2899,17 @@ export default function ProductRegisterPage() {
                         onClick={() => startInlineEdit(product, "productSalePrice")}
                         title="Clique para editar preço de venda"
                       >
-                        {product.productSalePrice}
+                        {parseMoneyBr(product.productSalePrice || "0") <= 0 ? (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-md bg-red-500/15 border border-red-500/30 px-2 py-0.5 text-xs font-bold text-red-600 dark:text-red-400"
+                            title="Produto sem preço de venda definido! Clique para cadastrar"
+                          >
+                            <AlertTriangle size={12} />
+                            Sem Preço
+                          </span>
+                        ) : (
+                          product.productSalePrice
+                        )}
                       </span>
                     )}
                   </td>
@@ -2426,7 +2975,8 @@ export default function ProductRegisterPage() {
                     />
                   </td>
                 </tr>
-              ))}
+              ))
+              )}
             </tbody>
           </table>
         </div>
