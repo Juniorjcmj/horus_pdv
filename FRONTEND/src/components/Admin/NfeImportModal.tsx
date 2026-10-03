@@ -52,6 +52,18 @@ type EditableItem = NfeImportItemPreview & {
   productCodeOriginal: string;
 };
 
+// Custo unitário de itens convertidos (caixa -> unidade): até 4 casas, igual ao DECIMAL(15,4) do banco.
+function formatCusto(value: number) {
+  if (!Number.isFinite(value)) return "0,00";
+  return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4, useGrouping: false });
+}
+
+function maskCusto4(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 12);
+  if (!digits) return "";
+  return formatCusto(Number(digits) / 10000);
+}
+
 export default function NfeImportModal({
   onClose,
   onImported,
@@ -318,8 +330,11 @@ export default function NfeImportModal({
         return {
           ...item,
           fatorConversao: cleanFator,
-          quantidade: novaQtd.toLocaleString("pt-BR", { maximumFractionDigits: 4 }),
-          precoCusto: formatMoneyBr(novoCusto),
+          // Sem separador de milhar: o backend lê "1.000" como 1, não como mil.
+          quantidade: novaQtd.toLocaleString("pt-BR", { maximumFractionDigits: 4, useGrouping: false }),
+          // Com conversão o custo unitário pode ter mais de 2 casas (ex.: 37,25 / 100 = 0,3725);
+          // o banco guarda 4 casas, então não arredonda para centavos aqui.
+          precoCusto: fator > 1 ? formatCusto(novoCusto) : formatMoneyBr(novoCusto),
           precoVenda: novoPrecoVenda,
           unidadeComercial: novaUnidade,
         };
@@ -820,7 +835,11 @@ export default function NfeImportModal({
                                 className="input-field w-24"
                                 value={item.precoCusto}
                                 onChange={(event) =>
-                                  setItemField(item.numeroItem, "precoCusto", maskMoneyBr(event.target.value))
+                                  setItemField(
+                                    item.numeroItem,
+                                    "precoCusto",
+                                    isConverted ? maskCusto4(event.target.value) : maskMoneyBr(event.target.value),
+                                  )
                                 }
                               />
                             </td>

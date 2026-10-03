@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1790992015.5745752,
-    "seen": 1790992090.2688944,
-    "ast_hash": "0b68d86b165999f1982ddf1076ce552d",
+    "mtime": 1791035374.6321054,
+    "seen": 1791035468.577917,
+    "ast_hash": "c323eb96d9a73b5445009ffbdc9c7116",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
