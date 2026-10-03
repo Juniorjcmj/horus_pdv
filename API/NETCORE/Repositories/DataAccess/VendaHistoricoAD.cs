@@ -36,6 +36,8 @@ public class VendaHistoricoAD
     public int? FiscalSerie { get; set; }
     public int? FiscalStatus { get; set; }
     public string? FiscalChaveAcesso { get; set; }
+    /// <summary>Formas de pagamento da venda com o valor de cada uma, ex.: "dinheiro=10.00;pix=5.00" (vazio em vendas antigas).</summary>
+    public string? PaymentBreakdown { get; set; }
     public string? CanceladoEm { get; set; }
     public string? CanceladoPorOperadorNome { get; set; }
     public string? CanceladoPorSupervisorNome { get; set; }

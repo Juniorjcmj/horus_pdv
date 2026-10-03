@@ -18,7 +18,12 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-    public async Task<List<VendaHistoricoAD>> ListarAsync(string companyId, string? saleNumber = null, DateTimeOffset? desde = null)
+    /// <param name="caixaSessaoId">Quando informado, lista só as vendas vinculadas a esse turno de caixa.</param>
+    public async Task<List<VendaHistoricoAD>> ListarAsync(
+        string companyId,
+        string? saleNumber = null,
+        DateTimeOffset? desde = null,
+        string? caixaSessaoId = null)
     {
         const string sql = """
             SELECT v.SaleNumber, ISNULL(v.Status, 'finalizada') AS Status,
@@ -33,7 +38,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                    ISNULL(i.Desconto, 0) AS Desconto,
                    i.PromocaoId,
                    d.Id AS FiscalDocId, d.Modelo AS FiscalModelo, d.NumeroNf AS FiscalNumeroNf,
-                   d.Serie AS FiscalSerie, d.Status AS FiscalStatus, d.ChaveAcesso AS FiscalChaveAcesso
+                   d.Serie AS FiscalSerie, d.Status AS FiscalStatus, d.ChaveAcesso AS FiscalChaveAcesso,
+                   pay.Breakdown AS PaymentBreakdown
             FROM Vendas v
             LEFT JOIN VendaItens i ON v.Id = i.VendaId
             OUTER APPLY (
@@ -42,9 +48,20 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 WHERE doc.CompanyId = v.CompanyId AND doc.VendaId = v.Id
                 ORDER BY doc.CriadoEm DESC
             ) d
+            OUTER APPLY (
+                -- Formas de pagamento da venda ("dinheiro=10.00;pix=5.00"): venda com mais de uma forma
+                -- precisa do valor de cada uma para os totais por forma de pagamento.
+                SELECT STUFF((
+                    SELECT ';' + LOWER(pg.PaymentType) + '=' + CONVERT(VARCHAR(32), pg.Amount)
+                    FROM VendaPagamentos pg
+                    WHERE pg.CompanyId = v.CompanyId AND pg.VendaId = v.Id
+                    ORDER BY pg.CreatedAt, pg.Id
+                    FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, '') AS Breakdown
+            ) pay
             WHERE v.CompanyId = @CompanyId
               AND (@SaleNumber IS NULL OR v.SaleNumber = @SaleNumber)
               AND (@Desde IS NULL OR v.SaleDate >= @Desde)
+              AND (@CaixaSessaoId IS NULL OR v.CaixaSessaoId = @CaixaSessaoId)
             ORDER BY v.SaleDate DESC;
             """;
 
@@ -52,6 +69,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@SaleNumber", string.IsNullOrWhiteSpace(saleNumber) ? DBNull.Value : saleNumber);
+        command.Parameters.AddWithValue("@CaixaSessaoId", string.IsNullOrWhiteSpace(caixaSessaoId) ? DBNull.Value : caixaSessaoId.Trim());
         var pDesde = command.Parameters.Add("@Desde", System.Data.SqlDbType.DateTimeOffset);
         pDesde.Value = desde.HasValue ? desde.Value : DBNull.Value;
         await using var reader = await command.ExecuteReaderAsync();
@@ -869,6 +887,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         FiscalSerie = ReadNullableInt(reader, "FiscalSerie"),
         FiscalStatus = ReadNullableInt(reader, "FiscalStatus"),
         FiscalChaveAcesso = ReadNullableString(reader, "FiscalChaveAcesso"),
+        PaymentBreakdown = ReadNullableString(reader, "PaymentBreakdown"),
         CanceladoEm = ReadNullableSaleDate(reader, "CanceladoEm"),
         CanceladoPorOperadorNome = ReadNullableString(reader, "CanceladoPorOperadorNome"),
         CanceladoPorSupervisorNome = ReadNullableString(reader, "CanceladoPorSupervisorNome"),

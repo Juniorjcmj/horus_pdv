@@ -37,6 +37,8 @@ export type SaleHistoryDto = {
   fiscalSerie?: number | null;
   fiscalStatus?: number | null;
   fiscalChaveAcesso?: string | null;
+  /** Formas de pagamento com o valor de cada uma, ex.: "dinheiro=10.00;pix=5.00" (vazio em vendas antigas). */
+  paymentBreakdown?: string | null;
 };
 
 export type CancelledSaleDto = {
@@ -158,10 +160,13 @@ export type RegisterSaleResponse = {
 };
 
 export const salesHistoryService = {
-  async list(desde?: string) {
-    const url = desde
-      ? `${HISTORICO_VENDAS_API_URL}?desde=${encodeURIComponent(desde)}`
-      : HISTORICO_VENDAS_API_URL;
+  /** `caixaSessaoId` limita a lista às vendas daquele turno de caixa (tela "Vendas do Caixa Atual"). */
+  async list(desde?: string, caixaSessaoId?: string) {
+    const query = new URLSearchParams();
+    if (desde) query.set("desde", desde);
+    if (caixaSessaoId) query.set("caixaSessaoId", caixaSessaoId);
+    const qs = query.toString();
+    const url = qs ? `${HISTORICO_VENDAS_API_URL}?${qs}` : HISTORICO_VENDAS_API_URL;
     const response = await apiRequest<SaleHistoryDto[]>(url);
     return response.data ?? [];
   },

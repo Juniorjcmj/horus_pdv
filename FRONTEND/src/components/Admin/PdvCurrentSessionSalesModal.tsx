@@ -1,7 +1,8 @@
 /**
  * Arquivo: src/components/Admin/PdvCurrentSessionSalesModal.tsx
- * Objetivo: exibe a listagem de todas as vendas do caixa/turno atual do operador no PDV,
- *           com filtros rápidos, resumo financeiro e acesso ao detalhamento de cada venda.
+ * Objetivo: exibe as vendas do caixa/turno atual DESTE PDV (só as vendas dessa sessão de caixa), com filtros
+ *           rápidos por forma de pagamento, resumo financeiro que acompanha os filtros e acesso ao
+ *           detalhamento de cada venda.
  */
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -24,15 +25,22 @@ import {
 } from "@/services/api/salesHistoryService";
 import { FISCAL_STATUS } from "@/services/api/fiscalService";
 import { formatNumeroNf } from "@/utils/danfePrint";
-import { getLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
+import { getPendingLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
 
 type PdvCurrentSessionSalesModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  /** Id do turno de caixa atual: a lista mostra somente as vendas desse turno. */
+  cashSessionId?: string | null;
   cashSessionOpenedAt?: string | null;
   operatorName?: string;
   onSelectSale: (saleNumber: string) => void;
 };
+
+type PaymentGroup = "dinheiro" | "cartao" | "pix" | "fiado" | "outros";
+type PaymentFilter = "all" | Exclude<PaymentGroup, "outros">;
+
+type SalePayment = { type: string; group: PaymentGroup; amount: number };
 
 type GroupedSale = {
   saleNumber: string;
@@ -44,12 +52,22 @@ type GroupedSale = {
   operatorName: string;
   saleDate: string;
   itemsCount: number;
+  cancelled: boolean;
+  payments: SalePayment[];
   fiscalDocId?: string | null;
   fiscalModelo?: number | null;
   fiscalNumeroNf?: number | null;
   fiscalSerie?: number | null;
   fiscalStatus?: number | null;
   fiscalChaveAcesso?: string | null;
+};
+
+const PAYMENT_FILTER_LABEL: Record<PaymentFilter, string> = {
+  all: "Todos",
+  dinheiro: "Dinheiro",
+  cartao: "Cartão",
+  pix: "PIX",
+  fiado: "Fiado",
 };
 
 function parseMoney(val?: string | null): number {
@@ -63,9 +81,43 @@ function formatCurrency(num: number): string {
   return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+/** Agrupa as formas de pagamento do sistema (dinheiro, pix, debito, credito, fiado...) nos botões do filtro. */
+function paymentGroupOf(type: string): PaymentGroup {
+  const t = type.toLowerCase();
+  if (t.includes("dinheiro")) return "dinheiro";
+  if (t.includes("pix")) return "pix";
+  if (t.includes("fiado") || t.includes("prazo")) return "fiado";
+  if (t.includes("deb") || t.includes("déb") || t.includes("cred") || t.includes("cré") || t.includes("cart")) {
+    return "cartao";
+  }
+  return "outros";
+}
+
+/**
+ * Pagamentos da venda com o valor de cada forma. Usa o detalhamento enviado pelo servidor
+ * ("dinheiro=10.00;pix=5.00"); sem ele (vendas antigas), considera a forma única da venda pelo total.
+ */
+function buildPayments(breakdown: string | null | undefined, paymentType: string, total: number): SalePayment[] {
+  const parsed: SalePayment[] = [];
+  for (const part of (breakdown ?? "").split(";")) {
+    const [rawType, rawAmount] = part.split("=");
+    const type = rawType?.trim();
+    const amount = parseFloat(rawAmount ?? "");
+    if (type && Number.isFinite(amount)) parsed.push({ type, group: paymentGroupOf(type), amount });
+  }
+  if (parsed.length > 0) return parsed;
+  return [{ type: paymentType, group: paymentGroupOf(paymentType), amount: total }];
+}
+
+function isCancelledStatus(status?: string | null): boolean {
+  const s = (status ?? "").toLowerCase();
+  return s.startsWith("cancel") || s.startsWith("estorn");
+}
+
 export default function PdvCurrentSessionSalesModal({
   isOpen,
   onClose,
+  cashSessionId,
   cashSessionOpenedAt,
   operatorName,
   onSelectSale,
@@ -73,53 +125,46 @@ export default function PdvCurrentSessionSalesModal({
   const [loading, setLoading] = useState(false);
   const [salesRows, setSalesRows] = useState<SaleHistoryDto[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [paymentFilter, setPaymentFilter] = useState("all");
-  const [scopeFilter, setScopeFilter] = useState<"session" | "all">("session");
+  const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>("all");
 
-  const loadSales = async (overrideScope?: "session" | "all") => {
+  const loadSales = async () => {
     setLoading(true);
-    const activeScope = overrideScope || scopeFilter;
     try {
+      // Turno que já existe no servidor: lista só as vendas dele. Turno aberto offline (id local, ainda
+      // sem equivalente no servidor): usa a data de abertura e o operador como melhor aproximação.
+      const serverSessionId =
+        cashSessionId && !cashSessionId.startsWith("cx-offline") ? cashSessionId : undefined;
+
       let rows: SaleHistoryDto[] = [];
-      const filterDate = activeScope === "session" ? cashSessionOpenedAt : undefined;
-
       try {
-        rows = await salesHistoryService.list(filterDate || undefined);
-      } catch (err) {
-        console.warn("Falha ao buscar vendas na API com filtro:", err);
-      }
-
-      // Se filtrou por sessão mas não encontrou nada na API, tenta buscar todas da API
-      // para evitar que o operador fique sem visualização por desencontro de horário
-      if ((!rows || rows.length === 0) && activeScope === "session") {
-        try {
-          const allRows = await salesHistoryService.list();
-          if (allRows && allRows.length > 0) {
-            rows = allRows;
-          }
-        } catch (err) {
-          console.warn("Falha ao buscar todas as vendas da API:", err);
+        rows = await salesHistoryService.list(
+          serverSessionId ? undefined : cashSessionOpenedAt || undefined,
+          serverSessionId,
+        );
+        if (!serverSessionId && operatorName) {
+          const operator = operatorName.trim().toLowerCase();
+          rows = rows.filter((row) => (row.operatorName || "").trim().toLowerCase() === operator);
         }
+      } catch (err) {
+        console.warn("Falha ao buscar as vendas do caixa na API:", err);
       }
 
-      // Carrega também as vendas locais do Dexie (IndexedDB)
+      // Vendas feitas neste aparelho que ainda não sincronizaram (as já sincronizadas vêm do servidor).
       try {
-        const localRows = await getLocalSalesHistory();
-        if (localRows && localRows.length > 0) {
-          const seenNumbers = new Set(rows.map((r) => r.saleNumber || r.clientSaleId || r.offlineReference));
-          for (const lr of localRows) {
-            const key = lr.saleNumber || lr.clientSaleId || lr.offlineReference;
-            if (key && !seenNumbers.has(key)) {
-              rows.push(lr);
-              seenNumbers.add(key);
-            }
+        const pending = await getPendingLocalSalesHistory(cashSessionOpenedAt);
+        const seen = new Set(rows.map((row) => row.saleNumber || row.clientSaleId || row.offlineReference));
+        for (const row of pending) {
+          const key = row.saleNumber || row.clientSaleId || row.offlineReference;
+          if (key && !seen.has(key)) {
+            rows.push(row);
+            seen.add(key);
           }
         }
       } catch (err) {
-        console.warn("Falha ao ler vendas locais do Dexie:", err);
+        console.warn("Falha ao ler vendas locais pendentes:", err);
       }
 
-      setSalesRows(rows || []);
+      setSalesRows(rows);
     } catch (e) {
       console.error("Erro ao carregar vendas:", e);
       setSalesRows([]);
@@ -130,8 +175,10 @@ export default function PdvCurrentSessionSalesModal({
 
   useEffect(() => {
     if (!isOpen) return;
-    loadSales();
-  }, [isOpen, cashSessionOpenedAt, scopeFilter]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadSales();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, cashSessionId, cashSessionOpenedAt]);
 
   // Fechar com Escape
   useEffect(() => {
@@ -155,16 +202,19 @@ export default function PdvCurrentSessionSalesModal({
 
       if (!map.has(row.saleNumber)) {
         const totalNum = parseMoney(row.totalAmount);
+        const paymentType = row.paymentType || "Dinheiro";
         map.set(row.saleNumber, {
           saleNumber: row.saleNumber,
           customerName: row.customerName || "Consumidor Final",
           customerCpf: row.customerCpf || "-",
-          paymentType: row.paymentType || "Dinheiro",
+          paymentType,
           totalAmount: row.totalAmount,
           totalAmountNum: totalNum,
           operatorName: row.operatorName || "",
           saleDate: row.saleDate || "",
           itemsCount: 1,
+          cancelled: isCancelledStatus(row.status),
+          payments: buildPayments(row.paymentBreakdown, paymentType, totalNum),
           fiscalDocId: row.fiscalDocId,
           fiscalModelo: row.fiscalModelo,
           fiscalNumeroNf: row.fiscalNumeroNf,
@@ -190,7 +240,13 @@ export default function PdvCurrentSessionSalesModal({
     return Array.from(map.values());
   }, [salesRows]);
 
-  // Filtra por termo de busca e pagamento
+  // Quanto da venda entra no filtro de pagamento atual (venda com mais de uma forma conta só a parcela dela).
+  const amountInFilter = (sale: GroupedSale): number =>
+    paymentFilter === "all"
+      ? sale.totalAmountNum
+      : sale.payments.filter((p) => p.group === paymentFilter).reduce((acc, p) => acc + p.amount, 0);
+
+  // Filtra por termo de busca e forma de pagamento
   const filteredSales = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
 
@@ -205,22 +261,21 @@ export default function PdvCurrentSessionSalesModal({
         (sale.fiscalChaveAcesso && sale.fiscalChaveAcesso.includes(term));
 
       const matchPayment =
-        paymentFilter === "all" ||
-        sale.paymentType.toLowerCase().includes(paymentFilter.toLowerCase());
+        paymentFilter === "all" || sale.payments.some((p) => p.group === paymentFilter);
 
       return matchSearch && matchPayment;
     });
   }, [groupedSales, searchTerm, paymentFilter]);
 
-  // Resumo de totais
+  // Resumo: acompanha os filtros (forma de pagamento e busca) e ignora vendas canceladas/estornadas.
   const summary = useMemo(() => {
-    const totalVendas = groupedSales.length;
-    const totalValor = groupedSales.reduce((acc, s) => acc + s.totalAmountNum, 0);
-    const totalAutorizadas = groupedSales.filter(
-      (s) => s.fiscalStatus === FISCAL_STATUS.Autorizado
-    ).length;
+    const valid = filteredSales.filter((sale) => !sale.cancelled);
+    const totalVendas = valid.length;
+    const totalValor = valid.reduce((acc, sale) => acc + amountInFilter(sale), 0);
+    const totalAutorizadas = valid.filter((sale) => sale.fiscalStatus === FISCAL_STATUS.Autorizado).length;
     return { totalVendas, totalValor, totalAutorizadas };
-  }, [groupedSales]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredSales, paymentFilter]);
 
   if (!isOpen) return null;
 
@@ -280,14 +335,16 @@ export default function PdvCurrentSessionSalesModal({
           </div>
         </div>
 
-        {/* Resumo Financeiro no Topo */}
+        {/* Resumo Financeiro no Topo (acompanha os filtros) */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-b border-border-primary bg-bg-secondary/50 px-5 py-3 text-xs">
           <div className="flex items-center gap-3 rounded-xl border border-border-primary/60 bg-bg-primary/60 p-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/15 text-accent">
               <ShoppingBag size={16} />
             </div>
             <div>
-              <span className="text-[11px] text-text-secondary block">Total de Vendas</span>
+              <span className="text-[11px] text-text-secondary block">
+                {paymentFilter === "all" ? "Total de Vendas" : `Vendas • ${PAYMENT_FILTER_LABEL[paymentFilter]}`}
+              </span>
               <strong className="text-sm text-text-primary">{summary.totalVendas} concluídas</strong>
             </div>
           </div>
@@ -297,7 +354,9 @@ export default function PdvCurrentSessionSalesModal({
               <DollarSign size={16} />
             </div>
             <div>
-              <span className="text-[11px] text-text-secondary block">Total Faturado</span>
+              <span className="text-[11px] text-text-secondary block">
+                {paymentFilter === "all" ? "Total Faturado" : `Faturado • ${PAYMENT_FILTER_LABEL[paymentFilter]}`}
+              </span>
               <strong className="text-sm font-mono text-emerald-600 dark:text-emerald-400">
                 {formatCurrency(summary.totalValor)}
               </strong>
@@ -333,98 +392,23 @@ export default function PdvCurrentSessionSalesModal({
                 className="w-full rounded-xl border border-border-primary bg-bg-primary pl-9 pr-3 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none transition shadow-xs"
               />
             </div>
-
-            {/* Alternador Turno Atual / Todas as Vendas */}
-            <div className="flex items-center gap-1 bg-bg-primary p-1 rounded-xl border border-border-primary text-xs shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setScopeFilter("session");
-                  loadSales("session");
-                }}
-                className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                  scopeFilter === "session"
-                    ? "bg-accent text-white shadow-xs"
-                    : "text-text-secondary hover:text-text-primary"
-                }`}
-                title="Mostrar apenas vendas abertas neste turno"
-              >
-                Deste Turno
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setScopeFilter("all");
-                  loadSales("all");
-                }}
-                className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                  scopeFilter === "all"
-                    ? "bg-accent text-white shadow-xs"
-                    : "text-text-secondary hover:text-text-primary"
-                }`}
-                title="Mostrar histórico geral de vendas"
-              >
-                Todas as Vendas
-              </button>
-            </div>
           </div>
 
           <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
-            <button
-              type="button"
-              onClick={() => setPaymentFilter("all")}
-              className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                paymentFilter === "all"
-                  ? "bg-accent text-white"
-                  : "bg-bg-primary text-text-secondary hover:text-text-primary border border-border-primary"
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentFilter("dinheiro")}
-              className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                paymentFilter === "dinheiro"
-                  ? "bg-accent text-white"
-                  : "bg-bg-primary text-text-secondary hover:text-text-primary border border-border-primary"
-              }`}
-            >
-              Dinheiro
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentFilter("cart")}
-              className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                paymentFilter === "cart"
-                  ? "bg-accent text-white"
-                  : "bg-bg-primary text-text-secondary hover:text-text-primary border border-border-primary"
-              }`}
-            >
-              Cartão
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentFilter("pix")}
-              className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                paymentFilter === "pix"
-                  ? "bg-accent text-white"
-                  : "bg-bg-primary text-text-secondary hover:text-text-primary border border-border-primary"
-              }`}
-            >
-              PIX
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentFilter("fiado")}
-              className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-                paymentFilter === "fiado"
-                  ? "bg-accent text-white"
-                  : "bg-bg-primary text-text-secondary hover:text-text-primary border border-border-primary"
-              }`}
-            >
-              Fiado
-            </button>
+            {(Object.keys(PAYMENT_FILTER_LABEL) as PaymentFilter[]).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setPaymentFilter(key)}
+                className={`rounded-lg px-2.5 py-1 font-semibold transition ${
+                  paymentFilter === key
+                    ? "bg-accent text-white"
+                    : "bg-bg-primary text-text-secondary hover:text-text-primary border border-border-primary"
+                }`}
+              >
+                {PAYMENT_FILTER_LABEL[key]}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -442,8 +426,8 @@ export default function PdvCurrentSessionSalesModal({
               <ShoppingBag size={36} className="text-text-secondary/40 mb-2" />
               <p className="font-semibold text-sm">Nenhuma venda encontrada.</p>
               <p className="text-xs text-text-secondary mt-1">
-                {searchTerm
-                  ? "Tente ajustar o termo da pesquisa."
+                {searchTerm || paymentFilter !== "all"
+                  ? "Tente ajustar os filtros."
                   : "As vendas concluídas neste caixa aparecerão aqui."}
               </p>
             </div>
@@ -458,7 +442,9 @@ export default function PdvCurrentSessionSalesModal({
                   <th className="px-3 py-2.5 font-medium">Cliente</th>
                   <th className="px-3 py-2.5 font-medium">Pagamento</th>
                   <th className="px-3 py-2.5 text-center font-medium">Itens</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Total</th>
+                  <th className="px-3 py-2.5 text-right font-medium">
+                    {paymentFilter === "all" ? "Total" : `Total • ${PAYMENT_FILTER_LABEL[paymentFilter]}`}
+                  </th>
                   <th className="px-3 py-2.5 text-center font-medium">Status Fiscal</th>
                   <th className="px-4 py-2.5 text-right font-medium">Ações</th>
                 </tr>
@@ -468,15 +454,24 @@ export default function PdvCurrentSessionSalesModal({
                   const isAuth = sale.fiscalStatus === FISCAL_STATUS.Autorizado;
                   const isCanc = sale.fiscalStatus === FISCAL_STATUS.Cancelado;
                   const isRet = sale.fiscalStatus === FISCAL_STATUS.Devolvido;
+                  const inFilter = amountInFilter(sale);
+                  const partial = paymentFilter !== "all" && Math.abs(inFilter - sale.totalAmountNum) > 0.005;
 
                   return (
                     <tr
                       key={sale.saleNumber}
                       onClick={() => onSelectSale(sale.saleNumber)}
-                      className="cursor-pointer hover:bg-bg-secondary/60 transition-colors group"
+                      className={`cursor-pointer hover:bg-bg-secondary/60 transition-colors group ${
+                        sale.cancelled ? "opacity-60" : ""
+                      }`}
                     >
                       <td className="px-4 py-3 font-bold font-mono text-accent">
                         #{sale.saleNumber}
+                        {sale.cancelled ? (
+                          <span className="ml-1.5 inline-block rounded bg-rose-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
+                            Cancelada
+                          </span>
+                        ) : null}
                       </td>
                       <td className="px-3 py-3 text-text-secondary whitespace-nowrap">
                         {sale.saleDate}
@@ -498,7 +493,12 @@ export default function PdvCurrentSessionSalesModal({
                         {sale.itemsCount}
                       </td>
                       <td className="px-3 py-3 text-right font-bold font-mono text-text-primary">
-                        {formatCurrency(sale.totalAmountNum)}
+                        <span className={sale.cancelled ? "line-through" : ""}>{formatCurrency(inFilter)}</span>
+                        {partial ? (
+                          <span className="block text-[10px] font-normal text-text-secondary">
+                            de {formatCurrency(sale.totalAmountNum)}
+                          </span>
+                        ) : null}
                       </td>
                       <td className="px-3 py-3 text-center whitespace-nowrap">
                         {sale.fiscalDocId || sale.fiscalNumeroNf ? (

@@ -192,6 +192,8 @@ export async function getLocalSalesHistory(): Promise<SaleHistoryDto[]> {
     const items = await db.saleItems.where("saleId").equals(sale.id).toArray();
     const payments = await db.payments.where("saleId").equals(sale.id).toArray();
     const paymentLabel = payments.length > 0 ? payments.map((p) => p.paymentType).join(" + ") : "dinheiro";
+    const paymentBreakdown =
+      payments.length > 0 ? payments.map((p) => `${p.paymentType.toLowerCase()}=${p.amount}`).join(";") : null;
 
     const formattedDate = new Date(sale.createdAt).toLocaleString("pt-BR", {
       day: "2-digit",
@@ -217,6 +219,7 @@ export async function getLocalSalesHistory(): Promise<SaleHistoryDto[]> {
         saleDate: formattedDate,
         clientSaleId: sale.id,
         offlineReference: sale.saleNumber,
+        paymentBreakdown,
       });
     } else {
       for (const item of items) {
@@ -235,10 +238,37 @@ export async function getLocalSalesHistory(): Promise<SaleHistoryDto[]> {
           saleDate: formattedDate,
           clientSaleId: sale.id,
           offlineReference: sale.saleNumber,
+          paymentBreakdown,
         });
       }
     }
   }
 
   return result;
+}
+
+/**
+ * Vendas feitas NESTE aparelho que ainda não foram sincronizadas (evento SALE_CREATED do outbox fora do
+ * status PROCESSED) desde `sinceIso`. As já sincronizadas voltam do servidor com o número definitivo; listar
+ * as duas coisas mostraria a mesma venda duas vezes.
+ */
+export async function getPendingLocalSalesHistory(sinceIso?: string | null): Promise<SaleHistoryDto[]> {
+  const events = await db.outbox
+    .where("eventType")
+    .equals("SALE_CREATED")
+    .filter((event) => event.status !== "PROCESSED")
+    .toArray();
+  if (events.length === 0) return [];
+
+  const pendingIds = new Set(events.map((event) => event.aggregateId));
+  const sinceMs = sinceIso ? Date.parse(sinceIso) : Number.NaN;
+  const sales = await db.sales
+    .where("id")
+    .anyOf([...pendingIds])
+    .filter((sale) => Number.isNaN(sinceMs) || Date.parse(sale.createdAt) >= sinceMs)
+    .toArray();
+  const allowedIds = new Set(sales.map((sale) => sale.id));
+
+  const local = await getLocalSalesHistory();
+  return local.filter((row) => row.clientSaleId && allowedIds.has(row.clientSaleId));
 }

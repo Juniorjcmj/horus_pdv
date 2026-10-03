@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/HistoricoVendas/HistoricoVendasController.cs": {
-    "mtime": 1791055612.4114423,
-    "seen": 1791055811.075559,
-    "ast_hash": "0db9d94f16756fb37b41e893a31f52f5",
+    "mtime": 1791057443.099787,
+    "seen": 1791057574.6622684,
+    "ast_hash": "52382eda3d698316ea57dbeb47c2c6a7",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Home/HomeController.cs": {
@@ -372,9 +372,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/VendaHistoricoAD.cs": {
-    "mtime": 1791027975.5979407,
-    "seen": 1791028438.5295215,
-    "ast_hash": "3acb4941d0c87e2e8a8b40a9fa6c9184",
+    "mtime": 1791057416.6058218,
+    "seen": 1791057574.6748068,
+    "ast_hash": "b9884c9eb1b7cb6fcc4da348e3526c3b",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/VendaPagamentoAD.cs": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs": {
-    "mtime": 1791055649.758968,
-    "seen": 1791055811.0923486,
-    "ast_hash": "eba104b429591679ab8e53b5986a13e8",
+    "mtime": 1791057416.5220222,
+    "seen": 1791057574.6768966,
+    "ast_hash": "23ecd787f534f510aa4f2f46c41dcc5a",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HomeAB.cs": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791055761.8975024,
-    "seen": 1791055811.1191165,
-    "ast_hash": "e15d5792098ac2c91b59791562890368",
+    "mtime": 1791057526.2105997,
+    "seen": 1791057574.7083614,
+    "ast_hash": "7a1794fabb8d5f08637e3770f1c95fba",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1212,9 +1212,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/salesHistoryService.ts": {
-    "mtime": 1791055660.785633,
-    "seen": 1791055811.1248856,
-    "ast_hash": "5a64a928c201a58c7a237da1be90307a",
+    "mtime": 1791057443.2644012,
+    "seen": 1791057574.7139614,
+    "ast_hash": "e5d4892c05e06daab55c0e8286bb7cac",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/sessionService.ts": {
@@ -2562,9 +2562,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/application/sales/SaleOutboxAdapter.ts": {
-    "mtime": 1791028126.925722,
-    "seen": 1791028438.5395126,
-    "ast_hash": "8c48cba9185a628230f19e797a7c17f9",
+    "mtime": 1791057456.1835945,
+    "seen": 1791057574.688131,
+    "ast_hash": "2451485301e72939f1641be23d9cde0e",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SyncStatus.tsx": {
@@ -2994,9 +2994,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PdvCurrentSessionSalesModal.tsx": {
-    "mtime": 1790472190.3951893,
-    "seen": 1790472280.002181,
-    "ast_hash": "4b7420cc46164b9d5ceb24eaad5673d4",
+    "mtime": 1791057526.0981605,
+    "seen": 1791057574.6907659,
+    "ast_hash": "56d9111f08085770c221cd69230eca52",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PdvSaleDetailModal.tsx": {

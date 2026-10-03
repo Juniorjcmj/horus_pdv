@@ -3180,6 +3180,7 @@ export default function SalesStartPage({
       <PdvCurrentSessionSalesModal
         isOpen={sessionSalesModalOpen}
         onClose={() => setSessionSalesModalOpen(false)}
+        cashSessionId={cashStatus?.currentSession?.id}
         cashSessionOpenedAt={cashStatus?.currentSession?.openedAt}
         operatorName={operatorName || cashStatus?.currentSession?.operatorName}
         onSelectSale={(saleNum) => {

@@ -103,7 +103,7 @@ public class HistoricoVendasController(
 
     [HttpGet]
     [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
-    public async Task<IActionResult> Listar([FromQuery] string? desde = null)
+    public async Task<IActionResult> Listar([FromQuery] string? desde = null, [FromQuery] string? caixaSessaoId = null)
     {
         var currentUser = GetCurrentUser();
         if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
@@ -114,7 +114,22 @@ public class HistoricoVendasController(
             dtDesde = parsedDesde;
         }
 
-        var rows = await historicoVendasAB.ListarAsync(currentUser.CompanyId, desde: dtDesde);
+        // Vendas de UM turno de caixa (tela "Vendas do Caixa Atual"): gerente/administrador veem qualquer
+        // turno; os demais só o seu. ObterSessaoAsync devolve null quando o turno não existe ou não é do usuário.
+        if (!string.IsNullOrWhiteSpace(caixaSessaoId))
+        {
+            var sessao = await caixaService.ObterSessaoAsync(currentUser, caixaSessaoId.Trim());
+            if (sessao is null)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Turno de caixa não encontrado ou pertencente a outro operador."
+                });
+            }
+        }
+
+        var rows = await historicoVendasAB.ListarAsync(currentUser.CompanyId, desde: dtDesde, caixaSessaoId: caixaSessaoId);
         return Ok(new ApiResponse<object>
         {
             Success = true,
