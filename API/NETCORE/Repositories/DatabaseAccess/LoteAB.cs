@@ -10,6 +10,7 @@
 using HORUSPDV_API.Models.Produtos;
 using HORUSPDV_API.Services.Shared;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
@@ -21,6 +22,8 @@ public sealed class LoteLinha
     public string NumeroLote { get; set; } = string.Empty;
     public DateTime DataValidade { get; set; }
     public decimal QtdInicial { get; set; }
+    /// <summary>Saldo real do lote (baixado pela venda, devolvido pelo cancelamento) — Fase 2.</summary>
+    public decimal QtdAtual { get; set; }
     public string Origem { get; set; } = string.Empty;
     public bool ValidadePadrao { get; set; }
     public DateTimeOffset CriadoEm { get; set; }
@@ -61,12 +64,29 @@ public static class LoteEstimador
 
         return saldos;
     }
+
+    /// <summary>
+    /// Saldo por lote conforme o modo: 'ativo' usa o saldo real (QtdAtual, baixado pela venda); nos demais
+    /// modos continua o saldo estimado FEFO da Fase 1.
+    /// </summary>
+    public static Dictionary<string, decimal> Saldos(IReadOnlyList<LoteLinha> lotesDoProduto, bool usarSaldoReal)
+        => usarSaldoReal
+            ? lotesDoProduto.ToDictionary(lote => lote.Id, lote => Math.Max(0m, lote.QtdAtual))
+            : Distribuir(lotesDoProduto);
 }
 
-public class LoteAB(Connection connection)
+public class LoteAB(Connection connection, ILogger<LoteAB> logger)
 {
+    public const string ModoDesligado = "desligado";
+    public const string ModoSombra = "sombra";
+    public const string ModoAtivo = "ativo";
+
+    public static bool ModoValido(string? modo)
+        => modo is ModoDesligado or ModoSombra or ModoAtivo;
+
     private const string LinhasSql = """
-        SELECT l.Id, l.ProdutoId, l.NumeroLote, l.DataValidade, l.QtdInicial, l.Origem, l.ValidadePadrao, l.CriadoEm,
+        SELECT l.Id, l.ProdutoId, l.NumeroLote, l.DataValidade, l.QtdInicial, ISNULL(l.QtdAtual, 0) AS QtdAtual,
+               l.Origem, l.ValidadePadrao, l.CriadoEm,
                p.ProductCode, p.ProductName, p.ProductQnt, p.ProductUnitPrice, p.ProductSalePrice,
                p.DiasAlertaValidade AS DiasAlertaProduto,
                COALESCE(c.Nome, N'') AS CategoriaNome,
@@ -100,6 +120,7 @@ public class LoteAB(Connection connection)
                 NumeroLote = ReadString(reader, "NumeroLote"),
                 DataValidade = reader.GetDateTime(reader.GetOrdinal("DataValidade")).Date,
                 QtdInicial = ReadDecimal(reader, "QtdInicial"),
+                QtdAtual = ReadDecimal(reader, "QtdAtual"),
                 Origem = ReadString(reader, "Origem"),
                 ValidadePadrao = reader.GetBoolean(reader.GetOrdinal("ValidadePadrao")),
                 CriadoEm = reader.GetDateTimeOffset(reader.GetOrdinal("CriadoEm")),
@@ -169,8 +190,8 @@ public class LoteAB(Connection connection)
         CancellationToken cancellationToken = default)
     {
         const string sql = """
-            INSERT INTO ProdutoLotes (Id, CompanyId, ProdutoId, NumeroLote, DataValidade, QtdInicial, Origem, ValidadePadrao, CriadoPorNome)
-            VALUES (@Id, @CompanyId, @ProdutoId, @NumeroLote, @DataValidade, @QtdInicial, @Origem, @ValidadePadrao, @CriadoPorNome);
+            INSERT INTO ProdutoLotes (Id, CompanyId, ProdutoId, NumeroLote, DataValidade, QtdInicial, QtdAtual, Origem, ValidadePadrao, CriadoPorNome)
+            VALUES (@Id, @CompanyId, @ProdutoId, @NumeroLote, @DataValidade, @QtdInicial, @QtdInicial, @Origem, @ValidadePadrao, @CriadoPorNome);
             """;
 
         var id = $"lt-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}-{Guid.NewGuid().ToString("N")[..8]}";
@@ -236,7 +257,8 @@ public class LoteAB(Connection connection)
         var linhas = await ListarLinhasAsync(companyId, produtoId, cancellationToken);
         if (linhas.Count == 0) return;
 
-        var saldos = LoteEstimador.Distribuir(linhas);
+        var modo = await ObterModoAsync(companyId, cancellationToken);
+        var saldos = LoteEstimador.Saldos(linhas, modo == ModoAtivo);
         var comSaldo = linhas.Where(linha => saldos.GetValueOrDefault(linha.Id) > 0).ToList();
         if (comSaldo.Count == 0) return;
 
@@ -302,6 +324,353 @@ public class LoteAB(Connection connection)
         command.Parameters.AddWithValue("@Prazo", (object?)prazoPadraoDias ?? DBNull.Value);
         command.Parameters.AddWithValue("@Alerta", (object?)diasAlerta ?? DBNull.Value);
         return await command.ExecuteNonQueryAsync(cancellationToken) > 0;
+    }
+
+    // -----------------------------------------------------------------------
+    // Fase 2 — baixa FEFO por lote
+    // -----------------------------------------------------------------------
+
+    /// <summary>Modo da baixa por lote da empresa. Sem configuração gravada vale 'sombra'.</summary>
+    public async Task<string> ObterModoAsync(string companyId, CancellationToken cancellationToken = default)
+    {
+        const string sql = "SELECT Modo FROM LoteConfig WHERE CompanyId = @CompanyId;";
+
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        var value = await command.ExecuteScalarAsync(cancellationToken);
+        var modo = (value is null or DBNull) ? null : Convert.ToString(value)?.Trim().ToLowerInvariant();
+        return ModoValido(modo) ? modo! : ModoSombra;
+    }
+
+    public async Task DefinirModoAsync(string companyId, string modo, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            UPDATE LoteConfig SET Modo = @Modo, AtualizadoEm = SYSDATETIMEOFFSET() WHERE CompanyId = @CompanyId;
+            IF @@ROWCOUNT = 0
+                INSERT INTO LoteConfig (CompanyId, Modo) VALUES (@CompanyId, @Modo);
+            """;
+
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Modo", modo);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Baixa FEFO de uma venda: para cada produto, tira a quantidade dos lotes que vencem primeiro e
+    /// registra quanto saiu de cada um (para estornar no lote certo no cancelamento).
+    /// "Seguro": roda DEPOIS do commit da venda, em transação própria, e NUNCA lança exceção — qualquer
+    /// falha é só registrada no log e a venda (já gravada) não é afetada.
+    /// </summary>
+    public async Task ConsumirVendaSeguroAsync(
+        string companyId,
+        string vendaId,
+        IEnumerable<(string ProductCode, decimal Quantity)> itens,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (await ObterModoAsync(companyId, cancellationToken) == ModoDesligado) return;
+
+            var agrupados = itens
+                .Where(item => !string.IsNullOrWhiteSpace(item.ProductCode) && item.Quantity > 0)
+                .GroupBy(item => item.ProductCode.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Select(grupo => (Codigo: grupo.Key, Quantidade: grupo.Sum(item => item.Quantity)))
+                .ToList();
+            if (agrupados.Count == 0) return;
+
+            var afetados = new List<string>();
+            await using (var db = await connection.OpenConnectionAsync(cancellationToken))
+            await using (var transaction = (SqlTransaction)await db.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    foreach (var (codigo, quantidade) in agrupados)
+                    {
+                        var produtoId = await ObterProdutoIdPorCodigoAsync(db, transaction, companyId, codigo, cancellationToken);
+                        if (produtoId is null) continue;
+
+                        if (await ConsumirNosLotesAsync(db, transaction, companyId, produtoId, quantidade, "venda", vendaId, cancellationToken))
+                        {
+                            afetados.Add(produtoId);
+                        }
+                    }
+
+                    await transaction.CommitAsync(cancellationToken);
+                }
+                catch
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            }
+
+            foreach (var produtoId in afetados.Distinct())
+            {
+                await SincronizarValidadeProdutoAsync(companyId, produtoId, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Falha na baixa FEFO por lote da venda {VendaId}. A venda não foi afetada.", vendaId);
+        }
+    }
+
+    /// <summary>Baixa FEFO de uma saída manual de estoque (perda, avaria). Seguro: nunca lança exceção.</summary>
+    public async Task ConsumirAjusteSeguroAsync(
+        string companyId,
+        string produtoId,
+        decimal quantidade,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (quantidade <= 0 || await ObterModoAsync(companyId, cancellationToken) == ModoDesligado) return;
+
+            var consumiu = false;
+            await using (var db = await connection.OpenConnectionAsync(cancellationToken))
+            await using (var transaction = (SqlTransaction)await db.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    consumiu = await ConsumirNosLotesAsync(
+                        db, transaction, companyId, produtoId, quantidade, "ajuste", $"aj-{Guid.NewGuid():N}", cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
+                }
+                catch
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            }
+
+            if (consumiu)
+            {
+                await SincronizarValidadeProdutoAsync(companyId, produtoId, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Falha na baixa FEFO por lote do ajuste de estoque do produto {ProdutoId}.", produtoId);
+        }
+    }
+
+    /// <summary>
+    /// Devolve aos lotes de origem o que uma venda cancelada/estornada tirou deles. Idempotente (cada
+    /// registro é marcado como estornado) e seguro: nunca lança exceção. Vendas anteriores à Fase 2 não
+    /// têm registro de consumo e, portanto, não mexem em lote.
+    /// </summary>
+    public async Task EstornarVendaSeguroAsync(string companyId, string vendaId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var afetados = new List<string>();
+            await using (var db = await connection.OpenConnectionAsync(cancellationToken))
+            await using (var transaction = (SqlTransaction)await db.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    var consumos = new List<(string Id, string ProdutoId, string? LoteId, decimal Quantidade)>();
+                    await using (var select = new SqlCommand(
+                        """
+                        SELECT Id, ProdutoId, LoteId, Quantidade
+                        FROM LoteConsumos WITH (UPDLOCK, ROWLOCK)
+                        WHERE CompanyId = @CompanyId AND RefId = @RefId AND Origem = N'venda' AND Estornado = 0;
+                        """,
+                        db,
+                        transaction))
+                    {
+                        select.Parameters.AddWithValue("@CompanyId", companyId);
+                        select.Parameters.AddWithValue("@RefId", vendaId);
+                        await using var reader = await select.ExecuteReaderAsync(cancellationToken);
+                        while (await reader.ReadAsync(cancellationToken))
+                        {
+                            var loteOrdinal = reader.GetOrdinal("LoteId");
+                            consumos.Add((
+                                reader.GetString(reader.GetOrdinal("Id")),
+                                reader.GetString(reader.GetOrdinal("ProdutoId")),
+                                reader.IsDBNull(loteOrdinal) ? null : reader.GetString(loteOrdinal),
+                                reader.GetDecimal(reader.GetOrdinal("Quantidade"))));
+                        }
+                    }
+
+                    foreach (var consumo in consumos)
+                    {
+                        if (consumo.LoteId is not null)
+                        {
+                            await using var devolve = new SqlCommand(
+                                "UPDATE ProdutoLotes SET QtdAtual = ISNULL(QtdAtual, 0) + @Quantidade WHERE Id = @LoteId AND CompanyId = @CompanyId;",
+                                db,
+                                transaction);
+                            devolve.Parameters.AddWithValue("@Quantidade", consumo.Quantidade);
+                            devolve.Parameters.AddWithValue("@LoteId", consumo.LoteId);
+                            devolve.Parameters.AddWithValue("@CompanyId", companyId);
+                            await devolve.ExecuteNonQueryAsync(cancellationToken);
+                            afetados.Add(consumo.ProdutoId);
+                        }
+
+                        await using var marca = new SqlCommand(
+                            "UPDATE LoteConsumos SET Estornado = 1 WHERE Id = @Id;",
+                            db,
+                            transaction);
+                        marca.Parameters.AddWithValue("@Id", consumo.Id);
+                        await marca.ExecuteNonQueryAsync(cancellationToken);
+                    }
+
+                    await transaction.CommitAsync(cancellationToken);
+                }
+                catch
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            }
+
+            foreach (var produtoId in afetados.Distinct())
+            {
+                await SincronizarValidadeProdutoAsync(companyId, produtoId, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Falha ao estornar a baixa por lote da venda {VendaId}.", vendaId);
+        }
+    }
+
+    private static async Task<string?> ObterProdutoIdPorCodigoAsync(
+        SqlConnection db,
+        SqlTransaction transaction,
+        string companyId,
+        string productCode,
+        CancellationToken cancellationToken)
+    {
+        await using var command = new SqlCommand(
+            "SELECT Id FROM Produtos WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;",
+            db,
+            transaction);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@ProductCode", productCode);
+        var value = await command.ExecuteScalarAsync(cancellationToken);
+        return (value is null or DBNull) ? null : Convert.ToString(value);
+    }
+
+    /// <summary>
+    /// Tira a quantidade dos lotes do produto em ordem FEFO (validade mais próxima primeiro) e grava o
+    /// consumo. O que nenhum lote cobre fica registrado como "sem lote" (LoteId nulo). Produto sem
+    /// nenhum lote não gera registro. Idempotente por (origem, referência, produto). Retorna true quando
+    /// registrou algo.
+    /// </summary>
+    private static async Task<bool> ConsumirNosLotesAsync(
+        SqlConnection db,
+        SqlTransaction transaction,
+        string companyId,
+        string produtoId,
+        decimal quantidade,
+        string origem,
+        string refId,
+        CancellationToken cancellationToken)
+    {
+        await using (var jaFeito = new SqlCommand(
+            "SELECT COUNT(1) FROM LoteConsumos WHERE CompanyId = @CompanyId AND RefId = @RefId AND ProdutoId = @ProdutoId AND Origem = @Origem;",
+            db,
+            transaction))
+        {
+            jaFeito.Parameters.AddWithValue("@CompanyId", companyId);
+            jaFeito.Parameters.AddWithValue("@RefId", refId);
+            jaFeito.Parameters.AddWithValue("@ProdutoId", produtoId);
+            jaFeito.Parameters.AddWithValue("@Origem", origem);
+            if (Convert.ToInt32(await jaFeito.ExecuteScalarAsync(cancellationToken)) > 0) return false;
+        }
+
+        var lotes = new List<(string Id, decimal Saldo)>();
+        await using (var select = new SqlCommand(
+            """
+            SELECT Id, ISNULL(QtdAtual, 0) AS QtdAtual
+            FROM ProdutoLotes WITH (UPDLOCK, ROWLOCK)
+            WHERE CompanyId = @CompanyId AND ProdutoId = @ProdutoId AND ISNULL(QtdAtual, 0) > 0
+            ORDER BY DataValidade ASC, CriadoEm ASC;
+            """,
+            db,
+            transaction))
+        {
+            select.Parameters.AddWithValue("@CompanyId", companyId);
+            select.Parameters.AddWithValue("@ProdutoId", produtoId);
+            await using var reader = await select.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                lotes.Add((reader.GetString(reader.GetOrdinal("Id")), reader.GetDecimal(reader.GetOrdinal("QtdAtual"))));
+            }
+        }
+
+        if (lotes.Count == 0)
+        {
+            // Produto sem nenhum lote cadastrado: não há o que baixar nem o que registrar.
+            await using var temLote = new SqlCommand(
+                "SELECT COUNT(1) FROM ProdutoLotes WHERE CompanyId = @CompanyId AND ProdutoId = @ProdutoId;",
+                db,
+                transaction);
+            temLote.Parameters.AddWithValue("@CompanyId", companyId);
+            temLote.Parameters.AddWithValue("@ProdutoId", produtoId);
+            if (Convert.ToInt32(await temLote.ExecuteScalarAsync(cancellationToken)) == 0) return false;
+        }
+
+        var restante = quantidade;
+        foreach (var (loteId, saldo) in lotes)
+        {
+            if (restante <= 0) break;
+
+            var tirar = Math.Min(saldo, restante);
+            await using (var baixa = new SqlCommand(
+                "UPDATE ProdutoLotes SET QtdAtual = ISNULL(QtdAtual, 0) - @Quantidade WHERE Id = @LoteId AND CompanyId = @CompanyId;",
+                db,
+                transaction))
+            {
+                baixa.Parameters.AddWithValue("@Quantidade", tirar);
+                baixa.Parameters.AddWithValue("@LoteId", loteId);
+                baixa.Parameters.AddWithValue("@CompanyId", companyId);
+                await baixa.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            await InserirConsumoAsync(db, transaction, companyId, refId, origem, produtoId, loteId, tirar, cancellationToken);
+            restante -= tirar;
+        }
+
+        if (restante > 0)
+        {
+            await InserirConsumoAsync(db, transaction, companyId, refId, origem, produtoId, null, restante, cancellationToken);
+        }
+
+        return true;
+    }
+
+    private static async Task InserirConsumoAsync(
+        SqlConnection db,
+        SqlTransaction transaction,
+        string companyId,
+        string refId,
+        string origem,
+        string produtoId,
+        string? loteId,
+        decimal quantidade,
+        CancellationToken cancellationToken)
+    {
+        await using var command = new SqlCommand(
+            """
+            INSERT INTO LoteConsumos (Id, CompanyId, RefId, Origem, ProdutoId, LoteId, Quantidade)
+            VALUES (@Id, @CompanyId, @RefId, @Origem, @ProdutoId, @LoteId, @Quantidade);
+            """,
+            db,
+            transaction);
+        command.Parameters.AddWithValue("@Id", $"lc-{Guid.NewGuid():N}");
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@RefId", refId);
+        command.Parameters.AddWithValue("@Origem", origem);
+        command.Parameters.AddWithValue("@ProdutoId", produtoId);
+        command.Parameters.AddWithValue("@LoteId", (object?)loteId ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Quantidade", quantidade);
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     private static string ReadString(SqlDataReader reader, string name)

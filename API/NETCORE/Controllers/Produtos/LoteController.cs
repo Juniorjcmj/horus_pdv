@@ -95,6 +95,42 @@ public class LoteController(LoteService loteService) : ControllerBase
         }
     }
 
+    [HttpGet("fefo")]
+    [ProducesResponseType(typeof(ApiResponse<FefoStatusModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> FefoStatus(CancellationToken cancellationToken)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<FefoStatusModel> { Success = false, Message = "Sessão não encontrada." });
+
+        var data = await loteService.ObterFefoStatusAsync(currentUser.CompanyId, cancellationToken);
+        return Ok(new ApiResponse<FefoStatusModel>
+        {
+            Success = true,
+            Message = "Situação da baixa por lote obtida com sucesso.",
+            Data = data
+        });
+    }
+
+    [HttpPut("fefo/modo")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DefinirModoFefo([FromBody] FefoModoRequest request, CancellationToken cancellationToken)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        try
+        {
+            await loteService.DefinirModoAsync(currentUser.CompanyId, request.Modo, cancellationToken);
+            return Ok(new ApiResponse<object> { Success = true, Message = "Modo da baixa por lote atualizado." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
+    }
+
     [HttpGet("categorias")]
     [ProducesResponseType(typeof(ApiResponse<List<CategoriaValidadeModel>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Categorias(CancellationToken cancellationToken)

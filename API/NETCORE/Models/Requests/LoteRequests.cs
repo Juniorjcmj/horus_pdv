@@ -36,6 +36,12 @@ public class LoteConsultaFiltro
     public int TamanhoPagina { get; set; } = 25;
 }
 
+public class FefoModoRequest
+{
+    /// <summary>"desligado", "sombra" ou "ativo".</summary>
+    public string Modo { get; set; } = string.Empty;
+}
+
 public class CategoriaValidadeRequest
 {
     /// <summary>Dias de validade sugeridos na entrada (null = sem prazo padrão).</summary>

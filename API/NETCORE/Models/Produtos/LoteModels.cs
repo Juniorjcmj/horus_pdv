@@ -47,6 +47,8 @@ public class LoteAlertasResumoModel
     public decimal ValorEmRisco { get; set; }
     /// <summary>Produtos que controlam validade mas ainda não têm nenhum lote com saldo.</summary>
     public int ProdutosSemLote { get; set; }
+    /// <summary>Modo da baixa por lote: "desligado", "sombra" (saldo estimado) ou "ativo" (saldo real).</summary>
+    public string Modo { get; set; } = "sombra";
     public List<LoteAlertaModel> Itens { get; set; } = [];
 }
 
@@ -58,7 +60,35 @@ public class LoteConsultaModel
     public int TamanhoPagina { get; set; }
     /// <summary>Valor em risco (saldo estimado x custo) de todos os lotes filtrados.</summary>
     public decimal ValorEmRisco { get; set; }
+    public string Modo { get; set; } = "sombra";
     public List<LoteAlertaModel> Itens { get; set; } = [];
+}
+
+/// <summary>Um lote em que o saldo real (baixado pela venda) difere do saldo estimado da Fase 1.</summary>
+public class FefoDivergenciaModel
+{
+    public string ProdutoId { get; set; } = string.Empty;
+    public string ProductCode { get; set; } = string.Empty;
+    public string ProductName { get; set; } = string.Empty;
+    public string LoteId { get; set; } = string.Empty;
+    public string NumeroLote { get; set; } = string.Empty;
+    public string DataValidade { get; set; } = string.Empty;
+    public decimal QtdEstimada { get; set; }
+    public decimal QtdReal { get; set; }
+    /// <summary>QtdReal - QtdEstimada.</summary>
+    public decimal Diferenca { get; set; }
+}
+
+public class FefoStatusModel
+{
+    public string Modo { get; set; } = "sombra";
+    public int LotesComSaldo { get; set; }
+    public int LotesComDivergencia { get; set; }
+    public int ProdutosComDivergencia { get; set; }
+    /// <summary>Produtos cujo estoque é maior que a soma dos saldos reais dos lotes (entrada sem lote, ajuste manual etc.).</summary>
+    public int ProdutosComEstoqueSemLote { get; set; }
+    /// <summary>Até 100 maiores divergências (valor absoluto).</summary>
+    public List<FefoDivergenciaModel> Itens { get; set; } = [];
 }
 
 public class CategoriaValidadeModel

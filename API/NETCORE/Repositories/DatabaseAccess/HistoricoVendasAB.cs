@@ -14,7 +14,7 @@ using Microsoft.Data.SqlClient;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
-public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogAB auditLogAb)
+public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogAB auditLogAb, LoteAB loteAb)
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -298,6 +298,10 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 
             await transaction.CommitAsync();
 
+            // Baixa FEFO por lote (Fase 2): depois do commit e sem nunca derrubar a venda já gravada.
+            await loteAb.ConsumirVendaSeguroAsync(
+                companyId, result.VendaId, saleItems.Select(item => (item.ProductCode, item.Quantity)));
+
             if (rupturas.Count > 0)
             {
                 foreach (var r in rupturas)
@@ -424,6 +428,10 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             }
 
             await transaction.CommitAsync();
+
+            // Baixa FEFO por lote (Fase 2): depois do commit e sem nunca derrubar a venda já gravada.
+            await loteAb.ConsumirVendaSeguroAsync(
+                companyId, result.VendaId, saleItems.Select(item => (item.ProductCode, item.Quantity)));
 
             if (fiadoMovFixo is not null)
             {
@@ -1173,6 +1181,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             await transaction.RollbackAsync();
             return (false, $"Erro ao cancelar venda: {ex.Message}", 0, null);
         }
+
+        // Devolve aos lotes de origem o que a venda tirou deles (Fase 2). Seguro: nunca lança exceção.
+        await loteAb.EstornarVendaSeguroAsync(companyId, vendaId);
 
         // 7. Se houve fiado, estorna o saldo devedor do cliente de forma consistente
         if (!string.IsNullOrEmpty(clienteIdFiado) && valorFiado > 0)
