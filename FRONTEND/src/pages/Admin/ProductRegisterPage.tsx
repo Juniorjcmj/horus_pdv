@@ -10,6 +10,7 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
+  Copy,
   Database,
   DollarSign,
   FileUp,
@@ -224,9 +225,11 @@ function ProductFormDrawer({
   supplierOptions,
   onCreateSupplier,
   categories,
+  cloneSourceName,
 }: {
   open: boolean;
   isEditMode: boolean;
+  cloneSourceName?: string | null;
   value: ProductFormData;
   isSaving: boolean;
   onClose: () => void;
@@ -549,7 +552,9 @@ function ProductFormDrawer({
               {isEditMode ? "Editar produto" : "Novo produto"}
             </h3>
             <p className="mt-1 text-sm text-text-secondary">
-              Cadastre produto com fornecedor, preços e quantidade.
+              {cloneSourceName
+                ? `Clone de "${cloneSourceName}": dados fiscais e comerciais copiados. Informe código, quantidade e ajuste descrição e preço.`
+                : "Cadastre produto com fornecedor, preços e quantidade."}
             </p>
           </div>
           <button
@@ -1524,6 +1529,7 @@ export default function ProductRegisterPage() {
     return Array.from(locs).sort();
   }, [products]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [cloneSourceName, setCloneSourceName] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [deletingProductIds, setDeletingProductIds] = useState<Set<string>>(() => new Set());
@@ -1832,6 +1838,7 @@ export default function ProductRegisterPage() {
 
   const openCreateDrawer = () => {
     setEditingId(null);
+    setCloneSourceName(null);
     setForm(EMPTY_FORM);
     setDrawerOpen(true);
   };
@@ -1921,7 +1928,27 @@ export default function ProductRegisterPage() {
 
   const openEditDrawer = (product: Product) => {
     setEditingId(product.id);
+    setCloneSourceName(null);
     setForm({ ...product });
+    setDrawerOpen(true);
+  };
+
+  // Clona o produto como um cadastro novo, mantendo tributação fiscal, categoria, fornecedor, preços etc.
+  // Só limpa o que identifica o item (código, GTIN) ou é específico do lote (quantidade, validade).
+  const openCloneDrawer = (product: Product) => {
+    setEditingId(null);
+    setCloneSourceName(product.productName);
+    const cloned: Partial<Product> = { ...product };
+    delete cloned.id; // não pode ir no payload de criação
+    setForm({
+      ...(cloned as ProductFormData),
+      productCode: "",
+      gtin: "SEM GTIN",
+      productQnt: "",
+      totalPriceOnProduct: "",
+      dataValidade: "",
+      diasRestantes: null,
+    });
     setDrawerOpen(true);
   };
 
@@ -2109,6 +2136,7 @@ export default function ProductRegisterPage() {
 
     setDrawerOpen(false);
     setEditingId(null);
+    setCloneSourceName(null);
     setForm(EMPTY_FORM);
   };
 
@@ -2963,6 +2991,12 @@ export default function ProductRegisterPage() {
                           onClick: () => openEditDrawer(product),
                         },
                         {
+                          key: "clone",
+                          label: "Clonar produto",
+                          icon: <Copy size={13} />,
+                          onClick: () => openCloneDrawer(product),
+                        },
+                        {
                           key: "delete",
                           label: "Excluir",
                           icon: <Trash2 size={13} />,
@@ -2998,6 +3032,7 @@ export default function ProductRegisterPage() {
       <ProductFormDrawer
         open={drawerOpen}
         isEditMode={editingId !== null}
+        cloneSourceName={cloneSourceName}
         value={form}
         isSaving={saving}
         onClose={() => setDrawerOpen(false)}
