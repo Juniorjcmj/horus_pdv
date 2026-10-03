@@ -135,7 +135,10 @@ public class NfeImportService(
             // Se o produto já existente tem margem desejada configurada, EntradaEstoqueAsync vai
             // recalcular o preço de venda sozinho a partir do novo custo — a prévia já mostra esse
             // valor projetado em vez do preço de venda atual, que ficaria defasado.
-            var precoVendaSugerido = existente?.MargemDesejadaPercentual is { } margemExistente
+            // Margem nula ou zero = sem margem cadastrada: mantém o preço de venda atual (igual à
+            // regra de ProdutoAB.EntradaEstoqueAsync).
+            var margemExistenteValida = existente?.MargemDesejadaPercentual is > 0m ? existente.MargemDesejadaPercentual : null;
+            var precoVendaSugerido = margemExistenteValida is { } margemExistente
                 ? item.ValorUnitario * (1 + margemExistente / 100m)
                 : existente?.ProductSalePrice ?? item.ValorUnitario;
 
@@ -309,6 +312,12 @@ public class NfeImportService(
                 throw new InvalidOperationException($"Nome do produto muito curto no item {item.NumeroItem}.");
             }
 
+            // Margem só é gravada quando o operador a digitou (> 0); a margem derivada é informativa.
+            decimal? margemDesejada = string.IsNullOrWhiteSpace(item.MargemPercentual)
+                ? null
+                : HorusMoneyFormat.ParseDecimal(item.MargemPercentual);
+            if (margemDesejada is <= 0) margemDesejada = null;
+
             var novoProduto = new ProdutoAD
             {
                 Id = $"pr-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}-{indice}",
@@ -320,6 +329,10 @@ public class NfeImportService(
                 ProductUnitPrice = precoCusto,
                 ProductSalePrice = precoVenda,
                 TotalPriceOnProduct = precoCusto * quantidade,
+                Lucro = precoVenda - precoCusto,
+                MargemDesejadaPercentual = margemDesejada,
+                MarkupCadastrado = margemDesejada ?? 0m,
+                MarkupPraticado = precoCusto > 0 ? (precoVenda - precoCusto) / precoCusto * 100m : 0m,
                 Ncm = string.IsNullOrWhiteSpace(item.Ncm) ? "00000000" : item.Ncm.Trim(),
                 Cest = string.IsNullOrWhiteSpace(item.Cest) ? null : item.Cest.Trim(),
                 Cfop = "5102",

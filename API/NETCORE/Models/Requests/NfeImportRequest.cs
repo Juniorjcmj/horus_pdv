@@ -61,6 +61,12 @@ public class NfeImportItemInput
 
     /// <summary>Número/código do lote impresso na embalagem, opcional.</summary>
     public string? NumeroLote { get; set; }
+
+    /// <summary>
+    /// Margem desejada (% sobre o custo, pt-BR) do produto NOVO, só quando o operador a digitou.
+    /// Vira MargemDesejadaPercentual: nas próximas entradas o preço de venda é recalculado por ela.
+    /// </summary>
+    public string? MargemPercentual { get; set; }
 }
 
 public class NfeImportConfirmRequest

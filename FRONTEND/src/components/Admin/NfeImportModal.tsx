@@ -39,8 +39,15 @@ import {
   type NfeImportPreview,
 } from "@/services/api/nfeImportService";
 import { productService, type ProductDto } from "@/services/api/productService";
+import { formatMoneyBr as fmtMoney, parseMoneyBr as parseMoney } from "@/utils/inputMasks";
 
 type EditableItem = NfeImportItemPreview & {
+  /** Margem sobre o custo, em % (pt-BR). Mesma regra do cadastro: venda = custo x (1 + margem/100). */
+  margem: string;
+  /** Lucro unitário em R$ (venda - custo, pt-BR). */
+  lucro: string;
+  /** true quando o operador digitou margem ou lucro: nesse caso custo/fator novos recalculam o preço de venda. */
+  margemManual: boolean;
   quantidade: string;
   precoCusto: string;
   precoVenda: string;
@@ -58,6 +65,44 @@ type EditableItem = NfeImportItemPreview & {
 function formatCusto(value: number) {
   if (!Number.isFinite(value)) return "0,00";
   return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4, useGrouping: false });
+}
+
+type PricingSource = "custo" | "margem" | "venda" | "lucro";
+
+/**
+ * Mantém custo, preço de venda, margem (% sobre o custo) e lucro (R$) coerentes entre si.
+ * `source` diz qual campo o operador acabou de mudar:
+ *  - margem: recalcula a venda (custo x (1 + margem/100)) e o lucro;
+ *  - lucro:  venda = custo + lucro, e a margem acompanha;
+ *  - venda:  lucro e margem passam a refletir o preço digitado;
+ *  - custo:  se a margem foi digitada, mantém a margem e recalcula a venda; senão mantém a
+ *            venda e recalcula margem/lucro.
+ */
+function applyPricing(item: EditableItem, source: PricingSource): EditableItem {
+  const custo = parseMoney(item.precoCusto);
+  const venda = parseMoney(item.precoVenda);
+  const toPercent = (lucro: number) => (custo > 0 ? fmtMoney((lucro / custo) * 100) : "");
+
+  const fromMargin = (): EditableItem => {
+    const margem = item.margem.trim();
+    if (custo <= 0 || !margem) return item;
+    const novaVenda = Math.round((custo * (1 + parseMoney(margem) / 100) + Number.EPSILON) * 100) / 100;
+    return { ...item, precoVenda: fmtMoney(novaVenda), lucro: fmtMoney(novaVenda - custo) };
+  };
+
+  if (source === "margem") return fromMargin();
+  if (source === "custo" && item.margemManual && item.margem.trim()) return fromMargin();
+
+  if (source === "lucro") {
+    const lucro = item.lucro.trim();
+    if (custo <= 0 || !lucro) return item;
+    const novaVenda = Math.round((custo + parseMoney(lucro) + Number.EPSILON) * 100) / 100;
+    return { ...item, precoVenda: fmtMoney(novaVenda), margem: toPercent(parseMoney(lucro)) };
+  }
+
+  // venda (ou custo sem margem manual): deriva margem e lucro do preço atual
+  if (custo <= 0 || venda <= 0) return { ...item, lucro: "", margem: "" };
+  return { ...item, lucro: fmtMoney(venda - custo), margem: toPercent(venda - custo) };
 }
 
 function maskCusto4(value: string) {
@@ -115,8 +160,11 @@ export default function NfeImportModal({
         const qtdOriginal = parseMoneyBr(item.quantidade) || 1;
         const custoOriginal = parseMoneyBr(item.precoCusto) || 0;
         const vendaOriginal = parseMoneyBr(item.precoVendaSugerido) || 0;
-        return {
+        return applyPricing({
           ...item,
+          margem: "",
+          lucro: "",
+          margemManual: false,
           quantidade: item.quantidade,
           precoCusto: item.precoCusto,
           precoVenda: item.precoVendaSugerido,
@@ -129,7 +177,7 @@ export default function NfeImportModal({
           productCodeOriginal: item.productCode,
           dataValidade: "",
           numeroLote: "",
-        };
+        }, "venda");
       }),
     );
   };
@@ -154,14 +202,27 @@ export default function NfeImportModal({
     setItens((current) =>
       current.map((it) => {
         if (it.numeroItem !== targetNumero) return it;
-        return {
-          ...it,
-          produtoExistenteId: produto.id,
-          produtoExistenteNome: produto.productName,
-          productCode: produto.productCode,
-          unidadeComercial: produto.unidadeComercial || "UN",
-          precoVenda: formatMoneyBr(parseMoneyBr(produto.productSalePrice)),
-        };
+        // Produto existente: SEM margem cadastrada o preço de venda atual é mantido (margem e lucro só
+        // informam o resultado sobre o novo custo). COM margem cadastrada o backend recalcula o preço
+        // a partir do novo custo, então a prévia mostra esse valor projetado (mesma regra do servidor).
+        const margemCadastrada = parseMoneyBr(produto.margemDesejadaPercentual ?? "0");
+        const custoNovo = parseMoneyBr(it.precoCusto);
+        const precoProjetado =
+          margemCadastrada > 0 && custoNovo > 0
+            ? Math.round((custoNovo * (1 + margemCadastrada / 100) + Number.EPSILON) * 100) / 100
+            : parseMoneyBr(produto.productSalePrice);
+        return applyPricing(
+          {
+            ...it,
+            produtoExistenteId: produto.id,
+            produtoExistenteNome: produto.productName,
+            productCode: produto.productCode,
+            unidadeComercial: produto.unidadeComercial || "UN",
+            precoVenda: formatMoneyBr(precoProjetado),
+            margemManual: false,
+          },
+          "venda",
+        );
       }),
     );
     setItemParaVincular(null);
@@ -172,14 +233,18 @@ export default function NfeImportModal({
     setItens((current) =>
       current.map((it) => {
         if (it.numeroItem !== numeroItem) return it;
-        return {
-          ...it,
-          produtoExistenteId: null,
-          produtoExistenteNome: null,
-          productCode: it.productCodeOriginal,
-          unidadeComercial: it.unidadeOriginal,
-          precoVenda: formatMoneyBr(it.precoVendaOriginal),
-        };
+        return applyPricing(
+          {
+            ...it,
+            produtoExistenteId: null,
+            produtoExistenteNome: null,
+            productCode: it.productCodeOriginal,
+            unidadeComercial: it.unidadeOriginal,
+            precoVenda: formatMoneyBr(it.precoVendaOriginal),
+            margemManual: false,
+          },
+          "venda",
+        );
       }),
     );
     Toast.info("Item desvinculado. Será cadastrado como produto novo.");
@@ -331,18 +396,32 @@ export default function NfeImportModal({
         // Se o fator for maior que 1, a unidade de venda vira UN (unidade avulsa)
         const novaUnidade = fator > 1 ? "UN" : item.unidadeOriginal;
 
-        return {
-          ...item,
-          fatorConversao: cleanFator,
-          // Sem separador de milhar: o backend lê "1.000" como 1, não como mil.
-          quantidade: novaQtd.toLocaleString("pt-BR", { maximumFractionDigits: 4, useGrouping: false }),
-          // Com conversão o custo unitário pode ter mais de 2 casas (ex.: 37,25 / 100 = 0,3725);
-          // o banco guarda 4 casas, então não arredonda para centavos aqui.
-          precoCusto: fator > 1 ? formatCusto(novoCusto) : formatMoneyBr(novoCusto),
-          precoVenda: novoPrecoVenda,
-          unidadeComercial: novaUnidade,
-        };
+        // Margem digitada pelo operador (produto novo): mantém a margem e recalcula a venda com o
+        // custo novo. Sem margem digitada, usa a venda proporcional e a margem/lucro acompanham.
+        return applyPricing(
+          {
+            ...item,
+            fatorConversao: cleanFator,
+            // Sem separador de milhar: o backend lê "1.000" como 1, não como mil.
+            quantidade: novaQtd.toLocaleString("pt-BR", { maximumFractionDigits: 4, useGrouping: false }),
+            // Com conversão o custo unitário pode ter mais de 2 casas (ex.: 37,25 / 100 = 0,3725);
+            // o banco guarda 4 casas, então não arredonda para centavos aqui.
+            precoCusto: fator > 1 ? formatCusto(novoCusto) : formatMoneyBr(novoCusto),
+            precoVenda: novoPrecoVenda,
+            unidadeComercial: novaUnidade,
+          },
+          item.margemManual && !item.produtoExistenteId ? "custo" : "venda",
+        );
       }),
+    );
+  };
+
+  /** Atualiza um campo de preço (custo, venda, margem ou lucro) e recalcula os demais. */
+  const updateItemPricing = (numeroItem: number, patch: Partial<EditableItem>, source: PricingSource) => {
+    setItens((current) =>
+      current.map((item) =>
+        item.numeroItem === numeroItem ? applyPricing({ ...item, ...patch }, source) : item,
+      ),
     );
   };
 
@@ -379,6 +458,10 @@ export default function NfeImportModal({
           precoVenda: item.precoVenda,
           dataValidade: item.dataValidade || null,
           numeroLote: item.numeroLote.trim() || null,
+          // Só vai como margem desejada do produto novo quando o operador a digitou (ela passa a
+          // recalcular o preço de venda nas próximas entradas); a margem derivada é só informativa.
+          margemPercentual:
+            !item.produtoExistenteId && item.margemManual && item.margem.trim() ? item.margem : null,
         })),
       });
       if (!resultado) return;
@@ -712,6 +795,12 @@ export default function NfeImportModal({
                         <th className="px-3 py-2">Qtd.</th>
                         <th className="px-3 py-2">Custo unit.</th>
                         <th className="px-3 py-2">Preço venda</th>
+                        <th className="px-3 py-2" title="Margem sobre o custo (%): preço de venda = custo × (1 + margem/100).">
+                          Margem %
+                        </th>
+                        <th className="px-3 py-2" title="Lucro por unidade (R$): preço de venda − custo.">
+                          Lucro R$
+                        </th>
                         <th className="px-3 py-2" title="Validade do lote recebido. Em branco, usa o prazo padrão da categoria do produto (se houver).">
                           Validade
                         </th>
@@ -847,10 +936,14 @@ export default function NfeImportModal({
                                 className="input-field w-24"
                                 value={item.precoCusto}
                                 onChange={(event) =>
-                                  setItemField(
+                                  updateItemPricing(
                                     item.numeroItem,
-                                    "precoCusto",
-                                    isConverted ? maskCusto4(event.target.value) : maskMoneyBr(event.target.value),
+                                    {
+                                      precoCusto: isConverted
+                                        ? maskCusto4(event.target.value)
+                                        : maskMoneyBr(event.target.value),
+                                    },
+                                    "custo",
                                   )
                                 }
                               />
@@ -862,7 +955,56 @@ export default function NfeImportModal({
                                 disabled={existente}
                                 title={existente ? "Produto já cadastrado — preço de venda não muda na importação." : undefined}
                                 onChange={(event) =>
-                                  setItemField(item.numeroItem, "precoVenda", maskMoneyBr(event.target.value))
+                                  // Preço digitado manda: margem e lucro passam a refletir esse preço.
+                                  updateItemPricing(
+                                    item.numeroItem,
+                                    { precoVenda: maskMoneyBr(event.target.value), margemManual: false },
+                                    "venda",
+                                  )
+                                }
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                className="input-field w-20 text-right disabled:cursor-not-allowed disabled:opacity-60"
+                                inputMode="numeric"
+                                placeholder="0,00"
+                                value={item.margem}
+                                disabled={existente}
+                                title={
+                                  existente
+                                    ? "Produto já cadastrado: mostra a margem do preço de venda atual sobre o novo custo."
+                                    : "Margem sobre o custo (%). Ao digitar, o preço de venda é calculado: custo × (1 + margem/100)."
+                                }
+                                onChange={(event) =>
+                                  updateItemPricing(
+                                    item.numeroItem,
+                                    { margem: maskMoneyBr(event.target.value), margemManual: true },
+                                    "margem",
+                                  )
+                                }
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                className={`input-field w-24 text-right disabled:cursor-not-allowed disabled:opacity-60 ${
+                                  parseMoneyBr(item.lucro || "0") < 0 ? "text-red-500" : ""
+                                }`}
+                                inputMode="numeric"
+                                placeholder="0,00"
+                                value={item.lucro}
+                                disabled={existente}
+                                title={
+                                  existente
+                                    ? "Produto já cadastrado: lucro do preço de venda atual sobre o novo custo."
+                                    : "Lucro por unidade (R$) = preço de venda − custo. Ao digitar, o preço de venda é recalculado."
+                                }
+                                onChange={(event) =>
+                                  updateItemPricing(
+                                    item.numeroItem,
+                                    { lucro: maskMoneyBr(event.target.value), margemManual: true },
+                                    "lucro",
+                                  )
                                 }
                               />
                             </td>

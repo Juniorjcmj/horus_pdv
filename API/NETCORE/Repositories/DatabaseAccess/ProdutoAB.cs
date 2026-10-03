@@ -176,7 +176,10 @@ public class ProdutoAB(Connection connection)
             // Custo mudou sem passar pelo formulário manual — se o produto tem uma margem
             // desejada configurada, o preço de venda é recalculado sozinho pra manter essa
             // margem em vez de ficar defasado em cima do custo antigo.
-            var nextSalePrice = current.MargemDesejadaPercentual is { } margem
+            // Margem nula OU zero = "sem margem cadastrada": o preço de venda atual é preservado.
+            // (Margem 0 recalcularia o preço para igualar o custo, o que apagaria o lucro do produto.)
+            var margemCadastrada = current.MargemDesejadaPercentual is > 0m ? current.MargemDesejadaPercentual : null;
+            var nextSalePrice = margemCadastrada is { } margem
                 ? custoUnitario * (1 + margem / 100m)
                 : current.ProductSalePrice;
 

@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfeImportRequest.cs": {
-    "mtime": 1791045688.0953403,
-    "seen": 1791045837.6965027,
-    "ast_hash": "821a8d30f2ed844ddd75fd61120ea8ed",
+    "mtime": 1791049631.1007798,
+    "seen": 1791049660.384847,
+    "ast_hash": "d54629d36d8f4a4aa295fe890c12c366",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/PedidoRequest.cs": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs": {
-    "mtime": 1790421566.4967937,
-    "seen": 1790421619.6321986,
-    "ast_hash": "d690dd2d14375d231b19b260aa99d1d1",
+    "mtime": 1791049904.1933389,
+    "seen": 1791049938.0205314,
+    "ast_hash": "d9866a5ccbb8ca8773a37a440ef87a11",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
@@ -546,9 +546,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
-    "mtime": 1791045688.2489119,
-    "seen": 1791045837.706933,
-    "ast_hash": "a60dc45b4d2ff0b38272a945c6bfc616",
+    "mtime": 1791049904.2505736,
+    "seen": 1791049938.025912,
+    "ast_hash": "b362bfdb5a3dbc07ec49cb54ab168f82",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeXmlParser.cs": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NfeImportModal.tsx": {
-    "mtime": 1791045757.8635194,
-    "seen": 1791045837.7133558,
-    "ast_hash": "9071b03cc4a6196dbadbb9720a3b4efd",
+    "mtime": 1791049904.33249,
+    "seen": 1791049938.0326695,
+    "ast_hash": "768e9c474963512cbd0ec1da08065236",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/nfeImportService.ts": {
-    "mtime": 1791045757.495844,
-    "seen": 1791045837.7327626,
-    "ast_hash": "ca4144ce2f14403432c6d1389d4e4a7f",
+    "mtime": 1791049598.250117,
+    "seen": 1791049660.4306715,
+    "ast_hash": "c238a78b684ceeca6f77cbf52978739b",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/pedidoService.ts": {

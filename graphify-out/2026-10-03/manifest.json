@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfeImportRequest.cs": {
-    "mtime": 1791045688.0953403,
-    "seen": 1791045837.6965027,
-    "ast_hash": "821a8d30f2ed844ddd75fd61120ea8ed",
+    "mtime": 1791049631.1007798,
+    "seen": 1791049660.384847,
+    "ast_hash": "d54629d36d8f4a4aa295fe890c12c366",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/PedidoRequest.cs": {
@@ -546,9 +546,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
-    "mtime": 1791045688.2489119,
-    "seen": 1791045837.706933,
-    "ast_hash": "a60dc45b4d2ff0b38272a945c6bfc616",
+    "mtime": 1791049631.277804,
+    "seen": 1791049660.397553,
+    "ast_hash": "45a2397d5f2598828488d58232c539cf",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeXmlParser.cs": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NfeImportModal.tsx": {
-    "mtime": 1791045757.8635194,
-    "seen": 1791045837.7133558,
-    "ast_hash": "9071b03cc4a6196dbadbb9720a3b4efd",
+    "mtime": 1791049611.8385973,
+    "seen": 1791049660.4056053,
+    "ast_hash": "3fedbf5e72eccea4723154e40dd20d75",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/nfeImportService.ts": {
-    "mtime": 1791045757.495844,
-    "seen": 1791045837.7327626,
-    "ast_hash": "ca4144ce2f14403432c6d1389d4e4a7f",
+    "mtime": 1791049598.250117,
+    "seen": 1791049660.4306715,
+    "ast_hash": "c238a78b684ceeca6f77cbf52978739b",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/pedidoService.ts": {
@@ -3726,45 +3726,45 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/LoteController.cs": {
-    "mtime": 1791043716.8767774,
-    "seen": 1791043964.185943,
-    "ast_hash": "a42fc06fdde341dbdf409d6d8c371b72",
+    "mtime": 1791047877.786306,
+    "seen": 1791047982.8483515,
+    "ast_hash": "697cf1191baa4179e1b079a140fa4e33",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/LoteModels.cs": {
-    "mtime": 1791043614.6983285,
-    "seen": 1791043964.1886148,
-    "ast_hash": "3b0e14c87123c04e9c8834117c9141b4",
+    "mtime": 1791047832.7446284,
+    "seen": 1791047982.851082,
+    "ast_hash": "2139753626069ec75ddc602f782edb53",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/LoteRequests.cs": {
-    "mtime": 1791043614.7763667,
-    "seen": 1791043964.1913881,
-    "ast_hash": "c06d35105f0c53477bc4ca918f7237af",
+    "mtime": 1791047832.8227818,
+    "seen": 1791047982.853582,
+    "ast_hash": "6bf64caa307dac09be7512f2b635ce47",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/LoteAB.cs": {
-    "mtime": 1791043917.2949493,
-    "seen": 1791043964.1968865,
-    "ast_hash": "3bc16de1c0fc170cb3b60c3f4564cfb2",
+    "mtime": 1791047832.5670617,
+    "seen": 1791047982.8602643,
+    "ast_hash": "59bbe2549d4d90fe8e8c88a54a301a06",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/LoteService.cs": {
-    "mtime": 1791043716.8358986,
-    "seen": 1791043964.2000608,
-    "ast_hash": "c105430b6b10c4481a2cc3d0f029bca3",
+    "mtime": 1791047861.906242,
+    "seen": 1791047982.8642635,
+    "ast_hash": "26c8dba0e5554411ded1a19edeec3121",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ValidadePage.tsx": {
-    "mtime": 1791043888.244653,
-    "seen": 1791043964.220428,
-    "ast_hash": "933ed9d14e66ce84daac83c125f84b2e",
+    "mtime": 1791047954.4961815,
+    "seen": 1791047982.8878741,
+    "ast_hash": "8911816e0b628d54a6da521036a7a26b",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/loteService.ts": {
-    "mtime": 1791043835.861417,
-    "seen": 1791043964.2235265,
-    "ast_hash": "2d1790ccc21513da4c010a2edc33373d",
+    "mtime": 1791047880.593007,
+    "seen": 1791047982.890731,
+    "ast_hash": "e5c3d23258287af68fe3c0875936556c",
     "semantic_hash": ""
   }
 }

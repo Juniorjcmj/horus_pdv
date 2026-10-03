@@ -63,6 +63,8 @@ export type NfeImportItemInput = {
   dataValidade?: string | null;
   /** Número/código do lote impresso na embalagem, opcional. */
   numeroLote?: string | null;
+  /** Margem desejada (% sobre o custo, pt-BR) do produto NOVO, só quando digitada pelo operador. */
+  margemPercentual?: string | null;
 };
 
 export type NfeImportConfirmPayload = {
