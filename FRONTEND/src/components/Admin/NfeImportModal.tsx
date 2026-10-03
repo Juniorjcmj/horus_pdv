@@ -51,6 +51,7 @@ type EditableItem = NfeImportItemPreview & {
   unidadeOriginal: string;
   productCodeOriginal: string;
   dataValidade: string;
+  numeroLote: string;
 };
 
 // Custo unitário de itens convertidos (caixa -> unidade): até 4 casas, igual ao DECIMAL(15,4) do banco.
@@ -127,6 +128,7 @@ export default function NfeImportModal({
           unidadeComercial: item.unidadeComercial || "UN",
           productCodeOriginal: item.productCode,
           dataValidade: "",
+          numeroLote: "",
         };
       }),
     );
@@ -376,6 +378,7 @@ export default function NfeImportModal({
           precoCusto: item.precoCusto,
           precoVenda: item.precoVenda,
           dataValidade: item.dataValidade || null,
+          numeroLote: item.numeroLote.trim() || null,
         })),
       });
       if (!resultado) return;
@@ -712,6 +715,9 @@ export default function NfeImportModal({
                         <th className="px-3 py-2" title="Validade do lote recebido. Em branco, usa o prazo padrão da categoria do produto (se houver).">
                           Validade
                         </th>
+                        <th className="px-3 py-2" title="Número do lote impresso na embalagem (opcional).">
+                          Lote
+                        </th>
                         <th className="px-3 py-2">Situação</th>
                       </tr>
                     </thead>
@@ -866,6 +872,16 @@ export default function NfeImportModal({
                                 className="input-field w-36 text-xs"
                                 value={item.dataValidade}
                                 onChange={(event) => setItemField(item.numeroItem, "dataValidade", event.target.value)}
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                maxLength={60}
+                                className="input-field w-28 text-xs"
+                                placeholder="opcional"
+                                value={item.numeroLote}
+                                onChange={(event) => setItemField(item.numeroItem, "numeroLote", event.target.value)}
                               />
                             </td>
                             <td className="px-3 py-2">

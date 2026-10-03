@@ -277,7 +277,7 @@ public class NfeImportService(
                 await produtosAB.EntradaEstoqueAsync(companyId, item.ProdutoExistenteId, quantidade, precoCusto);
                 resultado.ProdutosAtualizados++;
                 await loteAB.RegistrarEntradaAsync(
-                    companyId, item.ProdutoExistenteId, ParseValidade(item), quantidade, null, OrigemLoteNfe, CriadoPorImportacao);
+                    companyId, item.ProdutoExistenteId, ParseValidade(item), quantidade, item.NumeroLote, OrigemLoteNfe, CriadoPorImportacao);
 
                 // Grava ou atualiza o De-Para para que futuras notas deste fornecedor já venham vinculadas
                 var codFornec = !string.IsNullOrWhiteSpace(item.CodigoFornecedor)
@@ -338,7 +338,7 @@ public class NfeImportService(
             await produtosAB.SalvarAsync(companyId, novoProduto);
             resultado.ProdutosCriados++;
             await loteAB.RegistrarEntradaAsync(
-                companyId, novoProduto.Id, ParseValidade(item), quantidade, null, OrigemLoteNfe, CriadoPorImportacao);
+                companyId, novoProduto.Id, ParseValidade(item), quantidade, item.NumeroLote, OrigemLoteNfe, CriadoPorImportacao);
         }
 
         return resultado;

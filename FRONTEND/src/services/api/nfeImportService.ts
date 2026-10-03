@@ -61,6 +61,8 @@ export type NfeImportItemInput = {
   precoVenda: string;
   /** AAAA-MM-DD, opcional. Sem ela vale o prazo padrão da categoria (se existir). */
   dataValidade?: string | null;
+  /** Número/código do lote impresso na embalagem, opcional. */
+  numeroLote?: string | null;
 };
 
 export type NfeImportConfirmPayload = {

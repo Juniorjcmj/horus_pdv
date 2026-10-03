@@ -152,6 +152,7 @@ export const purchaseOrderService = {
       productCode: string;
       quantityReceived: number;
       dataValidade?: string;
+      numeroLote?: string;
     }>,
   ) {
     const response = await apiRequest<{ status: number }>(

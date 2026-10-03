@@ -137,7 +137,15 @@ export const productService = {
 
   async adjustStock(
     id: string,
-    payload: { tipo: "entrada" | "saida"; quantidade: number; motivo: string },
+    payload: {
+      tipo: "entrada" | "saida";
+      quantidade: number;
+      motivo: string;
+      /** Só para entrada (AAAA-MM-DD): validade do lote recebido. */
+      dataValidade?: string;
+      /** Só para entrada: número do lote impresso na embalagem. */
+      numeroLote?: string;
+    },
   ) {
     const response = await apiRequest<object>(`${PRODUTO_API_URL}/${id}/ajuste-estoque`, {
       method: "POST",

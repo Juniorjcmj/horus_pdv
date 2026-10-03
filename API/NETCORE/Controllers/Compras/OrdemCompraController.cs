@@ -202,7 +202,7 @@ public class OrdemCompraController(
         try
         {
             var itens = request.Itens
-                .Select(i => (i.ProductCode, i.QuantityReceived, i.DataValidade))
+                .Select(i => (i.ProductCode, i.QuantityReceived, i.DataValidade, i.NumeroLote))
                 .ToList();
 
             var novoStatus = await ordemCompraAb.ReceberAsync(

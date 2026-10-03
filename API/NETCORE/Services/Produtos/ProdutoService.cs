@@ -12,7 +12,7 @@ using HORUSPDV_API.Services.Shared;
 
 namespace HORUSPDV_API.Services.Produtos;
 
-public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) : IProdutoService
+public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, LoteAB loteAB) : IProdutoService
 {
     public async Task<List<ProdutoModel>> ListarAsync(string companyId)
         => (await produtosAB.ListarAsync(companyId)).Select(ToModel).ToList();
@@ -22,7 +22,21 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         Validate(request);
         await ValidateBusinessRulesAsync(companyId, request, null);
         var product = MapRequest($"pr-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", request);
-        return ToModel(await produtosAB.SalvarAsync(companyId, product));
+        var saved = await produtosAB.SalvarAsync(companyId, product);
+
+        // A quantidade inicial do cadastro é uma entrada de estoque: gera o primeiro lote
+        // (validade informada ou sugerida pelo prazo padrão da categoria).
+        DateTime? validade = DateTime.TryParse(request.DataValidade, out var dt) ? dt : null;
+        await loteAB.RegistrarEntradaAsync(
+            companyId,
+            saved.Id,
+            validade,
+            HorusMoneyFormat.ParseDecimal(request.ProductQnt),
+            request.NumeroLote,
+            "cadastro",
+            "Cadastro de produto");
+
+        return ToModel(saved);
     }
 
     public async Task<ProdutoModel?> AtualizarAsync(string companyId, string id, ProdutoRequest request)
@@ -56,16 +70,38 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB) :
         return await produtosAB.AtualizarValidadeAsync(companyId, id, parsed);
     }
 
-    public async Task<bool> AjustarEstoqueAsync(string companyId, string id, string tipo, decimal quantidade)
+    public async Task<bool> AjustarEstoqueAsync(
+        string companyId,
+        string id,
+        string tipo,
+        decimal quantidade,
+        string? dataValidade = null,
+        string? numeroLote = null,
+        string? operador = null)
     {
         if (quantidade <= 0)
             throw new InvalidOperationException("Quantidade deve ser maior que zero.");
 
-        if (!string.Equals(tipo, "entrada", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(tipo, "saida", StringComparison.OrdinalIgnoreCase))
+        var entrada = string.Equals(tipo, "entrada", StringComparison.OrdinalIgnoreCase);
+        if (!entrada && !string.Equals(tipo, "saida", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("Tipo deve ser 'entrada' ou 'saida'.");
 
-        return await produtosAB.AjustarEstoqueAsync(companyId, id, tipo, quantidade);
+        // Valida a data antes de mexer no estoque.
+        DateTime? validade = null;
+        if (entrada && !string.IsNullOrWhiteSpace(dataValidade))
+        {
+            if (!DateTime.TryParseExact(dataValidade.Trim(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed))
+                throw new InvalidOperationException("Data de validade inválida.");
+            validade = parsed;
+        }
+
+        var ok = await produtosAB.AjustarEstoqueAsync(companyId, id, tipo, quantidade);
+        if (ok && entrada)
+        {
+            await loteAB.RegistrarEntradaAsync(companyId, id, validade, quantidade, numeroLote, "ajuste", operador);
+        }
+
+        return ok;
     }
 
     private static void Validate(ProdutoRequest request)

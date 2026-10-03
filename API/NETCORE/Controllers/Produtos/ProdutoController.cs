@@ -158,7 +158,14 @@ public class ProdutoController(IProdutoService produtoService) : ControllerBase
         if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
         try
         {
-            var ok = await produtoService.AjustarEstoqueAsync(currentUser.CompanyId, id, request.Tipo, request.Quantidade);
+            var ok = await produtoService.AjustarEstoqueAsync(
+                currentUser.CompanyId,
+                id,
+                request.Tipo,
+                request.Quantidade,
+                request.DataValidade,
+                request.NumeroLote,
+                currentUser.Name);
             if (!ok)
                 return NotFound(new ApiResponse<object> { Success = false, Message = "Produto não encontrado." });
 

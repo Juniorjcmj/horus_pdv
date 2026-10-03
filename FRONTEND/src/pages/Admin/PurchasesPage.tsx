@@ -63,6 +63,7 @@ type CartItem = {
 type ReceiveItemState = PurchaseOrderItemDto & {
   qtyToReceive: string;
   dataValidade: string;
+  numeroLote: string;
   controlaValidade: boolean;
 };
 
@@ -511,6 +512,7 @@ export default function PurchasesPage() {
             ...i,
             qtyToReceive: String(Math.max(0, i.quantity - i.quantityReceived)),
             dataValidade: "",
+            numeroLote: "",
             controlaValidade: Boolean(prod?.controlaValidade),
           };
         }),
@@ -529,6 +531,7 @@ export default function PurchasesPage() {
           productCode: i.productCode,
           quantityReceived: Number(i.qtyToReceive) || 0,
           dataValidade: i.dataValidade ? new Date(i.dataValidade).toISOString() : undefined,
+          numeroLote: i.numeroLote.trim() || undefined,
         }))
         .filter((i) => i.quantityReceived > 0);
 
@@ -1390,6 +1393,7 @@ export default function PurchasesPage() {
                     <th className="px-3 py-2 text-right">Já Recebido</th>
                     <th className="px-3 py-2 text-right w-28">Receber Agora</th>
                     <th className="px-3 py-2 text-center w-36">Validade da Remessa</th>
+                    <th className="px-3 py-2 text-center w-32">Lote</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border-primary">
@@ -1418,21 +1422,36 @@ export default function PurchasesPage() {
                         />
                       </td>
                       <td className="px-3 py-2 text-center">
-                        {item.controlaValidade ? (
-                          <input
-                            type="date"
-                            value={item.dataValidade}
-                            onChange={(e) => {
-                              const updated = [...receiveItems];
-                              updated[idx] = { ...updated[idx], dataValidade: e.target.value };
-                              setReceiveItems(updated);
-                            }}
-                            className="input-field w-36 text-xs"
-                            title="Produto controla validade. Preencha a data de validade da carga recebida."
-                          />
-                        ) : (
-                          <span className="text-xs text-text-tertiary">Não controlada</span>
-                        )}
+                        <input
+                          type="date"
+                          value={item.dataValidade}
+                          onChange={(e) => {
+                            const updated = [...receiveItems];
+                            updated[idx] = { ...updated[idx], dataValidade: e.target.value };
+                            setReceiveItems(updated);
+                          }}
+                          className="input-field w-36 text-xs"
+                          title={
+                            item.controlaValidade
+                              ? "Produto controla validade. Preencha a data de validade da carga recebida."
+                              : "Em branco, usa o prazo padrão da categoria do produto (se houver)."
+                          }
+                        />
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <input
+                          type="text"
+                          maxLength={60}
+                          value={item.numeroLote}
+                          onChange={(e) => {
+                            const updated = [...receiveItems];
+                            updated[idx] = { ...updated[idx], numeroLote: e.target.value };
+                            setReceiveItems(updated);
+                          }}
+                          className="input-field w-28 text-xs"
+                          placeholder="opcional"
+                          title="Número do lote impresso na embalagem (opcional)."
+                        />
                       </td>
                     </tr>
                   ))}

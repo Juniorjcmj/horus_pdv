@@ -354,7 +354,7 @@ public class OrdemCompraAB(Connection connection, ProdutoAB produtoAb, LoteAB lo
         string orderNumber,
         string? receivedBy,
         string? receivedByName,
-        List<(string ProductCode, decimal QuantityReceived, DateTimeOffset? DataValidade)> itensRecebidos)
+        List<(string ProductCode, decimal QuantityReceived, DateTimeOffset? DataValidade, string? NumeroLote)> itensRecebidos)
     {
         await using var db = await connection.OpenConnectionAsync();
 
@@ -379,7 +379,7 @@ public class OrdemCompraAB(Connection connection, ProdutoAB produtoAb, LoteAB lo
         var itensOc = await ObterItensAsync(db, oc.Id);
         var lookup = itensRecebidos.ToDictionary(
             i => i.ProductCode,
-            i => (i.QuantityReceived, i.DataValidade),
+            i => (i.QuantityReceived, i.DataValidade, i.NumeroLote),
             StringComparer.OrdinalIgnoreCase);
 
         // Processa cada item recebido — entrada de estoque
@@ -402,7 +402,7 @@ public class OrdemCompraAB(Connection connection, ProdutoAB produtoAb, LoteAB lo
                 produto.Id,
                 recvData.DataValidade?.Date,
                 recvData.QuantityReceived,
-                null,
+                recvData.NumeroLote,
                 "compra",
                 receivedByName);
 

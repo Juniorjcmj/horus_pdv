@@ -66,6 +66,8 @@ type Product = {
   categoriaId?: string | null;
   categoriaNome?: string | null;
   dataValidade?: string | null;
+  /** Lote da quantidade inicial; só é enviado/usado ao criar o produto. */
+  numeroLote?: string | null;
   controlaValidade?: boolean;
   diasAlertaValidade?: number;
   diasRestantes?: number | null;
@@ -151,6 +153,7 @@ const EMPTY_FORM: ProductFormData = {
   categoriaId: null,
   categoriaNome: null,
   dataValidade: "",
+  numeroLote: "",
   controlaValidade: false,
   diasAlertaValidade: 15,
   diasRestantes: null,
@@ -1144,7 +1147,7 @@ function ProductFormDrawer({
                 <div className="grid gap-3 md:grid-cols-2">
                   <label className="block">
                     <span className="mb-1.5 block text-sm text-text-secondary">
-                      Data de Validade (lote mais próximo)
+                      {isEditMode ? "Data de Validade (lote mais próximo)" : "Data de Validade do lote inicial"}
                     </span>
                     <input
                       type="date"
@@ -1181,6 +1184,23 @@ function ProductFormDrawer({
                     </span>
                   </label>
                 </div>
+
+                {!isEditMode ? (
+                  <label className="block">
+                    <span className="mb-1.5 block text-sm text-text-secondary">Nº do lote (opcional)</span>
+                    <input
+                      type="text"
+                      maxLength={60}
+                      value={value.numeroLote ?? ""}
+                      onChange={(e) => onChange({ ...value, numeroLote: e.target.value })}
+                      className="input-field w-full"
+                      placeholder="Número do lote impresso na embalagem"
+                    />
+                    <span className="mt-1 block text-xs text-text-secondary">
+                      A quantidade informada no cadastro vira o primeiro lote deste produto.
+                    </span>
+                  </label>
+                ) : null}
 
                 {/* Indicador visual de status semafórico */}
                 {value.dataValidade ? (() => {

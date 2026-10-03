@@ -45,6 +45,8 @@ public class ReceberOrdemCompraItemRequest
     public string ProductCode { get; set; } = string.Empty;
     public decimal QuantityReceived { get; set; }
     public DateTimeOffset? DataValidade { get; set; }
+    /// <summary>Número/código do lote impresso na embalagem, opcional.</summary>
+    public string? NumeroLote { get; set; }
 }
 
 public class CancelarOrdemCompraRequest

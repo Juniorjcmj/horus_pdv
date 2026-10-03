@@ -96,6 +96,8 @@ export default function StockPage() {
   const [adjustType, setAdjustType] = useState<"entrada" | "saida">("entrada");
   const [adjustQty, setAdjustQty] = useState("");
   const [adjustReason, setAdjustReason] = useState("");
+  const [adjustValidade, setAdjustValidade] = useState("");
+  const [adjustLote, setAdjustLote] = useState("");
   const [adjusting, setAdjusting] = useState(false);
 
   // ---------------------------------------------------------------------------
@@ -184,6 +186,8 @@ export default function StockPage() {
     setAdjustType(type);
     setAdjustQty("");
     setAdjustReason("");
+    setAdjustValidade("");
+    setAdjustLote("");
   }
 
   async function handleAdjust() {
@@ -204,6 +208,12 @@ export default function StockPage() {
         tipo: adjustType,
         quantidade: qty,
         motivo: adjustReason.trim(),
+        ...(adjustType === "entrada"
+          ? {
+              dataValidade: adjustValidade || undefined,
+              numeroLote: adjustLote.trim() || undefined,
+            }
+          : {}),
       });
       Toast.success(
         adjustType === "entrada"
@@ -540,6 +550,37 @@ export default function StockPage() {
                   autoFocus
                 />
               </div>
+
+              {/* Validade e lote da entrada (opcionais) */}
+              {adjustType === "entrada" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-text-secondary">
+                      Validade do lote
+                    </label>
+                    <input
+                      type="date"
+                      value={adjustValidade}
+                      onChange={(e) => setAdjustValidade(e.target.value)}
+                      className="input-field w-full text-sm"
+                      title="Em branco, usa o prazo padrão da categoria do produto (se houver)."
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-text-secondary">
+                      Nº do lote
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={60}
+                      placeholder="opcional"
+                      value={adjustLote}
+                      onChange={(e) => setAdjustLote(e.target.value)}
+                      className="input-field w-full text-sm"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Reason */}
               <div>

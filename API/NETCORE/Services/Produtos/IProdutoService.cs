@@ -18,5 +18,12 @@ public interface IProdutoService
     Task<List<ProdutoModel>> ListarVencimentosAsync(string companyId, int dias);
     Task<VencimentoResumoModel> ObterResumoVencimentosAsync(string companyId);
     Task<bool> AtualizarValidadeAsync(string companyId, string id, string? dataValidade);
-    Task<bool> AjustarEstoqueAsync(string companyId, string id, string tipo, decimal quantidade);
+    Task<bool> AjustarEstoqueAsync(
+        string companyId,
+        string id,
+        string tipo,
+        decimal quantidade,
+        string? dataValidade = null,
+        string? numeroLote = null,
+        string? operador = null);
 }

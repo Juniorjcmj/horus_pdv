@@ -33,6 +33,9 @@ public class ProdutoRequest
     /// <summary>Data de validade do produto (formato ISO "YYYY-MM-DD" ou null/vazio).</summary>
     public string? DataValidade { get; set; }
 
+    /// <summary>Número/código do lote da quantidade inicial. Só é usado ao CRIAR o produto (gera o primeiro lote).</summary>
+    public string? NumeroLote { get; set; }
+
     /// <summary>Indica se o produto tem controle de validade ativo.</summary>
     public bool ControlaValidade { get; set; }
 

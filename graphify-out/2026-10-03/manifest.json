@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfeImportRequest.cs": {
-    "mtime": 1790969088.7210107,
-    "seen": 1790969442.0390139,
-    "ast_hash": "ff9fff41489b341ac4722d75c1b80c91",
+    "mtime": 1791043750.4389095,
+    "seen": 1791043964.1918564,
+    "ast_hash": "86e4a0d70802b2fde1b2bdf5b1df5566",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/PedidoRequest.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1790969064.558414,
-    "seen": 1790969442.0400307,
-    "ast_hash": "0e3af2c344402ebd29994658b00af2dc",
+    "mtime": 1791043716.9335005,
+    "seen": 1791043964.1929057,
+    "ast_hash": "ca2328af4a87b72591cd757f5045eb38",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1790990602.7449477,
-    "seen": 1790990658.7845087,
-    "ast_hash": "74e160bfae07a4780ff12674e9046a36",
+    "mtime": 1791043592.8339276,
+    "seen": 1791043964.1977742,
+    "ast_hash": "8dd0214f2d0f2b66406f690f811efd3f",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -546,9 +546,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
-    "mtime": 1790969181.0020707,
-    "seen": 1790969442.0474055,
-    "ast_hash": "fe8f6db4ecff2fe62323a3008293371e",
+    "mtime": 1791043750.730409,
+    "seen": 1791043964.2000635,
+    "ast_hash": "9255c1477d24a491b971b79aa0bf532b",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeXmlParser.cs": {
@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1790899547.6126764,
-    "seen": 1790909645.8067286,
-    "ast_hash": "3efdf86bdb0993812a448e561d229499",
+    "mtime": 1791043806.1303246,
+    "seen": 1791043964.2037172,
+    "ast_hash": "67fd93ae96ad8cc1719c5e4313e5fe9e",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NfeImportModal.tsx": {
-    "mtime": 1791037401.8932085,
-    "seen": 1791037494.4229784,
-    "ast_hash": "c0a88c0a83b25a0e9d463a7bb84eec16",
+    "mtime": 1791043780.411448,
+    "seen": 1791043964.2058096,
+    "ast_hash": "1cdb7c78c3aca524b3bc20c6eccdea13",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {
@@ -804,9 +804,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/AppSidebar.tsx": {
-    "mtime": 1790899547.6126764,
-    "seen": 1790909645.8185058,
-    "ast_hash": "d5b6b0f6ee9442372b6b25ec71fe9d10",
+    "mtime": 1791043805.8730876,
+    "seen": 1791043964.2094247,
+    "ast_hash": "9c4bc29b2c52be353729ec0f2ecf8390",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/UserMenu.tsx": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/nfeImportService.ts": {
-    "mtime": 1790969218.0881298,
-    "seen": 1790969442.0729659,
-    "ast_hash": "7535862b31d8a063753b2ee5caf1b1db",
+    "mtime": 1791043780.0142126,
+    "seen": 1791043964.223651,
+    "ast_hash": "af2a793b80d141641ee235865a065ebb",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/pedidoService.ts": {
@@ -2514,9 +2514,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/OrdemCompraAB.cs": {
-    "mtime": 1790199729.4876328,
-    "seen": 1790200166.1378868,
-    "ast_hash": "14c67d2b0198331261f7c4512d6c6315",
+    "mtime": 1791043734.0729866,
+    "seen": 1791043964.1971476,
+    "ast_hash": "7221c19a64eba6c752ef4ee702ebc186",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PurchaseOrderPrintModal.tsx": {
@@ -3723,6 +3723,48 @@
     "mtime": 1791028826.4543686,
     "seen": 1791029006.3312843,
     "ast_hash": "d7a483472d25a40038769f881ac1d411",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Produtos/LoteController.cs": {
+    "mtime": 1791043716.8767774,
+    "seen": 1791043964.185943,
+    "ast_hash": "a42fc06fdde341dbdf409d6d8c371b72",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Models/Produtos/LoteModels.cs": {
+    "mtime": 1791043614.6983285,
+    "seen": 1791043964.1886148,
+    "ast_hash": "3b0e14c87123c04e9c8834117c9141b4",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Models/Requests/LoteRequests.cs": {
+    "mtime": 1791043614.7763667,
+    "seen": 1791043964.1913881,
+    "ast_hash": "c06d35105f0c53477bc4ca918f7237af",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/LoteAB.cs": {
+    "mtime": 1791043917.2949493,
+    "seen": 1791043964.1968865,
+    "ast_hash": "3bc16de1c0fc170cb3b60c3f4564cfb2",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Produtos/LoteService.cs": {
+    "mtime": 1791043716.8358986,
+    "seen": 1791043964.2000608,
+    "ast_hash": "c105430b6b10c4481a2cc3d0f029bca3",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/pages/Admin/ValidadePage.tsx": {
+    "mtime": 1791043888.244653,
+    "seen": 1791043964.220428,
+    "ast_hash": "933ed9d14e66ce84daac83c125f84b2e",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/services/api/loteService.ts": {
+    "mtime": 1791043835.861417,
+    "seen": 1791043964.2235265,
+    "ast_hash": "2d1790ccc21513da4c010a2edc33373d",
     "semantic_hash": ""
   }
 }

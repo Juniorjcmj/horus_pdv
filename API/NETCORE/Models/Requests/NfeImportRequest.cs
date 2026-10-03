@@ -58,6 +58,9 @@ public class NfeImportItemInput
 
     /// <summary>Validade do lote recebido (AAAA-MM-DD), opcional. Sem ela, usa o prazo padrão da categoria do produto, se houver.</summary>
     public string? DataValidade { get; set; }
+
+    /// <summary>Número/código do lote impresso na embalagem, opcional.</summary>
+    public string? NumeroLote { get; set; }
 }
 
 public class NfeImportConfirmRequest

@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/ProdutoController.cs": {
-    "mtime": 1790192002.5459805,
-    "seen": 1790193586.8057473,
-    "ast_hash": "5b97b0c66d66d7f54a0c52760227a413",
+    "mtime": 1791045713.894245,
+    "seen": 1791045837.691391,
+    "ast_hash": "76d7764efcc57f637b456476faf3bdcb",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Relatorio/RelatorioController.cs": {
@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfeImportRequest.cs": {
-    "mtime": 1791043750.4389095,
-    "seen": 1791043964.1918564,
-    "ast_hash": "86e4a0d70802b2fde1b2bdf5b1df5566",
+    "mtime": 1791045688.0953403,
+    "seen": 1791045837.6965027,
+    "ast_hash": "821a8d30f2ed844ddd75fd61120ea8ed",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/PedidoRequest.cs": {
@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ProdutoRequest.cs": {
-    "mtime": 1789521472.8911788,
-    "seen": 1789523450.8425024,
-    "ast_hash": "555b9571e4d6ed199fc766a6467bce70",
+    "mtime": 1791045713.4405205,
+    "seen": 1791045837.6966298,
+    "ast_hash": "cc01ff0e814fec472f34b584243e5db1",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ResetPasswordWithTokenRequest.cs": {
@@ -540,15 +540,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/IProdutoService.cs": {
-    "mtime": 1790191981.2898977,
-    "seen": 1790193586.8281617,
-    "ast_hash": "0e1338fd426f7cb39923776e3557cad4",
+    "mtime": 1791045713.611188,
+    "seen": 1791045837.706791,
+    "ast_hash": "e869e42f40fd2f6f88fac7eec351cf27",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
-    "mtime": 1791043750.730409,
-    "seen": 1791043964.2000635,
-    "ast_hash": "9255c1477d24a491b971b79aa0bf532b",
+    "mtime": 1791045688.2489119,
+    "seen": 1791045837.706933,
+    "ast_hash": "a60dc45b4d2ff0b38272a945c6bfc616",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeXmlParser.cs": {
@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
-    "mtime": 1790381475.7126687,
-    "seen": 1790389445.5143821,
-    "ast_hash": "d5a2b1622697b9dd72c753e5590be19b",
+    "mtime": 1791045713.845263,
+    "seen": 1791045837.7070735,
+    "ast_hash": "9736aa254a65383494c065ed0aeed5d8",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusAuthorizeRolesAttribute.cs": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NfeImportModal.tsx": {
-    "mtime": 1791043780.411448,
-    "seen": 1791043964.2058096,
-    "ast_hash": "1cdb7c78c3aca524b3bc20c6eccdea13",
+    "mtime": 1791045757.8635194,
+    "seen": 1791045837.7133558,
+    "ast_hash": "9071b03cc4a6196dbadbb9720a3b4efd",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {
@@ -1038,15 +1038,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1791035494.5401518,
-    "seen": 1791037494.437771,
-    "ast_hash": "e268c9626a97f0f9967f4a6277a633bd",
+    "mtime": 1791045792.9802382,
+    "seen": 1791045837.728224,
+    "ast_hash": "0c615f778bf02afddab96f31b9506723",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
-    "mtime": 1790421566.5384526,
-    "seen": 1790421619.659341,
-    "ast_hash": "23237b760fe3eabad3b1d7978fda47e2",
+    "mtime": 1791045745.661847,
+    "seen": 1791045837.728381,
+    "ast_hash": "4d57d2871b1762ee6a2005005ab6925b",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ReportsPage.tsx": {
@@ -1080,9 +1080,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/StockPage.tsx": {
-    "mtime": 1790192107.517798,
-    "seen": 1790193586.854136,
-    "ast_hash": "fe76e24fb7e6b4bced0c7612fa2eb658",
+    "mtime": 1791045777.5003753,
+    "seen": 1791045837.7290812,
+    "ast_hash": "0c78715eee8b43b9b3ed64ba553c5d6a",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SupplierRegisterPage.tsx": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/nfeImportService.ts": {
-    "mtime": 1791043780.0142126,
-    "seen": 1791043964.223651,
-    "ast_hash": "af2a793b80d141641ee235865a065ebb",
+    "mtime": 1791045757.495844,
+    "seen": 1791045837.7327626,
+    "ast_hash": "ca4144ce2f14403432c6d1389d4e4a7f",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/pedidoService.ts": {
@@ -1200,9 +1200,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/productService.ts": {
-    "mtime": 1790421566.555305,
-    "seen": 1790421619.6613045,
-    "ast_hash": "1058b63bab56436ba5f6dbcae30e3505",
+    "mtime": 1791045777.157452,
+    "seen": 1791045837.7329519,
+    "ast_hash": "c864b95fd1c47fc0d5d341fc2f5cf4a4",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/reportService.ts": {
@@ -2478,15 +2478,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/AjusteEstoqueRequest.cs": {
-    "mtime": 1790191927.0979562,
-    "seen": 1790193586.8109431,
-    "ast_hash": "df369d1189a24eeeb5bd3c3aa63c2a29",
+    "mtime": 1791045713.3256693,
+    "seen": 1791045837.694415,
+    "ast_hash": "f78a9d2a9ec6e9f286950d8f1771b9d9",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Compras/OrdemCompraController.cs": {
-    "mtime": 1790199751.5780609,
-    "seen": 1790200166.1198652,
-    "ast_hash": "33b4cbec7f172655262b0b1543d65c9b",
+    "mtime": 1791045688.3963704,
+    "seen": 1791045837.6896656,
+    "ast_hash": "f278a84d70686f69a3e4aea0bf8382b7",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfeController.cs": {
@@ -2502,9 +2502,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/OrdemCompraRequests.cs": {
-    "mtime": 1790199702.7968233,
-    "seen": 1790200166.1300004,
-    "ast_hash": "22498da4606d8e4523ca5fa68b551151",
+    "mtime": 1791045688.3250191,
+    "seen": 1791045837.6965046,
+    "ast_hash": "3e7008794fb320d72a0b687e4613bcef",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/OrdemCompraAD.cs": {
@@ -2514,9 +2514,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/OrdemCompraAB.cs": {
-    "mtime": 1791043734.0729866,
-    "seen": 1791043964.1971476,
-    "ast_hash": "7221c19a64eba6c752ef4ee702ebc186",
+    "mtime": 1791045688.5702863,
+    "seen": 1791045837.7037866,
+    "ast_hash": "253e7b8d6468673e5b772d6f7324cc4c",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PurchaseOrderPrintModal.tsx": {
@@ -2532,9 +2532,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/purchaseOrderService.ts": {
-    "mtime": 1790421566.5582967,
-    "seen": 1790421619.6613078,
-    "ast_hash": "32c4a09cb692d8cd9658bd67b951ce6a",
+    "mtime": 1791045745.7202191,
+    "seen": 1791045837.7330885,
+    "ast_hash": "e9066468d30d56dde873eb74d0e5725b",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Shared/HorusPayloadHash.cs": {
