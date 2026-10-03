@@ -17,7 +17,13 @@ public class LoteService(LoteAB loteAB)
 {
     private const int JanelaAlertaPadraoDias = 15;
 
-    public async Task<LoteAlertasResumoModel> ListarAlertasAsync(string companyId, CancellationToken cancellationToken = default)
+    private static readonly string[] FaixasDeAlerta = ["vencido", "critico", "atencao"];
+
+    /// <summary>
+    /// Monta TODOS os lotes cadastrados com saldo estimado (FEFO), dias para vencer e faixa.
+    /// Faixa: "esgotado" (sem saldo), "vencido", "critico", "atencao" (dentro da janela de alerta) ou "ok".
+    /// </summary>
+    private async Task<List<LoteAlertaModel>> MontarTodosAsync(string companyId, CancellationToken cancellationToken)
     {
         var linhas = await loteAB.ListarLinhasAsync(companyId, null, cancellationToken);
         var hoje = HorusDateTime.NowDateTime.Date;
@@ -31,14 +37,16 @@ public class LoteService(LoteAB loteAB)
             foreach (var linha in doProduto)
             {
                 var saldo = saldos.GetValueOrDefault(linha.Id);
-                if (saldo <= 0) continue;
-
                 var dias = (linha.DataValidade.Date - hoje).Days;
                 var janela = linha.DiasAlertaCategoria
                     ?? (linha.DiasAlertaProduto > 0 ? linha.DiasAlertaProduto : JanelaAlertaPadraoDias);
-                if (dias > janela) continue;
 
-                var faixa = dias < 0 ? "vencido" : dias <= Math.Max(2, janela / 3) ? "critico" : "atencao";
+                string faixa;
+                if (saldo <= 0) faixa = "esgotado";
+                else if (dias < 0) faixa = "vencido";
+                else if (dias > janela) faixa = "ok";
+                else faixa = dias <= Math.Max(2, janela / 3) ? "critico" : "atencao";
+
                 itens.Add(new LoteAlertaModel
                 {
                     Id = linha.Id,
@@ -54,6 +62,8 @@ public class LoteService(LoteAB loteAB)
                     ProductCode = linha.ProductCode,
                     ProductName = linha.ProductName,
                     CategoriaNome = linha.CategoriaNome,
+                    CategoriaId = linha.CategoriaId,
+                    CategoriaPaiId = linha.CategoriaPaiId,
                     JanelaAlertaDias = janela,
                     Faixa = faixa,
                     CustoUnitario = linha.CustoUnitario,
@@ -63,7 +73,16 @@ public class LoteService(LoteAB loteAB)
             }
         }
 
-        itens = itens.OrderBy(item => item.DiasParaVencer).ThenBy(item => item.ProductName).ToList();
+        return itens;
+    }
+
+    public async Task<LoteAlertasResumoModel> ListarAlertasAsync(string companyId, CancellationToken cancellationToken = default)
+    {
+        var itens = (await MontarTodosAsync(companyId, cancellationToken))
+            .Where(item => FaixasDeAlerta.Contains(item.Faixa))
+            .OrderBy(item => item.DiasParaVencer)
+            .ThenBy(item => item.ProductName)
+            .ToList();
 
         return new LoteAlertasResumoModel
         {
@@ -74,6 +93,78 @@ public class LoteService(LoteAB loteAB)
             ProdutosSemLote = await loteAB.ContarProdutosSemLoteAsync(companyId, cancellationToken),
             Itens = itens,
         };
+    }
+
+    /// <summary>
+    /// Consulta qualquer lote cadastrado (não só os em alerta), com filtros por texto, período de
+    /// validade, categoria, situação, saldo e origem, ordenado pela validade e paginado.
+    /// </summary>
+    public async Task<LoteConsultaModel> ConsultarAsync(string companyId, LoteConsultaFiltro filtro, CancellationToken cancellationToken = default)
+    {
+        var de = ParseFiltroData(filtro.De, "inicial");
+        var ate = ParseFiltroData(filtro.Ate, "final");
+        if (de is not null && ate is not null && string.CompareOrdinal(ate, de) < 0)
+        {
+            throw new InvalidOperationException("Período inválido: a validade final é anterior à inicial.");
+        }
+
+        var busca = filtro.Busca?.Trim().ToLowerInvariant();
+        var categoriaId = filtro.CategoriaId?.Trim();
+        var faixa = filtro.Faixa?.Trim().ToLowerInvariant();
+        var origem = filtro.Origem?.Trim().ToLowerInvariant();
+
+        IEnumerable<LoteAlertaModel> query = await MontarTodosAsync(companyId, cancellationToken);
+
+        if (!string.IsNullOrEmpty(busca))
+        {
+            query = query.Where(item =>
+                item.ProductName.ToLowerInvariant().Contains(busca)
+                || item.ProductCode.ToLowerInvariant().Contains(busca)
+                || item.NumeroLote.ToLowerInvariant().Contains(busca));
+        }
+
+        if (de is not null) query = query.Where(item => string.CompareOrdinal(item.DataValidade, de) >= 0);
+        if (ate is not null) query = query.Where(item => string.CompareOrdinal(item.DataValidade, ate) <= 0);
+
+        if (!string.IsNullOrEmpty(categoriaId))
+        {
+            // Departamento inclui as subcategorias dele.
+            query = query.Where(item => item.CategoriaId == categoriaId || item.CategoriaPaiId == categoriaId);
+        }
+
+        if (!string.IsNullOrEmpty(faixa) && faixa != "todas") query = query.Where(item => item.Faixa == faixa);
+        if (filtro.ComSaldo == true) query = query.Where(item => item.QtdEstimada > 0);
+        if (!string.IsNullOrEmpty(origem) && origem != "todas") query = query.Where(item => item.Origem.ToLowerInvariant() == origem);
+
+        var filtrados = query
+            .OrderBy(item => item.DataValidade, StringComparer.Ordinal)
+            .ThenBy(item => item.ProductName)
+            .ToList();
+
+        var tamanho = Math.Clamp(filtro.TamanhoPagina, 5, 200);
+        var totalPaginas = Math.Max(1, (int)Math.Ceiling(filtrados.Count / (double)tamanho));
+        var pagina = Math.Clamp(filtro.Pagina, 1, totalPaginas);
+
+        return new LoteConsultaModel
+        {
+            Total = filtrados.Count,
+            Pagina = pagina,
+            TamanhoPagina = tamanho,
+            ValorEmRisco = filtrados.Sum(item => item.ValorEmRisco),
+            Itens = filtrados.Skip((pagina - 1) * tamanho).Take(tamanho).ToList(),
+        };
+    }
+
+    private static string? ParseFiltroData(string? value, string nome)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+
+        if (!DateTime.TryParseExact(value.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var data))
+        {
+            throw new InvalidOperationException($"Data {nome} inválida no filtro de validade.");
+        }
+
+        return data.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     }
 
     public async Task<List<LoteModel>> ListarPorProdutoAsync(string companyId, string produtoId, CancellationToken cancellationToken = default)

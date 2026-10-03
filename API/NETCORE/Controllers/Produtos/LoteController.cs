@@ -35,6 +35,30 @@ public class LoteController(LoteService loteService) : ControllerBase
         });
     }
 
+    [HttpGet("consulta")]
+    [ProducesResponseType(typeof(ApiResponse<LoteConsultaModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<LoteConsultaModel>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Consulta([FromQuery] LoteConsultaFiltro filtro, CancellationToken cancellationToken)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<LoteConsultaModel> { Success = false, Message = "Sessão não encontrada." });
+
+        try
+        {
+            var data = await loteService.ConsultarAsync(currentUser.CompanyId, filtro, cancellationToken);
+            return Ok(new ApiResponse<LoteConsultaModel>
+            {
+                Success = true,
+                Message = "Lotes obtidos com sucesso.",
+                Data = data
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<LoteConsultaModel> { Success = false, Message = ex.Message });
+        }
+    }
+
     [HttpGet("produto/{produtoId}")]
     [ProducesResponseType(typeof(ApiResponse<List<LoteModel>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> PorProduto(string produtoId, CancellationToken cancellationToken)

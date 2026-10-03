@@ -7,9 +7,10 @@
  * Fase 1: o lote é informativo. A venda não baixa lote; o saldo mostrado é estimado assumindo que o
  * estoque é consumido na ordem FEFO (vence primeiro, sai primeiro).
  */
-import { AlertCircle, AlertTriangle, CalendarClock, Clock, PackageX, Plus, RefreshCw, Save, X } from "lucide-react";
+import { AlertCircle, AlertTriangle, CalendarClock, Clock, PackageX, Plus, RefreshCw, Save, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/Admin/PageHeader";
+import TablePagination from "@/components/Pagination/TablePagination";
 import { Toast, useStatusDialog } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import PageLayout from "@/layout/PageLayout";
@@ -18,18 +19,67 @@ import {
   type CategoriaValidadeDto,
   type LoteAlertaDto,
   type LoteAlertasResumoDto,
+  type LoteConsultaDto,
   type LoteFaixa,
 } from "@/services/api/loteService";
 import { productService, type ProductDto } from "@/services/api/productService";
 
-type Tab = "alertas" | "categorias";
+type Tab = "alertas" | "consulta" | "categorias";
 type FaixaFilter = "todas" | LoteFaixa;
 
 const FAIXA_STYLE: Record<LoteFaixa, { label: string; badge: string }> = {
   vencido: { label: "Vencido", badge: "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30" },
   critico: { label: "Crítico", badge: "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30" },
   atencao: { label: "Atenção", badge: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30" },
+  ok: { label: "No prazo", badge: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" },
+  esgotado: { label: "Sem saldo", badge: "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30" },
 };
+
+const ORIGEM_LABEL: Record<string, string> = {
+  nfe: "NF-e",
+  compra: "Compra",
+  ajuste: "Ajuste de estoque",
+  cadastro: "Cadastro de produto",
+  manual: "Registro manual",
+  inicial: "Carga inicial",
+};
+
+type ConsultaFilters = {
+  busca: string;
+  de: string;
+  ate: string;
+  categoriaId: string;
+  faixa: "" | LoteFaixa;
+  origem: string;
+  comSaldo: boolean;
+};
+
+const EMPTY_CONSULTA_FILTERS: ConsultaFilters = {
+  busca: "",
+  de: "",
+  ate: "",
+  categoriaId: "",
+  faixa: "",
+  origem: "",
+  comSaldo: false,
+};
+
+function shiftDays(days: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+const QUICK_RANGES: Array<{ label: string; range: () => { de: string; ate: string } }> = [
+  { label: "Vencidos", range: () => ({ de: "", ate: shiftDays(-1) }) },
+  { label: "Vencem hoje", range: () => ({ de: shiftDays(0), ate: shiftDays(0) }) },
+  { label: "Próx. 7 dias", range: () => ({ de: shiftDays(0), ate: shiftDays(7) }) },
+  { label: "Próx. 15 dias", range: () => ({ de: shiftDays(0), ate: shiftDays(15) }) },
+  { label: "Próx. 30 dias", range: () => ({ de: shiftDays(0), ate: shiftDays(30) }) },
+  { label: "Próx. 60 dias", range: () => ({ de: shiftDays(0), ate: shiftDays(60) }) },
+  { label: "Próx. 90 dias", range: () => ({ de: shiftDays(0), ate: shiftDays(90) }) },
+];
 
 function formatDate(isoDate: string) {
   const [y, m, d] = isoDate.split("-");
@@ -55,6 +105,12 @@ export default function ValidadePage() {
   const [resumo, setResumo] = useState<LoteAlertasResumoDto | null>(null);
   const [faixaFilter, setFaixaFilter] = useState<FaixaFilter>("todas");
   const [baixandoIds, setBaixandoIds] = useState<Set<string>>(() => new Set());
+
+  const [consultaFilters, setConsultaFilters] = useState<ConsultaFilters>(EMPTY_CONSULTA_FILTERS);
+  const [consultaPage, setConsultaPage] = useState(1);
+  const [consultaPageSize, setConsultaPageSize] = useState(20);
+  const [consulta, setConsulta] = useState<LoteConsultaDto | null>(null);
+  const [consultaLoading, setConsultaLoading] = useState(false);
 
   const [categorias, setCategorias] = useState<CategoriaValidadeDto[]>([]);
   const [edits, setEdits] = useState<Record<string, { prazo: string; alerta: string }>>({});
@@ -101,6 +157,49 @@ export default function ValidadePage() {
     void loadAlertas();
     void loadCategorias();
   }, [loadAlertas, loadCategorias]);
+
+  // Consulta de lotes: filtros e paginação resolvidos no servidor. A busca por texto espera 300 ms.
+  useEffect(() => {
+    if (tab !== "consulta") return;
+
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      setConsultaLoading(true);
+      loteService
+        .consulta({
+          busca: consultaFilters.busca,
+          de: consultaFilters.de || undefined,
+          ate: consultaFilters.ate || undefined,
+          categoriaId: consultaFilters.categoriaId || undefined,
+          faixa: consultaFilters.faixa || undefined,
+          origem: consultaFilters.origem || undefined,
+          comSaldo: consultaFilters.comSaldo,
+          pagina: consultaPage,
+          tamanhoPagina: consultaPageSize,
+        })
+        .then((data) => {
+          if (!cancelled) setConsulta(data ?? null);
+        })
+        .catch((error) => {
+          if (!cancelled) Toast.error(error instanceof Error ? error.message : "Erro ao consultar lotes.");
+        })
+        .finally(() => {
+          if (!cancelled) setConsultaLoading(false);
+        });
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [tab, consultaFilters, consultaPage, consultaPageSize]);
+
+  const updateConsultaFilters = (patch: Partial<ConsultaFilters>) => {
+    setConsultaFilters((current) => ({ ...current, ...patch }));
+    setConsultaPage(1);
+  };
+
+  const hasConsultaFilters = JSON.stringify(consultaFilters) !== JSON.stringify(EMPTY_CONSULTA_FILTERS);
 
   const itensFiltrados = useMemo(
     () => (resumo?.itens ?? []).filter((item) => faixaFilter === "todas" || item.faixa === faixaFilter),
@@ -248,6 +347,7 @@ export default function ValidadePage() {
         {(
           [
             ["alertas", "Alertas por lote"],
+            ["consulta", "Consulta de lotes"],
             ["categorias", "Prazos por categoria"],
           ] as const
         ).map(([key, label]) => (
@@ -366,6 +466,202 @@ export default function ValidadePage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </section>
+        </>
+      ) : tab === "consulta" ? (
+        <>
+          <section className="card space-y-3 p-4 md:p-5">
+            <label className="relative block w-full sm:max-w-md">
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+              <input
+                value={consultaFilters.busca}
+                onChange={(event) => updateConsultaFilters({ busca: event.target.value })}
+                className="input-field w-full pl-9"
+                placeholder="Produto, código ou número do lote"
+              />
+            </label>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 text-xs font-semibold text-text-secondary">Validade:</span>
+              {QUICK_RANGES.map((quick) => (
+                <button
+                  key={quick.label}
+                  type="button"
+                  onClick={() => updateConsultaFilters(quick.range())}
+                  className="rounded-md border border-border-primary px-2.5 py-1 text-xs font-medium text-text-secondary hover:bg-hover-light hover:text-text-primary"
+                >
+                  {quick.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+              <label className="block text-xs text-text-secondary">
+                Validade de
+                <input
+                  type="date"
+                  value={consultaFilters.de}
+                  max={consultaFilters.ate || undefined}
+                  onChange={(event) => updateConsultaFilters({ de: event.target.value })}
+                  className="input-field mt-1 w-full py-1.5 text-xs"
+                />
+              </label>
+              <label className="block text-xs text-text-secondary">
+                Validade até
+                <input
+                  type="date"
+                  value={consultaFilters.ate}
+                  min={consultaFilters.de || undefined}
+                  onChange={(event) => updateConsultaFilters({ ate: event.target.value })}
+                  className="input-field mt-1 w-full py-1.5 text-xs"
+                />
+              </label>
+              <label className="block text-xs text-text-secondary">
+                Categoria
+                <select
+                  value={consultaFilters.categoriaId}
+                  onChange={(event) => updateConsultaFilters({ categoriaId: event.target.value })}
+                  className="input-field mt-1 w-full py-1.5 text-xs"
+                >
+                  <option value="">Todas</option>
+                  {categoriasOrdenadas.map(({ categoria, nivel }) => (
+                    <option key={categoria.categoriaId} value={categoria.categoriaId}>
+                      {nivel === 1 ? `— ${categoria.nome}` : categoria.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-xs text-text-secondary">
+                Situação
+                <select
+                  value={consultaFilters.faixa}
+                  onChange={(event) => updateConsultaFilters({ faixa: event.target.value as ConsultaFilters["faixa"] })}
+                  className="input-field mt-1 w-full py-1.5 text-xs"
+                >
+                  <option value="">Todas</option>
+                  {(Object.keys(FAIXA_STYLE) as LoteFaixa[]).map((key) => (
+                    <option key={key} value={key}>
+                      {FAIXA_STYLE[key].label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-xs text-text-secondary">
+                Origem do lote
+                <select
+                  value={consultaFilters.origem}
+                  onChange={(event) => updateConsultaFilters({ origem: event.target.value })}
+                  className="input-field mt-1 w-full py-1.5 text-xs"
+                >
+                  <option value="">Todas</option>
+                  {Object.entries(ORIGEM_LABEL).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex items-end gap-2 pb-1.5 text-xs text-text-secondary">
+                <input
+                  type="checkbox"
+                  checked={consultaFilters.comSaldo}
+                  onChange={(event) => updateConsultaFilters({ comSaldo: event.target.checked })}
+                />
+                Só com saldo estimado
+              </label>
+            </div>
+
+            {hasConsultaFilters ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setConsultaFilters(EMPTY_CONSULTA_FILTERS);
+                  setConsultaPage(1);
+                }}
+                className="inline-flex items-center gap-1 text-xs font-medium text-text-secondary hover:text-text-primary"
+              >
+                <X size={13} /> Limpar filtros
+              </button>
+            ) : null}
+          </section>
+
+          <section className="card overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-primary px-4 py-3 text-xs text-text-secondary">
+              <span>
+                <strong className="text-text-primary">{consulta?.total ?? 0}</strong> lote(s) encontrado(s) · valor em risco{" "}
+                <strong className="text-text-primary">R$ {formatMoneyBr(consulta?.valorEmRisco ?? 0)}</strong>
+              </span>
+              <span>Saldo estimado: considera que o que vence primeiro sai primeiro.</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[960px] text-sm">
+                <thead className="bg-bg-primary text-left text-text-secondary">
+                  <tr>
+                    <th className="px-3 py-3">Produto</th>
+                    <th className="px-3 py-3">Lote</th>
+                    <th className="px-3 py-3">Validade</th>
+                    <th className="px-3 py-3 text-right">Qtd. inicial</th>
+                    <th className="px-3 py-3 text-right">Qtd. estimada</th>
+                    <th className="px-3 py-3 text-right">Valor em risco</th>
+                    <th className="px-3 py-3">Situação</th>
+                    <th className="px-3 py-3">Origem</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(consulta?.itens.length ?? 0) === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="px-3 py-10 text-center text-text-tertiary">
+                        {consultaLoading ? "Carregando..." : "Nenhum lote encontrado para os filtros selecionados."}
+                      </td>
+                    </tr>
+                  ) : null}
+                  {consulta?.itens.map((item) => (
+                    <tr key={item.id} className="border-t border-border-primary">
+                      <td className="px-3 py-3">
+                        <span className="block font-semibold text-text-primary">{item.productName}</span>
+                        <span className="block text-xs text-text-secondary">
+                          {item.productCode}
+                          {item.categoriaNome ? ` · ${item.categoriaNome}` : ""}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-xs text-text-secondary">
+                        <span className="block">{item.numeroLote || "—"}</span>
+                        {item.validadePadrao ? (
+                          <span className="mt-0.5 inline-block rounded bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-sky-600 dark:text-sky-400">
+                            validade sugerida
+                          </span>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className="block font-medium">{formatDate(item.dataValidade)}</span>
+                        <span className="block text-xs text-text-secondary">{describeDays(item.diasParaVencer)}</span>
+                      </td>
+                      <td className="px-3 py-3 text-right tabular-nums">{formatQty(item.qtdInicial)}</td>
+                      <td className="px-3 py-3 text-right tabular-nums">{formatQty(item.qtdEstimada)}</td>
+                      <td className="px-3 py-3 text-right font-semibold tabular-nums">R$ {formatMoneyBr(item.valorEmRisco)}</td>
+                      <td className="px-3 py-3">
+                        <span className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold ${FAIXA_STYLE[item.faixa].badge}`}>
+                          {FAIXA_STYLE[item.faixa].label}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-xs text-text-secondary">{ORIGEM_LABEL[item.origem] ?? item.origem}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="px-4 py-4">
+              <TablePagination
+                totalItems={consulta?.total ?? 0}
+                currentPage={consulta?.pagina ?? consultaPage}
+                itemsPerPage={consultaPageSize}
+                onPageChange={setConsultaPage}
+                onItemsPerPageChange={(value) => {
+                  setConsultaPageSize(value);
+                  setConsultaPage(1);
+                }}
+              />
             </div>
           </section>
         </>

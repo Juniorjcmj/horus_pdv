@@ -32,6 +32,8 @@ public sealed class LoteLinha
     public decimal PrecoVenda { get; set; }
     public int DiasAlertaProduto { get; set; }
     public string CategoriaNome { get; set; } = string.Empty;
+    public string CategoriaId { get; set; } = string.Empty;
+    public string CategoriaPaiId { get; set; } = string.Empty;
     public int? DiasAlertaCategoria { get; set; }
 }
 
@@ -68,6 +70,8 @@ public class LoteAB(Connection connection)
                p.ProductCode, p.ProductName, p.ProductQnt, p.ProductUnitPrice, p.ProductSalePrice,
                p.DiasAlertaValidade AS DiasAlertaProduto,
                COALESCE(c.Nome, N'') AS CategoriaNome,
+               c.Id AS CategoriaId,
+               c.CategoriaPaiId AS CategoriaPaiId,
                COALESCE(c.DiasAlertaValidade, cp.DiasAlertaValidade) AS DiasAlertaCategoria
         FROM ProdutoLotes l
         JOIN Produtos p ON p.Id = l.ProdutoId AND p.CompanyId = l.CompanyId
@@ -106,6 +110,8 @@ public class LoteAB(Connection connection)
                 PrecoVenda = ReadDecimal(reader, "ProductSalePrice"),
                 DiasAlertaProduto = ReadInt(reader, "DiasAlertaProduto"),
                 CategoriaNome = ReadString(reader, "CategoriaNome"),
+                CategoriaId = ReadString(reader, "CategoriaId"),
+                CategoriaPaiId = ReadString(reader, "CategoriaPaiId"),
                 DiasAlertaCategoria = ReadNullableInt(reader, "DiasAlertaCategoria"),
             });
         }

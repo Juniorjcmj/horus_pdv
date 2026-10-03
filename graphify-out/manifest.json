@@ -3726,45 +3726,45 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/LoteController.cs": {
-    "mtime": 1791043716.8767774,
-    "seen": 1791043964.185943,
-    "ast_hash": "a42fc06fdde341dbdf409d6d8c371b72",
+    "mtime": 1791047877.786306,
+    "seen": 1791047982.8483515,
+    "ast_hash": "697cf1191baa4179e1b079a140fa4e33",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/LoteModels.cs": {
-    "mtime": 1791043614.6983285,
-    "seen": 1791043964.1886148,
-    "ast_hash": "3b0e14c87123c04e9c8834117c9141b4",
+    "mtime": 1791047832.7446284,
+    "seen": 1791047982.851082,
+    "ast_hash": "2139753626069ec75ddc602f782edb53",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/LoteRequests.cs": {
-    "mtime": 1791043614.7763667,
-    "seen": 1791043964.1913881,
-    "ast_hash": "c06d35105f0c53477bc4ca918f7237af",
+    "mtime": 1791047832.8227818,
+    "seen": 1791047982.853582,
+    "ast_hash": "6bf64caa307dac09be7512f2b635ce47",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/LoteAB.cs": {
-    "mtime": 1791043917.2949493,
-    "seen": 1791043964.1968865,
-    "ast_hash": "3bc16de1c0fc170cb3b60c3f4564cfb2",
+    "mtime": 1791047832.5670617,
+    "seen": 1791047982.8602643,
+    "ast_hash": "59bbe2549d4d90fe8e8c88a54a301a06",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/LoteService.cs": {
-    "mtime": 1791043716.8358986,
-    "seen": 1791043964.2000608,
-    "ast_hash": "c105430b6b10c4481a2cc3d0f029bca3",
+    "mtime": 1791047861.906242,
+    "seen": 1791047982.8642635,
+    "ast_hash": "26c8dba0e5554411ded1a19edeec3121",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ValidadePage.tsx": {
-    "mtime": 1791043888.244653,
-    "seen": 1791043964.220428,
-    "ast_hash": "933ed9d14e66ce84daac83c125f84b2e",
+    "mtime": 1791047954.4961815,
+    "seen": 1791047982.8878741,
+    "ast_hash": "8911816e0b628d54a6da521036a7a26b",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/loteService.ts": {
-    "mtime": 1791043835.861417,
-    "seen": 1791043964.2235265,
-    "ast_hash": "2d1790ccc21513da4c010a2edc33373d",
+    "mtime": 1791047880.593007,
+    "seen": 1791047982.890731,
+    "ast_hash": "e5c3d23258287af68fe3c0875936556c",
     "semantic_hash": ""
   }
 }

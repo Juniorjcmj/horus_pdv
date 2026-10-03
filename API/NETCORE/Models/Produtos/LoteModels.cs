@@ -28,8 +28,10 @@ public class LoteAlertaModel : LoteModel
     public string ProductCode { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public string CategoriaNome { get; set; } = string.Empty;
+    public string CategoriaId { get; set; } = string.Empty;
+    public string CategoriaPaiId { get; set; } = string.Empty;
     public int JanelaAlertaDias { get; set; }
-    /// <summary>"vencido", "critico" ou "atencao".</summary>
+    /// <summary>"vencido", "critico", "atencao", "ok" (fora da janela de alerta) ou "esgotado" (sem saldo estimado).</summary>
     public string Faixa { get; set; } = "atencao";
     public decimal CustoUnitario { get; set; }
     public decimal PrecoVenda { get; set; }
@@ -45,6 +47,17 @@ public class LoteAlertasResumoModel
     public decimal ValorEmRisco { get; set; }
     /// <summary>Produtos que controlam validade mas ainda não têm nenhum lote com saldo.</summary>
     public int ProdutosSemLote { get; set; }
+    public List<LoteAlertaModel> Itens { get; set; } = [];
+}
+
+public class LoteConsultaModel
+{
+    /// <summary>Total de lotes que atendem aos filtros (todas as páginas).</summary>
+    public int Total { get; set; }
+    public int Pagina { get; set; }
+    public int TamanhoPagina { get; set; }
+    /// <summary>Valor em risco (saldo estimado x custo) de todos os lotes filtrados.</summary>
+    public decimal ValorEmRisco { get; set; }
     public List<LoteAlertaModel> Itens { get; set; } = [];
 }
 
