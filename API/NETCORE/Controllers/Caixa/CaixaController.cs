@@ -35,6 +35,31 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
         });
     }
 
+    [HttpGet("movimentos")]
+    public async Task<IActionResult> Movimentos([FromQuery] string? de = null, [FromQuery] string? ate = null, CancellationToken cancellationToken = default)
+    {
+        if (HttpContext.Items["CurrentUser"] is not AuthenticatedUser currentUser)
+        {
+            return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+        }
+
+        var hoje = HorusDateTime.Now.Date;
+        var dtDe = DateTime.TryParse(de, out var pDe) ? pDe.Date : hoje.AddDays(-30);
+        var dtAte = DateTime.TryParse(ate, out var pAte) ? pAte.Date : hoje;
+        if (dtAte < dtDe)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Período inválido: a data final é anterior à inicial." });
+        }
+
+        var movimentos = await caixaService.ListarMovimentosPorPeriodoAsync(currentUser, dtDe, dtAte, cancellationToken);
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = "Movimentos de caixa obtidos com sucesso.",
+            Data = movimentos
+        });
+    }
+
     [HttpPost("abrir")]
     public async Task<IActionResult> Abrir([FromBody] AbrirCaixaRequest request, CancellationToken cancellationToken)
     {

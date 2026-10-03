@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/HistoricoVendas/HistoricoVendasController.cs": {
-    "mtime": 1790972560.198068,
-    "seen": 1790973295.0726619,
-    "ast_hash": "b9e30dbd6cbe43d5e9ae186b4250f586",
+    "mtime": 1791028012.5967605,
+    "seen": 1791028438.5203493,
+    "ast_hash": "9df1c4261945b12460ccffc79866e7ca",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Home/HomeController.cs": {
@@ -372,9 +372,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/VendaHistoricoAD.cs": {
-    "mtime": 1790972265.005541,
-    "seen": 1790973295.0876176,
-    "ast_hash": "5d6b22a66b05343a3db5716f40baa665",
+    "mtime": 1791027975.5979407,
+    "seen": 1791028438.5295215,
+    "ast_hash": "3acb4941d0c87e2e8a8b40a9fa6c9184",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/VendaPagamentoAD.cs": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs": {
-    "mtime": 1790972405.234916,
-    "seen": 1790973295.0896277,
-    "ast_hash": "369dd76ff74aa37da637a3af8c62155e",
+    "mtime": 1791028002.5580034,
+    "seen": 1791028438.530786,
+    "ast_hash": "860c688c4551c0368c3792bd4662586a",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HomeAB.cs": {
@@ -462,9 +462,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
-    "mtime": 1790972507.8171084,
-    "seen": 1790973295.091832,
-    "ast_hash": "60a7f852e622685943a44af835852594",
+    "mtime": 1791028024.9636295,
+    "seen": 1791028438.5320668,
+    "ast_hash": "fed44c091f42c48886525d73ad86264c",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1790976545.3396308,
-    "seen": 1790976661.2328658,
-    "ast_hash": "6934853f4c1a65688dea5cdb9dbdb67b",
+    "mtime": 1791028351.8279634,
+    "seen": 1791028438.5556183,
+    "ast_hash": "6211f80c5b530ef21f512c61670eaead",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -2226,9 +2226,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/FiadoAB.cs": {
-    "mtime": 1789339343.9295187,
-    "seen": 1789339389.9270668,
-    "ast_hash": "7dc78d287da528da4a62f321de52f0ee",
+    "mtime": 1791027986.0844831,
+    "seen": 1791028438.5306606,
+    "ast_hash": "7af7f1b48e1df74b6dd0132efb7c0489",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/PromocaoAB.cs": {
@@ -2262,9 +2262,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiadoPage.tsx": {
-    "mtime": 1790466337.7358067,
-    "seen": 1790466496.8323328,
-    "ast_hash": "8b3ac3594b8acdbdbf2cd20b4404c0b8",
+    "mtime": 1791028292.5804462,
+    "seen": 1791028438.5536919,
+    "ast_hash": "b56388532542a9f986c8d030317ee35b",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PromocoesPage.tsx": {
@@ -2550,9 +2550,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/application/customers/CustomerSyncAdapter.ts": {
-    "mtime": 1790421566.5140622,
-    "seen": 1790421619.6417727,
-    "ast_hash": "afb05488e7ce166a8baf426fa8a1598d",
+    "mtime": 1791028074.3974404,
+    "seen": 1791028438.5393612,
+    "ast_hash": "b0453f212b4de89fb1e64aef5285941f",
     "semantic_hash": ""
   },
   "FRONTEND/src/application/products/ProductSyncAdapter.ts": {
@@ -2562,9 +2562,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/application/sales/SaleOutboxAdapter.ts": {
-    "mtime": 1790421566.5157866,
-    "seen": 1790421619.6417816,
-    "ast_hash": "31172d1f5b8219cbdeff027a8abbf31c",
+    "mtime": 1791028126.925722,
+    "seen": 1791028438.5395126,
+    "ast_hash": "8c48cba9185a628230f19e797a7c17f9",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SyncStatus.tsx": {
@@ -2580,9 +2580,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useCustomers.ts": {
-    "mtime": 1790963623.81675,
-    "seen": 1790963817.5408618,
-    "ast_hash": "408a989a22b3f72facedb1c6a83337ff",
+    "mtime": 1791028092.6968417,
+    "seen": 1791028438.5492764,
+    "ast_hash": "5b722d474153625aa22eb894c98f9f60",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useDeviceId.ts": {

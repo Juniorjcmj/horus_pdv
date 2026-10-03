@@ -50,6 +50,33 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         return status;
     }
 
+    /// <summary>
+    /// Sangrias e reforços no período (datas inclusivas, fuso de Brasília). Gerente/administrador vê
+    /// de todos os operadores; os demais perfis só veem os próprios lançamentos.
+    /// </summary>
+    public async Task<List<CaixaMovimentoDto>> ListarMovimentosPorPeriodoAsync(
+        AuthenticatedUser currentUser,
+        DateTime de,
+        DateTime ate,
+        CancellationToken cancellationToken = default)
+    {
+        var offset = TimeSpan.FromHours(-3);
+        var inicio = new DateTimeOffset(de.Date, offset);
+        var fim = new DateTimeOffset(ate.Date.AddDays(1), offset);
+        var operatorId = HorusRoles.IsGerenteOuAdmin(currentUser.Role) ? null : currentUser.Id;
+
+        var movimentos = await caixaAB.ListarMovimentosPorPeriodoAsync(currentUser.CompanyId, inicio, fim, operatorId, cancellationToken);
+        return movimentos.Select(item => new CaixaMovimentoDto
+        {
+            Id = item.Id,
+            Tipo = item.Tipo.ToString(),
+            Valor = HorusMoneyFormat.Format(item.Valor),
+            Motivo = item.Motivo,
+            CreatedAt = HorusDateTime.FormatIso(item.CreatedAt),
+            OperatorName = item.OperatorName,
+        }).ToList();
+    }
+
     public async Task<CaixaStatusDto> AbrirAsync(AbrirCaixaRequest request, AuthenticatedUser currentUser, string? ip = null, CancellationToken cancellationToken = default)
     {
         var now = HorusDateTime.Now;

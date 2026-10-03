@@ -900,6 +900,39 @@ public class CaixaAB(Connection connection)
         return rows;
     }
 
+    /// <summary>Lista sangrias/reforços de todos os turnos no intervalo [de, ate). Filtra por operador quando informado.</summary>
+    public async Task<List<CaixaMovimentoAD>> ListarMovimentosPorPeriodoAsync(
+        string companyId,
+        DateTimeOffset de,
+        DateTimeOffset ate,
+        string? operatorId = null,
+        CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT Id, CaixaSessaoId, Tipo, Valor, Motivo, CreatedAt, OperatorId, OperatorName
+            FROM CaixaMovimentos
+            WHERE CompanyId = @CompanyId
+              AND CreatedAt >= @De AND CreatedAt < @Ate
+              AND (@OperatorId IS NULL OR OperatorId = @OperatorId)
+            ORDER BY CreatedAt ASC;
+            """;
+
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var command = new SqlCommand(sql, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@De", de);
+        command.Parameters.AddWithValue("@Ate", ate);
+        command.Parameters.AddWithValue("@OperatorId", (object?)operatorId ?? DBNull.Value);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        var rows = new List<CaixaMovimentoAD>();
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(MapMovimento(reader));
+        }
+
+        return rows;
+    }
+
     private static CaixaMovimentoAD MapMovimento(SqlDataReader reader) => new()
     {
         Id = ReadString(reader, "Id"),

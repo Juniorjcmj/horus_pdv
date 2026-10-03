@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Caixa/CaixaController.cs": {
-    "mtime": 1790425298.380343,
-    "seen": 1790426295.5312,
-    "ast_hash": "43ce4a7841c0c5df059ab0b77f90834d",
+    "mtime": 1791028771.740254,
+    "seen": 1791029006.2633584,
+    "ast_hash": "c2d1a17e96402167e536c7472108b8fb",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Clientes/ClienteController.cs": {
@@ -390,9 +390,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/CaixaAB.cs": {
-    "mtime": 1790972420.9723818,
-    "seen": 1790973295.0878544,
-    "ast_hash": "b151e0204af8207b987656f238354a5f",
+    "mtime": 1791028771.598723,
+    "seen": 1791029006.2799056,
+    "ast_hash": "bf90f471eefe43a7db368f0790c4774d",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ClienteAB.cs": {
@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
-    "mtime": 1790970727.8579698,
-    "seen": 1790971082.3009963,
-    "ast_hash": "e867797b4efc63608d0f6145433b403e",
+    "mtime": 1791028771.68689,
+    "seen": 1791029006.2837865,
+    "ast_hash": "252403cfed54559df82021f103af9f7c",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Clientes/ClienteService.cs": {
@@ -1062,9 +1062,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesHistoryPage.tsx": {
-    "mtime": 1790972938.3378541,
-    "seen": 1790973295.1303222,
-    "ast_hash": "191742a0419a00cd10c95251f170af8a",
+    "mtime": 1791028959.174191,
+    "seen": 1791029006.3196533,
+    "ast_hash": "c894ea1c7471add03c293be32aac2cc9",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
@@ -1152,9 +1152,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/cashRegisterService.ts": {
-    "mtime": 1790425418.9493687,
-    "seen": 1790426295.564878,
-    "ast_hash": "4aa7106f37ca4150667a43594a428bb7",
+    "mtime": 1791028798.5432105,
+    "seen": 1791029006.3230374,
+    "ast_hash": "942e4dcf1cc01a636e19ad2b8cc99875",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/companyService.ts": {
@@ -3717,6 +3717,12 @@
     "mtime": 1790973205.0253036,
     "seen": 1790973295.1098099,
     "ast_hash": "1de5f837ad6a62965273bdee6c023185",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/salesDailyReport.ts": {
+    "mtime": 1791028826.4543686,
+    "seen": 1791029006.3312843,
+    "ast_hash": "d7a483472d25a40038769f881ac1d411",
     "semantic_hash": ""
   }
 }
