@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791028351.8279634,
-    "seen": 1791028438.5556183,
-    "ast_hash": "6211f80c5b530ef21f512c61670eaead",
+    "mtime": 1791038395.1798248,
+    "seen": 1791038435.9537532,
+    "ast_hash": "dd7621b97cd1baf961ea694b75016eef",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -2268,9 +2268,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PromocoesPage.tsx": {
-    "mtime": 1789330705.6250844,
-    "seen": 1789334546.6403737,
-    "ast_hash": "85848e98a943e6d3c840ae2ea5763902",
+    "mtime": 1791038395.116111,
+    "seen": 1791038435.9532022,
+    "ast_hash": "a82aa058be6444d45c330c2a8c2d20f3",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiadoService.ts": {

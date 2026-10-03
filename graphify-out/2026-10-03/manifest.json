@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NfeImportModal.tsx": {
-    "mtime": 1790969379.4256546,
-    "seen": 1790969442.0542529,
-    "ast_hash": "b40572809c10518f79779a1517b79150",
+    "mtime": 1791037401.8932085,
+    "seen": 1791037494.4229784,
+    "ast_hash": "c0a88c0a83b25a0e9d463a7bb84eec16",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {
@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1791035374.6321054,
-    "seen": 1791035468.577917,
-    "ast_hash": "c323eb96d9a73b5445009ffbdc9c7116",
+    "mtime": 1791035494.5401518,
+    "seen": 1791037494.437771,
+    "ast_hash": "e268c9626a97f0f9967f4a6277a633bd",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {

@@ -38,6 +38,13 @@ const TIPO_LABELS: Record<TipoPromocao, string> = {
   preco_atacado: "Preço de Atacado (por volume)",
 };
 
+// <input type="datetime-local"> trabalha em horário LOCAL; toISOString() devolve UTC (3h à frente de
+// Brasília) e fazia a promoção só começar 3h depois de criada.
+function toLocalInputValue(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export default function PromocoesPage() {
   const { formatMoneyBr } = useInputMasks();
   const statusDialog = useStatusDialog();
@@ -135,8 +142,8 @@ export default function PromocoesPage() {
     const nextWeek = new Date();
     nextWeek.setDate(today.getDate() + 7);
 
-    setFormInicio(today.toISOString().slice(0, 16));
-    setFormFim(nextWeek.toISOString().slice(0, 16));
+    setFormInicio(toLocalInputValue(today));
+    setFormFim(toLocalInputValue(nextWeek));
     setFormCategoriaId("");
     setFormProdutoIds([]);
     setProductSearch("");
@@ -152,8 +159,8 @@ export default function PromocoesPage() {
     setFormQtdLeva(promo.quantidadeLeva ? String(promo.quantidadeLeva) : "");
     setFormQtdPaga(promo.quantidadePaga ? String(promo.quantidadePaga) : "");
     setFormQtdMinima(promo.quantidadeMinima ? String(promo.quantidadeMinima) : "");
-    setFormInicio(new Date(promo.inicioVigencia).toISOString().slice(0, 16));
-    setFormFim(new Date(promo.fimVigencia).toISOString().slice(0, 16));
+    setFormInicio(toLocalInputValue(new Date(promo.inicioVigencia)));
+    setFormFim(toLocalInputValue(new Date(promo.fimVigencia)));
     setFormCategoriaId(promo.categoriaId || "");
     setFormProdutoIds(promo.produtoIds || []);
     setProductSearch("");

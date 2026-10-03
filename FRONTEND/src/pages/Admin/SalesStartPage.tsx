@@ -395,10 +395,18 @@ export default function SalesStartPage({
     };
 
     fetchPromos();
-    const interval = window.setInterval(fetchPromos, 5 * 60 * 1000);
+    // Promoção criada/alterada no admin precisa chegar ao PDV sem recarregar a página.
+    const interval = window.setInterval(fetchPromos, 60 * 1000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") fetchPromos();
+    };
+    window.addEventListener("focus", fetchPromos);
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
       window.clearInterval(interval);
+      window.removeEventListener("focus", fetchPromos);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 
