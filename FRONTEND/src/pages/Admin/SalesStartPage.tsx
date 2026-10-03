@@ -1863,7 +1863,7 @@ export default function SalesStartPage({
               <span className="mb-1 block text-xs font-semibold uppercase">Produto:</span>
               <div className="relative">
                 <Search
-                  size={14}
+                  size={18}
                   className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary"
                 />
                 <input
@@ -1934,16 +1934,16 @@ export default function SalesStartPage({
                       setShowProductOptions(false);
                     }
                   }}
-                  className="input-field h-10 w-full pl-9 text-sm"
+                  className="input-field h-12 w-full pl-10 text-lg font-medium"
                   autoComplete="off"
                 />
                 {showProductOptions && (
-                  <ul className="absolute left-0 right-0 top-full z-layer-popover mt-1 max-h-44 overflow-y-auto rounded-xl border border-border-secondary bg-bg-light text-text-primary shadow-lg">
+                  <ul className="absolute left-0 right-0 top-full z-layer-popover mt-1 max-h-80 overflow-y-auto rounded-xl border border-border-secondary bg-bg-light text-text-primary shadow-lg">
                     {filteredProducts.length > 0 ? (
                       filteredProducts.map((item, index) => (
                         <li
                           key={item.id}
-                          className={`cursor-pointer border-b border-border-primary px-3 py-2 text-xs ${
+                          className={`cursor-pointer border-b border-border-primary px-3 py-2.5 text-base ${
                             highlightedProductIndex === index ? "bg-hover-light" : "hover:bg-hover-light"
                           }`}
                           onMouseEnter={() => setHighlightedProductIndex(index)}
@@ -1952,7 +1952,7 @@ export default function SalesStartPage({
                           }}
                         >
                           <p className="font-semibold">{item.name}</p>
-                          <p className="text-[11px] text-text-secondary">
+                          <p className="text-sm text-text-secondary">
                             {item.code}
                             {item.marca ? ` · ${item.marca}` : ""}
                             {" · R$ "}
@@ -1962,7 +1962,7 @@ export default function SalesStartPage({
                         </li>
                       ))
                     ) : (
-                      <li className="px-2 py-2 text-xs text-text-secondary">Nenhum produto encontrado.</li>
+                      <li className="px-3 py-3 text-base text-text-secondary">Nenhum produto encontrado.</li>
                     )}
                   </ul>
                 )}
