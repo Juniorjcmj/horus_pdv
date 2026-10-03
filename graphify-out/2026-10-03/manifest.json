@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Caixa/CaixaController.cs": {
-    "mtime": 1791028771.740254,
-    "seen": 1791029006.2633584,
-    "ast_hash": "c2d1a17e96402167e536c7472108b8fb",
+    "mtime": 1791046461.7943923,
+    "seen": 1791046498.0571153,
+    "ast_hash": "bdd5bda62bc60e9344cc1012f762f383",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Clientes/ClienteController.cs": {
@@ -390,9 +390,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/CaixaAB.cs": {
-    "mtime": 1791028771.598723,
-    "seen": 1791029006.2799056,
-    "ast_hash": "bf90f471eefe43a7db368f0790c4774d",
+    "mtime": 1791046461.731188,
+    "seen": 1791046498.07397,
+    "ast_hash": "30835cc2cc63da41f0fda07c479258dd",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ClienteAB.cs": {
@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
-    "mtime": 1791028771.68689,
-    "seen": 1791029006.2837865,
-    "ast_hash": "252403cfed54559df82021f103af9f7c",
+    "mtime": 1791046461.6374822,
+    "seen": 1791046498.0779438,
+    "ast_hash": "400c9be902fe2b07a3b4f72ba9d12d4b",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Clientes/ClienteService.cs": {
@@ -972,9 +972,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/CashRegisterPage.tsx": {
-    "mtime": 1790970993.9947803,
-    "seen": 1790971082.319662,
-    "ast_hash": "3c362faac94bfdb0d0fe1354933470a2",
+    "mtime": 1791046461.9960306,
+    "seen": 1791046498.1049805,
+    "ast_hash": "60c0f0d5dc1427c46050b8c50d5bb3b1",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/CrmLoyaltyPage.tsx": {
@@ -1152,9 +1152,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/cashRegisterService.ts": {
-    "mtime": 1791028798.5432105,
-    "seen": 1791029006.3230374,
-    "ast_hash": "942e4dcf1cc01a636e19ad2b8cc99875",
+    "mtime": 1791046461.8676896,
+    "seen": 1791046498.1110861,
+    "ast_hash": "01f5a1a3c69bd8a494ab1ef5c968d6a3",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/companyService.ts": {

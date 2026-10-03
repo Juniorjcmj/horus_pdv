@@ -2616,15 +2616,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/dexie.ts": {
-    "mtime": 1790421566.5247185,
-    "seen": 1790421619.656539,
-    "ast_hash": "cf35e08015c13eb5847e46352b04881f",
+    "mtime": 1791046779.7282763,
+    "seen": 1791046884.130563,
+    "ast_hash": "86e0fc854b00ce3d2e162af8a52d5515",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CashSessionRepository.ts": {
-    "mtime": 1790421566.5265112,
-    "seen": 1790421619.656541,
-    "ast_hash": "df46a4b66d656ae6bd09c63b09b33e85",
+    "mtime": 1791046831.805834,
+    "seen": 1791046884.1305666,
+    "ast_hash": "93043b7df22b1b282e539c0359121b51",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CustomerRepository.ts": {

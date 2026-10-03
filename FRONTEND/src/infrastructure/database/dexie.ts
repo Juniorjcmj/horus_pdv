@@ -72,6 +72,11 @@ export type CashSessionMovementItem = {
   operatorName: string;
 };
 
+export type CashSessionPaymentItem = {
+  paymentType: string;
+  total: string;
+};
+
 export type CashSessionRecord = {
   id: string;
   actualSessionId?: string;
@@ -87,6 +92,11 @@ export type CashSessionRecord = {
   note?: string;
   differenceReason?: string | null;
   movimentos?: CashSessionMovementItem[];
+  /** Último total por forma de pagamento visto no servidor (não inclui vendas offline ainda não sincronizadas). */
+  paymentBreakdown?: CashSessionPaymentItem[];
+  /** Fechamento offline: valores congelados no momento do fechamento (pt-BR). */
+  expectedCashAmount?: string | null;
+  differenceAmount?: string | null;
 };
 
 export type SaleRecord = {

@@ -3,13 +3,111 @@
  * Objetivo: persiste o status de caixa no IndexedDB para acesso offline.
  *           Garante atomicidade total entre a mutação de estado local e o enfileiramento no Outbox.
  */
-import { db, type CashSessionRecord, type CashSessionMovementItem } from "../dexie";
+import { db, type CashSessionRecord, type CashSessionMovementItem, type CashSessionPaymentItem } from "../dexie";
 import type { CashRegisterStatusDto } from "@/services/api/cashRegisterService";
 import { getCachedDeviceId } from "../deviceId";
 import { enqueueEvent } from "./OutboxRepository";
 import { computeCashMovementPayloadHash } from "@/utils/cryptoHash";
 
 const CACHE_KEY = "cash-status-cache";
+const FORMA_DINHEIRO = "dinheiro";
+
+function parseMoney(value: string | number | null | undefined): number {
+  if (value === null || value === undefined) return 0;
+  if (typeof value === "number") return value;
+  const parsed = parseFloat(value.replace(/\./g, "").replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatMoney(value: number): string {
+  return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function round2(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+/**
+ * Soma, por forma de pagamento, as vendas feitas neste aparelho que ainda NÃO foram sincronizadas
+ * (evento SALE_CREATED no outbox fora do status PROCESSED) desde a abertura do turno. As já
+ * sincronizadas estão no total do servidor e não podem ser somadas de novo.
+ */
+async function sumPendingLocalSales(openedAt: string): Promise<Record<string, number>> {
+  const events = await db.outbox
+    .where("eventType")
+    .equals("SALE_CREATED")
+    .filter((event) => event.status !== "PROCESSED")
+    .toArray();
+  const saleIds = events.map((event) => event.aggregateId);
+  if (saleIds.length === 0) return {};
+
+  const openedMs = Date.parse(openedAt);
+  const sales = await db.sales
+    .where("id")
+    .anyOf(saleIds)
+    .filter((sale) => {
+      if (sale.status !== "COMPLETED") return false;
+      const createdMs = Date.parse(sale.createdAt);
+      return Number.isNaN(openedMs) || Number.isNaN(createdMs) || createdMs >= openedMs;
+    })
+    .toArray();
+  if (sales.length === 0) return {};
+
+  const payments = await db.payments
+    .where("saleId")
+    .anyOf(sales.map((sale) => sale.id))
+    .toArray();
+
+  const totals: Record<string, number> = {};
+  for (const payment of payments) {
+    const key = payment.paymentType.trim().toLowerCase() || "outros";
+    totals[key] = (totals[key] ?? 0) + payment.amount;
+  }
+  return totals;
+}
+
+export type OfflineCashSummary = {
+  paymentBreakdown: CashSessionPaymentItem[];
+  /** Dinheiro esperado na gaveta: fundo de troco + vendas em dinheiro + reforços - sangrias (pt-BR). */
+  expectedCashAmount: string;
+};
+
+/**
+ * Totais do turno quando o servidor não está disponível: último total conhecido do servidor
+ * + vendas locais pendentes de sincronização + movimentos (sangria/reforço) já guardados.
+ */
+export async function computeOfflineCashSummary(
+  record: Pick<CashSessionRecord, "openedAt" | "openingAmount" | "movimentos" | "paymentBreakdown">,
+): Promise<OfflineCashSummary> {
+  const totals: Record<string, number> = {};
+  for (const item of record.paymentBreakdown ?? []) {
+    const key = item.paymentType.trim().toLowerCase() || "outros";
+    totals[key] = (totals[key] ?? 0) + parseMoney(item.total);
+  }
+
+  const pending = await sumPendingLocalSales(record.openedAt);
+  for (const [key, value] of Object.entries(pending)) {
+    totals[key] = (totals[key] ?? 0) + value;
+  }
+
+  const movimentos = record.movimentos ?? [];
+  const reforcos = movimentos
+    .filter((item) => item.tipo.toLowerCase() === "reforco")
+    .reduce((sum, item) => sum + parseMoney(item.valor), 0);
+  const sangrias = movimentos
+    .filter((item) => item.tipo.toLowerCase() === "sangria")
+    .reduce((sum, item) => sum + parseMoney(item.valor), 0);
+
+  const expected = round2(record.openingAmount + (totals[FORMA_DINHEIRO] ?? 0) + reforcos - sangrias);
+
+  return {
+    paymentBreakdown: Object.entries(totals).map(([paymentType, total]) => ({
+      paymentType,
+      total: formatMoney(round2(total)),
+    })),
+    expectedCashAmount: formatMoney(expected),
+  };
+}
 
 /** Salva o status do caixa no IndexedDB e espelha no localStorage para compatibilidade. */
 export async function saveCashStatus(status: CashRegisterStatusDto): Promise<void> {
@@ -37,6 +135,10 @@ export async function saveCashStatus(status: CashRegisterStatusDto): Promise<voi
       note: session.note || "",
       differenceReason: session.differenceReason || null,
       movimentos: session.movimentos || [],
+      // Guarda o total por forma de pagamento do servidor: base para o fechamento offline.
+      paymentBreakdown: session.paymentBreakdown ?? [],
+      expectedCashAmount: session.expectedCashAmount ?? null,
+      differenceAmount: session.differenceAmount ?? null,
     };
 
     await db.cashSessions.put(record);
@@ -62,6 +164,8 @@ export async function loadCachedCashStatus(): Promise<CashRegisterStatusDto | nu
   if (record) {
     const isOpened = record.status === "OPEN";
     const sessionId = record.actualSessionId || (record.id !== CACHE_KEY ? record.id : "cx-offline");
+    // Turno aberto: totais ao vivo (servidor + vendas locais pendentes). Fechado: valores congelados no fechamento.
+    const liveSummary = isOpened ? await computeOfflineCashSummary(record) : null;
     return {
       state: isOpened ? "aberto" : "fechado",
       canSell: isOpened,
@@ -82,6 +186,8 @@ export async function loadCachedCashStatus(): Promise<CashRegisterStatusDto | nu
             note: record.note || "",
             elapsedMinutes: 0,
             movimentos: record.movimentos || [],
+            expectedCashAmount: liveSummary?.expectedCashAmount,
+            paymentBreakdown: liveSummary?.paymentBreakdown,
           }
         : null,
       lastSession: !isOpened
@@ -100,6 +206,9 @@ export async function loadCachedCashStatus(): Promise<CashRegisterStatusDto | nu
             differenceReason: record.differenceReason || null,
             elapsedMinutes: 0,
             movimentos: record.movimentos || [],
+            expectedCashAmount: record.expectedCashAmount ?? null,
+            differenceAmount: record.differenceAmount ?? null,
+            paymentBreakdown: record.paymentBreakdown ?? [],
           }
         : undefined,
       history: [],
@@ -200,6 +309,9 @@ export async function openCashLocal(
         note: "",
         elapsedMinutes: 0,
         movimentos: [],
+        // Sem vendas nem movimentos ainda: a gaveta deve ter só o fundo de troco.
+        expectedCashAmount: openingAmount,
+        paymentBreakdown: [],
       },
       history: [],
     };
@@ -229,6 +341,17 @@ export async function closeCashLocal(
 
   let resultDto: CashRegisterStatusDto;
 
+  // Totais do turno calculados ANTES da transação (ela só cobre cashSessions e outbox; as vendas
+  // e pagamentos locais ficam em outras tabelas): servidor + vendas locais pendentes + movimentos.
+  const cachedBefore = await db.cashSessions.get(CACHE_KEY);
+  const summary = await computeOfflineCashSummary({
+    openedAt: cachedBefore?.openedAt || now,
+    openingAmount: cachedBefore?.openingAmount || 0,
+    movimentos: cachedBefore?.movimentos || [],
+    paymentBreakdown: cachedBefore?.paymentBreakdown,
+  });
+  const differenceNum = round2(closingNum - parseMoney(summary.expectedCashAmount));
+
   // Transação atômica única: leitura, gravação e outbox
   await db.transaction("rw", [db.cashSessions, db.outbox], async () => {
     const cached = await db.cashSessions.get(CACHE_KEY);
@@ -236,6 +359,8 @@ export async function closeCashLocal(
     const openedAt = cached?.openedAt || now;
     const openingNum = cached?.openingAmount || 0;
     const existingMovimentos = cached?.movimentos || [];
+    const openedMs = Date.parse(openedAt);
+    const elapsedMinutes = Number.isNaN(openedMs) ? 0 : Math.max(0, Math.floor((Date.parse(now) - openedMs) / 60000));
 
     const closedRecord: CashSessionRecord = {
       id: sessionId,
@@ -252,6 +377,9 @@ export async function closeCashLocal(
       note,
       differenceReason: differenceReason || null,
       movimentos: existingMovimentos,
+      paymentBreakdown: summary.paymentBreakdown,
+      expectedCashAmount: summary.expectedCashAmount,
+      differenceAmount: formatMoney(differenceNum),
     };
 
     await db.cashSessions.put(closedRecord);
@@ -291,8 +419,11 @@ export async function closeCashLocal(
         closedByName: operatorName || "",
         note,
         differenceReason: differenceReason || null,
-        elapsedMinutes: 0,
+        elapsedMinutes,
         movimentos: existingMovimentos,
+        expectedCashAmount: summary.expectedCashAmount,
+        differenceAmount: formatMoney(differenceNum),
+        paymentBreakdown: summary.paymentBreakdown,
       },
       history: [],
     };
@@ -397,6 +528,15 @@ export async function registerMovementLocal(
       history: [],
     };
   });
+
+  // Esperado em gaveta e totais atualizados com o novo movimento (leitura fora da transação:
+  // vendas e pagamentos locais ficam em outras tabelas).
+  const cachedAfter = await db.cashSessions.get(CACHE_KEY);
+  if (cachedAfter && resultDto!.currentSession) {
+    const summary = await computeOfflineCashSummary(cachedAfter);
+    resultDto!.currentSession.expectedCashAmount = summary.expectedCashAmount;
+    resultDto!.currentSession.paymentBreakdown = summary.paymentBreakdown;
+  }
 
   // Espelho não bloqueante no localStorage após commit da transação
   try {
