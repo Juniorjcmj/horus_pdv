@@ -65,6 +65,22 @@ export type CancelSalePayload = {
   justificativa: string;
 };
 
+export type AutorizarPrecoPayload = {
+  supervisorId: string;
+  supervisorPassword: string;
+  productCode: string;
+  precoNovo: number;
+  motivo?: string;
+};
+
+export type AutorizarPrecoResult = {
+  autorizacaoId: string;
+  supervisorNome: string;
+  precoTabela: number;
+  precoNovo: number;
+  expiraEm: string;
+};
+
 export type SalePaymentItemDto = {
   id: string;
   companyId: string;
@@ -111,6 +127,8 @@ export type RegisterSalePayload = {
   occurredAt?: string;
   offlineReference?: string;
   payloadHash?: string;
+  /** true só no reenvio de venda feita offline (SyncEngine). */
+  reenvioOffline?: boolean;
   customerName: string;
   customerCpf: string;
   paymentType: string;
@@ -124,6 +142,8 @@ export type RegisterSalePayload = {
     desconto?: number;
     itemTotal?: number;
     promocaoId?: string | null;
+    /** Autorização de gerente para o preço alterado deste item (ver autorizarPreco). */
+    autorizacaoPrecoId?: string | null;
   }>;
   payments?: SalePaymentDto[];
 };
@@ -166,6 +186,14 @@ export const salesHistoryService = {
       rows: SaleHistoryDto[];
     }>(`${HISTORICO_VENDAS_API_URL}/${saleNumber}/imprimir`, {
       method: "POST",
+    });
+    return response.data;
+  },
+  /** Pede ao servidor a autorização (senha de gerente) para vender um produto por preço diferente do cadastrado. */
+  async autorizarPreco(payload: AutorizarPrecoPayload) {
+    const response = await apiRequest<AutorizarPrecoResult>(`${HISTORICO_VENDAS_API_URL}/autorizar-preco`, {
+      method: "POST",
+      body: JSON.stringify(payload),
     });
     return response.data;
   },

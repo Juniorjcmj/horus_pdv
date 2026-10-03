@@ -23,6 +23,7 @@ public static class AuditEventTypes
     public const string FiadoRecebimento = "FiadoRecebimento";
     public const string EstoqueRuptura = "EstoqueRuptura";
     public const string VendaCancelada = "VendaCancelada";
+    public const string AlteracaoPreco = "AlteracaoPreco";
 }
 
 public class AuditLogAB(Connection connection)

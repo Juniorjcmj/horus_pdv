@@ -86,6 +86,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<Connection>();
 builder.Services.AddScoped<ProdutoAB>();
 builder.Services.AddScoped<LoteAB>();
+builder.Services.AddScoped<AutorizacaoPrecoAB>();
 builder.Services.AddScoped<LoteService>();
 builder.Services.AddScoped<ClienteAB>();
 builder.Services.AddScoped<FornecedorAB>();

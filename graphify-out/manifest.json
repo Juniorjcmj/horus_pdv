@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/HistoricoVendas/HistoricoVendasController.cs": {
-    "mtime": 1791028012.5967605,
-    "seen": 1791028438.5203493,
-    "ast_hash": "9df1c4261945b12460ccffc79866e7ca",
+    "mtime": 1791055612.4114423,
+    "seen": 1791055811.075559,
+    "ast_hash": "0db9d94f16756fb37b41e893a31f52f5",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Home/HomeController.cs": {
@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/VendaRequest.cs": {
-    "mtime": 1790421566.4900577,
-    "seen": 1790421619.6254172,
-    "ast_hash": "4c6df0f65f5f6362f939544d6de096a2",
+    "mtime": 1791055649.6724563,
+    "seen": 1791055811.0871067,
+    "ast_hash": "ccf902eb295ba353c2abe918b863b43b",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Response/ApiResponse.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1791043716.9335005,
-    "seen": 1791043964.1929057,
-    "ast_hash": "ca2328af4a87b72591cd757f5045eb38",
+    "mtime": 1791055612.4787173,
+    "seen": 1791055811.087377,
+    "ast_hash": "a5f242161548ff343f21d20ff95e8976",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -384,9 +384,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/AuditLogAB.cs": {
-    "mtime": 1790972186.993185,
-    "seen": 1790973295.0878515,
-    "ast_hash": "3d541d6cf43bdbbdec27931762cd4021",
+    "mtime": 1791055612.3391113,
+    "seen": 1791055811.0910115,
+    "ast_hash": "86c67288995deb59399ff58882d3a3fe",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/CaixaAB.cs": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs": {
-    "mtime": 1791051070.452979,
-    "seen": 1791051228.7563515,
-    "ast_hash": "8df223e4d38c4c8798fffefe20993214",
+    "mtime": 1791055649.758968,
+    "seen": 1791055811.0923486,
+    "ast_hash": "eba104b429591679ab8e53b5986a13e8",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HomeAB.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791050933.227871,
-    "seen": 1791051228.7583685,
-    "ast_hash": "3300c19b4b2403c85b67f26d51a656a3",
+    "mtime": 1791055557.5588431,
+    "seen": 1791055811.0941563,
+    "ast_hash": "831fb512e162ebe60905fb7ce0e51436",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791051193.8433049,
-    "seen": 1791051228.787923,
-    "ast_hash": "becc45c63f9918434b415c30edb010cb",
+    "mtime": 1791055761.8975024,
+    "seen": 1791055811.1191165,
+    "ast_hash": "e15d5792098ac2c91b59791562890368",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1212,9 +1212,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/salesHistoryService.ts": {
-    "mtime": 1790972916.4939153,
-    "seen": 1790973295.137493,
-    "ast_hash": "be2485bcf6f576d16630c41adc3e6f75",
+    "mtime": 1791055660.785633,
+    "seen": 1791055811.1248856,
+    "ast_hash": "5a64a928c201a58c7a237da1be90307a",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/sessionService.ts": {
@@ -2658,9 +2658,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/synchronization/SyncEngine.ts": {
-    "mtime": 1790425521.0517294,
-    "seen": 1790426295.5597029,
-    "ast_hash": "ef9a7ff45cad878049680d77c86318d3",
+    "mtime": 1791055649.8784533,
+    "seen": 1791055811.1155555,
+    "ast_hash": "ecdd2eefcc4208dc64a164613b3a799e",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/offlineStore.ts": {
@@ -3765,6 +3765,18 @@
     "mtime": 1791051111.4588606,
     "seen": 1791051228.7919328,
     "ast_hash": "a2e0c273d4e920a6ce07172b2120f411",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/AutorizacaoPrecoAB.cs": {
+    "mtime": 1791055592.1015427,
+    "seen": 1791055811.0910149,
+    "ast_hash": "a4e7c576ffacfed3cfaa3f7181927b00",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/PriceOverrideModal.tsx": {
+    "mtime": 1791055688.9612443,
+    "seen": 1791055811.1045513,
+    "ast_hash": "6242e46522e2efc73c03fe64c2d40dec",
     "semantic_hash": ""
   }
 }

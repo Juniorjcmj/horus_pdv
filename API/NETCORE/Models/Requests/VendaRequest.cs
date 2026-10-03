@@ -17,6 +17,15 @@ public class VendaRequest
     public string? OfflineReference { get; set; }
     public DateTimeOffset? OccurredAt { get; set; }
     public string? PayloadHash { get; set; }
+
+    /// <summary>
+    /// true somente quando a venda foi feita sem conexão e está sendo reenviada pela sincronização do caixa.
+    /// (eventId/offlineReference/occurredAt vão em TODA venda, então não servem para distinguir.)
+    /// Nesse caso o servidor não recusa preço diferente do cadastrado sem autorização, pois o caixa offline
+    /// não consegue validar a senha do gerente.
+    /// </summary>
+    public bool ReenvioOffline { get; set; }
+
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerCpf { get; set; } = string.Empty;
     public string PaymentType { get; set; } = string.Empty;
@@ -42,4 +51,20 @@ public class VendaItemRequest
     public decimal UnitPrice { get; set; }
     public decimal Desconto { get; set; }
     public string? PromocaoId { get; set; }
+
+    /// <summary>
+    /// Autorização de gerente (POST api/HistoricoVendas/autorizar-preco) para este item ter preço
+    /// diferente do cadastrado. Obrigatória, em venda online, quando o preço é menor que o cadastrado.
+    /// </summary>
+    public string? AutorizacaoPrecoId { get; set; }
+}
+
+public class AutorizarPrecoRequest
+{
+    public string SupervisorId { get; set; } = string.Empty;
+    public string SupervisorPassword { get; set; } = string.Empty;
+    public string ProductCode { get; set; } = string.Empty;
+    /// <summary>Preço unitário autorizado (maior que zero).</summary>
+    public decimal PrecoNovo { get; set; }
+    public string? Motivo { get; set; }
 }

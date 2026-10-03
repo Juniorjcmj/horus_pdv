@@ -21,8 +21,86 @@ public class HistoricoVendasController(
     DocumentoFiscalAB documentoFiscalAB,
     RegrasEmissaoNfceAB regrasEmissaoNfceAB,
     HorusSecurityStore securityStore,
+    AutorizacaoPrecoAB autorizacaoPrecoAB,
+    ProdutoAB produtoAB,
+    AuditLogAB auditLogAB,
     ILogger<HistoricoVendasController> logger) : ControllerBase
 {
+    /// <summary>
+    /// Autoriza, com a senha de um gerente/administrador, a venda de um produto por preço diferente do
+    /// cadastrado. Devolve um id de autorização (uso único, vale 2 horas) que o caixa envia junto do item.
+    /// </summary>
+    [HttpPost("autorizar-preco")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
+    public async Task<IActionResult> AutorizarPreco([FromBody] AutorizarPrecoRequest request)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        if (string.IsNullOrWhiteSpace(request.ProductCode))
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Informe o produto." });
+        }
+
+        if (request.PrecoNovo <= 0)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "O novo preço deve ser maior que zero." });
+        }
+
+        var (valido, msgSupervisor, supervisor) = securityStore.ValidateSupervisorCredentials(
+            request.SupervisorId,
+            request.SupervisorPassword,
+            currentUser.CompanyId);
+
+        if (!valido || supervisor is null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object> { Success = false, Message = msgSupervisor });
+        }
+
+        var produto = await produtoAB.ObterPorCodigoAsync(currentUser.CompanyId, request.ProductCode.Trim());
+        if (produto is null)
+        {
+            return NotFound(new ApiResponse<object> { Success = false, Message = "Produto não encontrado." });
+        }
+
+        var precoTabela = produto.ProductSalePrice > 0 ? produto.ProductSalePrice : produto.ProductUnitPrice;
+        var (autorizacaoId, expiraEm) = await autorizacaoPrecoAB.CriarAsync(
+            currentUser.CompanyId,
+            produto.ProductCode,
+            precoTabela,
+            request.PrecoNovo,
+            supervisor.Id,
+            supervisor.Name,
+            currentUser.Id,
+            currentUser.Name,
+            request.Motivo);
+
+        _ = auditLogAB.RegistrarAsync(
+            currentUser.CompanyId,
+            supervisor.Id,
+            supervisor.Name,
+            AuditEventTypes.AlteracaoPreco,
+            $"{supervisor.Name} autorizou alterar o preço de \"{produto.ProductName}\" (cód. {produto.ProductCode}) de " +
+            $"{HorusMoneyFormat.Format(precoTabela)} para {HorusMoneyFormat.Format(request.PrecoNovo)} no caixa de {currentUser.Name}." +
+            (string.IsNullOrWhiteSpace(request.Motivo) ? string.Empty : $" Motivo: {request.Motivo.Trim()}"),
+            entityType: "Produto",
+            entityId: produto.ProductCode);
+
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = "Alteração de preço autorizada.",
+            Data = new
+            {
+                autorizacaoId,
+                supervisorNome = supervisor.Name,
+                precoTabela,
+                precoNovo = request.PrecoNovo,
+                expiraEm
+            }
+        });
+    }
+
     [HttpGet]
     [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
     public async Task<IActionResult> Listar([FromQuery] string? desde = null)

@@ -300,7 +300,9 @@ class SyncEngine {
     switch (eventType) {
       case "SALE_CREATED": {
         const payload = JSON.parse(payloadJson) as RegisterSalePayload;
-        const res = await salesHistoryService.register(payload);
+        // Marca como reenvio offline: o servidor não recusa preço sem autorização de gerente nesse caso
+        // (o caixa offline não consegue validar a senha). O hash de idempotência não inclui este campo.
+        const res = await salesHistoryService.register({ ...payload, reenvioOffline: true });
         return res;
       }
       case "CASH_OPEN": {

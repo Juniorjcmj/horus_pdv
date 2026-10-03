@@ -253,12 +253,19 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 || !string.IsNullOrWhiteSpace(request.OfflineReference) 
                 || request.OccurredAt.HasValue;
 
+            // Preço diferente do cadastrado exige autorização de gerente (senha dada no caixa). A conferência
+            // roda na transação da venda: a autorização é consumida junto com ela e some se a venda falhar.
+            var autorizacoesPreco = await AutorizacaoPrecoAB.ValidarPrecosDaVendaAsync(
+                db, transaction, companyId, request.Items, request.ReenvioOffline);
+
             // A venda e a baixa de estoque compartilham a mesma transação para evitar histórico sem estoque atualizado.
             var (saleItems, rupturas) = await BaixarEstoqueAsync(db, transaction, companyId, request.Items, isOfflineSync);
 
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, payments,
                 request.ClientSaleId, request.OfflineReference, request.OccurredAt, caixaSessaoId);
+
+            await AutorizacaoPrecoAB.VincularVendaAsync(db, transaction, companyId, autorizacoesPreco, result.VendaId);
 
             result.Warnings = rupturas;
 

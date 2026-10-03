@@ -19,7 +19,9 @@ import {
   Receipt,
   RefreshCw,
   Search,
+  Tag,
   Trash2,
+  Undo2,
   UserPlus,
   Users,
   UserX,
@@ -46,6 +48,7 @@ import ReceiptPreviewModal, {
   type PaymentType,
   type SaleReceipt,
 } from "@/components/Admin/ReceiptPreviewModal";
+import PriceOverrideModal, { type PriceOverrideApproval } from "@/components/Admin/PriceOverrideModal";
 import { promocaoService, type Promocao } from "@/services/api/promocaoService";
 import { applyPromotions, round2 } from "@/utils/promotionEngine";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
@@ -133,6 +136,11 @@ type CartItem = {
   itemTotal?: number;
   promocaoId?: string | null;
   promocaoNome?: string | null;
+  /** Preço cadastrado do produto, guardado quando o preço é alterado com senha de gerente (para restaurar). */
+  precoCadastro?: number;
+  /** Autorização de gerente (uso único) do preço alterado; vai no item da venda. */
+  autorizacaoPrecoId?: string | null;
+  precoAutorizadoPor?: string | null;
 };
 
 const PAYMENT_OPTIONS: Array<{ value: PaymentType; label: string }> = [
@@ -422,7 +430,18 @@ export default function SalesStartPage({
   }, [products]);
 
   const cart = useMemo(() => {
-    return applyPromotions(rawCart, promocoes, produtoCategoriaMap);
+    // Item com preço alterado por gerente vale pelo preço autorizado: não recebe promoção por cima.
+    return applyPromotions(rawCart, promocoes, produtoCategoriaMap).map((item) =>
+      item.autorizacaoPrecoId
+        ? {
+            ...item,
+            discount: 0,
+            itemTotal: round2(item.quantity * item.unitPrice),
+            promocaoId: null,
+            promocaoNome: null,
+          }
+        : item,
+    );
   }, [rawCart, promocoes, produtoCategoriaMap]);
 
   const grossSubtotal = useMemo(
@@ -875,6 +894,54 @@ export default function SalesStartPage({
     [addProductToCart, cartLocked, formatMoneyBr, products],
   );
 
+  // --- Alteração de preço com senha de gerente ------------------------------------------------
+  const [priceOverrideId, setPriceOverrideId] = useState<string | null>(null);
+  const priceOverrideItem = priceOverrideId ? (rawCart.find((item) => item.id === priceOverrideId) ?? null) : null;
+
+  const openPriceOverride = (item: CartItem) => {
+    if (cartLocked) {
+      Toast.error("Este carrinho veio de um pedido — os preços foram combinados com o vendedor.");
+      return;
+    }
+    setPriceOverrideId(item.id);
+  };
+
+  const handlePriceApproved = (approval: PriceOverrideApproval) => {
+    const targetId = priceOverrideId;
+    if (!targetId) return;
+    setRawCart((current) =>
+      current.map((item) =>
+        item.id === targetId
+          ? {
+              ...item,
+              precoCadastro: item.precoCadastro ?? item.unitPrice,
+              unitPrice: approval.novoPreco,
+              autorizacaoPrecoId: approval.autorizacaoId,
+              precoAutorizadoPor: approval.supervisorNome,
+            }
+          : item,
+      ),
+    );
+    setPriceOverrideId(null);
+    Toast.success(`Preço alterado com autorização de ${approval.supervisorNome}.`);
+  };
+
+  const restoreCatalogPrice = (item: CartItem) => {
+    setRawCart((current) =>
+      current.map((entry) =>
+        entry.id === item.id
+          ? {
+              ...entry,
+              unitPrice: entry.precoCadastro ?? entry.unitPrice,
+              precoCadastro: undefined,
+              autorizacaoPrecoId: null,
+              precoAutorizadoPor: null,
+            }
+          : entry,
+      ),
+    );
+  };
+
   const removeItem = (id: string) => {
     if (cartLocked) {
       Toast.error("Este carrinho veio de um pedido — solte o pedido para remover itens.");
@@ -1266,6 +1333,7 @@ export default function SalesStartPage({
           desconto: item.discount ?? 0,
           itemTotal: item.itemTotal ?? Math.max(0, item.quantity * item.unitPrice - (item.discount ?? 0)),
           promocaoId: item.promocaoId ?? null,
+          autorizacaoPrecoId: item.autorizacaoPrecoId ?? null,
         })),
         payments: payloadPayments,
         payloadHash: "",
@@ -2074,7 +2142,18 @@ export default function SalesStartPage({
                                 <p className="font-semibold text-text-primary">{item.quantity}</p>
                               </div>
                               <div>
-                                <p className="text-text-secondary">Vl. Unit</p>
+                                <p className="flex items-center gap-1 text-text-secondary">
+                                  Vl. Unit
+                                  <button
+                                    type="button"
+                                    onClick={() => openPriceOverride(item)}
+                                    disabled={cartLocked}
+                                    aria-label={`Alterar preço de ${item.name}`}
+                                    className="inline-flex h-5 w-5 items-center justify-center rounded border border-border-secondary text-text-secondary disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    <Tag size={10} />
+                                  </button>
+                                </p>
                                 {hasDiscount ? (
                                   <div>
                                     <span className="text-[10px] text-text-secondary line-through">
@@ -2085,10 +2164,19 @@ export default function SalesStartPage({
                                     </p>
                                   </div>
                                 ) : (
-                                  <p className="font-semibold text-text-primary">
+                                  <p className={`font-semibold ${item.autorizacaoPrecoId ? "text-amber-600 dark:text-amber-400" : "text-text-primary"}`}>
                                     {formatMoneyBr(item.unitPrice)}
                                   </p>
                                 )}
+                                {item.autorizacaoPrecoId ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => restoreCatalogPrice(item)}
+                                    className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400"
+                                  >
+                                    <Undo2 size={10} /> preço alterado • restaurar
+                                  </button>
+                                ) : null}
                               </div>
                               <div>
                                 <p className="text-text-secondary">Vl. Total</p>
@@ -2138,6 +2226,20 @@ export default function SalesStartPage({
                               <td className="w-28 px-2 py-1">{item.code}</td>
                               <td className="px-2 py-1">
                                 <span>{item.name}</span>
+                                {item.autorizacaoPrecoId ? (
+                                  <span className="ml-1.5 inline-flex items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                                    PREÇO ALTERADO{item.precoAutorizadoPor ? ` • ${item.precoAutorizadoPor}` : ""}
+                                    <button
+                                      type="button"
+                                      onClick={() => restoreCatalogPrice(item)}
+                                      title={`Voltar ao preço cadastrado (R$ ${formatMoneyBr(item.precoCadastro ?? item.unitPrice)})`}
+                                      aria-label="Restaurar preço cadastrado"
+                                      className="inline-flex items-center"
+                                    >
+                                      <Undo2 size={10} />
+                                    </button>
+                                  </span>
+                                ) : null}
                                 {item.promocaoNome ? (
                                   <span className="ml-1.5 inline-block rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                                     PROMO • {item.promocaoNome}
@@ -2155,18 +2257,32 @@ export default function SalesStartPage({
                               </td>
                               <td className="w-16 px-2 py-1 text-center">{item.quantity}</td>
                               <td className="w-32 px-2 py-1 text-right">
-                                {hasDiscount ? (
-                                  <div>
-                                    <span className="text-[11px] text-text-secondary line-through">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => openPriceOverride(item)}
+                                    disabled={cartLocked}
+                                    title="Alterar preço (exige a senha de um gerente)"
+                                    aria-label={`Alterar preço de ${item.name}`}
+                                    className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border-secondary text-text-secondary hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    <Tag size={11} />
+                                  </button>
+                                  {hasDiscount ? (
+                                    <div>
+                                      <span className="text-[11px] text-text-secondary line-through">
+                                        {formatMoneyBr(item.unitPrice)}
+                                      </span>
+                                      <p className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                        {formatMoneyBr((item.itemTotal ?? total) / item.quantity)}
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <span className={item.autorizacaoPrecoId ? "font-semibold text-amber-600 dark:text-amber-400" : ""}>
                                       {formatMoneyBr(item.unitPrice)}
                                     </span>
-                                    <p className="font-semibold text-emerald-600 dark:text-emerald-400">
-                                      {formatMoneyBr((item.itemTotal ?? total) / item.quantity)}
-                                    </p>
-                                  </div>
-                                ) : (
-                                  formatMoneyBr(item.unitPrice)
-                                )}
+                                  )}
+                                </div>
                               </td>
                               <td className="w-32 px-2 py-1 text-right">
                                 {hasDiscount ? (
@@ -3128,6 +3244,15 @@ export default function SalesStartPage({
           setNfceCancelInitialDoc(null);
           void reloadProducts().catch(() => {});
         }}
+      />
+
+      <PriceOverrideModal
+        isOpen={priceOverrideItem !== null}
+        productCode={priceOverrideItem?.code ?? ""}
+        productName={priceOverrideItem?.name ?? ""}
+        currentPrice={priceOverrideItem ? (priceOverrideItem.precoCadastro ?? priceOverrideItem.unitPrice) : 0}
+        onClose={() => setPriceOverrideId(null)}
+        onApproved={handlePriceApproved}
       />
 
       {statusDialog.Dialog}
