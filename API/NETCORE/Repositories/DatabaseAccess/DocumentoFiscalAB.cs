@@ -18,7 +18,8 @@ public class DocumentoFiscalAB(
     Connection connection,
     HistoricoVendasAB historicoVendasAB,
     ProdutoAB produtoAB,
-    ClienteAB clienteAB)
+    ClienteAB clienteAB,
+    LoteAB loteAB)
 {
     private const short ModeloNfce = 65;
     private const short ModeloNfe = 55;
@@ -928,6 +929,12 @@ public class DocumentoFiscalAB(
             }
 
             await transaction.CommitAsync(ct);
+
+            // Devolve aos lotes de origem o que a venda tirou deles (Fase 2). Seguro: nunca lança exceção.
+            if (!string.IsNullOrWhiteSpace(vendaId))
+            {
+                await loteAB.EstornarVendaSeguroAsync(companyId, vendaId, ct);
+            }
         }
         catch
         {
@@ -1249,6 +1256,9 @@ public class DocumentoFiscalAB(
             }
 
             await transaction.CommitAsync(ct);
+
+            // Devolve aos lotes de origem o que a venda tirou deles (Fase 2). Seguro: nunca lança exceção.
+            await loteAB.EstornarVendaSeguroAsync(companyId, vendaId, ct);
             return idNfe;
         }
         catch

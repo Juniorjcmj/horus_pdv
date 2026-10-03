@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1790738084.7900283,
-    "seen": 1790739586.7320085,
-    "ast_hash": "bac6ac0e6ad632c598141823646ae225",
+    "mtime": 1791051090.105188,
+    "seen": 1791051228.7554314,
+    "ast_hash": "e3f78ae570ee189a7509dfe702de4e30",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs": {
-    "mtime": 1791028002.5580034,
-    "seen": 1791028438.530786,
-    "ast_hash": "860c688c4551c0368c3792bd4662586a",
+    "mtime": 1791051070.452979,
+    "seen": 1791051228.7563515,
+    "ast_hash": "8df223e4d38c4c8798fffefe20993214",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HomeAB.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791043592.8339276,
-    "seen": 1791043964.1977742,
-    "ast_hash": "8dd0214f2d0f2b66406f690f811efd3f",
+    "mtime": 1791050933.227871,
+    "seen": 1791051228.7583685,
+    "ast_hash": "3300c19b4b2403c85b67f26d51a656a3",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
-    "mtime": 1791045713.845263,
-    "seen": 1791045837.7070735,
-    "ast_hash": "9736aa254a65383494c065ed0aeed5d8",
+    "mtime": 1791051090.225282,
+    "seen": 1791051228.761998,
+    "ast_hash": "f490be480907be0f9dc4f29f02bafb6e",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusAuthorizeRolesAttribute.cs": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791038395.1798248,
-    "seen": 1791038435.9537532,
-    "ast_hash": "dd7621b97cd1baf961ea694b75016eef",
+    "mtime": 1791051193.8433049,
+    "seen": 1791051228.787923,
+    "ast_hash": "becc45c63f9918434b415c30edb010cb",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -3726,45 +3726,45 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/LoteController.cs": {
-    "mtime": 1791047877.786306,
-    "seen": 1791047982.8483515,
-    "ast_hash": "697cf1191baa4179e1b079a140fa4e33",
+    "mtime": 1791051057.2995794,
+    "seen": 1791051228.7420683,
+    "ast_hash": "d946a80e4a9c79e1df524f44c6a41556",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/LoteModels.cs": {
-    "mtime": 1791047832.7446284,
-    "seen": 1791047982.851082,
-    "ast_hash": "2139753626069ec75ddc602f782edb53",
+    "mtime": 1791051057.2313864,
+    "seen": 1791051228.7457857,
+    "ast_hash": "6eba73a642c3666f474bb9fc58defa73",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/LoteRequests.cs": {
-    "mtime": 1791047832.8227818,
-    "seen": 1791047982.853582,
-    "ast_hash": "6bf64caa307dac09be7512f2b635ce47",
+    "mtime": 1791051016.7567034,
+    "seen": 1791051228.749126,
+    "ast_hash": "945fa80bc0203888caf1f304eea96d28",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/LoteAB.cs": {
-    "mtime": 1791047832.5670617,
-    "seen": 1791047982.8602643,
-    "ast_hash": "59bbe2549d4d90fe8e8c88a54a301a06",
+    "mtime": 1791051003.6548896,
+    "seen": 1791051228.7568905,
+    "ast_hash": "b66608155e1f7081e8b14c130f708021",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/LoteService.cs": {
-    "mtime": 1791047861.906242,
-    "seen": 1791047982.8642635,
-    "ast_hash": "26c8dba0e5554411ded1a19edeec3121",
+    "mtime": 1791051044.856135,
+    "seen": 1791051228.761638,
+    "ast_hash": "b020bc571af5e61352523a864d1e17e1",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ValidadePage.tsx": {
-    "mtime": 1791047954.4961815,
-    "seen": 1791047982.8878741,
-    "ast_hash": "8911816e0b628d54a6da521036a7a26b",
+    "mtime": 1791051155.0191393,
+    "seen": 1791051228.7885737,
+    "ast_hash": "66fdf7e8e4989012e1152f0131d91c22",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/loteService.ts": {
-    "mtime": 1791047880.593007,
-    "seen": 1791047982.890731,
-    "ast_hash": "e5c3d23258287af68fe3c0875936556c",
+    "mtime": 1791051111.4588606,
+    "seen": 1791051228.7919328,
+    "ast_hash": "a2e0c273d4e920a6ce07172b2120f411",
     "semantic_hash": ""
   }
 }

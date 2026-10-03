@@ -35,13 +35,40 @@ export type LoteAlertaDto = {
   valorEmRisco: number;
 };
 
+/** "desligado" não baixa lote; "sombra" baixa em segundo plano mas a tela usa o saldo estimado; "ativo" usa o saldo real. */
+export type FefoModo = "desligado" | "sombra" | "ativo";
+
 export type LoteAlertasResumoDto = {
   vencidos: number;
   criticos: number;
   atencao: number;
   valorEmRisco: number;
   produtosSemLote: number;
+  modo: FefoModo;
   itens: LoteAlertaDto[];
+};
+
+export type FefoDivergenciaDto = {
+  produtoId: string;
+  productCode: string;
+  productName: string;
+  loteId: string;
+  numeroLote: string;
+  /** AAAA-MM-DD */
+  dataValidade: string;
+  qtdEstimada: number;
+  qtdReal: number;
+  /** qtdReal - qtdEstimada */
+  diferenca: number;
+};
+
+export type FefoStatusDto = {
+  modo: FefoModo;
+  lotesComSaldo: number;
+  lotesComDivergencia: number;
+  produtosComDivergencia: number;
+  produtosComEstoqueSemLote: number;
+  itens: FefoDivergenciaDto[];
 };
 
 export type LoteConsultaFiltro = {
@@ -63,6 +90,7 @@ export type LoteConsultaDto = {
   pagina: number;
   tamanhoPagina: number;
   valorEmRisco: number;
+  modo: FefoModo;
   itens: LoteAlertaDto[];
 };
 
@@ -101,6 +129,17 @@ export const loteService = {
     query.set("tamanhoPagina", String(filtro.tamanhoPagina ?? 25));
     const response = await apiRequest<LoteConsultaDto>(`${LOTES_API_URL}/consulta?${query.toString()}`);
     return response.data;
+  },
+  /** Situação da baixa por lote: modo atual e divergências entre o saldo real e o estimado. */
+  async fefoStatus() {
+    const response = await apiRequest<FefoStatusDto>(`${LOTES_API_URL}/fefo`);
+    return response.data;
+  },
+  async definirModoFefo(modo: FefoModo) {
+    return apiRequest<object>(`${LOTES_API_URL}/fefo/modo`, {
+      method: "PUT",
+      body: JSON.stringify({ modo }),
+    });
   },
   async registrar(payload: RegistrarLotePayload) {
     return apiRequest<object>(`${LOTES_API_URL}/registrar`, {

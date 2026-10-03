@@ -19,12 +19,30 @@ import {
   type CategoriaValidadeDto,
   type LoteAlertaDto,
   type LoteAlertasResumoDto,
+  type FefoModo,
+  type FefoStatusDto,
   type LoteConsultaDto,
   type LoteFaixa,
 } from "@/services/api/loteService";
 import { productService, type ProductDto } from "@/services/api/productService";
 
-type Tab = "alertas" | "consulta" | "categorias";
+type Tab = "alertas" | "consulta" | "fefo" | "categorias";
+
+const MODO_INFO: Record<FefoModo, { label: string; description: string }> = {
+  desligado: {
+    label: "Desligado",
+    description: "As vendas não baixam lote. O saldo por lote continua estimado (o que vence primeiro sai primeiro).",
+  },
+  sombra: {
+    label: "Sombra",
+    description:
+      "A venda baixa o lote em segundo plano, mas as telas ainda usam o saldo estimado. Use para comparar o saldo real com o estimado antes de ativar.",
+  },
+  ativo: {
+    label: "Ativo",
+    description: "As telas passam a usar o saldo real de cada lote, baixado pela venda (vence primeiro, sai primeiro).",
+  },
+};
 type FaixaFilter = "todas" | LoteFaixa;
 
 const FAIXA_STYLE: Record<LoteFaixa, { label: string; badge: string }> = {
@@ -112,6 +130,10 @@ export default function ValidadePage() {
   const [consulta, setConsulta] = useState<LoteConsultaDto | null>(null);
   const [consultaLoading, setConsultaLoading] = useState(false);
 
+  const [fefo, setFefo] = useState<FefoStatusDto | null>(null);
+  const [fefoLoading, setFefoLoading] = useState(false);
+  const [modoChanging, setModoChanging] = useState(false);
+
   const [categorias, setCategorias] = useState<CategoriaValidadeDto[]>([]);
   const [edits, setEdits] = useState<Record<string, { prazo: string; alerta: string }>>({});
   const [savingCategoriaIds, setSavingCategoriaIds] = useState<Set<string>>(() => new Set());
@@ -193,6 +215,46 @@ export default function ValidadePage() {
       window.clearTimeout(timer);
     };
   }, [tab, consultaFilters, consultaPage, consultaPageSize]);
+
+  const loadFefo = useCallback(async () => {
+    setFefoLoading(true);
+    try {
+      setFefo((await loteService.fefoStatus()) ?? null);
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Erro ao carregar a situação da baixa por lote.");
+    } finally {
+      setFefoLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (tab === "fefo") void loadFefo();
+  }, [tab, loadFefo]);
+
+  const handleChangeModo = async (modo: FefoModo) => {
+    if (!fefo || fefo.modo === modo) return;
+    if (modo === "ativo") {
+      const confirmed = await statusDialog.confirm(
+        `Ativar o saldo real por lote? ${fefo.lotesComDivergencia} lote(s) em ${fefo.produtosComDivergencia} produto(s) divergem do saldo estimado. As telas de validade passam a mostrar o saldo real, baixado pelas vendas.`,
+      );
+      if (!confirmed) return;
+    }
+
+    setModoChanging(true);
+    try {
+      await loteService.definirModoFefo(modo);
+      Toast.success(`Baixa por lote: modo ${MODO_INFO[modo].label.toLowerCase()}.`);
+      await Promise.all([loadFefo(), loadAlertas()]);
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Erro ao alterar o modo.");
+    } finally {
+      setModoChanging(false);
+    }
+  };
+
+  // Saldo por lote: real quando o modo é "ativo", estimado nos demais.
+  const saldoLabel = (modo?: FefoModo) => (modo === "ativo" ? "Saldo (real)" : "Qtd. estimada");
 
   const updateConsultaFilters = (patch: Partial<ConsultaFilters>) => {
     setConsultaFilters((current) => ({ ...current, ...patch }));
@@ -348,6 +410,7 @@ export default function ValidadePage() {
           [
             ["alertas", "Alertas por lote"],
             ["consulta", "Consulta de lotes"],
+            ["fefo", "Baixa por lote"],
             ["categorias", "Prazos por categoria"],
           ] as const
         ).map(([key, label]) => (
@@ -396,7 +459,11 @@ export default function ValidadePage() {
           <section className="card overflow-hidden">
             <div className="flex items-center justify-between border-b border-border-primary px-4 py-3">
               <p className="text-xs text-text-secondary">
-                O saldo por lote é <strong>estimado</strong>: considera que o que vence primeiro sai primeiro.
+                {resumo?.modo === "ativo" ? (
+                  <>O saldo por lote é o <strong>real</strong>, baixado pelas vendas (vence primeiro, sai primeiro).</>
+                ) : (
+                  <>O saldo por lote é <strong>estimado</strong>: considera que o que vence primeiro sai primeiro.</>
+                )}
               </p>
               <button type="button" onClick={() => void loadAlertas()} className="btn-secondary inline-flex items-center gap-1.5 text-xs">
                 <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Atualizar
@@ -409,7 +476,7 @@ export default function ValidadePage() {
                     <th className="px-3 py-3">Produto</th>
                     <th className="px-3 py-3">Lote</th>
                     <th className="px-3 py-3">Validade</th>
-                    <th className="px-3 py-3 text-right">Qtd. estimada</th>
+                    <th className="px-3 py-3 text-right">{saldoLabel(resumo?.modo)}</th>
                     <th className="px-3 py-3 text-right">Valor em risco</th>
                     <th className="px-3 py-3">Situação</th>
                     <th className="px-3 py-3 text-center">Ação</th>
@@ -592,7 +659,11 @@ export default function ValidadePage() {
                 <strong className="text-text-primary">{consulta?.total ?? 0}</strong> lote(s) encontrado(s) · valor em risco{" "}
                 <strong className="text-text-primary">R$ {formatMoneyBr(consulta?.valorEmRisco ?? 0)}</strong>
               </span>
-              <span>Saldo estimado: considera que o que vence primeiro sai primeiro.</span>
+              <span>
+                {consulta?.modo === "ativo"
+                  ? "Saldo real, baixado pelas vendas."
+                  : "Saldo estimado: considera que o que vence primeiro sai primeiro."}
+              </span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[960px] text-sm">
@@ -602,7 +673,7 @@ export default function ValidadePage() {
                     <th className="px-3 py-3">Lote</th>
                     <th className="px-3 py-3">Validade</th>
                     <th className="px-3 py-3 text-right">Qtd. inicial</th>
-                    <th className="px-3 py-3 text-right">Qtd. estimada</th>
+                    <th className="px-3 py-3 text-right">{saldoLabel(consulta?.modo)}</th>
                     <th className="px-3 py-3 text-right">Valor em risco</th>
                     <th className="px-3 py-3">Situação</th>
                     <th className="px-3 py-3">Origem</th>
@@ -662,6 +733,124 @@ export default function ValidadePage() {
                   setConsultaPage(1);
                 }}
               />
+            </div>
+          </section>
+        </>
+      ) : tab === "fefo" ? (
+        <>
+          <section className="card space-y-4 p-4 md:p-5">
+            <div>
+              <h2 className="text-sm font-semibold text-text-primary">Baixa por lote na venda (FEFO)</h2>
+              <p className="mt-1 text-xs text-text-secondary">
+                Cada venda tira a quantidade dos lotes que vencem primeiro. Um lote vencido nunca bloqueia a venda: o PDV
+                só avisa.
+              </p>
+            </div>
+
+            <div className="grid gap-2 md:grid-cols-3">
+              {(Object.keys(MODO_INFO) as FefoModo[]).map((modo) => {
+                const selected = fefo?.modo === modo;
+                return (
+                  <button
+                    key={modo}
+                    type="button"
+                    disabled={!fefo || modoChanging}
+                    onClick={() => void handleChangeModo(modo)}
+                    className={`rounded-xl border p-3 text-left transition disabled:opacity-60 ${
+                      selected
+                        ? "border-brand-primary bg-brand-primary/10"
+                        : "border-border-primary hover:bg-hover-light"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+                      {MODO_INFO[modo].label}
+                      {selected ? (
+                        <span className="rounded-full bg-brand-primary/15 px-2 py-0.5 text-[10px] font-bold text-brand-primary">
+                          atual
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="mt-1 block text-xs text-text-secondary">{MODO_INFO[modo].description}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <div className="card border border-border-primary p-3">
+                <span className="block text-xs text-text-secondary">Lotes com saldo real</span>
+                <span className="mt-1 block text-lg font-bold text-text-primary">{fefo?.lotesComSaldo ?? 0}</span>
+              </div>
+              <div className="card border border-border-primary p-3">
+                <span className="block text-xs text-text-secondary">Lotes divergentes</span>
+                <span className="mt-1 block text-lg font-bold text-text-primary">{fefo?.lotesComDivergencia ?? 0}</span>
+              </div>
+              <div className="card border border-border-primary p-3">
+                <span className="block text-xs text-text-secondary">Produtos divergentes</span>
+                <span className="mt-1 block text-lg font-bold text-text-primary">{fefo?.produtosComDivergencia ?? 0}</span>
+              </div>
+              <div
+                className="card border border-border-primary p-3"
+                title="Estoque do produto maior que a soma dos saldos dos lotes: entrada sem lote, ajuste manual, edição de quantidade."
+              >
+                <span className="block text-xs text-text-secondary">Estoque não coberto por lote</span>
+                <span className="mt-1 block text-lg font-bold text-text-primary">{fefo?.produtosComEstoqueSemLote ?? 0}</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="card overflow-hidden">
+            <div className="flex items-center justify-between border-b border-border-primary px-4 py-3">
+              <p className="text-xs text-text-secondary">
+                Maiores divergências entre o saldo <strong>real</strong> (baixado pelas vendas) e o{" "}
+                <strong>estimado</strong>. Poucas divergências indicam que a baixa por lote está confiável.
+              </p>
+              <button type="button" onClick={() => void loadFefo()} className="btn-secondary inline-flex items-center gap-1.5 text-xs">
+                <RefreshCw size={13} className={fefoLoading ? "animate-spin" : ""} /> Atualizar
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-sm">
+                <thead className="bg-bg-primary text-left text-text-secondary">
+                  <tr>
+                    <th className="px-3 py-3">Produto</th>
+                    <th className="px-3 py-3">Lote</th>
+                    <th className="px-3 py-3">Validade</th>
+                    <th className="px-3 py-3 text-right">Estimado</th>
+                    <th className="px-3 py-3 text-right">Real</th>
+                    <th className="px-3 py-3 text-right">Diferença</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(fefo?.itens.length ?? 0) === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-3 py-10 text-center text-text-tertiary">
+                        {fefoLoading ? "Carregando..." : "Nenhuma divergência. 🎉"}
+                      </td>
+                    </tr>
+                  ) : null}
+                  {fefo?.itens.map((item) => (
+                    <tr key={item.loteId} className="border-t border-border-primary">
+                      <td className="px-3 py-3">
+                        <span className="block font-semibold text-text-primary">{item.productName}</span>
+                        <span className="block text-xs text-text-secondary">{item.productCode}</span>
+                      </td>
+                      <td className="px-3 py-3 text-xs text-text-secondary">{item.numeroLote || "—"}</td>
+                      <td className="px-3 py-3">{formatDate(item.dataValidade)}</td>
+                      <td className="px-3 py-3 text-right tabular-nums">{formatQty(item.qtdEstimada)}</td>
+                      <td className="px-3 py-3 text-right tabular-nums">{formatQty(item.qtdReal)}</td>
+                      <td
+                        className={`px-3 py-3 text-right font-semibold tabular-nums ${
+                          item.diferenca < 0 ? "text-red-500" : "text-emerald-500"
+                        }`}
+                      >
+                        {item.diferenca > 0 ? "+" : ""}
+                        {formatQty(item.diferenca)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         </>

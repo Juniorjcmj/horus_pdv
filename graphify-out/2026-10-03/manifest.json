@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs": {
-    "mtime": 1790421566.4967937,
-    "seen": 1790421619.6321986,
-    "ast_hash": "d690dd2d14375d231b19b260aa99d1d1",
+    "mtime": 1791049904.1933389,
+    "seen": 1791049938.0205314,
+    "ast_hash": "d9866a5ccbb8ca8773a37a440ef87a11",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
@@ -546,9 +546,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
-    "mtime": 1791049631.277804,
-    "seen": 1791049660.397553,
-    "ast_hash": "45a2397d5f2598828488d58232c539cf",
+    "mtime": 1791049904.2505736,
+    "seen": 1791049938.025912,
+    "ast_hash": "b362bfdb5a3dbc07ec49cb54ab168f82",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeXmlParser.cs": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NfeImportModal.tsx": {
-    "mtime": 1791049611.8385973,
-    "seen": 1791049660.4056053,
-    "ast_hash": "3fedbf5e72eccea4723154e40dd20d75",
+    "mtime": 1791049904.33249,
+    "seen": 1791049938.0326695,
+    "ast_hash": "768e9c474963512cbd0ec1da08065236",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {

@@ -734,14 +734,18 @@ export default function SalesStartPage({
         const alertDays = product.diasAlertaValidade || 15;
 
         if (diffDays < 0) {
-          const blockExpired = localStorage.getItem("horus_pdv_bloquear_vencidos") !== "false";
+          // Lote vencido só AVISA e a venda segue (decisão do negócio). O bloqueio fica como opção
+          // explícita: basta gravar "true" em localStorage "horus_pdv_bloquear_vencidos".
+          const blockExpired = localStorage.getItem("horus_pdv_bloquear_vencidos") === "true";
           if (blockExpired) {
             statusDialog.error(
               `PRODUTO VENCIDO: "${product.name}" venceu em ${valDate.toLocaleDateString("pt-BR")}. Venda bloqueada conforme normas sanitárias.`,
             );
             return false;
           } else {
-            Toast.error(`Produto VENCIDO em ${valDate.toLocaleDateString("pt-BR")}`);
+            Toast.error(
+              `ATENÇÃO: o lote mais antigo de "${product.name}" venceu em ${valDate.toLocaleDateString("pt-BR")}. Confira a validade do produto.`,
+            );
           }
         } else if (diffDays <= alertDays) {
           Toast.info(`Atenção: "${product.name}" vence em ${diffDays} dia(s).`);

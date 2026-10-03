@@ -100,6 +100,11 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
         {
             await loteAB.RegistrarEntradaAsync(companyId, id, validade, quantidade, numeroLote, "ajuste", operador);
         }
+        else if (ok)
+        {
+            // Saída manual (perda, avaria): baixa FEFO nos lotes, começando pelos que vencem primeiro.
+            await loteAB.ConsumirAjusteSeguroAsync(companyId, id, quantidade);
+        }
 
         return ok;
     }
