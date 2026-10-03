@@ -59,6 +59,11 @@ export const cashRegisterService = {
     const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/status`);
     return response.data;
   },
+  /** Detalhe completo de um turno (movimentos e totais por forma de pagamento), para reimprimir o fechamento. */
+  async sessao(id: string) {
+    const response = await apiRequest<CashRegisterSessionDto>(`${CAIXA_API_URL}/sessao/${encodeURIComponent(id)}`);
+    return response.data ?? null;
+  },
   /** Sangrias e reforços de todos os turnos no período (datas AAAA-MM-DD, inclusivas). */
   async movimentos(de?: string, ate?: string) {
     const query = new URLSearchParams();

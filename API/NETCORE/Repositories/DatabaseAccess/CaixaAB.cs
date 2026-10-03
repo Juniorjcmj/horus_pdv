@@ -38,6 +38,23 @@ public class CaixaAB(Connection connection)
         return rows;
     }
 
+    public async Task<CaixaSessionAD?> ObterSessaoPorIdAsync(string companyId, string sessionId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var command = new SqlCommand(
+            """
+            SELECT Id, OpenedAt, ClosedAt, OpeningAmount, ClosingAmount, OperatorId, OperatorName, ClosedById, ClosedByName, Note,
+                   ExpectedCashAmount, DifferenceAmount, DifferenceReason
+            FROM CaixaSessoes
+            WHERE CompanyId = @CompanyId AND Id = @Id;
+            """,
+            db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Id", sessionId);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        return await reader.ReadAsync(cancellationToken) ? Map(reader) : null;
+    }
+
     public async Task<CaixaSessionAD?> ObterSessaoAbertaAsync(string companyId, CancellationToken cancellationToken = default)
         => await ObterSessaoAbertaAsync(companyId, operatorId: null, cancellationToken);
 

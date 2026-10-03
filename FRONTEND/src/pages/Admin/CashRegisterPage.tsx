@@ -272,6 +272,18 @@ export default function CashRegisterPage() {
     }
   };
 
+  // A lista de histórico vem sem movimentos nem totais por forma de pagamento (DTO leve):
+  // busca o turno completo antes de mostrar/reimprimir o fechamento.
+  const openSessionDetails = async (session: CashRegisterSessionDto) => {
+    try {
+      const detail = await cashRegisterService.sessao(session.id);
+      setViewingSession(detail ?? session);
+    } catch {
+      setViewingSession(session);
+      Toast.info("Sem conexão com o servidor: o resumo pode não mostrar vendas e movimentos do turno.");
+    }
+  };
+
   const closeCashRegister = async () => {
     if (hasDifference && differenceReason.trim().length < 3) {
       Toast.error("Informe o motivo da diferença antes de fechar o caixa.");
@@ -684,7 +696,7 @@ export default function CashRegisterPage() {
             </thead>
             <tbody>
               {paginatedHistoryRows.map((session) => (
-                <SessionRow key={session.id} session={session} onViewDetails={setViewingSession} />
+                <SessionRow key={session.id} session={session} onViewDetails={openSessionDetails} />
               ))}
             </tbody>
           </table>

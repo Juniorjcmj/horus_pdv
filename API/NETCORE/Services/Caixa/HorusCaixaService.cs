@@ -77,6 +77,30 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         }).ToList();
     }
 
+    /// <summary>
+    /// Detalhe completo de um turno (movimentos e totais por forma de pagamento) para reabrir/reimprimir
+    /// o fechamento a partir do histórico. Gerente/administrador vê qualquer turno; os demais só os seus.
+    /// Retorna null quando o turno não existe ou o usuário não pode vê-lo.
+    /// </summary>
+    public async Task<CaixaSessionDto?> ObterSessaoAsync(AuthenticatedUser currentUser, string sessionId, CancellationToken cancellationToken = default)
+    {
+        var session = await caixaAB.ObterSessaoPorIdAsync(currentUser.CompanyId, sessionId, cancellationToken);
+        if (session is null)
+        {
+            return null;
+        }
+
+        var permitido = HorusRoles.IsGerenteOuAdmin(currentUser.Role)
+            || session.OperatorId == currentUser.Id
+            || session.ClosedById == currentUser.Id;
+        if (!permitido)
+        {
+            return null;
+        }
+
+        return await ToDtoAsync(currentUser.CompanyId, session, HorusDateTime.Now, isCurrent: session.ClosedAt is null, cancellationToken);
+    }
+
     public async Task<CaixaStatusDto> AbrirAsync(AbrirCaixaRequest request, AuthenticatedUser currentUser, string? ip = null, CancellationToken cancellationToken = default)
     {
         var now = HorusDateTime.Now;
@@ -307,6 +331,17 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         CaixaSessionDto BuildDto(CaixaSessionAD session) =>
             session == openSession && openSessionDto is not null ? openSessionDto : BuildHistoricalDto(session);
 
+        // A última sessão (a que acabou de ser fechada, por exemplo) alimenta o cupom de fechamento,
+        // então precisa vir completa: movimentos (sangria/reforço) e totais por forma de pagamento.
+        // Só o histórico (lista) usa o DTO leve, sem essas consultas.
+        CaixaSessionDto? lastSessionDto = null;
+        if (lastSession is not null)
+        {
+            lastSessionDto = lastSession == openSession && openSessionDto is not null
+                ? openSessionDto
+                : await ToDtoAsync(companyId, lastSession, now, isCurrent: lastSession.ClosedAt is null, cancellationToken);
+        }
+
         return new CaixaStatusDto
         {
             State = state,
@@ -314,7 +349,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             BlockReason = blockReason,
             ServerNow = HorusDateTime.FormatIso(now),
             CurrentSession = openSessionDto,
-            LastSession = lastSession is null ? null : BuildDto(lastSession),
+            LastSession = lastSessionDto,
             History = sessions.Take(12).Select(BuildDto).ToList(),
             OpenSessions = openSessionsDtos
         };

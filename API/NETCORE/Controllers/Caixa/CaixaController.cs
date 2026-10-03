@@ -35,6 +35,28 @@ public class CaixaController(HorusCaixaService caixaService, HorusSecurityOption
         });
     }
 
+    [HttpGet("sessao/{id}")]
+    public async Task<IActionResult> Sessao(string id, CancellationToken cancellationToken)
+    {
+        if (HttpContext.Items["CurrentUser"] is not AuthenticatedUser currentUser)
+        {
+            return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+        }
+
+        var session = await caixaService.ObterSessaoAsync(currentUser, id, cancellationToken);
+        if (session is null)
+        {
+            return NotFound(new ApiResponse<object> { Success = false, Message = "Turno de caixa não encontrado." });
+        }
+
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = "Turno de caixa obtido com sucesso.",
+            Data = session
+        });
+    }
+
     [HttpGet("movimentos")]
     public async Task<IActionResult> Movimentos([FromQuery] string? de = null, [FromQuery] string? ate = null, CancellationToken cancellationToken = default)
     {
