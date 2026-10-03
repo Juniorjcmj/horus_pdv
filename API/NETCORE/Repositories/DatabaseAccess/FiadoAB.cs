@@ -75,11 +75,11 @@ public class FiadoAB(Connection connection)
             saldoAnterior = reader.GetDecimal(reader.GetOrdinal("SaldoDevedor"));
         }
 
-        if (limiteCredito > 0 && (saldoAnterior + valor) > limiteCredito)
+        var limiteDisponivel = Math.Max(0, limiteCredito - saldoAnterior);
+        if ((saldoAnterior + valor) > limiteCredito)
         {
-            var disponivel = Math.Max(0, limiteCredito - saldoAnterior);
             throw new InvalidOperationException(
-                $"Limite de crédito excedido para {customerName}. Limite: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoAnterior:N2}, Disponível: R$ {disponivel:N2}, Compra: R$ {valor:N2}.");
+                $"Limite de crédito insuficiente para {customerName}. Limite total: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoAnterior:N2}, Disponível: R$ {limiteDisponivel:N2}, Compra fiado: R$ {valor:N2}.");
         }
 
         var saldoAtual = saldoAnterior + valor;

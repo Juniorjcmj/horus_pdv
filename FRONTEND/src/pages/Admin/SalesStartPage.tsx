@@ -54,7 +54,9 @@ import { useCustomers } from "@/hooks/useCustomers";
 import {
   syncCustomersFromApi,
   upsertCustomerLocal,
+  updateCustomerDebtLocal,
 } from "@/application/customers/CustomerSyncAdapter";
+import { ApiError } from "@/services/api/apiClient";
 import { syncProductsFromApi } from "@/application/products/ProductSyncAdapter";
 import {
   FISCAL_STATUS,
@@ -471,12 +473,11 @@ export default function SalesStartPage({
     if (!selectedCustomer) return false;
     const currentFiadoValue = currentPaymentType === "fiado" ? currentPaymentAmountValue : 0;
     const totalPotentialFiado = totalFiadoCommitted + currentFiadoValue;
-    const limite = selectedCustomer.limiteCredito ?? 0;
-    const saldo = selectedCustomer.saldoDevedor ?? 0;
-    if (limite > 0 && saldo + totalPotentialFiado > limite + 0.009) {
-      return true;
-    }
-    return false;
+    if (totalPotentialFiado <= 0) return false;
+    const limite = Number(selectedCustomer.limiteCredito ?? 0);
+    const saldo = Number(selectedCustomer.saldoDevedor ?? 0);
+    const disponivel = Math.max(0, limite - saldo);
+    return totalPotentialFiado > disponivel + 0.009;
   }, [selectedCustomer, currentPaymentType, currentPaymentAmountValue, totalFiadoCommitted]);
 
   const canConfirmPayment = useMemo(() => {
@@ -994,14 +995,16 @@ export default function SalesStartPage({
         void openCustomerModal();
         return;
       }
-      const limite = selectedCustomer.limiteCredito ?? 0;
-      const saldo = selectedCustomer.saldoDevedor ?? 0;
-      if (limite > 0 && saldo + totalFiadoCommitted + amountVal > limite + 0.009) {
-        const disponivel = Math.max(0, limite - saldo - totalFiadoCommitted);
+      const limite = Number(selectedCustomer.limiteCredito ?? 0);
+      const saldo = Number(selectedCustomer.saldoDevedor ?? 0);
+      const disponivel = Math.max(0, limite - saldo - totalFiadoCommitted);
+      if (amountVal > disponivel + 0.009) {
         Toast.error(
-          `Limite de crédito excedido para ${selectedCustomer.customerName}! Limite disponível: R$ ${formatMoneyBr(
+          `Limite de crédito insuficiente para ${selectedCustomer.customerName}! Limite total: R$ ${formatMoneyBr(
+            limite,
+          )} | Saldo devedor: R$ ${formatMoneyBr(saldo)} | Disponível: R$ ${formatMoneyBr(
             disponivel,
-          )}`,
+          )} | Parcela fiado: R$ ${formatMoneyBr(amountVal)}`,
         );
         return;
       }
@@ -1169,15 +1172,16 @@ export default function SalesStartPage({
         void openCustomerModal();
         return;
       }
-      const limite = selectedCustomer.limiteCredito ?? 0;
-      const saldo = selectedCustomer.saldoDevedor ?? 0;
-      if (limite > 0 && saldo + totalFiado > limite + 0.009) {
+      const limite = Number(selectedCustomer.limiteCredito ?? 0);
+      const saldo = Number(selectedCustomer.saldoDevedor ?? 0);
+      const disponivel = Math.max(0, limite - saldo);
+      if (totalFiado > disponivel + 0.009) {
         Toast.error(
-          `Limite de crédito excedido para ${selectedCustomer.customerName}! Limite: R$ ${formatMoneyBr(
+          `Limite de crédito insuficiente para ${selectedCustomer.customerName}! Limite total: R$ ${formatMoneyBr(
             limite,
           )} | Saldo devedor: R$ ${formatMoneyBr(saldo)} | Disponível: R$ ${formatMoneyBr(
-            Math.max(0, limite - saldo),
-          )}.`,
+            disponivel,
+          )} | Valor a prazo: R$ ${formatMoneyBr(totalFiado)}.`,
         );
         return;
       }
@@ -1264,9 +1268,10 @@ export default function SalesStartPage({
       let saleNumber: string;
       let isOfflineSale = false;
       let fiscalDetail: FiscalDocumentDetailDto | null = null;
+      let result: any = null;
 
       try {
-        const result = activePedido
+        result = activePedido
           ? await pedidoService.finalize(activePedido.orderNumber, primaryPaymentType, payloadPayments)
           : await salesHistoryService.register(registerPayload);
 
@@ -1370,7 +1375,19 @@ export default function SalesStartPage({
             Toast.error("Venda registrada, mas erro ao enfileirar NF-e modelo 55.");
           }
         }
-      } catch {
+      } catch (err: any) {
+        // Se a API rejeitou com erro 4xx (validação de domínio, limite de crédito insuficiente, etc.)
+        const status = Number(err?.status ?? err?.response?.status ?? 0);
+        const isClientValidation =
+          (err instanceof ApiError && err.status >= 400 && err.status < 500 && err.status !== 408) ||
+          (status >= 400 && status < 500 && status !== 408 && status !== 429);
+
+        if (isClientValidation) {
+          const errMsg = err?.message || "Erro de validação ao registrar venda.";
+          Toast.error(errMsg);
+          return;
+        }
+
         // API indisponível — enfileira venda para sincronização posterior
         if (activePedido) {
           // Pedidos não podem ser finalizados offline (dependem de estado no servidor)
@@ -1478,12 +1495,21 @@ export default function SalesStartPage({
         isFiado: hasFiado,
         saldoDevedorAtual:
           hasFiado && selectedCustomer
-            ? (selectedCustomer.saldoDevedor ?? 0) + totalFiado
+            ? ((result as any)?.fiadoSaldoAtual ?? ((selectedCustomer.saldoDevedor ?? 0) + totalFiado))
             : undefined,
       };
 
+      if (hasFiado && selectedCustomer) {
+        const novoSaldo = receipt.saldoDevedorAtual ?? ((selectedCustomer.saldoDevedor ?? 0) + totalFiado);
+        setSelectedCustomer((prev) => (prev ? { ...prev, saldoDevedor: novoSaldo } : null));
+        void updateCustomerDebtLocal(selectedCustomer.document || selectedCustomer.id, novoSaldo);
+      }
+
       setCheckoutOpen(false);
-      await reloadProducts().catch(() => { /* ignora falha de reload pós-venda */ });
+      await Promise.all([
+        reloadProducts().catch(() => {}),
+        reloadCustomers(false).catch(() => {}),
+      ]);
       saveLastReceipt(receipt);
 
       // Impressão automática na impressora padrão (Blob garante UTF-8)
@@ -2283,11 +2309,9 @@ export default function SalesStartPage({
                     </div>
                     <div className="flex flex-wrap items-center gap-2 border-t border-border-primary pt-1 text-[11px]">
                       <span className="text-text-secondary">
-                        Limite:{" "}
+                        Limite Total:{" "}
                         <strong className="text-text-primary">
-                          {(selectedCustomer.limiteCredito ?? 0) > 0
-                            ? `R$ ${formatMoneyBr(selectedCustomer.limiteCredito!)}`
-                            : "Ilimitado"}
+                          R$ {formatMoneyBr(selectedCustomer.limiteCredito ?? 0)}
                         </strong>
                       </span>
                       <span className="text-text-secondary">•</span>
@@ -2303,31 +2327,35 @@ export default function SalesStartPage({
                           R$ {formatMoneyBr(selectedCustomer.saldoDevedor ?? 0)}
                         </strong>
                       </span>
-                      {(selectedCustomer.limiteCredito ?? 0) > 0 && (
-                        <>
-                          <span className="text-text-secondary">•</span>
-                          <span className="text-text-secondary">
-                            Disponível:{" "}
-                            <strong
-                              className={fiadoLimitExceeded ? "text-danger" : "text-success"}
-                            >
-                              R${" "}
-                              {formatMoneyBr(
-                                Math.max(
-                                  0,
-                                  (selectedCustomer.limiteCredito ?? 0) -
-                                    (selectedCustomer.saldoDevedor ?? 0),
-                                ),
-                              )}
-                            </strong>
-                          </span>
-                        </>
-                      )}
+                      <span className="text-text-secondary">•</span>
+                      <span className="text-text-secondary">
+                        Disponível:{" "}
+                        <strong
+                          className={
+                            Math.max(
+                              0,
+                              (selectedCustomer.limiteCredito ?? 0) -
+                                (selectedCustomer.saldoDevedor ?? 0),
+                            ) <= 0 || fiadoLimitExceeded
+                              ? "text-danger"
+                              : "text-success"
+                          }
+                        >
+                          R${" "}
+                          {formatMoneyBr(
+                            Math.max(
+                              0,
+                              (selectedCustomer.limiteCredito ?? 0) -
+                                (selectedCustomer.saldoDevedor ?? 0),
+                            ),
+                          )}
+                        </strong>
+                      </span>
                     </div>
                     {fiadoLimitExceeded && (
                       <div className="mt-1 flex items-center gap-1.5 rounded bg-danger/10 p-1.5 text-[11px] font-semibold text-danger">
                         <AlertTriangle size={13} />
-                        Limite de crédito excedido para esta compra a prazo!
+                        Limite de crédito insuficiente para esta compra a prazo!
                       </div>
                     )}
                   </div>
@@ -2949,7 +2977,7 @@ export default function SalesStartPage({
                 filteredCustomerList.map((c) => {
                   const saldo = c.saldoDevedor ?? 0;
                   const limite = c.limiteCredito ?? 0;
-                  const disponivel = limite > 0 ? Math.max(0, limite - saldo) : null;
+                  const disponivel = Math.max(0, limite - saldo);
                   return (
                     <div
                       key={c.id}
@@ -2962,9 +2990,9 @@ export default function SalesStartPage({
                         </p>
                         <div className="flex flex-wrap items-center gap-2 text-[10px]">
                           <span className="text-text-tertiary">
-                            Limite:{" "}
+                            Limite Total:{" "}
                             <strong className="text-text-primary">
-                              {limite > 0 ? `R$ ${formatMoneyBr(limite)}` : "Ilimitado"}
+                              R$ {formatMoneyBr(limite)}
                             </strong>
                           </span>
                           <span className="text-text-tertiary">•</span>
@@ -2975,18 +3003,14 @@ export default function SalesStartPage({
                           >
                             Saldo Devedor: R$ {formatMoneyBr(saldo)}
                           </span>
-                          {disponivel !== null && (
-                            <>
-                              <span className="text-text-tertiary">•</span>
-                              <span
-                                className={`font-semibold ${
-                                  disponivel <= 0 ? "text-danger" : "text-success"
-                                }`}
-                              >
-                                Disponível: R$ {formatMoneyBr(disponivel)}
-                              </span>
-                            </>
-                          )}
+                          <span className="text-text-tertiary">•</span>
+                          <span
+                            className={`font-semibold ${
+                              disponivel <= 0 ? "text-danger" : "text-success"
+                            }`}
+                          >
+                            Disponível: R$ {formatMoneyBr(disponivel)}
+                          </span>
                         </div>
                       </div>
                       <button

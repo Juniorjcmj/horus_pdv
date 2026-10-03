@@ -43,7 +43,7 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload): Promise<s
 
   await db.transaction(
     "rw",
-    [db.sales, db.saleItems, db.payments, db.stockMovements, db.outbox, db.products, db.cashSessions],
+    [db.sales, db.saleItems, db.payments, db.stockMovements, db.outbox, db.products, db.cashSessions, db.customers],
     async () => {
       // 1. Obter sessão atual de caixa (se houver)
       const cachedCash = await db.cashSessions.get("cash-status-cache");
@@ -136,6 +136,31 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload): Promise<s
           cashGiven: null,
           changeAmount: null,
         });
+      }
+
+      // 4.1 Se houver pagamento fiado, atualizar saldo devedor do cliente no IndexedDB
+      const fiadoPayments = Array.isArray(payload.payments)
+        ? payload.payments.filter((p) => String(p.paymentType).trim().toLowerCase() === "fiado")
+        : (String(payload.paymentType).trim().toLowerCase() === "fiado" ? [{ amount: totalAmountNum }] : []);
+      const totalFiado = fiadoPayments.reduce((s, p) => s + (p.amount || 0), 0);
+
+      if (totalFiado > 0 && payload.customerCpf) {
+        const digits = payload.customerCpf.replace(/\D/g, "");
+        const cust = await db.customers
+          .filter((c) => c.cpfCnpj.replace(/\D/g, "") === digits)
+          .first();
+        if (cust) {
+          cust.saldoDevedor = (cust.saldoDevedor || 0) + totalFiado;
+          cust.updatedAt = new Date().toISOString();
+          await db.customers.put(cust);
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("customer-balance-updated", {
+                detail: { customerId: cust.id, document: cust.cpfCnpj, saldoDevedor: cust.saldoDevedor },
+              }),
+            );
+          }
+        }
       }
 
       // 5. Enfileirar no Outbox para sincronização posterior

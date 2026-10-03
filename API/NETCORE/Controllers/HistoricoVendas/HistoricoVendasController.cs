@@ -184,7 +184,9 @@ public class HistoricoVendasController(
                     fiscalQueued,
                     emitirFiscal = deveEmitirFiscal,
                     isReplay = false,
-                    warnings = result.Warnings
+                    warnings = result.Warnings,
+                    fiadoSaldoAtual = result.FiadoSaldoAtual,
+                    fiadoClienteId = result.FiadoClienteId
                 }
             });
         }

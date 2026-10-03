@@ -470,7 +470,7 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
             ("cliente", d.ClienteNome),
             ("documento", d.Document),
             ("contato", string.IsNullOrWhiteSpace(d.Cellphone) ? (d.Telephone ?? "-") : d.Cellphone),
-            ("limite", d.LimiteCredito > 0 ? FormatMoney(d.LimiteCredito) : "Ilimitado"),
+            ("limite", FormatMoney(d.LimiteCredito)),
             ("saldoDevedor", FormatMoney(d.SaldoDevedor)),
             ("ultimaCompra", d.UltimaCompra.HasValue ? d.UltimaCompra.Value.ToLocalTime().ToString("dd/MM/yyyy") : "-"),
             ("diasAtraso", d.DiasSemPagamento.HasValue ? $"{d.DiasSemPagamento.Value} dias" : "0 dias"),

@@ -65,3 +65,31 @@ export async function loadCustomersLocal(): Promise<LocalCustomerRecord[]> {
 export async function upsertCustomerLocal(dto: CustomerDto): Promise<void> {
   await customerRepository.upsert(mapDtoToLocal(dto));
 }
+
+/** Atualiza o saldo devedor do cliente localmente no IndexedDB e notifica componentes via evento. */
+export async function updateCustomerDebtLocal(
+  customerIdOrDoc: string,
+  newSaldoDevedor: number,
+): Promise<void> {
+  try {
+    const all = await customerRepository.getAll();
+    const digits = customerIdOrDoc.replace(/\D/g, "");
+    const target = all.find(
+      (c) =>
+        c.id === customerIdOrDoc ||
+        (digits.length > 0 && c.cpfCnpj.replace(/\D/g, "") === digits),
+    );
+    if (target) {
+      target.saldoDevedor = newSaldoDevedor;
+      target.updatedAt = new Date().toISOString();
+      await customerRepository.upsert(target);
+      window.dispatchEvent(
+        new CustomEvent("customer-balance-updated", {
+          detail: { customerId: target.id, document: target.cpfCnpj, saldoDevedor: newSaldoDevedor },
+        }),
+      );
+    }
+  } catch (err) {
+    console.warn("Falha ao atualizar saldo local do cliente no IndexedDB:", err);
+  }
+}

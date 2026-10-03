@@ -55,5 +55,13 @@ export function useCustomers(): UseCustomersReturn {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const handleUpdate = () => {
+      void load(false);
+    };
+    window.addEventListener("customer-balance-updated", handleUpdate);
+    return () => window.removeEventListener("customer-balance-updated", handleUpdate);
+  }, [load]);
+
   return { customers, loading, reload: load };
 }

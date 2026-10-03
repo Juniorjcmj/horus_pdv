@@ -32,6 +32,7 @@ import {
   type FiadoMovimento,
   type FiadoResumo,
 } from "@/services/api/fiadoService";
+import { updateCustomerDebtLocal } from "@/application/customers/CustomerSyncAdapter";
 
 const FORMAS_PAGAMENTO = [
   { value: "dinheiro", label: "Dinheiro" },
@@ -191,6 +192,8 @@ export default function FiadoPage() {
       Toast.success(
         `Pagamento de R$ ${formatMoneyBr(valor)} recebido de ${selectedDevedor.clienteNome}!`,
       );
+      const novoSaldo = Math.max(0, selectedDevedor.saldoDevedor - valor);
+      void updateCustomerDebtLocal(selectedDevedor.clienteId, novoSaldo);
       setReceberModalOpen(false);
       await loadData();
     } catch (error) {
@@ -292,9 +295,7 @@ export default function FiadoPage() {
         <div><strong>Cliente:</strong> ${extratoCliente.clienteNome}</div>
         <div><strong>CPF/CNPJ:</strong> ${extratoCliente.document}</div>
         ${extratoCliente.cellphone ? `<div><strong>Telefone:</strong> ${extratoCliente.cellphone}</div>` : ""}
-        <div><strong>Limite de Crédito:</strong> ${
-          extratoCliente.limiteCredito > 0 ? `R$ ${formatMoneyBr(extratoCliente.limiteCredito)}` : "Ilimitado"
-        }</div>
+        <div><strong>Limite de Crédito:</strong> R$ ${formatMoneyBr(extratoCliente.limiteCredito)}</div>
       </section>
       <div class="divider"></div>
       <section>
@@ -307,14 +308,10 @@ export default function FiadoPage() {
           <span>SALDO DEVEDOR ATUAL:</span>
           <span>R$ ${formatMoneyBr(extratoCliente.saldoDevedor)}</span>
         </div>
-        ${
-          extratoCliente.limiteCredito > 0
-            ? `<div class="line" style="font-size: 11px; margin-top: 4px;">
-                 <span>Limite Disponível:</span>
-                 <span>R$ ${formatMoneyBr(Math.max(0, extratoCliente.limiteCredito - extratoCliente.saldoDevedor))}</span>
-               </div>`
-            : ""
-        }
+        <div class="line" style="font-size: 11px; margin-top: 4px;">
+          <span>Limite Disponível:</span>
+          <span>R$ ${formatMoneyBr(Math.max(0, extratoCliente.limiteCredito - extratoCliente.saldoDevedor))}</span>
+        </div>
       </section>
       <div class="divider"></div>
       <section class="center" style="margin-top: 28px;">
@@ -569,11 +566,7 @@ export default function FiadoPage() {
                         {d.cellphone || d.telephone || "-"}
                       </td>
                       <td className="px-4 py-3 text-text-secondary">
-                        {d.limiteCredito > 0 ? (
-                          <span>R$ {formatMoneyBr(d.limiteCredito)}</span>
-                        ) : (
-                          <span className="text-xs text-text-tertiary">Ilimitado</span>
-                        )}
+                        <span>R$ {formatMoneyBr(d.limiteCredito)}</span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="font-bold text-amber-500">
@@ -786,11 +779,21 @@ export default function FiadoPage() {
                 <span>{extratoCliente.cellphone || extratoCliente.telephone || "-"}</span>
               </div>
               <div>
-                <span className="block text-[11px] text-text-secondary">Limite de Crédito</span>
+                <span className="block text-[11px] text-text-secondary">Limite Total</span>
                 <span className="font-semibold text-text-primary">
-                  {extratoCliente.limiteCredito > 0
-                    ? `R$ ${formatMoneyBr(extratoCliente.limiteCredito)}`
-                    : "Ilimitado"}
+                  R$ {formatMoneyBr(extratoCliente.limiteCredito)}
+                </span>
+              </div>
+              <div>
+                <span className="block text-[11px] text-text-secondary">Disponível</span>
+                <span
+                  className={`font-semibold ${
+                    Math.max(0, extratoCliente.limiteCredito - extratoCliente.saldoDevedor) <= 0
+                      ? "text-danger"
+                      : "text-success"
+                  }`}
+                >
+                  R$ {formatMoneyBr(Math.max(0, extratoCliente.limiteCredito - extratoCliente.saldoDevedor))}
                 </span>
               </div>
               <div>

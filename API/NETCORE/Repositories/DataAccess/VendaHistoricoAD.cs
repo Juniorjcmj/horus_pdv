@@ -92,6 +92,8 @@ public class VendaRegistroResultadoAD
     public List<VendaHistoricoAD> Rows { get; set; } = [];
     public List<VendaPagamentoAD> Payments { get; set; } = [];
     public List<EstoqueRupturaAvisoAD> Warnings { get; set; } = [];
+    public decimal? FiadoSaldoAtual { get; set; }
+    public string? FiadoClienteId { get; set; }
 }
 
 public class EstoqueRupturaAvisoAD

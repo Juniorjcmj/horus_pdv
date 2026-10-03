@@ -241,11 +241,11 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                     customerName = r.GetString(r.GetOrdinal("CustomerName"));
                 }
 
-                if (limiteCredito > 0 && (saldoDevedor + fiadoPayment.Amount) > limiteCredito)
+                var disponivel = Math.Max(0, limiteCredito - saldoDevedor);
+                if ((saldoDevedor + fiadoPayment.Amount) > limiteCredito)
                 {
-                    var disponivel = Math.Max(0, limiteCredito - saldoDevedor);
                     throw new InvalidOperationException(
-                        $"Limite de crédito excedido para {customerName}. Limite: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoDevedor:N2}, Disponível: R$ {disponivel:N2}, Valor fiado: R$ {fiadoPayment.Amount:N2}.");
+                        $"Limite de crédito insuficiente para {customerName}. Limite total: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoDevedor:N2}, Disponível: R$ {disponivel:N2}, Tentativa fiado: R$ {fiadoPayment.Amount:N2}.");
                 }
             }
 
@@ -266,6 +266,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             if (fiadoPayment is not null && fiadoPayment.Amount > 0 && fiadoClienteId is not null)
             {
                 fiadoMov = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteId, fiadoPayment.Amount, result.VendaId, operatorName);
+                result.FiadoSaldoAtual = fiadoMov.SaldoAtual;
+                result.FiadoClienteId = fiadoClienteId;
             }
 
             if (!string.IsNullOrWhiteSpace(eventId))
@@ -401,11 +403,11 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                     customerName = r.GetString(r.GetOrdinal("CustomerName"));
                 }
 
-                if (limiteCredito > 0 && (saldoDevedor + fiadoPaymentFixo.Amount) > limiteCredito)
+                var disponivel = Math.Max(0, limiteCredito - saldoDevedor);
+                if ((saldoDevedor + fiadoPaymentFixo.Amount) > limiteCredito)
                 {
-                    var disponivel = Math.Max(0, limiteCredito - saldoDevedor);
                     throw new InvalidOperationException(
-                        $"Limite de crédito excedido para {customerName}. Limite: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoDevedor:N2}, Disponível: R$ {disponivel:N2}, Valor fiado: R$ {fiadoPaymentFixo.Amount:N2}.");
+                        $"Limite de crédito insuficiente para {customerName}. Limite total: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoDevedor:N2}, Disponível: R$ {disponivel:N2}, Tentativa fiado: R$ {fiadoPaymentFixo.Amount:N2}.");
                 }
             }
 
@@ -417,6 +419,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             if (fiadoPaymentFixo is not null && fiadoPaymentFixo.Amount > 0 && fiadoClienteIdFixo is not null)
             {
                 fiadoMovFixo = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteIdFixo, fiadoPaymentFixo.Amount, result.VendaId, operatorName);
+                result.FiadoSaldoAtual = fiadoMovFixo.SaldoAtual;
+                result.FiadoClienteId = fiadoClienteIdFixo;
             }
 
             await transaction.CommitAsync();
