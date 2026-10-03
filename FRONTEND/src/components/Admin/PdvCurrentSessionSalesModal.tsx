@@ -26,6 +26,13 @@ import {
 import { FISCAL_STATUS } from "@/services/api/fiscalService";
 import { formatNumeroNf } from "@/utils/danfePrint";
 import { getPendingLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
+import {
+  PAYMENT_GROUP_LABEL,
+  buildPayments,
+  isCancelledStatus,
+  type PaymentGroup,
+  type SalePayment,
+} from "@/utils/salePayments";
 
 type PdvCurrentSessionSalesModalProps = {
   isOpen: boolean;
@@ -37,10 +44,7 @@ type PdvCurrentSessionSalesModalProps = {
   onSelectSale: (saleNumber: string) => void;
 };
 
-type PaymentGroup = "dinheiro" | "cartao" | "pix" | "fiado" | "outros";
 type PaymentFilter = "all" | Exclude<PaymentGroup, "outros">;
-
-type SalePayment = { type: string; group: PaymentGroup; amount: number };
 
 type GroupedSale = {
   saleNumber: string;
@@ -64,10 +68,10 @@ type GroupedSale = {
 
 const PAYMENT_FILTER_LABEL: Record<PaymentFilter, string> = {
   all: "Todos",
-  dinheiro: "Dinheiro",
-  cartao: "Cartão",
-  pix: "PIX",
-  fiado: "Fiado",
+  dinheiro: PAYMENT_GROUP_LABEL.dinheiro,
+  cartao: PAYMENT_GROUP_LABEL.cartao,
+  pix: PAYMENT_GROUP_LABEL.pix,
+  fiado: PAYMENT_GROUP_LABEL.fiado,
 };
 
 function parseMoney(val?: string | null): number {
@@ -79,39 +83,6 @@ function parseMoney(val?: string | null): number {
 
 function formatCurrency(num: number): string {
   return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-/** Agrupa as formas de pagamento do sistema (dinheiro, pix, debito, credito, fiado...) nos botões do filtro. */
-function paymentGroupOf(type: string): PaymentGroup {
-  const t = type.toLowerCase();
-  if (t.includes("dinheiro")) return "dinheiro";
-  if (t.includes("pix")) return "pix";
-  if (t.includes("fiado") || t.includes("prazo")) return "fiado";
-  if (t.includes("deb") || t.includes("déb") || t.includes("cred") || t.includes("cré") || t.includes("cart")) {
-    return "cartao";
-  }
-  return "outros";
-}
-
-/**
- * Pagamentos da venda com o valor de cada forma. Usa o detalhamento enviado pelo servidor
- * ("dinheiro=10.00;pix=5.00"); sem ele (vendas antigas), considera a forma única da venda pelo total.
- */
-function buildPayments(breakdown: string | null | undefined, paymentType: string, total: number): SalePayment[] {
-  const parsed: SalePayment[] = [];
-  for (const part of (breakdown ?? "").split(";")) {
-    const [rawType, rawAmount] = part.split("=");
-    const type = rawType?.trim();
-    const amount = parseFloat(rawAmount ?? "");
-    if (type && Number.isFinite(amount)) parsed.push({ type, group: paymentGroupOf(type), amount });
-  }
-  if (parsed.length > 0) return parsed;
-  return [{ type: paymentType, group: paymentGroupOf(paymentType), amount: total }];
-}
-
-function isCancelledStatus(status?: string | null): boolean {
-  const s = (status ?? "").toLowerCase();
-  return s.startsWith("cancel") || s.startsWith("estorn");
 }
 
 export default function PdvCurrentSessionSalesModal({

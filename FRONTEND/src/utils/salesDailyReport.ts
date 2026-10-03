@@ -14,6 +14,8 @@ export type DailySale = {
   paymentType: string;
   total: number;
   cancelled: boolean;
+  /** Valor de cada forma de pagamento (venda com mais de uma forma). Sem isso vale paymentType x total. */
+  payments?: Array<{ type: string; amount: number }>;
 };
 
 export type DailyMovement = {
@@ -87,8 +89,15 @@ export function buildDailySummaries(sales: DailySale[], movements: DailyMovement
     } else {
       day.salesCount += 1;
       day.totalSold += sale.total;
-      const key = sale.paymentType.toLowerCase() || "outros";
-      day.byPayment[key] = (day.byPayment[key] ?? 0) + sale.total;
+      if (sale.payments && sale.payments.length > 0) {
+        for (const payment of sale.payments) {
+          const key = payment.type.toLowerCase() || "outros";
+          day.byPayment[key] = (day.byPayment[key] ?? 0) + payment.amount;
+        }
+      } else {
+        const key = sale.paymentType.toLowerCase() || "outros";
+        day.byPayment[key] = (day.byPayment[key] ?? 0) + sale.total;
+      }
     }
   }
 

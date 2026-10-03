@@ -42,6 +42,13 @@ import { cashRegisterService, type CashMovementDto } from "@/services/api/cashRe
 import { getLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
 import { getStoredAuthUser } from "@/utils/authStorage";
 import {
+  PAYMENT_GROUP_LABEL,
+  buildPayments,
+  isCancelledStatus,
+  type PaymentGroup,
+  type SalePayment,
+} from "@/utils/salePayments";
+import {
   buildDailySummaries,
   formatDateKey,
   parseDateParts,
@@ -101,6 +108,8 @@ function toCompanyReceipt(company: CompanyDto | null): SaleReceipt["company"] {
     ambienteFiscal: company.ambienteFiscal,
   };
 }
+
+const PAYMENT_FILTER_OPTIONS: PaymentGroup[] = ["dinheiro", "cartao", "pix", "fiado", "outros"];
 
 function splitSaleDate(value: string) {
   const [date = value, time = ""] = value.split(" ");
@@ -174,13 +183,31 @@ export default function SalesHistoryPage() {
     [salesHistory],
   );
 
-  const paymentOptions = useMemo(
-    () =>
-      [...new Set(salesHistory.map((sale) => sale.paymentType?.toLowerCase()).filter(Boolean))].sort(),
-    [salesHistory],
-  );
-
   const saleTotalOf = (sale: SaleHistoryRow) => parseMoneyBr(sale.totalAmount || "0,00");
+
+  // Uma entrada por venda (o histórico vem uma linha por item): total, pagamentos com valor e se foi cancelada.
+  const saleMeta = useMemo(() => {
+    const itemsTotals = new Map<string, number>();
+    for (const row of salesHistory) {
+      itemsTotals.set(
+        row.saleNumber,
+        (itemsTotals.get(row.saleNumber) ?? 0) + (parseMoneyBr(row.itemTotal || "0,00") || 0),
+      );
+    }
+
+    const map = new Map<string, { total: number; payments: SalePayment[]; cancelled: boolean }>();
+    for (const row of salesHistory) {
+      if (map.has(row.saleNumber)) continue;
+      const total = parseMoneyBr(row.totalAmount || "0,00") || itemsTotals.get(row.saleNumber) || 0;
+      map.set(row.saleNumber, {
+        total,
+        payments: buildPayments(row.paymentBreakdown, row.paymentType || "", total),
+        cancelled: isCancelledStatus(row.status),
+      });
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [salesHistory]);
 
   const filteredSales = useMemo(() => {
     // Busca local por número da venda ou nome do cliente + filtros avançados (período, operador,
@@ -190,7 +217,7 @@ export default function SalesHistoryPage() {
     const max = maxValue ? parseMoneyBr(maxValue) : null;
 
     return salesHistory.filter((sale) => {
-      const isCancelled = sale.status?.toLowerCase() === "cancelada";
+      const isCancelled = isCancelledStatus(sale.status);
       if (statusFilter === "finalizadas" && isCancelled) return false;
       if (statusFilter === "canceladas" && !isCancelled) return false;
 
@@ -201,7 +228,10 @@ export default function SalesHistoryPage() {
         if (dateTo && dateKey > dateTo) return false;
       }
       if (operatorFilter && sale.operatorName !== operatorFilter) return false;
-      if (paymentFilter && sale.paymentType?.toLowerCase() !== paymentFilter) return false;
+      if (paymentFilter) {
+        const meta = saleMeta.get(sale.saleNumber);
+        if (!meta || !meta.payments.some((payment) => payment.group === paymentFilter)) return false;
+      }
       if (min !== null || max !== null) {
         const total = saleTotalOf(sale);
         if (min !== null && total < min) return false;
@@ -215,7 +245,44 @@ export default function SalesHistoryPage() {
       );
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [salesHistory, search, statusFilter, dateFrom, dateTo, operatorFilter, paymentFilter, minValue, maxValue]);
+  }, [salesHistory, saleMeta, search, statusFilter, dateFrom, dateTo, operatorFilter, paymentFilter, minValue, maxValue]);
+
+  // Resumo do período filtrado (todas as páginas): acompanha período, operador, pagamento, valor e busca.
+  // Venda com mais de uma forma de pagamento conta, no filtro de pagamento, só a parcela daquela forma.
+  const periodSummary = useMemo(() => {
+    const seen = new Set<string>();
+    const byGroup: Record<PaymentGroup, number> = { dinheiro: 0, cartao: 0, pix: 0, fiado: 0, outros: 0 };
+    let vendas = 0;
+    let total = 0;
+    let canceladas = 0;
+    let totalCanceladas = 0;
+
+    for (const row of filteredSales) {
+      if (seen.has(row.saleNumber)) continue;
+      seen.add(row.saleNumber);
+      const meta = saleMeta.get(row.saleNumber);
+      if (!meta) continue;
+
+      const parcelas = meta.payments.filter((payment) => !paymentFilter || payment.group === paymentFilter);
+      const valor = paymentFilter ? parcelas.reduce((sum, payment) => sum + payment.amount, 0) : meta.total;
+      if (meta.cancelled) {
+        canceladas += 1;
+        totalCanceladas += valor;
+        continue;
+      }
+
+      vendas += 1;
+      total += valor;
+      for (const payment of parcelas) byGroup[payment.group] += payment.amount;
+    }
+
+    return { vendas, total, ticketMedio: vendas > 0 ? total / vendas : 0, canceladas, totalCanceladas, byGroup };
+  }, [filteredSales, saleMeta, paymentFilter]);
+
+  const periodLabel =
+    dateFrom || dateTo
+      ? `${dateFrom ? formatDateKey(dateFrom) : "início"} a ${dateTo ? formatDateKey(dateTo) : "hoje"}`
+      : "Todo o histórico";
 
   // Reinicia a paginação sempre que um filtro avançado muda.
   const advancedFilterKey = [dateFrom, dateTo, operatorFilter, paymentFilter, minValue, maxValue].join("|");
@@ -267,21 +334,18 @@ export default function SalesHistoryPage() {
   }, [movementRange.de, movementRange.ate]);
 
   const dailySummaries = useMemo(() => {
-    // Uma entrada por venda (o histórico vem uma linha por item).
-    const itemsTotals = new Map<string, number>();
-    for (const row of filteredSales) {
-      itemsTotals.set(
-        row.saleNumber,
-        (itemsTotals.get(row.saleNumber) ?? 0) + (parseMoneyBr(row.itemTotal || "0,00") || 0),
-      );
-    }
-
+    // Uma entrada por venda (o histórico vem uma linha por item). Com filtro de pagamento, vale só a
+    // parcela da venda naquela forma.
     const bySale = new Map<string, DailySale>();
     for (const row of filteredSales) {
       if (bySale.has(row.saleNumber)) continue;
       const parts = parseDateParts(row.saleDate);
-      if (!parts) continue;
-      const itemsTotal = itemsTotals.get(row.saleNumber) ?? 0;
+      const meta = saleMeta.get(row.saleNumber);
+      if (!parts || !meta) continue;
+
+      const payments = meta.payments
+        .filter((payment) => !paymentFilter || payment.group === paymentFilter)
+        .map((payment) => ({ type: payment.type, amount: payment.amount }));
       bySale.set(row.saleNumber, {
         saleNumber: row.saleNumber,
         dateKey: parts.dateKey,
@@ -289,8 +353,9 @@ export default function SalesHistoryPage() {
         operatorName: row.operatorName,
         customerName: row.customerName,
         paymentType: row.paymentType || "",
-        total: saleTotalOf(row) || itemsTotal,
-        cancelled: row.status?.toLowerCase() === "cancelada",
+        total: paymentFilter ? payments.reduce((sum, payment) => sum + payment.amount, 0) : meta.total,
+        cancelled: meta.cancelled,
+        payments,
       });
     }
 
@@ -322,7 +387,7 @@ export default function SalesHistoryPage() {
 
     return buildDailySummaries([...bySale.values()], dailyMovements);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredSales, movements, dateFrom, dateTo, operatorFilter, paymentFilter, statusFilter]);
+  }, [filteredSales, saleMeta, movements, dateFrom, dateTo, operatorFilter, paymentFilter, statusFilter]);
 
   const toggleDay = (dateKey: string) =>
     setExpandedDays((current) => {
@@ -339,7 +404,7 @@ export default function SalesHistoryPage() {
     }
     const filters = [
       operatorFilter && `Operador: ${operatorFilter}`,
-      paymentFilter && `Pgto: ${PAYMENT_LABEL[paymentFilter] || paymentFilter}`,
+      paymentFilter && `Pgto: ${PAYMENT_GROUP_LABEL[paymentFilter as PaymentGroup] ?? paymentFilter}`,
       statusFilter !== "todas" && (statusFilter === "canceladas" ? "Somente canceladas" : "Somente concluidas"),
     ].filter(Boolean);
     const ok = printDailyReport(dailySummaries, {
@@ -611,9 +676,9 @@ export default function SalesHistoryPage() {
                 className="input-field mt-1 w-full py-1.5 text-xs"
               >
                 <option value="">Todas</option>
-                {paymentOptions.map((type) => (
-                  <option key={type} value={type}>
-                    {PAYMENT_LABEL[type] || type}
+                {PAYMENT_FILTER_OPTIONS.map((group) => (
+                  <option key={group} value={group}>
+                    {PAYMENT_GROUP_LABEL[group]}
                   </option>
                 ))}
               </select>
@@ -672,6 +737,71 @@ export default function SalesHistoryPage() {
               </button>
             ) : null}
           </div>
+        </div>
+      </section>
+
+      <section className="card space-y-3 p-4 md:p-5" aria-label="Resumo do período">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold text-text-primary">Resumo do período</h2>
+          <span className="text-xs text-text-secondary">
+            {periodLabel}
+            {paymentFilter ? ` · ${PAYMENT_GROUP_LABEL[paymentFilter as PaymentGroup] ?? paymentFilter}` : ""}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
+            <span className="block text-[11px] text-text-secondary">
+              {paymentFilter ? `Total em ${PAYMENT_GROUP_LABEL[paymentFilter as PaymentGroup]}` : "Total vendido"}
+            </span>
+            <strong className="mt-1 block font-mono text-lg text-emerald-600 dark:text-emerald-400">
+              R$ {formatMoneyBr(periodSummary.total)}
+            </strong>
+          </div>
+          <div className="rounded-xl border border-border-primary bg-bg-primary/60 p-3">
+            <span className="block text-[11px] text-text-secondary">Vendas concluídas</span>
+            <strong className="mt-1 block text-lg text-text-primary">{periodSummary.vendas}</strong>
+          </div>
+          <div className="rounded-xl border border-border-primary bg-bg-primary/60 p-3">
+            <span className="block text-[11px] text-text-secondary">Ticket médio</span>
+            <strong className="mt-1 block font-mono text-lg text-text-primary">
+              R$ {formatMoneyBr(periodSummary.ticketMedio)}
+            </strong>
+          </div>
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-3">
+            <span className="block text-[11px] text-text-secondary">Canceladas (fora do total)</span>
+            <strong className="mt-1 block text-lg text-rose-600 dark:text-rose-400">
+              {periodSummary.canceladas}
+              {periodSummary.canceladas > 0 ? (
+                <span className="ml-1.5 font-mono text-xs font-medium">R$ {formatMoneyBr(periodSummary.totalCanceladas)}</span>
+              ) : null}
+            </strong>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-semibold text-text-secondary">Por forma de pagamento:</span>
+          {PAYMENT_FILTER_OPTIONS.map((group) => {
+            const value = periodSummary.byGroup[group];
+            const active = paymentFilter === group;
+            if (group === "outros" && value === 0 && !active) return null;
+            return (
+              <button
+                key={group}
+                type="button"
+                onClick={() => setPaymentFilter(active ? "" : group)}
+                title={active ? "Clique para remover o filtro" : `Filtrar somente ${PAYMENT_GROUP_LABEL[group]}`}
+                className={`rounded-lg border px-2.5 py-1 font-semibold transition ${
+                  active
+                    ? "border-brand-primary bg-brand-primary/10 text-brand-primary"
+                    : "border-border-primary text-text-secondary hover:bg-hover-light hover:text-text-primary"
+                }`}
+              >
+                {PAYMENT_GROUP_LABEL[group]}{" "}
+                <span className="font-mono text-text-primary">R$ {formatMoneyBr(value)}</span>
+              </button>
+            );
+          })}
         </div>
       </section>
 
