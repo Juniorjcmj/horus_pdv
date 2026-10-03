@@ -63,7 +63,8 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
         if (currentUser is null) return Unauthorized(new ApiResponse<ClienteModel> { Success = false, Message = "Sessão não encontrada." });
         try
         {
-            var updated = await clienteService.AtualizarAsync(currentUser.CompanyId, id, request);
+            var updated = await clienteService.AtualizarAsync(
+                currentUser.CompanyId, id, request, PodeAlterarFiado(currentUser));
             if (updated is null)
             {
                 return NotFound(new ApiResponse<ClienteModel> { Success = false, Message = "Cliente não encontrado." });
@@ -89,14 +90,25 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
     {
         var currentUser = GetCurrentUser();
         if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
-        var removed = await clienteService.ExcluirAsync(currentUser.CompanyId, id);
-        if (!removed)
+        try
         {
-            return NotFound(new ApiResponse<object> { Success = false, Message = "Cliente não encontrado." });
-        }
+            var removed = await clienteService.ExcluirAsync(currentUser.CompanyId, id, PodeAlterarFiado(currentUser));
+            if (!removed)
+            {
+                return NotFound(new ApiResponse<object> { Success = false, Message = "Cliente não encontrado." });
+            }
 
-        return Ok(new ApiResponse<object> { Success = true, Message = "Cliente removido com sucesso." });
+            return Ok(new ApiResponse<object> { Success = true, Message = "Cliente removido com sucesso." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
     }
+
+    /// <summary>Gerente consulta o fiado/crediário, mas não altera (limite de crédito, recebimentos, exclusão de devedor).</summary>
+    private static bool PodeAlterarFiado(AuthenticatedUser user)
+        => !string.Equals(user.Role, HorusRoles.Gerente, StringComparison.OrdinalIgnoreCase);
 
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;

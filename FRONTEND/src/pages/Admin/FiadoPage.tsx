@@ -23,6 +23,7 @@ import PageHeader from "@/components/Admin/PageHeader";
 import LoadingButton from "@/components/Loading/LoadingButton";
 import TablePagination from "@/components/Pagination/TablePagination";
 import { Toast, useStatusDialog } from "@/hooks/Dialog";
+import { getStoredAuthUser } from "@/utils/authStorage";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import PageLayout from "@/layout/PageLayout";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
@@ -76,6 +77,9 @@ function formatDateBr(isoString?: string | null) {
 export default function FiadoPage() {
   const { formatMoneyBr, maskMoneyBr, parseMoneyBr } = useInputMasks();
   const statusDialog = useStatusDialog();
+
+  // Gerente só consulta fiado/crediário (extrato, devedores, resumo): não registra recebimentos.
+  const canReceber = getStoredAuthUser()?.role?.toLowerCase() !== "gerente";
 
   const [devedores, setDevedores] = useState<FiadoDevedor[]>([]);
   const [resumo, setResumo] = useState<FiadoResumo | null>(null);
@@ -593,14 +597,16 @@ export default function FiadoPage() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenReceber(d)}
-                            className="btn-success py-1 px-2.5 text-xs font-semibold inline-flex items-center gap-1"
-                            title="Receber pagamento deste cliente"
-                          >
-                            <DollarSign size={13} /> Receber
-                          </button>
+                          {canReceber ? (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenReceber(d)}
+                              className="btn-success py-1 px-2.5 text-xs font-semibold inline-flex items-center gap-1"
+                              title="Receber pagamento deste cliente"
+                            >
+                              <DollarSign size={13} /> Receber
+                            </button>
+                          ) : null}
                           <button
                             type="button"
                             onClick={() => handleOpenExtrato(d)}

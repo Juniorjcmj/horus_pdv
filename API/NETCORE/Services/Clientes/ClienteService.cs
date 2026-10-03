@@ -23,7 +23,7 @@ public class ClienteService(ClienteAB clientesAB) : IClienteService
         return ToModel(await clientesAB.SalvarAsync(companyId, customer));
     }
 
-    public async Task<ClienteModel?> AtualizarAsync(string companyId, string id, ClienteRequest request)
+    public async Task<ClienteModel?> AtualizarAsync(string companyId, string id, ClienteRequest request, bool podeAlterarFiado = true)
     {
         Validate(request);
         var current = await clientesAB.ObterAsync(companyId, id);
@@ -32,12 +32,31 @@ public class ClienteService(ClienteAB clientesAB) : IClienteService
             return null;
         }
 
+        // Limite de crédito é parâmetro do fiado/crediário: quem só consulta o fiado (gerente) não altera.
+        if (!podeAlterarFiado && request.LimiteCredito != current.LimiteCredito)
+        {
+            throw new InvalidOperationException(
+                "Seu perfil só consulta fiado/crediário: o limite de crédito do cliente não pode ser alterado.");
+        }
+
         await ValidateDuplicatesAsync(companyId, request, id);
         return ToModel(await clientesAB.SalvarAsync(companyId, MapRequest(id, request)));
     }
 
-    public Task<bool> ExcluirAsync(string companyId, string id)
-        => clientesAB.ExcluirAsync(companyId, id);
+    public async Task<bool> ExcluirAsync(string companyId, string id, bool podeAlterarFiado = true)
+    {
+        if (!podeAlterarFiado)
+        {
+            var current = await clientesAB.ObterAsync(companyId, id);
+            if (current is not null && current.SaldoDevedor > 0)
+            {
+                throw new InvalidOperationException(
+                    "Seu perfil só consulta fiado/crediário: cliente com saldo devedor não pode ser excluído.");
+            }
+        }
+
+        return await clientesAB.ExcluirAsync(companyId, id);
+    }
 
     private static void Validate(ClienteRequest request)
     {

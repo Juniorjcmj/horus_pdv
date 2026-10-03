@@ -16,6 +16,7 @@ import { Toast, useStatusDialog } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import PageLayout from "@/layout/PageLayout";
 import { customerService } from "@/services/api/customerService";
+import { getStoredAuthUser } from "@/utils/authStorage";
 import { lookupAddressByCep } from "@/utils/cepLookup";
 import {
   getAgeFromBirthDate,
@@ -90,6 +91,10 @@ function CustomerFormDrawer({
   onFillAddressFromCep: () => void;
 }) {
   const { maskCpfOrCnpj } = useInputMasks();
+
+  // Gerente cadastra cliente novo (com limite), mas não altera o limite de crédito de quem já existe.
+  const limiteSomenteLeitura =
+    isEditMode && getStoredAuthUser()?.role?.toLowerCase() === "gerente";
 
   if (!open) return null;
 
@@ -204,11 +209,14 @@ function CustomerFormDrawer({
                   onChange={(event) =>
                     setField("limiteCredito", Math.max(0, parseFloat(event.target.value) || 0))
                   }
-                  className="input-field w-full"
+                  disabled={limiteSomenteLeitura}
+                  className="input-field w-full disabled:cursor-not-allowed disabled:opacity-60"
                   placeholder="0,00 (0 = ilimitado)"
                 />
                 <span className="mt-1 block text-xs text-text-tertiary">
-                  0 significa sem limite pré-estabelecido.
+                  {limiteSomenteLeitura
+                    ? "Seu perfil só consulta fiado/crediário: o limite de um cliente já cadastrado não pode ser alterado."
+                    : "0 significa sem limite pré-estabelecido."}
                 </span>
               </label>
               <label className="block">

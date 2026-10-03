@@ -12,6 +12,8 @@ public interface IClienteService
 {
     Task<List<ClienteModel>> ListarAsync(string companyId);
     Task<ClienteModel> CriarAsync(string companyId, ClienteRequest request);
-    Task<ClienteModel?> AtualizarAsync(string companyId, string id, ClienteRequest request);
-    Task<bool> ExcluirAsync(string companyId, string id);
+    /// <param name="podeAlterarFiado">false (gerente): não pode mudar o limite de crédito (fiado/crediário) do cliente.</param>
+    Task<ClienteModel?> AtualizarAsync(string companyId, string id, ClienteRequest request, bool podeAlterarFiado = true);
+    /// <param name="podeAlterarFiado">false (gerente): não pode excluir cliente com saldo devedor de fiado.</param>
+    Task<bool> ExcluirAsync(string companyId, string id, bool podeAlterarFiado = true);
 }

@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Clientes/ClienteController.cs": {
-    "mtime": 1790976492.3703275,
-    "seen": 1790976661.1898053,
-    "ast_hash": "a6df304c24badaeb30b17d9a720991be",
+    "mtime": 1791054712.183861,
+    "seen": 1791054783.9419901,
+    "ast_hash": "ef92237c727c19bf7bfccb00d9b15a01",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Empresa/EmpresaController.cs": {
@@ -480,15 +480,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Clientes/ClienteService.cs": {
-    "mtime": 1789329684.8859,
-    "seen": 1789330645.1133683,
-    "ast_hash": "9c763494f356f731e17e0159052dc75a",
+    "mtime": 1791054712.021344,
+    "seen": 1791054783.9569068,
+    "ast_hash": "9bf85c4bd70b87b3ee7feb1207e12f17",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Clientes/IClienteService.cs": {
-    "mtime": 1788665266.555845,
-    "seen": 1788888974.3519347,
-    "ast_hash": "dd1abbf19089d131e5bb76917c495575",
+    "mtime": 1791054711.9162512,
+    "seen": 1791054783.9569108,
+    "ast_hash": "da36ee292b49f7a385403fb938d0175e",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Email/HorusEmailOptions.cs": {
@@ -984,9 +984,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/CustomerRegisterPage.tsx": {
-    "mtime": 1789329739.337291,
-    "seen": 1789330645.1351328,
-    "ast_hash": "a6821170225764a003571be393bee019",
+    "mtime": 1791054749.5268166,
+    "seen": 1791054783.9785974,
+    "ast_hash": "3adc9211ef09cbb0b329b2fea3d1dca2",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/EditProfilePage.tsx": {
@@ -2184,9 +2184,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiado/FiadoController.cs": {
-    "mtime": 1789329570.82147,
-    "seen": 1789330645.0949497,
-    "ast_hash": "053987295fbfe44854e6411da35864f4",
+    "mtime": 1791054711.8368342,
+    "seen": 1791054783.9422507,
+    "ast_hash": "718b80cea122d9d700a27bda0c07d57f",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Promocoes/PromocaoController.cs": {
@@ -2262,9 +2262,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiadoPage.tsx": {
-    "mtime": 1791028292.5804462,
-    "seen": 1791028438.5536919,
-    "ast_hash": "b56388532542a9f986c8d030317ee35b",
+    "mtime": 1791054741.2654488,
+    "seen": 1791054783.9787428,
+    "ast_hash": "71d51ec3c718750197047b31b3b87654",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PromocoesPage.tsx": {

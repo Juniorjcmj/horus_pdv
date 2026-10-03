@@ -16,7 +16,9 @@ namespace HORUSPDV_API.Controllers.Fiado;
 [HorusAuthorizeRoles("administrador", "gerente", "caixa")]
 public class FiadoController(IFiadoService fiadoService) : ControllerBase
 {
+    // Receber pagamento altera o fiado/crediário do cliente: gerente só consulta (extrato, devedores, resumo).
     [HttpPost("receber")]
+    [HorusAuthorizeRoles("administrador", "caixa")]
     [ProducesResponseType(typeof(ApiResponse<FiadoMovimentoAD>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<FiadoMovimentoAD>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Receber([FromBody] RecebimentoFiadoRequest request)
