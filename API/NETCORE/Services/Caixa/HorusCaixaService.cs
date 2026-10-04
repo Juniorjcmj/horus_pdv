@@ -288,7 +288,13 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         // Multi-caixa: busca a sessão aberta DESTE operador (não qualquer uma da empresa)
         var openSession = sessions.FirstOrDefault(item => item.ClosedAt is null && item.OperatorId == operatorId);
         var allOpenSessions = sessions.Where(item => item.ClosedAt is null).ToList();
-        var lastSession = openSession ?? sessions.FirstOrDefault();
+        // "Última sessão" é a do PRÓPRIO operador: a aberta ou, se ele acabou de fechar, a mais recente dele
+        // (é a que o cupom de fechamento imprime). Pegar a mais recente da empresa trazia, com 2 caixas abertos,
+        // o caixa do outro operador. Sem nenhuma sessão própria, cai na mais recente da empresa (visão gerencial;
+        // para operador comum, GetStatusAsync já descarta o que não for dele).
+        var lastSession = openSession
+            ?? sessions.FirstOrDefault(item => item.OperatorId == operatorId)
+            ?? sessions.FirstOrDefault();
         var canSell = false;
         var blockReason = "Abra o caixa do dia antes de iniciar vendas.";
         var state = "fechado";

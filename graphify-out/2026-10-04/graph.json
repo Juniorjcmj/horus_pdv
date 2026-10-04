@@ -2457,7 +2457,7 @@
       },
       "norm_label": "caixastatusdto",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L443"
+      "source_location": "L437"
     },
     {
       "id": "frontend_src_components_pagination_tablepagination_tablepaginationprops",
@@ -11087,7 +11087,7 @@
       },
       "norm_label": "caixamovimentodto",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L482"
+      "source_location": "L476"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto",
@@ -11106,7 +11106,7 @@
       },
       "norm_label": "caixasessiondto",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L457"
+      "source_location": "L451"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_paymentbreakdowndto",
@@ -11125,7 +11125,7 @@
       },
       "norm_label": "paymentbreakdowndto",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L492"
+      "source_location": "L486"
     },
     {
       "id": "api_netcore_repositories_dataaccess_ordemcompraad_horuspdv_api_repositories_dataaccess_ordemcompraad",
@@ -12849,19 +12849,19 @@
             "callee": "Max",
             "receiver_type": "Math",
             "lang": "csharp",
-            "line": "L382"
+            "line": "L376"
           },
           {
             "callee": "Floor",
             "receiver_type": "Math",
             "lang": "csharp",
-            "line": "L382"
+            "line": "L376"
           }
         ]
       },
       "norm_label": ".buildhistoricaldto()",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L364"
+      "source_location": "L358"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_horuscaixaservice_buildstatus",
@@ -12899,7 +12899,7 @@
             "callee": "Add",
             "receiver_type": "List",
             "lang": "csharp",
-            "line": "L332"
+            "line": "L326"
           }
         ]
       },
@@ -13145,19 +13145,19 @@
             "callee": "Max",
             "receiver_type": "Math",
             "lang": "csharp",
-            "line": "L433"
+            "line": "L427"
           },
           {
             "callee": "Floor",
             "receiver_type": "Math",
             "lang": "csharp",
-            "line": "L433"
+            "line": "L427"
           }
         ]
       },
       "norm_label": ".todtoasync()",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L391"
+      "source_location": "L385"
     },
     {
       "id": "api_netcore_services_security_horusroles_horuspdv_api_services_security_horusroles_isgerenteouadmin",
@@ -53939,7 +53939,7 @@
       },
       "norm_label": "blockreason",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L447"
+      "source_location": "L441"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixastatusdto_cansell",
@@ -53956,7 +53956,7 @@
       },
       "norm_label": "cansell",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L446"
+      "source_location": "L440"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixastatusdto_currentsession",
@@ -53973,7 +53973,7 @@
       },
       "norm_label": "currentsession",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L449"
+      "source_location": "L443"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixastatusdto_history",
@@ -53990,7 +53990,7 @@
       },
       "norm_label": "history",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L451"
+      "source_location": "L445"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixastatusdto_isreplay",
@@ -54007,7 +54007,7 @@
       },
       "norm_label": "isreplay",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L454"
+      "source_location": "L448"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixastatusdto_lastsession",
@@ -54024,7 +54024,7 @@
       },
       "norm_label": "lastsession",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L450"
+      "source_location": "L444"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixastatusdto_opensessions",
@@ -54041,7 +54041,7 @@
       },
       "norm_label": "opensessions",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L453"
+      "source_location": "L447"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixastatusdto_servernow",
@@ -54058,7 +54058,7 @@
       },
       "norm_label": "servernow",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L448"
+      "source_location": "L442"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixastatusdto_state",
@@ -54075,7 +54075,7 @@
       },
       "norm_label": "state",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L445"
+      "source_location": "L439"
     },
     {
       "id": "frontend_src_main",
@@ -101389,7 +101389,7 @@
       },
       "norm_label": "createdat",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L488"
+      "source_location": "L482"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixamovimentodto_id",
@@ -101406,7 +101406,7 @@
       },
       "norm_label": "id",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L484"
+      "source_location": "L478"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixamovimentodto_motivo",
@@ -101423,7 +101423,7 @@
       },
       "norm_label": "motivo",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L487"
+      "source_location": "L481"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixamovimentodto_operatorname",
@@ -101440,7 +101440,7 @@
       },
       "norm_label": "operatorname",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L489"
+      "source_location": "L483"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixamovimentodto_tipo",
@@ -101457,7 +101457,7 @@
       },
       "norm_label": "tipo",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L485"
+      "source_location": "L479"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixamovimentodto_valor",
@@ -101474,7 +101474,7 @@
       },
       "norm_label": "valor",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L486"
+      "source_location": "L480"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_closedat",
@@ -101491,7 +101491,7 @@
       },
       "norm_label": "closedat",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L462"
+      "source_location": "L456"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_closedbyid",
@@ -101508,7 +101508,7 @@
       },
       "norm_label": "closedbyid",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L467"
+      "source_location": "L461"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_closedbyname",
@@ -101525,7 +101525,7 @@
       },
       "norm_label": "closedbyname",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L468"
+      "source_location": "L462"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_closingamount",
@@ -101542,7 +101542,7 @@
       },
       "norm_label": "closingamount",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L464"
+      "source_location": "L458"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_differenceamount",
@@ -101559,7 +101559,7 @@
       },
       "norm_label": "differenceamount",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L474"
+      "source_location": "L468"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_differencereason",
@@ -101576,7 +101576,7 @@
       },
       "norm_label": "differencereason",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L475"
+      "source_location": "L469"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_elapsedminutes",
@@ -101593,7 +101593,7 @@
       },
       "norm_label": "elapsedminutes",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L470"
+      "source_location": "L464"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_expectedcashamount",
@@ -101610,7 +101610,7 @@
       },
       "norm_label": "expectedcashamount",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L473"
+      "source_location": "L467"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_id",
@@ -101627,7 +101627,7 @@
       },
       "norm_label": "id",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L459"
+      "source_location": "L453"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_movimentos",
@@ -101644,7 +101644,7 @@
       },
       "norm_label": "movimentos",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L476"
+      "source_location": "L470"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_note",
@@ -101661,7 +101661,7 @@
       },
       "norm_label": "note",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L469"
+      "source_location": "L463"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_openedat",
@@ -101678,7 +101678,7 @@
       },
       "norm_label": "openedat",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L461"
+      "source_location": "L455"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_openingamount",
@@ -101695,7 +101695,7 @@
       },
       "norm_label": "openingamount",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L463"
+      "source_location": "L457"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_operatorid",
@@ -101712,7 +101712,7 @@
       },
       "norm_label": "operatorid",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L465"
+      "source_location": "L459"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_operatorname",
@@ -101729,7 +101729,7 @@
       },
       "norm_label": "operatorname",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L466"
+      "source_location": "L460"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_paymentbreakdown",
@@ -101746,7 +101746,7 @@
       },
       "norm_label": "paymentbreakdown",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L479"
+      "source_location": "L473"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_caixasessiondto_status",
@@ -101763,7 +101763,7 @@
       },
       "norm_label": "status",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L460"
+      "source_location": "L454"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_paymentbreakdowndto_paymenttype",
@@ -101780,7 +101780,7 @@
       },
       "norm_label": "paymenttype",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L494"
+      "source_location": "L488"
     },
     {
       "id": "api_netcore_services_caixa_horuscaixaservice_horuspdv_api_services_caixa_paymentbreakdowndto_total",
@@ -101797,7 +101797,7 @@
       },
       "norm_label": "total",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L495"
+      "source_location": "L489"
     },
     {
       "id": "api_netcore_repositories_dataaccess_ordemcompraad_cs_list",
@@ -119508,7 +119508,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L369",
+      "source_location": "L363",
       "weight": 1.0
     },
     {
@@ -119520,7 +119520,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L373",
+      "source_location": "L367",
       "weight": 1.0
     },
     {
@@ -119532,7 +119532,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L375",
+      "source_location": "L369",
       "weight": 1.0
     },
     {
@@ -119556,7 +119556,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L325",
+      "source_location": "L319",
       "weight": 1.0
     },
     {
@@ -119568,7 +119568,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L328",
+      "source_location": "L322",
       "weight": 1.0
     },
     {
@@ -119580,7 +119580,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L338",
+      "source_location": "L332",
       "weight": 1.0
     },
     {
@@ -119592,7 +119592,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L351",
+      "source_location": "L345",
       "weight": 1.0
     },
     {
@@ -119604,7 +119604,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L356",
+      "source_location": "L350",
       "weight": 1.0
     },
     {
@@ -119880,7 +119880,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L397",
+      "source_location": "L391",
       "weight": 1.0
     },
     {
@@ -119892,7 +119892,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L401",
+      "source_location": "L395",
       "weight": 1.0
     },
     {
@@ -119904,7 +119904,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L403",
+      "source_location": "L397",
       "weight": 1.0
     },
     {
@@ -119916,7 +119916,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L410",
+      "source_location": "L404",
       "weight": 1.0
     },
     {
@@ -119928,7 +119928,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L416",
+      "source_location": "L410",
       "weight": 1.0
     },
     {
@@ -119940,7 +119940,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L420",
+      "source_location": "L414",
       "weight": 1.0
     },
     {
@@ -133997,7 +133997,7 @@
         "ref_token": "List"
       },
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L479",
+      "source_location": "L473",
       "weight": 1.0
     },
     {
@@ -134012,7 +134012,7 @@
         "ref_token": "List"
       },
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L453",
+      "source_location": "L447",
       "weight": 1.0
     },
     {
@@ -148829,7 +148829,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L484",
+      "source_location": "L478",
       "weight": 1.0
     },
     {
@@ -148841,7 +148841,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L485",
+      "source_location": "L479",
       "weight": 1.0
     },
     {
@@ -148853,7 +148853,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L486",
+      "source_location": "L480",
       "weight": 1.0
     },
     {
@@ -148865,7 +148865,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L487",
+      "source_location": "L481",
       "weight": 1.0
     },
     {
@@ -148877,7 +148877,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L488",
+      "source_location": "L482",
       "weight": 1.0
     },
     {
@@ -148889,7 +148889,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L489",
+      "source_location": "L483",
       "weight": 1.0
     },
     {
@@ -148901,7 +148901,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L459",
+      "source_location": "L453",
       "weight": 1.0
     },
     {
@@ -148913,7 +148913,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L460",
+      "source_location": "L454",
       "weight": 1.0
     },
     {
@@ -148925,7 +148925,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L461",
+      "source_location": "L455",
       "weight": 1.0
     },
     {
@@ -148937,7 +148937,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L462",
+      "source_location": "L456",
       "weight": 1.0
     },
     {
@@ -148949,7 +148949,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L463",
+      "source_location": "L457",
       "weight": 1.0
     },
     {
@@ -148961,7 +148961,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L464",
+      "source_location": "L458",
       "weight": 1.0
     },
     {
@@ -148973,7 +148973,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L465",
+      "source_location": "L459",
       "weight": 1.0
     },
     {
@@ -148985,7 +148985,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L466",
+      "source_location": "L460",
       "weight": 1.0
     },
     {
@@ -148997,7 +148997,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L467",
+      "source_location": "L461",
       "weight": 1.0
     },
     {
@@ -149009,7 +149009,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L468",
+      "source_location": "L462",
       "weight": 1.0
     },
     {
@@ -149021,7 +149021,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L469",
+      "source_location": "L463",
       "weight": 1.0
     },
     {
@@ -149033,7 +149033,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L470",
+      "source_location": "L464",
       "weight": 1.0
     },
     {
@@ -149045,7 +149045,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L473",
+      "source_location": "L467",
       "weight": 1.0
     },
     {
@@ -149057,7 +149057,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L474",
+      "source_location": "L468",
       "weight": 1.0
     },
     {
@@ -149069,7 +149069,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L475",
+      "source_location": "L469",
       "weight": 1.0
     },
     {
@@ -149081,7 +149081,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L476",
+      "source_location": "L470",
       "weight": 1.0
     },
     {
@@ -149093,7 +149093,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L479",
+      "source_location": "L473",
       "weight": 1.0
     },
     {
@@ -149105,7 +149105,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L445",
+      "source_location": "L439",
       "weight": 1.0
     },
     {
@@ -149117,7 +149117,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L446",
+      "source_location": "L440",
       "weight": 1.0
     },
     {
@@ -149129,7 +149129,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L447",
+      "source_location": "L441",
       "weight": 1.0
     },
     {
@@ -149141,7 +149141,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L448",
+      "source_location": "L442",
       "weight": 1.0
     },
     {
@@ -149153,7 +149153,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L449",
+      "source_location": "L443",
       "weight": 1.0
     },
     {
@@ -149165,7 +149165,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L450",
+      "source_location": "L444",
       "weight": 1.0
     },
     {
@@ -149177,7 +149177,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L451",
+      "source_location": "L445",
       "weight": 1.0
     },
     {
@@ -149189,7 +149189,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L453",
+      "source_location": "L447",
       "weight": 1.0
     },
     {
@@ -149201,7 +149201,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L454",
+      "source_location": "L448",
       "weight": 1.0
     },
     {
@@ -149213,7 +149213,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L494",
+      "source_location": "L488",
       "weight": 1.0
     },
     {
@@ -149225,7 +149225,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L495",
+      "source_location": "L489",
       "weight": 1.0
     },
     {
@@ -155343,7 +155343,7 @@
         "ref_token": "CaixaMovimentoDto"
       },
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L476",
+      "source_location": "L470",
       "weight": 1.0
     },
     {
@@ -155448,7 +155448,7 @@
         "ref_token": "CaixaSessionDto"
       },
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L453",
+      "source_location": "L447",
       "weight": 1.0
     },
     {
@@ -160938,7 +160938,7 @@
         "ref_token": "PaymentBreakdownDto"
       },
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L479",
+      "source_location": "L473",
       "weight": 1.0
     },
     {
@@ -176170,7 +176170,7 @@
         "ref_token": "CaixaSessionAD"
       },
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L364",
+      "source_location": "L358",
       "weight": 1.0
     },
     {
@@ -176230,7 +176230,7 @@
         "ref_token": "CaixaSessionAD"
       },
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L391",
+      "source_location": "L385",
       "weight": 1.0
     },
     {
@@ -177985,7 +177985,7 @@
         "ref_token": "CancellationToken"
       },
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L391",
+      "source_location": "L385",
       "weight": 1.0
     },
     {
@@ -180685,7 +180685,7 @@
         "ref_token": "DateTimeOffset"
       },
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L391",
+      "source_location": "L385",
       "weight": 1.0
     },
     {
@@ -194287,7 +194287,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L391",
+      "source_location": "L385",
       "weight": 1.0
     },
     {
@@ -203594,7 +203594,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L443",
+      "source_location": "L437",
       "weight": 1.0
     },
     {
@@ -203605,7 +203605,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L457",
+      "source_location": "L451",
       "weight": 1.0
     },
     {
@@ -203616,7 +203616,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L482",
+      "source_location": "L476",
       "weight": 1.0
     },
     {
@@ -203627,7 +203627,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L492",
+      "source_location": "L486",
       "weight": 1.0
     },
     {
@@ -234567,7 +234567,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L364",
+      "source_location": "L358",
       "weight": 1.0
     },
     {
@@ -234578,7 +234578,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L391",
+      "source_location": "L385",
       "weight": 1.0
     },
     {
@@ -244960,7 +244960,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L396",
+      "source_location": "L390",
       "weight": 1.0
     },
     {
@@ -244972,7 +244972,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Services/Caixa/HorusCaixaService.cs",
-      "source_location": "L408",
+      "source_location": "L402",
       "weight": 1.0
     },
     {
@@ -253197,5 +253197,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "0efe695306db9240b5ab9b4b5eefde44f59de57d"
+  "built_at_commit": "1ce133a7fd1de8a5dba71b13ecd3af788fc63f06"
 }
