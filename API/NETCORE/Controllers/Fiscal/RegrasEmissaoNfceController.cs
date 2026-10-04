@@ -108,6 +108,11 @@ public class RegrasEmissaoNfceController(RegrasEmissaoNfceAB regrasEmissaoNfceAB
 public class SalvarRegrasEmissaoNfceRequest
 {
     public bool Habilitado { get; set; } = true;
+
+    /// <summary>
+    /// Formas de pagamento que SEMPRE emitem NFC-e (ex.: "pix"). As demais formas seguem o intervalo.
+    /// Vazio = nenhuma sempre emite (todas seguem o intervalo).
+    /// </summary>
     public string FormasPagamentoHabilitadas { get; set; } = "dinheiro,credito,debito,pix,fiado";
     public int IntervaloNotas { get; set; } = 1;
     public bool EmitirSempreComCpf { get; set; } = true;

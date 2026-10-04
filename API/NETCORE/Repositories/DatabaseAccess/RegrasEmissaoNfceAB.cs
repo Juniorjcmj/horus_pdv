@@ -70,7 +70,9 @@ public class RegrasEmissaoNfceAB(Connection connection)
         CancellationToken cancellationToken = default)
     {
         if (intervaloNotas < 1) intervaloNotas = 1;
-        formasPagamentoHabilitadas = string.IsNullOrWhiteSpace(formasPagamentoHabilitadas)
+        // Lista vazia é válida: nenhuma forma "sempre emite" e todas seguem o intervalo. Só o valor nulo
+        // (campo ausente) volta ao padrão.
+        formasPagamentoHabilitadas = formasPagamentoHabilitadas is null
             ? "dinheiro,credito,debito,pix,fiado"
             : formasPagamentoHabilitadas.Trim().ToLowerInvariant();
 
@@ -118,8 +120,14 @@ public class RegrasEmissaoNfceAB(Connection connection)
     }
 
     /// <summary>
-    /// Avalia atomicamente se a venda atual deve emitir NFC-e com base nas formas de pagamento,
-    /// presença de CPF/CNPJ e contador de intervalo (ex.: 1 a cada 30).
+    /// Avalia atomicamente se a venda atual deve emitir NFC-e. Regras, em ordem:
+    ///  1. controle desativado: emite todas;
+    ///  2. cliente pediu CPF/CNPJ na nota (e a opção está ligada): emite;
+    ///  3. alguma forma de pagamento da venda está entre as "SEMPRE emitir" (ex.: PIX): emite, sem entrar
+    ///     na contagem do intervalo;
+    ///  4. demais vendas (qualquer outra forma: dinheiro, cartão, fiado...): 1 NFC-e a cada N vendas, com
+    ///     contador único para todas elas (ex.: 30 = a 30ª venda dessas formas emite e a contagem reinicia).
+    /// Intervalo 1 emite todas.
     /// </summary>
     public async Task<bool> AvaliarEmissaoEIncrementarAsync(
         string companyId,
@@ -146,7 +154,8 @@ public class RegrasEmissaoNfceAB(Connection connection)
             }
         }
 
-        // 3. Verifica se alguma das formas de pagamento da venda está habilitada para emitir NFC-e
+        // 3. Formas marcadas como "sempre emitir" (ex.: PIX): se a venda tem alguma delas, emite sempre,
+        //    sem entrar na contagem do intervalo.
         var formasConfiguradas = (config.FormasPagamentoHabilitadas ?? "")
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(NormalizarFormaPagamento)
@@ -169,21 +178,18 @@ public class RegrasEmissaoNfceAB(Connection connection)
             }
         }
 
-        bool formaHabilitada = formasVenda.Any(f => formasConfiguradas.Contains(f));
-
-        // Se nenhuma forma de pagamento da venda foi marcada para emitir NFC-e, não emite
-        if (!formaHabilitada)
+        if (formasVenda.Any(f => formasConfiguradas.Contains(f)))
         {
-            return false;
+            return true;
         }
 
-        // 4. Se o intervalo for 1 (padrão), emite todas
+        // 4. Demais formas de pagamento: com intervalo 1 (padrão), emite todas
         if (config.IntervaloNotas <= 1)
         {
             return true;
         }
 
-        // 5. Se houver intervalo (ex.: a cada 30), incrementa atomicamente o contador no banco
+        // 5. Com intervalo (ex.: a cada 30), incrementa atomicamente o contador único dessas vendas
         const string sqlIncrement = @"
             -- Garante que a linha existe
             IF NOT EXISTS (SELECT 1 FROM RegrasEmissaoNfce WHERE CompanyId = @CompanyId)

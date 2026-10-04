@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791055557.5588431,
-    "seen": 1791055811.0941563,
-    "ast_hash": "831fb512e162ebe60905fb7ce0e51436",
+    "mtime": 1791073577.3295906,
+    "seen": 1791073644.9606204,
+    "ast_hash": "6165dce1b6e66c4d06597072b296420e",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -3678,21 +3678,21 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/RegrasEmissaoNfceController.cs": {
-    "mtime": 1790976508.269744,
-    "seen": 1790976661.190523,
-    "ast_hash": "b86f4e52afec9a9c85c508592a952e5b",
+    "mtime": 1791073577.203935,
+    "seen": 1791073644.9398353,
+    "ast_hash": "1ce7a633cdec6c47e0cde376581dec2a",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs": {
-    "mtime": 1790965222.2732399,
-    "seen": 1790965934.3449728,
-    "ast_hash": "06bb6bf1f6d038985f3b7be352799e4f",
+    "mtime": 1791073577.1106799,
+    "seen": 1791073644.96048,
+    "ast_hash": "2ef3d7485055720b76ad2f9ca8534c3b",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx": {
-    "mtime": 1790965801.5538814,
-    "seen": 1790965934.3598516,
-    "ast_hash": "84988e614de4ec75d47f7e7f45a435e8",
+    "mtime": 1791073603.2251651,
+    "seen": 1791073644.9815435,
+    "ast_hash": "314befd1ca5ee00f3dab490bc49381da",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/regrasEmissaoNfceService.ts": {

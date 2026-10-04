@@ -1,7 +1,8 @@
 /**
  * Arquivo: src/components/SettingsPage/FiscalEmissionRulesCard.tsx
- * Objetivo: permite ao administrador/gerente configurar quais formas de pagamento emitem NFC-e
- *           e a cada quantas vendas uma nota será gerada perante a SEFAZ (ex.: a cada 30 vendas emitir 1 NFC-e).
+ * Objetivo: permite ao administrador/gerente configurar quais formas de pagamento SEMPRE emitem NFC-e (ex.: PIX)
+ *           e, para todas as demais formas, a cada quantas vendas uma nota será gerada perante a SEFAZ
+ *           (ex.: a cada 30 vendas emitir 1 NFC-e).
  */
 import { useEffect, useState } from "react";
 import {
@@ -96,7 +97,8 @@ export default function FiscalEmissionRulesCard() {
             .split(",")
             .map((s) => s.trim().toLowerCase())
             .filter(Boolean);
-          setSelectedMethods(methods.length > 0 ? methods : ["dinheiro", "credito", "debito", "pix", "fiado"]);
+          // Lista vazia é válida: nenhuma forma "sempre emite" e todas seguem o intervalo.
+          setSelectedMethods(methods);
         }
       })
       .catch(() => {
@@ -112,11 +114,6 @@ export default function FiscalEmissionRulesCard() {
   };
 
   const handleSave = async () => {
-    if (selectedMethods.length === 0) {
-      Toast.error("Selecione pelo menos uma forma de pagamento para a regra.");
-      return;
-    }
-
     if (intervaloNotas < 1) {
       Toast.error("O intervalo de notas deve ser no mínimo 1.");
       return;
@@ -158,6 +155,11 @@ export default function FiscalEmissionRulesCard() {
     }
   };
 
+  const alwaysLabels = PAYMENT_OPTIONS.filter((opt) => selectedMethods.includes(opt.id)).map((opt) => opt.label);
+  const intervalLabels = PAYMENT_OPTIONS.filter((opt) => !selectedMethods.includes(opt.id)).map((opt) => opt.label);
+  const joinLabels = (labels: string[]) =>
+    labels.length <= 1 ? labels.join("") : `${labels.slice(0, -1).join(", ")} e ${labels[labels.length - 1]}`;
+
   const progressPercent =
     intervaloNotas > 1 ? Math.min(100, Math.round((contadorVendas / intervaloNotas) * 100)) : 100;
 
@@ -178,8 +180,8 @@ export default function FiscalEmissionRulesCard() {
               </span>
             </div>
             <p className="mt-1 text-xs text-text-secondary">
-              Controle quais formas de pagamento devem emitir NFC-e perante a SEFAZ e defina o intervalo de
-              emissão (ex.: a cada 30 vendas emitir 1 nota fiscal).
+              Defina quais formas de pagamento emitem NFC-e <strong>sempre</strong> (ex.: PIX) e, para todas as
+              outras formas, o intervalo de emissão (ex.: a cada 30 vendas emitir 1 nota fiscal).
             </p>
           </div>
         </div>
@@ -199,7 +201,7 @@ export default function FiscalEmissionRulesCard() {
         <div>
           <div className="mb-2 flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-text-secondary">
-              1. Formas de pagamento com emissão de NFC-e
+              1. Formas de pagamento que SEMPRE emitem NFC-e
             </label>
             <span className="text-[11px] text-text-tertiary">
               {selectedMethods.length} selecionada(s)
@@ -244,18 +246,20 @@ export default function FiscalEmissionRulesCard() {
             })}
           </div>
           <p className="mt-1.5 text-[11px] text-text-tertiary">
-            * Vendas pagas exclusivamente com formas desmarcadas serão liberadas com comprovante de venda não fiscal.
+            * Toda venda que tiver uma forma marcada aqui emite NFC-e, sem entrar na contagem do intervalo. As formas
+            desmarcadas seguem o intervalo abaixo (contagem única para todas elas).
           </p>
         </div>
 
         {/* 2. Intervalo de Vendas */}
         <div className="rounded-xl border border-border-secondary bg-bg-light/50 p-4">
           <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary">
-            2. Intervalo de emissão (a cada quantas vendas emitir 1 NFC-e?)
+            2. Intervalo de emissão das demais formas (a cada quantas vendas emitir 1 NFC-e?)
           </label>
           <p className="mt-0.5 text-xs text-text-secondary">
-            Determine a proporção de notas transmitidas para a SEFAZ. Por exemplo, configurando <strong>30</strong>,
-            a cada 30 vendas das formas selecionadas, 1 sairá como NFC-e e 29 como comprovante de venda.
+            Vale para as formas <strong>desmarcadas</strong> acima (dinheiro, cartão, fiado...), somadas. Por exemplo,
+            configurando <strong>30</strong>, a cada 30 vendas dessas formas, 1 sairá como NFC-e e 29 como comprovante
+            de venda.
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -301,11 +305,21 @@ export default function FiscalEmissionRulesCard() {
               <span>Como funcionará no PDV:</span>
             </div>
             <p className="mt-1 leading-relaxed text-text-secondary">
-              {intervaloNotas === 1 ? (
-                <>Todas as vendas com as formas habilitadas gerarão NFC-e normalmente perante a SEFAZ.</>
+              {alwaysLabels.length > 0 ? (
+                <>
+                  Vendas com <strong>{joinLabels(alwaysLabels)}</strong> emitem <strong>NFC-e sempre</strong>.{" "}
+                </>
+              ) : null}
+              {intervalLabels.length === 0 ? (
+                <>Todas as formas estão marcadas: todas as vendas emitem NFC-e e o intervalo não se aplica.</>
+              ) : intervaloNotas === 1 ? (
+                <>
+                  Vendas com <strong>{joinLabels(intervalLabels)}</strong> também emitem NFC-e (intervalo 1 = todas).
+                </>
               ) : (
                 <>
-                  Das formas selecionadas, a cada <strong>{intervaloNotas} vendas</strong>, o sistema transmitirá{" "}
+                  Nas vendas com <strong>{joinLabels(intervalLabels)}</strong>, a cada{" "}
+                  <strong>{intervaloNotas} vendas</strong> o sistema transmitirá{" "}
                   <strong>1 NFC-e oficial com QR-Code</strong> para a SEFAZ. As outras{" "}
                   <strong>{intervaloNotas - 1} vendas</strong> sairão como comprovante de venda não fiscal imediato.
                 </>
@@ -348,7 +362,7 @@ export default function FiscalEmissionRulesCard() {
                   Progresso do Ciclo Atual
                 </p>
                 <p className="text-xs text-text-primary mt-0.5">
-                  Vendas contabilizadas no ciclo:{" "}
+                  Vendas (formas sem emissão automática) contabilizadas no ciclo:{" "}
                   <strong className="text-accent text-sm">{contadorVendas}</strong> de{" "}
                   <strong>{intervaloNotas}</strong>
                   {contadorVendas >= intervaloNotas - 1 && (
