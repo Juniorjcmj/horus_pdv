@@ -151,6 +151,18 @@ const PAYMENT_OPTIONS: Array<{ value: PaymentType; label: string }> = [
   { value: "fiado", label: "Fiado / A Prazo" },
 ];
 
+// Rótulos curtos dos botões de forma de pagamento (atalho: Alt+1 a Alt+5, na ordem de PAYMENT_OPTIONS).
+const PAYMENT_SHORT_LABEL: Record<string, string> = {
+  dinheiro: "Dinheiro",
+  pix: "PIX",
+  debito: "Débito",
+  credito: "Crédito",
+  fiado: "Fiado",
+};
+
+// Cédulas sugeridas nos botões de valor recebido em dinheiro.
+const QUICK_CASH_NOTES = [10, 20, 50, 100, 200];
+
 const LAST_RECEIPT_STORAGE_KEY = "horus-pdv-last-receipt";
 
 function formatDateTime(date: Date) {
@@ -204,6 +216,8 @@ export default function SalesStartPage({
   const statusDialog = useStatusDialog();
   const productInputRef = useRef<HTMLInputElement | null>(null);
   const qtyInputRef = useRef<HTMLInputElement | null>(null);
+  const cashGivenInputRef = useRef<HTMLInputElement | null>(null);
+  const paymentAmountInputRef = useRef<HTMLInputElement | null>(null);
 
   const [now, setNow] = useState(new Date());
   const [productSearch, setProductSearch] = useState("");
@@ -476,6 +490,33 @@ export default function SalesStartPage({
       ? Math.max(0, currentCashGivenValue - currentPaymentAmountValue)
       : 0;
 
+  // Cédulas sugeridas: as maiores que o valor da parcela (devolvem troco). "Valor exato" sempre existe.
+  const quickCashNotes = QUICK_CASH_NOTES.filter((note) => note > currentPaymentAmountValue + 0.009);
+
+  const focusAmountField = (tipo: PaymentType) => {
+    window.setTimeout(() => {
+      const field = tipo === "dinheiro" ? cashGivenInputRef.current : paymentAmountInputRef.current;
+      field?.focus();
+      field?.select();
+    }, 0);
+  };
+
+  // Escolhe a forma de pagamento (botões e atalhos Alt+1..5) e leva o foco ao campo certo para digitar.
+  const selectPaymentType = (tipo: PaymentType) => {
+    setCurrentPaymentType(tipo);
+    if (tipo === "dinheiro") {
+      setCurrentCashGiven(currentPaymentAmount);
+    } else if (tipo === "fiado" && !selectedCustomer) {
+      void openCustomerModal();
+      return;
+    }
+    focusAmountField(tipo);
+  };
+  const selectPaymentTypeRef = useRef(selectPaymentType);
+  useEffect(() => {
+    selectPaymentTypeRef.current = selectPaymentType;
+  });
+
   const currentCoversRemaining = useMemo(() => {
     if (remainingToPay <= 0.001) return false;
     return (
@@ -535,6 +576,11 @@ export default function SalesStartPage({
     currentCashGivenValue,
     subtotal,
   ]);
+
+  const canConfirmPaymentRef = useRef(canConfirmPayment);
+  useEffect(() => {
+    canConfirmPaymentRef.current = canConfirmPayment;
+  });
 
   const effectiveTotalPaid = useMemo(() => {
     if (payments.length === 0) {
@@ -1645,6 +1691,24 @@ export default function SalesStartPage({
     window.setTimeout(() => productInputRef.current?.focus(), 0);
   };
 
+  // Versão mais recente de confirmPayment para o atalho global de Enter (o handler não re-registra a cada render).
+  const confirmPaymentRef = useRef(confirmPayment);
+  useEffect(() => {
+    confirmPaymentRef.current = confirmPayment;
+  });
+
+  // Ao abrir o pagamento, o foco vai direto ao campo de valor: o operador já pode digitar o valor recebido.
+  useEffect(() => {
+    if (!checkoutOpen) return;
+    const timer = window.setTimeout(() => {
+      const field = currentPaymentType === "dinheiro" ? cashGivenInputRef.current : paymentAmountInputRef.current;
+      field?.focus();
+      field?.select();
+    }, 60);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checkoutOpen]);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented) return;
@@ -1699,11 +1763,33 @@ export default function SalesStartPage({
         event.preventDefault();
         setCheckoutOpen(false);
       }
+
+      if (checkoutOpen && !isConfirmingSale) {
+        // Alt+1..5: forma de pagamento, na ordem dos botões (Dinheiro, PIX, Débito, Crédito, Fiado).
+        if (event.altKey && !event.ctrlKey && !event.metaKey && /^[1-5]$/.test(event.key)) {
+          const option = PAYMENT_OPTIONS[Number(event.key) - 1];
+          if (option) {
+            event.preventDefault();
+            selectPaymentTypeRef.current(option.value);
+          }
+          return;
+        }
+
+        // Enter com a venda quitada confirma, mesmo com o foco fora dos campos de valor (nos campos
+        // de valor o próprio campo já trata o Enter; em botões, o Enter aciona o botão).
+        if (event.key === "Enter" && canConfirmPaymentRef.current) {
+          const tag = target?.tagName;
+          if (tag !== "INPUT" && tag !== "SELECT" && tag !== "TEXTAREA" && tag !== "BUTTON") {
+            event.preventDefault();
+            void confirmPaymentRef.current();
+          }
+        }
+      }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [addItem, cancelSale, checkoutOpen, handleSyncCloud, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen, sessionSalesModalOpen, saleDetailModalOpen]);
+  }, [addItem, cancelSale, checkoutOpen, handleSyncCloud, isConfirmingSale, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen, sessionSalesModalOpen, saleDetailModalOpen]);
 
   const { dateLabel, timeLabel } = formatDateTime(now);
   const cashCanSell = cashStatus?.canSell === true;
@@ -2801,6 +2887,29 @@ export default function SalesStartPage({
                 </div>
               </div>
 
+              {/* Troco em destaque: é o valor que o operador precisa falar e entregar ao cliente */}
+              {(currentPaymentType === "dinheiro" || totalChangeValue > 0.004) && (
+                <div
+                  className={`rounded-xl border-2 px-3 py-2 text-center transition-colors ${
+                    totalChangeValue > 0.004
+                      ? "border-emerald-500/60 bg-emerald-500/10"
+                      : "border-border-primary bg-bg-primary/40"
+                  }`}
+                  aria-live="polite"
+                >
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-text-secondary">
+                    Troco a devolver
+                  </span>
+                  <span
+                    className={`block font-mono text-4xl font-extrabold leading-tight ${
+                      totalChangeValue > 0.004 ? "text-emerald-500" : "text-text-tertiary"
+                    }`}
+                  >
+                    R$ {formatMoneyBr(totalChangeValue)}
+                  </span>
+                </div>
+              )}
+
               {/* Lista de Pagamentos já inseridos */}
               {payments.length > 0 && (
                 <div className="space-y-1.5">
@@ -2859,33 +2968,38 @@ export default function SalesStartPage({
                     </span>
                   </div>
 
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm text-text-secondary">Forma</span>
-                      <select
-                        value={currentPaymentType}
-                        onChange={(e) => {
-                          const tipo = e.target.value as PaymentType;
-                          setCurrentPaymentType(tipo);
-                          if (tipo === "dinheiro") {
-                            setCurrentCashGiven(currentPaymentAmount);
-                          } else if (tipo === "fiado" && !selectedCustomer) {
-                            void openCustomerModal();
-                          }
-                        }}
-                        className="select-field w-full"
-                      >
-                        {PAYMENT_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value} className="bg-bg-primary text-text-primary">
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                  <div>
+                    <span className="mb-1.5 block text-sm text-text-secondary">Forma</span>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-5" role="radiogroup" aria-label="Forma de pagamento">
+                      {PAYMENT_OPTIONS.map((option, index) => {
+                        const active = currentPaymentType === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            role="radio"
+                            aria-checked={active}
+                            onClick={() => selectPaymentType(option.value)}
+                            title={`${option.label} (Alt+${index + 1})`}
+                            className={`flex flex-col items-center justify-center rounded-xl border px-1.5 py-2.5 text-sm font-semibold transition ${
+                              active
+                                ? "border-accent bg-accent text-white shadow-xs"
+                                : "border-border-primary bg-bg-primary text-text-secondary hover:border-accent/50 hover:text-text-primary"
+                            }`}
+                          >
+                            <span>{PAYMENT_SHORT_LABEL[option.value] ?? option.label}</span>
+                            <span className="mt-0.5 text-[10px] font-normal opacity-70">Alt+{index + 1}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
+                  <div className="grid gap-2">
                     <label className="block">
                       <span className="mb-1.5 block text-sm text-text-secondary">Valor a pagar (R$)</span>
                       <input
+                        ref={paymentAmountInputRef}
                         value={currentPaymentAmount}
                         inputMode="numeric"
                         pattern="[0-9,.]*"
@@ -2918,6 +3032,7 @@ export default function SalesStartPage({
                       <label className="block">
                         <span className="mb-1.5 block text-sm text-text-secondary">Valor entregue em dinheiro</span>
                         <input
+                          ref={cashGivenInputRef}
                           value={currentCashGiven}
                           inputMode="numeric"
                           pattern="[0-9,.]*"
@@ -2944,6 +3059,35 @@ export default function SalesStartPage({
                           R$ {formatMoneyBr(currentChangeValue)}
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {currentPaymentType === "dinheiro" && (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-[11px] font-semibold uppercase text-text-secondary">Recebido:</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrentCashGiven(currentPaymentAmount);
+                          focusAmountField("dinheiro");
+                        }}
+                        className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs font-bold text-accent transition hover:bg-accent/20"
+                      >
+                        Valor exato
+                      </button>
+                      {quickCashNotes.map((note) => (
+                        <button
+                          key={note}
+                          type="button"
+                          onClick={() => {
+                            setCurrentCashGiven(formatMoneyBr(note));
+                            focusAmountField("dinheiro");
+                          }}
+                          className="rounded-lg border border-border-primary bg-bg-primary px-3 py-1.5 text-xs font-bold text-text-primary transition hover:border-accent hover:text-accent"
+                        >
+                          R$ {note}
+                        </button>
+                      ))}
                     </div>
                   )}
 

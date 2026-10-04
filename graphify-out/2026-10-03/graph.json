@@ -9357,7 +9357,7 @@
       "file_type": "code",
       "norm_label": "paymentoption",
       "source_file": "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx",
-      "source_location": "L25"
+      "source_location": "L26"
     },
     {
       "id": "frontend_src_components_settingspage_printsettingscard_printsettingscardprops",
@@ -13783,25 +13783,25 @@
             "callee": "Add",
             "receiver_type": "HashSet",
             "lang": "csharp",
-            "line": "L158"
+            "line": "L167"
           },
           {
             "callee": "Any",
             "receiver_type": "HashSet",
             "lang": "csharp",
-            "line": "L172"
+            "line": "L181"
           },
           {
             "callee": "ExecuteReaderAsync",
             "receiver_type": "SqlCommand",
             "lang": "csharp",
-            "line": "L206"
+            "line": "L212"
           }
         ]
       },
       "norm_label": ".avaliaremissaoeincrementarasync()",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L124"
+      "source_location": "L132"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_regrasemissaonfceab_horuspdv_api_repositories_databaseaccess_regrasemissaonfceab_getbycompanyasync",
@@ -13845,7 +13845,7 @@
       },
       "norm_label": ".normalizarformapagamento()",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L227"
+      "source_location": "L233"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_regrasemissaonfceab_horuspdv_api_repositories_databaseaccess_regrasemissaonfceab_resetcontadorasync",
@@ -13865,13 +13865,13 @@
             "callee": "ExecuteNonQueryAsync",
             "receiver_type": "SqlCommand",
             "lang": "csharp",
-            "line": "L117"
+            "line": "L119"
           }
         ]
       },
       "norm_label": ".resetcontadorasync()",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L107"
+      "source_location": "L109"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_regrasemissaonfceab_horuspdv_api_repositories_databaseaccess_regrasemissaonfceab_upsertasync",
@@ -29697,13 +29697,13 @@
             "callee": "ExecuteScalarAsync",
             "receiver_type": "SqlCommand",
             "lang": "csharp",
-            "line": "L253"
+            "line": "L256"
           }
         ]
       },
       "norm_label": ".iscolumnstilltextasync()",
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L246"
+      "source_location": "L249"
     },
     {
       "id": "api_netcore_repositories_horusdatabaseinitializer_horuspdv_api_repositories_horusdatabaseinitializer_runscriptfileasync",
@@ -29723,85 +29723,85 @@
             "callee": "Combine",
             "receiver_type": "Path",
             "lang": "csharp",
-            "line": "L167"
+            "line": "L170"
           },
           {
             "callee": "Exists",
             "receiver_type": "File",
             "lang": "csharp",
-            "line": "L168"
+            "line": "L171"
           },
           {
             "callee": "GetCurrentDirectory",
             "receiver_type": "Directory",
             "lang": "csharp",
-            "line": "L170"
+            "line": "L173"
           },
           {
             "callee": "LogWarning",
             "receiver_type": "ILogger",
             "lang": "csharp",
-            "line": "L175"
+            "line": "L178"
           },
           {
             "callee": "ReadAllTextAsync",
             "receiver_type": "File",
             "lang": "csharp",
-            "line": "L179"
+            "line": "L182"
           },
           {
             "callee": "Split",
             "receiver_type": "Regex",
             "lang": "csharp",
-            "line": "L180"
+            "line": "L183"
           },
           {
             "callee": "Replace",
             "receiver_type": "Regex",
             "lang": "csharp",
-            "line": "L200"
+            "line": "L203"
           },
           {
             "callee": "BeginTransactionAsync",
             "receiver_type": "SqlConnection",
             "lang": "csharp",
-            "line": "L205"
+            "line": "L208"
           },
           {
             "callee": "CommitAsync",
             "receiver_type": "SqlTransaction",
             "lang": "csharp",
-            "line": "L215"
+            "line": "L218"
           },
           {
             "callee": "DisposeAsync",
             "receiver_type": "SqlTransaction",
             "lang": "csharp",
-            "line": "L216"
+            "line": "L219"
           },
           {
             "callee": "ExecuteNonQueryAsync",
             "receiver_type": "SqlCommand",
             "lang": "csharp",
-            "line": "L226"
+            "line": "L229"
           },
           {
             "callee": "RollbackAsync",
             "receiver_type": "SqlTransaction",
             "lang": "csharp",
-            "line": "L233"
+            "line": "L236"
           },
           {
             "callee": "LogInformation",
             "receiver_type": "ILogger",
             "lang": "csharp",
-            "line": "L239"
+            "line": "L242"
           }
         ]
       },
       "norm_label": ".runscriptfileasync()",
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L165"
+      "source_location": "L168"
     },
     {
       "id": "frontend_src_components_admin_purchaseorderprintmodal_escapehtml",
@@ -38381,7 +38381,7 @@
       "file_type": "code",
       "norm_label": "fiscalemissionrulescard()",
       "source_file": "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx",
-      "source_location": "L67"
+      "source_location": "L68"
     },
     {
       "id": "frontend_src_components_settingspage_gatewaymonitorcard_gatewaymonitorcard",
@@ -48772,7 +48772,7 @@
       },
       "norm_label": "emitirsemprecomcpf",
       "source_file": "API/NETCORE/Controllers/Fiscal/RegrasEmissaoNfceController.cs",
-      "source_location": "L113"
+      "source_location": "L118"
     },
     {
       "id": "api_netcore_controllers_fiscal_regrasemissaonfcecontroller_horuspdv_api_controllers_fiscal_salvarregrasemissaonfcerequest_formaspagamentohabilitadas",
@@ -48789,7 +48789,7 @@
       },
       "norm_label": "formaspagamentohabilitadas",
       "source_file": "API/NETCORE/Controllers/Fiscal/RegrasEmissaoNfceController.cs",
-      "source_location": "L111"
+      "source_location": "L116"
     },
     {
       "id": "api_netcore_controllers_fiscal_regrasemissaonfcecontroller_horuspdv_api_controllers_fiscal_salvarregrasemissaonfcerequest_habilitado",
@@ -48823,7 +48823,7 @@
       },
       "norm_label": "intervalonotas",
       "source_file": "API/NETCORE/Controllers/Fiscal/RegrasEmissaoNfceController.cs",
-      "source_location": "L112"
+      "source_location": "L117"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_regrasemissaonfceab_cs_cancellationtoken",
@@ -91360,7 +91360,7 @@
       "file_type": "code",
       "norm_label": "payment_options",
       "source_file": "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx",
-      "source_location": "L32"
+      "source_location": "L33"
     },
     {
       "id": "frontend_src_components_settingspage_fiscalemissionrulescard_presets",
@@ -91371,7 +91371,7 @@
       "file_type": "code",
       "norm_label": "presets",
       "source_file": "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx",
-      "source_location": "L65"
+      "source_location": "L66"
     },
     {
       "id": "frontend_src_components_settingspage_gatewaymonitorcard",
@@ -117446,7 +117446,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L131",
+      "source_location": "L139",
       "weight": 1.0
     },
     {
@@ -117458,7 +117458,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L158",
+      "source_location": "L167",
       "weight": 1.0
     },
     {
@@ -117470,7 +117470,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L216",
+      "source_location": "L222",
       "weight": 1.0
     },
     {
@@ -117494,7 +117494,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L104",
+      "source_location": "L106",
       "weight": 1.0
     },
     {
@@ -135259,7 +135259,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Fiscal/RegrasEmissaoNfceController.cs",
-      "source_location": "L111",
+      "source_location": "L116",
       "weight": 1.0
     },
     {
@@ -135271,7 +135271,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Fiscal/RegrasEmissaoNfceController.cs",
-      "source_location": "L112",
+      "source_location": "L117",
       "weight": 1.0
     },
     {
@@ -135283,7 +135283,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Fiscal/RegrasEmissaoNfceController.cs",
-      "source_location": "L113",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -173137,7 +173137,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx",
-      "source_location": "L6",
+      "source_location": "L7",
       "weight": 1.0
     },
     {
@@ -173149,7 +173149,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0
     },
     {
@@ -177768,7 +177768,7 @@
         "ref_token": "CancellationToken"
       },
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L124",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
@@ -177798,7 +177798,7 @@
         "ref_token": "CancellationToken"
       },
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L107",
+      "source_location": "L109",
       "weight": 1.0
     },
     {
@@ -182658,7 +182658,7 @@
         "ref_token": "IEnumerable"
       },
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L124",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
@@ -182733,7 +182733,7 @@
         "ref_token": "ILogger"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L165",
+      "source_location": "L168",
       "weight": 1.0
     },
     {
@@ -185163,7 +185163,7 @@
         "ref_token": "SqlConnection"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L246",
+      "source_location": "L249",
       "weight": 1.0
     },
     {
@@ -185178,7 +185178,7 @@
         "ref_token": "SqlConnection"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L165",
+      "source_location": "L168",
       "weight": 1.0
     },
     {
@@ -193680,7 +193680,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L124",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
@@ -193710,7 +193710,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L107",
+      "source_location": "L109",
       "weight": 1.0
     },
     {
@@ -194100,7 +194100,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L246",
+      "source_location": "L249",
       "weight": 1.0
     },
     {
@@ -194115,7 +194115,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L165",
+      "source_location": "L168",
       "weight": 1.0
     },
     {
@@ -209248,7 +209248,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0
     },
     {
@@ -209259,7 +209259,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx",
-      "source_location": "L32",
+      "source_location": "L33",
       "weight": 1.0
     },
     {
@@ -209270,7 +209270,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx",
-      "source_location": "L65",
+      "source_location": "L66",
       "weight": 1.0
     },
     {
@@ -209281,7 +209281,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx",
-      "source_location": "L67",
+      "source_location": "L68",
       "weight": 1.0
     },
     {
@@ -233797,7 +233797,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L107",
+      "source_location": "L109",
       "weight": 1.0
     },
     {
@@ -233808,7 +233808,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L124",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
@@ -233819,7 +233819,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L227",
+      "source_location": "L233",
       "weight": 1.0
     },
     {
@@ -234325,7 +234325,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L165",
+      "source_location": "L168",
       "weight": 1.0
     },
     {
@@ -234336,7 +234336,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/HorusDatabaseInitializer.cs",
-      "source_location": "L246",
+      "source_location": "L249",
       "weight": 1.0
     },
     {
@@ -244616,7 +244616,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L201",
+      "source_location": "L207",
       "weight": 1.0
     },
     {
@@ -244640,7 +244640,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L114",
+      "source_location": "L116",
       "weight": 1.0
     },
     {
@@ -244652,7 +244652,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs",
-      "source_location": "L92",
+      "source_location": "L94",
       "weight": 1.0
     },
     {
@@ -253153,5 +253153,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "95e3666ea09dcb7ece2d7f2a9b06db793263566a"
+  "built_at_commit": "260c7fbca1d7b99145bf8abf658e392d8282663a"
 }
