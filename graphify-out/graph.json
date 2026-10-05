@@ -4505,7 +4505,7 @@
       "file_type": "code",
       "norm_label": "appsidebarprops",
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L120"
+      "source_location": "L118"
     },
     {
       "id": "frontend_src_components_appsidebar_appsidebar_pagekey",
@@ -4518,7 +4518,7 @@
       "file_type": "code",
       "norm_label": "pagekey",
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L37"
+      "source_location": "L35"
     },
     {
       "id": "frontend_src_components_appsidebar_appsidebar_sidebaritemprops",
@@ -4531,7 +4531,7 @@
       "file_type": "code",
       "norm_label": "sidebaritemprops",
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L67"
+      "source_location": "L65"
     },
     {
       "id": "frontend_src_components_appsidebar_appsidebar_sidebarsectiontitleprops",
@@ -4544,7 +4544,7 @@
       "file_type": "code",
       "norm_label": "sidebarsectiontitleprops",
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L76"
+      "source_location": "L74"
     },
     {
       "id": "frontend_src_components_appsidebar_usermenu_usermenuprops",
@@ -25399,7 +25399,7 @@
       "file_type": "code",
       "norm_label": "appsidebar()",
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L141"
+      "source_location": "L139"
     },
     {
       "id": "frontend_src_components_appsidebar_appsidebar_sidebaritem",
@@ -25411,7 +25411,7 @@
       "file_type": "code",
       "norm_label": "sidebaritem()",
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L93"
+      "source_location": "L91"
     },
     {
       "id": "frontend_src_components_appsidebar_appsidebar_sidebarsectiontitle",
@@ -25423,7 +25423,7 @@
       "file_type": "code",
       "norm_label": "sidebarsectiontitle()",
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L81"
+      "source_location": "L79"
     },
     {
       "id": "frontend_src_components_appsidebar_usermenu_usermenu",
@@ -170619,7 +170619,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L35",
+      "source_location": "L33",
       "weight": 1.0
     },
     {
@@ -174902,7 +174902,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L34",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -174914,7 +174914,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L35",
+      "source_location": "L33",
       "weight": 1.0
     },
     {
@@ -211465,7 +211465,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L120",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -211476,7 +211476,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L141",
+      "source_location": "L139",
       "weight": 1.0
     },
     {
@@ -211487,7 +211487,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L37",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -211498,7 +211498,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L67",
+      "source_location": "L65",
       "weight": 1.0
     },
     {
@@ -211509,7 +211509,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L76",
+      "source_location": "L74",
       "weight": 1.0
     },
     {
@@ -211520,7 +211520,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L81",
+      "source_location": "L79",
       "weight": 1.0
     },
     {
@@ -211531,7 +211531,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/AppSidebar/AppSidebar.tsx",
-      "source_location": "L93",
+      "source_location": "L91",
       "weight": 1.0
     },
     {
@@ -256506,5 +256506,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "d9c4125607789a2d5ab0d04dba602c044eb3521e"
+  "built_at_commit": "b876c183fdb6356ba396a190798f3200b77aed05"
 }

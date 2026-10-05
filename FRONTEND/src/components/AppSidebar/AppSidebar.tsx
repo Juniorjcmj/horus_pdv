@@ -23,11 +23,9 @@ import {
   Repeat2,
   ShieldCheck,
   ShoppingCart,
-  Store,
   Tag,
   Truck,
   UserCog,
-  UsersRound,
   UserRoundPlus,
   WalletCards,
 } from "lucide-react";
@@ -416,20 +414,6 @@ export default function AppSidebar({
                   active={activePage === "devolucoes"}
                   collapsed={collapsed}
                   onClick={() => handleChangePage("devolucoes")}
-                />
-                <SidebarItem
-                  icon={<UsersRound size={20} />}
-                  label="CRM e Fidelidade"
-                  active={activePage === "crm-fidelidade"}
-                  collapsed={collapsed}
-                  onClick={() => handleChangePage("crm-fidelidade")}
-                />
-                <SidebarItem
-                  icon={<Store size={20} />}
-                  label="Omnichannel"
-                  active={activePage === "omnichannel"}
-                  collapsed={collapsed}
-                  onClick={() => handleChangePage("omnichannel")}
                 />
               </div>
 

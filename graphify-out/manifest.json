@@ -804,9 +804,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/AppSidebar.tsx": {
-    "mtime": 1791168712.829173,
-    "seen": 1791168995.5565915,
-    "ast_hash": "25106e60c341600b8f1030083c8dcd0d",
+    "mtime": 1791221011.979566,
+    "seen": 1791221102.4687095,
+    "ast_hash": "cf28d7ec6c883f839a542f35ec65cf10",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/UserMenu.tsx": {
