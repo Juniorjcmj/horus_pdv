@@ -54,6 +54,12 @@ export type CashRegisterStatusDto = {
   isReplay?: boolean;
 };
 
+/**
+ * Abrir/fechar/sangria/reforço gravam no servidor: com o padrão de 5s, uma API lenta (ex.: primeira
+ * requisição após ociosidade) fazia a operação "cair" para o modo offline mesmo com internet.
+ */
+const CASH_WRITE_TIMEOUT_MS = 20_000;
+
 export const cashRegisterService = {
   async status() {
     const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/status`);
@@ -77,6 +83,7 @@ export const cashRegisterService = {
     const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/abrir`, {
       method: "POST",
       body: JSON.stringify({ openingAmount, eventId, payloadHash }),
+      timeoutMs: CASH_WRITE_TIMEOUT_MS,
     });
     return response.data;
   },
@@ -84,6 +91,7 @@ export const cashRegisterService = {
     const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/fechar`, {
       method: "POST",
       body: JSON.stringify({ closingAmount, note, differenceReason: differenceReason || null, eventId, payloadHash }),
+      timeoutMs: CASH_WRITE_TIMEOUT_MS,
     });
     return response.data;
   },
@@ -97,6 +105,7 @@ export const cashRegisterService = {
     const response = await apiRequest<CashRegisterStatusDto>(`${CAIXA_API_URL}/movimento`, {
       method: "POST",
       body: JSON.stringify({ tipo, valor, motivo, eventId, payloadHash }),
+      timeoutMs: CASH_WRITE_TIMEOUT_MS,
     });
     return response.data;
   },

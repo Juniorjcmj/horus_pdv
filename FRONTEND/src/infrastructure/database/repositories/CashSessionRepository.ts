@@ -246,10 +246,15 @@ export function removeLegacyCashCache(): void {
 }
 
 /** Abre o caixa localmente quando offline e enfileira evento no outbox de forma estritamente atômica. */
+/**
+ * `eventId`: o mesmo já enviado na tentativa online. Se o servidor gravou mas a resposta não chegou
+ * (timeout), o reenvio da fila com o mesmo EventId vira replay idempotente em vez de duplicar.
+ */
 export async function openCashLocal(
   openingAmount: string,
   operatorId?: string,
   operatorName?: string,
+  eventId?: string,
 ): Promise<CashRegisterStatusDto> {
   const deviceId = getCachedDeviceId() || "unknown";
   const now = new Date().toISOString();
@@ -284,7 +289,7 @@ export async function openCashLocal(
     await db.cashSessions.put({ ...sessionRecord, id: CACHE_KEY });
 
     await enqueueEvent({
-      id: `ev-cxopen-${Date.now()}`,
+      id: eventId || `ev-cxopen-${Date.now()}`,
       eventType: "CASH_OPEN",
       aggregateType: "CashSession",
       aggregateId: sessionId,
@@ -342,6 +347,8 @@ export async function closeCashLocal(
   differenceReason?: string,
   operatorId?: string,
   operatorName?: string,
+  /** Mesmo EventId da tentativa online (ver openCashLocal). */
+  eventId?: string,
 ): Promise<CashRegisterStatusDto> {
   const now = new Date().toISOString();
   const closingNum = parseFloat(closingAmount.replace(/\./g, "").replace(",", ".")) || 0;
@@ -394,7 +401,7 @@ export async function closeCashLocal(
     await db.cashSessions.put({ ...closedRecord, id: CACHE_KEY });
 
     await enqueueEvent({
-      id: `ev-cxclose-${Date.now()}`,
+      id: eventId || `ev-cxclose-${Date.now()}`,
       eventType: "CASH_CLOSE",
       aggregateType: "CashSession",
       aggregateId: sessionId,
@@ -454,6 +461,8 @@ export async function registerMovementLocal(
   motivo: string,
   operatorId?: string,
   operatorName?: string,
+  /** Mesmo EventId da tentativa online (ver openCashLocal). */
+  eventId?: string,
 ): Promise<CashRegisterStatusDto> {
   const now = new Date().toISOString();
   let resultDto: CashRegisterStatusDto;
@@ -496,7 +505,7 @@ export async function registerMovementLocal(
 
     // Enfileira evento de movimento no outbox dentro da mesma transação com hash de idempotência
     await enqueueEvent({
-      id: `ev-cxmov-${Date.now()}`,
+      id: eventId || `ev-cxmov-${Date.now()}`,
       eventType: "CASH_MOVEMENT",
       aggregateType: "CashSession",
       aggregateId: sessionId,
