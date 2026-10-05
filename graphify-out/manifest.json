@@ -1002,9 +1002,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/HomePage.tsx": {
-    "mtime": 1790466284.363433,
-    "seen": 1790466496.8325698,
-    "ast_hash": "6f22ad6c12b1da41ecda74c4b74bab25",
+    "mtime": 1791221206.382475,
+    "seen": 1791221255.6736565,
+    "ast_hash": "d15d72838753b3c8179e855c198588ba",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/LicenseDetailsPage.tsx": {

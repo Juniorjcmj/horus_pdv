@@ -8582,7 +8582,7 @@
       "file_type": "code",
       "norm_label": "homepageprops",
       "source_file": "FRONTEND/src/pages/Admin/HomePage.tsx",
-      "source_location": "L109"
+      "source_location": "L95"
     },
     {
       "id": "api_netcore_repositories_dataaccess_clientead_horuspdv_api_repositories_dataaccess_clientead",
@@ -36125,7 +36125,7 @@
       "file_type": "code",
       "norm_label": "homepage()",
       "source_file": "FRONTEND/src/pages/Admin/HomePage.tsx",
-      "source_location": "L114"
+      "source_location": "L100"
     },
     {
       "id": "api_netcore_services_clientes_iclienteservice_horuspdv_api_services_clientes_iclienteservice_atualizarasync",
@@ -88475,7 +88475,7 @@
       "file_type": "code",
       "norm_label": "marketshortcuts",
       "source_file": "FRONTEND/src/pages/Admin/HomePage.tsx",
-      "source_location": "L58"
+      "source_location": "L56"
     },
     {
       "id": "frontend_src_pages_admin_homepage_shortcuts",
@@ -88486,7 +88486,7 @@
       "file_type": "code",
       "norm_label": "shortcuts",
       "source_file": "FRONTEND/src/pages/Admin/HomePage.tsx",
-      "source_location": "L31"
+      "source_location": "L29"
     },
     {
       "id": "api_netcore_repositories_dataaccess_clientead",
@@ -176082,7 +176082,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "FRONTEND/src/pages/Admin/HomePage.tsx",
-      "source_location": "L22",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -214121,24 +214121,13 @@
     },
     {
       "source": "frontend_src_pages_admin_homepage",
-      "target": "frontend_src_pages_admin_homepage_homepageprops",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "FRONTEND/src/pages/Admin/HomePage.tsx",
-      "source_location": "L109",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_src_pages_admin_homepage",
       "target": "frontend_src_pages_admin_homepage_homepage",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/HomePage.tsx",
-      "source_location": "L114",
+      "source_location": "L100",
       "weight": 1.0
     },
     {
@@ -214149,7 +214138,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/HomePage.tsx",
-      "source_location": "L31",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -214160,7 +214149,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/HomePage.tsx",
-      "source_location": "L58",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_src_pages_admin_homepage",
+      "target": "frontend_src_pages_admin_homepage_homepageprops",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FRONTEND/src/pages/Admin/HomePage.tsx",
+      "source_location": "L95",
       "weight": 1.0
     },
     {
@@ -256506,5 +256506,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "b876c183fdb6356ba396a190798f3200b77aed05"
+  "built_at_commit": "f8553bcd0f9c8710151726970b2cfeeb106ecbdf"
 }

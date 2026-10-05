@@ -15,9 +15,7 @@ import {
   Receipt,
   Repeat2,
   ShoppingCart,
-  Store,
   UserRoundPlus,
-  UsersRound,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { PageKey } from "@/components/AppSidebar/AppSidebar";
@@ -91,18 +89,6 @@ const marketShortcuts = [
     description: "Estorno, crédito e autorização",
     icon: Repeat2,
     page: "devolucoes" as PageKey,
-  },
-  {
-    title: "CRM e Fidelidade",
-    description: "Pontos, cashback e campanhas",
-    icon: UsersRound,
-    page: "crm-fidelidade" as PageKey,
-  },
-  {
-    title: "Omnichannel",
-    description: "Loja online, marketplace e delivery",
-    icon: Store,
-    page: "omnichannel" as PageKey,
   },
 ];
 
@@ -194,7 +180,7 @@ export default function HomePage({ onNavigate, onOpenSalesInNewTab }: HomePagePr
           Acesse os módulos operacionais para acompanhar rotinas do PDV.
         </p>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {marketShortcuts.map((shortcut) => {
             const Icon = shortcut.icon;
             return (
