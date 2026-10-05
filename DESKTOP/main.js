@@ -8,7 +8,7 @@
  *
  * Configuração opcional: %APPDATA%\Quack PDV\config.json
  *   { "url": "https://pdv.quacksistemas.com.br", "fullscreen": true, "confirmClose": true,
- *     "autoZoom": true, "zoomAdjust": 1 }
+ *     "autoZoom": true, "zoomAdjust": 1, "backupDir": "<opcional>" }
  * Variável de ambiente QUACK_PDV_URL sobrescreve a URL (útil para apontar para o ambiente de dev).
  *
  * Zoom automático: o PDV foi desenhado para 1366x768. A janela aplica um zoom proporcional ao tamanho
@@ -18,7 +18,7 @@
  * Atalhos: F11 tela cheia | F5 / Ctrl+R recarregar | Ctrl+Shift+R recarregar sem cache | Ctrl+Shift+I DevTools (suporte)
  *          Ctrl+= / Ctrl+- aumentar/diminuir | Ctrl+0 voltar ao tamanho automático
  */
-const { app, BrowserWindow, dialog, screen, shell } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, screen, shell } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -43,6 +43,59 @@ const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 function configPath() {
   return path.join(app.getPath("userData"), "config.json");
+}
+
+// ---------------------------------------------------------------------------
+// Backup automático das pendências (vendas/movimentos ainda não enviados ao servidor)
+// ---------------------------------------------------------------------------
+
+/** Fora do perfil do programa: se %APPDATA%\Quack PDV for apagado/corromper, o backup continua. */
+function backupDir(config) {
+  return config.backupDir || path.join(app.getPath("documents"), "Quack PDV", "Backups");
+}
+
+const MAX_BACKUP_BYTES = 50 * 1024 * 1024;
+const BACKUP_RETENTION_DAYS = 30;
+
+/** Grava em arquivo temporário e renomeia: um desligamento no meio não deixa o backup pela metade. */
+function writeAtomic(file, content) {
+  const tmp = `${file}.tmp`;
+  fs.writeFileSync(tmp, content, "utf8");
+  fs.renameSync(tmp, file);
+}
+
+function pruneOldBackups(dir) {
+  const limit = Date.now() - BACKUP_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  for (const name of fs.readdirSync(dir)) {
+    if (!/^pendencias-\d{4}-\d{2}-\d{2}\.json$/.test(name)) continue;
+    const full = path.join(dir, name);
+    try {
+      if (fs.statSync(full).mtimeMs < limit) fs.unlinkSync(full);
+    } catch {
+      // arquivo em uso/sumiu: tenta de novo no próximo backup
+    }
+  }
+}
+
+/**
+ * pendencias-atual.json: sempre o estado mais recente (com 0 itens quando está tudo enviado).
+ * pendencias-AAAA-MM-DD.json: último estado com pendências de cada dia (guardado por 30 dias).
+ */
+function savePendingBackup(config, json) {
+  const parsed = JSON.parse(json);
+  const dir = backupDir(config);
+  fs.mkdirSync(dir, { recursive: true });
+  const content = JSON.stringify(parsed, null, 2);
+  const current = path.join(dir, "pendencias-atual.json");
+  writeAtomic(current, content);
+  if (Number(parsed?.count) > 0) {
+    // Data local (não UTC): à noite no Brasil o UTC já é o dia seguinte.
+    const now = new Date();
+    const day = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    writeAtomic(path.join(dir, `pendencias-${day}.json`), content);
+  }
+  pruneOldBackups(dir);
+  return current;
 }
 
 /** Grava só as chaves alteradas, preservando o resto do config.json do cliente. */
@@ -116,6 +169,7 @@ if (!app.requestSingleInstanceLock()) {
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: true,
+        preload: path.join(__dirname, "preload.js"),
       },
     });
     mainWindow.removeMenu();
@@ -259,6 +313,21 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(() => {
     config = loadConfig();
+
+    // Só a página do PDV (mesma origem da URL configurada) pode pedir backup; conteúdo limitado e validado.
+    ipcMain.handle("quack:save-pending-backup", (event, json) => {
+      const appOrigin = new URL(config.url).origin;
+      let senderOrigin = "";
+      try {
+        senderOrigin = new URL(event.senderFrame?.url || "").origin;
+      } catch {
+        // URL inválida: cai na recusa abaixo
+      }
+      if (senderOrigin !== appOrigin) throw new Error("Origem não autorizada para backup.");
+      if (typeof json !== "string" || json.length > MAX_BACKUP_BYTES) throw new Error("Backup inválido.");
+      return savePendingBackup(config, json);
+    });
+
     createWindow();
   });
 

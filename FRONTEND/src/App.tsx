@@ -21,6 +21,7 @@ import { cashRegisterService } from "@/services/api/cashRegisterService";
 import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
 import { syncEngine } from "@/infrastructure/synchronization/SyncEngine";
 import { startCloudGatewayProvisioning } from "@/infrastructure/gateway/cloudGatewayProvisioning";
+import { startPendingBackup } from "@/infrastructure/desktop/pendingBackup";
 import { companyThemeService } from "@/services/api/companyThemeService";
 import {
   applyAccent,
@@ -702,10 +703,13 @@ export default function App() {
     if (!isAuthenticated) return;
     connectivityService.start();
     const stopSync = syncEngine.start();
+    // Programa desktop: backup automático das pendências em Documentos\Quack PDV\Backups.
+    const stopPendingBackup = startPendingBackup();
     // Aditivo: aprende o endereço do Gateway pela Cloud enquanto online (fallback offline zero-config).
     const stopGatewayProvisioning = startCloudGatewayProvisioning();
     return () => {
       stopSync();
+      stopPendingBackup();
       stopGatewayProvisioning();
       connectivityService.stop();
     };

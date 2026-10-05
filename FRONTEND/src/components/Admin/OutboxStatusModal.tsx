@@ -8,6 +8,7 @@ import { AlertTriangle, CheckCircle2, Clock, RefreshCw, X, RotateCcw } from "luc
 import type { OutboxEvent } from "@/shared/types/sync";
 import { useOutboxStatus } from "@/hooks/useOutboxStatus";
 import { Toast } from "@/hooks/Dialog";
+import ImportPendingBackupButton from "@/components/Admin/ImportPendingBackupButton";
 
 type OutboxStatusModalProps = {
   isOpen: boolean;
@@ -201,15 +202,18 @@ export default function OutboxStatusModal({ isOpen, onClose }: OutboxStatusModal
           >
             Fechar
           </button>
-          <button
-            type="button"
-            onClick={handleSyncNow}
-            disabled={loading}
-            className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-accent/90 active:scale-95 disabled:opacity-50"
-          >
-            <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
-            Sincronizar Agora
-          </button>
+          <div className="flex items-center gap-2">
+            <ImportPendingBackupButton onImported={() => void loadFailedEvents()} />
+            <button
+              type="button"
+              onClick={handleSyncNow}
+              disabled={loading}
+              className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-accent/90 active:scale-95 disabled:opacity-50"
+            >
+              <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+              Sincronizar Agora
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -24,7 +24,7 @@ export async function enqueueEvent(params: {
   const now = new Date().toISOString();
   const eventOccurredAt = params.occurredAt || now;
 
-  return await db.transaction("rw", db.outbox, async () => {
+  const result = await db.transaction("rw", db.outbox, async () => {
     const last = await db.outbox.orderBy("sequence").last();
     const sequence = (last ? last.sequence : 0) + 1;
 
@@ -51,7 +51,16 @@ export async function enqueueEvent(params: {
     await db.outbox.put(event);
     return id;
   });
+  // Avisa quem acompanha a fila (ex.: backup automático das pendências). Disparado após o enqueue;
+  // se o chamador ainda está numa transação externa, o backup roda com debounce depois do commit.
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(OUTBOX_CHANGED_EVENT));
+  }
+  return result;
 }
+
+/** Evento de janela disparado sempre que um evento novo entra no outbox. */
+export const OUTBOX_CHANGED_EVENT = "horus-outbox-changed";
 
 /** Retorna todos os eventos pendentes, ordenados por sequência. */
 export async function getPendingEvents(): Promise<OutboxEvent[]> {

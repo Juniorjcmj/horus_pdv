@@ -37,6 +37,21 @@ Arquivo `%APPDATA%\Quack PDV\config.json`:
 }
 ```
 
+## Backup automático das pendências
+
+Tudo o que ainda **não chegou ao servidor** (vendas offline, abertura/fechamento de caixa, sangria,
+reforço — com todos os dados) é gravado automaticamente em **`Documentos\Quack PDV\Backups`**, fora
+da pasta do programa: se o perfil `%APPDATA%\Quack PDV` for apagado ou corromper, o backup continua.
+
+- `pendencias-atual.json` — sempre o estado mais recente (`"count": 0` quando está tudo enviado).
+- `pendencias-AAAA-MM-DD.json` — último estado com pendências de cada dia; guardados por 30 dias.
+- Atualiza ~2s depois de cada venda/movimento offline, a cada envio da fila e a cada 5 minutos.
+- Outra pasta: `"backupDir": "D:\\Backups\\Quack"` no `config.json`.
+
+Só funciona no programa (no navegador comum o PDV não grava arquivos). Para recuperar dados a partir
+de um backup, fale com o suporte: o arquivo traz cada evento com o mesmo identificador do envio
+original, então reenviar não duplica o que já tiver chegado ao servidor.
+
 ## Tamanho da tela (zoom automático)
 
 O PDV foi desenhado para **1366×768**. O programa aplica um zoom proporcional ao tamanho da janela,

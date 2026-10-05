@@ -8,6 +8,7 @@ import {
   FiscalEmissionRulesCard,
   GatewayMonitorCard,
   GatewaySettingsCard,
+  PendingBackupCard,
   PrintSettingsCard,
   SecuritySessionsCard,
   ThemeColorsCard,
@@ -102,6 +103,7 @@ export default function SettingsPage({
             {isAdminOrManager && <FiscalEmissionRulesCard />}
             {isAdminOrManager && <GatewaySettingsCard />}
             <GatewayMonitorCard />
+            <PendingBackupCard />
             <SecuritySessionsCard
               sessions={sessions}
               isLoading={isLoading}
