@@ -11,9 +11,13 @@ import UpdateNotification from "@/components/UpdateNotification";
 import "./index.css";
 import App from "./App.tsx";
 import { registerServiceWorker } from "./registerServiceWorker";
+import { requestPersistentStorage } from "./infrastructure/database/persistentStorage";
 
 // Registra o Service Worker do PWA para operação Offline-First
 registerServiceWorker();
+
+// Pede armazenamento persistente para o IndexedDB não ser apagado automaticamente pelo navegador
+void requestPersistentStorage();
 
 if (import.meta.env.DEV) {
   import("./infrastructure/testHarness").then((m) => m.setupTestHarness());

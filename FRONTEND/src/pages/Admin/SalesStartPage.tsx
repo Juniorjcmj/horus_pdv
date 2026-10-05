@@ -289,7 +289,20 @@ export default function SalesStartPage({
     getPrintPreviewEnabled(),
   );
   const [isConfirmingSale, setIsConfirmingSale] = useState(false);
-  const { pendingCount, failedCount } = useOutboxStatus();
+  const { pendingCount, failedCount, oldestUnsyncedAt } = useOutboxStatus();
+  // Relógio de 1 min para o aviso "pendente há X" avançar mesmo sem novo ciclo de sync.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  const unsyncedAgeMin = oldestUnsyncedAt
+    ? Math.max(0, Math.floor((nowMs - Date.parse(oldestUnsyncedAt)) / 60_000))
+    : 0;
+  const unsyncedAgeLabel =
+    unsyncedAgeMin >= 60 ? `${Math.floor(unsyncedAgeMin / 60)}h` : `${unsyncedAgeMin} min`;
+  /** Pendência antiga (> 2h): risco de perda se o navegador limpar os dados ou o caixa for trocado. */
+  const unsyncedStale = pendingCount > 0 && unsyncedAgeMin >= 120;
   const [outboxModalOpen, setOutboxModalOpen] = useState(false);
   const [nfceCancelModalOpen, setNfceCancelModalOpen] = useState(false);
   const [nfceCancelInitialDoc, setNfceCancelInitialDoc] = useState<FiscalDocumentDetailDto | null>(null);
@@ -1856,9 +1869,13 @@ export default function SalesStartPage({
                 <button
                   type="button"
                   onClick={() => setOutboxModalOpen(true)}
-                  title="Clique para abrir detalhes da sincronização offline"
+                  title={
+                    unsyncedStale
+                      ? `Há vendas guardadas só neste caixa há ${unsyncedAgeLabel}. Verifique a internet e não limpe os dados do navegador até sincronizar.`
+                      : "Clique para abrir detalhes da sincronização offline"
+                  }
                   className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition active:scale-95 ${
-                    failedCount > 0
+                    failedCount > 0 || unsyncedStale
                       ? "border-rose-400/60 bg-rose-500/30 text-rose-100 hover:bg-rose-500/40"
                       : "border-yellow-400/40 bg-yellow-500/20 text-yellow-100 hover:bg-yellow-500/30"
                   }`}
@@ -1871,6 +1888,7 @@ export default function SalesStartPage({
                   ) : (
                     <span>
                       {pendingCount} venda{pendingCount > 1 ? "s" : ""} pendente{pendingCount > 1 ? "s" : ""}
+                      {unsyncedAgeMin >= 30 && ` há ${unsyncedAgeLabel}`}
                     </span>
                   )}
                 </button>

@@ -8,6 +8,7 @@ import { useEffect, useState, useCallback } from "react";
 import { syncEngine } from "@/infrastructure/synchronization/SyncEngine";
 import {
   getFailedEvents,
+  getOldestUnsyncedAt,
   retryFailedEvent,
   retryAllFailed,
 } from "@/infrastructure/database/repositories/OutboxRepository";
@@ -16,6 +17,8 @@ import type { OutboxEvent } from "@/shared/types/sync";
 export type OutboxStatusState = {
   pendingCount: number;
   failedCount: number;
+  /** Data (ISO) da venda/evento não sincronizado mais antigo; null se a fila está limpa. */
+  oldestUnsyncedAt: string | null;
   syncNow: () => Promise<void>;
   retryAll: () => Promise<number>;
   retryEvent: (id: string) => Promise<void>;
@@ -27,10 +30,14 @@ export function useOutboxStatus(): OutboxStatusState {
     pendingCount: 0,
     failedCount: 0,
   });
+  const [oldestUnsyncedAt, setOldestUnsyncedAt] = useState<string | null>(null);
 
   useEffect(() => {
     return syncEngine.subscribe((pendingCount, failedCount) => {
       setCounts({ pendingCount, failedCount });
+      void getOldestUnsyncedAt()
+        .then(setOldestUnsyncedAt)
+        .catch(() => setOldestUnsyncedAt(null));
     });
   }, []);
 
@@ -56,6 +63,7 @@ export function useOutboxStatus(): OutboxStatusState {
   return {
     pendingCount: counts.pendingCount,
     failedCount: counts.failedCount,
+    oldestUnsyncedAt,
     syncNow,
     retryAll,
     retryEvent,

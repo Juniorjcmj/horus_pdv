@@ -134,4 +134,29 @@ test.describe("Venda sempre no IndexedDB e saldo do fiado protegido", () => {
     expect(result.comPendente).toBe(80);
     expect(result.aposSync).toBe(80);
   });
+
+  test("Pede armazenamento persistente ao navegador sem lançar erro", async ({ page }) => {
+    const status = await page.evaluate(async () => {
+      const { persistentStorage } = (window as any).__horus_test__;
+      return persistentStorage.requestPersistentStorage();
+    });
+    expect(["granted", "denied", "unsupported"]).toContain(status);
+  });
+
+  test("getOldestUnsyncedAt devolve a pendência mais antiga e null com a fila limpa", async ({ page }) => {
+    const result = await page.evaluate(async (payload) => {
+      const { SaleOutboxAdapter, OutboxRepository, db } = (window as any).__horus_test__;
+      const vazio = await OutboxRepository.getOldestUnsyncedAt();
+      await SaleOutboxAdapter.queueSaleToOutbox({ ...payload, occurredAt: "2026-10-05T08:00:00.000Z" });
+      await SaleOutboxAdapter.queueSaleToOutbox({ ...payload, occurredAt: "2026-10-05T10:00:00.000Z" });
+      const maisAntiga = await OutboxRepository.getOldestUnsyncedAt();
+      for (const evt of await db.outbox.toArray()) await db.outbox.update(evt.id, { status: "PROCESSED" });
+      const aposSync = await OutboxRepository.getOldestUnsyncedAt();
+      return { vazio, maisAntiga, aposSync };
+    }, salePayload("dinheiro", 20));
+
+    expect(result.vazio).toBeNull();
+    expect(result.maisAntiga).toBe("2026-10-05T08:00:00.000Z");
+    expect(result.aposSync).toBeNull();
+  });
 });

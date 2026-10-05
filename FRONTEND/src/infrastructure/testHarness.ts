@@ -12,6 +12,7 @@ import * as ProductSyncAdapter from "@/application/products/ProductSyncAdapter";
 import * as CustomerSyncAdapter from "@/application/customers/CustomerSyncAdapter";
 import { customerService } from "@/services/api/customerService";
 import * as UserRepository from "./database/repositories/UserRepository";
+import * as persistentStorage from "./database/persistentStorage";
 import * as cryptoHash from "@/utils/cryptoHash";
 import { syncEngine } from "./synchronization/SyncEngine";
 import { syncCoordinator } from "./synchronization/SyncCoordinator";
@@ -31,6 +32,7 @@ export function setupTestHarness(): void {
     CustomerSyncAdapter,
     customerService,
     UserRepository,
+    persistentStorage,
     cryptoHash,
     syncEngine,
     syncCoordinator,

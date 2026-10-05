@@ -93,6 +93,17 @@ export async function getPendingCount(): Promise<number> {
   return db.outbox.where("status").anyOf(["PENDING", "PROCESSING"]).count();
 }
 
+/** Data (ISO) do evento ainda não sincronizado mais antigo (PENDING, PROCESSING ou FAILED); null se a fila está limpa. */
+export async function getOldestUnsyncedAt(): Promise<string | null> {
+  const events = await db.outbox.where("status").anyOf(["PENDING", "PROCESSING", "FAILED"]).toArray();
+  let oldest: string | null = null;
+  for (const evt of events) {
+    const at = evt.occurredAt || evt.createdAt;
+    if (at && (!oldest || Date.parse(at) < Date.parse(oldest))) oldest = at;
+  }
+  return oldest;
+}
+
 /** Conta eventos com falha crítica (status FAILED após esgotar retries). */
 export async function getFailedCount(): Promise<number> {
   return db.outbox.where("status").equals("FAILED").count();
