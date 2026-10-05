@@ -105,9 +105,14 @@ public partial class TreinamentoController(TreinamentoAB treinamentoAB) : Contro
             : Ok(new ApiResponse<object> { Success = true, Message = "Vídeo salvo com sucesso.", Data = new { id = salvoId } });
     }
 
+    // Mesma regra de "dono da plataforma" usada pelo frontend (App.tsx, isSuperAdmin).
+    private static readonly string[] DonosDaPlataforma =
+        ["jotacfs2010@hotmail.com", "jotanaval2009@gmail.com", "flavio@hpdv.com.br"];
+
     private static bool PodeGerenciar(AuthenticatedUser user)
-        => string.Equals(user.CompanyId, "empresa-principal", StringComparison.OrdinalIgnoreCase)
-           && string.Equals(user.Role, "administrador", StringComparison.OrdinalIgnoreCase);
+        => string.Equals(user.Role, "administrador", StringComparison.OrdinalIgnoreCase)
+           && (string.Equals(user.CompanyId, "empresa-principal", StringComparison.OrdinalIgnoreCase)
+               || DonosDaPlataforma.Contains(user.Email?.Trim().ToLowerInvariant() ?? string.Empty));
 
     /// <summary>Devolve 403 quando o usuário não é o administrador geral; null quando pode editar.</summary>
     private IActionResult? Negar()
