@@ -73,6 +73,7 @@ import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { useProducts } from "@/hooks/useProducts";
 import { queueSaleToOutbox, saveSyncedSaleLocally } from "@/application/sales/SaleOutboxAdapter";
+import { toFiscalPaymentCode } from "@/utils/fiscalPaymentCode";
 import { computeSalePayloadHash } from "@/utils/cryptoHash";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 import { useOutboxStatus } from "@/hooks/useOutboxStatus";
@@ -1566,7 +1567,7 @@ export default function SalesStartPage({
               desconto: item.discount ?? 0,
             })),
             pagamentos: finalPayments.map((p) => ({
-              tipo: p.paymentType === "dinheiro" ? "01" : p.paymentType === "credito" ? "03" : p.paymentType === "debito" ? "04" : "17",
+              tipo: toFiscalPaymentCode(p.paymentType),
               valor: p.amount,
             })),
             valorTroco: totalChange,

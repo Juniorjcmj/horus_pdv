@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791225594.670716,
-    "seen": 1791225849.1562533,
-    "ast_hash": "a628212b07a2b32a24e3607f9094c84c",
+    "mtime": 1791229297.4611607,
+    "seen": 1791229353.4892411,
+    "ast_hash": "1294657207674177b1ccaba499dc6c38",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -3819,6 +3819,12 @@
     "mtime": 1791225572.0171168,
     "seen": 1791225849.150694,
     "ast_hash": "2f324ca92303d3b30953208dba883850",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/fiscalPaymentCode.ts": {
+    "mtime": 1791229290.0158508,
+    "seen": 1791229353.506533,
+    "ast_hash": "f0ca03b8ce4de3a49301e1842eb20755",
     "semantic_hash": ""
   }
 }
