@@ -25023,61 +25023,61 @@
             "callee": "LoadXml",
             "receiver_type": "XmlDocument",
             "lang": "csharp",
-            "line": "L281"
+            "line": "L285"
           },
           {
             "callee": "GetRSAPrivateKey",
             "receiver_type": "X509Certificate2",
             "lang": "csharp",
-            "line": "L285"
+            "line": "L289"
           },
           {
             "callee": "AddTransform",
             "receiver_type": "Reference",
             "lang": "csharp",
-            "line": "L289"
+            "line": "L293"
           },
           {
             "callee": "AddReference",
             "receiver_type": "SignedXml",
             "lang": "csharp",
-            "line": "L293"
+            "line": "L297"
           },
           {
             "callee": "AddClause",
             "receiver_type": "KeyInfo",
             "lang": "csharp",
-            "line": "L298"
+            "line": "L302"
           },
           {
             "callee": "ComputeSignature",
             "receiver_type": "SignedXml",
             "lang": "csharp",
-            "line": "L301"
+            "line": "L305"
           },
           {
             "callee": "GetXml",
             "receiver_type": "SignedXml",
             "lang": "csharp",
-            "line": "L303"
+            "line": "L307"
           },
           {
             "callee": "ImportNode",
             "receiver_type": "XmlDocument",
             "lang": "csharp",
-            "line": "L304"
+            "line": "L308"
           },
           {
             "callee": "GetElementsByTagName",
             "receiver_type": "XmlDocument",
             "lang": "csharp",
-            "line": "L307"
+            "line": "L311"
           }
         ]
       },
       "norm_label": ".assinarxml()",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L278"
+      "source_location": "L282"
     },
     {
       "id": "frontend_src_application_products_productsyncadapter_loadproductslocal",
@@ -32299,7 +32299,7 @@
       },
       "norm_label": ".calculardigitoverificador()",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L393"
+      "source_location": "L397"
     },
     {
       "id": "gateway_src_horusgateway_services_localfiscalsigner_horusgateway_services_localfiscalsigner_emitircontingencia",
@@ -32355,7 +32355,7 @@
       },
       "norm_label": ".escapexml()",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L418"
+      "source_location": "L422"
     },
     {
       "id": "gateway_src_horusgateway_services_localfiscalsigner_horusgateway_services_localfiscalsigner_gerarchaveacesso",
@@ -32375,13 +32375,13 @@
             "callee": "ToString",
             "receiver_type": "DateTimeOffset",
             "lang": "csharp",
-            "line": "L380"
+            "line": "L384"
           }
         ]
       },
       "norm_label": ".gerarchaveacesso()",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L376"
+      "source_location": "L380"
     },
     {
       "id": "gateway_src_horusgateway_services_localfiscalsigner_horusgateway_services_localfiscalsigner_gerarqrcodev2",
@@ -32401,25 +32401,25 @@
             "callee": "FromBase64String",
             "receiver_type": "Convert",
             "lang": "csharp",
-            "line": "L323"
+            "line": "L327"
           },
           {
             "callee": "ToHexString",
             "receiver_type": "Convert",
             "lang": "csharp",
-            "line": "L329"
+            "line": "L333"
           },
           {
             "callee": "HashData",
             "receiver_type": "SHA1",
             "lang": "csharp",
-            "line": "L335"
+            "line": "L339"
           }
         ]
       },
       "norm_label": ".gerarqrcodev2()",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L313"
+      "source_location": "L317"
     },
     {
       "id": "gateway_src_horusgateway_services_localfiscalsigner_horusgateway_services_localfiscalsigner_inseririnfnfesupl",
@@ -32439,25 +32439,25 @@
             "callee": "LoadXml",
             "receiver_type": "XmlDocument",
             "lang": "csharp",
-            "line": "L345"
+            "line": "L349"
           },
           {
             "callee": "CreateElement",
             "receiver_type": "XmlDocument",
             "lang": "csharp",
-            "line": "L347"
+            "line": "L351"
           },
           {
             "callee": "CreateCDataSection",
             "receiver_type": "XmlDocument",
             "lang": "csharp",
-            "line": "L349"
+            "line": "L353"
           }
         ]
       },
       "norm_label": ".inseririnfnfesupl()",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L342"
+      "source_location": "L346"
     },
     {
       "id": "gateway_src_horusgateway_services_localfiscalsigner_horusgateway_services_localfiscalsigner_limparnaodigitos",
@@ -32477,19 +32477,19 @@
             "callee": "Append",
             "receiver_type": "StringBuilder",
             "lang": "csharp",
-            "line": "L413"
+            "line": "L417"
           },
           {
             "callee": "ToString",
             "receiver_type": "StringBuilder",
             "lang": "csharp",
-            "line": "L415"
+            "line": "L419"
           }
         ]
       },
       "norm_label": ".limparnaodigitos()",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L407"
+      "source_location": "L411"
     },
     {
       "id": "gateway_src_horusgateway_services_localfiscalsigner_horusgateway_services_localfiscalsigner_mapeardescricaopagamento",
@@ -32507,7 +32507,7 @@
       },
       "norm_label": ".mapeardescricaopagamento()",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L428"
+      "source_location": "L432"
     },
     {
       "id": "gateway_src_horusgateway_services_localfiscalsigner_horusgateway_services_localfiscalsigner_montarxmlnfce",
@@ -32545,7 +32545,7 @@
             "callee": "ToString",
             "receiver_type": "StringBuilder",
             "lang": "csharp",
-            "line": "L275"
+            "line": "L279"
           }
         ]
       },
@@ -32569,7 +32569,7 @@
       },
       "norm_label": ".obterurlconsultachave()",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L369"
+      "source_location": "L373"
     },
     {
       "id": "gateway_src_horusgateway_services_localfiscalsigner_horusgateway_services_localfiscalsigner_obterurlqrcodebase",
@@ -32587,7 +32587,7 @@
       },
       "norm_label": ".obterurlqrcodebase()",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L361"
+      "source_location": "L365"
     },
     {
       "id": "gateway_tests_horusgateway_tests_localfiscalcontingencytests_horusgateway_tests_localfiscalcontingencytests_gerarchaveacesso_comtipo9_retornachavecom44digitos_e_tpemis9",
@@ -129078,7 +129078,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L381",
+      "source_location": "L385",
       "weight": 1.0
     },
     {
@@ -129090,7 +129090,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L389",
+      "source_location": "L393",
       "weight": 1.0
     },
     {
@@ -129102,7 +129102,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L338",
+      "source_location": "L342",
       "weight": 1.0
     },
     {
@@ -183141,7 +183141,7 @@
         "ref_token": "DateTimeOffset"
       },
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L376",
+      "source_location": "L380",
       "weight": 1.0
     },
     {
@@ -189441,7 +189441,7 @@
         "ref_token": "X509Certificate2"
       },
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L278",
+      "source_location": "L282",
       "weight": 1.0
     },
     {
@@ -190443,7 +190443,7 @@
         "ref_token": "DigestValue"
       },
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L278",
+      "source_location": "L282",
       "weight": 1.0
     },
     {
@@ -200748,7 +200748,7 @@
         "ref_token": "XmlAssinado"
       },
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L278",
+      "source_location": "L282",
       "weight": 1.0
     },
     {
@@ -241424,7 +241424,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L278",
+      "source_location": "L282",
       "weight": 1.0
     },
     {
@@ -241435,7 +241435,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L313",
+      "source_location": "L317",
       "weight": 1.0
     },
     {
@@ -241446,7 +241446,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L342",
+      "source_location": "L346",
       "weight": 1.0
     },
     {
@@ -241457,7 +241457,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L361",
+      "source_location": "L365",
       "weight": 1.0
     },
     {
@@ -241468,7 +241468,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L369",
+      "source_location": "L373",
       "weight": 1.0
     },
     {
@@ -241479,7 +241479,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L376",
+      "source_location": "L380",
       "weight": 1.0
     },
     {
@@ -241501,7 +241501,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L393",
+      "source_location": "L397",
       "weight": 1.0
     },
     {
@@ -241512,7 +241512,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L407",
+      "source_location": "L411",
       "weight": 1.0
     },
     {
@@ -241523,7 +241523,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L418",
+      "source_location": "L422",
       "weight": 1.0
     },
     {
@@ -241534,7 +241534,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L428",
+      "source_location": "L432",
       "weight": 1.0
     },
     {
@@ -253525,7 +253525,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L285",
+      "source_location": "L289",
       "weight": 1.0
     },
     {
@@ -253573,7 +253573,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs",
-      "source_location": "L410",
+      "source_location": "L414",
       "weight": 1.0
     },
     {
@@ -256506,5 +256506,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ce036e798f5c4539f4f6214f0db0d2a50d6a36d5"
+  "built_at_commit": "d9c4125607789a2d5ab0d04dba602c044eb3521e"
 }

@@ -259,6 +259,10 @@ public sealed class LocalFiscalSigner
                 sb.Append("<detPag>");
                 sb.Append($"<tPag>{pag.Tipo}</tPag>");
                 sb.Append($"<vPag>{pag.Valor.ToString("F2", CultureInfo.InvariantCulture)}</vPag>");
+                // Grupo card obrigatório para crédito, débito e PIX dinâmico (rejeição SEFAZ 391).
+                // Sem TEF integrado no Gateway: tpIntegra=2 (não integrado), bandeira 99 (outros).
+                if (pag.Tipo is "03" or "04" or "17")
+                    sb.Append("<card><tpIntegra>2</tpIntegra><tBand>99</tBand></card>");
                 sb.Append("</detPag>");
             }
         }

@@ -3456,9 +3456,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs": {
-    "mtime": 1790739232.9203374,
-    "seen": 1790739586.7663317,
-    "ast_hash": "e86e7acfdc0291451b5e8094138d2647",
+    "mtime": 1791220712.941651,
+    "seen": 1791220875.9470704,
+    "ast_hash": "515a0a0f56433ee4ac75c49844eaca29",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Services/LocalFiscalStore.cs": {
