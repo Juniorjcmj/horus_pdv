@@ -1370,12 +1370,13 @@ public sealed class ZeusFiscalProvider(
     }
 
     /// <summary>
-    /// Tag card é obrigatória para pagamentos com cartão (crédito/débito) — rejeição SEFAZ 391.
+    /// Tag card é obrigatória para pagamentos com cartão (crédito/débito) e PIX dinâmico (17) — rejeição SEFAZ 391.
     /// Para POS avulso (sem TEF integrado), tpIntegra deve ser 2 (TipNaoIntegrado).
     /// </summary>
     private static card? MontarCard(PagamentoFiscal p, FormaPagamento tPag)
     {
-        var ehCartao = tPag is FormaPagamento.fpCartaoCredito or FormaPagamento.fpCartaoDebito;
+        var ehCartao = tPag is FormaPagamento.fpCartaoCredito or FormaPagamento.fpCartaoDebito
+            || (int)tPag == 17; // PIX dinâmico
         var temIntegracao = !string.IsNullOrWhiteSpace(p.CnpjCredenciadora);
 
         if (!ehCartao && !temIntegracao)

@@ -9773,7 +9773,7 @@
       },
       "norm_label": "salvarsecaorequest",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L146"
+      "source_location": "L151"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_salvarvideorequest",
@@ -9792,7 +9792,7 @@
       },
       "norm_label": "salvarvideorequest",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L153"
+      "source_location": "L158"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_treinamentocontroller",
@@ -33593,7 +33593,7 @@
       "file_type": "code",
       "norm_label": "field()",
       "source_file": "FRONTEND/src/pages/Admin/AprendizadoPage.tsx",
-      "source_location": "L435"
+      "source_location": "L437"
     },
     {
       "id": "frontend_src_pages_admin_aprendizadopage_modal",
@@ -33605,7 +33605,7 @@
       "file_type": "code",
       "norm_label": "modal()",
       "source_file": "FRONTEND/src/pages/Admin/AprendizadoPage.tsx",
-      "source_location": "L416"
+      "source_location": "L418"
     },
     {
       "id": "frontend_src_pages_admin_aprendizadopage_modalactions",
@@ -33617,7 +33617,7 @@
       "file_type": "code",
       "norm_label": "modalactions()",
       "source_file": "FRONTEND/src/pages/Admin/AprendizadoPage.tsx",
-      "source_location": "L444"
+      "source_location": "L446"
     },
     {
       "id": "frontend_src_pages_admin_novopedidopage_formatquantitydisplay",
@@ -40471,7 +40471,7 @@
       },
       "norm_label": ".extrairyoutubeid()",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L130"
+      "source_location": "L135"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_treinamentocontroller_idyoutube",
@@ -40489,7 +40489,7 @@
       },
       "norm_label": ".idyoutube()",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L139"
+      "source_location": "L144"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_treinamentocontroller_linkyoutube",
@@ -40507,7 +40507,7 @@
       },
       "norm_label": ".linkyoutube()",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L142"
+      "source_location": "L147"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_treinamentocontroller_listar",
@@ -40543,7 +40543,7 @@
       },
       "norm_label": ".negar()",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L113"
+      "source_location": "L118"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_treinamentocontroller_podegerenciar",
@@ -40557,11 +40557,19 @@
         "namespace": "HORUSPDV_API.Controllers.Admin",
         "scope_chain": [
           "s490"
+        ],
+        "unresolved_calls": [
+          {
+            "callee": "Contains",
+            "receiver_type": "DonosDaPlataforma",
+            "lang": "csharp",
+            "line": "L115"
+          }
         ]
       },
       "norm_label": ".podegerenciar()",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L108"
+      "source_location": "L112"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_treinamentocontroller_salvarsecao",
@@ -96147,7 +96155,7 @@
       },
       "norm_label": "descricao",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L149"
+      "source_location": "L154"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_salvarsecaorequest_nome",
@@ -96164,7 +96172,7 @@
       },
       "norm_label": "nome",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L148"
+      "source_location": "L153"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_salvarsecaorequest_ordem",
@@ -96181,7 +96189,7 @@
       },
       "norm_label": "ordem",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L150"
+      "source_location": "L155"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_salvarvideorequest_descricao",
@@ -96198,7 +96206,7 @@
       },
       "norm_label": "descricao",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L157"
+      "source_location": "L162"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_salvarvideorequest_instrucoes",
@@ -96215,7 +96223,7 @@
       },
       "norm_label": "instrucoes",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L158"
+      "source_location": "L163"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_salvarvideorequest_ordem",
@@ -96232,7 +96240,7 @@
       },
       "norm_label": "ordem",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L161"
+      "source_location": "L166"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_salvarvideorequest_secaoid",
@@ -96249,7 +96257,7 @@
       },
       "norm_label": "secaoid",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L155"
+      "source_location": "L160"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_salvarvideorequest_titulo",
@@ -96266,7 +96274,7 @@
       },
       "norm_label": "titulo",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L156"
+      "source_location": "L161"
     },
     {
       "id": "api_netcore_controllers_admin_treinamentocontroller_horuspdv_api_controllers_admin_salvarvideorequest_url",
@@ -96283,7 +96291,7 @@
       },
       "norm_label": "url",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L160"
+      "source_location": "L165"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_treinamentoab",
@@ -106579,7 +106587,7 @@
         "ref_token": "GeneratedRegex"
       },
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L139",
+      "source_location": "L144",
       "weight": 1.0
     },
     {
@@ -106594,7 +106602,7 @@
         "ref_token": "GeneratedRegex"
       },
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L142",
+      "source_location": "L147",
       "weight": 1.0
     },
     {
@@ -110614,7 +110622,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L134",
+      "source_location": "L139",
       "weight": 1.0
     },
     {
@@ -110626,7 +110634,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L135",
+      "source_location": "L140",
       "weight": 1.0
     },
     {
@@ -110650,7 +110658,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L120",
+      "source_location": "L125",
       "weight": 1.0
     },
     {
@@ -122350,7 +122358,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs",
-      "source_location": "L1388",
+      "source_location": "L1389",
       "weight": 1.0
     },
     {
@@ -122362,7 +122370,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs",
-      "source_location": "L1392",
+      "source_location": "L1393",
       "weight": 1.0
     },
     {
@@ -136836,7 +136844,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L148",
+      "source_location": "L153",
       "weight": 1.0
     },
     {
@@ -136848,7 +136856,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L149",
+      "source_location": "L154",
       "weight": 1.0
     },
     {
@@ -136860,7 +136868,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L150",
+      "source_location": "L155",
       "weight": 1.0
     },
     {
@@ -136872,7 +136880,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L155",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -136884,7 +136892,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L156",
+      "source_location": "L161",
       "weight": 1.0
     },
     {
@@ -136896,7 +136904,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L157",
+      "source_location": "L162",
       "weight": 1.0
     },
     {
@@ -136908,7 +136916,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L158",
+      "source_location": "L163",
       "weight": 1.0
     },
     {
@@ -136920,7 +136928,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L160",
+      "source_location": "L165",
       "weight": 1.0
     },
     {
@@ -136932,7 +136940,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L161",
+      "source_location": "L166",
       "weight": 1.0
     },
     {
@@ -177928,7 +177936,7 @@
         "ref_token": "AuthenticatedUser"
       },
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L108",
+      "source_location": "L112",
       "weight": 1.0
     },
     {
@@ -190795,7 +190803,7 @@
         "ref_token": "IActionResult"
       },
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L113",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -191470,7 +191478,7 @@
         "ref_token": "Regex"
       },
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L139",
+      "source_location": "L144",
       "weight": 1.0
     },
     {
@@ -191485,7 +191493,7 @@
         "ref_token": "Regex"
       },
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L142",
+      "source_location": "L147",
       "weight": 1.0
     },
     {
@@ -202691,7 +202699,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L146",
+      "source_location": "L151",
       "weight": 1.0
     },
     {
@@ -202702,7 +202710,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L153",
+      "source_location": "L158",
       "weight": 1.0
     },
     {
@@ -213734,7 +213742,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/AprendizadoPage.tsx",
-      "source_location": "L416",
+      "source_location": "L418",
       "weight": 1.0
     },
     {
@@ -213745,7 +213753,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/AprendizadoPage.tsx",
-      "source_location": "L435",
+      "source_location": "L437",
       "weight": 1.0
     },
     {
@@ -213756,7 +213764,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/AprendizadoPage.tsx",
-      "source_location": "L444",
+      "source_location": "L446",
       "weight": 1.0
     },
     {
@@ -231329,7 +231337,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L108",
+      "source_location": "L112",
       "weight": 1.0
     },
     {
@@ -231340,7 +231348,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L113",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -231351,7 +231359,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L130",
+      "source_location": "L135",
       "weight": 1.0
     },
     {
@@ -231362,7 +231370,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L139",
+      "source_location": "L144",
       "weight": 1.0
     },
     {
@@ -231373,7 +231381,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L142",
+      "source_location": "L147",
       "weight": 1.0
     },
     {
@@ -250745,7 +250753,7 @@
       "confidence_score": 0.85,
       "context": "call",
       "source_file": "API/NETCORE/Controllers/Admin/TreinamentoController.cs",
-      "source_location": "L117",
+      "source_location": "L122",
       "weight": 1.0
     },
     {
@@ -256498,5 +256506,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "3b292a7ca440fc9a415bf5bb1de53fe46c15261d"
+  "built_at_commit": "ce036e798f5c4539f4f6214f0db0d2a50d6a36d5"
 }
