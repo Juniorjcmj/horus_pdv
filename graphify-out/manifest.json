@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791074793.6475952,
-    "seen": 1791074844.5504277,
-    "ast_hash": "ee8573a1238321974eecc370096360ed",
+    "mtime": 1791223989.4426508,
+    "seen": 1791224248.1772702,
+    "ast_hash": "c68b8c87280dd6a39ca21e22e3bf3731",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1272,9 +1272,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/.last-run.json": {
-    "mtime": 1790735910.9862435,
-    "seen": 1790736222.2436662,
-    "ast_hash": "4bc553677b9dbe5b82ae4476f139b02f",
+    "mtime": 1791224202.011279,
+    "seen": 1791224248.1859024,
+    "ast_hash": "5645f78ad777de5be9a546563ece0f4c",
     "semantic_hash": ""
   },
   "FRONTEND/tests/demo/horus-pdv.demo.spec.ts": {
@@ -2550,9 +2550,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/application/customers/CustomerSyncAdapter.ts": {
-    "mtime": 1791028074.3974404,
-    "seen": 1791028438.5393612,
-    "ast_hash": "b0453f212b4de89fb1e64aef5285941f",
+    "mtime": 1791223951.1116955,
+    "seen": 1791224248.154153,
+    "ast_hash": "57495d0a14bf2541315528045d3be0b6",
     "semantic_hash": ""
   },
   "FRONTEND/src/application/products/ProductSyncAdapter.ts": {
@@ -2562,9 +2562,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/application/sales/SaleOutboxAdapter.ts": {
-    "mtime": 1791057456.1835945,
-    "seen": 1791057574.688131,
-    "ast_hash": "2451485301e72939f1641be23d9cde0e",
+    "mtime": 1791223371.8484461,
+    "seen": 1791223500.509138,
+    "ast_hash": "84f903831f417e971ac29404c8a404cb",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SyncStatus.tsx": {
@@ -2616,9 +2616,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/dexie.ts": {
-    "mtime": 1791046779.7282763,
-    "seen": 1791046884.130563,
-    "ast_hash": "86e0fc854b00ce3d2e162af8a52d5515",
+    "mtime": 1791224105.009467,
+    "seen": 1791224248.168832,
+    "ast_hash": "75471357d09f37e4a413ce4594863a73",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CashSessionRepository.ts": {
@@ -2754,9 +2754,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/testHarness.ts": {
-    "mtime": 1790421566.5324461,
-    "seen": 1790421619.656558,
-    "ast_hash": "a2a6db196d0064bb96e95bb203ac63bc",
+    "mtime": 1791224036.3224669,
+    "seen": 1791224248.1731055,
+    "ast_hash": "2590555563f3f8000f8f3ab034fd3b83",
     "semantic_hash": ""
   },
   "FRONTEND/tests/architecture/bloco1-outbox.spec.ts": {
@@ -3341,28 +3341,10 @@
     "ast_hash": "b5a8971a37783a93cb9755839dd39e0d",
     "semantic_hash": ""
   },
-  "FRONTEND/test-results/bloco13-resilience-concurr-78a98--e-1-replay-sem-duplicidade-chromium/error-context.md": {
-    "mtime": 1790735834.6276996,
-    "seen": 1790736222.2850592,
-    "ast_hash": "67a50c9201321503fa17cda2075c54ce",
-    "semantic_hash": ""
-  },
-  "FRONTEND/test-results/bloco2-3-idempotency-BLOCO-f04bc-adHash-processa-com-sucesso-chromium/error-context.md": {
-    "mtime": 1790735837.3054662,
-    "seen": 1790736222.2850666,
-    "ast_hash": "c4f3b065b80877d3dabb9625f81ddd79",
-    "semantic_hash": ""
-  },
-  "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/error-context.md": {
-    "mtime": 1790735907.1043358,
-    "seen": 1790736222.2850728,
-    "ast_hash": "5c9a8f603fecda1146ca68ccdd51eded",
-    "semantic_hash": ""
-  },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/error-context.md": {
-    "mtime": 1790735857.8962946,
-    "seen": 1790736222.285077,
-    "ast_hash": "6e7f13688355c2a459ba53ce72286ce1",
+    "mtime": 1791224202.0153873,
+    "seen": 1791224248.2190738,
+    "ast_hash": "aface98cb37189fcbf085aa5f32da9e1",
     "semantic_hash": ""
   },
   "GATEWAY/README.md": {
@@ -3407,15 +3389,9 @@
     "ast_hash": "43790503d02b71ef3197a4b3a30e937b",
     "semantic_hash": ""
   },
-  "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
-    "mtime": 1790735906.9843102,
-    "seen": 1790736222.3113582,
-    "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
-    "semantic_hash": ""
-  },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/test-failed-1.png": {
-    "mtime": 1790735857.664167,
-    "seen": 1790736222.3113687,
+    "mtime": 1791224202.0157435,
+    "seen": 1791224248.2334504,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3807,6 +3783,48 @@
     "mtime": 1791168647.5555878,
     "seen": 1791168995.6169426,
     "ast_hash": "bbc0fa92289d10a9f27245015fc60755",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/venda-local-fiado.spec.ts": {
+    "mtime": 1791224056.1493397,
+    "seen": 1791224248.1897843,
+    "ast_hash": "0c7fbc326d8fd0fc4554464621b11039",
+    "semantic_hash": ""
+  },
+  "FRONTEND/test-results/bloco12-security-productio-34e8d-t\u00e9m-fallback-localhost-5260-chromium/error-context.md": {
+    "mtime": 1791224200.5319448,
+    "seen": 1791224248.2190616,
+    "ast_hash": "3e465171ec52a41f690e4555f49da666",
+    "semantic_hash": ""
+  },
+  "FRONTEND/test-results/bloco12-security-productio-89ba8--requireEnvUrl-sem-fallback-chromium/error-context.md": {
+    "mtime": 1791224201.5947373,
+    "seen": 1791224248.2190645,
+    "ast_hash": "91f1eb1bd27d986a790983dce10a6571",
+    "semantic_hash": ""
+  },
+  "FRONTEND/test-results/bloco13-resilience-concurr-78a98--e-1-replay-sem-duplicidade-chromium/error-context.md": {
+    "mtime": 1791224202.012341,
+    "seen": 1791224248.2190666,
+    "ast_hash": "224bad386e70ce696ae92cb0396ceceb",
+    "semantic_hash": ""
+  },
+  "FRONTEND/test-results/bloco2-3-idempotency-BLOCO-f04bc-adHash-processa-com-sucesso-chromium/error-context.md": {
+    "mtime": 1791224202.013352,
+    "seen": 1791224248.2190685,
+    "ast_hash": "c24ea5fe7f8c136047ff5127180e8dae",
+    "semantic_hash": ""
+  },
+  "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/error-context.md": {
+    "mtime": 1791224202.013352,
+    "seen": 1791224248.219071,
+    "ast_hash": "5cba1c90a8ecdabc6798c69a1000df68",
+    "semantic_hash": ""
+  },
+  "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
+    "mtime": 1791224202.013352,
+    "seen": 1791224248.2334461,
+    "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   }
 }

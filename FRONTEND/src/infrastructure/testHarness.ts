@@ -9,6 +9,8 @@ import * as CashSessionRepository from "./database/repositories/CashSessionRepos
 import * as SaleOutboxAdapter from "@/application/sales/SaleOutboxAdapter";
 import * as ProductRepository from "./database/repositories/ProductRepository";
 import * as ProductSyncAdapter from "@/application/products/ProductSyncAdapter";
+import * as CustomerSyncAdapter from "@/application/customers/CustomerSyncAdapter";
+import { customerService } from "@/services/api/customerService";
 import * as UserRepository from "./database/repositories/UserRepository";
 import * as cryptoHash from "@/utils/cryptoHash";
 import { syncEngine } from "./synchronization/SyncEngine";
@@ -26,6 +28,8 @@ export function setupTestHarness(): void {
     SaleOutboxAdapter,
     ProductRepository,
     ProductSyncAdapter,
+    CustomerSyncAdapter,
+    customerService,
     UserRepository,
     cryptoHash,
     syncEngine,
@@ -56,6 +60,7 @@ export function setupTestHarness(): void {
           await db.payments.clear();
           await db.stockMovements.clear();
           await db.products.clear();
+          await db.customers.clear();
           await db.cashSessions.clear();
           await db.outbox.clear();
           await db.processedEvents.clear();

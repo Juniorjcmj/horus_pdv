@@ -3,6 +3,7 @@
  * Objetivo: schema do banco IndexedDB local via Dexie.js — todas as tabelas do PDV offline-first.
  * Versão 1: fundação (devices, users, products, customers, cashSessions, sales, saleItems,
  *           payments, stockMovements, outbox, processedEvents, syncCheckpoint, syncLogs).
+ * Versão 2: índice saleNumber em sales.
  */
 import Dexie, { type EntityTable } from "dexie";
 import type { OutboxEvent, SyncCheckpoint, SyncLog } from "@/shared/types/sync";
@@ -110,6 +111,8 @@ export type SaleRecord = {
   totalAmount: number;
   status: "COMPLETED" | "CANCELLED";
   createdAt: string;
+  /** ONLINE = já registrada no servidor (só histórico local); OFFLINE = aguardando sync no outbox. Ausente em registros antigos. */
+  origin?: "ONLINE" | "OFFLINE";
 };
 
 export type SaleItemRecord = {
@@ -185,6 +188,11 @@ export class LocalDatabase extends Dexie {
       processedEvents: "eventId, processedAt",
       syncCheckpoint: "deviceId",
       syncLogs: "id, timestamp, direction, status",
+    });
+
+    // Versão 2: índice saleNumber em sales (busca da venda pelo número — online e offline).
+    this.version(2).stores({
+      sales: "id, deviceId, tenantId, sessionId, saleNumber, status, createdAt",
     });
   }
 }

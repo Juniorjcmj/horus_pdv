@@ -1,7 +1,7 @@
 /**
  * Arquivo: src/application/sales/SaleOutboxAdapter.ts
- * Objetivo: persiste vendas offline atomicamente em todas as tabelas locais do IndexedDB
- *           (sales, saleItems, payments, stockMovements, products e outbox) e fornece
+ * Objetivo: persiste TODA venda (online e offline) atomicamente nas tabelas locais do IndexedDB
+ *           (sales, saleItems, payments, stockMovements, products; outbox só na offline) e fornece
  *           consulta do histórico de vendas local para operação offline.
  */
 import { enqueueEvent } from "@/infrastructure/database/repositories/OutboxRepository";
@@ -35,6 +35,33 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload): Promise<s
   payload.offlineReference = localRef;
   payload.occurredAt = occurredAt;
 
+  await persistSaleLocally(payload, { clientSaleId, saleNumber: localRef, occurredAt, origin: "OFFLINE", eventId });
+  return localRef;
+}
+
+/**
+ * Grava no IndexedDB uma venda já registrada no servidor (histórico local do caixa).
+ * NÃO entra no outbox: a venda já está sincronizada e não pode ser reenviada.
+ */
+export async function saveSyncedSaleLocally(payload: RegisterSalePayload, saleNumber: string): Promise<void> {
+  const clientSaleId =
+    payload.clientSaleId ||
+    (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `cs-${Date.now()}`);
+  const occurredAt = payload.occurredAt || new Date().toISOString();
+  await persistSaleLocally(payload, { clientSaleId, saleNumber, occurredAt, origin: "ONLINE" });
+}
+
+type PersistSaleOptions = {
+  clientSaleId: string;
+  saleNumber: string;
+  occurredAt: string;
+  origin: "ONLINE" | "OFFLINE";
+  /** Presente só para venda offline: enfileira o evento SALE_CREATED no outbox. */
+  eventId?: string;
+};
+
+async function persistSaleLocally(payload: RegisterSalePayload, options: PersistSaleOptions): Promise<void> {
+  const { clientSaleId, saleNumber, occurredAt, origin, eventId } = options;
   const deviceId = getCachedDeviceId() || "unknown-device";
   const totalAmountNum =
     typeof payload.totalAmount === "number"
@@ -55,12 +82,13 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload): Promise<s
         deviceId,
         tenantId: "",
         sessionId,
-        saleNumber: localRef,
+        saleNumber,
         customerId: payload.customerCpf || null,
         customerName: payload.customerName || null,
         totalAmount: totalAmountNum,
         status: "COMPLETED",
         createdAt: occurredAt,
+        origin,
       };
       await db.sales.put(saleRecord);
 
@@ -101,7 +129,9 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload): Promise<s
           createdAt: occurredAt,
         });
 
-        // Atualiza estoque local no db.products
+        // Venda offline: baixa estoque local no db.products. Na online o estoque vem do servidor
+        // (o PDV recarrega o catálogo logo após a venda) — baixar aqui duplicaria a saída.
+        if (origin !== "OFFLINE") continue;
         const prod =
           (await db.products.where("productCode").equals(item.productCode).first()) ||
           (await db.products.where("barcode").equals(item.productCode).first());
@@ -138,13 +168,14 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload): Promise<s
         });
       }
 
-      // 4.1 Se houver pagamento fiado, atualizar saldo devedor do cliente no IndexedDB
+      // 4.1 Venda offline com fiado: atualizar saldo devedor do cliente no IndexedDB
+      //     (na online o PDV já grava o saldo devolvido pelo servidor via updateCustomerDebtLocal).
       const fiadoPayments = Array.isArray(payload.payments)
         ? payload.payments.filter((p) => String(p.paymentType).trim().toLowerCase() === "fiado")
         : (String(payload.paymentType).trim().toLowerCase() === "fiado" ? [{ amount: totalAmountNum }] : []);
       const totalFiado = fiadoPayments.reduce((s, p) => s + (p.amount || 0), 0);
 
-      if (totalFiado > 0 && payload.customerCpf) {
+      if (origin === "OFFLINE" && totalFiado > 0 && payload.customerCpf) {
         const digits = payload.customerCpf.replace(/\D/g, "");
         const cust = await db.customers
           .filter((c) => c.cpfCnpj.replace(/\D/g, "") === digits)
@@ -163,21 +194,21 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload): Promise<s
         }
       }
 
-      // 5. Enfileirar no Outbox para sincronização posterior
-      await enqueueEvent({
-        id: eventId,
-        clientSaleId,
-        payloadHash: payload.payloadHash,
-        occurredAt,
-        eventType: "SALE_CREATED",
-        aggregateType: "Sale",
-        aggregateId: clientSaleId,
-        payload,
-      });
+      // 5. Venda offline: enfileirar no Outbox para sincronização posterior
+      if (eventId) {
+        await enqueueEvent({
+          id: eventId,
+          clientSaleId,
+          payloadHash: payload.payloadHash,
+          occurredAt,
+          eventType: "SALE_CREATED",
+          aggregateType: "Sale",
+          aggregateId: clientSaleId,
+          payload,
+        });
+      }
     },
   );
-
-  return localRef;
 }
 
 /**

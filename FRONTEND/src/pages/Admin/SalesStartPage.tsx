@@ -58,6 +58,7 @@ import {
   syncCustomersFromApi,
   upsertCustomerLocal,
   updateCustomerDebtLocal,
+  getLocalCustomerDebt,
 } from "@/application/customers/CustomerSyncAdapter";
 import { ApiError } from "@/services/api/apiClient";
 import { syncProductsFromApi } from "@/application/products/ProductSyncAdapter";
@@ -71,7 +72,7 @@ import {
 import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { useProducts } from "@/hooks/useProducts";
-import { queueSaleToOutbox } from "@/application/sales/SaleOutboxAdapter";
+import { queueSaleToOutbox, saveSyncedSaleLocally } from "@/application/sales/SaleOutboxAdapter";
 import { computeSalePayloadHash } from "@/utils/cryptoHash";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 import { useOutboxStatus } from "@/hooks/useOutboxStatus";
@@ -1291,6 +1292,7 @@ export default function SalesStartPage({
       .filter((p) => p.paymentType === "fiado")
       .reduce((sum, p) => sum + p.amount, 0);
 
+    let saldoAntesFiado = 0;
     if (hasFiado) {
       if (!selectedCustomer) {
         Toast.error("Para pagamento fiado, selecione um cliente cadastrado.");
@@ -1298,7 +1300,10 @@ export default function SalesStartPage({
         return;
       }
       const limite = Number(selectedCustomer.limiteCredito ?? 0);
-      const saldo = Number(selectedCustomer.saldoDevedor ?? 0);
+      // Saldo mais atual do IndexedDB (inclui fiado offline ainda não sincronizado); usa o maior dos dois.
+      const saldoLocal = await getLocalCustomerDebt(selectedCustomer.document || selectedCustomer.id).catch(() => null);
+      const saldo = Math.max(Number(selectedCustomer.saldoDevedor ?? 0), saldoLocal ?? 0);
+      saldoAntesFiado = saldo;
       const disponivel = Math.max(0, limite - saldo);
       if (totalFiado > disponivel + 0.009) {
         Toast.error(
@@ -1402,6 +1407,11 @@ export default function SalesStartPage({
           : await salesHistoryService.register(registerPayload);
 
         saleNumber = result?.saleNumber || offlineReference;
+
+        // Guarda também a venda online no IndexedDB (histórico local do caixa) — sem outbox, já está no servidor.
+        void saveSyncedSaleLocally(registerPayload, saleNumber).catch((localErr) =>
+          console.warn("Venda registrada, mas não foi salva no IndexedDB:", localErr),
+        );
 
         // Aguarda brevemente a autorização da SEFAZ pelo outbox worker se a venda foi qualificada para emissão fiscal
         const shouldEmitNfce = (result as any)?.emitirFiscal !== false && (result as any)?.fiscalQueued !== false;
@@ -1575,6 +1585,19 @@ export default function SalesStartPage({
         }
       }
 
+      // Saldo devedor após a venda fiado: online = valor devolvido pelo servidor; offline = o que ficou no
+      // IndexedDB (já somado por queueSaleToOutbox). Fallback: saldo usado na checagem de limite + fiado.
+      let novoSaldoFiado: number | undefined;
+      if (hasFiado && selectedCustomer) {
+        const fallback = saldoAntesFiado + totalFiado;
+        if (!isOfflineSale) {
+          novoSaldoFiado = (result as any)?.fiadoSaldoAtual ?? fallback;
+        } else {
+          const local = await getLocalCustomerDebt(selectedCustomer.document || selectedCustomer.id).catch(() => null);
+          novoSaldoFiado = local ?? fallback;
+        }
+      }
+
       const receipt: SaleReceipt = {
         saleNumber,
         issuedAt: new Date().toISOString(),
@@ -1619,16 +1642,15 @@ export default function SalesStartPage({
         })),
         fiscalDetail,
         isFiado: hasFiado,
-        saldoDevedorAtual:
-          hasFiado && selectedCustomer
-            ? ((result as any)?.fiadoSaldoAtual ?? ((selectedCustomer.saldoDevedor ?? 0) + totalFiado))
-            : undefined,
+        saldoDevedorAtual: novoSaldoFiado,
       };
 
-      if (hasFiado && selectedCustomer) {
-        const novoSaldo = receipt.saldoDevedorAtual ?? ((selectedCustomer.saldoDevedor ?? 0) + totalFiado);
-        setSelectedCustomer((prev) => (prev ? { ...prev, saldoDevedor: novoSaldo } : null));
-        void updateCustomerDebtLocal(selectedCustomer.document || selectedCustomer.id, novoSaldo);
+      if (hasFiado && selectedCustomer && novoSaldoFiado !== undefined) {
+        setSelectedCustomer((prev) => (prev ? { ...prev, saldoDevedor: novoSaldoFiado } : null));
+        // Venda offline: queueSaleToOutbox já somou o fiado no IndexedDB. Online: grava o saldo do servidor.
+        if (!isOfflineSale) {
+          void updateCustomerDebtLocal(selectedCustomer.document || selectedCustomer.id, novoSaldoFiado);
+        }
       }
 
       setCheckoutOpen(false);
