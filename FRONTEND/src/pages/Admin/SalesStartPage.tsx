@@ -1995,8 +1995,9 @@ export default function SalesStartPage({
           </div>
         </header>
 
-        <main className="flex min-h-0 flex-1 flex-col lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
-          <aside className="shrink-0 border-b border-border-primary bg-bg-gray-theme p-3.5 text-text-primary lg:overflow-y-auto lg:border-b-0 lg:border-r">
+        {/* Duas colunas a partir de 768px (antes 1024px): monitor pequeno/zoom alto não cai no layout de celular. */}
+        <main className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[240px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
+          <aside className="shrink-0 border-b border-border-primary bg-bg-gray-theme p-3.5 text-text-primary md:overflow-y-auto md:border-b-0 md:border-r">
             {activePedido ? (
               <div className="mb-3 rounded-xl border border-accent/30 bg-accent/10 p-3 text-xs">
                 <p className="font-semibold text-text-primary">
@@ -2024,7 +2025,7 @@ export default function SalesStartPage({
                   }}
                   placeholder="Nº do pedido"
                   inputMode="numeric"
-                  className="input-field h-9 flex-1 text-xs"
+                  className="input-field h-9 min-w-0 flex-1 text-xs"
                 />
                 <button
                   type="button"
@@ -2196,7 +2197,7 @@ export default function SalesStartPage({
               type="button"
               onClick={addItem}
               disabled={cartLocked}
-              className="btn-success h-11 w-full rounded-xl shadow-md shadow-success/20 disabled:cursor-not-allowed disabled:opacity-40"
+              className="btn-success h-auto min-h-11 w-full rounded-xl py-2 leading-tight shadow-md shadow-success/20 disabled:cursor-not-allowed disabled:opacity-40 md:text-sm lg:text-base"
             >
               ADICIONAR ITEM (ENTER)
             </button>
@@ -2224,7 +2225,7 @@ export default function SalesStartPage({
             </div>
           </aside>
 
-          <section className="flex min-h-[55vh] flex-col bg-bg-light lg:min-h-0">
+          <section className="flex min-h-[55vh] flex-col bg-bg-light md:min-h-0">
             <div className="grid grid-cols-1 gap-1 border-b border-border-primary bg-bg-gray-theme px-3 py-2 text-xs text-text-primary sm:grid-cols-[1fr_200px] sm:gap-0">
               <p>
                 <span className="font-semibold">Empresa:</span>{" "}
@@ -2554,22 +2555,22 @@ export default function SalesStartPage({
                 <button
                   type="button"
                   onClick={cancelSale}
-                  className="btn-cancel h-11 w-full rounded-xl"
+                  className="btn-cancel h-auto min-h-11 w-full rounded-xl py-2 leading-tight md:text-sm lg:text-base"
                 >
                   ✖ CANCELAR (F8)
                 </button>
                 <button
                   type="button"
                   onClick={printLastSale}
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border-secondary px-4 py-2 text-sm font-semibold text-text-secondary transition hover:bg-hover-light hover:text-text-primary"
+                  className="inline-flex h-auto min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border-secondary px-3 py-2 text-sm font-semibold leading-tight text-text-secondary transition hover:bg-hover-light hover:text-text-primary"
                 >
-                  <Printer size={16} />
+                  <Printer size={16} className="shrink-0" />
                   Imprimir última venda
                 </button>
                 <button
                   type="button"
                   onClick={openPayment}
-                  className="btn-success h-11 w-full rounded-xl shadow-md shadow-success/20 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="btn-success h-auto min-h-11 w-full rounded-xl py-2 leading-tight shadow-md shadow-success/20 disabled:cursor-not-allowed disabled:opacity-60 md:text-sm lg:text-base"
                   disabled={!cashCanSell}
                 >
                   PAGAMENTO (F12)

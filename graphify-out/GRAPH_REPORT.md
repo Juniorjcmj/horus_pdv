@@ -1,7 +1,7 @@
 # Graph Report - horus_pdv  (2026-10-05)
 
 ## Corpus Check
-- 630 files · ~1,278,143 words
+- 630 files · ~1,278,294 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `75831180`
+- Built from commit: `2898cebc`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -674,7 +674,7 @@ Nodes (11): salesHistoryService, CachedProduct, getPendingSales(), getPendingSal
 
 ### Community 59 - "DESKTOP/package.json"
 Cohesion: 0.05
-Nodes (40): { app, BrowserWindow, dialog, shell }, configPath(), DEFAULT_CONFIG, fs, loadConfig(), path, saveConfig(), author (+32 more)
+Nodes (40): { app, BrowserWindow, dialog, screen, shell }, configPath(), DEFAULT_CONFIG, fs, loadConfig(), path, saveConfig(), author (+32 more)
 
 ### Community 60 - "FornecedorRequest"
 Cohesion: 0.12

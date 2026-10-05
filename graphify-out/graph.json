@@ -94099,13 +94099,13 @@
       "source_location": "L1"
     },
     {
-      "id": "desktop_main_app_browserwindow_dialog_shell",
-      "label": "{ app, BrowserWindow, dialog, shell }",
+      "id": "desktop_main_app_browserwindow_dialog_screen_shell",
+      "label": "{ app, BrowserWindow, dialog, screen, shell }",
       "_origin": "ast",
       "community": 59,
       "community_name": "DESKTOP/package.json",
       "file_type": "code",
-      "norm_label": "{ app, browserwindow, dialog, shell }",
+      "norm_label": "{ app, browserwindow, dialog, screen, shell }",
       "source_file": "DESKTOP/main.js",
       "source_location": "L21"
     },
@@ -209110,7 +209110,7 @@
     },
     {
       "source": "desktop_main",
-      "target": "desktop_main_app_browserwindow_dialog_shell",
+      "target": "desktop_main_app_browserwindow_dialog_screen_shell",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -258194,5 +258194,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "7583118096b6934efb0ad6ced224845f3ee66d70"
+  "built_at_commit": "2898cebc8d937bd078bdd34d5e9e5dbdb0698eca"
 }

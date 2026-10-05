@@ -18,7 +18,7 @@
  * Atalhos: F11 tela cheia | F5 / Ctrl+R recarregar | Ctrl+Shift+R recarregar sem cache | Ctrl+Shift+I DevTools (suporte)
  *          Ctrl+= / Ctrl+- aumentar/diminuir | Ctrl+0 voltar ao tamanho automático
  */
-const { app, BrowserWindow, dialog, shell } = require("electron");
+const { app, BrowserWindow, dialog, screen, shell } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -148,6 +148,30 @@ if (!app.requestSingleInstanceLock()) {
     mainWindow.on("resize", scheduleZoom);
     mainWindow.on("enter-full-screen", scheduleZoom);
     mainWindow.on("leave-full-screen", scheduleZoom);
+    // Trocar de monitor (ex.: Win+Shift+seta em tela cheia) nem sempre dispara "resize": sem isto o zoom
+    // calculado para o monitor de 1920 ficava no de 1366 e a página caía no layout de celular.
+    mainWindow.on("move", scheduleZoom);
+    mainWindow.on("moved", scheduleZoom);
+    const onDisplayChange = () => scheduleZoom();
+    screen.on("display-metrics-changed", onDisplayChange);
+    screen.on("display-added", onDisplayChange);
+    screen.on("display-removed", onDisplayChange);
+    // Rede de segurança: confere o tamanho da janela a cada 1s e reaplica se mudou.
+    let lastSize = "";
+    const sizeWatch = setInterval(() => {
+      if (!mainWindow || mainWindow.isDestroyed()) return;
+      const size = mainWindow.getContentSize().join("x");
+      if (size !== lastSize) {
+        lastSize = size;
+        applyZoom();
+      }
+    }, 1000);
+    mainWindow.on("closed", () => {
+      clearInterval(sizeWatch);
+      screen.removeListener("display-metrics-changed", onDisplayChange);
+      screen.removeListener("display-added", onDisplayChange);
+      screen.removeListener("display-removed", onDisplayChange);
+    });
     // O Chromium guarda zoom por origem: reaplica a cada carregamento (inclui a tela offline).
     mainWindow.webContents.on("did-finish-load", applyZoom);
     // Ctrl + roda do mouse vira ajuste fino (em vez do zoom solto do Chromium).
