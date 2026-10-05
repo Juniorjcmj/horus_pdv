@@ -250,6 +250,8 @@ export default function AprendizadoPage() {
                       src={`https://www.youtube-nocookie.com/embed/${videoAtual.youtubeId}?rel=0`}
                       title={videoAtual.titulo}
                       className="h-full w-full"
+                      // O app usa Referrer-Policy "no-referrer"; o YouTube recusa o embed sem referrer (erro 153).
+                      referrerPolicy="strict-origin-when-cross-origin"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                       allowFullScreen
                     />
