@@ -23,3 +23,6 @@ dist/
 #CSharp Build output
 bin/
 obj/
+
+# Casca desktop (Electron) — instalador gerado tem ~100 MB, não versionar
+DESKTOP/release/

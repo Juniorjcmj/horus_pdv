@@ -1,0 +1,43 @@
+{
+  "name": "quack-pdv-desktop",
+  "productName": "Quack PDV",
+  "version": "1.0.0",
+  "description": "Casca desktop (Electron) do Quack PDV",
+  "author": "Quack Sistemas",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "br.com.quacksistemas.pdv",
+    "productName": "Quack PDV",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "offline.html",
+      "build/icon.png"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Quack PDV",
+      "artifactName": "quack-pdv-setup-${version}.${ext}"
+    }
+  }
+}
