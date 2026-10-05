@@ -648,15 +648,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1791168715.7375076,
-    "seen": 1791168995.5280817,
-    "ast_hash": "418027aaff9bbb43c6b6626d4205cca3",
+    "mtime": 1791243200.6177015,
+    "seen": 1791243532.5917401,
+    "ast_hash": "d343ba8c0215bab436c13f3a7db19e4a",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
-    "mtime": 1790970909.52188,
-    "seen": 1790971082.3075747,
-    "ast_hash": "a2996348fce4968f7b38581384b44fb5",
+    "mtime": 1791240242.9223578,
+    "seen": 1791240357.0464838,
+    "ast_hash": "c8e0aabda272c4ac5630a7e788dace4e",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashMovementModal.tsx": {
@@ -894,9 +894,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/index.ts": {
-    "mtime": 1790965470.5355327,
-    "seen": 1790965934.3606327,
-    "ast_hash": "a719029fe8775daac962d8785fcb73f2",
+    "mtime": 1791243690.4286,
+    "seen": 1791243946.7321703,
+    "ast_hash": "8c1acc204be2d79e598e7aa84fd7a949",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Tour/GuidedTour.tsx": {
@@ -1068,15 +1068,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791234746.2942388,
-    "seen": 1791235446.5313199,
-    "ast_hash": "86ebd43cf57c18ecba7f499df86a5920",
+    "mtime": 1791240255.2574432,
+    "seen": 1791240357.0675063,
+    "ast_hash": "a3bc2cc51daa4b93072549cc9fced8ad",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
-    "mtime": 1790965516.0393353,
-    "seen": 1790965934.3695917,
-    "ast_hash": "9ad705bb81907f8c2be032974da653cf",
+    "mtime": 1791243690.619373,
+    "seen": 1791243946.7447119,
+    "ast_hash": "8807c6787d929649d688b757fa0833e0",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/StockPage.tsx": {
@@ -1152,9 +1152,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/cashRegisterService.ts": {
-    "mtime": 1791046461.8676896,
-    "seen": 1791046498.1110861,
-    "ast_hash": "01f5a1a3c69bd8a494ab1ef5c968d6a3",
+    "mtime": 1791242195.9135234,
+    "seen": 1791242425.9285934,
+    "ast_hash": "f491778caae47204b3be7c021ed2730b",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/companyService.ts": {
@@ -1272,8 +1272,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/.last-run.json": {
-    "mtime": 1791235184.6419318,
-    "seen": 1791235446.542303,
+    "mtime": 1791243917.2130527,
+    "seen": 1791243946.754857,
     "ast_hash": "5645f78ad777de5be9a546563ece0f4c",
     "semantic_hash": ""
   },
@@ -2622,9 +2622,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CashSessionRepository.ts": {
-    "mtime": 1791046831.805834,
-    "seen": 1791046884.1305666,
-    "ast_hash": "93043b7df22b1b282e539c0359121b51",
+    "mtime": 1791242175.3455274,
+    "seen": 1791242425.9210474,
+    "ast_hash": "3c854cb90d2fee61f68ed8061a2eaed1",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CustomerRepository.ts": {
@@ -2634,9 +2634,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/OutboxRepository.ts": {
-    "mtime": 1791225549.7450197,
-    "seen": 1791225849.151017,
-    "ast_hash": "e857391fe89abded93dec48e76fa51b9",
+    "mtime": 1791243187.7559621,
+    "seen": 1791243532.6054676,
+    "ast_hash": "c95cf227311902c7703fbc9b686523b6",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/ProductRepository.ts": {
@@ -2718,9 +2718,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/OutboxStatusModal.tsx": {
-    "mtime": 1790421566.5168662,
-    "seen": 1790421619.646927,
-    "ast_hash": "712246c2af08e12b07d109a67c603e9a",
+    "mtime": 1791243690.1964488,
+    "seen": 1791243946.7236187,
+    "ast_hash": "0be917132782c23f44129d69998e6467",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useOutboxStatus.ts": {
@@ -3342,8 +3342,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/error-context.md": {
-    "mtime": 1791235184.6459587,
-    "seen": 1791235446.574743,
+    "mtime": 1791243917.2184818,
+    "seen": 1791243946.7800727,
     "ast_hash": "aface98cb37189fcbf085aa5f32da9e1",
     "semantic_hash": ""
   },
@@ -3390,8 +3390,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/test-failed-1.png": {
-    "mtime": 1791235184.6469452,
-    "seen": 1791235446.5941079,
+    "mtime": 1791243917.2195606,
+    "seen": 1791243946.792147,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3792,26 +3792,26 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco13-resilience-concurr-78a98--e-1-replay-sem-duplicidade-chromium/error-context.md": {
-    "mtime": 1791235184.6429398,
-    "seen": 1791235446.5747335,
+    "mtime": 1791243917.214216,
+    "seen": 1791243946.780065,
     "ast_hash": "224bad386e70ce696ae92cb0396ceceb",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco2-3-idempotency-BLOCO-f04bc-adHash-processa-com-sucesso-chromium/error-context.md": {
-    "mtime": 1791235184.6439376,
-    "seen": 1791235446.5747364,
+    "mtime": 1791243917.2152894,
+    "seen": 1791243946.780068,
     "ast_hash": "c24ea5fe7f8c136047ff5127180e8dae",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/error-context.md": {
-    "mtime": 1791235184.6449385,
-    "seen": 1791235446.5747402,
+    "mtime": 1791243917.216906,
+    "seen": 1791243946.7800705,
     "ast_hash": "5cba1c90a8ecdabc6798c69a1000df68",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
-    "mtime": 1791235184.6449385,
-    "seen": 1791235446.5941029,
+    "mtime": 1791243917.216906,
+    "seen": 1791243946.792144,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3828,21 +3828,21 @@
     "semantic_hash": ""
   },
   "DESKTOP/main.js": {
-    "mtime": 1791235094.7829018,
-    "seen": 1791235446.5009413,
-    "ast_hash": "6c0078f3470e76d37ce62091820cac85",
+    "mtime": 1791243306.579925,
+    "seen": 1791243532.5905728,
+    "ast_hash": "36199027a7769c86bc9eb2709faced30",
     "semantic_hash": ""
   },
   "DESKTOP/package.json": {
-    "mtime": 1791235205.8053017,
-    "seen": 1791235446.5009456,
-    "ast_hash": "2f66a04e05a23fca45c905e0b552539d",
+    "mtime": 1791243407.4843645,
+    "seen": 1791243532.5905764,
+    "ast_hash": "7502312182b95fe724b9edd3ec5b3ee4",
     "semantic_hash": ""
   },
   "DESKTOP/README.md": {
-    "mtime": 1791234797.1647134,
-    "seen": 1791235446.5742579,
-    "ast_hash": "beece23b532651f3a1fb583f4e926322",
+    "mtime": 1791243306.5112119,
+    "seen": 1791243532.6465847,
+    "ast_hash": "269e8716e158d6ba5941cf2c9e15b8bb",
     "semantic_hash": ""
   },
   "DESKTOP/offline.html": {
@@ -3852,21 +3852,57 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PdvCashPanelModal.tsx": {
-    "mtime": 1791232899.5413826,
-    "seen": 1791233056.2989652,
-    "ast_hash": "09cea0a8404af3ab3a9967dfa7c6a6bb",
+    "mtime": 1791240243.1240177,
+    "seen": 1791240357.0491605,
+    "ast_hash": "3261cbe642cb588b529005095f8760f2",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useCashRegisterActions.ts": {
-    "mtime": 1791232535.7453737,
-    "seen": 1791233056.3103933,
-    "ast_hash": "9fdc0ab69676e1d22223292d3ff2fb43",
+    "mtime": 1791242224.95533,
+    "seen": 1791242425.9192367,
+    "ast_hash": "4fb974f891b26d5db67c7b32f4cbf94e",
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/cashRegisterFormat.ts": {
     "mtime": 1791232595.6205502,
     "seen": 1791233056.3292341,
     "ast_hash": "1ac6d448fb2ad7ebc514a3dc2c445ce5",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/caixa-offline.spec.ts": {
+    "mtime": 1791239958.659743,
+    "seen": 1791240077.276675,
+    "ast_hash": "36ac12365cbc17d4876570836c8a242c",
+    "semantic_hash": ""
+  },
+  "DESKTOP/preload.js": {
+    "mtime": 1791243118.812857,
+    "seen": 1791243532.590578,
+    "ast_hash": "9b5d781bda90c108001686dd65b2bc0b",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/infrastructure/desktop/pendingBackup.ts": {
+    "mtime": 1791243652.0865407,
+    "seen": 1791243946.739624,
+    "ast_hash": "0c40528b41f3a26ed09f12e4e1e91716",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/ImportPendingBackupButton.tsx": {
+    "mtime": 1791243874.166425,
+    "seen": 1791243946.723095,
+    "ast_hash": "904dce3e5b6279ea32ce1a2e0df1e33f",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/SettingsPage/PendingBackupCard.tsx": {
+    "mtime": 1791243690.3127725,
+    "seen": 1791243946.730645,
+    "ast_hash": "206606b0decba18e1f0a208b62b461a1",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/backup-pendencias.spec.ts": {
+    "mtime": 1791243783.4771996,
+    "seen": 1791243946.7548594,
+    "ast_hash": "a69912a37b4171fdbec8ed469a1404a6",
     "semantic_hash": ""
   }
 }
