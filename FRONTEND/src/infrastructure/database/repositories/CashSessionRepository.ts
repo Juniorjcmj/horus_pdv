@@ -23,6 +23,14 @@ function formatMoney(value: number): string {
   return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+/** Minutos entre a abertura e `until` (agora, por padrão) — o servidor manda isso pronto; offline calculamos. */
+function elapsedMinutesSince(openedAt: string | null | undefined, until?: string | null): number {
+  const start = openedAt ? Date.parse(openedAt) : Number.NaN;
+  const end = until ? Date.parse(until) : Date.now();
+  if (Number.isNaN(start) || Number.isNaN(end)) return 0;
+  return Math.max(0, Math.floor((end - start) / 60_000));
+}
+
 function round2(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
@@ -177,14 +185,14 @@ export async function loadCachedCashStatus(): Promise<CashRegisterStatusDto | nu
             status: "aberto",
             openedAt: record.openedAt,
             closedAt: null,
-            openingAmount: String(record.openingAmount).replace(".", ","),
+            openingAmount: formatMoney(record.openingAmount),
             closingAmount: "0,00",
             operatorId: record.userId,
             operatorName: record.operatorName || "Operador",
             closedById: "",
             closedByName: "",
             note: record.note || "",
-            elapsedMinutes: 0,
+            elapsedMinutes: elapsedMinutesSince(record.openedAt),
             movimentos: record.movimentos || [],
             expectedCashAmount: liveSummary?.expectedCashAmount,
             paymentBreakdown: liveSummary?.paymentBreakdown,
@@ -196,15 +204,15 @@ export async function loadCachedCashStatus(): Promise<CashRegisterStatusDto | nu
             status: "fechado",
             openedAt: record.openedAt,
             closedAt: record.closedAt || record.openedAt,
-            openingAmount: String(record.openingAmount).replace(".", ","),
-            closingAmount: record.closingAmount ? String(record.closingAmount).replace(".", ",") : "0,00",
+            openingAmount: formatMoney(record.openingAmount),
+            closingAmount: record.closingAmount ? formatMoney(record.closingAmount) : "0,00",
             operatorId: record.userId,
             operatorName: record.operatorName || "Operador",
             closedById: record.userId,
             closedByName: record.operatorName || "Operador",
             note: record.note || "",
             differenceReason: record.differenceReason || null,
-            elapsedMinutes: 0,
+            elapsedMinutes: elapsedMinutesSince(record.openedAt, record.closedAt),
             movimentos: record.movimentos || [],
             expectedCashAmount: record.expectedCashAmount ?? null,
             differenceAmount: record.differenceAmount ?? null,
@@ -515,14 +523,14 @@ export async function registerMovementLocal(
         status: "aberto",
         openedAt: cached.openedAt,
         closedAt: null,
-        openingAmount: String(cached.openingAmount).replace(".", ","),
+        openingAmount: formatMoney(cached.openingAmount),
         closingAmount: "0,00",
         operatorId: cached.userId,
         operatorName: cached.operatorName || "Operador",
         closedById: "",
         closedByName: "",
         note: cached.note || "",
-        elapsedMinutes: 0,
+        elapsedMinutes: elapsedMinutesSince(cached.openedAt),
         movimentos: updatedMovimentos,
       },
       history: [],

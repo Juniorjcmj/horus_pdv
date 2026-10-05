@@ -31,9 +31,17 @@ type PdvCashPanelModalProps = {
   company: CompanyDto | null;
   onStatusChange: (status: CashRegisterStatusDto | null) => void;
   onClose: () => void;
+  /** Depois de fechar o caixa, oferece "Sair do sistema" (troca de operador / fim de turno). */
+  onLogout?: () => void;
 };
 
-export default function PdvCashPanelModal({ cashStatus, company, onStatusChange, onClose }: PdvCashPanelModalProps) {
+export default function PdvCashPanelModal({
+  cashStatus,
+  company,
+  onStatusChange,
+  onClose,
+  onLogout,
+}: PdvCashPanelModalProps) {
   const { maskMoneyBr, parseMoneyBr, formatMoneyBr } = useInputMasks();
   const statusDialog = useStatusDialog();
   const { saving, openCash, closeCash, registerMovement } = useCashRegisterActions(onStatusChange);
@@ -380,6 +388,7 @@ export default function PdvCashPanelModal({ cashStatus, company, onStatusChange,
             setClosingSummary(null);
             onClose();
           }}
+          onLogout={onLogout}
         />
       ) : null}
 

@@ -864,6 +864,7 @@ export default function App() {
           <SalesStartPage
             standalone={isStandalonePos}
             operatorName={currentUser.name}
+            onLogout={handleLogout}
             onExit={() => {
               if (isStandalonePos) {
                 window.close();

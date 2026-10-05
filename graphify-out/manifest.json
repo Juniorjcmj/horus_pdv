@@ -648,15 +648,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1791168715.7375076,
-    "seen": 1791168995.5280817,
-    "ast_hash": "418027aaff9bbb43c6b6626d4205cca3",
+    "mtime": 1791240255.3811572,
+    "seen": 1791240357.0453866,
+    "ast_hash": "859f2217c259d1a0df7403fe639e1604",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
-    "mtime": 1790970909.52188,
-    "seen": 1790971082.3075747,
-    "ast_hash": "a2996348fce4968f7b38581384b44fb5",
+    "mtime": 1791240242.9223578,
+    "seen": 1791240357.0464838,
+    "ast_hash": "c8e0aabda272c4ac5630a7e788dace4e",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashMovementModal.tsx": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791238561.1726253,
-    "seen": 1791238736.7980409,
-    "ast_hash": "e1800fc4a8a44ad2f32dfc2e11abd9a7",
+    "mtime": 1791240255.2574432,
+    "seen": 1791240357.0675063,
+    "ast_hash": "a3bc2cc51daa4b93072549cc9fced8ad",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1272,8 +1272,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/.last-run.json": {
-    "mtime": 1791238615.0205066,
-    "seen": 1791238736.8150566,
+    "mtime": 1791240327.4657052,
+    "seen": 1791240357.0760489,
     "ast_hash": "5645f78ad777de5be9a546563ece0f4c",
     "semantic_hash": ""
   },
@@ -2622,9 +2622,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CashSessionRepository.ts": {
-    "mtime": 1791046831.805834,
-    "seen": 1791046884.1305666,
-    "ast_hash": "93043b7df22b1b282e539c0359121b51",
+    "mtime": 1791239938.293923,
+    "seen": 1791240077.2581294,
+    "ast_hash": "f559ff5359fd466a8838f3cc8b4ac253",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CustomerRepository.ts": {
@@ -3342,8 +3342,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/error-context.md": {
-    "mtime": 1791238615.0277178,
-    "seen": 1791238736.8509228,
+    "mtime": 1791240327.4872909,
+    "seen": 1791240357.1025696,
     "ast_hash": "aface98cb37189fcbf085aa5f32da9e1",
     "semantic_hash": ""
   },
@@ -3390,8 +3390,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/test-failed-1.png": {
-    "mtime": 1791238615.028727,
-    "seen": 1791238736.868587,
+    "mtime": 1791240327.488286,
+    "seen": 1791240357.1145782,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3792,26 +3792,26 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco13-resilience-concurr-78a98--e-1-replay-sem-duplicidade-chromium/error-context.md": {
-    "mtime": 1791238615.021064,
-    "seen": 1791238736.8509128,
+    "mtime": 1791240327.468764,
+    "seen": 1791240357.1025617,
     "ast_hash": "224bad386e70ce696ae92cb0396ceceb",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco2-3-idempotency-BLOCO-f04bc-adHash-processa-com-sucesso-chromium/error-context.md": {
-    "mtime": 1791238615.0239744,
-    "seen": 1791238736.8509161,
+    "mtime": 1791240327.473773,
+    "seen": 1791240357.102564,
     "ast_hash": "c24ea5fe7f8c136047ff5127180e8dae",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/error-context.md": {
-    "mtime": 1791238615.0260947,
-    "seen": 1791238736.8509197,
+    "mtime": 1791240327.482895,
+    "seen": 1791240357.1025674,
     "ast_hash": "5cba1c90a8ecdabc6798c69a1000df68",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
-    "mtime": 1791238615.026634,
-    "seen": 1791238736.8685832,
+    "mtime": 1791240327.4846961,
+    "seen": 1791240357.1145751,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3852,9 +3852,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PdvCashPanelModal.tsx": {
-    "mtime": 1791232899.5413826,
-    "seen": 1791233056.2989652,
-    "ast_hash": "09cea0a8404af3ab3a9967dfa7c6a6bb",
+    "mtime": 1791240243.1240177,
+    "seen": 1791240357.0491605,
+    "ast_hash": "3261cbe642cb588b529005095f8760f2",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useCashRegisterActions.ts": {
@@ -3867,6 +3867,12 @@
     "mtime": 1791232595.6205502,
     "seen": 1791233056.3292341,
     "ast_hash": "1ac6d448fb2ad7ebc514a3dc2c445ce5",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/caixa-offline.spec.ts": {
+    "mtime": 1791239958.659743,
+    "seen": 1791240077.276675,
+    "ast_hash": "36ac12365cbc17d4876570836c8a242c",
     "semantic_hash": ""
   }
 }

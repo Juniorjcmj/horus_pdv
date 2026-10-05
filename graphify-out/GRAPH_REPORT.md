@@ -1,16 +1,16 @@
 # Graph Report - horus_pdv  (2026-10-05)
 
 ## Corpus Check
-- 630 files · ~1,278,294 words
+- 631 files · ~1,278,728 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 6760 nodes · 12151 edges · 432 communities (365 shown, 26 thin omitted)
+- 6762 nodes · 12157 edges · 424 communities (358 shown, 25 thin omitted)
 - Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 1052 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2898cebc`
+- Built from commit: `0c45e4e0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -36,7 +36,7 @@
 - ReportFiltersView.tsx
 - lucide-react
 - inputMasks.ts
-- SecuritySession
+- .InvokeAsync
 - ProdutoModel
 - ProdutoAD
 - ProdutoRequest
@@ -48,22 +48,22 @@
 - LoteService
 - LoteAlertaModel
 - HorusEmailService
-- FiadoAB
+- FiadoMovimentoAD
 - Fase 2 — Backend: Models e Repositórios
 - PedidoAB
 - PedidoAD
-- .OpenConnectionAsync
+- ProdutoAB
 - ItemFiscal
 - dexie.ts
 - ClienteModel
 - ClienteAD
-- package.json
+- FRONTEND/package.json
 - ADDED Requirements
 - compilerOptions
 - .ListSessions
 - ClienteRequest
 - VendaHistoricoAD
-- DocumentoFiscalAB
+- .OpenConnectionAsync
 - syncCoordinator
 - PedidoModel
 - HomeAB
@@ -76,7 +76,7 @@
 - offlineStore.ts
 - DESKTOP/package.json
 - FornecedorRequest
-- HorusDateTime
+- .CancelarVendaComSupervisorAsync
 - devDependencies
 - TreinamentoController
 - VendaCanceladaResumoAD
@@ -101,26 +101,26 @@
 - TimePickerField.tsx
 - SefazDFeDownloadService
 - DocumentoFiscalPendente
-- SqliteTerminalStore
+- GatewayDatabase
 - ClienteService
 - ProdutoService
 - AtualizarOrdemCompraRequest
 - SalesStartPage.tsx
 - .Atualizar
 - HistoricoVendasController
-- .GatewayFiscalController_EmitirContingencia_RetornaOkComXmlAssinadoEDanfe
+- InvalidOperationException
 - CaixaSessionDto
 - OrdemCompraAD
 - PromocaoAD
 - ProdutoController
 - Requirements
-- DocumentoFiscalContingenciaResumo
+- VendaDetalheCompletoAD
 - http
 - StatusDocumentoFiscal
 - Horus PDV Project
 - ProductRegisterPage.tsx
 - UserAccountsPage.tsx
-- ZeusFiscalProvider
+- OrderView
 - .PreVisualizarXmlBytesAsync
 - doc fiscal pdv/FiscalContracts.cs
 - dependencies
@@ -133,23 +133,23 @@
 - tourSteps.ts
 - fiscalService.ts
 - ApiResponse
-- RegrasEmissaoNfceAB
+- .Put
 - HORUSPDV-API
-- setup.ts
+- F-mixed-payment.spec.ts
 - useToast.tsx
 - ADDED Requirements
 - ADDED Requirements
 - authStorage.ts
 - vite.config.ts
-- VendaDetalheCompletoAD
+- VendaRegistroResultadoAD
 - Requirements
 - PromocaoAB
 - Design: Modelo de Produto Multi-Segmento
 - .agent/skills/openspec-explore/SKILL.md
 - .agents/skills/openspec-explore/SKILL.md
-- LocalFiscalSigner
-- FiadoMovimentoAD
 - LocalNfceContingenciaRequest
+- CaixaMovimentoAD
+- SqliteOrderStore
 - Dashboard - Home dashboard with real-time KPIs (daily sales: 42, avg ticket: R$186.30, customers served: 31, open orders: 6), quick action shortcuts, and advanced management module links
 - Frente de Caixa - POS cashier interface with product search, quantity/price inputs, item list, subtotal display (R$0.00), Cancel(F8)/Print/Payment(F12) action buttons, and company CNPJ header
 - Historico de Vendas screen - sales history listing with search, columns for Venda/Cliente/CPF/Produto/QNT/Valor/Data, pagination, sidebar navigation
@@ -159,26 +159,26 @@
 - Requirements
 - StatusDocumentoFiscal
 - SalesHistoryPage.tsx
-- InvalidOperationException
+- CaixaAB
 - authService.ts
 - salesHistoryService.ts
 - FiscalPage.tsx
 - PromocaoRequest
 - OrdemCompraAB
 - Cadastro de Produto screen - paginated product list with search, image, code, supplier, quantity, sale price columns and new product button
-- TerminalInfo
+- SqliteTerminalStore
 - ResultadoFiscal
 - ADDED Requirements
 - ErrorBoundary
-- D-caixa.spec.ts
+- setup.ts
 - main.tsx
 - TablePagination.tsx
 - HorusSecurityStore
 - cashRegisterService.ts
 - .Ingest
-- HORUSPDV_API.Models.Requests
+- HORUSPDV_API.Repositories.DatabaseAccess
 - .claude/skills/openspec-explore/SKILL.md
-- OrderView
+- OrderApplyResult
 - balancaBarcode.ts
 - pdvPreferences.ts
 - Graphify Skill - Claude Code knowledge graph generation skill
@@ -200,8 +200,8 @@
 - ADDED Requirements
 - Proposal: Múltiplas Formas de Pagamento no PDV
 - Requirements
-- ControllerBase
-- LocalNfceContingenciaResponse
+- IEventStore
+- CaixaController
 - CashClosingSummaryModal.tsx
 - graphify reference: query, path, explain
 - graphify reference: query, path, explain
@@ -217,7 +217,7 @@
 - graphify reference: add a URL and watch a folder
 - graphify reference: commit hook and native CLAUDE.md integration
 - graphify reference: incremental update and cluster-only
-- CaixaController
+- RegistrarMovimentoCaixaRequest
 - graphify reference: add a URL and watch a folder
 - graphify reference: commit hook and native CLAUDE.md integration
 - graphify reference: incremental update and cluster-only
@@ -238,8 +238,8 @@
 - AuditLogAD
 - PromocaoService
 - LoteAB
-- SettingsPage/index.ts
-- FiadoDevedorAD
+- C-fiado.spec.ts
+- VendaPagamentoAD
 - DatePickerField.tsx
 - productService.ts
 - ProductSyncAdapter.ts
@@ -249,21 +249,21 @@
 - AppSidebar.tsx
 - HistoricoVendasAB
 - produtosBalancaData.ts
-- CancelamentoRequest
+- HorusSecurityStore.cs
 - PromocaoResultadoModel
 - PromocaoController
 - CashSessionRepository.ts
 - Proposal: Gestão Completa de Mercadinho — Categorias, Validade, Promoções e Fiado
 - GatewayOptions
-- GatewayFiscalStatusResponse
+- IOrderStore
 - NfeImportItemInput
 - GatewayEvent
 - Connection
 - PromocaoResultadoAD
-- LocalItemFiscal
+- OrdersController
 - HorusGateway.Services
 - MyCompanyPage.tsx
-- HORUSPDV_API.Services.Fiscal
+- VendaItemRecord
 - Decisions
 - PdvCurrentSessionSalesModal.tsx
 - NETCORE/Program.cs
@@ -276,7 +276,7 @@
 - promocaoService.ts
 - CustomerSyncAdapter.ts
 - .InvokeAsync
-- DocumentoFiscalExportacaoXml
+- HorusMoneyFormat
 - OrdemCompraController
 - .Atualizar
 - LoteConsultaFiltro
@@ -295,13 +295,13 @@
 - .InitializeAsync
 - PurchaseOrderPrintModal.tsx
 - Requirements
-- DestinatarioFiscal
+- AddressContactFields.tsx
 - Decisions
 - FiscalDetailModal.tsx
-- .GetDashboardSummary
+- ControllerBase
 - Requirements
-- TerminalsController
-- .ListCompaniesAdmin
+- GatewayIdentity
+- CustomerRegisterPage.tsx
 - domain.ts
 - cryptoHash.ts
 - SaleOutboxAdapter.ts
@@ -312,17 +312,17 @@
 - IClock
 - salesDailyReport.ts
 - danfePrint.ts
-- .TratarFalhaTransitoriaAsync
+- CancelamentoVendaComSupervisorRequest
 - Quack Gateway — CHANGE GATEWAY 02 + 03 + 04 + 05 + 06 + 07 + 08
-- IProdutoService
+- HorusAuthorizeRolesAttribute
 - .NextDelay
 - RegrasEmissaoNfceDto
 - LoginRequest
-- EmissaoNfceRequest
+- ResultadoFiscal
 - HorusGateway.Tests.csproj
 - IFornecedorService
 - .TryNext
-- IFiadoService
+- SaleCancelModal.tsx
 - cancelamento-nfce-caixa-gerente/proposal.md
 - Tasks: Local Gateway — Plano de Implementação Incremental
 - PdvNfceCancelModal.tsx
@@ -332,7 +332,7 @@
 - DocumentoFiscalResumo
 - CancelamentoRequest
 - HorusGateway
-- FiadoResumoAD
+- App
 - Proposal: Local Gateway — Offline-first por Loja
 - LoteController
 - InutilizacaoRequest
@@ -341,9 +341,8 @@
 - emissao-nfe-devolucao-nfce/tasks.md
 - .Receber
 - PagamentoFiscal
-- CriarPedidoRequest
+- VendaItemRequest
 - treinamentoService.ts
-- LocalFiscalContingencyTests
 - @playwright/test
 - DanfePreviewModal.tsx
 - bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/error-context.md
@@ -351,7 +350,6 @@
 - companyTheme.ts
 - HorusEmailTemplate
 - HorusEmailOptions
-- .TratarFalhaTransitoriaAsync
 - 2026-09-30-contingencia-offline-nfce/design.md
 - Tasks: Descoberta do Local Gateway via Cloud (endereço por loja)
 - Quack PDV — Desktop (Electron)
@@ -374,7 +372,6 @@
 - NfeImportItemPreview
 - useRecaptchaV3.ts
 - LoteModel
-- RecebimentoFiadoRequest
 - FornecedorController.cs
 - .Canonicalize
 - .BuscarSefaz
@@ -389,21 +386,16 @@
 - useProducts.ts
 - loteService.ts
 - PageLayout.tsx
-- PromocaoController.cs
 - NfeImportModal.tsx
 - FiadoPage.tsx
 - HORUSPDV_API.Services.Security
-- NovoPedidoPage.tsx
-- LandingPage.tsx
 - bloco5-6-sale-stock-BLOCOS-7d409-ção-impede-gravação-parcial-chromium/error-context.md
 - bloco13-resilience-concurr-78a98--e-1-replay-sem-duplicidade-chromium/error-context.md
 - userService.ts
 - EmpresaAdminItemDto
 - customerService.ts
 - bloco2-3-idempotency-BLOCO-f04bc-adHash-processa-com-sucesso-chromium/error-context.md
-- ChangePasswordRequest
-- FiscalErrorModal.tsx
-- AtualizarValidadeRequest
+- HORUSPDV_API.Models.Requests
 - FiscalCancelModal.tsx
 - GuidedTour.tsx
 
@@ -428,21 +420,21 @@
   MODULO-FISCAL-E-PEDIDOS.md → doc fiscal pdv/README-FISCAL.md
 - `ResultadoFiscal` --references--> `StatusDocumentoFiscal`  [EXTRACTED]
   doc fiscal pdv/FiscalContracts.cs → API/NETCORE/Services/Fiscal/FiscalContracts.cs
-- `EmissaoNfceRequest` --references--> `TipoEmissaoFiscal`  [EXTRACTED]
-  doc fiscal pdv/FiscalContracts.cs → API/NETCORE/Services/Fiscal/FiscalContracts.cs
+- `ZeusFiscalProvider` --implements--> `IFiscalProvider`  [EXTRACTED]
+  doc fiscal pdv/ZeusFiscalProvider.cs → API/NETCORE/Services/Fiscal/FiscalContracts.cs
 
 ## Import Cycles
 - None detected.
 
-## Communities (432 total, 26 thin omitted)
+## Communities (424 total, 25 thin omitted)
 
 ### Community 0 - "ModuloMercadoRegistroAD"
 Cohesion: 0.06
 Nodes (38): HttpDelete, HttpGet, HttpPost, HttpPut, IActionResult, ProducesResponseType, Task, ModuloMercadoController (+30 more)
 
 ### Community 1 - "UsuarioRequest"
-Cohesion: 0.09
-Nodes (22): HorusAuthorizeRoles, HttpGet, HttpPatch, HttpPost, HttpPut, IActionResult, ILogger, IWebHostEnvironment (+14 more)
+Cohesion: 0.10
+Nodes (21): HorusAuthorizeRoles, HttpGet, HttpPatch, HttpPost, HttpPut, IActionResult, ILogger, IWebHostEnvironment (+13 more)
 
 ### Community 2 - "NFC-e Fiscal Module (Modelo 65)"
 Cohesion: 0.05
@@ -485,16 +477,16 @@ Cohesion: 0.05
 Nodes (50): HorusAuthorizeRoles, HttpDelete, HttpGet, HttpPatch, HttpPost, HttpPut, IActionResult, ProducesResponseType (+42 more)
 
 ### Community 12 - "ZeusFiscalProvider"
-Cohesion: 0.14
-Nodes (15): BandeiraCartao, CancellationToken, ConfiguracaoServico, CultureInfo, Estado, ILogger, IWebHostEnvironment, NFe (+7 more)
+Cohesion: 0.09
+Nodes (22): CancellationToken, ConfiguracaoServico, CultureInfo, det, Estado, ICMSBasico, ILogger, IWebHostEnvironment (+14 more)
 
 ### Community 13 - "react"
 Cohesion: 0.04
-Nodes (16): BalancaImportModalProps, PageHeaderProps, SkeletonProps, AddressContactFieldsProps, AddressContactValue, STATE_OPTIONS, STATE_SELECT_OPTIONS, StatusSetter (+8 more)
+Nodes (17): FiscalErrorModal(), FiscalErrorModalProps, formatDate(), OutboxStatusModalProps, PdvCashPanelModalProps, SkeletonProps, StatusSetter, UseCustomersReturn (+9 more)
 
 ### Community 14 - "NfceController"
-Cohesion: 0.37
-Nodes (7): CancellationToken, HorusAuthorizeRoles, HttpGet, HttpPost, IActionResult, Task, NfceController
+Cohesion: 0.17
+Nodes (18): CancellationToken, HorusAuthorizeRoles, HttpGet, HttpPost, IActionResult, Task, NfceController, CancelamentoComSupervisorRequest (+10 more)
 
 ### Community 15 - "UsersPage/index.ts"
 Cohesion: 0.12
@@ -509,20 +501,20 @@ Cohesion: 0.04
 Nodes (45): 1.1 Banco de Dados, 1.2 Backend — Repository e Model, 1.3 Backend — Controller e Service, 1.4 Backend — Relatórios, 1.5 Frontend — Service e Tipos, 1.6 Frontend — Cadastro de Produto, 1.7 Frontend — PDV, 1.8 Frontend — Relatórios (+37 more)
 
 ### Community 18 - "ReportFiltersView.tsx"
-Cohesion: 0.07
-Nodes (37): ReportCardsGridProps, compactCurrencyFormatter, currencyFormatter, numberFormatter, ReportChartView(), ReportChartViewProps, toNumber(), createInitialFilterValues() (+29 more)
+Cohesion: 0.08
+Nodes (36): ReportCardsGridProps, compactCurrencyFormatter, currencyFormatter, numberFormatter, ReportChartView(), ReportChartViewProps, toNumber(), createInitialFilterValues() (+28 more)
 
 ### Community 19 - "lucide-react"
-Cohesion: 0.04
-Nodes (24): OutboxStatusModalProps, PdvCashPanelModalProps, MOTIVOS_FREQUENTES, PriceOverrideApproval, PriceOverrideModalProps, QuickCustomerRegisterModalProps, buildSaleCancellationReceiptHtml(), MOTIVOS_CANCELAMENTO (+16 more)
+Cohesion: 0.03
+Nodes (30): BalancaImportModalProps, PageHeaderProps, MOTIVOS_FREQUENTES, PriceOverrideApproval, PriceOverrideModalProps, QuickCustomerRegisterModalProps, UnderDevelopmentPageProps, ValidadeAlertWidgetProps (+22 more)
 
 ### Community 20 - "inputMasks.ts"
 Cohesion: 0.13
 Nodes (24): BRL_CURRENCY_FORMATTER, hasCurrencyInput(), maskCellphoneBr(), maskCep(), maskCnpj(), maskCpf(), maskCpfOrCnpj(), maskCurrencyBr() (+16 more)
 
-### Community 21 - "SecuritySession"
-Cohesion: 0.11
-Nodes (16): HttpContext, IWebHostEnvironment, RequestDelegate, Task, HorusAuthMiddleware, SecuritySession, CreatedAt, Device (+8 more)
+### Community 21 - ".InvokeAsync"
+Cohesion: 0.23
+Nodes (7): HttpContext, IWebHostEnvironment, RequestDelegate, Task, HorusAuthMiddleware, HorusJwtService, SessionHours
 
 ### Community 22 - "ProdutoModel"
 Cohesion: 0.04
@@ -537,8 +529,8 @@ Cohesion: 0.04
 Nodes (52): ProdutoRequest, AliquotaIcms, AlturaCm, CategoriaId, CClassTrib, Cest, Cfop, ComissaoPercentual (+44 more)
 
 ### Community 25 - "ContextoEmitente"
-Cohesion: 0.08
-Nodes (24): ContextoEmitente, Bairro, Cep, CertificadoPfx, CertificadoSenha, Cnae, Cnpj, CodigoMunicipioIbge (+16 more)
+Cohesion: 0.05
+Nodes (42): ContextoEmitente, Bairro, Cep, CertificadoPfx, CertificadoSenha, Cnae, Cnpj, CodigoMunicipioIbge (+34 more)
 
 ### Community 26 - "ContextoEmitente"
 Cohesion: 0.08
@@ -549,12 +541,12 @@ Cohesion: 0.08
 Nodes (25): compilerOptions, allowImportingTsExtensions, baseUrl, erasableSyntaxOnly, ignoreDeprecations, jsx, lib, module (+17 more)
 
 ### Community 28 - "HorusSecurityOptions"
-Cohesion: 0.08
-Nodes (21): HttpContext, Task, HttpContext, Task, HttpContext, IConfiguration, IWebHostEnvironment, HorusSecurityOptions (+13 more)
+Cohesion: 0.07
+Nodes (22): HttpContext, Task, HttpContext, Task, HttpContext, HorusClientIpResolver, IConfiguration, IWebHostEnvironment (+14 more)
 
 ### Community 29 - "SecurityUserDto"
-Cohesion: 0.09
-Nodes (23): AdminPasswordResetResult, LoginAttemptBucket, Count, FirstAttemptAt, LastAttemptAt, LockedUntil, PasswordResetTokenRecord, SecurityUserDto (+15 more)
+Cohesion: 0.07
+Nodes (27): Task, DateTimeOffset, AdminPasswordResetResult, LoginResult, PasswordResetRequestResult, PasswordResetTokenRecord, SecuritySession, CreatedAt (+19 more)
 
 ### Community 30 - "LoteService"
 Cohesion: 0.31
@@ -568,9 +560,9 @@ Nodes (40): List, CategoriaValidadeModel, CategoriaId, CategoriaPaiId, DiasAlert
 Cohesion: 0.22
 Nodes (11): CancellationToken, DateTimeOffset, ILogger, Task, EmailPayload, HorusEmailService, IsEnabled, SmtpSettings (+3 more)
 
-### Community 33 - "FiadoAB"
-Cohesion: 0.17
-Nodes (11): Connection, DateTimeOffset, List, SqlConnection, SqlTransaction, Task, FiadoAB, DateTimeOffset (+3 more)
+### Community 33 - "FiadoMovimentoAD"
+Cohesion: 0.05
+Nodes (43): DateTimeOffset, FiadoDevedorAD, Cellphone, ClienteId, ClienteNome, DiasSemPagamento, Document, LimiteCredito (+35 more)
 
 ### Community 34 - "Fase 2 — Backend: Models e Repositórios"
 Cohesion: 0.08
@@ -584,16 +576,16 @@ Nodes (8): Connection, IEnumerable, List, SqlConnection, SqlDataReader, SqlTrans
 Cohesion: 0.08
 Nodes (26): DateTimeOffset, List, PedidoAD, CompanyId, CreatedAt, CustomerCpf, CustomerName, FinalizedAt (+18 more)
 
-### Community 37 - ".OpenConnectionAsync"
-Cohesion: 0.14
-Nodes (13): CancellationToken, SqlConnection, Task, Connection, DateTime, IEnumerable, List, ProductCode (+5 more)
+### Community 37 - "ProdutoAB"
+Cohesion: 0.15
+Nodes (10): Connection, DateTime, IEnumerable, List, ProductCode, Quantity, SqlCommand, SqlDataReader (+2 more)
 
 ### Community 38 - "ItemFiscal"
 Cohesion: 0.10
 Nodes (21): ItemFiscal, AliquotaIcms, CClassTrib, Cest, Cfop, CodigoProduto, Csosn, CstCofins (+13 more)
 
 ### Community 39 - "dexie.ts"
-Cohesion: 0.10
+Cohesion: 0.11
 Nodes (18): CashSessionMovementItem, CashSessionPaymentItem, CashSessionRecord, db, DeviceRecord, LocalCustomerRecord, LocalDatabase, LocalProductRecord (+10 more)
 
 ### Community 40 - "ClienteModel"
@@ -604,9 +596,9 @@ Nodes (22): ClienteModel, Address, Age, BirthDate, Cellphone, Cep, City, CodigoM
 Cohesion: 0.09
 Nodes (22): ClienteAD, Address, Age, BirthDate, Cellphone, Cep, City, CodigoMunicipioIbge (+14 more)
 
-### Community 42 - "package.json"
-Cohesion: 0.12
-Nodes (18): name, private, type, version, date-fns, eslint, @eslint/js, eslint-plugin-react-hooks (+10 more)
+### Community 42 - "FRONTEND/package.json"
+Cohesion: 0.11
+Nodes (19): name, private, type, version, date-fns, eslint, @eslint/js, eslint-plugin-react-hooks (+11 more)
 
 ### Community 43 - "ADDED Requirements"
 Cohesion: 0.10
@@ -617,7 +609,7 @@ Cohesion: 0.10
 Nodes (19): compilerOptions, allowImportingTsExtensions, erasableSyntaxOnly, lib, module, moduleDetection, moduleResolution, noEmit (+11 more)
 
 ### Community 45 - ".ListSessions"
-Cohesion: 0.15
+Cohesion: 0.17
 Nodes (12): HttpDelete, HttpGet, IActionResult, SessaoController, SecuritySessionDto, Current, Device, Id (+4 more)
 
 ### Community 46 - "ClienteRequest"
@@ -628,9 +620,9 @@ Nodes (20): ClienteRequest, Address, Age, BirthDate, Cellphone, Cep, City, Codig
 Cohesion: 0.07
 Nodes (28): VendaHistoricoAD, CanceladoJustificativa, CanceladoPorOperadorNome, CanceladoPorSupervisorNome, ClientSaleId, CustomerCpf, CustomerName, Desconto (+20 more)
 
-### Community 48 - "DocumentoFiscalAB"
+### Community 48 - ".OpenConnectionAsync"
 Cohesion: 0.14
-Nodes (16): CancellationToken, Connection, DateTimeOffset, DestinatarioFiscal, DocumentoFiscalPendente, List, SqlConnection, SqlDataReader (+8 more)
+Nodes (18): CancellationToken, Task, CancellationToken, Connection, DateTimeOffset, DestinatarioFiscal, DocumentoFiscalPendente, List (+10 more)
 
 ### Community 49 - "syncCoordinator"
 Cohesion: 0.25
@@ -645,11 +637,11 @@ Cohesion: 0.14
 Nodes (16): HttpGet, IActionResult, Task, HomeController, Connection, CultureInfo, DateTimeOffset, Func (+8 more)
 
 ### Community 52 - "ItemFiscal"
-Cohesion: 0.06
-Nodes (29): ItemFiscal, AliquotaIcms, CClassTrib, Cest, Cfop, CodigoProduto, Csosn, CstCofins (+21 more)
+Cohesion: 0.09
+Nodes (23): ItemFiscal, AliquotaIcms, CClassTrib, Cest, Cfop, CodigoProduto, Csosn, CstCofins (+15 more)
 
 ### Community 53 - "AuthController"
-Cohesion: 0.09
+Cohesion: 0.10
 Nodes (21): HttpGet, HttpPost, HttpPut, IActionResult, ILogger, IWebHostEnvironment, Task, AuthController (+13 more)
 
 ### Community 54 - "FornecedorAD"
@@ -680,9 +672,9 @@ Nodes (40): { app, BrowserWindow, dialog, screen, shell }, configPath(), DEFAULT
 Cohesion: 0.12
 Nodes (15): FornecedorRequest, Address, Cellphone, Cep, City, Cnpj, CompanyName, Email (+7 more)
 
-### Community 61 - "HorusDateTime"
-Cohesion: 0.23
-Nodes (9): CultureInfo, DateTime, DateTimeOffset, TimeZoneInfo, HorusDateTime, Now, NowDateTime, TimeZone (+1 more)
+### Community 61 - ".CancelarVendaComSupervisorAsync"
+Cohesion: 0.15
+Nodes (13): CanceladoEm, CultureInfo, DateTime, DateTimeOffset, TimeZoneInfo, HorusDateTime, Now, NowDateTime (+5 more)
 
 ### Community 62 - "devDependencies"
 Cohesion: 0.12
@@ -697,20 +689,20 @@ Cohesion: 0.12
 Nodes (17): VendaCanceladaResumoAD, CanceladoEm, CanceladoJustificativa, CanceladoPorOperadorNome, CanceladoPorSupervisorNome, CustomerCpf, CustomerName, Items (+9 more)
 
 ### Community 65 - ".Put"
-Cohesion: 0.08
-Nodes (23): CancellationToken, GeneratedRegex, HorusAuthorizeRoles, HttpGet, HttpPut, IActionResult, Regex, Task (+15 more)
+Cohesion: 0.10
+Nodes (21): CancellationToken, GeneratedRegex, HorusAuthorizeRoles, HttpGet, HttpPut, IActionResult, Regex, Task (+13 more)
 
 ### Community 66 - "ADDED Requirements"
 Cohesion: 0.08
 Nodes (25): ADDED Requirements, Purpose, Requirement: Auditoria de movimentações, Requirement: Campos de crédito no cadastro de cliente, Requirement: Extrato do cliente imprimível, Requirement: Integração fiscal (NFC-e), Requirement: Lista de devedores e KPIs, Requirement: Recebimento de fiado (parcial ou total) (+17 more)
 
 ### Community 67 - "GatewayAppFactory"
-Cohesion: 0.06
-Nodes (34): Fact, Task, DashboardControllerTests, Fact, JsonElement, Task, GatewayApiTests, GatewayAppFactory (+26 more)
+Cohesion: 0.05
+Nodes (35): Program, Fact, Task, DashboardControllerTests, Fact, JsonElement, Task, GatewayApiTests (+27 more)
 
 ### Community 68 - "DanfeThermalData"
-Cohesion: 0.06
-Nodes (34): DanfeItemData, Codigo, Descricao, Numero, Quantidade, Unidade, ValorTotal, ValorUnitario (+26 more)
+Cohesion: 0.05
+Nodes (45): DateTime, DanfeItemData, Codigo, Descricao, Numero, Quantidade, Unidade, ValorTotal (+37 more)
 
 ### Community 69 - "apiClient.ts"
 Cohesion: 0.08
@@ -757,40 +749,40 @@ Cohesion: 0.24
 Nodes (12): CancellationToken, Connection, DateTimeOffset, IEnumerable, List, SqlConnection, SqlTransaction, Task (+4 more)
 
 ### Community 80 - ".Put"
-Cohesion: 0.10
-Nodes (22): CancellationToken, HorusAuthorizeRoles, HttpGet, HttpPut, IActionResult, Task, GatewayConfigController, GatewayConfigRequest (+14 more)
+Cohesion: 0.09
+Nodes (23): CancellationToken, HorusAuthorizeRoles, HttpGet, HttpPut, IActionResult, Task, GatewayConfigController, GatewayConfigRequest (+15 more)
 
 ### Community 81 - "VendaRequest"
-Cohesion: 0.06
-Nodes (36): DateTimeOffset, List, AutorizarPrecoRequest, Motivo, PrecoNovo, ProductCode, SupervisorId, SupervisorPassword (+28 more)
+Cohesion: 0.07
+Nodes (28): DateTimeOffset, List, AutorizarPrecoRequest, Motivo, PrecoNovo, ProductCode, SupervisorId, SupervisorPassword (+20 more)
 
 ### Community 82 - "Requirement: 6 tipos de promoção suportados"
 Cohesion: 0.08
 Nodes (25): ADDED Requirements, Purpose, Requirement: 6 tipos de promoção suportados, Requirement: Aplicação automática no PDV, Requirement: CRUD de promoções com vigência, Requirement: Integração fiscal (NFC-e), Requirement: Registro de desconto na venda, Requirement: Relatório de resultado de promoção (+17 more)
 
 ### Community 83 - "TimePickerField.tsx"
-Cohesion: 0.14
-Nodes (15): normalizeSearchValue(), SearchableSelectField(), SearchableSelectFieldProps, ActiveColumn, formatTimeValue(), getDefaultSelection(), getNeighborValues(), nearestMinute() (+7 more)
+Cohesion: 0.27
+Nodes (11): ActiveColumn, formatTimeValue(), getDefaultSelection(), getNeighborValues(), nearestMinute(), pad2(), ParsedTime, parseTimeValue() (+3 more)
 
 ### Community 84 - "SefazDFeDownloadService"
 Cohesion: 0.22
 Nodes (9): CancellationToken, Estado, ILogger, IWebHostEnvironment, Task, SefazDFeDownloadService, DiretorioSchemas, SchemasDisponiveis (+1 more)
 
 ### Community 85 - "DocumentoFiscalPendente"
-Cohesion: 0.09
-Nodes (21): EmissaoNfceRequest, ItemFiscal, List, DateTimeOffset, DocumentoFiscalPendente, ChaveAcesso, CompanyId, DestinatarioJson (+13 more)
+Cohesion: 0.10
+Nodes (19): EmissaoNfceRequest, ItemFiscal, DateTimeOffset, DocumentoFiscalPendente, ChaveAcesso, CompanyId, DhContingencia, Id (+11 more)
 
-### Community 86 - "SqliteTerminalStore"
-Cohesion: 0.09
-Nodes (25): ILogger, SqliteConnection, GatewayDatabase, ProvisionTerminalRequest, AllowedIp, CompanyId, ProvisionToken, StoreId (+17 more)
+### Community 86 - "GatewayDatabase"
+Cohesion: 0.15
+Nodes (13): ILogger, SqliteConnection, GatewayDatabase, ProvisionTerminalRequest, AllowedIp, CompanyId, ProvisionToken, StoreId (+5 more)
 
 ### Community 87 - "ClienteService"
 Cohesion: 0.42
 Nodes (3): List, Task, ClienteService
 
 ### Community 88 - "ProdutoService"
-Cohesion: 0.18
-Nodes (5): List, Task, ProdutoService, CultureInfo, HorusMoneyFormat
+Cohesion: 0.16
+Nodes (6): List, Task, IProdutoService, List, Task, ProdutoService
 
 ### Community 89 - "AtualizarOrdemCompraRequest"
 Cohesion: 0.07
@@ -805,12 +797,12 @@ Cohesion: 0.29
 Nodes (6): HorusAuthorizeRoles, HttpGet, HttpPut, IActionResult, Task, EmpresaController
 
 ### Community 92 - "HistoricoVendasController"
-Cohesion: 0.25
-Nodes (11): HorusAuthorizeRoles, HttpGet, HttpPost, IActionResult, ILogger, Task, HistoricoVendasController, CancelamentoVendaComSupervisorRequest (+3 more)
+Cohesion: 0.40
+Nodes (7): HorusAuthorizeRoles, HttpGet, HttpPost, IActionResult, ILogger, Task, HistoricoVendasController
 
-### Community 93 - ".GatewayFiscalController_EmitirContingencia_RetornaOkComXmlAssinadoEDanfe"
-Cohesion: 0.17
-Nodes (11): CancellationToken, HttpGet, HttpPost, IActionResult, ILogger, Task, GatewayFiscalController, ILogger (+3 more)
+### Community 93 - "InvalidOperationException"
+Cohesion: 0.22
+Nodes (6): Action, Func, HorusPayloadHash, IdempotencyConflictException, EventId, InvalidOperationException
 
 ### Community 94 - "CaixaSessionDto"
 Cohesion: 0.07
@@ -832,9 +824,9 @@ Nodes (9): HorusAuthorizeRoles, HttpDelete, HttpGet, HttpPost, HttpPut, IActionR
 Cohesion: 0.08
 Nodes (25): Purpose, Requirement: Auditoria de movimentações, Requirement: Campos de crédito no cadastro de cliente, Requirement: Extrato do cliente imprimível, Requirement: Integração fiscal (NFC-e), Requirement: Lista de devedores e KPIs, Requirement: Recebimento de fiado (parcial ou total), Requirement: Venda no fiado como forma de pagamento (+17 more)
 
-### Community 99 - "DocumentoFiscalContingenciaResumo"
-Cohesion: 0.12
-Nodes (17): DateTimeOffset, DocumentoFiscalContingenciaResumo, ChaveAcesso, CriadoEm, DhContingencia, HorasRestantesPrazo, Id, JustContingencia (+9 more)
+### Community 99 - "VendaDetalheCompletoAD"
+Cohesion: 0.11
+Nodes (18): VendaDetalheCompletoAD, CanceladoEm, CanceladoJustificativa, CanceladoPorOperadorNome, CanceladoPorSupervisorNome, ClientSaleId, CustomerCpf, CustomerName (+10 more)
 
 ### Community 100 - "http"
 Cohesion: 0.13
@@ -856,9 +848,9 @@ Nodes (9): EMPTY_FORM, EMPTY_SUPPLIER_DRAFT, isFractionableUnit(), Product, Prod
 Cohesion: 0.24
 Nodes (6): defaultForm(), toInputForm(), UserAccountsPage(), UserFormDrawer, UsersFilters, UsersTable
 
-### Community 105 - "ZeusFiscalProvider"
+### Community 105 - "OrderView"
 Cohesion: 0.13
-Nodes (14): card, CancellationToken, ConfiguracaoServico, CultureInfo, det, ICMSBasico, ILogger, IWebHostEnvironment (+6 more)
+Nodes (14): JsonElement, OrderView, CompanyId, CreatedAt, LastEventId, OrderNumber, Payload, Status (+6 more)
 
 ### Community 106 - ".PreVisualizarXmlBytesAsync"
 Cohesion: 0.26
@@ -908,17 +900,17 @@ Nodes (17): CancelarComSupervisorPayload, CancelarComSupervisorResult, DevolverN
 Cohesion: 0.21
 Nodes (12): HttpDelete, HttpGet, HttpPost, HttpPut, IActionResult, ILogger, GerenciamentoEmpresasController, ApiResponse (+4 more)
 
-### Community 118 - "RegrasEmissaoNfceAB"
-Cohesion: 0.15
-Nodes (17): CancellationToken, HorusAuthorizeRoles, HttpGet, HttpPost, HttpPut, IActionResult, Task, RegrasEmissaoNfceController (+9 more)
+### Community 118 - ".Put"
+Cohesion: 0.18
+Nodes (13): CancellationToken, HorusAuthorizeRoles, HttpGet, HttpPost, HttpPut, IActionResult, Task, RegrasEmissaoNfceController (+5 more)
 
 ### Community 119 - "HORUSPDV-API"
 Cohesion: 0.29
 Nodes (7): HORUSPDV-API, net8.0, Swashbuckle.AspNetCore (10.1.5), System.Security.Cryptography.Xml (8.0.*), Microsoft.NET.Sdk.Web, Hercules.NET.NFe.NFCe (2026.8.31.*), Microsoft.Data.SqlClient (5.2.2)
 
-### Community 120 - "setup.ts"
-Cohesion: 0.13
-Nodes (30): Entity, Product, Entity, Product, Entity, ApiResponse, cleanupHomologData(), cnpjDigit() (+22 more)
+### Community 120 - "F-mixed-payment.spec.ts"
+Cohesion: 0.17
+Nodes (14): Entity, cnpjDigit(), cpfDigit(), customerPayload(), formatCnpj(), formatCpf(), generateCnpj(), generateCpf() (+6 more)
 
 ### Community 121 - "useToast.tsx"
 Cohesion: 0.16
@@ -940,9 +932,9 @@ Nodes (5): AUTH_REMEMBER_STORAGE_KEY, AUTH_USER_STORAGE_KEY, AuthenticatedUser, 
 Cohesion: 0.29
 Nodes (6): chunkGroups, getPackageName(), manualChunks(), @tailwindcss/vite, vite, @vitejs/plugin-react
 
-### Community 126 - "VendaDetalheCompletoAD"
-Cohesion: 0.05
-Nodes (45): List, EstoqueRupturaAvisoAD, EstoqueAnterior, ProductCode, ProductName, QuantidadeVendida, SaldoResultante, VendaDetalheCompletoAD (+37 more)
+### Community 126 - "VendaRegistroResultadoAD"
+Cohesion: 0.12
+Nodes (17): List, EstoqueRupturaAvisoAD, EstoqueAnterior, ProductCode, ProductName, QuantidadeVendida, SaldoResultante, VendaRegistroResultadoAD (+9 more)
 
 ### Community 127 - "Requirements"
 Cohesion: 0.10
@@ -964,17 +956,17 @@ Nodes (10): Check for context, Ending Discovery, Guardrails, Handling Different 
 Cohesion: 0.18
 Nodes (10): Check for context, Ending Discovery, Guardrails, Handling Different Entry Points, OpenSpec Awareness, The Stance, What You Don't Have To Do, What You Might Do (+2 more)
 
-### Community 132 - "LocalFiscalSigner"
-Cohesion: 0.22
-Nodes (5): DateTimeOffset, ILogger, LocalFiscalSigner, Fact, StringBuilder
+### Community 132 - "LocalNfceContingenciaRequest"
+Cohesion: 0.04
+Nodes (67): CancellationToken, HttpGet, HttpPost, IActionResult, ILogger, Task, GatewayFiscalController, DateTimeOffset (+59 more)
 
-### Community 133 - "FiadoMovimentoAD"
-Cohesion: 0.13
-Nodes (15): FiadoMovimentoAD, ClienteDocument, ClienteId, ClienteNome, CompanyId, CriadoEm, FormaPagamento, Id (+7 more)
+### Community 133 - "CaixaMovimentoAD"
+Cohesion: 0.15
+Nodes (13): DateTimeOffset, CaixaMovimentoAD, CaixaSessaoId, CreatedAt, Id, Motivo, OperatorId, OperatorName (+5 more)
 
-### Community 134 - "LocalNfceContingenciaRequest"
-Cohesion: 0.12
-Nodes (16): List, LocalNfceContingenciaRequest, CustomerCpf, CustomerName, Itens, Justificativa, Pagamentos, TerminalId (+8 more)
+### Community 134 - "SqliteOrderStore"
+Cohesion: 0.26
+Nodes (7): CancellationToken, ILogger, IReadOnlyList, SqliteConnection, Task, SqliteOrderStore, SqliteTransaction
 
 ### Community 135 - "Dashboard - Home dashboard with real-time KPIs (daily sales: 42, avg ticket: R$186.30, customers served: 31, open orders: 6), quick action shortcuts, and advanced management module links"
 Cohesion: 0.53
@@ -1005,16 +997,16 @@ Cohesion: 0.15
 Nodes (12): Acceptance Criteria, Out of Scope, Overview, REQ-1: Correção de Tipos Numéricos, REQ-2: Unidades de Medida Flexíveis, REQ-3: Marca e Fabricante, REQ-4: Hierarquia de 3 Níveis de Categoria, REQ-5: Peso e Dimensões (+4 more)
 
 ### Community 142 - "StatusDocumentoFiscal"
-Cohesion: 0.08
-Nodes (24): List, DocumentoFiscalContingenciaItemResultado, ChaveAcesso, CodigoStatus, DocumentoId, MotivoStatus, Protocolo, Status (+16 more)
+Cohesion: 0.05
+Nodes (39): Status, DocumentoFiscalExportacaoXml, ChaveAcesso, CriadoEm, DhAutorizacao, Id, NumeroNf, Protocolo (+31 more)
 
 ### Community 143 - "SalesHistoryPage.tsx"
 Cohesion: 0.27
 Nodes (9): PAYMENT_FILTER_OPTIONS, PAYMENT_LABEL, QUICK_RANGES, SaleHistoryRow, SalesHistoryPage(), shiftDays(), splitSaleDate(), toCompanyReceipt() (+1 more)
 
-### Community 144 - "InvalidOperationException"
-Cohesion: 0.09
-Nodes (28): Action, DateTimeOffset, CaixaMovimentoAD, CaixaSessaoId, CreatedAt, Id, Motivo, OperatorId (+20 more)
+### Community 144 - "CaixaAB"
+Cohesion: 0.21
+Nodes (9): CancellationToken, Connection, DateTimeOffset, Dictionary, JsonSerializerOptions, List, SqlDataReader, Task (+1 more)
 
 ### Community 145 - "authService.ts"
 Cohesion: 0.29
@@ -1040,13 +1032,13 @@ Nodes (13): UnitCost, Connection, DateTimeOffset, List, ProductCode, Quantity, S
 Cohesion: 0.80
 Nodes (5): Cadastro de Produto screen - paginated product list with search, image, code, supplier, quantity, sale price columns and new product button, Relatorios screen - catalog of 8 report cards: Vendas por Periodo, Historico de Vendas, Produtos Mais Vendidos, Clientes Mais Frequentes, Estoque Critico, Compras por Fornecedor, Movimento de Estoque, Desempenho de Caixa, Sobre PDV screen - open source project info, created 2020, author Flavio Oliveira, free use with credits, Trocas e Devolucoes screen - operational dashboard with volume/pending/completed/alerts KPIs, operational records list with status and values, Usuarios screen - user list with name/CNPJ/email/phone, profile (Atendente/Administrador), status, last login, security; filters; new user button
 
-### Community 151 - "TerminalInfo"
-Cohesion: 0.08
-Nodes (26): IdentifyTerminalRequest, ProvisionToken, TerminalAuthOutcome, CompanyMismatch, InvalidKey, MissingCredential, Ok, Revoked (+18 more)
+### Community 151 - "SqliteTerminalStore"
+Cohesion: 0.05
+Nodes (51): IdentifyTerminalRequest, ProvisionToken, RegisterTerminalRequest, CompanyId, RegistrationToken, StoreId, TerminalId, TerminalType (+43 more)
 
 ### Community 152 - "ResultadoFiscal"
-Cohesion: 0.16
-Nodes (15): CancellationToken, Task, IFiscalProvider, ResultadoFiscal, ChaveAcesso, CodigoStatus, DhAutorizacao, DigestValue (+7 more)
+Cohesion: 0.08
+Nodes (30): CancellationToken, Task, IFiscalProvider, ResultadoFiscal, ChaveAcesso, CodigoStatus, DhAutorizacao, DigestValue (+22 more)
 
 ### Community 153 - "ADDED Requirements"
 Cohesion: 0.10
@@ -1056,41 +1048,41 @@ Nodes (19): ADDED Requirements, Purpose, Requirement: Alerta no PDV ao vender pr
 Cohesion: 0.22
 Nodes (3): ErrorBoundary, Props, State
 
-### Community 155 - "D-caixa.spec.ts"
-Cohesion: 0.17
-Nodes (20): Entity, Product, Entity, Entity, Entity, api(), API_URL, APP_URL (+12 more)
+### Community 155 - "setup.ts"
+Cohesion: 0.15
+Nodes (27): Entity, Product, Entity, Entity, Product, Entity, Entity, api() (+19 more)
 
 ### Community 156 - "main.tsx"
-Cohesion: 0.24
-Nodes (6): App(), formatRole(), toCurrentUser(), PersistentStorageStatus, requestPersistentStorage(), registerServiceWorker()
+Cohesion: 0.32
+Nodes (3): PersistentStorageStatus, requestPersistentStorage(), registerServiceWorker()
 
 ### Community 157 - "TablePagination.tsx"
 Cohesion: 0.67
 Nodes (3): createPageItems(), TablePagination(), TablePaginationProps
 
 ### Community 158 - "HorusSecurityStore"
-Cohesion: 0.11
-Nodes (11): DateTimeOffset, SqlCommand, SqlConnection, SqlTransaction, TimeSpan, HorusSecurityStore, LoginResult, PasswordHasher (+3 more)
+Cohesion: 0.09
+Nodes (15): SqlConnection, List, SqlCommand, SqlConnection, SqlDataReader, SqlTransaction, Status, TimeSpan (+7 more)
 
 ### Community 159 - "cashRegisterService.ts"
 Cohesion: 0.25
 Nodes (7): CAIXA_API_URL, CashMovementDto, CashMovementType, cashRegisterService, CashRegisterSessionDto, CashRegisterStatusDto, PaymentBreakdownDto
 
 ### Community 160 - ".Ingest"
-Cohesion: 0.17
+Cohesion: 0.18
 Nodes (11): CancellationToken, HttpGet, HttpPost, IActionResult, ILogger, Task, GatewayController, Task (+3 more)
 
-### Community 161 - "HORUSPDV_API.Models.Requests"
+### Community 161 - "HORUSPDV_API.Repositories.DatabaseAccess"
 Cohesion: 0.10
-Nodes (14): AuditEventTypes, HORUSPDV_API.Controllers.Fiado, HORUSPDV_API.Repositories.DatabaseAccess, HORUSPDV_API.Services.Fiado, HORUSPDV_API.Models.Requests, HORUSPDV_API.Controllers.Caixa, HORUSPDV_API.Services.Caixa, HORUSPDV_API.Controllers.ModuloMercado (+6 more)
+Nodes (9): AuditEventTypes, HORUSPDV_API.Controllers.Fiado, HORUSPDV_API.Repositories.DatabaseAccess, HORUSPDV_API.Services.Fiado, HORUSPDV_API.Controllers.ModuloMercado, HORUSPDV_API.Repositories.DataAccess, HORUSPDV_API.Services.Fiscal, HORUSPDV_API.Controllers.Empresa (+1 more)
 
 ### Community 162 - ".claude/skills/openspec-explore/SKILL.md"
 Cohesion: 0.18
 Nodes (10): Check for context, Ending Discovery, Guardrails, Handling Different Entry Points, OpenSpec Awareness, The Stance, What You Don't Have To Do, What You Might Do (+2 more)
 
-### Community 163 - "OrderView"
-Cohesion: 0.06
-Nodes (42): CancellationToken, HttpGet, IActionResult, Task, OrdersController, JsonElement, OrderApplyOutcome, Applied (+34 more)
+### Community 163 - "OrderApplyResult"
+Cohesion: 0.15
+Nodes (12): OrderApplyOutcome, Applied, InvalidTransition, MissingOrderNumber, UnknownEventType, OrderApplyResult, Message, Ok (+4 more)
 
 ### Community 164 - "balancaBarcode.ts"
 Cohesion: 0.50
@@ -1156,13 +1148,13 @@ Nodes (7): Capabilities, Impact, Modified Capabilities, New Capabilities, Propos
 Cohesion: 0.10
 Nodes (19): Purpose, Requirement: Alerta no PDV ao vender produto vencido, Requirement: Campos de controle de validade no produto, Requirement: Consulta de vencimentos com KPIs, Requirement: Relatório de vencimentos, Requirement: Widget de alertas no Dashboard, Requirements, Scenario: Alerta discreto de produto próximo do vencimento (+11 more)
 
-### Community 191 - "ControllerBase"
-Cohesion: 0.08
-Nodes (27): ControllerBase, HttpGet, IActionResult, ILogger, Task, HealthController, CancellationToken, Task (+19 more)
+### Community 191 - "IEventStore"
+Cohesion: 0.09
+Nodes (24): HttpGet, IActionResult, ILogger, Task, HealthController, CancellationToken, ILogger, Task (+16 more)
 
-### Community 192 - "LocalNfceContingenciaResponse"
-Cohesion: 0.14
-Nodes (14): DateTimeOffset, LocalNfceContingenciaResponse, ChaveAcesso, DanfeData, DhContingencia, DigestValue, DocumentoId, Message (+6 more)
+### Community 192 - "CaixaController"
+Cohesion: 0.44
+Nodes (6): CancellationToken, HttpGet, HttpPost, IActionResult, Task, CaixaController
 
 ### Community 193 - "CashClosingSummaryModal.tsx"
 Cohesion: 0.36
@@ -1224,9 +1216,9 @@ Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify refer
 Cohesion: 0.50
 Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphify reference: incremental update and cluster-only
 
-### Community 208 - "CaixaController"
-Cohesion: 0.12
-Nodes (22): CancellationToken, HttpGet, HttpPost, IActionResult, Task, CaixaController, AbrirCaixaRequest, EventId (+14 more)
+### Community 208 - "RegistrarMovimentoCaixaRequest"
+Cohesion: 0.11
+Nodes (16): AbrirCaixaRequest, EventId, OpeningAmount, PayloadHash, FecharCaixaRequest, ClosingAmount, DifferenceReason, EventId (+8 more)
 
 ### Community 209 - "graphify reference: add a URL and watch a folder"
 Cohesion: 0.50
@@ -1264,17 +1256,17 @@ Nodes (4): HashSet, List, Task, PromocaoService
 Cohesion: 0.17
 Nodes (13): Quantity, CancellationToken, Connection, DateTime, IEnumerable, ILogger, List, ProductCode (+5 more)
 
-### Community 259 - "SettingsPage/index.ts"
-Cohesion: 0.09
-Nodes (8): PAYMENT_OPTIONS, PaymentOption, PRESETS, PrintSettingsCardProps, ActiveSession, SecuritySessionsCardProps, ThemeMode, ThemeSettingsCardProps
+### Community 259 - "C-fiado.spec.ts"
+Cohesion: 0.26
+Nodes (9): Entity, Product, cleanupHomologData(), escapeSql(), querySqlScalar(), runSql(), sqlcmdPath(), toSingleLine() (+1 more)
 
-### Community 260 - "FiadoDevedorAD"
+### Community 260 - "VendaPagamentoAD"
 Cohesion: 0.18
-Nodes (11): DateTimeOffset, FiadoDevedorAD, Cellphone, ClienteId, ClienteNome, DiasSemPagamento, Document, LimiteCredito (+3 more)
+Nodes (10): DateTimeOffset, VendaPagamentoAD, Amount, CashGiven, ChangeAmount, CompanyId, CreatedAt, Id (+2 more)
 
 ### Community 261 - "DatePickerField.tsx"
-Cohesion: 0.21
-Nodes (9): DateOutputFormat, DatePickerField(), DatePickerFieldProps, parseBrDate(), parseIsoDate(), PopoverPosition, toBrDate(), toIsoDate() (+1 more)
+Cohesion: 0.12
+Nodes (13): DateOutputFormat, DatePickerField(), DatePickerFieldProps, parseBrDate(), parseIsoDate(), PopoverPosition, toBrDate(), toIsoDate() (+5 more)
 
 ### Community 262 - "productService.ts"
 Cohesion: 0.33
@@ -1289,24 +1281,24 @@ Cohesion: 0.47
 Nodes (4): BalancaExportItem, generateMgvCargaTxt(), generateTriunfoCargaTxt(), sanitizeAscii()
 
 ### Community 265 - ".DevolverNfce"
-Cohesion: 0.12
-Nodes (23): DestinatarioFiscal, HorusAuthorizeRoles, HttpGet, HttpPost, IActionResult, ILogger, Task, NfeController (+15 more)
+Cohesion: 0.16
+Nodes (18): DestinatarioFiscal, HorusAuthorizeRoles, HttpGet, HttpPost, IActionResult, ILogger, Task, NfeController (+10 more)
 
 ### Community 266 - "EmissaoNfceRequest"
-Cohesion: 0.06
-Nodes (35): IReadOnlyList, EmissaoNfceRequest, Destinatario, DhContingencia, Emitente, Itens, JustificativaContingencia, NumeroNf (+27 more)
+Cohesion: 0.03
+Nodes (72): IReadOnlyList, DestinatarioFiscal, Bairro, Cep, CodigoMunicipioIbge, Complemento, CpfCnpj, Email (+64 more)
 
 ### Community 267 - "AppSidebar.tsx"
 Cohesion: 0.13
 Nodes (9): RowActionItem, RowActionsMenuProps, AppSidebarProps, PageKey, SidebarItemProps, SidebarSectionTitleProps, UserMenu(), UserMenuProps (+1 more)
 
 ### Community 268 - "HistoricoVendasAB"
-Cohesion: 0.11
-Nodes (23): CanceladoEm, Connection, DateTimeOffset, IEnumerable, JsonSerializerOptions, SqlConnection, SqlDataReader, SqlTransaction (+15 more)
+Cohesion: 0.19
+Nodes (13): Connection, DateTimeOffset, IEnumerable, JsonSerializerOptions, List, SqlConnection, SqlDataReader, SqlTransaction (+5 more)
 
-### Community 270 - "CancelamentoRequest"
-Cohesion: 0.14
-Nodes (15): CancelamentoRequest, ChaveAcesso, Emitente, Justificativa, Protocolo, SequenciaEvento, InutilizacaoRequest, Emitente (+7 more)
+### Community 270 - "HorusSecurityStore.cs"
+Cohesion: 0.20
+Nodes (9): LoginAttemptBucket, Count, FirstAttemptAt, LastAttemptAt, LockedUntil, SupervisorResumoDto, Id, Name (+1 more)
 
 ### Community 271 - "PromocaoResultadoModel"
 Cohesion: 0.20
@@ -1317,28 +1309,28 @@ Cohesion: 0.31
 Nodes (10): HorusAuthorizeRoles, HttpDelete, HttpGet, HttpPatch, HttpPost, HttpPut, IActionResult, ProducesResponseType (+2 more)
 
 ### Community 273 - "CashSessionRepository.ts"
-Cohesion: 0.30
-Nodes (13): getCachedDeviceId(), closeCashLocal(), computeOfflineCashSummary(), formatMoney(), loadCachedCashStatus(), OfflineCashSummary, openCashLocal(), parseMoney() (+5 more)
+Cohesion: 0.25
+Nodes (14): getCachedDeviceId(), closeCashLocal(), computeOfflineCashSummary(), elapsedMinutesSince(), formatMoney(), loadCachedCashStatus(), OfflineCashSummary, openCashLocal() (+6 more)
 
 ### Community 274 - "Proposal: Gestão Completa de Mercadinho — Categorias, Validade, Promoções e Fiado"
 Cohesion: 0.17
 Nodes (11): Capabilities, Feature 1 — Categorias / Departamentos de Produto, Feature 2 — Controle de Validade, Feature 3 — Promoções e Preços Dinâmicos, Feature 4 — Fiado / Conta Corrente do Cliente, Impact, Modified Capabilities, New Capabilities (+3 more)
 
 ### Community 275 - "GatewayOptions"
-Cohesion: 0.07
-Nodes (28): GatewayOptions, AmbienteFiscal, CertificadoPfxBase64, CertificadoPfxPath, CertificadoSenha, CloudSyncBatchSize, CloudSyncIntervalSeconds, CloudSyncToken (+20 more)
+Cohesion: 0.06
+Nodes (34): BackgroundService, GatewayOptions, AmbienteFiscal, CertificadoPfxBase64, CertificadoPfxPath, CertificadoSenha, CloudSyncBatchSize, CloudSyncIntervalSeconds (+26 more)
 
-### Community 276 - "GatewayFiscalStatusResponse"
-Cohesion: 0.18
-Nodes (11): DateTime, GatewayFiscalStatusResponse, CertificadoConfigurado, CertificadoSubject, CertificadoValido, CertificadoValidoAte, CscConfigurado, DiasRestantesCertificado (+3 more)
+### Community 276 - "IOrderStore"
+Cohesion: 0.39
+Nodes (4): CancellationToken, IReadOnlyList, Task, IOrderStore
 
 ### Community 277 - "NfeImportItemInput"
 Cohesion: 0.11
 Nodes (18): NfeImportItemInput, Cest, CodigoFornecedor, DataValidade, Gtin, MargemPercentual, Ncm, NumeroItem (+10 more)
 
 ### Community 278 - "GatewayEvent"
-Cohesion: 0.03
-Nodes (59): GatewayEvent, ClientPayloadHash, CompanyId, CreatedAt, EventId, EventType, OccurredAt, Payload (+51 more)
+Cohesion: 0.04
+Nodes (51): GatewayEvent, ClientPayloadHash, CompanyId, CreatedAt, EventId, EventType, OccurredAt, Payload (+43 more)
 
 ### Community 279 - "Connection"
 Cohesion: 0.47
@@ -1348,21 +1340,21 @@ Nodes (3): IConfiguration, Connection, ConnectionString
 Cohesion: 0.22
 Nodes (8): PromocaoResultadoAD, DescontoTotal, MargemLiquida, Nome, PromocaoId, QuantidadeVendas, ReceitaBruta, ReceitaLiquida
 
-### Community 281 - "LocalItemFiscal"
-Cohesion: 0.18
-Nodes (11): LocalItemFiscal, Cfop, CodigoProduto, Desconto, Descricao, Ncm, Numero, Quantidade (+3 more)
+### Community 281 - "OrdersController"
+Cohesion: 0.54
+Nodes (5): CancellationToken, HttpGet, IActionResult, Task, OrdersController
 
 ### Community 282 - "HorusGateway.Services"
 Cohesion: 0.12
-Nodes (8): HorusGateway.Models, HorusGateway.Tests, HorusGateway.Controllers, HorusGateway.Hubs, HorusGateway.Services, HorusGateway.Configuration, HorusGateway.Data, Program
+Nodes (13): HorusGateway.Models, HorusGateway.Tests, HorusGateway.Controllers, HorusGateway.Hubs, HorusGateway.Services, HorusGateway.Configuration, HorusGateway.Data, HttpClient (+5 more)
 
 ### Community 283 - "MyCompanyPage.tsx"
 Cohesion: 0.40
 Nodes (5): CRT_OPTIONS, fileToBase64(), MyCompanyPage(), UF_OPTIONS, UF_SELECT_OPTIONS
 
-### Community 284 - "HORUSPDV_API.Services.Fiscal"
-Cohesion: 0.12
-Nodes (11): HORUSPDV_API.Services.Fiscal, DateTimeOffset, DocumentoFiscalPendente, CompanyId, DhContingencia, Id, NumeroNf, Serie (+3 more)
+### Community 284 - "VendaItemRecord"
+Cohesion: 0.29
+Nodes (7): VendaItemRecord, Desconto, ProductCode, ProductName, PromocaoId, Quantity, UnitPrice
 
 ### Community 285 - "Decisions"
 Cohesion: 0.18
@@ -1373,8 +1365,8 @@ Cohesion: 0.32
 Nodes (7): formatCurrency(), GroupedSale, parseMoney(), PAYMENT_FILTER_LABEL, PaymentFilter, PdvCurrentSessionSalesModal(), PdvCurrentSessionSalesModalProps
 
 ### Community 287 - "NETCORE/Program.cs"
-Cohesion: 0.12
-Nodes (11): ILogger, RequestDelegate, HorusRequestTelemetryMiddleware, HttpContext, RequestDelegate, Task, HorusSecurityHeadersMiddleware, HORUSPDV_API.Models.Categorias (+3 more)
+Cohesion: 0.10
+Nodes (13): RequestDelegate, HorusRequestBodyLimitMiddleware, ILogger, RequestDelegate, HorusRequestTelemetryMiddleware, HttpContext, RequestDelegate, Task (+5 more)
 
 ### Community 288 - "promotionEngine.ts"
 Cohesion: 0.52
@@ -1404,10 +1396,6 @@ Nodes (4): mapDtoToLocal(), sumPendingFiadoByDocument(), syncCustomersFromApi(),
 Cohesion: 0.22
 Nodes (9): ConcurrentDictionary, DateTimeOffset, HttpContext, RequestDelegate, Task, HorusRateLimitMiddleware, RequestBucket, Count (+1 more)
 
-### Community 297 - "DocumentoFiscalExportacaoXml"
-Cohesion: 0.12
-Nodes (15): Status, DocumentoFiscalExportacaoXml, ChaveAcesso, CriadoEm, DhAutorizacao, Id, NumeroNf, Protocolo (+7 more)
-
 ### Community 298 - "OrdemCompraController"
 Cohesion: 0.40
 Nodes (6): HttpGet, HttpPost, HttpPut, IActionResult, Task, OrdemCompraController
@@ -1433,8 +1421,8 @@ Cohesion: 0.21
 Nodes (10): FakeClock, CancellationToken, ILogger, IReadOnlyList, SqliteConnection, Task, SqliteEventStore, Fact (+2 more)
 
 ### Community 305 - "CloudSyncDispatcherTests"
-Cohesion: 0.15
-Nodes (19): FakeCloudClient, CloudSyncResult, Message, Status, CloudSyncStatus, Conflict, Permanent, Success (+11 more)
+Cohesion: 0.13
+Nodes (21): FakeCloudClient, CloudSyncResult, Message, Status, CloudSyncStatus, Conflict, Permanent, Success (+13 more)
 
 ### Community 306 - "GondolaLabelModal.tsx"
 Cohesion: 0.22
@@ -1476,9 +1464,9 @@ Nodes (6): escapeHtml(), formatDate(), formatDateTime(), formatMoney(), Purchase
 Cohesion: 0.13
 Nodes (14): fiscal/contingencia-offline-nfce Specification, Purpose, Requirement: Emissão de NFC-e em contingência offline (tpEmis = 9), Requirement: Emissão e assinatura na rede local via Local Gateway, Requirement: Impressão do DANFE NFC-e térmico de contingência, Requirement: Transmissão posterior em lote à SEFAZ e controle de prazo de 24h, Requirements, Scenario: Emissão de NFC-e sem internet via Gateway local (+6 more)
 
-### Community 316 - "DestinatarioFiscal"
-Cohesion: 0.13
-Nodes (15): DestinatarioFiscal, Bairro, Cep, CodigoMunicipioIbge, Complemento, CpfCnpj, Email, Fone (+7 more)
+### Community 316 - "AddressContactFields.tsx"
+Cohesion: 0.33
+Nodes (4): AddressContactFieldsProps, AddressContactValue, STATE_OPTIONS, STATE_SELECT_OPTIONS
 
 ### Community 317 - "Decisions"
 Cohesion: 0.22
@@ -1488,21 +1476,21 @@ Nodes (8): 1. Parâmetros Fiscais e Destinatário Híbrido, 2. Autorização de 
 Cohesion: 0.60
 Nodes (4): FiscalDetailModal(), FiscalDetailModalProps, formatChave(), formatDate()
 
-### Community 319 - ".GetDashboardSummary"
-Cohesion: 0.18
-Nodes (18): CancellationToken, DateTimeOffset, HttpGet, IActionResult, ILogger, Task, DashboardController, IReadOnlyList (+10 more)
+### Community 319 - "ControllerBase"
+Cohesion: 0.17
+Nodes (19): ControllerBase, CancellationToken, DateTimeOffset, HttpGet, IActionResult, ILogger, Task, DashboardController (+11 more)
 
 ### Community 320 - "Requirements"
 Cohesion: 0.10
 Nodes (20): Acceptance Criteria (arquitetura), Overview, Regra absoluta desta fase, REQ-10: Pedidos como eventos operacionais, REQ-11: Pagamentos, REQ-12: Fronteiras (não é segunda verdade), REQ-13: Fiscal e impressão (fora da v1), REQ-14: Monitoramento e saúde (+12 more)
 
-### Community 321 - "TerminalsController"
-Cohesion: 0.10
-Nodes (27): CancellationToken, HttpGet, HttpPost, IActionResult, ILogger, Task, TerminalsController, ApiKeyHeader (+19 more)
+### Community 321 - "GatewayIdentity"
+Cohesion: 0.18
+Nodes (14): CancellationToken, HttpGet, HttpPost, IActionResult, ILogger, Task, TerminalsController, ApiKeyHeader (+6 more)
 
-### Community 322 - ".ListCompaniesAdmin"
-Cohesion: 0.16
-Nodes (7): RejectionReason, List, SqlDataReader, Status, EmpresasAdminListResult, Message, Success
+### Community 322 - "CustomerRegisterPage.tsx"
+Cohesion: 0.33
+Nodes (3): Customer, CustomerFormData, EMPTY_FORM
 
 ### Community 323 - "domain.ts"
 Cohesion: 0.50
@@ -1533,8 +1521,8 @@ Cohesion: 0.14
 Nodes (13): ADDED Requirements, Purpose, Requirement: Emissão de NFC-e em contingência offline (tpEmis = 9), Requirement: Emissão e assinatura na rede local via Local Gateway, Requirement: Impressão do DANFE NFC-e térmico de contingência, Requirement: Transmissão posterior em lote à SEFAZ e controle de prazo de 24h, Scenario: Emissão de NFC-e sem internet via Gateway local, Scenario: Geração válida de NFC-e em contingência (+5 more)
 
 ### Community 330 - "IClock"
-Cohesion: 0.12
-Nodes (16): DateTimeOffset, IClock, UtcNow, SystemClock, UtcNow, DateTimeOffset, TimeSpan, FakeClock (+8 more)
+Cohesion: 0.14
+Nodes (13): DateTimeOffset, IClock, UtcNow, SystemClock, UtcNow, DateTimeOffset, TimeSpan, FakeClock (+5 more)
 
 ### Community 331 - "salesDailyReport.ts"
 Cohesion: 0.24
@@ -1544,33 +1532,33 @@ Nodes (8): buildDailyReportPrintHtml(), DailyMovement, DailyPrintOptions, DailyS
 Cohesion: 0.35
 Nodes (11): buildDanfeFromThermalData(), buildDanfePrintHtml(), DanfeThermalData, escapeHtml(), formatChaveAcesso(), formatDateTime(), formatNumeroNf(), generateQrCodeSvg() (+3 more)
 
-### Community 333 - ".TratarFalhaTransitoriaAsync"
-Cohesion: 0.23
-Nodes (10): CancellationToken, ILogger, IServiceScopeFactory, Task, TimeSpan, NfceOutboxWorker, BackgroundService, ILogger (+2 more)
+### Community 333 - "CancelamentoVendaComSupervisorRequest"
+Cohesion: 0.40
+Nodes (4): CancelamentoVendaComSupervisorRequest, Justificativa, SupervisorId, SupervisorPassword
 
 ### Community 334 - "Quack Gateway — CHANGE GATEWAY 02 + 03 + 04 + 05 + 06 + 07 + 08"
 Cohesion: 0.10
 Nodes (20): Autenticação de terminal (CHANGE GATEWAY 03), Configuração (seção `Gateway`), Dashboard Local e Atualização Controlada (CHANGE GATEWAY 08), Descoberta via Cloud + HTTPS na LAN (zero config no terminal), Endpoints, Executar com um clique (scripts `run-gateway`), Idempotência, Instalação nativa (sem Docker) (+12 more)
 
-### Community 335 - "IProdutoService"
-Cohesion: 0.30
-Nodes (3): List, Task, IProdutoService
+### Community 335 - "HorusAuthorizeRolesAttribute"
+Cohesion: 0.40
+Nodes (4): HorusAuthorizeRolesAttribute, Roles, Attribute, IReadOnlySet
 
 ### Community 336 - ".NextDelay"
 Cohesion: 0.23
 Nodes (7): TimeSpan, BackoffPolicy, Fact, InlineData, Theory, BackoffPolicyTests, Random
 
 ### Community 337 - "RegrasEmissaoNfceDto"
-Cohesion: 0.22
-Nodes (9): DateTime, RegrasEmissaoNfceDto, CompanyId, ContadorVendas, EmitirSempreComCpf, FormasPagamentoHabilitadas, Habilitado, IntervaloNotas (+1 more)
+Cohesion: 0.18
+Nodes (13): CancellationToken, DateTime, IEnumerable, Task, RegrasEmissaoNfceAB, RegrasEmissaoNfceDto, CompanyId, ContadorVendas (+5 more)
 
 ### Community 338 - "LoginRequest"
 Cohesion: 0.33
 Nodes (5): LoginRequest, Email, Password, RecaptchaToken, RememberMe
 
-### Community 339 - "EmissaoNfceRequest"
-Cohesion: 0.09
-Nodes (23): DateTimeOffset, IReadOnlyList, EmissaoNfceRequest, Destinatario, DhContingencia, Emitente, Itens, JustificativaContingencia (+15 more)
+### Community 339 - "ResultadoFiscal"
+Cohesion: 0.18
+Nodes (11): DateTimeOffset, ResultadoFiscal, ChaveAcesso, CodigoStatus, DhAutorizacao, MotivoStatus, Protocolo, Retentavel (+3 more)
 
 ### Community 340 - "HorusGateway.Tests.csproj"
 Cohesion: 0.13
@@ -1584,9 +1572,9 @@ Nodes (3): List, Task, IFornecedorService
 Cohesion: 0.31
 Nodes (3): OrderStateMachine, Fact, OrderStateMachineTests
 
-### Community 343 - "IFiadoService"
-Cohesion: 0.39
-Nodes (4): DateTimeOffset, List, Task, IFiadoService
+### Community 343 - "SaleCancelModal.tsx"
+Cohesion: 0.50
+Nodes (4): buildSaleCancellationReceiptHtml(), MOTIVOS_CANCELAMENTO, SaleCancelModal(), SaleCancelModalProps
 
 ### Community 344 - "cancelamento-nfce-caixa-gerente/proposal.md"
 Cohesion: 0.29
@@ -1613,8 +1601,8 @@ Cohesion: 0.60
 Nodes (3): CancellationToken, Task, MapeamentoProdutoFornecedorAB
 
 ### Community 350 - "DocumentoFiscalResumo"
-Cohesion: 0.07
-Nodes (26): DocumentoFiscalResumo, ChaveAcesso, ChaveReferenciada, CriadoEm, CustomerCpf, CustomerName, Devolvida, DhAutorizacao (+18 more)
+Cohesion: 0.04
+Nodes (45): DocumentoFiscalResumo, ChaveAcesso, ChaveReferenciada, CriadoEm, CustomerCpf, CustomerName, Devolvida, DhAutorizacao (+37 more)
 
 ### Community 351 - "CancelamentoRequest"
 Cohesion: 0.33
@@ -1624,9 +1612,9 @@ Nodes (6): CancelamentoRequest, ChaveAcesso, Emitente, Justificativa, Protocolo,
 Cohesion: 0.20
 Nodes (9): ASPNETCORE_ENVIRONMENT, applicationUrl, commandName, dotnetRunMessages, environmentVariables, launchBrowser, profiles, HorusGateway (+1 more)
 
-### Community 353 - "FiadoResumoAD"
-Cohesion: 0.29
-Nodes (6): FiadoResumoAD, Inadimplencia30Dias, Inadimplencia60Dias, MaiorDebito, QuantidadeDevedores, TotalAReceber
+### Community 353 - "App"
+Cohesion: 1.00
+Nodes (3): App(), formatRole(), toCurrentUser()
 
 ### Community 354 - "Proposal: Local Gateway — Offline-first por Loja"
 Cohesion: 0.29
@@ -1653,24 +1641,20 @@ Cohesion: 0.40
 Nodes (4): 1. Backend: Modelos e Provedor Fiscal Zeus, 2. Backend: Repositório e Endpoints de Devolução Supervisionada, 3. Frontend: Integração e Suporte Supervisionado no PDV, 4. Validação e Fechamento
 
 ### Community 360 - ".Receber"
-Cohesion: 0.35
-Nodes (8): DateTimeOffset, HorusAuthorizeRoles, HttpGet, HttpPost, IActionResult, ProducesResponseType, Task, FiadoController
+Cohesion: 0.14
+Nodes (17): DateTimeOffset, HorusAuthorizeRoles, HttpGet, HttpPost, IActionResult, ProducesResponseType, Task, FiadoController (+9 more)
 
 ### Community 361 - "PagamentoFiscal"
 Cohesion: 0.33
 Nodes (6): PagamentoFiscal, AutorizacaoTef, BandeiraCartao, CnpjCredenciadora, Tipo, Valor
 
-### Community 362 - "CriarPedidoRequest"
-Cohesion: 0.25
-Nodes (8): List, CriarPedidoRequest, CustomerCpf, CustomerName, Items, FinalizarPedidoRequest, Payments, PaymentType
+### Community 362 - "VendaItemRequest"
+Cohesion: 0.12
+Nodes (16): List, CriarPedidoRequest, CustomerCpf, CustomerName, Items, FinalizarPedidoRequest, Payments, PaymentType (+8 more)
 
 ### Community 363 - "treinamentoService.ts"
 Cohesion: 0.29
 Nodes (6): SalvarSecaoPayload, SalvarVideoPayload, TreinamentoDto, TreinamentoSecaoDto, treinamentoService, TreinamentoVideoDto
-
-### Community 364 - "LocalFiscalContingencyTests"
-Cohesion: 0.18
-Nodes (7): ILogger, LocalFiscalStore, InlineData, Theory, LocalFiscalContingencyTests, TotalNotas, UltimoNumero
 
 ### Community 365 - "@playwright/test"
 Cohesion: 0.12
@@ -1695,10 +1679,6 @@ Nodes (3): DateTimeOffset, TimeZoneInfo, HorusEmailTemplate
 ### Community 371 - "HorusEmailOptions"
 Cohesion: 0.17
 Nodes (11): HorusEmailOptions, Enabled, EnableSsl, FromEmail, FromName, FrontendBaseUrl, Host, Password (+3 more)
-
-### Community 372 - ".TratarFalhaTransitoriaAsync"
-Cohesion: 0.39
-Nodes (6): CancellationToken, ILogger, IServiceScopeFactory, Task, TimeSpan, NfceOutboxWorker
 
 ### Community 373 - "2026-09-30-contingencia-offline-nfce/design.md"
 Cohesion: 0.20
@@ -1780,10 +1760,6 @@ Nodes (4): loadRecaptchaScript(), useRecaptchaV3(), waitForRecaptchaReady(), Win
 Cohesion: 0.18
 Nodes (11): LoteModel, CriadoEm, DataValidade, DiasParaVencer, Id, NumeroLote, Origem, ProdutoId (+3 more)
 
-### Community 399 - "RecebimentoFiadoRequest"
-Cohesion: 0.33
-Nodes (5): RecebimentoFiadoRequest, ClienteId, FormaPagamento, Observacao, Valor
-
 ### Community 401 - "FornecedorController.cs"
 Cohesion: 0.47
 Nodes (3): HORUSPDV_API.Controllers.Fornecedores, HORUSPDV_API.Services.Fornecedores, HORUSPDV_API.Models.Fornecedores
@@ -1836,10 +1812,6 @@ Nodes (11): CategoriaValidadeDto, FefoDivergenciaDto, FefoModo, FefoStatusDto, L
 Cohesion: 0.40
 Nodes (3): PageLayoutProps, PageLayoutSize, SIZE_CLASS
 
-### Community 415 - "PromocaoController.cs"
-Cohesion: 0.47
-Nodes (3): HORUSPDV_API.Models.Promocoes, HORUSPDV_API.Services.Promocoes, HORUSPDV_API.Controllers.Promocoes
-
 ### Community 416 - "NfeImportModal.tsx"
 Cohesion: 0.48
 Nodes (6): applyPricing(), EditableItem, formatCusto(), maskCusto4(), NfeImportModal(), PricingSource
@@ -1849,12 +1821,8 @@ Cohesion: 0.60
 Nodes (4): FiadoPage(), FORMAS_PAGAMENTO, formatDateBr(), formatDateTimeBr()
 
 ### Community 418 - "HORUSPDV_API.Services.Security"
-Cohesion: 0.07
-Nodes (24): EmitirContingenciaManualRequest, Justificativa, VendaId, RequestDelegate, HorusRequestBodyLimitMiddleware, HorusAuthorizeRolesAttribute, Roles, HorusClientIpResolver (+16 more)
-
-### Community 419 - "NovoPedidoPage.tsx"
-Cohesion: 0.47
-Nodes (5): CartItem, formatQuantityDisplay(), isFractionableUnit(), NovoPedidoPage(), Product
+Cohesion: 0.09
+Nodes (20): EmitirContingenciaManualRequest, Justificativa, VendaId, HorusRoles, HORUSPDV_API.Controllers.Caixa, HORUSPDV_API.Services.Caixa, HORUSPDV_API.Controllers.Admin, HORUSPDV_API.Services.Email (+12 more)
 
 ### Community 421 - "bloco5-6-sale-stock-BLOCOS-7d409-ção-impede-gravação-parcial-chromium/error-context.md"
 Cohesion: 0.40
@@ -1870,7 +1838,7 @@ Nodes (3): SupervisorDto, userService, USUARIOS_API_URL
 
 ### Community 424 - "EmpresaAdminItemDto"
 Cohesion: 0.05
-Nodes (43): DateTimeOffset, List, AlterarCredenciaisEmpresaRequest, NewEmail, NewPassword, AtualizarConfiguracaoPlataformaRequest, RequireApprovalForNewCompanies, BloquearEmpresaRequest (+35 more)
+Nodes (44): DateTimeOffset, List, AlterarCredenciaisEmpresaRequest, NewEmail, NewPassword, AtualizarConfiguracaoPlataformaRequest, RequireApprovalForNewCompanies, BloquearEmpresaRequest (+36 more)
 
 ### Community 425 - "customerService.ts"
 Cohesion: 0.40
@@ -1880,13 +1848,9 @@ Nodes (4): CLIENTE_API_URL, CustomerDto, CustomerPayload, customerService
 Cohesion: 0.50
 Nodes (3): Error details, Instructions, Test info
 
-### Community 427 - "ChangePasswordRequest"
-Cohesion: 0.50
-Nodes (3): ChangePasswordRequest, CurrentPassword, NextPassword
-
-### Community 428 - "FiscalErrorModal.tsx"
-Cohesion: 0.67
-Nodes (3): FiscalErrorModal(), FiscalErrorModalProps, formatDate()
+### Community 427 - "HORUSPDV_API.Models.Requests"
+Cohesion: 0.13
+Nodes (12): AtualizarValidadeRequest, DataValidade, ChangePasswordRequest, CurrentPassword, NextPassword, HORUSPDV_API.Models.Categorias, HORUSPDV_API.Models.Requests, HORUSPDV_API.Models.Produtos (+4 more)
 
 ### Community 433 - "FiscalCancelModal.tsx"
 Cohesion: 0.47
@@ -1898,18 +1862,18 @@ Nodes (4): clamp(), findTarget(), GuidedTour(), GuidedTourProps
 
 ## Knowledge Gaps
 - **3062 isolated node(s):** `Nome`, `Descricao`, `Ordem`, `SecaoId`, `Titulo` (+3057 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3735 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **26 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 3736 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **25 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `ApiResponse` connect `ApiResponse` to `ModuloMercadoRegistroAD`, `UsuarioRequest`, `RelatorioAB`, `.DevolverNfce`, `CategoriaModel`, `NfceController`, `PromocaoController`, `.BuscarSefaz`, `SecuritySession`, `HorusSecurityOptions`, `.InvokeAsync`, `OrdemCompraController`, `.Atualizar`, `.ListSessions`, `HomeAB`, `AuthController`, `TreinamentoController`, `.Put`, `.Atualizar`, `PedidoController`, `CaixaController`, `.Put`, `.Atualizar`, `HistoricoVendasController`, `ProdutoController`, `LoteController`, `.Receber`, `RegrasEmissaoNfceAB`?**
+- **Why does `ApiResponse` connect `ApiResponse` to `ModuloMercadoRegistroAD`, `UsuarioRequest`, `RelatorioAB`, `.DevolverNfce`, `CategoriaModel`, `NfceController`, `PromocaoController`, `.BuscarSefaz`, `.InvokeAsync`, `HorusSecurityOptions`, `SecurityUserDto`, `.InvokeAsync`, `OrdemCompraController`, `.Atualizar`, `.ListSessions`, `HomeAB`, `AuthController`, `TreinamentoController`, `CaixaController`, `.Put`, `.Atualizar`, `PedidoController`, `.Put`, `.Atualizar`, `HistoricoVendasController`, `ProdutoController`, `LoteController`, `.Receber`, `.Put`?**
   _High betweenness centrality (0.065) - this node is a cross-community bridge._
-- **Why does `GatewayController` connect `.Ingest` to `TerminalsController`, `OrderView`, `GatewayOptions`, `SqliteTerminalStore`, `HorusGateway.Services`, `ControllerBase`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
-- **Why does `DashboardController` connect `.GetDashboardSummary` to `TerminalsController`, `OrderView`, `IClock`, `GatewayOptions`, `SqliteTerminalStore`, `HorusGateway.Services`, `ControllerBase`?**
-  _High betweenness centrality (0.022) - this node is a cross-community bridge._
+- **Why does `DashboardController` connect `ControllerBase` to `GatewayIdentity`, `IClock`, `GatewayOptions`, `IOrderStore`, `SqliteTerminalStore`, `HorusGateway.Services`, `IEventStore`?**
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+- **Why does `GatewayFiscalController` connect `LocalNfceContingenciaRequest` to `SqliteTerminalStore`, `HorusGateway.Services`, `GatewayOptions`, `ControllerBase`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
 - **Are the 142 inferred relationships involving `ApiResponse` (e.g. with `.AlterarCredenciais()` and `.Aprovar()`) actually correct?**
   _`ApiResponse` has 142 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Nome`, `Descricao`, `Ordem` to the rest of the system?**
@@ -1917,4 +1881,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `ModuloMercadoRegistroAD` be split into smaller, more focused modules?**
   _Cohesion score 0.06240084611316764 - nodes in this community are weakly interconnected._
 - **Should `UsuarioRequest` be split into smaller, more focused modules?**
-  _Cohesion score 0.09462365591397849 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10052910052910052 - nodes in this community are weakly interconnected._

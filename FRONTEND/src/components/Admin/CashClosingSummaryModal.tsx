@@ -6,7 +6,7 @@
  *           e breakdown por forma de pagamento.
  * Entradas esperadas: recebe a sessão de caixa (CashRegisterSessionDto), dados da empresa e callback de fechamento.
  */
-import { Printer, ReceiptText, X } from "lucide-react";
+import { LogOut, Printer, ReceiptText, X } from "lucide-react";
 import type { CashRegisterSessionDto } from "@/services/api/cashRegisterService";
 import type { CompanyDto } from "@/services/api/companyService";
 
@@ -365,11 +365,14 @@ export default function CashClosingSummaryModal({
   company,
   companyName,
   onClose,
+  onLogout,
 }: {
   session: CashRegisterSessionDto;
   company?: CashClosingCompany;
   companyName?: string;
   onClose: () => void;
+  /** Frente de caixa: mostra "Sair do sistema" (fim de turno → página de login). */
+  onLogout?: () => void;
 }) {
   const companyFantasy =
     company?.fantasyName || company?.corporateName || companyName || "HORUS PDV";
@@ -637,10 +640,27 @@ export default function CashClosingSummaryModal({
           </div>
         </div>
 
+        {/* Fim de turno na frente de caixa: sair libera o PDV para o próximo operador entrar. */}
+        {onLogout ? (
+          <div className="flex flex-col gap-2 border-t border-border-primary bg-bg-primary px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-text-secondary">
+              Terminou o turno? Saia do sistema para o próximo operador entrar com o login dele.
+            </p>
+            <button
+              type="button"
+              onClick={onLogout}
+              className="btn-success inline-flex shrink-0 items-center justify-center gap-2"
+            >
+              <LogOut size={16} />
+              Sair do sistema
+            </button>
+          </div>
+        ) : null}
+
         {/* RODAPÉ COM AÇÕES */}
         <div className="flex justify-end gap-2 border-t border-border-primary bg-bg-light px-4 py-3">
           <button type="button" onClick={onClose} className="btn-secondary">
-            Fechar
+            {onLogout ? "Continuar no sistema" : "Fechar"}
           </button>
           <button
             type="button"

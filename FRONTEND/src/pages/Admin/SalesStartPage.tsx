@@ -101,6 +101,8 @@ import { type SaleDetailFullDto } from "@/services/api/salesHistoryService";
 
 type SalesStartPageProps = {
   onExit?: () => void;
+  /** Encerra a sessão e volta para o login (oferecido após fechar o caixa: troca de operador). */
+  onLogout?: () => void;
   standalone?: boolean;
   operatorName?: string;
 };
@@ -221,6 +223,7 @@ type SplitPayment = {
 export default function SalesStartPage({
   standalone = false,
   operatorName = "Operador",
+  onLogout,
 }: SalesStartPageProps) {
   const { formatMoneyBr, maskMoneyBr, parseMoneyBr, sanitizeIntegerInput, sanitizeDecimalInput } =
     useInputMasks();
@@ -3472,6 +3475,14 @@ export default function SalesStartPage({
             setCashPanelOpen(false);
             productInputRef.current?.focus();
           }}
+          onLogout={
+            onLogout
+              ? () => {
+                  setCashPanelOpen(false);
+                  onLogout();
+                }
+              : undefined
+          }
         />
       ) : null}
 
