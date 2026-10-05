@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs": {
-    "mtime": 1791057416.5220222,
-    "seen": 1791057574.6768966,
-    "ast_hash": "23ecd787f534f510aa4f2f46c41dcc5a",
+    "mtime": 1791165065.7996564,
+    "seen": 1791165117.6412487,
+    "ast_hash": "a5be3ece23425426d35797605c1a92fd",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HomeAB.cs": {

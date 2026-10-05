@@ -1122,10 +1122,12 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             }
 
             // 3. Busca os itens da venda para estornar o estoque
+            // VendaItens não tem coluna CompanyId: o isolamento por empresa vem da junção com Vendas.
             const string sqlItens = """
-                SELECT ProductCode, Quantity
-                FROM VendaItens
-                WHERE VendaId = @VendaId AND CompanyId = @CompanyId;
+                SELECT vi.ProductCode, vi.Quantity
+                FROM VendaItens vi
+                INNER JOIN Vendas v ON v.Id = vi.VendaId
+                WHERE vi.VendaId = @VendaId AND v.CompanyId = @CompanyId;
                 """;
             await using (var cmdItens = new SqlCommand(sqlItens, db, transaction))
             {
