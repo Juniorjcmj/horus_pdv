@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1791240255.3811572,
-    "seen": 1791240357.0453866,
-    "ast_hash": "859f2217c259d1a0df7403fe639e1604",
+    "mtime": 1791243200.6177015,
+    "seen": 1791243532.5917401,
+    "ast_hash": "d343ba8c0215bab436c13f3a7db19e4a",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -894,9 +894,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/index.ts": {
-    "mtime": 1790965470.5355327,
-    "seen": 1790965934.3606327,
-    "ast_hash": "a719029fe8775daac962d8785fcb73f2",
+    "mtime": 1791243690.4286,
+    "seen": 1791243946.7321703,
+    "ast_hash": "8c1acc204be2d79e598e7aa84fd7a949",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Tour/GuidedTour.tsx": {
@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
-    "mtime": 1790965516.0393353,
-    "seen": 1790965934.3695917,
-    "ast_hash": "9ad705bb81907f8c2be032974da653cf",
+    "mtime": 1791243690.619373,
+    "seen": 1791243946.7447119,
+    "ast_hash": "8807c6787d929649d688b757fa0833e0",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/StockPage.tsx": {
@@ -1140,9 +1140,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/apiClient.ts": {
-    "mtime": 1790425456.4173615,
-    "seen": 1790426295.564747,
-    "ast_hash": "166dba9dca837feff80c263713b8a4da",
+    "mtime": 1791244189.8784614,
+    "seen": 1791244355.9067655,
+    "ast_hash": "ea5b63737462a7f2cafb6875e0b58a8c",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/authService.ts": {
@@ -1272,8 +1272,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/.last-run.json": {
-    "mtime": 1791242378.4242392,
-    "seen": 1791242425.9345365,
+    "mtime": 1791244315.386581,
+    "seen": 1791244355.9167478,
     "ast_hash": "5645f78ad777de5be9a546563ece0f4c",
     "semantic_hash": ""
   },
@@ -2634,9 +2634,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/OutboxRepository.ts": {
-    "mtime": 1791225549.7450197,
-    "seen": 1791225849.151017,
-    "ast_hash": "e857391fe89abded93dec48e76fa51b9",
+    "mtime": 1791243187.7559621,
+    "seen": 1791243532.6054676,
+    "ast_hash": "c95cf227311902c7703fbc9b686523b6",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/ProductRepository.ts": {
@@ -2646,9 +2646,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/synchronization/ConnectivityService.ts": {
-    "mtime": 1790421566.5314338,
-    "seen": 1790421619.6565518,
-    "ast_hash": "f7f1b86ea61021edd10a5a4c17ffa5fd",
+    "mtime": 1791244176.4435587,
+    "seen": 1791244355.8977873,
+    "ast_hash": "d1501d7748832c9826cad351f0e4e6b1",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/synchronization/SyncCoordinator.ts": {
@@ -2718,9 +2718,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/OutboxStatusModal.tsx": {
-    "mtime": 1790421566.5168662,
-    "seen": 1790421619.646927,
-    "ast_hash": "712246c2af08e12b07d109a67c603e9a",
+    "mtime": 1791243690.1964488,
+    "seen": 1791243946.7236187,
+    "ast_hash": "0be917132782c23f44129d69998e6467",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useOutboxStatus.ts": {
@@ -3342,8 +3342,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/error-context.md": {
-    "mtime": 1791242378.4299486,
-    "seen": 1791242425.9651258,
+    "mtime": 1791244315.3921769,
+    "seen": 1791244355.9563081,
     "ast_hash": "aface98cb37189fcbf085aa5f32da9e1",
     "semantic_hash": ""
   },
@@ -3390,8 +3390,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/test-failed-1.png": {
-    "mtime": 1791242378.4299486,
-    "seen": 1791242425.9771106,
+    "mtime": 1791244315.3927653,
+    "seen": 1791244355.972483,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3792,26 +3792,26 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco13-resilience-concurr-78a98--e-1-replay-sem-duplicidade-chromium/error-context.md": {
-    "mtime": 1791242378.4254112,
-    "seen": 1791242425.9651177,
+    "mtime": 1791244315.3870988,
+    "seen": 1791244355.956291,
     "ast_hash": "224bad386e70ce696ae92cb0396ceceb",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco2-3-idempotency-BLOCO-f04bc-adHash-processa-com-sucesso-chromium/error-context.md": {
-    "mtime": 1791242378.4270802,
-    "seen": 1791242425.9651203,
+    "mtime": 1791244315.388712,
+    "seen": 1791244355.9562962,
     "ast_hash": "c24ea5fe7f8c136047ff5127180e8dae",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/error-context.md": {
-    "mtime": 1791242378.4288735,
-    "seen": 1791242425.965124,
+    "mtime": 1791244315.390512,
+    "seen": 1791244355.9563036,
     "ast_hash": "5cba1c90a8ecdabc6798c69a1000df68",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
-    "mtime": 1791242378.4294116,
-    "seen": 1791242425.9771078,
+    "mtime": 1791244315.3910618,
+    "seen": 1791244355.9724789,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3828,21 +3828,21 @@
     "semantic_hash": ""
   },
   "DESKTOP/main.js": {
-    "mtime": 1791238382.295791,
-    "seen": 1791238736.7703602,
-    "ast_hash": "faba8f884ce7664eab4abc13fd756636",
+    "mtime": 1791243306.579925,
+    "seen": 1791243532.5905728,
+    "ast_hash": "36199027a7769c86bc9eb2709faced30",
     "semantic_hash": ""
   },
   "DESKTOP/package.json": {
-    "mtime": 1791238615.1146467,
-    "seen": 1791238736.7703638,
-    "ast_hash": "a7da0dfb1962efbba10f32ac45a4a3a3",
+    "mtime": 1791243407.4843645,
+    "seen": 1791243532.5905764,
+    "ast_hash": "7502312182b95fe724b9edd3ec5b3ee4",
     "semantic_hash": ""
   },
   "DESKTOP/README.md": {
-    "mtime": 1791234797.1647134,
-    "seen": 1791235446.5742579,
-    "ast_hash": "beece23b532651f3a1fb583f4e926322",
+    "mtime": 1791243306.5112119,
+    "seen": 1791243532.6465847,
+    "ast_hash": "269e8716e158d6ba5941cf2c9e15b8bb",
     "semantic_hash": ""
   },
   "DESKTOP/offline.html": {
@@ -3873,6 +3873,42 @@
     "mtime": 1791239958.659743,
     "seen": 1791240077.276675,
     "ast_hash": "36ac12365cbc17d4876570836c8a242c",
+    "semantic_hash": ""
+  },
+  "DESKTOP/preload.js": {
+    "mtime": 1791243118.812857,
+    "seen": 1791243532.590578,
+    "ast_hash": "9b5d781bda90c108001686dd65b2bc0b",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/infrastructure/desktop/pendingBackup.ts": {
+    "mtime": 1791243652.0865407,
+    "seen": 1791243946.739624,
+    "ast_hash": "0c40528b41f3a26ed09f12e4e1e91716",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/ImportPendingBackupButton.tsx": {
+    "mtime": 1791243874.166425,
+    "seen": 1791243946.723095,
+    "ast_hash": "904dce3e5b6279ea32ce1a2e0df1e33f",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/SettingsPage/PendingBackupCard.tsx": {
+    "mtime": 1791243690.3127725,
+    "seen": 1791243946.730645,
+    "ast_hash": "206606b0decba18e1f0a208b62b461a1",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/backup-pendencias.spec.ts": {
+    "mtime": 1791243783.4771996,
+    "seen": 1791243946.7548594,
+    "ast_hash": "a69912a37b4171fdbec8ed469a1404a6",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/conectividade.spec.ts": {
+    "mtime": 1791244239.6546795,
+    "seen": 1791244355.919611,
+    "ast_hash": "3b14ae347818af90b92187c67da1573c",
     "semantic_hash": ""
   }
 }

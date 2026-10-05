@@ -77,6 +77,12 @@ export async function apiRequest<T>(
     window.clearTimeout(timeoutId);
   }
 
+  // Resposta real da API (não 5xx: 502/503 do proxy = API fora) prova conectividade para o
+  // ConnectivityService, evitando "API indisponível" por um health check lento isolado.
+  if (response.status < 500) {
+    window.dispatchEvent(new CustomEvent("horus-api-responded"));
+  }
+
   const contentType = response.headers.get("content-type") || "";
   const payload = contentType.includes("application/json")
     ? ((await response.json()) as ApiResponse<T>)
