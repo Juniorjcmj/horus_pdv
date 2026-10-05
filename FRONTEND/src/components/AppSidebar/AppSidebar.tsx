@@ -11,6 +11,7 @@ import {
   ClipboardList,
   CreditCard,
   FileText,
+  GraduationCap,
   History,
   House,
   Info,
@@ -60,6 +61,7 @@ export type PageKey =
   | "configuracoes"
   | "detalhe-licenca"
   | "sobre-pdv"
+  | "aprendizado"
   | "editar-perfil";
 
 type SidebarItemProps = {
@@ -236,6 +238,13 @@ export default function AppSidebar({
                 active={activePage === "caixa"}
                 collapsed={collapsed}
                 onClick={() => handleChangePage("caixa")}
+              />
+              <SidebarItem
+                icon={<GraduationCap size={20} />}
+                label="Aprendizado"
+                active={activePage === "aprendizado"}
+                collapsed={collapsed}
+                onClick={() => handleChangePage("aprendizado")}
               />
             </div>
           ) : (
@@ -446,6 +455,13 @@ export default function AppSidebar({
                   active={activePage === "sobre-pdv"}
                   collapsed={collapsed}
                   onClick={() => handleChangePage("sobre-pdv")}
+                />
+                <SidebarItem
+                  icon={<GraduationCap size={20} />}
+                  label="Aprendizado"
+                  active={activePage === "aprendizado"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("aprendizado")}
                 />
               </div>
             </>

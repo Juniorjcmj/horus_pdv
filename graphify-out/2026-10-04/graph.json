@@ -8258,7 +8258,7 @@
       },
       "norm_label": "vendaitemrecord",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1342"
+      "source_location": "L1344"
     },
     {
       "id": "api_netcore_repositories_dataaccess_clientead_horuspdv_api_repositories_dataaccess_clientead",
@@ -24847,19 +24847,19 @@
             "callee": "ExecuteReaderAsync",
             "receiver_type": "SqlCommand",
             "lang": "csharp",
-            "line": "L1286"
+            "line": "L1288"
           },
           {
             "callee": "TryGetValue",
             "receiver_type": "Dictionary",
             "lang": "csharp",
-            "line": "L1292"
+            "line": "L1294"
           }
         ]
       },
       "norm_label": ".listarcancelamentosasync()",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1254"
+      "source_location": "L1256"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_historicovendasab_horuspdv_api_repositories_databaseaccess_historicovendasab_map",
@@ -39323,13 +39323,13 @@
             "callee": "Add",
             "receiver_type": "List",
             "lang": "csharp",
-            "line": "L1141"
+            "line": "L1143"
           },
           {
             "callee": "ExecuteNonQueryAsync",
             "receiver_type": "SqlCommand",
             "lang": "csharp",
-            "line": "L1159"
+            "line": "L1161"
           }
         ]
       },
@@ -86534,7 +86534,7 @@
       },
       "norm_label": "desconto",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1348"
+      "source_location": "L1350"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_historicovendasab_horuspdv_api_repositories_databaseaccess_vendaitemrecord_productcode",
@@ -86551,7 +86551,7 @@
       },
       "norm_label": "productcode",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1344"
+      "source_location": "L1346"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_historicovendasab_horuspdv_api_repositories_databaseaccess_vendaitemrecord_productname",
@@ -86568,7 +86568,7 @@
       },
       "norm_label": "productname",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1345"
+      "source_location": "L1347"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_historicovendasab_horuspdv_api_repositories_databaseaccess_vendaitemrecord_promocaoid",
@@ -86585,7 +86585,7 @@
       },
       "norm_label": "promocaoid",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1349"
+      "source_location": "L1351"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_historicovendasab_horuspdv_api_repositories_databaseaccess_vendaitemrecord_quantity",
@@ -86602,7 +86602,7 @@
       },
       "norm_label": "quantity",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1347"
+      "source_location": "L1349"
     },
     {
       "id": "api_netcore_repositories_databaseaccess_historicovendasab_horuspdv_api_repositories_databaseaccess_vendaitemrecord_unitprice",
@@ -86619,7 +86619,7 @@
       },
       "norm_label": "unitprice",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1346"
+      "source_location": "L1348"
     },
     {
       "id": "api_netcore_repositories_dataaccess_clientead",
@@ -113412,7 +113412,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1241",
+      "source_location": "L1243",
       "weight": 1.0
     },
     {
@@ -113424,7 +113424,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1250",
+      "source_location": "L1252",
       "weight": 1.0
     },
     {
@@ -113532,7 +113532,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1291",
+      "source_location": "L1293",
       "weight": 1.0
     },
     {
@@ -113544,7 +113544,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1294",
+      "source_location": "L1296",
       "weight": 1.0
     },
     {
@@ -113556,7 +113556,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1301",
+      "source_location": "L1303",
       "weight": 1.0
     },
     {
@@ -113568,7 +113568,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1301",
+      "source_location": "L1303",
       "weight": 1.0
     },
     {
@@ -113580,7 +113580,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1303",
+      "source_location": "L1305",
       "weight": 1.0
     },
     {
@@ -113592,7 +113592,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1304",
+      "source_location": "L1306",
       "weight": 1.0
     },
     {
@@ -113604,7 +113604,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1305",
+      "source_location": "L1307",
       "weight": 1.0
     },
     {
@@ -113616,7 +113616,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1319",
+      "source_location": "L1321",
       "weight": 1.0
     },
     {
@@ -147833,7 +147833,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1344",
+      "source_location": "L1346",
       "weight": 1.0
     },
     {
@@ -147845,7 +147845,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1345",
+      "source_location": "L1347",
       "weight": 1.0
     },
     {
@@ -147857,7 +147857,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1346",
+      "source_location": "L1348",
       "weight": 1.0
     },
     {
@@ -147869,7 +147869,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1347",
+      "source_location": "L1349",
       "weight": 1.0
     },
     {
@@ -147881,7 +147881,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1348",
+      "source_location": "L1350",
       "weight": 1.0
     },
     {
@@ -147893,7 +147893,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1349",
+      "source_location": "L1351",
       "weight": 1.0
     },
     {
@@ -160062,7 +160062,7 @@
         "ref_token": "List"
       },
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1254",
+      "source_location": "L1256",
       "weight": 1.0
     },
     {
@@ -180501,7 +180501,7 @@
         "ref_token": "DateTimeOffset"
       },
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1254",
+      "source_location": "L1256",
       "weight": 1.0
     },
     {
@@ -192588,7 +192588,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1254",
+      "source_location": "L1256",
       "weight": 1.0
     },
     {
@@ -203085,7 +203085,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1342",
+      "source_location": "L1344",
       "weight": 1.0
     },
     {
@@ -231770,7 +231770,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1254",
+      "source_location": "L1256",
       "weight": 1.0
     },
     {
@@ -243345,7 +243345,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1212",
+      "source_location": "L1214",
       "weight": 1.0
     },
     {
@@ -243357,7 +243357,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1219",
+      "source_location": "L1221",
       "weight": 1.0
     },
     {
@@ -243369,7 +243369,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1236",
+      "source_location": "L1238",
       "weight": 1.0
     },
     {
@@ -243393,7 +243393,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs",
-      "source_location": "L1278",
+      "source_location": "L1280",
       "weight": 1.0
     },
     {
@@ -253238,5 +253238,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "3896135ac6a2cd0fd82e629986c67035a22ae7c8"
+  "built_at_commit": "d3ebc3dcc646a02f3bb74e904bda90688bcfd5b4"
 }

@@ -102,6 +102,7 @@ builder.Services.AddScoped<RelatorioAB>();
 builder.Services.AddScoped<LojaGatewayConfigAB>();
 builder.Services.AddScoped<EmpresaTemaAB>();
 builder.Services.AddScoped<RegrasEmissaoNfceAB>();
+builder.Services.AddScoped<TreinamentoAB>();
 builder.Services.AddScoped<MapeamentoProdutoFornecedorAB>();
 builder.Services.AddScoped<HorusCaixaService>();
 builder.Services.AddScoped<HorusSecurityStore>();

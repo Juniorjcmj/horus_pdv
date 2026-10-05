@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1791055612.4787173,
-    "seen": 1791055811.087377,
-    "ast_hash": "a5f242161548ff343f21d20ff95e8976",
+    "mtime": 1791168577.8859587,
+    "seen": 1791168995.4543407,
+    "ast_hash": "1ccfb2431404ad49d9345c3facc6f96c",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791073577.3295906,
-    "seen": 1791073644.9606204,
-    "ast_hash": "6165dce1b6e66c4d06597072b296420e",
+    "mtime": 1791168577.8001688,
+    "seen": 1791168995.4951882,
+    "ast_hash": "fd075ee3580a0c09d04b15902ed1e816",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1791043806.1303246,
-    "seen": 1791043964.2037172,
-    "ast_hash": "67fd93ae96ad8cc1719c5e4313e5fe9e",
+    "mtime": 1791168715.7375076,
+    "seen": 1791168995.5280817,
+    "ast_hash": "418027aaff9bbb43c6b6626d4205cca3",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -804,9 +804,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/AppSidebar.tsx": {
-    "mtime": 1791043805.8730876,
-    "seen": 1791043964.2094247,
-    "ast_hash": "9c4bc29b2c52be353729ec0f2ecf8390",
+    "mtime": 1791168712.829173,
+    "seen": 1791168995.5565915,
+    "ast_hash": "25106e60c341600b8f1030083c8dcd0d",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/UserMenu.tsx": {
@@ -3783,6 +3783,30 @@
     "mtime": 1791059491.6958663,
     "seen": 1791059615.6694834,
     "ast_hash": "3498a781f7ce346e752e1b0b550cbc64",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Admin/TreinamentoController.cs": {
+    "mtime": 1791168622.9180634,
+    "seen": 1791168995.4173734,
+    "ast_hash": "dc815d3c68d3832c82da9427721aa089",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/TreinamentoAB.cs": {
+    "mtime": 1791168602.4129643,
+    "seen": 1791168995.4951813,
+    "ast_hash": "1535fb17f52bf1b55d6fdea699aed97a",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/pages/Admin/AprendizadoPage.tsx": {
+    "mtime": 1791168686.9868462,
+    "seen": 1791168995.5824685,
+    "ast_hash": "41b2908aed0c1f727fd280b5de5bdaeb",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/services/api/treinamentoService.ts": {
+    "mtime": 1791168647.5555878,
+    "seen": 1791168995.6169426,
+    "ast_hash": "bbc0fa92289d10a9f27245015fc60755",
     "semantic_hash": ""
   }
 }

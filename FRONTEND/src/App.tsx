@@ -51,6 +51,7 @@ const ProductRegisterPage = lazy(
 const SalesHistoryPage = lazy(() => import("@/pages/Admin/SalesHistoryPage"));
 const PromocoesPage = lazy(() => import("@/pages/Admin/PromocoesPage"));
 const ValidadePage = lazy(() => import("@/pages/Admin/ValidadePage"));
+const AprendizadoPage = lazy(() => import("@/pages/Admin/AprendizadoPage"));
 const FiadoPage = lazy(() => import("@/pages/Admin/FiadoPage"));
 const SalesStartPage = lazy(() => import("@/pages/Admin/SalesStartPage"));
 const NovoPedidoPage = lazy(() => import("@/pages/Admin/NovoPedidoPage"));
@@ -97,7 +98,7 @@ type CurrentUser = {
 // cadastros, relatórios, fiscal, pedidos ou configurações da empresa. A restrição de verdade é
 // sempre aplicada no backend (HorusAuthorizeRoles); isso aqui é só para não deixar a tela mostrar
 // menus/páginas que dariam 403 na hora de carregar os dados.
-const CAIXA_ROLE_ALLOWED_PAGES: PageKey[] = ["vendas", "caixa", "editar-perfil", "configuracoes"];
+const CAIXA_ROLE_ALLOWED_PAGES: PageKey[] = ["vendas", "caixa", "aprendizado", "editar-perfil", "configuracoes"];
 
 type ThemeMode = "light" | "dark";
 type PublicAuthPage =
@@ -168,6 +169,7 @@ export default function App() {
       "gerenciamento-geral",
       "detalhe-licenca",
       "sobre-pdv",
+      "aprendizado",
       "editar-perfil",
       "configuracoes",
     ].includes(value);
@@ -260,6 +262,7 @@ export default function App() {
     "gerenciamento-geral": "Gerenciamento Geral de Empresas",
     "detalhe-licenca": "Detalhes da Licença",
     "sobre-pdv": "Sobre PDV",
+    aprendizado: "Aprendizado",
     "editar-perfil": "Meu Perfil",
     configuracoes: "Configurações",
   };
@@ -333,6 +336,8 @@ export default function App() {
         return LicenseDetailsPage;
       case "sobre-pdv":
         return AboutPdvPage;
+      case "aprendizado":
+        return AprendizadoPage;
       default:
         return EmptyPage;
     }
