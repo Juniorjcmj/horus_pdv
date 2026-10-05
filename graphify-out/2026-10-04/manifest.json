@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
-    "mtime": 1791046461.6374822,
-    "seen": 1791046498.0779438,
-    "ast_hash": "400c9be902fe2b07a3b4f72ba9d12d4b",
+    "mtime": 1791113315.2987185,
+    "seen": 1791113355.0429773,
+    "ast_hash": "6e1764efe2308f2c911519ade89eb00b",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Clientes/ClienteService.cs": {

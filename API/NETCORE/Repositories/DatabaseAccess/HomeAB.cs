@@ -3,6 +3,7 @@
  * Objetivo: consolidar indicadores reais da home a partir das tabelas operacionais.
  * Entradas esperadas: recebe conexão configurada e retorna dados agregados para o dashboard.
  */
+using HORUSPDV_API.Services.Shared;
 using Microsoft.Data.SqlClient;
 using System.Globalization;
 
@@ -16,8 +17,10 @@ public class HomeAB(Connection connection)
     {
         var sales = await ListarVendasAsync(companyId);
         var products = await ListarProdutosAsync(companyId);
-        var today = DateTimeOffset.Now.Date;
-        var todaySales = sales.Where(item => item.SaleDate.Date == today).ToList();
+        // O dia da venda é o dia em Brasília: SaleDate vem gravada em UTC pelo PDV, e uma venda das 21h
+        // (00h UTC) cairia no dia seguinte. "Hoje" também é a data de Brasília, não a do relógio do servidor.
+        var today = HorusDateTime.Now.Date;
+        var todaySales = sales.Where(item => HorusDateTime.ToBrasilia(item.SaleDate).Date == today).ToList();
         var todayRevenue = todaySales.Sum(item => item.TotalAmount);
         var todayCustomers = todaySales
             .Where(item => !string.IsNullOrWhiteSpace(item.CustomerCpf) && item.CustomerCpf != "-")
@@ -119,10 +122,10 @@ public class HomeAB(Connection connection)
 
     private static int[] BuildDailyTrend(List<HomeSaleRow> sales, Func<List<HomeSaleRow>, double> selector)
     {
-        var today = DateTimeOffset.Now.Date;
+        var today = HorusDateTime.Now.Date;
         return Enumerable.Range(0, 7)
             .Select(index => today.AddDays(index - 6))
-            .Select(day => (int)Math.Round(selector(sales.Where(item => item.SaleDate.Date == day).ToList())))
+            .Select(day => (int)Math.Round(selector(sales.Where(item => HorusDateTime.ToBrasilia(item.SaleDate).Date == day).ToList())))
             .ToArray();
     }
 
