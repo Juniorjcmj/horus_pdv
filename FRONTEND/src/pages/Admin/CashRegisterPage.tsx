@@ -20,7 +20,7 @@ import {
   UnlockKeyhole,
   Wallet,
 } from "lucide-react";
-import { type ClipboardEvent, type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type ClipboardEvent, useCallback, useEffect, useMemo, useState } from "react";
 import CashClosingSummaryModal, { printCashClosingReceipt } from "@/components/Admin/CashClosingSummaryModal";
 import CashMovementModal from "@/components/Admin/CashMovementModal";
 import PageHeader from "@/components/Admin/PageHeader";
@@ -36,28 +36,17 @@ import {
   type CashRegisterSessionDto,
   type CashRegisterStatusDto,
 } from "@/services/api/cashRegisterService";
+import { saveCashStatus, loadCachedCashStatus } from "@/infrastructure/database/repositories/CashSessionRepository";
+import { useCashRegisterActions } from "@/hooks/useCashRegisterActions";
 import {
-  saveCashStatus,
-  loadCachedCashStatus,
-  openCashLocal,
-  closeCashLocal,
-  registerMovementLocal,
-} from "@/infrastructure/database/repositories/CashSessionRepository";
+  MANAGER_ROLES,
+  cashPaymentLabel as paymentLabel,
+  formatElapsed,
+  hasNonZeroDifference,
+  preventInvalidMoneyBeforeInput,
+} from "@/utils/cashRegisterFormat";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
 import { getStoredAuthUser } from "@/utils/authStorage";
-
-const MANAGER_ROLES = ["administrador", "gerente"];
-
-const PAYMENT_LABELS: Record<string, string> = {
-  dinheiro: "Dinheiro",
-  pix: "PIX",
-  debito: "Cartão Débito",
-  credito: "Cartão Crédito",
-};
-
-function paymentLabel(paymentType: string) {
-  return PAYMENT_LABELS[paymentType.toLowerCase()] ?? paymentType;
-}
 
 function formatDateTime(value?: string | null) {
   if (!value) return "-";
@@ -74,26 +63,6 @@ function formatDateTime(value?: string | null) {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function formatElapsed(minutes: number) {
-  if (minutes < 1) return "menos de 1 min";
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  if (hours === 0) return `${remainingMinutes} min`;
-  return `${hours}h ${String(remainingMinutes).padStart(2, "0")}min`;
-}
-
-function preventInvalidMoneyBeforeInput(event: FormEvent<HTMLInputElement>) {
-  const data = (event.nativeEvent as InputEvent).data ?? "";
-  if (data && /[^0-9,.]/.test(data)) {
-    event.preventDefault();
-  }
-}
-
-function hasNonZeroDifference(value?: string | null) {
-  if (!value) return false;
-  return value !== "0,00" && value !== "-0,00";
 }
 
 function SessionRow({
@@ -130,7 +99,7 @@ function SessionRow({
       </td>
       <td className="px-3 py-3 text-right">
         {session.differenceAmount ? (
-          <span className={temDiferenca ? "font-semibold text-danger" : "text-text-tertiary"}>
+          <span className={temDiferenca ? "font-semibold text-primary" : "text-text-tertiary"}>
             R$ {session.differenceAmount}
           </span>
         ) : (
@@ -158,7 +127,8 @@ export default function CashRegisterPage() {
   const [company, setCompany] = useState<CompanyDto | null>(null);
   const [companyName, setCompanyName] = useState("Quack PDV");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const cashActions = useCashRegisterActions(setCashStatus);
+  const saving = cashActions.saving;
   const [openingAmount, setOpeningAmount] = useState("0,00");
   const [closingAmount, setClosingAmount] = useState("0,00");
   const [closingNote, setClosingNote] = useState("");
@@ -251,25 +221,7 @@ export default function CashRegisterPage() {
   };
 
   const openCashRegister = async () => {
-    setSaving(true);
-    try {
-      const status = await cashRegisterService.open(openingAmount);
-      setCashStatus(status ?? null);
-      if (status) {
-        void saveCashStatus(status);
-      }
-      Toast.success("Caixa aberto. Frente de caixa liberada para venda.");
-    } catch (onlineError) {
-      try {
-        const localStatus = await openCashLocal(openingAmount, loggedUser?.id, loggedUser?.name);
-        setCashStatus(localStatus);
-        Toast.info("Caixa aberto localmente (modo offline). Será sincronizado ao reconectar.");
-      } catch (err) {
-        Toast.error(onlineError instanceof Error ? onlineError.message : "Não foi possível abrir o caixa.");
-      }
-    } finally {
-      setSaving(false);
-    }
+    await cashActions.openCash(openingAmount);
   };
 
   // A lista de histórico vem sem movimentos nem totais por forma de pagamento (DTO leve):
@@ -293,70 +245,21 @@ export default function CashRegisterPage() {
     const confirmed = await statusDialog.confirm("Fechar o caixa atual?");
     if (!confirmed) return;
 
-    setSaving(true);
-    try {
-      const status = await cashRegisterService.close(
-        closingAmount,
-        closingNote,
-        hasDifference ? differenceReason.trim() : undefined,
-      );
-      setCashStatus(status ?? null);
-      if (status) {
-        void saveCashStatus(status);
-      }
-      setClosingNote("");
-      setDifferenceReason("");
-      if (status?.lastSession) {
-        setClosingSummary(status.lastSession);
-        printCashClosingReceipt(status.lastSession, company, companyName);
-      }
-      Toast.success("Caixa fechado. Vendas bloqueadas até nova abertura.");
-    } catch (onlineError) {
-      try {
-        const localStatus = await closeCashLocal(
-          closingAmount,
-          closingNote,
-          hasDifference ? differenceReason.trim() : undefined,
-          loggedUser?.id,
-          loggedUser?.name,
-        );
-        setCashStatus(localStatus);
-        setClosingNote("");
-        setDifferenceReason("");
-        if (localStatus?.lastSession) {
-          setClosingSummary(localStatus.lastSession);
-          printCashClosingReceipt(localStatus.lastSession, company, companyName);
-        }
-        Toast.info("Caixa fechado localmente (modo offline). O encerramento será sincronizado ao reconectar.");
-      } catch (err) {
-        Toast.error(onlineError instanceof Error ? onlineError.message : "Não foi possível fechar o caixa.");
-      }
-    } finally {
-      setSaving(false);
-    }
+    const closedSession = await cashActions.closeCash(
+      closingAmount,
+      closingNote,
+      hasDifference ? differenceReason.trim() : undefined,
+    );
+    if (closedSession === null) return;
+    setClosingNote("");
+    setDifferenceReason("");
+    setClosingSummary(closedSession);
+    printCashClosingReceipt(closedSession, company, companyName);
   };
 
   const registerMovement = async (tipo: CashMovementType, valor: string, motivo: string) => {
-    try {
-      const status = await cashRegisterService.registrarMovimento(tipo, valor, motivo);
-      setCashStatus(status ?? null);
+    if (await cashActions.registerMovement(tipo, valor, motivo)) {
       setMovementModalType(null);
-      Toast.success(tipo === "Sangria" ? "Sangria registrada." : "Reforço registrado.");
-    } catch (onlineError) {
-      try {
-        const localStatus = await registerMovementLocal(
-          tipo,
-          valor,
-          motivo,
-          loggedUser?.id,
-          loggedUser?.name,
-        );
-        setCashStatus(localStatus);
-        setMovementModalType(null);
-        Toast.info(`${tipo} registrado localmente (modo offline).`);
-      } catch (err) {
-        Toast.error(onlineError instanceof Error ? onlineError.message : "Não foi possível registrar o movimento.");
-      }
     }
   };
 
@@ -473,7 +376,7 @@ export default function CashRegisterPage() {
                   <button
                     type="button"
                     onClick={() => setMovementModalType("Sangria")}
-                    className="inline-flex items-center gap-1 rounded-lg border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-semibold text-danger hover:bg-danger/20"
+                    className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20"
                   >
                     <ArrowDownCircle size={14} />
                     Sangria
@@ -486,7 +389,7 @@ export default function CashRegisterPage() {
                 {currentSession.movimentos.map((item) => (
                   <div key={item.id} className="flex items-start justify-between text-sm">
                     <div>
-                      <span className={item.tipo === "Sangria" ? "font-semibold text-danger" : "font-semibold text-success"}>
+                      <span className={item.tipo === "Sangria" ? "font-semibold text-primary" : "font-semibold text-success"}>
                         {item.tipo === "Sangria" ? "Sangria" : "Reforço"}
                       </span>
                       <p className="text-xs text-text-secondary">{item.motivo}</p>
@@ -559,7 +462,7 @@ export default function CashRegisterPage() {
                     className={`rounded-xl border p-3 text-sm ${
                       difference === 0
                         ? "border-success/30 bg-success/10 text-success"
-                        : "border-danger/30 bg-danger/10 text-danger"
+                        : "border-primary/30 bg-primary/10 text-primary"
                     }`}
                   >
                     <div className="flex justify-between font-bold">

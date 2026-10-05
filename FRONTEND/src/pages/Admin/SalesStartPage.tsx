@@ -25,6 +25,7 @@ import {
   UserPlus,
   Users,
   UserX,
+  Wallet,
   X,
 } from "lucide-react";
 import {
@@ -78,6 +79,7 @@ import { computeSalePayloadHash } from "@/utils/cryptoHash";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 import { useOutboxStatus } from "@/hooks/useOutboxStatus";
 import OutboxStatusModal from "@/components/Admin/OutboxStatusModal";
+import PdvCashPanelModal from "@/components/Admin/PdvCashPanelModal";
 import { buildDanfePrintHtml } from "@/utils/danfePrint";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
@@ -305,6 +307,7 @@ export default function SalesStartPage({
   /** Pendência antiga (> 2h): risco de perda se o navegador limpar os dados ou o caixa for trocado. */
   const unsyncedStale = pendingCount > 0 && unsyncedAgeMin >= 120;
   const [outboxModalOpen, setOutboxModalOpen] = useState(false);
+  const [cashPanelOpen, setCashPanelOpen] = useState(false);
   const [nfceCancelModalOpen, setNfceCancelModalOpen] = useState(false);
   const [nfceCancelInitialDoc, setNfceCancelInitialDoc] = useState<FiscalDocumentDetailDto | null>(null);
   const [sessionSalesModalOpen, setSessionSalesModalOpen] = useState(false);
@@ -1101,6 +1104,8 @@ export default function SalesStartPage({
         Toast.error(
           latestCashStatus?.blockReason || "Abra o caixa antes de iniciar uma venda.",
         );
+        // Já abre o painel de caixa para o operador resolver sem sair da frente de venda.
+        setCashPanelOpen(true);
         return;
       }
     } catch {
@@ -1768,7 +1773,14 @@ export default function SalesStartPage({
         void handleSyncCloud();
         return;
       }
-      if (nfceCancelModalOpen || sessionSalesModalOpen || saleDetailModalOpen) return;
+      if (nfceCancelModalOpen || sessionSalesModalOpen || saleDetailModalOpen || cashPanelOpen) return;
+
+      // F6: painel de caixa (abertura, sangria, reforço e fechamento) sem sair da frente de venda.
+      if (event.key === "F6" && !checkoutOpen) {
+        event.preventDefault();
+        setCashPanelOpen(true);
+        return;
+      }
 
       if (event.key === "F2") {
         event.preventDefault();
@@ -1825,7 +1837,7 @@ export default function SalesStartPage({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [addItem, cancelSale, checkoutOpen, handleSyncCloud, isConfirmingSale, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen, sessionSalesModalOpen, saleDetailModalOpen]);
+  }, [addItem, cancelSale, checkoutOpen, handleSyncCloud, isConfirmingSale, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen, sessionSalesModalOpen, saleDetailModalOpen, cashPanelOpen]);
 
   const { dateLabel, timeLabel } = formatDateTime(now);
   const cashCanSell = cashStatus?.canSell === true;
@@ -1905,6 +1917,15 @@ export default function SalesStartPage({
                 <span className="hidden sm:inline">
                   {isSyncingCloud ? "Sincronizando..." : "Sincronizar Nuvem (F10)"}
                 </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCashPanelOpen(true)}
+                title="Abertura, sangria, reforço e fechamento do caixa (F6)"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 focus:outline-none"
+              >
+                <Wallet size={16} />
+                <span className="hidden sm:inline">Caixa (F6)</span>
               </button>
               <button
                 type="button"
@@ -2196,7 +2217,17 @@ export default function SalesStartPage({
                   cashCanSell ? "bg-success animate-pulse" : "bg-primary"
                 }`}
               />
-              {cashLabel}
+              <span className="min-w-0 flex-1 truncate">{cashLabel}</span>
+              {cashStatus && !cashCanSell ? (
+                <button
+                  type="button"
+                  onClick={() => setCashPanelOpen(true)}
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-2.5 py-1 font-semibold text-white transition hover:bg-primary/90 active:scale-95"
+                >
+                  <Wallet size={13} />
+                  {cashStatus.currentSession ? "Fechar caixa (F6)" : "Abrir caixa (F6)"}
+                </button>
+              ) : null}
             </div>
 
             <div className="border-b border-border-primary bg-bg-gray-theme/40 px-3 py-4">
@@ -3360,6 +3391,19 @@ export default function SalesStartPage({
         isOpen={outboxModalOpen}
         onClose={() => setOutboxModalOpen(false)}
       />
+
+      {/* Painel de caixa (F6): abertura, sangria, reforço e fechamento sem sair da frente de venda */}
+      {cashPanelOpen ? (
+        <PdvCashPanelModal
+          cashStatus={cashStatus}
+          company={company}
+          onStatusChange={setCashStatus}
+          onClose={() => {
+            setCashPanelOpen(false);
+            productInputRef.current?.focus();
+          }}
+        />
+      ) : null}
 
       {/* Modal de Listagem de Vendas do Caixa Atual */}
       <PdvCurrentSessionSalesModal

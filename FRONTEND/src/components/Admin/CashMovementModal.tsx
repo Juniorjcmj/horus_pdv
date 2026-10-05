@@ -55,7 +55,7 @@ export default function CashMovementModal({
           <div className="flex items-center gap-2">
             <span
               className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${
-                isSangria ? "bg-danger/10 text-danger" : "bg-success/10 text-success"
+                isSangria ? "bg-primary/10 text-primary" : "bg-success/10 text-success"
               }`}
             >
               {isSangria ? <ArrowDownCircle size={18} /> : <ArrowUpCircle size={18} />}
@@ -98,7 +98,7 @@ export default function CashMovementModal({
               placeholder={isSangria ? "Ex.: envio ao cofre às 15h" : "Ex.: troco adicional recebido do gerente"}
             />
             {motivo.trim().length > 0 && motivo.trim().length < 3 ? (
-              <span className="mt-1 block text-xs text-danger">Mínimo de 3 caracteres.</span>
+              <span className="mt-1 block text-xs text-primary">Mínimo de 3 caracteres.</span>
             ) : null}
           </label>
         </div>
@@ -113,7 +113,7 @@ export default function CashMovementModal({
             loadingLabel="Registrando..."
             disabled={motivo.trim().length < 3}
             className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 ${
-              isSangria ? "bg-danger hover:bg-danger/90" : "bg-success hover:bg-success/90"
+              isSangria ? "bg-primary hover:bg-primary/90" : "bg-success hover:bg-success/90"
             }`}
           >
             Confirmar {isSangria ? "sangria" : "reforço"}
