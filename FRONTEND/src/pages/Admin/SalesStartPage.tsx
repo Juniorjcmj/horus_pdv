@@ -7,6 +7,8 @@
 import {
   AlertOctagon,
   AlertTriangle,
+  ArrowDownCircle,
+  ArrowUpCircle,
   Building2,
   CheckCircle2,
   Image as ImageIcon,
@@ -80,6 +82,11 @@ import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 import { useOutboxStatus } from "@/hooks/useOutboxStatus";
 import OutboxStatusModal from "@/components/Admin/OutboxStatusModal";
 import PdvCashPanelModal from "@/components/Admin/PdvCashPanelModal";
+import CashMovementModal from "@/components/Admin/CashMovementModal";
+import { useCashRegisterActions } from "@/hooks/useCashRegisterActions";
+import type { CashMovementType } from "@/services/api/cashRegisterService";
+import { getStoredAuthUser } from "@/utils/authStorage";
+import { MANAGER_ROLES } from "@/utils/cashRegisterFormat";
 import { buildDanfePrintHtml } from "@/utils/danfePrint";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
@@ -228,6 +235,14 @@ export default function SalesStartPage({
   const { products, reload: reloadProducts } = useProducts();
   const [company, setCompany] = useState<CompanyDto | null>(null);
   const [cashStatus, setCashStatus] = useState<CashRegisterStatusDto | null>(null);
+  const cashActions = useCashRegisterActions(setCashStatus);
+  // Mesma regra da tela de Caixa: só quem abriu o turno ou gerente/administrador lança sangria/reforço.
+  const loggedCashUser = useMemo(() => getStoredAuthUser(), []);
+  const canMoveCash = (() => {
+    const session = cashStatus?.currentSession ?? null;
+    if (!session || !loggedCashUser) return true;
+    return MANAGER_ROLES.includes(loggedCashUser.role.toLowerCase()) || session.operatorId === loggedCashUser.id;
+  })();
   const [selectedProductId, setSelectedProductId] = useState("");
   const [showProductOptions, setShowProductOptions] = useState(false);
   const [highlightedProductIndex, setHighlightedProductIndex] = useState(0);
@@ -308,6 +323,7 @@ export default function SalesStartPage({
   const unsyncedStale = pendingCount > 0 && unsyncedAgeMin >= 120;
   const [outboxModalOpen, setOutboxModalOpen] = useState(false);
   const [cashPanelOpen, setCashPanelOpen] = useState(false);
+  const [cashMovementType, setCashMovementType] = useState<CashMovementType | null>(null);
   const [nfceCancelModalOpen, setNfceCancelModalOpen] = useState(false);
   const [nfceCancelInitialDoc, setNfceCancelInitialDoc] = useState<FiscalDocumentDetailDto | null>(null);
   const [sessionSalesModalOpen, setSessionSalesModalOpen] = useState(false);
@@ -1773,12 +1789,26 @@ export default function SalesStartPage({
         void handleSyncCloud();
         return;
       }
-      if (nfceCancelModalOpen || sessionSalesModalOpen || saleDetailModalOpen || cashPanelOpen) return;
+      if (nfceCancelModalOpen || sessionSalesModalOpen || saleDetailModalOpen || cashPanelOpen || cashMovementType) return;
 
       // F6: painel de caixa (abertura, sangria, reforço e fechamento) sem sair da frente de venda.
       if (event.key === "F6" && !checkoutOpen) {
         event.preventDefault();
         setCashPanelOpen(true);
+        return;
+      }
+
+      // F1 reforço / F3 sangria direto da frente de venda (caixa aberto e operador autorizado).
+      if ((event.key === "F1" || event.key === "F3") && !checkoutOpen) {
+        event.preventDefault();
+        if (!cashStatus?.canSell) {
+          Toast.error("Abra o caixa antes de lançar sangria ou reforço.");
+          setCashPanelOpen(true);
+        } else if (!canMoveCash) {
+          Toast.error("Só quem abriu o caixa ou um gerente/administrador pode lançar sangria ou reforço.");
+        } else {
+          setCashMovementType(event.key === "F1" ? "Reforco" : "Sangria");
+        }
         return;
       }
 
@@ -1837,7 +1867,7 @@ export default function SalesStartPage({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [addItem, cancelSale, checkoutOpen, handleSyncCloud, isConfirmingSale, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen, sessionSalesModalOpen, saleDetailModalOpen, cashPanelOpen]);
+  }, [addItem, cancelSale, checkoutOpen, handleSyncCloud, isConfirmingSale, openPayment, quantity, selectedProductId, cart.length, showProductOptions, nfceCancelModalOpen, sessionSalesModalOpen, saleDetailModalOpen, cashPanelOpen, cashMovementType, cashStatus?.canSell, canMoveCash]);
 
   const { dateLabel, timeLabel } = formatDateTime(now);
   const cashCanSell = cashStatus?.canSell === true;
@@ -1861,23 +1891,23 @@ export default function SalesStartPage({
         } flex-col overflow-visible bg-bg-light shadow-md md:h-full md:overflow-hidden`}
       >
         <header className="relative border-b border-border-secondary bg-[linear-gradient(100deg,var(--color-action-accent),var(--color-action-hover-accent))] px-4 py-3 text-text-light shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <img
                 src="/quack-logo-v5.png"
                 alt="Quack Sistemas"
                 className="h-10 md:h-12 w-auto max-w-[120px] rounded-xl object-contain bg-white/90 p-1 shadow-md"
               />
               <div>
-                <h1 className="font-display text-xl md:text-3xl font-bold italic leading-none text-white">
+                <h1 className="whitespace-nowrap font-display text-xl font-bold italic leading-none text-white md:text-2xl xl:text-3xl">
                   Quack Sistemas
                 </h1>
-                <p className="text-xs md:text-sm text-white/90 leading-tight mt-0.5">
+                <p className="mt-0.5 hidden whitespace-nowrap text-xs leading-tight text-white/90 xl:block xl:text-sm">
                   Frente de Caixa • Soluções para seu negócio
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 md:gap-4">
+            <div className="flex shrink-0 items-center gap-2 xl:gap-3">
               {(pendingCount > 0 || failedCount > 0) && (
                 <button
                   type="button"
@@ -1914,8 +1944,8 @@ export default function SalesStartPage({
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-60 focus:outline-none"
               >
                 <RefreshCw size={15} className={isSyncingCloud ? "animate-spin" : ""} />
-                <span className="hidden sm:inline">
-                  {isSyncingCloud ? "Sincronizando..." : "Sincronizar Nuvem (F10)"}
+                <span className="hidden whitespace-nowrap lg:inline">
+                  {isSyncingCloud ? "Sincronizando..." : "Sincronizar (F10)"}
                 </span>
               </button>
               <button
@@ -1925,7 +1955,7 @@ export default function SalesStartPage({
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 focus:outline-none"
               >
                 <Wallet size={16} />
-                <span className="hidden sm:inline">Caixa (F6)</span>
+                <span className="hidden whitespace-nowrap lg:inline">Caixa (F6)</span>
               </button>
               <button
                 type="button"
@@ -1934,7 +1964,7 @@ export default function SalesStartPage({
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 focus:outline-none"
               >
                 <Receipt size={16} />
-                <span className="hidden sm:inline">Vendas do Caixa (F9)</span>
+                <span className="hidden whitespace-nowrap lg:inline">Vendas (F9)</span>
               </button>
               <button
                 type="button"
@@ -1946,7 +1976,7 @@ export default function SalesStartPage({
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-danger/80 hover:bg-danger px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 focus:outline-none"
               >
                 <AlertOctagon size={16} />
-                <span className="hidden sm:inline">Cancelar NFC-e (F7)</span>
+                <span className="hidden whitespace-nowrap lg:inline">Cancelar NFC-e (F7)</span>
               </button>
               <button
                 type="button"
@@ -1955,10 +1985,10 @@ export default function SalesStartPage({
                 className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-white/20 active:scale-95 focus:outline-none"
               >
                 {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-                <span className="hidden sm:inline">{isFullscreen ? "Sair Tela Cheia" : "Tela Cheia (F11)"}</span>
+                <span className="hidden whitespace-nowrap xl:inline">{isFullscreen ? "Sair da tela cheia" : "Tela cheia (F11)"}</span>
               </button>
-              <div className="text-right text-xs md:text-sm">
-                <p className="capitalize">{dateLabel}</p>
+              <div className="whitespace-nowrap text-right text-xs md:text-sm">
+                <p className="hidden capitalize xl:block">{dateLabel}</p>
                 <p className="text-base font-semibold md:text-lg">{timeLabel}</p>
               </div>
             </div>
@@ -2227,6 +2257,28 @@ export default function SalesStartPage({
                   <Wallet size={13} />
                   {cashStatus.currentSession ? "Fechar caixa (F6)" : "Abrir caixa (F6)"}
                 </button>
+              ) : null}
+              {cashCanSell && canMoveCash ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setCashMovementType("Reforco")}
+                    title="Lançar reforço (entrada de dinheiro na gaveta) — F1"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-success/40 bg-bg-light px-2.5 py-1 font-semibold text-success transition hover:bg-success/15 active:scale-95"
+                  >
+                    <ArrowUpCircle size={13} />
+                    Reforço (F1)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCashMovementType("Sangria")}
+                    title="Lançar sangria (retirada de dinheiro da gaveta) — F3"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-primary/40 bg-bg-light px-2.5 py-1 font-semibold text-primary transition hover:bg-primary/10 active:scale-95"
+                  >
+                    <ArrowDownCircle size={13} />
+                    Sangria (F3)
+                  </button>
+                </>
               ) : null}
             </div>
 
@@ -3391,6 +3443,23 @@ export default function SalesStartPage({
         isOpen={outboxModalOpen}
         onClose={() => setOutboxModalOpen(false)}
       />
+
+      {/* Sangria / reforço direto da frente de venda (F3 / F1) */}
+      {cashMovementType ? (
+        <CashMovementModal
+          tipo={cashMovementType}
+          onClose={() => {
+            setCashMovementType(null);
+            productInputRef.current?.focus();
+          }}
+          onConfirm={async (valor, motivo) => {
+            if (await cashActions.registerMovement(cashMovementType, valor, motivo)) {
+              setCashMovementType(null);
+              productInputRef.current?.focus();
+            }
+          }}
+        />
+      ) : null}
 
       {/* Painel de caixa (F6): abertura, sangria, reforço e fechamento sem sair da frente de venda */}
       {cashPanelOpen ? (

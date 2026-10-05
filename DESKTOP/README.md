@@ -28,8 +28,23 @@ Para apontar para outro ambiente (ex.: frontend local): `QUACK_PDV_URL=http://lo
 Arquivo `%APPDATA%\Quack PDV\config.json`:
 
 ```json
-{ "url": "https://pdv.quacksistemas.com.br", "fullscreen": true, "confirmClose": true }
+{
+  "url": "https://pdv.quacksistemas.com.br",
+  "fullscreen": true,
+  "confirmClose": true,
+  "autoZoom": true,
+  "zoomAdjust": 1
+}
 ```
+
+## Tamanho da tela (zoom automático)
+
+O PDV foi desenhado para **1366×768**. O programa aplica um zoom proporcional ao tamanho da janela,
+para a tela inteira (letras, ícones, campos) ficar igual em qualquer monitor: ~0,8 em 1024×768,
+~1,4 em 1920×1080, ~1,9 em 2560×1440. Já considera a escala de exibição do Windows (125%, 150%…).
+
+Se o operador quiser maior ou menor, usa **Ctrl +** / **Ctrl −** (ou Ctrl + roda do mouse); o ajuste
+fica salvo em `zoomAdjust`. **Ctrl+0** volta ao automático. `"autoZoom": false` desliga o automático.
 
 ## Atalhos
 
@@ -38,7 +53,10 @@ Arquivo `%APPDATA%\Quack PDV\config.json`:
 | F11 | Liga/desliga tela cheia |
 | F5 / Ctrl+R | Recarrega |
 | Ctrl+Shift+R | Recarrega ignorando o cache |
-| F12 | Ferramentas de desenvolvedor (suporte) |
+| Ctrl + / Ctrl − / Ctrl+0 | Aumenta / diminui / volta ao tamanho automático |
+| Ctrl+Shift+I | Ferramentas de desenvolvedor (suporte) |
+
+O F12 não é capturado pelo programa: é o atalho de **Pagamento** do PDV.
 
 ## Observações
 

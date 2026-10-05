@@ -1,7 +1,7 @@
 # Graph Report - horus_pdv  (2026-10-05)
 
 ## Corpus Check
-- 630 files · ~1,278,143 words
+- 630 files · ~1,277,845 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary

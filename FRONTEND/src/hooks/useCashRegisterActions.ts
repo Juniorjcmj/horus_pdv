@@ -96,7 +96,11 @@ export function useCashRegisterActions(onStatus: StatusSetter) {
       } catch (onlineError) {
         try {
           onStatus(await registerMovementLocal(tipo, valor, motivo, user?.id, user?.name));
-          Toast.info(`${tipo === "Sangria" ? "Sangria" : "Reforço"} registrado localmente (modo offline).`);
+          Toast.info(
+            tipo === "Sangria"
+              ? "Sangria registrada localmente (modo offline)."
+              : "Reforço registrado localmente (modo offline).",
+          );
           return true;
         } catch {
           Toast.error(onlineError instanceof Error ? onlineError.message : "Não foi possível registrar o movimento.");

@@ -7,10 +7,16 @@
  *           programa (%APPDATA%\Quack PDV) e não somem ao limpar o histórico do Chrome/Edge.
  *
  * Configuração opcional: %APPDATA%\Quack PDV\config.json
- *   { "url": "https://pdv.quacksistemas.com.br", "fullscreen": true, "confirmClose": true }
+ *   { "url": "https://pdv.quacksistemas.com.br", "fullscreen": true, "confirmClose": true,
+ *     "autoZoom": true, "zoomAdjust": 1 }
  * Variável de ambiente QUACK_PDV_URL sobrescreve a URL (útil para apontar para o ambiente de dev).
  *
- * Atalhos: F11 tela cheia | F5 / Ctrl+R recarregar | Ctrl+Shift+R recarregar sem cache | F12 DevTools (suporte)
+ * Zoom automático: o PDV foi desenhado para 1366x768. A janela aplica um zoom proporcional ao tamanho
+ * dela (como o Ctrl+ do navegador) para a tela inteira — letras, ícones e campos — ficar do mesmo jeito
+ * em qualquer monitor. "zoomAdjust" é o ajuste fino do operador (Ctrl+ / Ctrl- / Ctrl+0), salvo no config.
+ *
+ * Atalhos: F11 tela cheia | F5 / Ctrl+R recarregar | Ctrl+Shift+R recarregar sem cache | Ctrl+Shift+I DevTools (suporte)
+ *          Ctrl+= / Ctrl+- aumentar/diminuir | Ctrl+0 voltar ao tamanho automático
  */
 const { app, BrowserWindow, dialog, shell } = require("electron");
 const fs = require("node:fs");
@@ -20,10 +26,39 @@ const DEFAULT_CONFIG = {
   url: "https://pdv.quacksistemas.com.br",
   fullscreen: true,
   confirmClose: true,
+  autoZoom: true,
+  zoomAdjust: 1,
 };
 
+/** Resolução para a qual o PDV foi desenhado: nela o zoom automático é 1. */
+const BASE_WIDTH = 1366;
+const BASE_HEIGHT = 768;
+const MIN_ZOOM = 0.6;
+/** Piso do zoom automático: abaixo disso as letras pequenas do PDV (10–11px) ficam ilegíveis. */
+const MIN_AUTO_ZOOM = 0.85;
+const MAX_ZOOM = 3;
+const ADJUST_STEP = 0.1;
+
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+function configPath() {
+  return path.join(app.getPath("userData"), "config.json");
+}
+
+/** Grava só as chaves alteradas, preservando o resto do config.json do cliente. */
+function saveConfig(patch) {
+  try {
+    const file = configPath();
+    const current = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, JSON.stringify({ ...current, ...patch }, null, 2), "utf8");
+  } catch (err) {
+    console.error("Não foi possível salvar config.json:", err);
+  }
+}
+
 function loadConfig() {
-  const file = path.join(app.getPath("userData"), "config.json");
+  const file = configPath();
   let fromFile = {};
   try {
     if (fs.existsSync(file)) fromFile = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -43,6 +78,12 @@ function isInternalUrl(target, appOrigin) {
   } catch {
     return false;
   }
+}
+
+// Perfil separado (testes/desenvolvimento): não mistura dados nem trava a instalação do caixa.
+// Precisa vir antes do requestSingleInstanceLock, que usa a pasta do perfil.
+if (process.env.QUACK_PDV_USER_DATA) {
+  app.setPath("userData", process.env.QUACK_PDV_USER_DATA);
 }
 
 // Uma única instância: abrir o atalho de novo só traz a janela existente para frente.
@@ -81,6 +122,37 @@ if (!app.requestSingleInstanceLock()) {
     mainWindow.once("ready-to-show", () => {
       if (!config.fullscreen) mainWindow.maximize();
       mainWindow.show();
+    });
+
+    // Zoom automático proporcional ao tamanho da janela (em DIPs: já respeita a escala do Windows).
+    const applyZoom = () => {
+      if (!mainWindow || mainWindow.isDestroyed()) return;
+      const adjust = clamp(Number(config.zoomAdjust) || 1, 0.5, 2);
+      let factor = adjust;
+      if (config.autoZoom) {
+        const [width, height] = mainWindow.getContentSize();
+        factor = Math.max(MIN_AUTO_ZOOM, Math.min(width / BASE_WIDTH, height / BASE_HEIGHT)) * adjust;
+      }
+      mainWindow.webContents.setZoomFactor(clamp(Math.round(factor * 100) / 100, MIN_ZOOM, MAX_ZOOM));
+    };
+    let zoomTimer = null;
+    const scheduleZoom = () => {
+      clearTimeout(zoomTimer);
+      zoomTimer = setTimeout(applyZoom, 80);
+    };
+    const changeAdjust = (next) => {
+      config.zoomAdjust = clamp(Math.round(next * 100) / 100, 0.5, 2);
+      saveConfig({ zoomAdjust: config.zoomAdjust });
+      applyZoom();
+    };
+    mainWindow.on("resize", scheduleZoom);
+    mainWindow.on("enter-full-screen", scheduleZoom);
+    mainWindow.on("leave-full-screen", scheduleZoom);
+    // O Chromium guarda zoom por origem: reaplica a cada carregamento (inclui a tela offline).
+    mainWindow.webContents.on("did-finish-load", applyZoom);
+    // Ctrl + roda do mouse vira ajuste fino (em vez do zoom solto do Chromium).
+    mainWindow.webContents.on("zoom-changed", (_event, direction) => {
+      changeAdjust((Number(config.zoomAdjust) || 1) + (direction === "in" ? ADJUST_STEP : -ADJUST_STEP));
     });
 
     // Janelas abertas pelo PDV (impressão do cupom, frente de caixa em nova aba) ficam no programa;
@@ -122,8 +194,18 @@ if (!app.requestSingleInstanceLock()) {
         if (input.shift) mainWindow.webContents.reloadIgnoringCache();
         else mainWindow.webContents.reload();
         event.preventDefault();
-      } else if (input.key === "F12") {
+      } else if (input.control && input.shift && key === "i") {
+        // F12 NÃO: é o atalho de PAGAMENTO do PDV.
         mainWindow.webContents.toggleDevTools();
+        event.preventDefault();
+      } else if (input.control && (input.key === "=" || input.key === "+")) {
+        changeAdjust((Number(config.zoomAdjust) || 1) + ADJUST_STEP);
+        event.preventDefault();
+      } else if (input.control && (input.key === "-" || input.key === "_")) {
+        changeAdjust((Number(config.zoomAdjust) || 1) - ADJUST_STEP);
+        event.preventDefault();
+      } else if (input.control && input.key === "0") {
+        changeAdjust(1);
         event.preventDefault();
       }
     });

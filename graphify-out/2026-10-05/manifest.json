@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791235892.2771888,
-    "seen": 1791236018.4734402,
-    "ast_hash": "c888bd2b4e08f8ceb7b83339454afd4b",
+    "mtime": 1791234746.2942388,
+    "seen": 1791235446.5313199,
+    "ast_hash": "86ebd43cf57c18ecba7f499df86a5920",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1272,8 +1272,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/.last-run.json": {
-    "mtime": 1791235969.485623,
-    "seen": 1791236018.4885972,
+    "mtime": 1791235184.6419318,
+    "seen": 1791235446.542303,
     "ast_hash": "5645f78ad777de5be9a546563ece0f4c",
     "semantic_hash": ""
   },
@@ -3342,8 +3342,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/error-context.md": {
-    "mtime": 1791235969.491893,
-    "seen": 1791236018.5323555,
+    "mtime": 1791235184.6459587,
+    "seen": 1791235446.574743,
     "ast_hash": "aface98cb37189fcbf085aa5f32da9e1",
     "semantic_hash": ""
   },
@@ -3390,8 +3390,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/test-failed-1.png": {
-    "mtime": 1791235969.491893,
-    "seen": 1791236018.547013,
+    "mtime": 1791235184.6469452,
+    "seen": 1791235446.5941079,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3792,26 +3792,26 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco13-resilience-concurr-78a98--e-1-replay-sem-duplicidade-chromium/error-context.md": {
-    "mtime": 1791235969.4866228,
-    "seen": 1791236018.5323408,
+    "mtime": 1791235184.6429398,
+    "seen": 1791235446.5747335,
     "ast_hash": "224bad386e70ce696ae92cb0396ceceb",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco2-3-idempotency-BLOCO-f04bc-adHash-processa-com-sucesso-chromium/error-context.md": {
-    "mtime": 1791235969.4871368,
-    "seen": 1791236018.5323484,
+    "mtime": 1791235184.6439376,
+    "seen": 1791235446.5747364,
     "ast_hash": "c24ea5fe7f8c136047ff5127180e8dae",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/error-context.md": {
-    "mtime": 1791235969.48917,
-    "seen": 1791236018.5323527,
+    "mtime": 1791235184.6449385,
+    "seen": 1791235446.5747402,
     "ast_hash": "5cba1c90a8ecdabc6798c69a1000df68",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
-    "mtime": 1791235969.4901729,
-    "seen": 1791236018.5470097,
+    "mtime": 1791235184.6449385,
+    "seen": 1791235446.5941029,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3858,9 +3858,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useCashRegisterActions.ts": {
-    "mtime": 1791235762.2975733,
-    "seen": 1791236018.4631739,
-    "ast_hash": "0dec26f0a0b2f00bd1013f19bc1430f4",
+    "mtime": 1791232535.7453737,
+    "seen": 1791233056.3103933,
+    "ast_hash": "9fdc0ab69676e1d22223292d3ff2fb43",
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/cashRegisterFormat.ts": {
