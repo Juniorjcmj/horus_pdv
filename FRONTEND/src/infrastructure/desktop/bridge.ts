@@ -32,6 +32,18 @@ export type DesktopGatewayConfigureInput = {
   apiUrl: string;
 };
 
+/** Impressora do caixa (DESKTOP/printer.js). "direct" imprime sem a janela de impressão do Windows. */
+export type DesktopPrinterSettings = {
+  mode: "direct" | "dialog";
+  /** Vazio = impressora padrão do Windows. */
+  deviceName: string;
+  copies: number;
+};
+
+export type DesktopPrinterInfo = { name: string; displayName: string; isDefault: boolean };
+
+export type DesktopPrintResult = { printed: boolean; error?: string };
+
 export type QuackDesktopBridge = {
   savePendingBackup: (json: string) => Promise<string>;
   /** Ausente nas versões do programa anteriores à 1.1.0. */
@@ -39,6 +51,13 @@ export type QuackDesktopBridge = {
     status: () => Promise<DesktopGatewayStatus>;
     configure: (input: DesktopGatewayConfigureInput) => Promise<DesktopGatewayStatus>;
     disable: () => Promise<DesktopGatewayStatus>;
+  };
+  /** Ausente nas versões do programa anteriores à 1.2.0. */
+  printer?: {
+    list: () => Promise<DesktopPrinterInfo[]>;
+    getSettings: () => Promise<DesktopPrinterSettings>;
+    saveSettings: (settings: Partial<DesktopPrinterSettings>) => Promise<DesktopPrinterSettings>;
+    test: (settings?: Partial<DesktopPrinterSettings>) => Promise<DesktopPrintResult>;
   };
 };
 

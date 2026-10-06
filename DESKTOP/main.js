@@ -18,6 +18,9 @@
  * Gateway embutido (ver gateway.js): ativado pelo PDV em Configurações → Gateway deste computador; fica em
  *   config.json → "gateway": { "enabled", "companyId", "storeId", "apiUrl", "port", "tokenEnc" }.
  *
+ * Impressora (ver printer.js): config.json → "printer": { "mode": "direct" | "dialog", "deviceName", "copies" };
+ *   o preload troca o window.print() do PDV e das janelas que ele abre pela impressão direta.
+ *
  * Atalhos: F11 tela cheia | F5 / Ctrl+R recarregar | Ctrl+Shift+R recarregar sem cache | Ctrl+Shift+I DevTools (suporte)
  *          Ctrl+= / Ctrl+- aumentar/diminuir | Ctrl+0 voltar ao tamanho automático
  */
@@ -298,7 +301,12 @@ if (!app.requestSingleInstanceLock()) {
       if (isInternalUrl(url, appOrigin)) {
         return {
           action: "allow",
-          overrideBrowserWindowOptions: { autoHideMenuBar: true, icon: path.join(__dirname, "build", "icon.png") },
+          overrideBrowserWindowOptions: {
+            autoHideMenuBar: true,
+            icon: path.join(__dirname, "build", "icon.png"),
+            // O preload troca o window.print() do cupom/DANFE pela impressão direta (ver preload.js).
+            webPreferences: { preload: path.join(__dirname, "preload.js") },
+          },
         };
       }
       void shell.openExternal(url);

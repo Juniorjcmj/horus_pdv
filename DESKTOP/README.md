@@ -76,6 +76,23 @@ O `npm run dist` copia o Gateway do kit `FRONTEND/public/gateway/quack-gateway-c
 (`scripts/prepare-gateway.js` → `gateway-bin/`). Mudou `GATEWAY/src`? Rode `GATEWAY/build-installer.sh`
 antes, senão o programa leva o Gateway antigo. Para testar com `npm start`: `npm run prepare-gateway`.
 
+## Impressora (impressão direta) — versão 1.2.0+
+
+No PDV, **Configurações → Impressão no PDV → Impressora deste computador**: escolha a impressora
+(ex.: a térmica do cupom), o número de cópias e ligue **Imprimir direto**. A partir daí cupom, DANFE
+NFC-e, fechamento de caixa, sangria/reforço, fiado e relatórios saem direto nela, **sem abrir a janela
+de impressão do Windows**. "Imprimir página de teste" confere impressora, acentos e largura (80mm).
+
+- Como funciona: as telas chamam `window.print()`; o `preload.js` (que roda também nas janelas abertas
+  pelo PDV) troca essa chamada por um pedido ao programa, que imprime com `webContents.print({ silent })`.
+- Se a impressora falhar (desligada, sem papel, removida), abre a janela de impressão normal para o
+  operador escolher outra — o cupom não se perde.
+- Desligado (padrão) = comportamento de sempre (janela de impressão).
+- Gravado no `config.json`: `"printer": { "mode": "direct", "deviceName": "", "copies": 1 }`
+  (`deviceName` vazio = impressora padrão do Windows).
+- O tamanho do papel vem do `@page` de cada documento (80mm) e do driver da impressora: na térmica,
+  deixe o papel do driver como bobina 80mm (ou 58mm, conforme o modelo).
+
 ## Tamanho da tela (zoom automático)
 
 O PDV foi desenhado para **1366×768**. O programa aplica um zoom proporcional ao tamanho da janela,

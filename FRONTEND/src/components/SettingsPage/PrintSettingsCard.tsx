@@ -5,6 +5,7 @@
 */
 import { Printer } from "lucide-react";
 import { YesNoSegmentedControl } from "@/components/Form";
+import DesktopPrinterSettings from "./DesktopPrinterSettings";
 
 type PrintSettingsCardProps = {
   printPreviewEnabled: boolean;
@@ -36,6 +37,7 @@ export default function PrintSettingsCard({
           ariaLabel="Ativar prévia de impressão"
         />
       </div>
+      <DesktopPrinterSettings />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 {
   "name": "quack-pdv-desktop",
   "productName": "Quack PDV",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Casca desktop (Electron) do Quack PDV",
   "author": "Quack Sistemas",
   "private": true,
@@ -26,6 +26,7 @@
       "main.js",
       "preload.js",
       "gateway.js",
+      "printer.js",
       "offline.html",
       "build/icon.png"
     ],
