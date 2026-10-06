@@ -340,6 +340,8 @@ export default function SalesStartPage({
 
   // Modelo fiscal: NFC-e (padrão consumidor) ou NF-e modelo 55 (empresas)
   const [fiscalModel, setFiscalModel] = useState<"nfce" | "nfe">("nfce");
+  /** Mostra "CPF na nota" e o modelo fiscal no pagamento (escondidos por padrão para não ocupar espaço). */
+  const [notaOptionsOpen, setNotaOptionsOpen] = useState(false);
   const EMPTY_NFE_DEST: NfeDestinatario = {
     cpfCnpj: "",
     nome: "",
@@ -573,6 +575,14 @@ export default function SalesStartPage({
       .filter((p) => p.paymentType === "fiado")
       .reduce((sum, p) => sum + p.amount, 0);
   }, [payments]);
+
+  // Pagamento: identificação do cliente só aparece com fiado (ou pelo botão "CPF na nota / NF-e");
+  // o modelo fiscal fica escondido até o botão. O que já foi preenchido nunca some da tela.
+  const hasFiadoPayment =
+    currentPaymentType === "fiado" || payments.some((payment) => payment.paymentType === "fiado");
+  const showCustomerSection =
+    hasFiadoPayment || notaOptionsOpen || selectedCustomer !== null || cpfNota.trim() !== "";
+  const showFiscalModelSection = notaOptionsOpen || fiscalModel === "nfe";
 
   const fiadoLimitExceeded = useMemo(() => {
     if (!selectedCustomer) return false;
@@ -1136,6 +1146,7 @@ export default function SalesStartPage({
     setCurrentPaymentType("dinheiro");
     setCurrentPaymentAmount(formatMoneyBr(subtotal));
     setCurrentCashGiven(formatMoneyBr(subtotal));
+    setNotaOptionsOpen(false);
     setCheckoutOpen(true);
   }, [cart.length, formatMoneyBr, loadCashStatus, subtotal]);
 
@@ -2610,7 +2621,29 @@ export default function SalesStartPage({
             </div>
 
             <div className="space-y-3">
+              {/* CPF na nota / NF-e: escondidos por padrão (fiado mostra a identificação sozinho) */}
+              {!showCustomerSection || !showFiscalModelSection ? (
+                <button
+                  type="button"
+                  onClick={() => setNotaOptionsOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border-secondary px-3 py-1.5 text-xs font-semibold text-text-secondary transition hover:bg-hover-light hover:text-text-primary"
+                >
+                  <Receipt size={13} />
+                  {showCustomerSection ? "Nota fiscal (NF-e)" : "CPF na nota / NF-e"}
+                </button>
+              ) : notaOptionsOpen && !hasFiadoPayment && !selectedCustomer && !cpfNota.trim() && fiscalModel !== "nfe" ? (
+                <button
+                  type="button"
+                  onClick={() => setNotaOptionsOpen(false)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border-secondary px-3 py-1.5 text-xs font-semibold text-text-secondary transition hover:bg-hover-light hover:text-text-primary"
+                >
+                  <X size={13} />
+                  Ocultar CPF na nota / NF-e
+                </button>
+              ) : null}
+
               {/* Identificação do Cliente / Conta Fiado */}
+              {showCustomerSection && (
               <div className="rounded-xl border border-border-primary bg-bg-primary/40 p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -2743,8 +2776,10 @@ export default function SalesStartPage({
                   </div>
                 )}
               </div>
+              )}
 
               {/* Modelo Fiscal: NFC-e ou NF-e */}
+              {showFiscalModelSection && (
               <div className="rounded-xl border border-border-primary bg-bg-primary/40 p-3">
                 <div className="flex items-center gap-2 mb-2">
                   <Building2 size={16} className="text-secondary" />
@@ -2964,6 +2999,7 @@ export default function SalesStartPage({
                   </div>
                 )}
               </div>
+              )}
 
               {/* Alerta se forma for Fiado e não tiver cliente selecionado */}
               {(currentPaymentType === "fiado" ||

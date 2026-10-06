@@ -127700,7 +127700,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L1663",
+      "source_location": "L1674",
       "weight": 1.0
     },
     {
@@ -127712,7 +127712,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L1875",
+      "source_location": "L1886",
       "weight": 1.0
     },
     {
@@ -127724,7 +127724,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L1879",
+      "source_location": "L1890",
       "weight": 1.0
     },
     {
@@ -127736,7 +127736,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L421",
+      "source_location": "L423",
       "weight": 1.0
     },
     {
@@ -127748,7 +127748,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/SalesStartPage.tsx",
-      "source_location": "L826",
+      "source_location": "L836",
       "weight": 1.0
     },
     {
@@ -259573,5 +259573,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "58ea00f36671c8ebe9c0c64e32c0e9c4ffd24b02"
+  "built_at_commit": "91cd1fe0257ec5b433dc2427c6bf38501971f523"
 }
