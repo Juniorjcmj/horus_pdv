@@ -81,6 +81,14 @@ builder.Services.AddHttpClient<ICloudSyncClient, HttpCloudSyncClient>(client =>
 builder.Services.AddScoped<CloudSyncDispatcher>();
 builder.Services.AddHostedService<CloudSyncBackgroundService>();
 
+// Token por loja: testa a conexão com a API da nuvem (ping) e expõe o estado em /api/gateway/cloud.
+builder.Services.AddSingleton<CloudConnectionState>();
+builder.Services.AddHttpClient(CloudConnectionMonitor.HttpClientName, client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(20);
+});
+builder.Services.AddHostedService<CloudConnectionMonitor>();
+
 var app = builder.Build();
 
 // Inicializa o schema local (idempotente) e registra a identidade + recuperação no boot.

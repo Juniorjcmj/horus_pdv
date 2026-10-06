@@ -9,6 +9,9 @@ param(
     [int]$Port           = $(if ($env:GATEWAY_PORT)        { [int]$env:GATEWAY_PORT }  else { 5080 }),
     [string]$ServiceName = "HorusGateway",
     [string]$CloudSyncUrl = $env:GATEWAY_CLOUD_SYNC_URL,
+    # Token da loja (Configuracoes > Token do Gateway, formato qgw_...) e endereco da API da nuvem.
+    [string]$CloudToken  = $env:GATEWAY_CLOUD_TOKEN,
+    [string]$CloudApiUrl = $(if ($env:GATEWAY_CLOUD_API_URL) { $env:GATEWAY_CLOUD_API_URL } else { "https://api-pdv.quacksistemas.com.br" }),
     # Use -SkipPublish quando a pasta publish-service\ ja vem pronta (ex.: pendrive na visita ao cliente):
     # dispensa o .NET SDK e a internet na maquina do cliente — so registra o servico.
     [switch]$SkipPublish
@@ -81,6 +84,16 @@ $envLines = @(
     "Gateway__DatabasePath=$([IO.Path]::Combine($DataDir,'horus-gateway.db'))"
 )
 if ($CloudSyncUrl) { $envLines += "Gateway__CloudSyncUrl=$CloudSyncUrl" }
+if ($CloudToken) {
+    if (-not $CloudToken.StartsWith("qgw_")) {
+        Write-Host "[Quack Gateway] -CloudToken deve comecar com 'qgw_' (gere em Configuracoes > Token do Gateway)." -ForegroundColor Red
+        exit 1
+    }
+    $envLines += "Gateway__CloudSyncToken=$CloudToken"
+    $envLines += "Gateway__CloudApiBaseUrl=$CloudApiUrl"
+} else {
+    Write-Host "[Quack Gateway] Sem -CloudToken: o Gateway funciona na LAN, mas nao conversa com a nuvem." -ForegroundColor Yellow
+}
 if ($env:GATEWAY_HTTPS_CERT) {
     $envLines += "ASPNETCORE_Kestrel__Certificates__Default__Path=$($env:GATEWAY_HTTPS_CERT)"
     if ($env:GATEWAY_HTTPS_CERT_PASSWORD) {

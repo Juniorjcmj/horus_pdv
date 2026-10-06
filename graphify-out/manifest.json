@@ -132,9 +132,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Middlewares/HorusAuthMiddleware.cs": {
-    "mtime": 1791245736.5226674,
-    "seen": 1791246146.6596138,
-    "ast_hash": "2d7e0acfaeac5187a9a36b96ad90c78b",
+    "mtime": 1791256767.3223426,
+    "seen": 1791257314.9031284,
+    "ast_hash": "fbcb30a72b29cdaa43a9a07de097aab1",
     "semantic_hash": ""
   },
   "API/NETCORE/Middlewares/HorusRateLimitMiddleware.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1791168577.8859587,
-    "seen": 1791168995.4543407,
-    "ast_hash": "1ccfb2431404ad49d9345c3facc6f96c",
+    "mtime": 1791256792.8328457,
+    "seen": 1791257314.9098246,
+    "ast_hash": "d29fe60985e1e355f4a08166f4c93074",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791168577.8001688,
-    "seen": 1791168995.4951882,
-    "ast_hash": "fd075ee3580a0c09d04b15902ed1e816",
+    "mtime": 1791256675.0618546,
+    "seen": 1791257314.9164486,
+    "ast_hash": "fdcf4dd3a53681ea56b8782734d2a3eb",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -894,9 +894,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/index.ts": {
-    "mtime": 1791243690.4286,
-    "seen": 1791243946.7321703,
-    "ast_hash": "8c1acc204be2d79e598e7aa84fd7a949",
+    "mtime": 1791256916.827903,
+    "seen": 1791257314.9343607,
+    "ast_hash": "8487708f8891b134d116417a6e088a38",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Tour/GuidedTour.tsx": {
@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
-    "mtime": 1791243690.619373,
-    "seen": 1791243946.7447119,
-    "ast_hash": "8807c6787d929649d688b757fa0833e0",
+    "mtime": 1791256917.0846837,
+    "seen": 1791257314.9432333,
+    "ast_hash": "24621b5a8ead5fd3eb815fc1cd3aaa11",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/StockPage.tsx": {
@@ -3060,9 +3060,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Configuration/GatewayOptions.cs": {
-    "mtime": 1790738322.0047,
-    "seen": 1790739586.7634284,
-    "ast_hash": "beae39cd7dc29b40a581136d23244c8b",
+    "mtime": 1791257033.6850996,
+    "seen": 1791257314.9575772,
+    "ast_hash": "f8474806159af36464c1fc4511241f31",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Controllers/DashboardController.cs": {
@@ -3144,9 +3144,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Program.cs": {
-    "mtime": 1790899547.6311963,
-    "seen": 1790909645.8634586,
-    "ast_hash": "8ad1e3c9e4b9b799a18f47b4d8f0fea6",
+    "mtime": 1791257061.919938,
+    "seen": 1791257314.960853,
+    "ast_hash": "fb80d82b18eea7bf7832cd19c7d8d8be",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Properties/launchSettings.json": {
@@ -3396,9 +3396,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/install-service.ps1": {
-    "mtime": 1790899547.6311963,
-    "seen": 1790909645.8603501,
-    "ast_hash": "3f1c981ccf3d41bf8af60e5935072e67",
+    "mtime": 1791257062.150104,
+    "seen": 1791257314.9572022,
+    "ast_hash": "2ab3b576283bd211829a0327fc46bc78",
     "semantic_hash": ""
   },
   "GATEWAY/run-gateway.ps1": {
@@ -3909,6 +3909,48 @@
     "mtime": 1791244239.6546795,
     "seen": 1791244355.919611,
     "ast_hash": "3b14ae347818af90b92187c67da1573c",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Gateway/GatewayTokenController.cs": {
+    "mtime": 1791256792.7304823,
+    "seen": 1791257314.9010198,
+    "ast_hash": "27a2df23b652a0e1f00ec7c442108f4c",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/GatewayTokenAB.cs": {
+    "mtime": 1791256732.3095305,
+    "seen": 1791257314.9137688,
+    "ast_hash": "c4a7aefc4657627fb315b47faf918e7c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/SettingsPage/GatewayTokensCard.tsx": {
+    "mtime": 1791256958.1108322,
+    "seen": 1791257314.9336848,
+    "ast_hash": "a1b0d214c7b644601e0daf2fdce1516e",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/services/api/gatewayTokenService.ts": {
+    "mtime": 1791256884.168762,
+    "seen": 1791257314.9470427,
+    "ast_hash": "05d598f2ef1542ef73b29406425971df",
+    "semantic_hash": ""
+  },
+  "GATEWAY/src/HorusGateway/Controllers/CloudConnectionController.cs": {
+    "mtime": 1791257061.7796552,
+    "seen": 1791257314.9575796,
+    "ast_hash": "4c051479f314bbe45831879eb3eb960d",
+    "semantic_hash": ""
+  },
+  "GATEWAY/src/HorusGateway/Services/CloudConnectionMonitor.cs": {
+    "mtime": 1791257033.8097627,
+    "seen": 1791257314.961305,
+    "ast_hash": "a2d4c177210ef0c701784edb28b79cf8",
+    "semantic_hash": ""
+  },
+  "GATEWAY/tests/HorusGateway.Tests/CloudConnectionMonitorTests.cs": {
+    "mtime": 1791257102.303512,
+    "seen": 1791257314.9643874,
+    "ast_hash": "04a4a776a72567f9d733a13c3e498246",
     "semantic_hash": ""
   }
 }

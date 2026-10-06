@@ -55,8 +55,21 @@ public sealed class GatewayOptions
     /// <summary>Máximo de eventos enviados por ciclo.</summary>
     public int CloudSyncBatchSize { get; set; } = 50;
 
-    /// <summary>Token opcional enviado no header Authorization para a cloud (Bearer).</summary>
+    /// <summary>
+    /// Token da loja (gerado em Configurações → Token do Gateway, formato "qgw_..."), enviado como
+    /// Authorization: Bearer para a nuvem.
+    /// </summary>
     public string CloudSyncToken { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Endereço base da API da nuvem (ex.: https://api-pdv.quacksistemas.com.br). Com ele + CloudSyncToken,
+    /// o Gateway testa o token (GET /api/GatewayToken/ping) e passa a falar com os endpoints da nuvem.
+    /// Vazio = conexão com a nuvem desligada.
+    /// </summary>
+    public string CloudApiBaseUrl { get; set; } = string.Empty;
+
+    /// <summary>Intervalo (segundos) entre testes do token com a nuvem.</summary>
+    public int CloudConnectionCheckSeconds { get; set; } = 300;
 
     /* --------------------------------------------------------------------- */
     /* Configurações Fiscais de Contingência Offline (LAN)                   */

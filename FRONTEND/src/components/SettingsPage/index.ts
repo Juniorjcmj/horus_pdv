@@ -5,6 +5,7 @@
 */
 export { default as ThemeSettingsCard } from "./ThemeSettingsCard";
 export { default as GatewaySettingsCard } from "./GatewaySettingsCard";
+export { default as GatewayTokensCard } from "./GatewayTokensCard";
 export { default as ThemeColorsCard } from "./ThemeColorsCard";
 export { default as PrintSettingsCard } from "./PrintSettingsCard";
 export { default as GatewayMonitorCard } from "./GatewayMonitorCard";
