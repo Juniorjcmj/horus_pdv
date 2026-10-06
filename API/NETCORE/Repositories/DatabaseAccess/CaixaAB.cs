@@ -15,6 +15,45 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public class CaixaAB(Connection connection)
 {
+    /// <summary>
+    /// Só as sessões que o status do caixa usa: as 12 mais recentes (histórico), todas as abertas e a
+    /// mais recente do operador. Antes o status lia TODAS as sessões da empresa a cada venda/abertura/
+    /// movimento — ficava mais lento a cada dia de uso. Ordenação igual à de ListarSessoesAsync.
+    /// </summary>
+    public async Task<List<CaixaSessionAD>> ListarSessoesParaStatusAsync(
+        string companyId,
+        string operatorId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var command = new SqlCommand(
+            """
+            SELECT s.Id, s.OpenedAt, s.ClosedAt, s.OpeningAmount, s.ClosingAmount, s.OperatorId, s.OperatorName,
+                   s.ClosedById, s.ClosedByName, s.Note, s.ExpectedCashAmount, s.DifferenceAmount, s.DifferenceReason
+            FROM CaixaSessoes s
+            WHERE s.CompanyId = @CompanyId
+              AND (
+                    s.ClosedAt IS NULL
+                 OR s.Id IN (SELECT TOP 12 r.Id FROM CaixaSessoes r
+                             WHERE r.CompanyId = @CompanyId ORDER BY r.OpenedAt DESC)
+                 OR s.Id = (SELECT TOP 1 o.Id FROM CaixaSessoes o
+                            WHERE o.CompanyId = @CompanyId AND o.OperatorId = @OperatorId ORDER BY o.OpenedAt DESC)
+                  )
+            ORDER BY s.OpenedAt DESC;
+            """,
+            db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@OperatorId", operatorId);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        var rows = new List<CaixaSessionAD>();
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            rows.Add(Map(reader));
+        }
+
+        return rows;
+    }
+
     public async Task<List<CaixaSessionAD>> ListarSessoesAsync(string companyId, CancellationToken cancellationToken = default)
     {
         await using var db = await connection.OpenConnectionAsync(cancellationToken);
@@ -675,8 +714,10 @@ public class CaixaAB(Connection connection)
         string companyId,
         RegistrarMovimentoCaixaRequest request,
         AuthenticatedUser currentUser,
-        Func<DateTimeOffset, CaixaStatusDto> statusBuilder,
-        Func<string, CaixaSessionAD, DateTimeOffset, decimal> computeExpectedCash,
+        // Assíncronos: antes eram síncronos e o serviço os implementava com .GetAwaiter().GetResult(),
+        // prendendo uma thread do pool durante as consultas a cada sangria/reforço.
+        Func<DateTimeOffset, Task<CaixaStatusDto>> statusBuilder,
+        Func<string, CaixaSessionAD, DateTimeOffset, Task<decimal>> computeExpectedCash,
         Action<CaixaSessionAD, AuthenticatedUser> ensureResponsavel,
         string? ip = null,
         CancellationToken cancellationToken = default)
@@ -725,7 +766,7 @@ public class CaixaAB(Connection connection)
 
         if (tipo == TipoMovimentoCaixa.Sangria)
         {
-            var caixaAtual = computeExpectedCash(companyId, openSession, now);
+            var caixaAtual = await computeExpectedCash(companyId, openSession, now);
             if (valor > caixaAtual)
             {
                 throw new InvalidOperationException(
@@ -849,7 +890,7 @@ public class CaixaAB(Connection connection)
             await transaction.CommitAsync();
 
             // Computa o status completo APÓS o commit (statusBuilder abre nova conexão)
-            var updatedStatus = statusBuilder(now);
+            var updatedStatus = await statusBuilder(now);
             updatedStatus.IsReplay = false;
 
             // Atualiza o ResponsePayload com o status real para replays futuros

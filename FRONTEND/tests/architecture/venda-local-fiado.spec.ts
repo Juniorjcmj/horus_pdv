@@ -64,7 +64,7 @@ test.describe("Venda sempre no IndexedDB e saldo do fiado protegido", () => {
     );
   });
 
-  test("Venda online é gravada no IndexedDB sem entrar no outbox e sem baixar estoque local", async ({ page }) => {
+  test("Venda online é gravada no IndexedDB sem entrar no outbox e baixa o estoque local", async ({ page }) => {
     const result = await page.evaluate(async (payload) => {
       const { SaleOutboxAdapter, db } = (window as any).__horus_test__;
       await SaleOutboxAdapter.saveSyncedSaleLocally(payload, "V-1001");
@@ -83,7 +83,9 @@ test.describe("Venda sempre no IndexedDB e saldo do fiado protegido", () => {
     expect(result.items).toBe(1);
     expect(result.payments).toBe(1);
     expect(result.outbox).toBe(0);
-    expect(result.stock).toBe(20);
+    // O PDV não baixa mais o catálogo após a venda: o estoque exibido sai do IndexedDB.
+    expect(result.stock).toBe(18);
+    // Fiado online: o saldo vem do servidor (updateCustomerDebtLocal), não é somado aqui.
     expect(result.saldo).toBe(30);
   });
 

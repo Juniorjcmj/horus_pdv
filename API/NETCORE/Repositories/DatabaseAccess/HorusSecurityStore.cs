@@ -12,6 +12,9 @@ using System.Text;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
+/// <summary>Resultado da validação de uma requisição autenticada (sessão, usuário, empresa).</summary>
+public sealed record RequestAuthValidation(bool SessionActive, bool UserActive, string CompanyStatus);
+
 public class HorusSecurityStore(Connection connection, HorusSecurityOptions securityOptions)
 {
     private const int MaxFailedAttempts = 5;
@@ -418,6 +421,48 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
             transaction.Rollback();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Validação de toda requisição autenticada (HorusAuthMiddleware) em UMA consulta assíncrona —
+    /// antes eram 3 conexões síncronas (IsSessionActive + GetActiveUser + GetCompanyStatus), que prendiam
+    /// threads do pool e, com requisições simultâneas, faziam respostas de ms saltarem para vários segundos.
+    /// Mesmas regras: sessão existe; usuário com Status "ativo" (filtrado pela empresa, se informada);
+    /// empresa sem registro ou "empresa-principal" conta como "aprovada".
+    /// </summary>
+    public async Task<RequestAuthValidation> ValidateRequestAsync(
+        string sessionId,
+        string userId,
+        string? companyId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(cancellationToken);
+        await using var command = new SqlCommand(
+            """
+            SELECT
+                CASE WHEN EXISTS (SELECT 1 FROM Sessoes WHERE Id = @SessionId) THEN 1 ELSE 0 END AS SessionActive,
+                (SELECT TOP 1 Status FROM Usuarios
+                  WHERE Id = @UserId AND (@CompanyId IS NULL OR CompanyId = @CompanyId)) AS UserStatus,
+                (SELECT TOP 1 Status FROM Empresas WHERE Id = @CompanyId) AS CompanyStatus;
+            """,
+            db);
+        command.Parameters.AddWithValue("@SessionId", sessionId);
+        command.Parameters.AddWithValue("@UserId", userId);
+        command.Parameters.AddWithValue("@CompanyId", string.IsNullOrWhiteSpace(companyId) ? DBNull.Value : companyId);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return new RequestAuthValidation(false, false, "aprovada");
+        }
+
+        var sessionActive = Convert.ToInt32(reader["SessionActive"]) > 0;
+        var userStatus = reader["UserStatus"] as string;
+        var companyStatus = string.Equals(companyId, "empresa-principal", StringComparison.OrdinalIgnoreCase)
+            ? "aprovada"
+            : (reader["CompanyStatus"] as string) ?? "aprovada";
+
+        return new RequestAuthValidation(sessionActive, userStatus == "ativo", companyStatus);
     }
 
     public bool IsSessionActive(string sessionId)

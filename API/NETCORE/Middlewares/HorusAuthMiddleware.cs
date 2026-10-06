@@ -22,9 +22,15 @@ public class HorusAuthMiddleware(RequestDelegate next)
         var token = ResolveToken(context);
 
         var authenticatedUser = string.IsNullOrWhiteSpace(token) ? null : jwtService.ValidateToken(token);
-        if (authenticatedUser is null ||
-            !securityStore.IsSessionActive(authenticatedUser.SessionId) ||
-            securityStore.GetActiveUser(authenticatedUser.Id, authenticatedUser.CompanyId) is null)
+        // Sessão + usuário + empresa numa única consulta assíncrona (antes: 3 conexões síncronas por requisição).
+        var validation = authenticatedUser is null
+            ? null
+            : await securityStore.ValidateRequestAsync(
+                authenticatedUser.SessionId,
+                authenticatedUser.Id,
+                authenticatedUser.CompanyId,
+                context.RequestAborted);
+        if (authenticatedUser is null || validation is null || !validation.SessionActive || !validation.UserActive)
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsJsonAsync(new ApiResponse<object>
@@ -39,7 +45,7 @@ public class HorusAuthMiddleware(RequestDelegate next)
 
         if (!string.Equals(authenticatedUser.CompanyId, "empresa-principal", StringComparison.OrdinalIgnoreCase))
         {
-            var companyStatus = securityStore.GetCompanyStatus(authenticatedUser.CompanyId);
+            var companyStatus = validation.CompanyStatus;
             if (!string.Equals(companyStatus, "aprovada", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;

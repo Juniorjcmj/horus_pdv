@@ -14,7 +14,12 @@ import { getContiguousProcessedSequence } from "../database/repositories/OutboxR
 import { connectivityService } from "./ConnectivityService";
 
 /** Intervalo mínimo entre pull syncs completos (2 minutos). */
-const MIN_PULL_INTERVAL_MS = 2 * 60 * 1000;
+/**
+ * Download completo de produtos + clientes. Era 2 min por caixa aberto — somado ao reload após cada
+ * venda, fazia o banco enviar dezenas de GB e travava a API. Preço alterado chega em até 10 min, ou na
+ * hora pelo "Sincronizar (F10)". Estoque/fiado do próprio caixa já são atualizados localmente.
+ */
+const MIN_PULL_INTERVAL_MS = 10 * 60 * 1000;
 
 class SyncCoordinator {
   private lastPullAt = 0;

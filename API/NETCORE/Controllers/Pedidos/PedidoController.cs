@@ -101,7 +101,7 @@ public class PedidoController(
 
         try
         {
-            caixaService.EnsureVendaPermitida(currentUser);
+            await caixaService.EnsureVendaPermitidaAsync(currentUser);
 
             var pedido = await pedidoAB.ObterPorNumeroAsync(currentUser.CompanyId, orderNumber);
             if (pedido is null)

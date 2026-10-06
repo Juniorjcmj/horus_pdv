@@ -144,8 +144,8 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             currentUser.CompanyId,
             request,
             currentUser,
-            now => BuildStatus(currentUser.CompanyId, currentUser.Id, now),
-            (companyId, session, now) => ComputeExpectedCash(companyId, session, now),
+            now => BuildStatusAsync(currentUser.CompanyId, currentUser.Id, now, cancellationToken),
+            (companyId, session, now) => ComputeExpectedCashAsync(companyId, session, now, cancellationToken),
             EnsureResponsavelPeloCaixa,
             ip,
             cancellationToken);
@@ -224,20 +224,19 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
     public CaixaStatusDto Fechar(FecharCaixaRequest request, AuthenticatedUser currentUser, string? ip = null)
         => FecharAsync(request, currentUser, ip).GetAwaiter().GetResult();
 
-    public void EnsureVendaPermitida(AuthenticatedUser currentUser, string? ip = null)
+    /// <summary>Bloqueia a venda se o caixa do operador não permite vender. Assíncrono: roda em TODA venda.</summary>
+    public async Task EnsureVendaPermitidaAsync(AuthenticatedUser currentUser, string? ip = null, CancellationToken cancellationToken = default)
     {
-        var status = BuildStatus(currentUser.CompanyId, currentUser.Id, HorusDateTime.Now);
+        var status = await BuildStatusAsync(currentUser.CompanyId, currentUser.Id, HorusDateTime.Now, cancellationToken);
         if (status.CanSell) return;
 
-        auditLogAB.RegistrarAsync(
-                currentUser.CompanyId,
-                currentUser.Id,
-                currentUser.Name,
-                AuditEventTypes.VendaBloqueada,
-                $"Tentou vender com o caixa {status.State} — {status.BlockReason}",
-                ip: ip)
-            .GetAwaiter()
-            .GetResult();
+        await auditLogAB.RegistrarAsync(
+            currentUser.CompanyId,
+            currentUser.Id,
+            currentUser.Name,
+            AuditEventTypes.VendaBloqueada,
+            $"Tentou vender com o caixa {status.State} — {status.BlockReason}",
+            ip: ip);
 
         throw new InvalidOperationException(status.BlockReason);
     }
@@ -275,15 +274,9 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         return session.OpeningAmount + vendasDinheiro + totalReforcos - totalSangrias;
     }
 
-    private decimal ComputeExpectedCash(string companyId, CaixaSessionAD session, DateTimeOffset now)
-        => ComputeExpectedCashAsync(companyId, session, now).GetAwaiter().GetResult();
-
-    private CaixaStatusDto BuildStatus(string companyId, string operatorId, DateTimeOffset now)
-        => BuildStatusAsync(companyId, operatorId, now).GetAwaiter().GetResult();
-
     private async Task<CaixaStatusDto> BuildStatusAsync(string companyId, string operatorId, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
-        var sessions = await caixaAB.ListarSessoesAsync(companyId, cancellationToken);
+        var sessions = await caixaAB.ListarSessoesParaStatusAsync(companyId, operatorId, cancellationToken);
 
         // Multi-caixa: busca a sessão aberta DESTE operador (não qualquer uma da empresa)
         var openSession = sessions.FirstOrDefault(item => item.ClosedAt is null && item.OperatorId == operatorId);

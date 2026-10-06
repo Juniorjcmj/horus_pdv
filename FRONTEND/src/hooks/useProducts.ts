@@ -57,6 +57,8 @@ type UseProductsReturn = {
   loading: boolean;
   error: string | null;
   reload: (forceOnline?: boolean) => Promise<number>;
+  /** Relê só o IndexedDB (sem download do servidor). */
+  refreshLocal: () => Promise<number>;
 };
 
 export function useProducts(): UseProductsReturn {
@@ -104,9 +106,23 @@ export function useProducts(): UseProductsReturn {
     }
   }, []);
 
+  /**
+   * Relê só o IndexedDB, sem baixar o catálogo do servidor. Usado depois da venda (o estoque já foi
+   * baixado localmente) e depois do F10 (que acabou de sincronizar) — evita download completo repetido.
+   */
+  const refreshLocal = useCallback(async (): Promise<number> => {
+    try {
+      const records = await loadProductsLocal();
+      setProducts(records.map(toProduct));
+      return records.length;
+    } catch {
+      return 0;
+    }
+  }, []);
+
   useEffect(() => {
     void load();
   }, [load]);
 
-  return { products, loading, error, reload: load };
+  return { products, loading, error, reload: load, refreshLocal };
 }

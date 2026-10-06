@@ -17,6 +17,8 @@ type UseCustomersReturn = {
   customers: CustomerDto[];
   loading: boolean;
   reload: (forceOnline?: boolean) => Promise<number>;
+  /** Relê só o IndexedDB (sem download do servidor). */
+  refreshLocal: () => Promise<number>;
 };
 
 export function useCustomers(): UseCustomersReturn {
@@ -51,17 +53,30 @@ export function useCustomers(): UseCustomersReturn {
     }
   }, []);
 
+  /** Relê só o IndexedDB (sem baixar a lista do servidor). */
+  const refreshLocal = useCallback(async (): Promise<number> => {
+    try {
+      const records = await loadCustomersLocal();
+      setCustomers(records.map(localToDto));
+      return records.length;
+    } catch {
+      return 0;
+    }
+  }, []);
+
   useEffect(() => {
     void load();
   }, [load]);
 
   useEffect(() => {
+    // Saldo do fiado mudou no IndexedDB: basta reler o local. Antes chamava load(), que com internet
+    // baixava a lista INTEIRA de clientes do servidor a cada venda fiado/recebimento.
     const handleUpdate = () => {
-      void load(false);
+      void refreshLocal();
     };
     window.addEventListener("customer-balance-updated", handleUpdate);
     return () => window.removeEventListener("customer-balance-updated", handleUpdate);
-  }, [load]);
+  }, [refreshLocal]);
 
-  return { customers, loading, reload: load };
+  return { customers, loading, reload: load, refreshLocal };
 }

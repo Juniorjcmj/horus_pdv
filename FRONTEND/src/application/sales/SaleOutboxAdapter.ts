@@ -129,9 +129,8 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
           createdAt: occurredAt,
         });
 
-        // Venda offline: baixa estoque local no db.products. Na online o estoque vem do servidor
-        // (o PDV recarrega o catálogo logo após a venda) — baixar aqui duplicaria a saída.
-        if (origin !== "OFFLINE") continue;
+        // Baixa o estoque local (online e offline): o PDV não baixa mais o catálogo inteiro do servidor
+        // após cada venda — o estoque exibido sai do IndexedDB e a sincronização periódica corrige.
         const prod =
           (await db.products.where("productCode").equals(item.productCode).first()) ||
           (await db.products.where("barcode").equals(item.productCode).first());

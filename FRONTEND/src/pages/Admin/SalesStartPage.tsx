@@ -235,7 +235,7 @@ export default function SalesStartPage({
 
   const [now, setNow] = useState(new Date());
   const [productSearch, setProductSearch] = useState("");
-  const { products, reload: reloadProducts } = useProducts();
+  const { products, reload: reloadProducts, refreshLocal: refreshProductsLocal } = useProducts();
   const [company, setCompany] = useState<CompanyDto | null>(null);
   const [cashStatus, setCashStatus] = useState<CashRegisterStatusDto | null>(null);
   const cashActions = useCashRegisterActions(setCashStatus);
@@ -268,7 +268,12 @@ export default function SalesStartPage({
   const [cpfNota, setCpfNota] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDto | null>(null);
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
-  const { customers: customerList, loading: loadingCustomers, reload: reloadCustomers } = useCustomers();
+  const {
+    customers: customerList,
+    loading: loadingCustomers,
+    reload: reloadCustomers,
+    refreshLocal: refreshCustomersLocal,
+  } = useCustomers();
   const [customerFilter, setCustomerFilter] = useState("");
   const [isSyncingCloud, setIsSyncingCloud] = useState(false);
 
@@ -281,20 +286,15 @@ export default function SalesStartPage({
         syncCustomersFromApi(),
       ]);
 
-      await Promise.all([
-        reloadProducts(false),
-        reloadCustomers(false),
-      ]);
+      // Acabou de baixar tudo para o IndexedDB: só relê o local (antes baixava de novo, 2 downloads por F10).
+      await Promise.all([refreshProductsLocal(), refreshCustomersLocal()]);
 
       Toast.success(
         `Nuvem sincronizada com sucesso! ${prodRecords.length} produtos e ${custRecords.length} clientes atualizados para o PDV e fiado.`,
       );
     } catch (err) {
       console.error("Erro ao sincronizar com a nuvem:", err);
-      await Promise.all([
-        reloadProducts(false).catch(() => 0),
-        reloadCustomers(false).catch(() => 0),
-      ]);
+      await Promise.all([refreshProductsLocal(), refreshCustomersLocal()]);
       const reason = err instanceof Error ? err.message : "Falha na comunicação com o servidor.";
       Toast.error(
         `Não foi possível sincronizar com a nuvem: ${reason}`,
@@ -302,7 +302,7 @@ export default function SalesStartPage({
     } finally {
       setIsSyncingCloud(false);
     }
-  }, [isSyncingCloud, reloadProducts, reloadCustomers]);
+  }, [isSyncingCloud, refreshProductsLocal, refreshCustomersLocal]);
 
   const [lastReceipt, setLastReceipt] = useState<SaleReceipt | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<SaleReceipt | null>(null);
@@ -1446,8 +1446,9 @@ export default function SalesStartPage({
 
         saleNumber = result?.saleNumber || offlineReference;
 
-        // Guarda também a venda online no IndexedDB (histórico local do caixa) — sem outbox, já está no servidor.
-        void saveSyncedSaleLocally(registerPayload, saleNumber).catch((localErr) =>
+        // Guarda também a venda online no IndexedDB (histórico local + baixa de estoque) — sem outbox, já
+        // está no servidor. Aguardado: a tela relê o estoque do IndexedDB logo depois da venda.
+        await saveSyncedSaleLocally(registerPayload, saleNumber).catch((localErr) =>
           console.warn("Venda registrada, mas não foi salva no IndexedDB:", localErr),
         );
 
@@ -1692,10 +1693,9 @@ export default function SalesStartPage({
       }
 
       setCheckoutOpen(false);
-      await Promise.all([
-        reloadProducts().catch(() => {}),
-        reloadCustomers(false).catch(() => {}),
-      ]);
+      // Estoque e saldo do fiado já foram atualizados no IndexedDB: só relê o local. Antes baixava o
+      // catálogo e a lista de clientes INTEIROS do servidor a cada venda (carga pesada na API).
+      await Promise.all([refreshProductsLocal(), refreshCustomersLocal()]);
       saveLastReceipt(receipt);
 
       // Impressão automática na impressora padrão (Blob garante UTF-8)

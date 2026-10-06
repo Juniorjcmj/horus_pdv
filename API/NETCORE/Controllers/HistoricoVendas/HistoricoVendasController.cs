@@ -192,13 +192,13 @@ public class HistoricoVendasController(
             bool isOfflineSync = !string.IsNullOrWhiteSpace(request.EventId) || request.OccurredAt.HasValue;
             if (!isOfflineSync)
             {
-                caixaService.EnsureVendaPermitida(currentUser);
+                await caixaService.EnsureVendaPermitidaAsync(currentUser);
             }
             else
             {
                 try
                 {
-                    caixaService.EnsureVendaPermitida(currentUser);
+                    await caixaService.EnsureVendaPermitidaAsync(currentUser);
                 }
                 catch (Exception ex)
                 {
