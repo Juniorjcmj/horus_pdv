@@ -3060,27 +3060,27 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Configuration/GatewayOptions.cs": {
-    "mtime": 1791257033.6850996,
-    "seen": 1791257314.9575772,
-    "ast_hash": "f8474806159af36464c1fc4511241f31",
+    "mtime": 1791278444.4939454,
+    "seen": 1791278946.8052182,
+    "ast_hash": "6e07ece6b920533dcc0264708573df69",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Controllers/DashboardController.cs": {
-    "mtime": 1790735951.6372733,
-    "seen": 1790736222.2557847,
-    "ast_hash": "c62d0da59b2fad7aab6d9a34c38f73b8",
+    "mtime": 1791278530.4024355,
+    "seen": 1791278946.8053818,
+    "ast_hash": "f2d71402ed445571b67eb910b444d5c8",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Controllers/GatewayController.cs": {
-    "mtime": 1790737115.9178581,
-    "seen": 1790739586.7635887,
-    "ast_hash": "b01024168961700b2988fff31828c78d",
+    "mtime": 1791278543.5819116,
+    "seen": 1791278946.8053842,
+    "ast_hash": "647453f70ee7471756504be85b8e8c61",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Controllers/HealthController.cs": {
-    "mtime": 1790737115.9178581,
-    "seen": 1790739586.7635927,
-    "ast_hash": "e03d0b9443d2ceae38d5f042cdcd9039",
+    "mtime": 1791278543.4756947,
+    "seen": 1791278946.8055446,
+    "ast_hash": "d72ea154f41e5bc60874bbafe84c67e0",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Controllers/OrdersController.cs": {
@@ -3144,9 +3144,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Program.cs": {
-    "mtime": 1791257061.919938,
-    "seen": 1791257314.960853,
-    "ast_hash": "fb80d82b18eea7bf7832cd19c7d8d8be",
+    "mtime": 1791278520.3661253,
+    "seen": 1791278946.8076665,
+    "ast_hash": "410d88cf423ab2b4a95ab4833d4b4b68",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Properties/launchSettings.json": {
@@ -3168,9 +3168,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Services/CloudSyncBackgroundService.cs": {
-    "mtime": 1790548596.2574954,
-    "seen": 1790736222.2558475,
-    "ast_hash": "78cad4a61b1bea8ddada89415affb11f",
+    "mtime": 1791278520.5320346,
+    "seen": 1791278946.808397,
+    "ast_hash": "8ae022a21ac282b737d828c14994c4be",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Services/CloudSyncDispatcher.cs": {
@@ -3951,6 +3951,18 @@
     "mtime": 1791257102.303512,
     "seen": 1791257314.9643874,
     "ast_hash": "04a4a776a72567f9d733a13c3e498246",
+    "semantic_hash": ""
+  },
+  "GATEWAY/src/HorusGateway/Services/CloudEndpointSyncClient.cs": {
+    "mtime": 1791278444.5786738,
+    "seen": 1791278946.8083932,
+    "ast_hash": "5a85d97b3f56261c1384f714ed289981",
+    "semantic_hash": ""
+  },
+  "GATEWAY/tests/HorusGateway.Tests/CloudEndpointSyncClientTests.cs": {
+    "mtime": 1791278585.742033,
+    "seen": 1791278946.8118436,
+    "ast_hash": "34d4a993463c84dbc58055426ded4b7d",
     "semantic_hash": ""
   }
 }

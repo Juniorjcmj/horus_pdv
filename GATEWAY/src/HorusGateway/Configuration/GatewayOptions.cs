@@ -71,6 +71,13 @@ public sealed class GatewayOptions
     /// <summary>Intervalo (segundos) entre testes do token com a nuvem.</summary>
     public int CloudConnectionCheckSeconds { get; set; } = 300;
 
+    /// <summary>Envio pelos endpoints da nuvem (token por loja): CloudApiBaseUrl + CloudSyncToken.</summary>
+    public bool UsesCloudEndpoints =>
+        !string.IsNullOrWhiteSpace(CloudApiBaseUrl) && !string.IsNullOrWhiteSpace(CloudSyncToken);
+
+    /// <summary>Há algum destino de sincronização Gateway → nuvem (endpoints com token ou URL de lote legada).</summary>
+    public bool CloudSyncConfigured => UsesCloudEndpoints || !string.IsNullOrWhiteSpace(CloudSyncUrl);
+
     /* --------------------------------------------------------------------- */
     /* Configurações Fiscais de Contingência Offline (LAN)                   */
     /* --------------------------------------------------------------------- */

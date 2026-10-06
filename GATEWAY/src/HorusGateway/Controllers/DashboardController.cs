@@ -81,7 +81,7 @@ public sealed class DashboardController : ControllerBase
         var activeOrders = await _orderStore.ListAsync(_identity.CompanyId, null, cancellationToken);
 
         // 4. Cloud e Saúde
-        var cloudEnabled = !string.IsNullOrWhiteSpace(_options.CloudSyncUrl);
+        var cloudEnabled = _options.CloudSyncConfigured;
         var cloudStatus = !cloudEnabled ? "disabled" : (_cloudSync.Online ? "online" : "offline");
         var internetStatus = cloudEnabled && _cloudSync.Online ? "online" : (cloudEnabled ? "unreachable" : "unknown");
 

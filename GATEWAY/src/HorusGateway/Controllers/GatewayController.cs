@@ -99,6 +99,17 @@ public sealed class GatewayController : ControllerBase
             }
         }
 
+        // Venda/caixa vão à nuvem em nome do operador: sem operatorId no payload, recusa já na entrada
+        // (em vez de virar falha definitiva só na hora do envio).
+        if (CloudEndpointSyncClient.IsCloudEvent(request.EventType))
+        {
+            var payloadJson = request.Payload.ValueKind == System.Text.Json.JsonValueKind.Undefined ? "{}" : request.Payload.GetRawText();
+            if (CloudEndpointSyncClient.ReadOperatorId(payloadJson) is null)
+            {
+                return BadRequest(new { error = $"evento {request.EventType} requer operatorId no payload (operador que fez a operação)." });
+            }
+        }
+
         // Pré-validação da transição de pedido: rejeita transição inválida ANTES de gravar o evento.
         // Só para eventos NOVOS — um EventId já conhecido é replay idempotente e não revalida transição.
         if (OrderEventType.IsOrderEvent(request.EventType))

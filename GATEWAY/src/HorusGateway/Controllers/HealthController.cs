@@ -59,7 +59,7 @@ public sealed class HealthController : ControllerBase
         try
         {
             var pending = _identity.IsBound ? await _eventStore.CountPendingCloudAsync(_identity.CompanyId) : 0;
-            var cloudEnabled = !string.IsNullOrWhiteSpace(_options.CloudSyncUrl);
+            var cloudEnabled = _options.CloudSyncConfigured;
             var cloud = !cloudEnabled ? "disabled" : (_cloudSync.Online ? "online" : "offline");
             return Ok(new
             {
@@ -88,7 +88,7 @@ public sealed class HealthController : ControllerBase
         try
         {
             var pending = _identity.IsBound ? await _eventStore.CountPendingCloudAsync(_identity.CompanyId) : 0;
-            var cloudEnabled = !string.IsNullOrWhiteSpace(_options.CloudSyncUrl);
+            var cloudEnabled = _options.CloudSyncConfigured;
             var cloud = !cloudEnabled ? "disabled" : (_cloudSync.Online ? "online" : "offline");
             var safe = pending == 0;
 

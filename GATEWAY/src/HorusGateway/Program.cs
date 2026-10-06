@@ -74,10 +74,20 @@ builder.Services.AddSingleton<LocalFiscalStore>();
 
 // Sincronização Gateway → Cloud (CHANGE GATEWAY 06).
 builder.Services.AddSingleton<CloudSyncState>();
-builder.Services.AddHttpClient<ICloudSyncClient, HttpCloudSyncClient>(client =>
+// Dois destinos possíveis: endpoints da API com token por loja (preferido) ou a URL de lote legada.
+builder.Services.AddHttpClient<HttpCloudSyncClient>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(15);
 });
+builder.Services.AddHttpClient<CloudEndpointSyncClient>(client =>
+{
+    // Venda/caixa podem demorar na nuvem; o replay idempotente cobre um timeout aqui.
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddTransient<ICloudSyncClient>(sp =>
+    sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<GatewayOptions>>().Value.UsesCloudEndpoints
+        ? sp.GetRequiredService<CloudEndpointSyncClient>()
+        : sp.GetRequiredService<HttpCloudSyncClient>());
 builder.Services.AddScoped<CloudSyncDispatcher>();
 builder.Services.AddHostedService<CloudSyncBackgroundService>();
 

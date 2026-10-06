@@ -31,7 +31,8 @@ public sealed class CloudSyncBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var enabled = !string.IsNullOrWhiteSpace(_options.CloudSyncUrl);
+        // Endpoints da nuvem com token por loja OU a URL de lote legada.
+        var enabled = _options.CloudSyncConfigured;
         if (!enabled || !_identity.IsBound)
         {
             _logger.LogInformation("Sincronização Gateway→Cloud desabilitada (CloudSyncUrl ausente ou Gateway sem empresa). Operando LAN-only.");
