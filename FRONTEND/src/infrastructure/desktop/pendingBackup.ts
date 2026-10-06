@@ -8,7 +8,7 @@
  */
 import { db } from "@/infrastructure/database/dexie";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
-import { OUTBOX_CHANGED_EVENT } from "@/infrastructure/database/repositories/OutboxRepository";
+import { OUTBOX_CHANGED_EVENT, currentTenantId } from "@/infrastructure/database/repositories/OutboxRepository";
 import { syncEngine } from "@/infrastructure/synchronization/SyncEngine";
 import type { OutboxEvent } from "@/shared/types/sync";
 import { getDesktopBridge, type QuackDesktopBridge } from "./bridge";
@@ -111,6 +111,8 @@ export async function importPendingBackup(backup: PendingBackup): Promise<Import
       sequence++;
       await db.outbox.put({
         ...event,
+        // Backup antigo (sem empresa): fica com a empresa de quem está importando.
+        tenantId: event.tenantId || currentTenantId(),
         payload: typeof event.payload === "string" ? event.payload : JSON.stringify(event.payload),
         sequence,
         status: "PENDING",

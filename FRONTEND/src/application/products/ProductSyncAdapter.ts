@@ -8,7 +8,7 @@ import { productService } from "@/services/api/productService";
 import type { ProductDto } from "@/services/api/productService";
 import { productRepository } from "@/infrastructure/database/repositories/ProductRepository";
 import { db, type LocalProductRecord } from "@/infrastructure/database/dexie";
-import { NOT_IN_CLOUD_STATUSES } from "@/infrastructure/database/repositories/OutboxRepository";
+import { NOT_IN_CLOUD_STATUSES, currentTenantId, isCurrentTenant } from "@/infrastructure/database/repositories/OutboxRepository";
 
 const LS_PRODUCTS_KEY = "horus-pdv-products-cache";
 
@@ -59,9 +59,11 @@ export async function syncProductsFromApi(): Promise<LocalProductRecord[]> {
 
   await db.transaction("rw", [db.products, db.outbox], async () => {
     // Busca eventos de venda offline pendentes de sincronização
+    const tenant = currentTenantId();
     const pendingEvents = await db.outbox
       .where("status")
       .anyOf(NOT_IN_CLOUD_STATUSES) // inclui FORWARDED (no Gateway da loja, ainda não na nuvem)
+      .filter((event) => isCurrentTenant(event, tenant)) // só vendas offline da empresa logada
       .toArray();
 
     const pendingDeductions = new Map<string, number>();

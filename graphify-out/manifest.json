@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1791280670.0876944,
-    "seen": 1791281508.912731,
-    "ast_hash": "1118d8f77a8ffd3de791a22026c9d543",
+    "mtime": 1791321768.0072246,
+    "seen": 1791322218.965924,
+    "ast_hash": "5b8f7730b669bfb0a56ee8bb9d4e563c",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -876,9 +876,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/PrintSettingsCard.tsx": {
-    "mtime": 1788665266.585245,
-    "seen": 1788888974.3520637,
-    "ast_hash": "852cfd657d07ae39f6bb096782d24cd1",
+    "mtime": 1791282282.3486297,
+    "seen": 1791322218.9783945,
+    "ast_hash": "c3f4403ac95c528652066aba5d3d0cdd",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/SecuritySessionsCard.tsx": {
@@ -1272,8 +1272,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/.last-run.json": {
-    "mtime": 1791281447.706043,
-    "seen": 1791281508.9389515,
+    "mtime": 1791322039.4123828,
+    "seen": 1791322219.0113127,
     "ast_hash": "5645f78ad777de5be9a546563ece0f4c",
     "semantic_hash": ""
   },
@@ -2550,21 +2550,21 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/application/customers/CustomerSyncAdapter.ts": {
-    "mtime": 1791279564.6052759,
-    "seen": 1791280032.3868678,
-    "ast_hash": "9e442695edceca6c193582b17ee4b452",
+    "mtime": 1791321688.3282368,
+    "seen": 1791322218.965927,
+    "ast_hash": "2642bc4a09b497c35d1cb249d8f3676a",
     "semantic_hash": ""
   },
   "FRONTEND/src/application/products/ProductSyncAdapter.ts": {
-    "mtime": 1791279564.8189983,
-    "seen": 1791280032.3868709,
-    "ast_hash": "fb4dbf3e0a48a47e192ef960dae1c3a2",
+    "mtime": 1791321688.4263558,
+    "seen": 1791322218.9659288,
+    "ast_hash": "fe74c45b1d4c620e9d996d8c9dbd1c22",
     "semantic_hash": ""
   },
   "FRONTEND/src/application/sales/SaleOutboxAdapter.ts": {
-    "mtime": 1791245988.2210116,
-    "seen": 1791246146.6805892,
-    "ast_hash": "e9e9e932a19373ebc8d53ff438225a37",
+    "mtime": 1791321704.051201,
+    "seen": 1791322218.9659305,
+    "ast_hash": "cb2923955bf9d060fe737cd58ed9a451",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SyncStatus.tsx": {
@@ -2622,9 +2622,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CashSessionRepository.ts": {
-    "mtime": 1791279605.6470656,
-    "seen": 1791280032.400224,
-    "ast_hash": "cce000d9dbad47b333b16dfe25848801",
+    "mtime": 1791321704.051201,
+    "seen": 1791322218.9840577,
+    "ast_hash": "9445d37fa392ee5ccc34abaf8f745c53",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CustomerRepository.ts": {
@@ -2634,9 +2634,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/OutboxRepository.ts": {
-    "mtime": 1791279547.5711217,
-    "seen": 1791280032.40037,
-    "ast_hash": "07800912fa94dba0af252c21fed458a6",
+    "mtime": 1791321885.1809566,
+    "seen": 1791322218.9842799,
+    "ast_hash": "68e84c7382a4affe77fcb828f927c767",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/ProductRepository.ts": {
@@ -2658,9 +2658,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/synchronization/SyncEngine.ts": {
-    "mtime": 1791279586.5556445,
-    "seen": 1791280032.4017153,
-    "ast_hash": "542bb3de7587297c534b8beb09c32373",
+    "mtime": 1791321730.814833,
+    "seen": 1791322218.9874568,
+    "ast_hash": "15873d455fc38caf29cb54c24cb28d73",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/offlineStore.ts": {
@@ -3342,8 +3342,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/error-context.md": {
-    "mtime": 1791281447.7120702,
-    "seen": 1791281508.965468,
+    "mtime": 1791322039.4237468,
+    "seen": 1791322219.0490057,
     "ast_hash": "aface98cb37189fcbf085aa5f32da9e1",
     "semantic_hash": ""
   },
@@ -3390,8 +3390,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/test-failed-1.png": {
-    "mtime": 1791280941.8509293,
-    "seen": 1791281508.9766538,
+    "mtime": 1791322039.4237468,
+    "seen": 1791322219.063366,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3792,26 +3792,26 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco13-resilience-concurr-78a98--e-1-replay-sem-duplicidade-chromium/error-context.md": {
-    "mtime": 1791281447.7074275,
-    "seen": 1791281508.965459,
+    "mtime": 1791322039.4123828,
+    "seen": 1791322219.0489967,
     "ast_hash": "224bad386e70ce696ae92cb0396ceceb",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco2-3-idempotency-BLOCO-f04bc-adHash-processa-com-sucesso-chromium/error-context.md": {
-    "mtime": 1791281447.7085161,
-    "seen": 1791281508.965462,
+    "mtime": 1791322039.4191606,
+    "seen": 1791322219.0489998,
     "ast_hash": "c24ea5fe7f8c136047ff5127180e8dae",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/error-context.md": {
-    "mtime": 1791281447.711069,
-    "seen": 1791281508.965465,
+    "mtime": 1791322039.421152,
+    "seen": 1791322219.0490031,
     "ast_hash": "5cba1c90a8ecdabc6798c69a1000df68",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
-    "mtime": 1791281447.711069,
-    "seen": 1791281508.9766512,
+    "mtime": 1791322039.421152,
+    "seen": 1791322219.0633626,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3828,21 +3828,21 @@
     "semantic_hash": ""
   },
   "DESKTOP/main.js": {
-    "mtime": 1791280441.3031287,
-    "seen": 1791281508.9117408,
-    "ast_hash": "8697241efdc597461b4e3b286c33f645",
+    "mtime": 1791282323.0564868,
+    "seen": 1791322218.964495,
+    "ast_hash": "db80c6d4944ffbf98f8cbecae5f96b8d",
     "semantic_hash": ""
   },
   "DESKTOP/package.json": {
-    "mtime": 1791280563.6952524,
-    "seen": 1791281508.9117427,
-    "ast_hash": "f461743555809e50b35c2f186e624c5b",
+    "mtime": 1791282323.055015,
+    "seen": 1791322218.9644988,
+    "ast_hash": "c8861c1433b79ccaa47407f191e4ded8",
     "semantic_hash": ""
   },
   "DESKTOP/README.md": {
-    "mtime": 1791281459.4264183,
-    "seen": 1791281508.9650078,
-    "ast_hash": "49284c70dedd975c0b8239336e178092",
+    "mtime": 1791282332.3674679,
+    "seen": 1791322219.048409,
+    "ast_hash": "5a4971dec87801ea007e73bd54c7181c",
     "semantic_hash": ""
   },
   "DESKTOP/offline.html": {
@@ -3876,15 +3876,15 @@
     "semantic_hash": ""
   },
   "DESKTOP/preload.js": {
-    "mtime": 1791280441.3832788,
-    "seen": 1791281508.9117446,
-    "ast_hash": "41099b76ac294f2dce576efc7d281088",
+    "mtime": 1791281839.9442995,
+    "seen": 1791322218.9645011,
+    "ast_hash": "cea0462d5f4602cbf19bd5da53c386bc",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/desktop/pendingBackup.ts": {
-    "mtime": 1791280621.5506852,
-    "seen": 1791281508.9262092,
-    "ast_hash": "281a56963451a7ec037749520a605990",
+    "mtime": 1791321737.1562655,
+    "seen": 1791322218.9849932,
+    "ast_hash": "2c3f84d94e5ca699b3bf921a817bc794",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ImportPendingBackupButton.tsx": {
@@ -3996,9 +3996,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/desktop/bridge.ts": {
-    "mtime": 1791280619.570528,
-    "seen": 1791281508.9262044,
-    "ast_hash": "a9c3e1b4772fc57460061cb6108e8d67",
+    "mtime": 1791282238.1186419,
+    "seen": 1791322218.98469,
+    "ast_hash": "4dde07ec7391cce8a5e1546088529211",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/desktop/desktopGateway.ts": {
@@ -4017,6 +4017,30 @@
     "mtime": 1791280362.0991645,
     "seen": 1791281508.953366,
     "ast_hash": "eea734c12d3ae108ca0f7d439e815c0d",
+    "semantic_hash": ""
+  },
+  "DESKTOP/printer.js": {
+    "mtime": 1791281800.9730642,
+    "seen": 1791322218.9645038,
+    "ast_hash": "d629d37fcb1ae1724f81474cdb9745a7",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/SettingsPage/DesktopPrinterSettings.tsx": {
+    "mtime": 1791282238.2455237,
+    "seen": 1791322218.9774501,
+    "ast_hash": "4af068fdef1e4c5af593c57ab4f0f36b",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/infrastructure/database/localTenant.ts": {
+    "mtime": 1791321747.286892,
+    "seen": 1791322218.9838367,
+    "ast_hash": "97fe0a454e8d3b26eb18120e69c1682a",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/multi-empresa.spec.ts": {
+    "mtime": 1791321901.5061343,
+    "seen": 1791322219.0149302,
+    "ast_hash": "487887609a03edf5a9eaa2558a5de62b",
     "semantic_hash": ""
   }
 }

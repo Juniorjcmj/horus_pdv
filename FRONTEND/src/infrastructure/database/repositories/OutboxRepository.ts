@@ -2,10 +2,42 @@
  * Arquivo: src/infrastructure/database/repositories/OutboxRepository.ts
  * Objetivo: acesso à tabela `outbox` do IndexedDB — enfileira eventos para sincronização,
  *           marca como processados e fornece contadores para a UI.
+ *
+ * Empresas: cada pendência guarda a empresa (tenantId) do usuário logado ao ser criada, e todas as
+ * leituras daqui só enxergam as da empresa logada. Assim, no mesmo computador usado por duas empresas,
+ * as vendas offline de uma nunca são enviadas com o login da outra — ficam guardadas até alguém da
+ * empresa dona entrar.
  */
 import { db } from "../dexie";
 import type { OutboxEvent, OutboxStatus } from "@/shared/types/sync";
+import { getStoredAuthUser } from "@/utils/authStorage";
 import { getCachedDeviceId } from "../deviceId";
+
+/** Empresa do usuário logado ("" sem login). */
+export function currentTenantId(): string {
+  try {
+    return getStoredAuthUser()?.companyId?.trim() ?? "";
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * A pendência é da empresa logada? As sem empresa (antigas) valem para quem estiver logado até serem
+ * adotadas (adoptUntaggedEvents) — mesmo comportamento de antes desta separação.
+ */
+export function isCurrentTenant(event: Pick<OutboxEvent, "tenantId">, tenant = currentTenantId()): boolean {
+  return !event.tenantId || event.tenantId === tenant;
+}
+
+/**
+ * Pendências sem empresa (gravadas antes desta separação, ou sem login) passam a ser da empresa logada.
+ * Retorna quantas foram adotadas.
+ */
+export async function adoptUntaggedEvents(tenant = currentTenantId()): Promise<number> {
+  if (!tenant) return 0;
+  return db.outbox.filter((event) => !event.tenantId).modify({ tenantId: tenant });
+}
 
 /** Cria um novo evento no outbox. Retorna o ID gerado (EventId). */
 export async function enqueueEvent(params: {
@@ -31,7 +63,7 @@ export async function enqueueEvent(params: {
     const event: OutboxEvent = {
       id,
       deviceId: getCachedDeviceId() || "unknown",
-      tenantId: params.tenantId || "",
+      tenantId: params.tenantId || currentTenantId(),
       storeId: params.storeId || "",
       eventType: params.eventType,
       aggregateType: params.aggregateType,
@@ -67,12 +99,22 @@ export const OUTBOX_CHANGED_EVENT = "horus-outbox-changed";
  * não confirmou — reenviar com o mesmo EventId é replay idempotente).
  */
 export async function getPendingEvents(): Promise<OutboxEvent[]> {
-  return db.outbox.where("status").anyOf(["PENDING", "FORWARDED"]).sortBy("sequence");
+  const tenant = currentTenantId();
+  return db.outbox
+    .where("status")
+    .anyOf(["PENDING", "FORWARDED"])
+    .filter((event) => isCurrentTenant(event, tenant))
+    .sortBy("sequence");
 }
 
 /** Eventos que ainda podem ser entregues ao Gateway da loja (só PENDING), por sequência. */
 export async function getForwardableEvents(): Promise<OutboxEvent[]> {
-  return db.outbox.where("status").equals("PENDING").sortBy("sequence");
+  const tenant = currentTenantId();
+  return db.outbox
+    .where("status")
+    .equals("PENDING")
+    .filter((event) => isCurrentTenant(event, tenant))
+    .sortBy("sequence");
 }
 
 /** Marca o evento como entregue ao Gateway da loja (guardado em disco lá; a nuvem ainda não confirmou). */
@@ -119,12 +161,22 @@ export async function markFailed(id: string, error: string, maxRetries = MAX_OUT
 
 /** Conta eventos pendentes de sincronização (status PENDING ou PROCESSING). */
 export async function getPendingCount(): Promise<number> {
-  return db.outbox.where("status").anyOf(["PENDING", "PROCESSING"]).count();
+  const tenant = currentTenantId();
+  return db.outbox
+    .where("status")
+    .anyOf(["PENDING", "PROCESSING"])
+    .filter((event) => isCurrentTenant(event, tenant))
+    .count();
 }
 
 /** Data (ISO) do evento ainda não sincronizado mais antigo (PENDING, PROCESSING ou FAILED); null se a fila está limpa. */
 export async function getOldestUnsyncedAt(): Promise<string | null> {
-  const events = await db.outbox.where("status").anyOf(["PENDING", "PROCESSING", "FAILED"]).toArray();
+  const tenant = currentTenantId();
+  const events = await db.outbox
+    .where("status")
+    .anyOf(["PENDING", "PROCESSING", "FAILED"])
+    .filter((event) => isCurrentTenant(event, tenant))
+    .toArray();
   let oldest: string | null = null;
   for (const evt of events) {
     const at = evt.occurredAt || evt.createdAt;
@@ -135,12 +187,22 @@ export async function getOldestUnsyncedAt(): Promise<string | null> {
 
 /** Conta eventos com falha crítica (status FAILED após esgotar retries). */
 export async function getFailedCount(): Promise<number> {
-  return db.outbox.where("status").equals("FAILED").count();
+  const tenant = currentTenantId();
+  return db.outbox
+    .where("status")
+    .equals("FAILED")
+    .filter((event) => isCurrentTenant(event, tenant))
+    .count();
 }
 
 /** Retorna lista de eventos com falha crítica para auditoria e intervenção manual. */
 export async function getFailedEvents(): Promise<OutboxEvent[]> {
-  return db.outbox.where("status").equals("FAILED").sortBy("sequence");
+  const tenant = currentTenantId();
+  return db.outbox
+    .where("status")
+    .equals("FAILED")
+    .filter((event) => isCurrentTenant(event, tenant))
+    .sortBy("sequence");
 }
 
 /** Re-enfileira um evento com falha específica para nova tentativa de sincronização. */
@@ -155,7 +217,12 @@ export async function retryFailedEvent(id: string): Promise<void> {
 
 /** Re-enfileira todos os eventos com falha para nova tentativa em lote. */
 export async function retryAllFailed(): Promise<number> {
-  const failed = await db.outbox.where("status").equals("FAILED").toArray();
+  const tenant = currentTenantId();
+  const failed = await db.outbox
+    .where("status")
+    .equals("FAILED")
+    .filter((event) => isCurrentTenant(event, tenant))
+    .toArray();
   for (const event of failed) {
     await db.outbox.update(event.id, {
       status: "PENDING" as OutboxStatus,
@@ -172,9 +239,11 @@ export async function retryAllFailed(): Promise<number> {
  * Corresponde à maior sequência tal que todos os eventos até ela foram PROCESSED sem lacunas.
  */
 export async function getContiguousProcessedSequence(): Promise<number> {
+  const tenant = currentTenantId();
   const firstUnprocessed = await db.outbox
     .where("status")
     .anyOf(["PENDING", "PROCESSING", "FAILED", "FORWARDED"])
+    .filter((event) => isCurrentTenant(event, tenant))
     .sortBy("sequence");
 
   if (firstUnprocessed.length > 0) {

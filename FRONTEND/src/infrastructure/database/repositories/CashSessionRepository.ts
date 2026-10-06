@@ -6,7 +6,7 @@
 import { db, type CashSessionRecord, type CashSessionMovementItem, type CashSessionPaymentItem } from "../dexie";
 import type { CashRegisterStatusDto } from "@/services/api/cashRegisterService";
 import { getCachedDeviceId } from "../deviceId";
-import { enqueueEvent } from "./OutboxRepository";
+import { currentTenantId, enqueueEvent, isCurrentTenant } from "./OutboxRepository";
 import { computeCashMovementPayloadHash } from "@/utils/cryptoHash";
 
 const CACHE_KEY = "cash-status-cache";
@@ -41,10 +41,11 @@ function round2(value: number): number {
  * sincronizadas estão no total do servidor e não podem ser somadas de novo.
  */
 async function sumPendingLocalSales(openedAt: string): Promise<Record<string, number>> {
+  const tenant = currentTenantId();
   const events = await db.outbox
     .where("eventType")
     .equals("SALE_CREATED")
-    .filter((event) => event.status !== "PROCESSED")
+    .filter((event) => event.status !== "PROCESSED" && isCurrentTenant(event, tenant))
     .toArray();
   const saleIds = events.map((event) => event.aggregateId);
   if (saleIds.length === 0) return {};
@@ -132,7 +133,7 @@ export async function saveCashStatus(status: CashRegisterStatusDto): Promise<voi
       id: CACHE_KEY,
       actualSessionId: session.id,
       deviceId,
-      tenantId: "",
+      tenantId: currentTenantId(),
       userId: session.operatorId || "",
       operatorName: session.operatorName || "",
       status: status.canSell ? "OPEN" : "CLOSED",
@@ -274,7 +275,7 @@ export async function openCashLocal(
       id: sessionId,
       actualSessionId: sessionId,
       deviceId,
-      tenantId: "",
+      tenantId: currentTenantId(),
       userId: operatorId || "",
       operatorName: operatorName || "Operador",
       status: "OPEN",
@@ -381,7 +382,7 @@ export async function closeCashLocal(
       id: sessionId,
       actualSessionId: sessionId,
       deviceId,
-      tenantId: "",
+      tenantId: currentTenantId(),
       userId: operatorId || cached?.userId || "",
       operatorName: operatorName || cached?.operatorName || "Operador",
       status: "CLOSED",

@@ -4,7 +4,7 @@
  *           (sales, saleItems, payments, stockMovements, products; outbox só na offline) e fornece
  *           consulta do histórico de vendas local para operação offline.
  */
-import { enqueueEvent } from "@/infrastructure/database/repositories/OutboxRepository";
+import { currentTenantId, enqueueEvent, isCurrentTenant } from "@/infrastructure/database/repositories/OutboxRepository";
 import type { RegisterSalePayload, SaleHistoryDto } from "@/services/api/salesHistoryService";
 import {
   db,
@@ -80,7 +80,7 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
       const saleRecord: SaleRecord = {
         id: clientSaleId,
         deviceId,
-        tenantId: "",
+        tenantId: currentTenantId(),
         sessionId,
         saleNumber,
         customerId: payload.customerCpf || null,
@@ -120,7 +120,7 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
             typeof crypto !== "undefined" && crypto.randomUUID
               ? crypto.randomUUID()
               : `sm-${Date.now()}-${i}`,
-          tenantId: "",
+          tenantId: currentTenantId(),
           productId: item.productCode,
           productCode: item.productCode,
           type: "SALE",
@@ -283,10 +283,11 @@ export async function getLocalSalesHistory(): Promise<SaleHistoryDto[]> {
  * as duas coisas mostraria a mesma venda duas vezes.
  */
 export async function getPendingLocalSalesHistory(sinceIso?: string | null): Promise<SaleHistoryDto[]> {
+  const tenant = currentTenantId();
   const events = await db.outbox
     .where("eventType")
     .equals("SALE_CREATED")
-    .filter((event) => event.status !== "PROCESSED")
+    .filter((event) => event.status !== "PROCESSED" && isCurrentTenant(event, tenant))
     .toArray();
   if (events.length === 0) return [];
 

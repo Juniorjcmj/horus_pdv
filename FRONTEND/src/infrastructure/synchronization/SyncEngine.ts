@@ -7,6 +7,7 @@
 import { salesHistoryService, type RegisterSalePayload } from "@/services/api/salesHistoryService";
 import { cashRegisterService } from "@/services/api/cashRegisterService";
 import {
+  adoptUntaggedEvents,
   getPendingEvents,
   markProcessing,
   markProcessed,
@@ -159,6 +160,12 @@ class SyncEngine {
   /** Processa todos os eventos pendentes no outbox com lock cross-tab e backoff exponencial. */
   private async processOutbox(): Promise<void> {
     if (this.syncing) return;
+    // Pendências sem empresa (anteriores à separação por empresa) passam a ser da empresa logada.
+    try {
+      await adoptUntaggedEvents();
+    } catch {
+      // segue: na pior das hipóteses ficam para o próximo ciclo
+    }
     if (!connectivityService.isOnline()) {
       // Sem nuvem: entrega a fila ao Gateway da loja (se houver), que guarda em disco e repassa depois.
       await this.forwardToGateway();

@@ -23,6 +23,7 @@ import { syncEngine } from "@/infrastructure/synchronization/SyncEngine";
 import { startCloudGatewayProvisioning } from "@/infrastructure/gateway/cloudGatewayProvisioning";
 import { startPendingBackup } from "@/infrastructure/desktop/pendingBackup";
 import { startEmbeddedGatewayLink } from "@/infrastructure/desktop/desktopGateway";
+import { ensureLocalTenant } from "@/infrastructure/database/localTenant";
 import { companyThemeService } from "@/services/api/companyThemeService";
 import {
   applyAccent,
@@ -702,20 +703,29 @@ export default function App() {
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    connectivityService.start();
-    const stopSync = syncEngine.start();
-    // Programa desktop: backup automático das pendências em Documentos\Quack PDV\Backups.
-    const stopPendingBackup = startPendingBackup();
-    // Aditivo: aprende o endereço do Gateway pela Cloud enquanto online (fallback offline zero-config).
-    const stopGatewayProvisioning = startCloudGatewayProvisioning();
-    // Programa desktop com o Gateway embutido ativado: liga este caixa a ele (fila sem internet).
-    const stopEmbeddedGateway = startEmbeddedGatewayLink();
+    let cancelled = false;
+    const stops: Array<() => void> = [];
+
+    // Outra empresa neste computador: apaga antes o catálogo/clientes/caixa locais da anterior
+    // (as pendências dela ficam guardadas) e só depois liga a sincronização.
+    void ensureLocalTenant(getStoredAuthUser()?.companyId)
+      .catch((err) => console.warn("[PDV] Falha ao separar dados locais por empresa:", err))
+      .finally(() => {
+        if (cancelled) return;
+        connectivityService.start();
+        stops.push(syncEngine.start());
+        // Programa desktop: backup automático das pendências em Documentos\Quack PDV\Backups.
+        stops.push(startPendingBackup());
+        // Aditivo: aprende o endereço do Gateway pela Cloud enquanto online (fallback offline zero-config).
+        stops.push(startCloudGatewayProvisioning());
+        // Programa desktop com o Gateway embutido ativado: liga este caixa a ele (fila sem internet).
+        stops.push(startEmbeddedGatewayLink());
+        stops.push(() => connectivityService.stop());
+      });
+
     return () => {
-      stopSync();
-      stopPendingBackup();
-      stopGatewayProvisioning();
-      stopEmbeddedGateway();
-      connectivityService.stop();
+      cancelled = true;
+      stops.forEach((stop) => stop());
     };
   }, [isAuthenticated]);
 
