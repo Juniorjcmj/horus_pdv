@@ -1425,6 +1425,8 @@ export default function SalesStartPage({
         paymentType: primaryPaymentType,
         totalAmount: formatMoneyBr(subtotal),
         operatorName,
+        // Sem internet, a venda pode ir ao Gateway da loja, que a repassa à nuvem em nome deste operador.
+        operatorId: loggedCashUser?.id,
         items: cart.map((item) => ({
           productCode: item.code,
           productName: item.name,

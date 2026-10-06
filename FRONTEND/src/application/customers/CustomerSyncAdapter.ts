@@ -5,6 +5,7 @@
 import { customerService, type CustomerDto } from "@/services/api/customerService";
 import { customerRepository } from "@/infrastructure/database/repositories/CustomerRepository";
 import { db, type LocalCustomerRecord } from "@/infrastructure/database/dexie";
+import { NOT_IN_CLOUD_STATUSES } from "@/infrastructure/database/repositories/OutboxRepository";
 
 function mapDtoToLocal(dto: CustomerDto): LocalCustomerRecord {
   return {
@@ -50,7 +51,8 @@ export function localToDto(r: LocalCustomerRecord): CustomerDto {
  * (SALE_CREATED em PENDING/PROCESSING no outbox). Esse valor ainda não está no saldo do servidor.
  */
 async function sumPendingFiadoByDocument(): Promise<Map<string, number>> {
-  const pendingEvents = await db.outbox.where("status").anyOf(["PENDING", "PROCESSING"]).toArray();
+  // Inclui FORWARDED: entregue ao Gateway da loja, mas a nuvem ainda não somou esse fiado.
+  const pendingEvents = await db.outbox.where("status").anyOf(NOT_IN_CLOUD_STATUSES).toArray();
   const totals = new Map<string, number>();
 
   for (const evt of pendingEvents) {

@@ -411,6 +411,8 @@ export async function closeCashLocal(
         closingAmount,
         note,
         differenceReason,
+        // Quem fechou: o Local Gateway repassa à nuvem em nome deste operador (X-Operator-Id).
+        operatorId,
         closedAt: now,
       },
     });

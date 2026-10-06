@@ -21,6 +21,7 @@ import { syncCoordinator } from "./SyncCoordinator";
 import { db } from "@/infrastructure/database/dexie";
 import type { OutboxStatus } from "@/shared/types/sync";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
+import { forwardPendingToGateway } from "@/infrastructure/gateway/outboxGatewayForwarder";
 
 const SYNC_INTERVAL_MS = 30_000;
 const MAX_RETRIES = 10;
@@ -158,7 +159,11 @@ class SyncEngine {
   /** Processa todos os eventos pendentes no outbox com lock cross-tab e backoff exponencial. */
   private async processOutbox(): Promise<void> {
     if (this.syncing) return;
-    if (!connectivityService.isOnline()) return;
+    if (!connectivityService.isOnline()) {
+      // Sem nuvem: entrega a fila ao Gateway da loja (se houver), que guarda em disco e repassa depois.
+      await this.forwardToGateway();
+      return;
+    }
 
     // Garante que apenas uma aba processe o outbox por vez (lock cross-tab via Web Locks ou Storage Lease)
     if (typeof navigator !== "undefined" && navigator.locks) {
@@ -179,6 +184,23 @@ class SyncEngine {
       await this.doProcessOutbox();
     } finally {
       releaseStorageLock();
+    }
+  }
+
+  /** "Gateway como fila": sem internet, entrega os pendentes ao Gateway da loja. Nunca lança. */
+  private async forwardToGateway(): Promise<void> {
+    if (this.syncing) return;
+    this.syncing = true;
+    try {
+      const result = await forwardPendingToGateway();
+      if (result.forwarded > 0) {
+        window.dispatchEvent(new CustomEvent("outbox-forwarded-to-gateway", { detail: result }));
+      }
+    } catch {
+      // silencioso: os eventos continuam na fila local
+    } finally {
+      this.syncing = false;
+      await this.notifyListeners();
     }
   }
 

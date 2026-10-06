@@ -37,7 +37,8 @@ export type PendingBackup = {
 
 /** Monta o backup com todos os eventos ainda não sincronizados (PENDING, PROCESSING ou FAILED). */
 export async function buildPendingBackup(): Promise<PendingBackup> {
-  const events = await db.outbox.where("status").anyOf(["PENDING", "PROCESSING", "FAILED"]).sortBy("sequence");
+  // Inclui FORWARDED: já está no Gateway da loja, mas se aquela máquina falhar o backup ainda cobre.
+  const events = await db.outbox.where("status").anyOf(["PENDING", "PROCESSING", "FAILED", "FORWARDED"]).sortBy("sequence");
   return {
     format: "quack-pdv-pending-backup",
     version: 1,

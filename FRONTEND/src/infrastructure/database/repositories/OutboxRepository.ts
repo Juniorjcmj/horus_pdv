@@ -62,10 +62,30 @@ export async function enqueueEvent(params: {
 /** Evento de janela disparado sempre que um evento novo entra no outbox. */
 export const OUTBOX_CHANGED_EVENT = "horus-outbox-changed";
 
-/** Retorna todos os eventos pendentes, ordenados por sequência. */
+/**
+ * Eventos a enviar à nuvem, por sequência: PENDING e FORWARDED (já no Gateway da loja, mas a nuvem ainda
+ * não confirmou — reenviar com o mesmo EventId é replay idempotente).
+ */
 export async function getPendingEvents(): Promise<OutboxEvent[]> {
+  return db.outbox.where("status").anyOf(["PENDING", "FORWARDED"]).sortBy("sequence");
+}
+
+/** Eventos que ainda podem ser entregues ao Gateway da loja (só PENDING), por sequência. */
+export async function getForwardableEvents(): Promise<OutboxEvent[]> {
   return db.outbox.where("status").equals("PENDING").sortBy("sequence");
 }
+
+/** Marca o evento como entregue ao Gateway da loja (guardado em disco lá; a nuvem ainda não confirmou). */
+export async function markForwarded(id: string): Promise<void> {
+  await db.outbox.update(id, {
+    status: "FORWARDED" as OutboxStatus,
+    lastError: null,
+    lastAttemptAt: new Date().toISOString(),
+  });
+}
+
+/** Status que ainda NÃO chegaram à nuvem (fiado/estoque/fechamento offline precisam contá-los). */
+export const NOT_IN_CLOUD_STATUSES: OutboxStatus[] = ["PENDING", "PROCESSING", "FORWARDED"];
 
 /** Marca um evento como sendo processado (em trânsito). */
 export async function markProcessing(id: string): Promise<void> {
@@ -154,7 +174,7 @@ export async function retryAllFailed(): Promise<number> {
 export async function getContiguousProcessedSequence(): Promise<number> {
   const firstUnprocessed = await db.outbox
     .where("status")
-    .anyOf(["PENDING", "PROCESSING", "FAILED"])
+    .anyOf(["PENDING", "PROCESSING", "FAILED", "FORWARDED"])
     .sortBy("sequence");
 
   if (firstUnprocessed.length > 0) {

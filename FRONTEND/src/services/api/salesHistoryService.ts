@@ -136,6 +136,8 @@ export type RegisterSalePayload = {
   paymentType: string;
   totalAmount: string;
   operatorName: string;
+  /** Id do operador logado. O Local Gateway repassa a venda à nuvem em nome dele (a nuvem ignora o campo). */
+  operatorId?: string;
   items: Array<{
     productCode: string;
     productName: string;
