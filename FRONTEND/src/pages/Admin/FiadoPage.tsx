@@ -33,7 +33,7 @@ import {
   type FiadoMovimento,
   type FiadoResumo,
 } from "@/services/api/fiadoService";
-import { updateCustomerDebtLocal } from "@/application/customers/CustomerSyncAdapter";
+import { loadCustomersLocal, updateCustomerDebtLocal } from "@/application/customers/CustomerSyncAdapter";
 
 const FORMAS_PAGAMENTO = [
   { value: "dinheiro", label: "Dinheiro" },
@@ -74,6 +74,36 @@ function formatDateBr(isoString?: string | null) {
   }
 }
 
+/** Devedores a partir dos clientes guardados no IndexedDB (plano B quando o servidor não responde). */
+async function loadLocalDevedores(): Promise<FiadoDevedor[]> {
+  const customers = await loadCustomersLocal();
+  return customers
+    .filter((c) => (c.saldoDevedor ?? 0) > 0)
+    .sort((a, b) => (b.saldoDevedor ?? 0) - (a.saldoDevedor ?? 0))
+    .map((c) => ({
+      clienteId: c.id,
+      clienteNome: c.name,
+      document: c.cpfCnpj,
+      telephone: "",
+      cellphone: c.phone,
+      limiteCredito: c.limiteCredito ?? 0,
+      saldoDevedor: c.saldoDevedor ?? 0,
+      ultimaCompra: null,
+      diasSemPagamento: null,
+    }));
+}
+
+/** Resumo aproximado quando o endpoint de resumo falha (sem inadimplência, que depende das datas). */
+function resumoFromDevedores(list: FiadoDevedor[]): FiadoResumo {
+  return {
+    totalAReceber: list.reduce((sum, d) => sum + d.saldoDevedor, 0),
+    quantidadeDevedores: list.length,
+    inadimplencia30Dias: 0,
+    inadimplencia60Dias: 0,
+    maiorDebito: list.reduce((max, d) => Math.max(max, d.saldoDevedor), 0),
+  };
+}
+
 export default function FiadoPage() {
   const { formatMoneyBr, maskMoneyBr, parseMoneyBr } = useInputMasks();
   const statusDialog = useStatusDialog();
@@ -110,18 +140,37 @@ export default function FiadoPage() {
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
 
+  // Devedores e resumo carregam de forma independente: uma falha não esconde a outra. Sem resposta do
+  // servidor, a lista sai dos saldos guardados neste caixa (IndexedDB, inclui fiado offline pendente).
   const loadData = useCallback(async () => {
     try {
-      const [devList, resData, compData] = await Promise.all([
-        fiadoService.listarDevedores(),
-        fiadoService.resumo(),
+      const [devResult, resResult, compData] = await Promise.all([
+        fiadoService.listarDevedores().then(
+          (value) => ({ ok: true as const, value }),
+          (error: unknown) => ({ ok: false as const, error }),
+        ),
+        fiadoService.resumo().then(
+          (value) => ({ ok: true as const, value }),
+          (error: unknown) => ({ ok: false as const, error }),
+        ),
         companyService.get().catch(() => null),
       ]);
-      setDevedores(devList);
-      setResumo(resData ?? null);
       setCompany(compData ?? null);
-    } catch {
-      Toast.error("Erro ao carregar dados do fiado.");
+
+      let devList: FiadoDevedor[] = [];
+      if (devResult.ok) {
+        devList = devResult.value;
+      } else {
+        devList = await loadLocalDevedores().catch(() => []);
+        const reason = devResult.error instanceof Error ? devResult.error.message : "falha na comunicação";
+        if (devList.length > 0) {
+          Toast.info(`Servidor sem resposta (${reason}). Mostrando os saldos guardados neste caixa.`);
+        } else {
+          Toast.error(`Erro ao carregar a lista de fiado: ${reason}`);
+        }
+      }
+      setDevedores(devList);
+      setResumo(resResult.ok ? (resResult.value ?? null) : resumoFromDevedores(devList));
     } finally {
       setLoading(false);
     }

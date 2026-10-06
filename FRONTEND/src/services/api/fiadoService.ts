@@ -5,6 +5,8 @@
 import { apiRequest, requireEnvUrl } from "./apiClient";
 
 const FIADO_API_URL = requireEnvUrl("VITE_FIADO_API_URL");
+/** Devedores/resumo varrem clientes + movimentos: com a API lenta, 5s (padrão) estourava e a tela dava erro. */
+const FIADO_READ_TIMEOUT_MS = 15_000;
 
 export type FiadoMovimento = {
   id: string;
@@ -64,7 +66,9 @@ export const fiadoService = {
     if (dataInicio) params.append("dataInicio", dataInicio);
     if (dataFim) params.append("dataFim", dataFim);
     const qs = params.toString() ? `?${params.toString()}` : "";
-    const response = await apiRequest<FiadoMovimento[]>(`${FIADO_API_URL}/extrato/${clienteId}${qs}`);
+    const response = await apiRequest<FiadoMovimento[]>(`${FIADO_API_URL}/extrato/${clienteId}${qs}`, {
+      timeoutMs: FIADO_READ_TIMEOUT_MS,
+    });
     return response.data ?? [];
   },
 
@@ -72,12 +76,14 @@ export const fiadoService = {
     const params = new URLSearchParams();
     if (busca) params.append("busca", busca);
     const qs = params.toString() ? `?${params.toString()}` : "";
-    const response = await apiRequest<FiadoDevedor[]>(`${FIADO_API_URL}/devedores${qs}`);
+    const response = await apiRequest<FiadoDevedor[]>(`${FIADO_API_URL}/devedores${qs}`, {
+      timeoutMs: FIADO_READ_TIMEOUT_MS,
+    });
     return response.data ?? [];
   },
 
   async resumo() {
-    const response = await apiRequest<FiadoResumo>(`${FIADO_API_URL}/resumo`);
+    const response = await apiRequest<FiadoResumo>(`${FIADO_API_URL}/resumo`, { timeoutMs: FIADO_READ_TIMEOUT_MS });
     return response.data;
   },
 };
