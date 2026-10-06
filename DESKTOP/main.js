@@ -25,6 +25,7 @@ const { app, BrowserWindow, dialog, ipcMain, safeStorage, screen, shell } = requ
 const fs = require("node:fs");
 const path = require("node:path");
 const { EmbeddedGateway, validateConfigureInput } = require("./gateway");
+const { normalizePrinterSettings, listPrinters, printSilently, printTestPage } = require("./printer");
 
 const DEFAULT_CONFIG = {
   url: "https://pdv.quacksistemas.com.br",
@@ -303,7 +304,13 @@ if (!app.requestSingleInstanceLock()) {
       void shell.openExternal(url);
       return { action: "deny" };
     });
-    mainWindow.webContents.on("did-create-window", (child) => child.removeMenu());
+    mainWindow.webContents.on("did-create-window", (child) => {
+      child.removeMenu();
+      // Janelas abertas pelo PDV (cupom, DANFE, relatórios — inclusive about:blank) podem pedir impressão.
+      const id = child.webContents.id;
+      printSenders.add(id);
+      child.on("closed", () => printSenders.delete(id));
+    });
 
     mainWindow.webContents.on("will-navigate", (event, url) => {
       if (isInternalUrl(url, appOrigin) || url.startsWith("file:")) return;
@@ -371,6 +378,8 @@ if (!app.requestSingleInstanceLock()) {
 
   let gateway = null;
   let quitting = false;
+  /** webContents (janela principal + janelas abertas por ela) que podem pedir impressão. */
+  const printSenders = new Set();
 
   app.whenReady().then(() => {
     config = loadConfig();
@@ -414,6 +423,36 @@ if (!app.requestSingleInstanceLock()) {
     });
     // Sobe junto com o programa (sem travar a abertura da janela).
     void gateway.start();
+
+    // Impressora (ver printer.js). O window.print() das telas chega aqui pelo preload.
+    const printerSettings = () => normalizePrinterSettings(readFileConfig().printer);
+    ipcMain.handle("quack:print-page", async (event) => {
+      const fromMain = mainWindow && !mainWindow.isDestroyed() && event.sender === mainWindow.webContents;
+      if (!fromMain && !printSenders.has(event.sender.id)) throw new Error("Janela não autorizada a imprimir.");
+      const settings = printerSettings();
+      if (settings.mode !== "direct") return { useDialog: true };
+      const result = await printSilently(event.sender, settings);
+      if (!result.printed) console.error("Impressão direta falhou:", result.error);
+      return result;
+    });
+    ipcMain.handle("quack:printer-list", (event) => {
+      assertAppOrigin(event);
+      return listPrinters(event.sender);
+    });
+    ipcMain.handle("quack:printer-settings", (event) => {
+      assertAppOrigin(event);
+      return printerSettings();
+    });
+    ipcMain.handle("quack:printer-save", (event, input) => {
+      assertAppOrigin(event);
+      const next = normalizePrinterSettings({ ...printerSettings(), ...(input || {}) });
+      saveConfig({ printer: next });
+      return next;
+    });
+    ipcMain.handle("quack:printer-test", (event, input) => {
+      assertAppOrigin(event);
+      return printTestPage(normalizePrinterSettings({ ...printerSettings(), ...(input || {}) }));
+    });
 
     createWindow();
   });
