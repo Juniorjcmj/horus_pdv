@@ -134,6 +134,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Chromium (Private Network Access): a página do PDV, servida em https pela internet, chamando o Gateway
+// em localhost/LAN manda no preflight "Access-Control-Request-Private-Network: true"; sem a resposta
+// abaixo o navegador/programa desktop bloqueia a chamada. Vem antes do CORS, que encerra o preflight.
+app.Use(async (context, next) =>
+{
+    if (HttpMethods.IsOptions(context.Request.Method)
+        && context.Request.Headers.ContainsKey("Access-Control-Request-Private-Network"))
+    {
+        context.Response.Headers["Access-Control-Allow-Private-Network"] = "true";
+    }
+    await next();
+});
+
 app.UseCors(LanCorsPolicy);
 
 // Dashboard local de monitoramento/administração (CHANGE GATEWAY 08): página estática servida pelo

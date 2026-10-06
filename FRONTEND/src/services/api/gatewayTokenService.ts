@@ -19,6 +19,11 @@ export type GatewayTokenInfo = {
 };
 
 export const gatewayTokenService = {
+  /** Endereço base da API (ex.: https://api-pdv.quacksistemas.com.br), que o Gateway usa para falar com a nuvem. */
+  apiBaseUrl() {
+    return GATEWAY_TOKEN_API_URL.replace(/\/api\/GatewayToken\/?$/i, "").replace(/\/+$/, "");
+  },
+
   async listar() {
     const response = await apiRequest<GatewayTokenInfo[]>(GATEWAY_TOKEN_API_URL);
     return response.data ?? [];

@@ -11,16 +11,7 @@ import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 import { OUTBOX_CHANGED_EVENT } from "@/infrastructure/database/repositories/OutboxRepository";
 import { syncEngine } from "@/infrastructure/synchronization/SyncEngine";
 import type { OutboxEvent } from "@/shared/types/sync";
-
-type QuackDesktopBridge = {
-  savePendingBackup: (json: string) => Promise<string>;
-};
-
-declare global {
-  interface Window {
-    quackDesktop?: QuackDesktopBridge;
-  }
-}
+import { getDesktopBridge, type QuackDesktopBridge } from "./bridge";
 
 const PERIODIC_MS = 5 * 60_000;
 const DEBOUNCE_MS = 2_000;
@@ -154,7 +145,7 @@ async function writeBackup(bridge: QuackDesktopBridge): Promise<void> {
 
 /** Inicia o backup automático (só no programa desktop). Retorna a função que para. */
 export function startPendingBackup(): () => void {
-  const bridge = typeof window !== "undefined" ? window.quackDesktop : undefined;
+  const bridge = getDesktopBridge();
   if (!bridge?.savePendingBackup) return () => {};
 
   let timer: ReturnType<typeof setTimeout> | null = null;

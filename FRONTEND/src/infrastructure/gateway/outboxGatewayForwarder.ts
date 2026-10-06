@@ -10,7 +10,7 @@
  * Eventos sem operatorId (fila antiga) não vão ao Gateway: seguem pelo caminho de hoje (direto à nuvem).
  */
 import { getForwardableEvents, markForwarded } from "@/infrastructure/database/repositories/OutboxRepository";
-import { getGatewayConfig } from "./gatewayConfig";
+import { clearGatewayCredential, getGatewayConfig } from "./gatewayConfig";
 import { gatewayClient } from "./gatewayClient";
 import { probeGateway } from "./gatewayDiscovery";
 import { ensureConnected } from "./orderGatewayTransport";
@@ -72,6 +72,11 @@ export async function forwardPendingToGateway(): Promise<ForwardResult> {
       }
     } catch (err) {
       const status = (err as { status?: number })?.status ?? 0;
+      if (status === 401) {
+        // Credencial do terminal não vale mais (Gateway reinstalado/banco novo): limpa e registra de novo no próximo ciclo.
+        clearGatewayCredential();
+        return { forwarded, skipped, reason: "credencial do terminal recusada pelo Gateway" };
+      }
       if (status >= 400 && status < 500) {
         // Gateway recusou este evento (ex.: dados inválidos): fica na fila local e vai direto à nuvem depois.
         skipped++;

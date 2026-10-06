@@ -27,7 +27,16 @@ export async function ensureConnected(provisionToken = ""): Promise<boolean> {
   if (config.apiKey) return true;
 
   // Auto-identificação por IP/token (pré-autorizado pelo admin no Gateway).
-  return gatewayClient.identify(provisionToken);
+  if (await gatewayClient.identify(provisionToken)) return true;
+
+  // Terminal com identidade já definida (ex.: Gateway do programa desktop): registro aberto do Gateway.
+  if (!config.terminalId || !config.companyId) return false;
+  try {
+    await gatewayClient.register();
+    return Boolean(getGatewayConfig().apiKey);
+  } catch {
+    return false;
+  }
 }
 
 /**

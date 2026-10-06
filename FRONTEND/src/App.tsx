@@ -22,6 +22,7 @@ import { connectivityService } from "@/infrastructure/synchronization/Connectivi
 import { syncEngine } from "@/infrastructure/synchronization/SyncEngine";
 import { startCloudGatewayProvisioning } from "@/infrastructure/gateway/cloudGatewayProvisioning";
 import { startPendingBackup } from "@/infrastructure/desktop/pendingBackup";
+import { startEmbeddedGatewayLink } from "@/infrastructure/desktop/desktopGateway";
 import { companyThemeService } from "@/services/api/companyThemeService";
 import {
   applyAccent,
@@ -707,10 +708,13 @@ export default function App() {
     const stopPendingBackup = startPendingBackup();
     // Aditivo: aprende o endereço do Gateway pela Cloud enquanto online (fallback offline zero-config).
     const stopGatewayProvisioning = startCloudGatewayProvisioning();
+    // Programa desktop com o Gateway embutido ativado: liga este caixa a ele (fila sem internet).
+    const stopEmbeddedGateway = startEmbeddedGatewayLink();
     return () => {
       stopSync();
       stopPendingBackup();
       stopGatewayProvisioning();
+      stopEmbeddedGateway();
       connectivityService.stop();
     };
   }, [isAuthenticated]);

@@ -9,6 +9,7 @@
 import { getStoredAuthUser } from "@/utils/authStorage";
 import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
 import { gatewayConfigService } from "@/services/api/gatewayConfigService";
+import { isUsingEmbeddedGateway } from "@/infrastructure/desktop/desktopGateway";
 import { getGatewayConfig, saveGatewayConfig } from "./gatewayConfig";
 
 let inFlight = false;
@@ -26,6 +27,8 @@ export async function learnGatewayFromCloud(): Promise<void> {
 
   const user = getStoredAuthUser();
   if (!user?.companyId) return;
+  // Programa desktop com o Gateway embutido ativo: ele é o Gateway deste caixa.
+  if (isUsingEmbeddedGateway()) return;
 
   inFlight = true;
   try {

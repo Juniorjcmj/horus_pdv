@@ -15,12 +15,16 @@
  * dela (como o Ctrl+ do navegador) para a tela inteira — letras, ícones e campos — ficar do mesmo jeito
  * em qualquer monitor. "zoomAdjust" é o ajuste fino do operador (Ctrl+ / Ctrl- / Ctrl+0), salvo no config.
  *
+ * Gateway embutido (ver gateway.js): ativado pelo PDV em Configurações → Gateway deste computador; fica em
+ *   config.json → "gateway": { "enabled", "companyId", "storeId", "apiUrl", "port", "tokenEnc" }.
+ *
  * Atalhos: F11 tela cheia | F5 / Ctrl+R recarregar | Ctrl+Shift+R recarregar sem cache | Ctrl+Shift+I DevTools (suporte)
  *          Ctrl+= / Ctrl+- aumentar/diminuir | Ctrl+0 voltar ao tamanho automático
  */
-const { app, BrowserWindow, dialog, ipcMain, screen, shell } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, safeStorage, screen, shell } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
+const { EmbeddedGateway, validateConfigureInput } = require("./gateway");
 
 const DEFAULT_CONFIG = {
   url: "https://pdv.quacksistemas.com.br",
@@ -121,6 +125,60 @@ function loadConfig() {
   const config = { ...DEFAULT_CONFIG, ...fromFile };
   if (process.env.QUACK_PDV_URL) config.url = process.env.QUACK_PDV_URL;
   return config;
+}
+
+// ---------------------------------------------------------------------------
+// Gateway embutido: configuração (token cifrado pelo Windows) e caminho do executável
+// ---------------------------------------------------------------------------
+
+function readFileConfig() {
+  try {
+    const file = configPath();
+    return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
+  } catch {
+    return {};
+  }
+}
+
+function readGatewaySettings() {
+  const gateway = { ...(readFileConfig().gateway || {}) };
+  let token = "";
+  if (gateway.tokenEnc) {
+    try {
+      token = safeStorage.decryptString(Buffer.from(gateway.tokenEnc, "base64"));
+    } catch (err) {
+      console.error("Não foi possível decifrar o token do Gateway:", err);
+    }
+  } else if (gateway.token) {
+    token = gateway.token;
+  }
+  delete gateway.tokenEnc;
+  return { ...gateway, token };
+}
+
+function writeGatewaySettings(patch) {
+  const current = readFileConfig().gateway || {};
+  const next = { ...current, ...patch };
+  delete next.token;
+  if ("token" in patch) {
+    delete next.tokenEnc;
+    if (patch.token) {
+      if (safeStorage.isEncryptionAvailable()) {
+        next.tokenEnc = safeStorage.encryptString(patch.token).toString("base64");
+      } else {
+        next.token = patch.token;
+      }
+    }
+  }
+  saveConfig({ gateway: next });
+}
+
+/** Instalado: resources\gateway (extraResources). Desenvolvimento: DESKTOP\gateway-bin (scripts/prepare-gateway.js). */
+function gatewayExePath() {
+  if (process.env.QUACK_GATEWAY_EXE) return process.env.QUACK_GATEWAY_EXE;
+  return app.isPackaged
+    ? path.join(process.resourcesPath, "gateway", "HorusGateway.exe")
+    : path.join(__dirname, "gateway-bin", "HorusGateway.exe");
 }
 
 /** Mesma origem do PDV (ou páginas locais blob:/about: usadas na impressão) abre dentro do programa. */
@@ -311,11 +369,14 @@ if (!app.requestSingleInstanceLock()) {
     void mainWindow.loadURL(config.url);
   };
 
+  let gateway = null;
+  let quitting = false;
+
   app.whenReady().then(() => {
     config = loadConfig();
 
-    // Só a página do PDV (mesma origem da URL configurada) pode pedir backup; conteúdo limitado e validado.
-    ipcMain.handle("quack:save-pending-backup", (event, json) => {
+    // Só a página do PDV (mesma origem da URL configurada) fala com o programa.
+    const assertAppOrigin = (event) => {
       const appOrigin = new URL(config.url).origin;
       let senderOrigin = "";
       try {
@@ -323,12 +384,46 @@ if (!app.requestSingleInstanceLock()) {
       } catch {
         // URL inválida: cai na recusa abaixo
       }
-      if (senderOrigin !== appOrigin) throw new Error("Origem não autorizada para backup.");
+      if (senderOrigin !== appOrigin) throw new Error("Origem não autorizada.");
+    };
+
+    // Backup: conteúdo limitado e validado.
+    ipcMain.handle("quack:save-pending-backup", (event, json) => {
+      assertAppOrigin(event);
       if (typeof json !== "string" || json.length > MAX_BACKUP_BYTES) throw new Error("Backup inválido.");
       return savePendingBackup(config, json);
     });
 
+    gateway = new EmbeddedGateway({
+      exePath: gatewayExePath(),
+      dataDir: path.join(app.getPath("userData"), "gateway"),
+      readSettings: readGatewaySettings,
+      writeSettings: writeGatewaySettings,
+    });
+    ipcMain.handle("quack:gateway-status", (event) => {
+      assertAppOrigin(event);
+      return gateway.status();
+    });
+    ipcMain.handle("quack:gateway-configure", (event, input) => {
+      assertAppOrigin(event);
+      return gateway.configure(validateConfigureInput(input));
+    });
+    ipcMain.handle("quack:gateway-disable", (event) => {
+      assertAppOrigin(event);
+      return gateway.disable();
+    });
+    // Sobe junto com o programa (sem travar a abertura da janela).
+    void gateway.start();
+
     createWindow();
+  });
+
+  // Fecha o Gateway junto com o programa (espera o processo sair antes de encerrar).
+  app.on("will-quit", (event) => {
+    if (quitting || !gateway?.child) return;
+    event.preventDefault();
+    quitting = true;
+    void gateway.stop().finally(() => app.quit());
   });
 
   app.on("window-all-closed", () => app.quit());

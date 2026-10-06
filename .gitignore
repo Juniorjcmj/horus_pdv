@@ -26,3 +26,5 @@ obj/
 
 # Casca desktop (Electron) — instalador gerado tem ~100 MB, não versionar
 DESKTOP/release/
+# Gateway copiado do kit para o instalador do programa (DESKTOP/scripts/prepare-gateway.js)
+DESKTOP/gateway-bin/

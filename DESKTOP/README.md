@@ -18,7 +18,7 @@ programa **não precisa ser reinstalado a cada deploy do frontend**.
 npm install
 node node_modules/electron/install.js   # baixa o binário do Electron (o npm 11 bloqueia o script de instalação)
 npm start                                # roda em modo desenvolvimento
-npm run dist                             # gera release/quack-pdv-setup-<versão>.exe
+npm run dist                             # gera release/quack-pdv-setup-<versão>.exe (com o Gateway)
 ```
 
 Para apontar para outro ambiente (ex.: frontend local): `QUACK_PDV_URL=http://localhost:5173 npm start`.
@@ -52,6 +52,30 @@ Só funciona no programa (no navegador comum o PDV não grava arquivos). Para re
 de um backup, fale com o suporte: o arquivo traz cada evento com o mesmo identificador do envio
 original, então reenviar não duplica o que já tiver chegado ao servidor.
 
+## Gateway embutido (loja de um caixa) — versão 1.1.0+
+
+O instalador já traz o **Quack Gateway** (`resources\gateway\HorusGateway.exe`). Ativado, ele roda
+**junto com o programa** em `http://127.0.0.1:5080`: sem Administrador, sem Serviço do Windows e sem
+liberar firewall (só a própria máquina o acessa). Sem internet, a fila do PDV (vendas, abertura,
+fechamento, sangria/reforço) vai para o banco do Gateway e segue para a nuvem quando a internet volta.
+
+**Ativar:** no PDV, um administrador/gerente abre **Configurações → Gateway deste computador → Ativar
+neste computador** (com internet). O PDV gera o token da loja, entrega ao programa, o Gateway sobe e o
+caixa se registra nele — nada para digitar. "Gerar token novo e reiniciar" troca o token (o anterior é
+revogado); "Desativar" para o Gateway e revoga o token.
+
+- Token guardado no `config.json` cifrado pelo Windows (`"gateway": { "tokenEnc": ... }`).
+- Banco: `%APPDATA%\Quack PDV\gateway\horus-gateway.db`. Logs: `resources\gateway\logs`.
+- Fecha junto com o programa; se o Gateway cair, o programa o reinicia (2s, 5s, 10s, 30s).
+- Se já houver um Gateway na porta 5080 (Serviço do Windows numa loja com vários caixas), o programa
+  usa aquele e não sobe outro.
+- Loja com **vários caixas/terminais na rede**: continue usando o kit do Gateway como Serviço do
+  Windows (Configurações → Local Gateway), que atende a LAN.
+
+O `npm run dist` copia o Gateway do kit `FRONTEND/public/gateway/quack-gateway-completo.zip`
+(`scripts/prepare-gateway.js` → `gateway-bin/`). Mudou `GATEWAY/src`? Rode `GATEWAY/build-installer.sh`
+antes, senão o programa leva o Gateway antigo. Para testar com `npm start`: `npm run prepare-gateway`.
+
 ## Tamanho da tela (zoom automático)
 
 O PDV foi desenhado para **1366×768**. O programa aplica um zoom proporcional ao tamanho da janela,
@@ -77,6 +101,6 @@ O F12 não é capturado pelo programa: é o atalho de **Pagamento** do PDV.
 
 - O instalador **não é assinado digitalmente**: o Windows (SmartScreen) mostra "O Windows protegeu o
   computador" na primeira execução → "Mais informações" → "Executar assim mesmo".
-- O instalador tem ~100 MB e **não é versionado** (`DESKTOP/release/` está no `.gitignore`).
+- O instalador tem ~150 MB (com o Gateway) e **não é versionado** (`DESKTOP/release/` está no `.gitignore`).
 - Os dados do navegador **não são migrados**: no programa, o caixa começa com o IndexedDB vazio e
   faz login e sincronização de novo. Envie as vendas pendentes do navegador antes de trocar.

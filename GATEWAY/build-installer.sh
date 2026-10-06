@@ -9,7 +9,8 @@
 #
 # COMO: basta `bash GATEWAY/build-installer.sh`. O script se adapta ao ambiente:
 #   - PUBLICACAO: usa `dotnet` se existir; senao usa Docker (imagem SDK 8.0) — ideal no ambiente de nuvem.
-#   - COMPACTACAO: usa `zip` se existir; senao `python3`.
+#   - COMPACTACAO: usa `zip` se existir; senao `python3`; senao o PowerShell (Windows/Git Bash).
+#   O programa desktop (DESKTOP/scripts/prepare-gateway.js) tambem tira o Gateway deste zip.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -50,6 +51,10 @@ cp "$OUT/checklist.html" "$STAGE/"
 cat > "$STAGE/LEIA-ME.txt" <<'TXT'
 QUACK GATEWAY - KIT COMPLETO (pronto para instalar, sem .NET no cliente)
 ========================================================================
+Loja com UM caixa so: o programa Quack PDV (instalador do PDV) ja traz o Gateway embutido.
+Basta ativar no PDV em Configuracoes > Gateway deste computador. Este kit e para o Gateway
+como Servico do Windows (loja com varios caixas/terminais na rede).
+
 Esta pasta JA contem o programa publicado (publish-service\) + os scripts.
 Nao precisa rodar "dotnet publish". Na maquina do cliente (PowerShell como ADMIN):
 
@@ -65,7 +70,7 @@ echo "[build-installer] Compactando..."
 rm -f "$OUT/quack-gateway-completo.zip"
 if command -v zip >/dev/null 2>&1; then
     ( cd "$STAGE_PARENT" && zip -r -q "$OUT/quack-gateway-completo.zip" QuackGateway )
-elif command -v python3 >/dev/null 2>&1; then
+elif python3 -c "import zipfile" >/dev/null 2>&1; then  # no Windows, "python3" pode ser so o atalho da Store
     python3 - "$STAGE_PARENT" "$OUT/quack-gateway-completo.zip" <<'PY'
 import sys, os, zipfile
 base, out = sys.argv[1], sys.argv[2]
@@ -76,8 +81,21 @@ with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
             z.write(full, os.path.relpath(full, base))
 print("zip criado:", out)
 PY
+elif command -v powershell.exe >/dev/null 2>&1 && command -v cygpath >/dev/null 2>&1; then
+    # Windows (Git Bash) sem zip/python: .NET ZipFile, com "/" nos nomes (o Expand-Archive aceita os dois).
+    STAGE_WIN="$(cygpath -w "$STAGE_PARENT")" ZIP_WIN="$(cygpath -w "$OUT/quack-gateway-completo.zip")" \
+    powershell.exe -NoProfile -Command '
+        Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
+        $base = $env:STAGE_WIN.TrimEnd("\") + "\"
+        $zip = [IO.Compression.ZipFile]::Open($env:ZIP_WIN, "Create")
+        try {
+            Get-ChildItem -LiteralPath $base -Recurse -File | ForEach-Object {
+                $name = $_.FullName.Substring($base.Length).Replace("\", "/")
+                [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $_.FullName, $name, "Optimal")
+            }
+        } finally { $zip.Dispose() }'
 else
-    echo "[build-installer] ERRO: precisa de 'zip' ou 'python3' para compactar." >&2
+    echo "[build-installer] ERRO: precisa de 'zip', 'python3' ou PowerShell para compactar." >&2
     exit 1
 fi
 
