@@ -31,6 +31,7 @@ public class NfceController(
     HorusSecurityStore securityStore) : ControllerBase
 {
     [HttpGet]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> Listar()
     {
         var currentUser = GetCurrentUser();
@@ -86,7 +87,7 @@ public class NfceController(
     }
 
     [HttpPost("{id}/reemitir")]
-    [HorusAuthorizeRoles("administrador", "gerente")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> Reemitir(string id)
     {
         var currentUser = GetCurrentUser();
@@ -99,7 +100,7 @@ public class NfceController(
     }
 
     [HttpPost("{id}/cancelar")]
-    [HorusAuthorizeRoles("administrador", "gerente")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> Cancelar(string id, [FromBody] CancelamentoNfceRequest request)
     {
         var currentUser = GetCurrentUser();
@@ -217,7 +218,7 @@ public class NfceController(
     }
 
     [HttpPost("inutilizar")]
-    [HorusAuthorizeRoles("administrador", "gerente")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> Inutilizar([FromBody] InutilizacaoNfceRequest request)
     {
         var currentUser = GetCurrentUser();
@@ -254,7 +255,7 @@ public class NfceController(
     }
 
     [HttpGet("exportar-mes")]
-    [HorusAuthorizeRoles("administrador", "gerente")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> ExportarXmlsMes([FromQuery] int ano, [FromQuery] int mes, CancellationToken ct = default)
     {
         var currentUser = GetCurrentUser();
@@ -316,6 +317,7 @@ public class NfceController(
     }
 
     [HttpGet("{id}/xml")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> BaixarXml(string id, [FromQuery] string? tipo = null)
     {
         var currentUser = GetCurrentUser();
@@ -349,6 +351,7 @@ public class NfceController(
     }
 
     [HttpGet("{id}/itens")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> ObterItens(string id)
     {
         var currentUser = GetCurrentUser();
@@ -364,7 +367,7 @@ public class NfceController(
     }
 
     [HttpGet("contingencia/pendentes")]
-    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> ObterContingenciasPendentes(CancellationToken ct = default)
     {
         var currentUser = GetCurrentUser();
@@ -380,7 +383,7 @@ public class NfceController(
     }
 
     [HttpPost("contingencia/transmitir-pendentes")]
-    [HorusAuthorizeRoles("administrador", "gerente")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> TransmitirContingenciasPendentes(CancellationToken ct = default)
     {
         var currentUser = GetCurrentUser();

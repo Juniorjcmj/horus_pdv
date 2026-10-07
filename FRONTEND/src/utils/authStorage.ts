@@ -19,7 +19,22 @@ export type AuthenticatedUser = {
   createdAt: string;
   lastLoginAt: string;
   mustChangePassword: boolean;
+  /** Perfis somados ao principal (hoje só "financeiro"). Ausente em sessões antigas. */
+  perfisAdicionais?: string[];
 };
+
+export const PERFIL_FINANCEIRO = "financeiro";
+
+/**
+ * Acesso a notas fiscais (tela Fiscal, NF-e 55, canceladas, XML, configuração fiscal): administrador sempre;
+ * gerente/atendente só com o perfil Financeiro. A API confere de novo em toda chamada.
+ */
+export function hasFinanceiroAccess(user: Pick<AuthenticatedUser, "role" | "perfisAdicionais"> | null | undefined = getStoredAuthUser()) {
+  if (!user) return false;
+  const role = user.role?.toLowerCase();
+  if (role === "administrador" || role === PERFIL_FINANCEIRO) return true;
+  return (user.perfisAdicionais ?? []).some((perfil) => perfil.toLowerCase() === PERFIL_FINANCEIRO);
+}
 
 export function getStoredAuthUser() {
   const raw =
@@ -48,6 +63,7 @@ export function setAuthSession(user: AuthenticatedUser, remember = true) {
     createdAt: user.createdAt,
     lastLoginAt: user.lastLoginAt,
     mustChangePassword: Boolean(user.mustChangePassword),
+    perfisAdicionais: Array.isArray(user.perfisAdicionais) ? user.perfisAdicionais : [],
   };
   const primaryStorage = remember ? window.localStorage : window.sessionStorage;
   const secondaryStorage = remember ? window.sessionStorage : window.localStorage;

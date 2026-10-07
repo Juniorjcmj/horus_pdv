@@ -22,6 +22,7 @@ import LoadingBar from "@/components/Loading/LoadingBar";
 import PageLayout from "@/layout/PageLayout";
 import { userService } from "@/services/api/userService";
 import { onlyDigits } from "@/utils/inputMasks";
+import { getStoredAuthUser } from "@/utils/authStorage";
 
 const UsersFilters = lazy(() => import("@/components/Admin/UsersPage/UsersFilters"));
 const UsersTable = lazy(() => import("@/components/Admin/UsersPage/UsersTable"));
@@ -37,6 +38,7 @@ function defaultForm(): UserFormState {
     status: "ativo",
     password: "",
     confirmPassword: "",
+    perfisAdicionais: [],
   };
 }
 
@@ -50,10 +52,13 @@ function toInputForm(user: AdminUser): UserFormState {
     status: user.status,
     password: "",
     confirmPassword: "",
+    perfisAdicionais: user.perfisAdicionais ?? [],
   };
 }
 
 export default function UserAccountsPage() {
+  // Só o administrador dá perfis adicionais (ex.: Financeiro); a API ignora o campo vindo de outro perfil.
+  const canEditPerfisAdicionais = getStoredAuthUser()?.role?.toLowerCase() === "administrador";
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRoleFilter>("todos");
@@ -368,6 +373,7 @@ export default function UserAccountsPage() {
           onClose={() => setDrawerOpen(false)}
           onSave={saveUser}
           isSaving={isSavingUser}
+          canEditPerfisAdicionais={canEditPerfisAdicionais}
         />
       </Suspense>
 

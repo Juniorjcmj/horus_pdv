@@ -16,7 +16,8 @@ const ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
   { value: "gerente", label: "Gerente" },
   { value: "atendente", label: "Atendente" },
   { value: "caixa", label: "Caixa (só frente de caixa e abertura/fechamento)" },
-  { value: "financeiro", label: "Financeiro" },
+  // Antigo: hoje o Financeiro se dá como perfil ADICIONAL (abaixo). Mantido para cadastros existentes.
+  { value: "financeiro", label: "Financeiro (somente notas fiscais)" },
 ];
 
 const STATUS_OPTIONS: Array<{ value: UserStatus; label: string }> = [
@@ -33,6 +34,8 @@ export type UserFormState = {
   status: UserStatus;
   password: string;
   confirmPassword: string;
+  /** Perfis somados ao principal (hoje só "financeiro"). */
+  perfisAdicionais: string[];
 };
 
 type UserFormDrawerProps = {
@@ -40,6 +43,8 @@ type UserFormDrawerProps = {
   isEditMode: boolean;
   form: UserFormState;
   isSaving: boolean;
+  /** Só o administrador dá perfis adicionais (a API também confere). */
+  canEditPerfisAdicionais: boolean;
   onClose: () => void;
   onSave: () => void;
   onChange: (next: UserFormState) => void;
@@ -50,6 +55,7 @@ export default function UserFormDrawer({
   isEditMode,
   form,
   isSaving,
+  canEditPerfisAdicionais,
   onClose,
   onSave,
   onChange,
@@ -61,6 +67,16 @@ export default function UserFormDrawer({
 
   const setField = <K extends keyof UserFormState>(key: K, value: UserFormState[K]) =>
     onChange({ ...form, [key]: value });
+
+  const isAdminRole = form.role === "administrador";
+  const hasFinanceiro = isAdminRole || form.perfisAdicionais.includes("financeiro");
+  const toggleFinanceiro = (checked: boolean) =>
+    setField(
+      "perfisAdicionais",
+      checked
+        ? [...form.perfisAdicionais.filter((perfil) => perfil !== "financeiro"), "financeiro"]
+        : form.perfisAdicionais.filter((perfil) => perfil !== "financeiro"),
+    );
 
   return (
     <div className="dept-drawer-overlay" onClick={onClose}>
@@ -150,6 +166,37 @@ export default function UserFormDrawer({
                 placeholder="Selecione o status"
               />
             </div>
+          </section>
+
+          <section className="card rounded-2xl p-4">
+            <h4 className="text-sm font-semibold text-text-secondary">Perfis adicionais</h4>
+            <p className="mt-1 text-xs text-text-tertiary">
+              Somam-se ao perfil acima. Ex.: um gerente com Financeiro também cuida das notas fiscais.
+            </p>
+            <label
+              className={`mt-3 flex items-start gap-3 rounded-xl border border-border-primary p-3 ${
+                canEditPerfisAdicionais && !isAdminRole ? "cursor-pointer hover:bg-hover-light" : "opacity-70"
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-accent"
+                checked={hasFinanceiro}
+                disabled={!canEditPerfisAdicionais || isAdminRole}
+                onChange={(event) => toggleFinanceiro(event.target.checked)}
+              />
+              <span>
+                <span className="block text-sm font-semibold text-text-primary">Financeiro</span>
+                <span className="block text-xs text-text-secondary">
+                  Notas fiscais: consulta (inclusive canceladas), XML, cancelamento, inutilização, contingência e
+                  configuração fiscal.
+                  {isAdminRole ? " O administrador já tem esse acesso." : ""}
+                </span>
+              </span>
+            </label>
+            {!canEditPerfisAdicionais ? (
+              <p className="mt-2 text-xs text-text-tertiary">Só o administrador pode dar ou tirar perfis adicionais.</p>
+            ) : null}
           </section>
 
           <section className="card rounded-2xl p-4">

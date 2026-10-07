@@ -20,7 +20,7 @@ import {
 import { Toast } from "@/hooks/Dialog";
 import PageLayout from "@/layout/PageLayout";
 import { sessionService } from "@/services/api/sessionService";
-import { getStoredAuthUser } from "@/utils/authStorage";
+import { getStoredAuthUser, hasFinanceiroAccess } from "@/utils/authStorage";
 import { getPrintPreviewEnabled, setPrintPreviewEnabled } from "@/utils/pdvPreferences";
 
 type ThemeMode = "light" | "dark";
@@ -102,7 +102,8 @@ export default function SettingsPage({
               printPreviewEnabled={printPreviewEnabled}
               onChangePrintPreview={handleChangePrintPreview}
             />
-            {isAdminOrManager && <FiscalEmissionRulesCard />}
+            {/* Configuração fiscal: administrador ou perfil Financeiro (gerente sem Financeiro não vê). */}
+            {hasFinanceiroAccess() && <FiscalEmissionRulesCard />}
             <DesktopGatewayCard canManage={isAdminOrManager} />
             {isAdminOrManager && <GatewaySettingsCard />}
             {isAdminOrManager && <GatewayTokensCard />}

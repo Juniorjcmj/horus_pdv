@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { PageKey } from "@/components/AppSidebar/AppSidebar";
+import { hasFinanceiroAccess } from "@/utils/authStorage";
 import PageHeader from "@/components/Admin/PageHeader";
 import KpiTrendCard from "@/components/Admin/KpiTrendCard";
 import ValidadeAlertWidget from "@/components/Admin/ValidadeAlertWidget";
@@ -181,7 +182,9 @@ export default function HomePage({ onNavigate, onOpenSalesInNewTab }: HomePagePr
         </p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {marketShortcuts.map((shortcut) => {
+          {marketShortcuts
+            .filter((shortcut) => shortcut.page !== "fiscal" || hasFinanceiroAccess())
+            .map((shortcut) => {
             const Icon = shortcut.icon;
             return (
               <button

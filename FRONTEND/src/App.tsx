@@ -37,6 +37,7 @@ import { companyService } from "@/services/api/companyService";
 import {
   clearAuthSession,
   getStoredAuthUser,
+  hasFinanceiroAccess,
   setAuthSession,
   type AuthenticatedUser,
 } from "@/utils/authStorage";
@@ -286,6 +287,15 @@ export default function App() {
       setActivePage("home");
     }
   }, [activePage, isSuperAdmin]);
+
+  // Notas fiscais (tela Fiscal e NF-e 55): administrador ou quem tem o perfil Financeiro.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const canAccessFiscal = useMemo(() => hasFinanceiroAccess(getStoredAuthUser()), [currentUser]);
+  useEffect(() => {
+    if ((activePage === "fiscal" || activePage === "nfe-emissao") && !canAccessFiscal) {
+      setActivePage("home");
+    }
+  }, [activePage, canAccessFiscal]);
 
   const CurrentPage = useMemo(() => {
     switch (activePage) {
@@ -956,6 +966,7 @@ export default function App() {
         companyName={companyInfo?.name}
         companyCnpj={companyInfo?.cnpj}
         isSuperAdmin={isSuperAdmin}
+        canAccessFiscal={canAccessFiscal}
         pendingApprovalsCount={pendingApprovalsCount}
         onOpenProfile={() => setActivePage("editar-perfil")}
         onOpenSettings={() => setActivePage("configuracoes")}

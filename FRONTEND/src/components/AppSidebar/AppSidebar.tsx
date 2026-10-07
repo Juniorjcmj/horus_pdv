@@ -127,6 +127,8 @@ type AppSidebarProps = {
   companyName?: string;
   companyCnpj?: string;
   isSuperAdmin?: boolean;
+  /** Administrador ou perfil Financeiro: mostra Fiscal NFC-e / NF-e e NF-e Modelo 55. */
+  canAccessFiscal?: boolean;
   pendingApprovalsCount?: number;
   onOpenProfile: () => void;
   onOpenSettings: () => void;
@@ -148,6 +150,7 @@ export default function AppSidebar({
   companyName,
   companyCnpj,
   isSuperAdmin = false,
+  canAccessFiscal = false,
   pendingApprovalsCount = 0,
   onOpenProfile,
   onOpenSettings,
@@ -366,20 +369,24 @@ export default function AppSidebar({
 
               <div className="space-y-2">
                 <SidebarSectionTitle label="Gestão Avançada" collapsed={collapsed} />
-                <SidebarItem
-                  icon={<Receipt size={20} />}
-                  label="Fiscal NFC-e / NF-e"
-                  active={activePage === "fiscal"}
-                  collapsed={collapsed}
-                  onClick={() => handleChangePage("fiscal")}
-                />
-                <SidebarItem
-                  icon={<FileText size={20} />}
-                  label="NF-e Modelo 55"
-                  active={activePage === "nfe-emissao"}
-                  collapsed={collapsed}
-                  onClick={() => handleChangePage("nfe-emissao")}
-                />
+                {canAccessFiscal ? (
+                  <>
+                    <SidebarItem
+                      icon={<Receipt size={20} />}
+                      label="Fiscal NFC-e / NF-e"
+                      active={activePage === "fiscal"}
+                      collapsed={collapsed}
+                      onClick={() => handleChangePage("fiscal")}
+                    />
+                    <SidebarItem
+                      icon={<FileText size={20} />}
+                      label="NF-e Modelo 55"
+                      active={activePage === "nfe-emissao"}
+                      collapsed={collapsed}
+                      onClick={() => handleChangePage("nfe-emissao")}
+                    />
+                  </>
+                ) : null}
                 <SidebarItem
                   icon={<CreditCard size={20} />}
                   label="Pagamentos Integrados"

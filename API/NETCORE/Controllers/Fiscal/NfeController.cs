@@ -103,6 +103,7 @@ public class NfeController(
 
     /// <summary>Lista documentos fiscais modelo 55 da empresa.</summary>
     [HttpGet]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> Listar()
     {
         var currentUser = GetCurrentUser();
@@ -122,6 +123,7 @@ public class NfeController(
 
     /// <summary>Cancela uma NF-e modelo 55 autorizada.</summary>
     [HttpPost("{id}/cancelar")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> Cancelar(string id, [FromBody] CancelamentoNfceRequest request)
     {
         var currentUser = GetCurrentUser();
@@ -477,6 +479,7 @@ public class NfeController(
 
     /// <summary>Download do XML de uma NF-e.</summary>
     [HttpGet("{id}/xml")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> DownloadXml(string id)
     {
         var currentUser = GetCurrentUser();

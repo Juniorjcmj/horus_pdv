@@ -15,4 +15,10 @@ public class UsuarioRequest
     public string Role { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Perfis somados ao principal (ex.: ["financeiro"]). null = não mexer. Só o administrador consegue
+    /// alterar (UsuarioController); de outros perfis o valor é ignorado.
+    /// </summary>
+    public List<string>? PerfisAdicionais { get; set; }
 }

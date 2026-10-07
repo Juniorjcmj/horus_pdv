@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfceController.cs": {
-    "mtime": 1790738182.5211766,
-    "seen": 1790739586.7226436,
-    "ast_hash": "a7cb4252ee00e8a3c777f9ef5666eebe",
+    "mtime": 1791392724.7263074,
+    "seen": 1791393730.1730092,
+    "ast_hash": "b260f083fc452e09ca301dfc83f68107",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fornecedores/FornecedorController.cs": {
@@ -114,9 +114,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Usuario/UsuarioController.cs": {
-    "mtime": 1790452609.6203196,
-    "seen": 1790453042.4280982,
-    "ast_hash": "a28ccf90bde8307e7a2a8946094a2518",
+    "mtime": 1791392690.8863957,
+    "seen": 1791393730.1766453,
+    "ast_hash": "5029080ec7289ea1b04e720b39c8a815",
     "semantic_hash": ""
   },
   "API/NETCORE/HORUSPDV-API.csproj": {
@@ -132,9 +132,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Middlewares/HorusAuthMiddleware.cs": {
-    "mtime": 1791256767.3223426,
-    "seen": 1791257314.9031284,
-    "ast_hash": "fbcb30a72b29cdaa43a9a07de097aab1",
+    "mtime": 1791392561.385669,
+    "seen": 1791393730.1771362,
+    "ast_hash": "3e0dabcd761fb29921b051f18d9d8241",
     "semantic_hash": ""
   },
   "API/NETCORE/Middlewares/HorusRateLimitMiddleware.cs": {
@@ -282,9 +282,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/UsuarioRequest.cs": {
-    "mtime": 1788665266.5431583,
-    "seen": 1788888974.3518586,
-    "ast_hash": "cf84e625ee3a448a177b70424fa5cf2d",
+    "mtime": 1791392668.5830688,
+    "seen": 1791393730.1883702,
+    "ast_hash": "4264665ba00daffd0c0b51ad355a001c",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/VendaRequest.cs": {
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HorusSecurityStore.cs": {
-    "mtime": 1791245736.251956,
-    "seen": 1791246146.6693332,
-    "ast_hash": "772da006a7d7ddf2d71ac577c0ec5694",
+    "mtime": 1791392690.693971,
+    "seen": 1791393730.1985693,
+    "ast_hash": "9950d5ec130076bd804c30e20586692d",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ModuloMercadoAB.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791256675.0618546,
-    "seen": 1791257314.9164486,
-    "ast_hash": "fdcf4dd3a53681ea56b8782734d2a3eb",
+    "mtime": 1791392480.759265,
+    "seen": 1791393730.2028956,
+    "ast_hash": "7db59b0ee2f9307c8df59879f3f6396f",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -576,9 +576,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusJwtService.cs": {
-    "mtime": 1788665266.5604928,
-    "seen": 1788888974.3519661,
-    "ast_hash": "aaa6536b6a9e97c01a4514105ee8dbcf",
+    "mtime": 1791392510.1307392,
+    "seen": 1791393730.211756,
+    "ast_hash": "c59f937087ab6e64f587e8cf48efa9eb",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusRecaptchaService.cs": {
@@ -588,9 +588,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusRoles.cs": {
-    "mtime": 1790976531.289469,
-    "seen": 1790976661.2108846,
-    "ast_hash": "9d5ecf72bf502af96c6bc7d6247e0db9",
+    "mtime": 1791392930.943174,
+    "seen": 1791393730.2121453,
+    "ast_hash": "3585b08133c95abfa2d7ea1f42d5b458",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusSecretProtector.cs": {
@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1791321768.0072246,
-    "seen": 1791322218.965924,
-    "ast_hash": "5b8f7730b669bfb0a56ee8bb9d4e563c",
+    "mtime": 1791392824.5740328,
+    "seen": 1791393730.2234786,
+    "ast_hash": "a08b945473835d6a32cac57e34e566b9",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -762,9 +762,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/UsersPage/UserFormDrawer.tsx": {
-    "mtime": 1788791305.6585095,
-    "seen": 1788888974.3520243,
-    "ast_hash": "c97806dd461ec68ee39b5f263a62175d",
+    "mtime": 1791392956.0245297,
+    "seen": 1791393730.2374332,
+    "ast_hash": "75a2a753ebbb9b9647335710798ebced",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/UsersPage/UsersFilters.tsx": {
@@ -774,9 +774,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/UsersPage/UsersTable.tsx": {
-    "mtime": 1788665266.5768156,
-    "seen": 1788888974.3520277,
-    "ast_hash": "f580b2dc8295c25de2d8dd4f1b370a66",
+    "mtime": 1791393037.5975597,
+    "seen": 1791393730.237733,
+    "ast_hash": "e7c80b4040f6acf2985e2ed107e31c2f",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/UsersPage/constants.ts": {
@@ -792,9 +792,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/UsersPage/types.ts": {
-    "mtime": 1788791281.2150095,
-    "seen": 1788888974.3520324,
-    "ast_hash": "4cc1c6582c82f8569a0455815c19f56c",
+    "mtime": 1791392982.4136024,
+    "seen": 1791393730.238382,
+    "ast_hash": "b2fdf6b5be1e36ed241fdc49c1cc0a58",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/UsersPage/utils.ts": {
@@ -804,9 +804,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/AppSidebar.tsx": {
-    "mtime": 1791221011.979566,
-    "seen": 1791221102.4687095,
-    "ast_hash": "cf28d7ec6c883f839a542f35ec65cf10",
+    "mtime": 1791392842.7605126,
+    "seen": 1791393730.2389288,
+    "ast_hash": "a875a72ffefa965de309bde225190d8c",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/UserMenu.tsx": {
@@ -1002,9 +1002,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/HomePage.tsx": {
-    "mtime": 1791221206.382475,
-    "seen": 1791221255.6736565,
-    "ast_hash": "d15d72838753b3c8179e855c198588ba",
+    "mtime": 1791392860.3494358,
+    "seen": 1791393730.259523,
+    "ast_hash": "d3fda78df2b6e33318ce3e659c1f2ef5",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/LicenseDetailsPage.tsx": {
@@ -1062,9 +1062,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesHistoryPage.tsx": {
-    "mtime": 1791059578.0704038,
-    "seen": 1791059615.6599712,
-    "ast_hash": "c046cc7064024f550d71c4546b6a1e79",
+    "mtime": 1791392897.3705168,
+    "seen": 1791393730.2625976,
+    "ast_hash": "1c064c3698376d9e8a9aebc6a0dc9750",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
-    "mtime": 1791280698.408745,
-    "seen": 1791281508.930339,
-    "ast_hash": "9cd62354fa9b4901a422cfdf090cb0e4",
+    "mtime": 1791392860.589735,
+    "seen": 1791393730.2628012,
+    "ast_hash": "ac8677eb6cce981f0ecaef1765d2d487",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/StockPage.tsx": {
@@ -1092,9 +1092,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/UserAccountsPage.tsx": {
-    "mtime": 1788665266.6035607,
-    "seen": 1788888974.3521876,
-    "ast_hash": "efd00a99cbcdacf12c314e8b85e3d448",
+    "mtime": 1791392982.3476543,
+    "seen": 1791393730.2632139,
+    "ast_hash": "d75ec9d7b49ccfcb9efddf32924d636f",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Auth/AuthFields.tsx": {
@@ -1236,9 +1236,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/authStorage.ts": {
-    "mtime": 1790424687.7323718,
-    "seen": 1790426295.567752,
-    "ast_hash": "15dca3c347d8e7a2e98216823538a7e5",
+    "mtime": 1791392930.9874828,
+    "seen": 1791393730.2722309,
+    "ast_hash": "8d6bbbac3bb8562726ba1ef37de63038",
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/balancaBarcode.ts": {
@@ -1272,8 +1272,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/.last-run.json": {
-    "mtime": 1791322039.4123828,
-    "seen": 1791322219.0113127,
+    "mtime": 1791393658.0314763,
+    "seen": 1791393730.2746468,
     "ast_hash": "5645f78ad777de5be9a546563ece0f4c",
     "semantic_hash": ""
   },
@@ -2490,9 +2490,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfeController.cs": {
-    "mtime": 1790464068.4956875,
-    "seen": 1790464167.415435,
-    "ast_hash": "ceb1e18ae4a0e5c3c417550bab5deefb",
+    "mtime": 1791392724.731991,
+    "seen": 1791393730.1730154,
+    "ast_hash": "72f7f1aeb594f9016b0eb0afec33bc21",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/NfeEmissaoRequest.cs": {
@@ -3342,8 +3342,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/error-context.md": {
-    "mtime": 1791322039.4237468,
-    "seen": 1791322219.0490057,
+    "mtime": 1791393658.0400941,
+    "seen": 1791393730.3071835,
     "ast_hash": "aface98cb37189fcbf085aa5f32da9e1",
     "semantic_hash": ""
   },
@@ -3390,8 +3390,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/test-failed-1.png": {
-    "mtime": 1791322039.4237468,
-    "seen": 1791322219.063366,
+    "mtime": 1791393658.0400941,
+    "seen": 1791393730.3178089,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -3654,9 +3654,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/RegrasEmissaoNfceController.cs": {
-    "mtime": 1791073577.203935,
-    "seen": 1791073644.9398353,
-    "ast_hash": "1ce7a633cdec6c47e0cde376581dec2a",
+    "mtime": 1791392724.7349875,
+    "seen": 1791393730.1730194,
+    "ast_hash": "dd7632b44a3192210d87959f61e93736",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs": {
@@ -3792,26 +3792,26 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco13-resilience-concurr-78a98--e-1-replay-sem-duplicidade-chromium/error-context.md": {
-    "mtime": 1791322039.4123828,
-    "seen": 1791322219.0489967,
+    "mtime": 1791393658.0329955,
+    "seen": 1791393730.3071737,
     "ast_hash": "224bad386e70ce696ae92cb0396ceceb",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco2-3-idempotency-BLOCO-f04bc-adHash-processa-com-sucesso-chromium/error-context.md": {
-    "mtime": 1791322039.4191606,
-    "seen": 1791322219.0489998,
+    "mtime": 1791393658.035043,
+    "seen": 1791393730.3071766,
     "ast_hash": "c24ea5fe7f8c136047ff5127180e8dae",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/error-context.md": {
-    "mtime": 1791322039.421152,
-    "seen": 1791322219.0490031,
+    "mtime": 1791393658.0367196,
+    "seen": 1791393730.307181,
     "ast_hash": "5cba1c90a8ecdabc6798c69a1000df68",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
-    "mtime": 1791322039.421152,
-    "seen": 1791322219.0633626,
+    "mtime": 1791393658.0381713,
+    "seen": 1791393730.3178048,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },

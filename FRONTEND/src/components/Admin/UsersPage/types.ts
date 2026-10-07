@@ -17,6 +17,8 @@ export type AdminUser = {
   createdAt: string;
   lastLoginAt: string;
   mustChangePassword: boolean;
+  /** Perfis somados ao principal (hoje só "financeiro"). */
+  perfisAdicionais?: string[];
 };
 
 export type UserRoleFilter = UserRole | "todos";

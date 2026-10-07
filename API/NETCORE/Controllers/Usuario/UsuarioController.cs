@@ -67,7 +67,7 @@ public class UsuarioController(
 
         try
         {
-            var user = securityStore.CreateUser(request, currentUser.CompanyId);
+            var user = securityStore.CreateUser(request, currentUser.CompanyId, PodeAlterarPerfisAdicionais(currentUser));
             return StatusCode(StatusCodes.Status201Created, new ApiResponse<object>
             {
                 Success = true,
@@ -92,7 +92,7 @@ public class UsuarioController(
 
         try
         {
-            var user = securityStore.UpdateUser(id, request, currentUser.CompanyId);
+            var user = securityStore.UpdateUser(id, request, currentUser.CompanyId, PodeAlterarPerfisAdicionais(currentUser));
             if (user is null)
             {
                 return NotFound(new ApiResponse<object> { Success = false, Message = "Usuário não encontrado." });
@@ -215,6 +215,13 @@ public class UsuarioController(
 
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
+
+    /// <summary>
+    /// Só o administrador dá ou tira perfis adicionais (ex.: Financeiro). Senão um gerente poderia se dar
+    /// acesso às notas fiscais sozinho; de um gerente, o campo é ignorado (mantém o que já estava).
+    /// </summary>
+    private static bool PodeAlterarPerfisAdicionais(AuthenticatedUser currentUser)
+        => string.Equals(currentUser.Role, HorusRoles.Administrador, StringComparison.OrdinalIgnoreCase);
 
     private string GetClientIp()
     {

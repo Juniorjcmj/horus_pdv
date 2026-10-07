@@ -40,7 +40,7 @@ import {
 import { salesHistoryService, type SaleHistoryDto } from "@/services/api/salesHistoryService";
 import { cashRegisterService, type CashMovementDto } from "@/services/api/cashRegisterService";
 import { getLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
-import { getStoredAuthUser } from "@/utils/authStorage";
+import { getStoredAuthUser, hasFinanceiroAccess } from "@/utils/authStorage";
 import {
   PAYMENT_GROUP_LABEL,
   buildPayments,
@@ -118,6 +118,8 @@ function splitSaleDate(value: string) {
 
 export default function SalesHistoryPage() {
   const { formatMoneyBr, parseMoneyBr } = useInputMasks();
+  // Reemitir NFC-e é ação fiscal: administrador ou perfil Financeiro.
+  const canManageFiscal = hasFinanceiroAccess();
   const [search, setSearch] = useState("");
   const [salesHistory, setSalesHistory] = useState<SaleHistoryRow[]>([]);
   const [company, setCompany] = useState<CompanyDto | null>(null);
@@ -1074,7 +1076,7 @@ export default function SalesHistoryPage() {
                               },
                             ]
                           : []),
-                        ...(fiscal && fiscal.status === FISCAL_STATUS.Rejeitado
+                        ...(fiscal && fiscal.status === FISCAL_STATUS.Rejeitado && canManageFiscal
                           ? [
                               {
                                 key: "reemitir",
@@ -1136,10 +1138,14 @@ export default function SalesHistoryPage() {
         <FiscalErrorModal
           document={errorFiscalModal}
           onClose={() => setErrorFiscalModal(null)}
-          onReemitir={async (doc) => {
-            await reemitirNfce(doc);
-            setErrorFiscalModal(null);
-          }}
+          onReemitir={
+            canManageFiscal
+              ? async (doc) => {
+                  await reemitirNfce(doc);
+                  setErrorFiscalModal(null);
+                }
+              : undefined
+          }
           isReemitindo={reemitindoIds.has(errorFiscalModal.id)}
         />
       ) : null}

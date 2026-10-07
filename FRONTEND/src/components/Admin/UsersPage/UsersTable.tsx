@@ -10,6 +10,12 @@ import type { AdminUser } from "./types";
 import { ROLE_LABEL, STATUS_LABEL } from "./constants";
 import { formatDateTimePtBr, statusClass } from "./utils";
 
+/** "Gerente + Financeiro" quando há perfis adicionais. */
+function roleWithExtras(user: AdminUser) {
+  const extras = (user.perfisAdicionais ?? []).filter((perfil) => perfil !== user.role);
+  return [ROLE_LABEL[user.role] ?? user.role, ...extras.map((perfil) => ROLE_LABEL[perfil as AdminUser["role"]] ?? perfil)].join(" + ");
+}
+
 type UsersTableProps = {
   items: AdminUser[];
   onEdit: (user: AdminUser) => void;
@@ -58,7 +64,7 @@ export default function UsersTable({
                 <p className="text-xs text-text-secondary">{user.email}</p>
                 <p className="text-xs text-text-secondary">{user.phone}</p>
               </td>
-              <td className="px-4 py-3 text-text-secondary">{ROLE_LABEL[user.role]}</td>
+              <td className="px-4 py-3 text-text-secondary">{roleWithExtras(user)}</td>
               <td className="px-4 py-3">
                 <span
                   className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(user.status)}`}
@@ -135,7 +141,7 @@ export default function UsersTable({
             <dl className="mt-3 grid grid-cols-2 gap-2 text-xs text-text-secondary">
               <div>
                 <dt>Perfil</dt>
-                <dd className="font-medium text-text-primary">{ROLE_LABEL[user.role]}</dd>
+                <dd className="font-medium text-text-primary">{roleWithExtras(user)}</dd>
               </div>
               <div>
                 <dt>Último login</dt>

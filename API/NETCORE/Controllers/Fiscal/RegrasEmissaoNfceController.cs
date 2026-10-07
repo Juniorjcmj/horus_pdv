@@ -41,7 +41,7 @@ public class RegrasEmissaoNfceController(RegrasEmissaoNfceAB regrasEmissaoNfceAB
     }
 
     [HttpPut]
-    [HorusAuthorizeRoles("administrador", "gerente")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> Put([FromBody] SalvarRegrasEmissaoNfceRequest request, CancellationToken cancellationToken)
     {
         if (HttpContext.Items["CurrentUser"] is not AuthenticatedUser currentUser)
@@ -81,7 +81,7 @@ public class RegrasEmissaoNfceController(RegrasEmissaoNfceAB regrasEmissaoNfceAB
     }
 
     [HttpPost("reset-contador")]
-    [HorusAuthorizeRoles("administrador", "gerente")]
+    [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
     public async Task<IActionResult> ResetContador(CancellationToken cancellationToken)
     {
         if (HttpContext.Items["CurrentUser"] is not AuthenticatedUser currentUser)

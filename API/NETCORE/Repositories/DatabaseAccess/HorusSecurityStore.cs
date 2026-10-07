@@ -13,7 +13,7 @@ using System.Text;
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 /// <summary>Resultado da validação de uma requisição autenticada (sessão, usuário, empresa).</summary>
-public sealed record RequestAuthValidation(bool SessionActive, bool UserActive, string CompanyStatus);
+public sealed record RequestAuthValidation(bool SessionActive, bool UserActive, string CompanyStatus, string PerfisAdicionais = "");
 
 public class HorusSecurityStore(Connection connection, HorusSecurityOptions securityOptions)
 {
@@ -26,7 +26,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         using var db = connection.OpenConnection();
         using var command = new SqlCommand(
             """
-            SELECT Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword
+            SELECT Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword, PerfisAdicionais
             FROM Usuarios
             WHERE CompanyId = @CompanyId
             ORDER BY Name;
@@ -105,10 +105,12 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         return (true, "Gerente validado com sucesso.", ToDto(user));
     }
 
-    public SecurityUserDto CreateUser(UsuarioRequest request, string companyId)
+    /// <param name="podeAlterarPerfisAdicionais">Só o administrador dá perfis adicionais (ex.: Financeiro).</param>
+    public SecurityUserDto CreateUser(UsuarioRequest request, string companyId, bool podeAlterarPerfisAdicionais = false)
     {
         var user = MapRequest($"usr-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", request, true);
         user.CompanyId = companyId;
+        if (!podeAlterarPerfisAdicionais) user.PerfisAdicionais = [];
         ValidateDuplicates(user, null, companyId);
         InsertUser(user);
         return ToDto(user);
@@ -169,13 +171,18 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         return ToDto(user);
     }
 
-    public SecurityUserDto? UpdateUser(string id, UsuarioRequest request, string companyId)
+    /// <param name="podeAlterarPerfisAdicionais">Só o administrador muda perfis adicionais; os demais mantêm os atuais.</param>
+    public SecurityUserDto? UpdateUser(string id, UsuarioRequest request, string companyId, bool podeAlterarPerfisAdicionais = false)
     {
         var current = FindUserById(id, companyId);
         if (current is null) return null;
 
         var updated = MapRequest(id, request, false);
         updated.CompanyId = companyId;
+        if (!podeAlterarPerfisAdicionais || request.PerfisAdicionais is null)
+        {
+            updated.PerfisAdicionais = current.PerfisAdicionais;
+        }
         ValidateDuplicates(updated, id, companyId);
         updated.PasswordHash = string.IsNullOrWhiteSpace(request.Password)
             ? current.PasswordHash
@@ -234,6 +241,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         updated.CreatedAt = user.CreatedAt;
         updated.LastLoginAt = user.LastLoginAt;
         updated.MustChangePassword = user.MustChangePassword;
+        updated.PerfisAdicionais = user.PerfisAdicionais; // editar o próprio perfil não mexe em permissões
         ValidateDuplicates(updated, user.Id, user.CompanyId);
         UpdateUserRecord(updated);
         return ToDto(updated);
@@ -443,6 +451,8 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
                 CASE WHEN EXISTS (SELECT 1 FROM Sessoes WHERE Id = @SessionId) THEN 1 ELSE 0 END AS SessionActive,
                 (SELECT TOP 1 Status FROM Usuarios
                   WHERE Id = @UserId AND (@CompanyId IS NULL OR CompanyId = @CompanyId)) AS UserStatus,
+                (SELECT TOP 1 PerfisAdicionais FROM Usuarios
+                  WHERE Id = @UserId AND (@CompanyId IS NULL OR CompanyId = @CompanyId)) AS PerfisAdicionais,
                 (SELECT TOP 1 Status FROM Empresas WHERE Id = @CompanyId) AS CompanyStatus;
             """,
             db);
@@ -462,7 +472,8 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
             ? "aprovada"
             : (reader["CompanyStatus"] as string) ?? "aprovada";
 
-        return new RequestAuthValidation(sessionActive, userStatus == "ativo", companyStatus);
+        return new RequestAuthValidation(
+            sessionActive, userStatus == "ativo", companyStatus, (reader["PerfisAdicionais"] as string) ?? string.Empty);
     }
 
     public bool IsSessionActive(string sessionId)
@@ -830,7 +841,8 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
             CreatedAt = DateTime.UtcNow.ToString("yyyy-MM-dd"),
             LastLoginAt = "-",
             PasswordHash = string.IsNullOrWhiteSpace(request.Password) ? string.Empty : PasswordHasher.Hash(request.Password),
-            MustChangePassword = isCreate || !string.IsNullOrWhiteSpace(request.Password)
+            MustChangePassword = isCreate || !string.IsNullOrWhiteSpace(request.Password),
+            PerfisAdicionais = HorusRoles.NormalizePerfisAdicionais(request.PerfisAdicionais)
         };
     }
 
@@ -882,8 +894,8 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         using var db = connection.OpenConnection();
         using var command = new SqlCommand(
             """
-            INSERT INTO Usuarios (Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword)
-            VALUES (@Id, @CompanyId, @Cpf, @Name, @Email, @Phone, @Role, @Status, @CreatedAt, @LastLoginAt, @PasswordHash, @MustChangePassword);
+            INSERT INTO Usuarios (Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword, PerfisAdicionais)
+            VALUES (@Id, @CompanyId, @Cpf, @Name, @Email, @Phone, @Role, @Status, @CreatedAt, @LastLoginAt, @PasswordHash, @MustChangePassword, @PerfisAdicionais);
             """,
             db);
         AddUserParameters(command, user);
@@ -937,7 +949,8 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
                    Status = @Status,
                    LastLoginAt = @LastLoginAt,
                    PasswordHash = @PasswordHash,
-                   MustChangePassword = @MustChangePassword
+                   MustChangePassword = @MustChangePassword,
+                   PerfisAdicionais = @PerfisAdicionais
              WHERE Id = @Id AND CompanyId = @CompanyId;
             """,
             db);
@@ -962,7 +975,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         using var db = connection.OpenConnection();
         using var command = new SqlCommand(
             """
-            SELECT Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword
+            SELECT Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword, PerfisAdicionais
             FROM Usuarios
             WHERE Email = @Email;
             """,
@@ -976,7 +989,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
     {
         using var command = new SqlCommand(
             """
-            SELECT Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword
+            SELECT Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword, PerfisAdicionais
             FROM Usuarios
             WHERE Id = @Id;
             """,
@@ -995,7 +1008,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
     {
         using var command = new SqlCommand(
             """
-            SELECT Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword
+            SELECT Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword, PerfisAdicionais
             FROM Usuarios
             WHERE Id = @Id AND CompanyId = @CompanyId;
             """,
@@ -1023,7 +1036,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
     {
         using var command = new SqlCommand(
             """
-            SELECT Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword
+            SELECT Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword, PerfisAdicionais
             FROM Usuarios
             WHERE REPLACE(REPLACE(REPLACE(REPLACE(Cpf, '.', ''), '/', ''), '-', ''), ' ', '') = @Cnpj
               AND Email = @Email
@@ -1105,6 +1118,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         command.Parameters.AddWithValue("@LastLoginAt", user.LastLoginAt);
         command.Parameters.AddWithValue("@PasswordHash", user.PasswordHash);
         command.Parameters.AddWithValue("@MustChangePassword", user.MustChangePassword);
+        command.Parameters.AddWithValue("@PerfisAdicionais", string.Join(",", HorusRoles.NormalizePerfisAdicionais(user.PerfisAdicionais)));
     }
 
     private static string OnlyDigits(string value) => new(value.Where(char.IsDigit).ToArray());
@@ -1173,7 +1187,8 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         CreatedAt = ReadString(reader, "CreatedAt"),
         LastLoginAt = ReadString(reader, "LastLoginAt"),
         PasswordHash = ReadString(reader, "PasswordHash"),
-        MustChangePassword = reader.GetBoolean(reader.GetOrdinal("MustChangePassword"))
+        MustChangePassword = reader.GetBoolean(reader.GetOrdinal("MustChangePassword")),
+        PerfisAdicionais = HorusRoles.ParsePerfisAdicionais(ReadString(reader, "PerfisAdicionais"))
     };
 
     private static SecuritySession ReadSession(SqlDataReader reader) => new()
@@ -1561,7 +1576,7 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
             // Busca o admin (role=administrador) da empresa
             using var findCmd = new SqlCommand(
                 """
-                SELECT TOP 1 Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword
+                SELECT TOP 1 Id, CompanyId, Cpf, Name, Email, Phone, Role, Status, CreatedAt, LastLoginAt, PasswordHash, MustChangePassword, PerfisAdicionais
                 FROM Usuarios
                 WHERE CompanyId = @CompanyId AND Role = N'administrador' AND Status = N'ativo'
                 ORDER BY CreatedAt;
@@ -1722,7 +1737,8 @@ public class HorusSecurityStore(Connection connection, HorusSecurityOptions secu
         Status = source.Status,
         CreatedAt = source.CreatedAt,
         LastLoginAt = source.LastLoginAt,
-        MustChangePassword = source.MustChangePassword
+        MustChangePassword = source.MustChangePassword,
+        PerfisAdicionais = HorusRoles.NormalizePerfisAdicionais(source.PerfisAdicionais)
     };
 
     private static SecuritySessionDto ToSessionDto(SecuritySession source, bool current) => new()
@@ -1757,6 +1773,8 @@ public class SecurityUserDto
     public string CreatedAt { get; set; } = string.Empty;
     public string LastLoginAt { get; set; } = string.Empty;
     public bool MustChangePassword { get; set; }
+    /// <summary>Perfis somados ao principal (hoje só "financeiro").</summary>
+    public List<string> PerfisAdicionais { get; set; } = [];
 }
 
 public class SecuritySessionDto
@@ -1831,6 +1849,8 @@ internal sealed class SecurityUserRecord
     public string LastLoginAt { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public bool MustChangePassword { get; set; }
+    /// <summary>Perfis somados ao principal (ex.: "financeiro"). Ver HorusRoles.PerfisAdicionaisValidos.</summary>
+    public List<string> PerfisAdicionais { get; set; } = [];
     public int FailedLoginAttempts { get; set; }
     public DateTimeOffset? FirstFailedLoginAt { get; set; }
     public DateTimeOffset? LockoutEnd { get; set; }

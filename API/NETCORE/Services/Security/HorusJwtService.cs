@@ -119,4 +119,17 @@ public class AuthenticatedUser
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Perfis adicionais (ex.: "financeiro"). Lidos do banco a cada requisição (HorusAuthMiddleware), não do
+    /// token: tirar o Financeiro de alguém vale na hora, sem esperar novo login.
+    /// </summary>
+    public IReadOnlyList<string> PerfisAdicionais { get; set; } = [];
+
+    /// <summary>O usuário tem este perfil como principal ou adicional.</summary>
+    public bool TemPerfil(string perfil) =>
+        string.Equals(Role, perfil, StringComparison.OrdinalIgnoreCase) ||
+        PerfisAdicionais.Contains(perfil, StringComparer.OrdinalIgnoreCase);
+
+    public bool TemAcessoFinanceiro => HorusRoles.TemAcessoFinanceiro(Role, PerfisAdicionais);
 }

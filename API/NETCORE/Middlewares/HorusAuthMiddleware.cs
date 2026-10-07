@@ -76,6 +76,7 @@ public class HorusAuthMiddleware(RequestDelegate next)
                 return;
             }
             companyStatus = validation.CompanyStatus;
+            authenticatedUser.PerfisAdicionais = HorusRoles.ParsePerfisAdicionais(validation.PerfisAdicionais);
         }
 
         context.Items["CurrentUser"] = authenticatedUser;
@@ -101,7 +102,10 @@ public class HorusAuthMiddleware(RequestDelegate next)
         }
 
         var rolePolicy = context.GetEndpoint()?.Metadata.GetMetadata<HorusAuthorizeRolesAttribute>();
-        if (rolePolicy is not null && rolePolicy.Roles.Count > 0 && !rolePolicy.Roles.Contains(authenticatedUser.Role))
+        // Vale o perfil principal OU qualquer perfil adicional (ex.: gerente + financeiro passa em "financeiro").
+        if (rolePolicy is not null && rolePolicy.Roles.Count > 0
+            && !rolePolicy.Roles.Contains(authenticatedUser.Role)
+            && !authenticatedUser.PerfisAdicionais.Any(rolePolicy.Roles.Contains))
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             await context.Response.WriteAsJsonAsync(new ApiResponse<object>
