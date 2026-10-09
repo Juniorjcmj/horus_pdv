@@ -541,7 +541,7 @@ export default function CustomerRegisterPage() {
                 <th className="px-4 py-3">Nome</th>
                 <th className="px-4 py-3">Documento</th>
                 <th className="px-4 py-3">Cidade</th>
-                <th className="px-4 py-3">Celular</th>
+                <th className="px-4 py-3">Telefone / celular</th>
                 <th className="px-4 py-3">E-mail</th>
                 <th className="px-4 py-3">Saldo Devedor</th>
                 <th className="px-4 py-3">Ações</th>

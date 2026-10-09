@@ -65,20 +65,23 @@ public class ClienteService(ClienteAB clientesAB) : IClienteService
             throw new InvalidOperationException("Nome do cliente deve ter no minimo 3 caracteres.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.Document))
-        {
-            throw new InvalidOperationException("Documento do cliente e obrigatorio.");
-        }
-
         var documentDigits = OnlyDigits(request.Document);
-        if (documentDigits.Length != 11 && documentDigits.Length != 14)
+        if (!string.IsNullOrWhiteSpace(request.Document) && documentDigits.Length != 11 && documentDigits.Length != 14)
         {
             throw new InvalidOperationException("Documento do cliente invalido.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.Cellphone))
+        if (string.IsNullOrWhiteSpace(request.Telephone) && string.IsNullOrWhiteSpace(request.Cellphone))
         {
-            throw new InvalidOperationException("Celular do cliente e obrigatorio.");
+            throw new InvalidOperationException("Informe um telefone ou celular com DDD.");
+        }
+
+        foreach (var phone in new[] { request.Telephone, request.Cellphone })
+        {
+            if (!string.IsNullOrWhiteSpace(phone) && OnlyDigits(phone).Length is not (10 or 11))
+            {
+                throw new InvalidOperationException("Informe um telefone ou celular válido com DDD (10 ou 11 dígitos).");
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(request.Email) && !request.Email.Contains('@'))
@@ -89,8 +92,9 @@ public class ClienteService(ClienteAB clientesAB) : IClienteService
 
     private async Task ValidateDuplicatesAsync(string companyId, ClienteRequest request, string? currentId)
     {
-        var customers = await clientesAB.ListarAsync(companyId);
         var document = OnlyDigits(request.Document);
+        if (document.Length == 0) return;
+        var customers = await clientesAB.ListarAsync(companyId);
         if (customers.Any(item => item.Id != currentId && OnlyDigits(item.Document) == document))
         {
             throw new InvalidOperationException("Já existe cliente com este documento.");
@@ -101,20 +105,20 @@ public class ClienteService(ClienteAB clientesAB) : IClienteService
     {
         Id = id,
         CustomerName = request.CustomerName.Trim(),
-        Document = request.Document,
-        BirthDate = request.BirthDate,
-        Age = request.Age,
-        Cep = request.Cep,
-        City = request.City,
-        State = request.State,
-        Address = request.Address,
-        Neighborhood = request.Neighborhood,
-        StreetComplement = request.StreetComplement,
-        Number = request.Number,
-        ReferencePoint = request.ReferencePoint,
-        Telephone = request.Telephone,
-        Cellphone = request.Cellphone,
-        Email = request.Email,
+        Document = request.Document?.Trim() ?? string.Empty,
+        BirthDate = request.BirthDate ?? string.Empty,
+        Age = request.Age ?? string.Empty,
+        Cep = request.Cep ?? string.Empty,
+        City = request.City ?? string.Empty,
+        State = request.State ?? string.Empty,
+        Address = request.Address ?? string.Empty,
+        Neighborhood = request.Neighborhood ?? string.Empty,
+        StreetComplement = request.StreetComplement ?? string.Empty,
+        Number = request.Number ?? string.Empty,
+        ReferencePoint = request.ReferencePoint ?? string.Empty,
+        Telephone = request.Telephone?.Trim() ?? string.Empty,
+        Cellphone = request.Cellphone?.Trim() ?? string.Empty,
+        Email = request.Email ?? string.Empty,
         IndIeDest = request.IndIeDest,
         InscricaoEstadual = string.IsNullOrWhiteSpace(request.InscricaoEstadual) ? null : request.InscricaoEstadual.Trim(),
         CodigoMunicipioIbge = string.IsNullOrWhiteSpace(request.CodigoMunicipioIbge) ? null : request.CodigoMunicipioIbge.Trim(),
@@ -146,5 +150,5 @@ public class ClienteService(ClienteAB clientesAB) : IClienteService
         SaldoDevedor = source.SaldoDevedor
     };
 
-    private static string OnlyDigits(string value) => new(value.Where(char.IsDigit).ToArray());
+    private static string OnlyDigits(string? value) => new((value ?? string.Empty).Where(char.IsDigit).ToArray());
 }

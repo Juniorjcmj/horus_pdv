@@ -3,18 +3,18 @@
  * Objetivo: modal de cadastro rápido de cliente integrado ao fluxo de venda do PDV (Fiado / CPF).
  * Permite cadastrar e vincular o cliente instantaneamente sem sair do caixa ou perder a venda.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { UserPlus, X, Loader2, Check, Search, AlertCircle } from "lucide-react";
 import { customerService, type CustomerDto, type CustomerPayload } from "@/services/api/customerService";
 import { Toast } from "@/hooks/Dialog";
 import {
   maskCpfOrCnpj,
-  maskCellphoneBr,
+  maskPhoneBr,
   maskMoneyBr,
   maskCep,
-  onlyDigits,
 } from "@/utils/inputMasks";
 import { lookupAddressByCep, sanitizeCep } from "@/utils/cepLookup";
+import { getCustomerValidationError } from "@/utils/customerValidation";
 
 interface QuickCustomerRegisterModalProps {
   open: boolean;
@@ -31,6 +31,7 @@ export function QuickCustomerRegisterModal({
   onClose,
   onSuccess,
 }: QuickCustomerRegisterModalProps) {
+  const formId = useId();
   const [customerName, setCustomerName] = useState("");
   const [document, setDocument] = useState("");
   const [cellphone, setCellphone] = useState("");
@@ -109,25 +110,9 @@ export function QuickCustomerRegisterModal({
     setFormError(null);
 
     const nameClean = customerName.trim();
-    if (!nameClean || nameClean.length < 3) {
-      setFormError("Informe o nome completo do cliente (mínimo 3 caracteres).");
-      return;
-    }
-
-    const docDigits = onlyDigits(document);
-    if (docDigits.length !== 11 && docDigits.length !== 14) {
-      setFormError("Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.");
-      return;
-    }
-
-    const phoneDigits = onlyDigits(cellphone);
-    if (phoneDigits.length < 10) {
-      setFormError("Informe um número de celular ou WhatsApp válido com DDD.");
-      return;
-    }
-
-    if (email && !email.includes("@")) {
-      setFormError("Informe um endereço de e-mail válido.");
+    const validationError = getCustomerValidationError({ customerName: nameClean, cellphone, document, email });
+    if (validationError) {
+      setFormError(validationError);
       return;
     }
 
@@ -149,7 +134,7 @@ export function QuickCustomerRegisterModal({
       number,
       referencePoint: "",
       telephone: "",
-      cellphone: maskCellphoneBr(cellphone),
+      cellphone: maskPhoneBr(cellphone),
       email: email.trim(),
       limiteCredito: limiteNum,
       saldoDevedor: 0,
@@ -178,6 +163,8 @@ export function QuickCustomerRegisterModal({
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-labelledby={`${formId}-title`}
         className="card flex max-h-[92vh] w-full max-w-xl flex-col rounded-2xl border border-border-primary bg-bg-light p-5 shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
@@ -188,11 +175,11 @@ export function QuickCustomerRegisterModal({
               <UserPlus size={18} />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-text-primary">
+              <h3 id={`${formId}-title`} className="text-base font-semibold text-text-primary">
                 Cadastro Rápido de Cliente
               </h3>
               <p className="text-[11px] text-text-secondary">
-                Cadastre o cliente e vincule à venda instantaneamente
+                Informe nome e telefone. Os demais dados são opcionais.
               </p>
             </div>
           </div>
@@ -209,7 +196,7 @@ export function QuickCustomerRegisterModal({
         {/* Formulário */}
         <form onSubmit={handleSave} className="mt-4 flex flex-1 flex-col overflow-y-auto pr-1">
           {formError && (
-            <div className="mb-3 flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/10 p-3 text-xs text-danger">
+            <div role="alert" className="mb-3 flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/10 p-3 text-xs text-danger">
               <AlertCircle size={15} className="shrink-0" />
               <span>{formError}</span>
             </div>
@@ -218,10 +205,11 @@ export function QuickCustomerRegisterModal({
           <div className="space-y-3.5 text-xs">
             {/* Nome Completo */}
             <div>
-              <label className="mb-1 block font-medium text-text-primary">
+              <label htmlFor={`${formId}-name`} className="mb-1 block font-medium text-text-primary">
                 Nome Completo <span className="text-danger">*</span>
               </label>
               <input
+                id={`${formId}-name`}
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
@@ -235,26 +223,27 @@ export function QuickCustomerRegisterModal({
             {/* Documento e Celular */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block font-medium text-text-primary">
-                  CPF ou CNPJ <span className="text-danger">*</span>
+                <label htmlFor={`${formId}-document`} className="mb-1 block font-medium text-text-primary">
+                  CPF ou CNPJ <span className="text-text-tertiary">(Opcional)</span>
                 </label>
                 <input
+                  id={`${formId}-document`}
                   type="text"
                   value={document}
                   onChange={(e) => setDocument(maskCpfOrCnpj(e.target.value))}
                   placeholder="000.000.000-00"
                   className="input-field w-full text-xs font-mono"
-                  required
                 />
               </div>
               <div>
-                <label className="mb-1 block font-medium text-text-primary">
-                  Celular / WhatsApp <span className="text-danger">*</span>
+                <label htmlFor={`${formId}-phone`} className="mb-1 block font-medium text-text-primary">
+                  Telefone / celular <span className="text-danger">*</span>
                 </label>
                 <input
-                  type="text"
+                  id={`${formId}-phone`}
+                  type="tel"
                   value={cellphone}
-                  onChange={(e) => setCellphone(maskCellphoneBr(e.target.value))}
+                  onChange={(e) => setCellphone(maskPhoneBr(e.target.value))}
                   placeholder="(00) 00000-0000"
                   className="input-field w-full text-xs"
                   required
@@ -278,10 +267,11 @@ export function QuickCustomerRegisterModal({
                 />
               </div>
               <div>
-                <label className="mb-1 block font-medium text-text-primary">
+                <label htmlFor={`${formId}-email`} className="mb-1 block font-medium text-text-primary">
                   E-mail <span className="text-[10px] text-text-tertiary">(Opcional)</span>
                 </label>
                 <input
+                  id={`${formId}-email`}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
