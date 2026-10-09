@@ -119,7 +119,7 @@ test.describe("Cliente com nome e telefone obrigatórios", () => {
     await expect(page.getByRole("textbox", { name: "Celular *", exact: true })).toBeVisible();
     await expect(page.getByRole("textbox", { name: "Telefone", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Criar fornecedor", exact: true }).click();
-    await expect(page.getByText("Preencha os campos obrigatórios.", { exact: true })).toBeVisible();
+    await expect(page.getByText("Informe a Razão Social ou Nome Fantasia do fornecedor.", { exact: true })).toBeVisible();
     expect(writes).toHaveLength(0);
   });
 
