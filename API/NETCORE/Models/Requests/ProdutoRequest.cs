@@ -16,7 +16,7 @@ public class ProdutoRequest
     public string ProductImageName { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public string ProductCode { get; set; } = string.Empty;
-    public string ProductSupplier { get; set; } = string.Empty;
+    public string? ProductSupplier { get; set; } = string.Empty;
     public string ProductDescription { get; set; } = string.Empty;
     public string ProductQnt { get; set; } = string.Empty;
     public string EstoqueMinimo { get; set; } = "0";

@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ProdutoRequest.cs": {
-    "mtime": 1791045713.4405205,
-    "seen": 1791045837.6966298,
-    "ast_hash": "cc01ff0e814fec472f34b584243e5db1",
+    "mtime": 1791583030.5911453,
+    "seen": 1791583249.3889945,
+    "ast_hash": "2370808c2979bdc2d44017eef435b2ec",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ResetPasswordWithTokenRequest.cs": {
@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
-    "mtime": 1791575167.061342,
-    "seen": 1791575436.157193,
-    "ast_hash": "5a495d3c99440d14f0cfa2d3dee743a3",
+    "mtime": 1791583030.5921667,
+    "seen": 1791583249.4046428,
+    "ast_hash": "ae80533429c5b017d95256ecacc7f324",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusAuthorizeRolesAttribute.cs": {
@@ -4125,6 +4125,24 @@
     "mtime": 1791579322.3312564,
     "seen": 1791579531.4263437,
     "ast_hash": "c7590df97238ef9d4f5652e42eab5383",
+    "semantic_hash": ""
+  },
+  "API/tests/ProductRegistrationChecks/ProductRegistrationChecks.csproj": {
+    "mtime": 1791583132.816516,
+    "seen": 1791583249.4098299,
+    "ast_hash": "e04c8afd5817112dd06c13d0e099adf6",
+    "semantic_hash": ""
+  },
+  "API/tests/ProductRegistrationChecks/Program.cs": {
+    "mtime": 1791583132.8180327,
+    "seen": 1791583249.4098358,
+    "ast_hash": "fbcb4b89d2492a81e49720a015d9e4fe",
+    "semantic_hash": ""
+  },
+  "API/tests/ProductRegistrationChecks/README.md": {
+    "mtime": 1791583132.819043,
+    "seen": 1791583249.4965153,
+    "ast_hash": "647c82247d9fec5dc9ef24c7b413e8ea",
     "semantic_hash": ""
   }
 }

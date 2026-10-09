@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApiOutput>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../NETCORE/bin/$(Configuration)/net8.0'))</ApiOutput>
+    <SqlClientRuntime Condition="'$(OS)' == 'Windows_NT'">win</SqlClientRuntime>
+    <SqlClientRuntime Condition="'$(OS)' != 'Windows_NT'">unix</SqlClientRuntime>
+  </PropertyGroup>
+  <!-- Testa a API já compilada sem restaurar ou atualizar suas dependências fiscais. -->
+  <ItemGroup>
+    <Reference Include="HORUSPDV-API"><HintPath>$(ApiOutput)/HORUSPDV-API.dll</HintPath></Reference>
+    <Reference Include="Microsoft.Data.SqlClient"><HintPath>$(ApiOutput)/runtimes/$(SqlClientRuntime)/lib/net8.0/Microsoft.Data.SqlClient.dll</HintPath></Reference>
+    <Content Include="$(ApiOutput)/runtimes/win-x64/native/*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Condition="'$(OS)' == 'Windows_NT'" />
+  </ItemGroup>
+</Project>

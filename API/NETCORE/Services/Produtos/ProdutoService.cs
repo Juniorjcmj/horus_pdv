@@ -160,7 +160,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
             throw new InvalidOperationException("Já existe produto com este código.");
         }
 
-        var supplierName = request.ProductSupplier.Trim();
+        var supplierName = request.ProductSupplier?.Trim() ?? string.Empty;
         if (string.IsNullOrEmpty(supplierName)) return;
 
         var suppliers = await fornecedoresAB.ListarAsync(companyId);
@@ -188,7 +188,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
             ProductImageName = request.ProductImageName,
             ProductName = request.ProductName.Trim(),
             ProductCode = request.ProductCode.Trim(),
-            ProductSupplier = request.ProductSupplier.Trim(),
+            ProductSupplier = request.ProductSupplier?.Trim() ?? string.Empty,
             ProductDescription = request.ProductDescription.Trim(),
             ProductQnt = HorusMoneyFormat.ParseDecimal(request.ProductQnt),
             EstoqueMinimo = HorusMoneyFormat.ParseDecimal(request.EstoqueMinimo),
