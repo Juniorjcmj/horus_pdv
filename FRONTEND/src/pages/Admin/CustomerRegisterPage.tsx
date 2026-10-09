@@ -4,10 +4,13 @@
  * Entradas esperadas: não recebe props; processa estado local de formulário, lista e ações de CRUD.
  */
 
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import PageHeader from "@/components/Admin/PageHeader";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
+import ListState from "@/components/Admin/ListState";
+import useRemoteList from "@/hooks/useRemoteList";
 import { DatePickerField } from "@/components/Form";
 import LoadingButton from "@/components/Loading/LoadingButton";
 import TablePagination from "@/components/Pagination/TablePagination";
@@ -18,13 +21,8 @@ import PageLayout from "@/layout/PageLayout";
 import { customerService } from "@/services/api/customerService";
 import { getStoredAuthUser } from "@/utils/authStorage";
 import { lookupAddressByCep } from "@/utils/cepLookup";
-import {
-  getAgeFromBirthDate,
-  isValidCnpj,
-  isValidCpf,
-  isValidEmail,
-} from "@/utils/validators";
-import { onlyDigits } from "@/utils/inputMasks";
+import { getAgeFromBirthDate } from "@/utils/validators";
+import { getCustomerValidationError } from "@/utils/customerValidation";
 
 type Customer = {
   id: string;
@@ -114,7 +112,7 @@ function CustomerFormDrawer({
               {isEditMode ? "Editar cliente" : "Novo cliente"}
             </h3>
             <p className="mt-1 text-sm text-text-secondary">
-              Preencha os dados cadastrais e de contato do cliente.
+              Informe nome e telefone ou celular. Os demais dados são opcionais.
             </p>
           </div>
           <button
@@ -133,7 +131,7 @@ function CustomerFormDrawer({
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
-                  Documento (CPF/CNPJ) *
+                  Documento (CPF/CNPJ)
                 </span>
                 <input
                   value={value.document}
@@ -146,13 +144,14 @@ function CustomerFormDrawer({
                 <span className="mb-1.5 block text-sm text-text-secondary">Nome *</span>
                 <input
                   value={value.customerName}
+                  aria-required="true"
                   onChange={(event) => setField("customerName", event.target.value)}
                   className="input-field w-full"
                   placeholder="Nome"
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">DN *</span>
+                <span className="mb-1.5 block text-sm text-text-secondary">Data de nascimento</span>
                 <DatePickerField
                   value={value.birthDate}
                   onChange={(nextDate) => {
@@ -169,13 +168,15 @@ function CustomerFormDrawer({
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">Idade *</span>
+                <span className="mb-1.5 block text-sm text-text-secondary">Idade</span>
                 <input value={value.age} className="input-field w-full" disabled />
               </label>
             </div>
           </section>
 
           <AddressContactFields
+            addressRequired={false}
+            phoneRequired
             value={{
               cep: value.cep,
               city: value.city,
@@ -265,7 +266,7 @@ function CustomerFormDrawer({
 
 export default function CustomerRegisterPage() {
   const statusDialog = useStatusDialog();
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const { items: customers, setItems: setCustomers, isLoading, error: loadError, reload } = useRemoteList<Customer>(customerService.list, "Não foi possível carregar os clientes.");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -277,15 +278,6 @@ export default function CustomerRegisterPage() {
   const [deletingCustomerIds, setDeletingCustomerIds] = useState<Set<string>>(() => new Set());
   const [loadingCep, setLoadingCep] = useState(false);
   const [form, setForm] = useState<CustomerFormData>(EMPTY_FORM);
-
-  useEffect(() => {
-    customerService
-      .list()
-      .then(setCustomers)
-      .catch(() => {
-        Toast.error("Não foi possível carregar clientes da API.");
-      });
-  }, []);
 
   const filteredCustomers = useMemo(() => {
     const normalized = search.trim().toLowerCase();
@@ -443,47 +435,9 @@ export default function CustomerRegisterPage() {
   };
 
   const validateForm = () => {
-    const requiredFields: Array<keyof CustomerFormData> = [
-      "customerName",
-      "document",
-      "birthDate",
-      "age",
-      "cep",
-      "city",
-      "state",
-      "address",
-      "neighborhood",
-      "number",
-      "cellphone",
-    ];
-
-    const missing = requiredFields.some((field) => !String(form[field]).trim());
-    if (missing) {
-      Toast.error("Preencha os campos obrigatórios.");
-      return false;
-    }
-
-    if (form.customerName.trim().length < 3) {
-      Toast.error("O nome do cliente deve ter no mínimo 3 caracteres.");
-      return false;
-    }
-
-    const documentDigits = onlyDigits(form.document);
-    const isCpf = documentDigits.length === 11;
-    const isCnpj = documentDigits.length === 14;
-
-    if ((!isCpf && !isCnpj) || (isCpf && !isValidCpf(form.document)) || (isCnpj && !isValidCnpj(form.document))) {
-      Toast.error("Documento inválido.");
-      return false;
-    }
-
-    if (!form.age) {
-      Toast.error("Idade inválida.");
-      return false;
-    }
-
-    if (!isValidEmail(form.email)) {
-      Toast.error("E-mail inválido.");
+    const error = getCustomerValidationError(form);
+    if (error) {
+      Toast.error(error);
       return false;
     }
 
@@ -524,7 +478,7 @@ export default function CustomerRegisterPage() {
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
         title="Cadastro de Cliente"
-        description="Cadastro e manutenção de clientes com os campos do sistema legado."
+        description="Cadastre clientes e mantenha documentos, contatos e endereços atualizados."
         action={
           <button type="button" onClick={openCreateDrawer} className="btn-primary inline-flex items-center gap-2">
             <Plus size={16} />
@@ -548,6 +502,7 @@ export default function CustomerRegisterPage() {
             }}
             className="input-field w-full pl-9"
             placeholder="Pesquise por nome ou CPF"
+            aria-label="Buscar clientes por nome ou documento"
           />
         </label>
       </section>
@@ -570,7 +525,7 @@ export default function CustomerRegisterPage() {
             </LoadingButton>
           </div>
         ) : null}
-        <div className="overflow-x-auto">
+        <TableScrollArea label="Clientes" className="overflow-x-auto">
           <table className="w-full min-w-[880px] text-sm">
             <thead className="bg-bg-primary text-left text-text-secondary">
               <tr>
@@ -593,7 +548,15 @@ export default function CustomerRegisterPage() {
               </tr>
             </thead>
             <tbody>
-              {paginatedCustomers.map((customer) => (
+              {(isLoading || loadError || paginatedCustomers.length === 0) && (
+                <tr><td colSpan={8}><ListState loading={isLoading} error={Boolean(loadError)}
+                  title={isLoading ? "Carregando clientes…" : loadError || (search ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado")}
+                  description={loadError ? "Verifique a conexão e tente novamente." : search ? "Tente outro nome ou documento." : isLoading ? undefined : "Cadastre o primeiro cliente para começar."}
+                  actionLabel={isLoading ? undefined : loadError ? "Tentar novamente" : search ? "Limpar pesquisa" : "Cadastrar cliente"}
+                  onAction={isLoading ? undefined : loadError ? () => void reload() : search ? () => setSearch("") : openCreateDrawer} />
+                </td></tr>
+              )}
+              {!isLoading && !loadError && paginatedCustomers.map((customer) => (
                 <tr key={customer.id} className="border-t border-border-primary">
                   <td className="px-4 py-3">
                     <input
@@ -607,7 +570,7 @@ export default function CustomerRegisterPage() {
                   <td className="px-4 py-3 font-medium text-text-primary">{customer.customerName}</td>
                   <td className="px-4 py-3">{customer.document}</td>
                   <td className="px-4 py-3">{customer.city}</td>
-                  <td className="px-4 py-3">{customer.cellphone}</td>
+                  <td className="px-4 py-3">{customer.cellphone || customer.telephone}</td>
                   <td className="px-4 py-3">{customer.email || "-"}</td>
                   <td className="px-4 py-3">
                     {(customer.saldoDevedor ?? 0) > 0 ? (
@@ -646,7 +609,7 @@ export default function CustomerRegisterPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScrollArea>
         <div className="px-4 py-4">
           <TablePagination
             totalItems={filteredCustomers.length}

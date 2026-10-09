@@ -4,6 +4,7 @@
  *           número curto que o cliente leva até o caixa para pagar.
  * Entradas esperadas: não recebe props; busca produtos da API e registra o pedido ao finalizar.
  */
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import { CheckCircle2, ClipboardList, Plus, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/Admin/PageHeader";
@@ -311,7 +312,7 @@ export default function NovoPedidoPage() {
       </section>
 
       <section className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        <TableScrollArea label="Itens do pedido" className="overflow-x-auto">
           <table className="w-full min-w-[600px] text-sm">
             <thead className="bg-bg-primary text-left text-text-secondary">
               <tr>
@@ -352,7 +353,7 @@ export default function NovoPedidoPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScrollArea>
 
         <div className="flex flex-col gap-3 border-t border-border-primary p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-lg font-bold text-text-primary">Total: R$ {formatMoneyBr(total)}</p>

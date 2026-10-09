@@ -70,10 +70,10 @@ function KpiTrendCard({
 
   return (
     <article className={`card min-w-0 rounded-2xl p-4 ${className ?? ""}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
+      <p className="text-sm font-semibold text-text-secondary">
         {label}
       </p>
-      <p className={`mt-1 text-lg font-bold md:text-2xl ${valueClassName}`}>{value}</p>
+      <p className={`mt-1 break-words text-lg font-bold tabular-nums md:text-2xl ${valueClassName}`}>{value}</p>
       <p className="mt-1 text-xs text-text-secondary">{hint}</p>
       <div className="mt-3 h-12 w-full min-w-0">
         <svg

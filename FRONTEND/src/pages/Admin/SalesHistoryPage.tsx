@@ -4,6 +4,7 @@
  * Entradas esperadas: não recebe props; processa filtro textual e renderiza dados vindos da API.
  */
 
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import {
   AlertCircle,
   AlertTriangle,
@@ -826,7 +827,7 @@ export default function SalesHistoryPage() {
               <Printer size={14} /> Imprimir detalhamento
             </button>
           </div>
-          <div className="overflow-x-auto">
+          <TableScrollArea label="Histórico de vendas" className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-sm">
               <thead className="bg-bg-primary text-left text-text-secondary">
                 <tr>
@@ -933,11 +934,11 @@ export default function SalesHistoryPage() {
                 })}
               </tbody>
             </table>
-          </div>
+          </TableScrollArea>
         </section>
       ) : (
       <section className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        <TableScrollArea label="Histórico de vendas" className="overflow-x-auto">
           <table className="w-full min-w-[980px] table-fixed text-sm">
             <thead className="bg-bg-primary text-left text-text-secondary">
               <tr>
@@ -1095,7 +1096,7 @@ export default function SalesHistoryPage() {
               );})}
             </tbody>
           </table>
-        </div>
+        </TableScrollArea>
         <div className="px-4 py-4">
           <TablePagination
             totalItems={filteredSales.length}

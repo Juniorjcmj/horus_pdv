@@ -42,6 +42,7 @@ export default function ReportCardsGrid({
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder="Buscar relatório..."
+              aria-label="Buscar relatório"
               className="input-field w-full pl-9"
             />
           </label>

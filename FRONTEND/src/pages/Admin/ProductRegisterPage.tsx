@@ -4,6 +4,7 @@
  * Entradas esperadas: não recebe props; opera com estado local de lista e formulário de produto.
  */
 
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import {
   AlertTriangle,
   Barcode,
@@ -41,6 +42,8 @@ import AddressContactFields from "@/components/Register/AddressContactFields";
 import { Toast, useStatusDialog } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import PageLayout from "@/layout/PageLayout";
+import ListState from "@/components/Admin/ListState";
+import useRemoteList from "@/hooks/useRemoteList";
 import { categoriaService, type CategoriaArvore } from "@/services/api/categoriaService";
 import { productService } from "@/services/api/productService";
 import { supplierService, type SupplierPayload } from "@/services/api/supplierService";
@@ -1514,7 +1517,7 @@ function ProductFormDrawer({
 export default function ProductRegisterPage() {
   const { parseMoneyBr, formatMoneyBr, maskMoneyBr, sanitizeDecimalInput } = useInputMasks();
   const statusDialog = useStatusDialog();
-  const [products, setProducts] = useState<Product[]>([]);
+  const { items: products, setItems: setProducts, isLoading: loadingProducts, error: productsError, reload: loadProducts } = useRemoteList<Product>(productService.list, "Não foi possível carregar os produtos.");
   const [supplierOptions, setSupplierOptions] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -1586,15 +1589,6 @@ export default function ProductRegisterPage() {
 
   const [categories, setCategories] = useState<CategoriaArvore[]>([]);
 
-  const loadProducts = () => {
-    productService
-      .list()
-      .then(setProducts)
-      .catch(() => {
-        Toast.error("Não foi possível carregar produtos da API.");
-      });
-  };
-
   const loadSuppliers = () => {
     supplierService
       .list()
@@ -1618,7 +1612,6 @@ export default function ProductRegisterPage() {
   };
 
   useEffect(() => {
-    loadProducts();
     loadSuppliers();
     loadCategories();
   }, []);
@@ -2363,6 +2356,7 @@ export default function ProductRegisterPage() {
               }}
               className="input-field w-full pl-9 pr-8"
               placeholder="Pesquise por nome, código, barras/GTIN ou categoria..."
+              aria-label="Buscar produtos por descrição, código ou categoria"
             />
             {search && (
               <button
@@ -2558,6 +2552,7 @@ export default function ProductRegisterPage() {
               <div className="space-y-1">
                 <label className="text-xs font-medium text-text-secondary">Situação de Preço</label>
                 <select
+                  aria-label="Situação de preço"
                   value={filterPrice}
                   onChange={(e) => {
                     setFilterPrice(e.target.value as PriceFilter);
@@ -2581,6 +2576,7 @@ export default function ProductRegisterPage() {
                     type="text"
                     inputMode="decimal"
                     placeholder="Mín 0,00"
+                    aria-label="Preço de venda mínimo"
                     value={filterMinPrice}
                     onChange={(e) => {
                       setFilterMinPrice(maskMoneyBr(e.target.value));
@@ -2593,6 +2589,7 @@ export default function ProductRegisterPage() {
                     type="text"
                     inputMode="decimal"
                     placeholder="Máx 0,00"
+                    aria-label="Preço de venda máximo"
                     value={filterMaxPrice}
                     onChange={(e) => {
                       setFilterMaxPrice(maskMoneyBr(e.target.value));
@@ -2607,6 +2604,7 @@ export default function ProductRegisterPage() {
               <div className="space-y-1">
                 <label className="text-xs font-medium text-text-secondary">Situação do Estoque</label>
                 <select
+                  aria-label="Situação do estoque"
                   value={filterStock}
                   onChange={(e) => {
                     setFilterStock(e.target.value as StockFilter);
@@ -2625,6 +2623,7 @@ export default function ProductRegisterPage() {
               <div className="space-y-1">
                 <label className="text-xs font-medium text-text-secondary">Cadastro & Fiscal</label>
                 <select
+                  aria-label="Cadastro e dados fiscais"
                   value={filterFiscal}
                   onChange={(e) => {
                     setFilterFiscal(e.target.value as FiscalFilter);
@@ -2644,6 +2643,7 @@ export default function ProductRegisterPage() {
               <div className="space-y-1">
                 <label className="text-xs font-medium text-text-secondary">Categoria / Departamento</label>
                 <select
+                  aria-label="Categoria do produto"
                   value={filterCategory}
                   onChange={(e) => {
                     setFilterCategory(e.target.value);
@@ -2665,6 +2665,7 @@ export default function ProductRegisterPage() {
               <div className="space-y-1">
                 <label className="text-xs font-medium text-text-secondary">Fornecedor</label>
                 <select
+                  aria-label="Fornecedor do produto"
                   value={filterSupplier}
                   onChange={(e) => {
                     setFilterSupplier(e.target.value);
@@ -2686,6 +2687,7 @@ export default function ProductRegisterPage() {
               <div className="space-y-1">
                 <label className="text-xs font-medium text-text-secondary">Localização / Gôndola</label>
                 <select
+                  aria-label="Localização do estoque"
                   value={filterLocation}
                   onChange={(e) => {
                     setFilterLocation(e.target.value);
@@ -2706,6 +2708,7 @@ export default function ProductRegisterPage() {
               <div className="space-y-1">
                 <label className="text-xs font-medium text-text-secondary">Controle de Validade</label>
                 <select
+                  aria-label="Controle de validade"
                   value={filterValidity}
                   onChange={(e) => {
                     setFilterValidity(e.target.value as ValidityFilter);
@@ -2752,7 +2755,7 @@ export default function ProductRegisterPage() {
             </div>
           </div>
         ) : null}
-        <div className="overflow-x-auto">
+        <TableScrollArea label="Produtos" className="overflow-x-auto">
           <table className="w-full min-w-[1200px] text-sm">
             <thead className="bg-bg-primary text-left text-text-secondary">
               <tr>
@@ -2778,30 +2781,14 @@ export default function ProductRegisterPage() {
               </tr>
             </thead>
             <tbody>
-              {paginatedProducts.length === 0 ? (
+              {loadingProducts || productsError || paginatedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-16 text-center">
-                    <div className="flex flex-col items-center justify-center gap-2.5 text-text-secondary">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-bg-surface border border-border-primary text-text-tertiary shadow-sm">
-                        <Filter size={24} />
-                      </div>
-                      <p className="text-base font-semibold text-text-primary">
-                        Nenhum produto encontrado
-                      </p>
-                      <p className="max-w-md text-xs text-text-tertiary">
-                        Não encontramos produtos para os filtros ou termos de pesquisa aplicados.
-                      </p>
-                      {(activeFiltersCount > 0 || search) && (
-                        <button
-                          type="button"
-                          onClick={clearAllFilters}
-                          className="mt-2 inline-flex items-center gap-1.5 rounded-xl border border-border-primary bg-bg-surface px-3.5 py-2 text-xs font-semibold text-text-primary hover:bg-bg-primary transition shadow-sm"
-                        >
-                          <RotateCcw size={13} />
-                          Limpar todos os filtros
-                        </button>
-                      )}
-                    </div>
+                  <td colSpan={11}>
+                    <ListState loading={loadingProducts} error={Boolean(productsError)}
+                      title={loadingProducts ? "Carregando produtos…" : productsError || (activeFiltersCount > 0 || search ? "Nenhum produto encontrado" : "Nenhum produto cadastrado")}
+                      description={productsError ? "Verifique a conexão e tente novamente." : loadingProducts ? undefined : activeFiltersCount > 0 || search ? "Tente outra pesquisa ou remova os filtros." : "Informe descrição, custo e venda para cadastrar o primeiro produto."}
+                      actionLabel={loadingProducts ? undefined : productsError ? "Tentar novamente" : activeFiltersCount > 0 || search ? "Limpar todos os filtros" : "Cadastrar primeiro produto"}
+                      onAction={loadingProducts ? undefined : productsError ? () => void loadProducts() : activeFiltersCount > 0 || search ? clearAllFilters : openCreateDrawer} />
                   </td>
                 </tr>
               ) : (
@@ -3028,7 +3015,7 @@ export default function ProductRegisterPage() {
               )}
             </tbody>
           </table>
-        </div>
+        </TableScrollArea>
         <div className="px-4 py-4">
           <TablePagination
             totalItems={filteredProducts.length}

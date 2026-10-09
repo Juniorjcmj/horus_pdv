@@ -5,7 +5,7 @@
  */
 
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -78,6 +78,8 @@ export default function DatePickerField({
   const [open, setOpen] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState<PopoverPosition | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const dialogId = useId();
   const popoverRef = useRef<HTMLDivElement | null>(null);
   // Data selecionada derivada do valor textual recebido por props.
   const selectedDate = useMemo(
@@ -202,7 +204,11 @@ export default function DatePickerField({
     }
 
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape" && popoverRef.current) {
+        event.preventDefault();
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
     }
 
     window.addEventListener("mousedown", handleClickOutside);
@@ -216,11 +222,13 @@ export default function DatePickerField({
   return (
     <div ref={rootRef} className={`relative ${className}`}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((current) => !current)}
         disabled={disabled}
         aria-expanded={open}
         aria-haspopup="dialog"
+        aria-controls={open ? dialogId : undefined}
         className="input-field inline-flex w-full items-center justify-between gap-2 text-left"
       >
         <span className={displayValue ? "text-text-primary" : "text-text-tertiary"}>
@@ -232,7 +240,10 @@ export default function DatePickerField({
       {open && !disabled && typeof document !== "undefined" && createPortal(
         <div
           ref={popoverRef}
-          className="fixed z-layer-popover rounded-2xl border border-border-primary bg-bg-light p-3 shadow-xl"
+          id={dialogId}
+          role="dialog"
+          aria-label="Escolher data"
+          className="fixed z-layer-popover max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-xl border border-border-primary bg-bg-light p-3 shadow-xl"
           style={{
             left: popoverPosition?.left ?? VIEWPORT_MARGIN,
             top: popoverPosition?.top ?? VIEWPORT_MARGIN,
@@ -245,7 +256,7 @@ export default function DatePickerField({
               onClick={() =>
                 setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))
               }
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border-primary text-text-secondary transition hover:border-accent/50 hover:text-accent"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border-primary text-text-secondary transition hover:border-accent/50 hover:text-accent"
               aria-label="Mês anterior"
             >
               <ChevronLeft size={16} />
@@ -253,6 +264,7 @@ export default function DatePickerField({
 
             <div className="grid flex-1 grid-cols-2 gap-2">
               <select
+                aria-label="Mês"
                 value={viewMonth.getMonth()}
                 onChange={(event) => {
                   const nextMonth = Number(event.target.value);
@@ -267,6 +279,7 @@ export default function DatePickerField({
                 ))}
               </select>
               <select
+                aria-label="Ano"
                 value={viewMonth.getFullYear()}
                 onChange={(event) => {
                   const nextYear = Number(event.target.value);
@@ -287,7 +300,7 @@ export default function DatePickerField({
               onClick={() =>
                 setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))
               }
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border-primary text-text-secondary transition hover:border-accent/50 hover:text-accent"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border-primary text-text-secondary transition hover:border-accent/50 hover:text-accent"
               aria-label="Próximo mês"
             >
               <ChevronRight size={16} />
@@ -295,6 +308,7 @@ export default function DatePickerField({
           </div>
 
           <DayPicker
+            autoFocus
             mode="single"
             locale={ptBR}
             selected={selectedDate}
@@ -311,7 +325,10 @@ export default function DatePickerField({
                 return;
               }
               onChange(format === "br" ? toBrDate(nextDate) : toIsoDate(nextDate));
-              if (nextDate) setOpen(false);
+              if (nextDate) {
+                setOpen(false);
+                triggerRef.current?.focus();
+              }
             }}
             showOutsideDays
             classNames={{
@@ -320,18 +337,18 @@ export default function DatePickerField({
               month: "space-y-3",
               month_caption: "hidden",
               caption_label: "hidden",
-              weekdays: "grid grid-cols-7 gap-1",
+              weekdays: "grid grid-cols-7",
               weekday:
-                "h-8 w-8 inline-flex items-center justify-center text-[11px] font-semibold uppercase text-text-tertiary",
+                "h-11 w-full inline-flex items-center justify-center text-xs font-semibold text-text-secondary",
               weeks: "space-y-1",
-              week: "grid grid-cols-7 gap-1",
-              day: "h-8 w-8",
+              week: "grid grid-cols-7",
+              day: "h-11 min-w-0",
               day_button:
-                "h-8 w-8 rounded-lg text-sm text-text-secondary hover:bg-accent/10 hover:text-accent transition",
+                "h-11 w-full rounded-lg text-sm text-text-secondary hover:bg-hover-light transition",
               today:
                 "rounded-lg border border-accent/40 bg-accent/10 font-semibold text-accent",
               selected:
-                "rounded-lg bg-accent font-semibold text-white hover:bg-hover-accent hover:text-white",
+                "rounded-lg bg-(--color-action-accent) font-semibold [&_button]:text-(--color-action-on-accent) [&_button:hover]:bg-(--color-action-hover-accent)",
               outside: "text-text-tertiary/60",
               disabled: "text-text-tertiary/50 line-through",
             }}

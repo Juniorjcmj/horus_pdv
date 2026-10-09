@@ -11,7 +11,6 @@ import { test, expect } from "@playwright/test";
 import {
   APP_URL,
   API_URL,
-  RUN_ID,
   initSqlContainer,
   registerTestCompany,
   getCredentials,
@@ -65,7 +64,7 @@ test.describe("A — Login e Autenticação", () => {
     await loginButton.click();
 
     // 4. Validar redirecionamento para Home (validar elementos reais, não apenas URL)
-    await expect(page.getByRole("heading", { name: "Home" })).toBeVisible({
+    await expect(page.getByRole("heading", { name: "Visão geral" })).toBeVisible({
       timeout: 20_000,
     });
 
@@ -76,7 +75,7 @@ test.describe("A — Login e Autenticação", () => {
 
     // Validar que o menu lateral contém itens de navegação
     await expect(
-      page.getByRole("button", { name: "Home", exact: true }),
+      page.getByRole("button", { name: "Visão geral", exact: true }),
     ).toBeVisible();
 
     // 6. Validar persistência da sessão — cookie HttpOnly permite /Auth/me
@@ -91,7 +90,7 @@ test.describe("A — Login e Autenticação", () => {
     await page.reload();
 
     // 8. Confirmar que a sessão continua válida — Home ainda visível
-    await expect(page.getByRole("heading", { name: "Home" })).toBeVisible({
+    await expect(page.getByRole("heading", { name: "Visão geral" })).toBeVisible({
       timeout: 20_000,
     });
 
@@ -120,7 +119,7 @@ test.describe("A — Login e Autenticação", () => {
     await page.getByPlaceholder("usuario@hpdv.com.br").fill(creds.email);
     await page.getByPlaceholder("••••••••").fill(creds.password);
     await page.getByRole("button", { name: /entrar/i }).click();
-    await expect(page.getByRole("heading", { name: "Home" })).toBeVisible({
+    await expect(page.getByRole("heading", { name: "Visão geral" })).toBeVisible({
       timeout: 20_000,
     });
 
@@ -161,7 +160,7 @@ test.describe("A — Login e Autenticação", () => {
     // (não a tela de login, já que as credenciais offline estão persistidas)
     const isOperational = await Promise.race([
       page
-        .getByRole("heading", { name: "Home" })
+        .getByRole("heading", { name: "Visão geral" })
         .waitFor({ timeout: 15_000 })
         .then(() => true)
         .catch(() => false),
@@ -182,7 +181,7 @@ test.describe("A — Login e Autenticação", () => {
 
         // Verificar se login offline funcionou
         const offlineLoginWorked = await page
-          .getByRole("heading", { name: "Home" })
+          .getByRole("heading", { name: "Visão geral" })
           .waitFor({ timeout: 10_000 })
           .then(() => true)
           .catch(() => false);

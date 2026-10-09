@@ -4,6 +4,7 @@
  *           recebimento com entrada de estoque e validade automática, espelho de impressão/PDF,
  *           cancelamento com justificativa, exportação CSV e sugestões de reposição.
  */
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import {
   AlertCircle,
   AlertTriangle,
@@ -792,7 +793,7 @@ export default function PurchasesPage() {
             </p>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <TableScrollArea label="Compras" className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border-primary bg-bg-light text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
@@ -882,7 +883,7 @@ export default function PurchasesPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScrollArea>
               <div className="px-4 py-3">
                 <TablePagination
                   totalItems={filteredOrders.length}
@@ -1093,7 +1094,7 @@ export default function PurchasesPage() {
             </div>
 
             {cart.length > 0 ? (
-              <div className="border-t border-border-primary overflow-x-auto">
+              <TableScrollArea label="Compras" className="border-t border-border-primary overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border-primary bg-bg-light text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
@@ -1196,7 +1197,7 @@ export default function PurchasesPage() {
                     </tr>
                   </tfoot>
                 </table>
-              </div>
+              </TableScrollArea>
             ) : (
               <p className="p-4 text-center text-xs text-text-tertiary">
                 Nenhum produto adicionado ao pedido ainda.
@@ -1279,7 +1280,7 @@ export default function PurchasesPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <TableScrollArea label="Compras" className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border-primary bg-bg-light text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
@@ -1325,7 +1326,7 @@ export default function PurchasesPage() {
                     })}
                   </tbody>
                 </table>
-              </div>
+              </TableScrollArea>
 
               {/* Group by supplier and offer "Generate Order" buttons */}
               <div className="border-t border-border-primary px-4 py-3">
@@ -1384,7 +1385,7 @@ export default function PurchasesPage() {
               {receiveOrder.supplierName} • Informe a quantidade conferida e a data de validade dos perecíveis.
             </p>
 
-            <div className="overflow-x-auto max-h-[60vh]">
+            <TableScrollArea label="Compras" className="overflow-x-auto max-h-[60vh]">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border-primary text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
@@ -1457,7 +1458,7 @@ export default function PurchasesPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScrollArea>
 
             <div className="mt-6 flex justify-end gap-3 border-t border-border-primary pt-4">
               <button
@@ -1562,7 +1563,7 @@ export default function PurchasesPage() {
               </div>
             )}
 
-            <div className="overflow-x-auto max-h-[45vh]">
+            <TableScrollArea label="Compras" className="overflow-x-auto max-h-[45vh]">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border-primary bg-bg-light text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
@@ -1611,7 +1612,7 @@ export default function PurchasesPage() {
                   </tr>
                 </tfoot>
               </table>
-            </div>
+            </TableScrollArea>
 
             {detailOrder.note && (
               <p className="mt-3 rounded-lg bg-bg-light p-3 text-xs text-text-secondary">

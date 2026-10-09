@@ -322,7 +322,7 @@ export async function loginBrowserSession(page: Page): Promise<LoginData> {
     window.localStorage.setItem("horuspdv.activePage", "home");
     window.dispatchEvent(new CustomEvent("horuspdv-auth-change", { detail: { user: authenticatedUser } }));
   }, user);
-  await expect(page.getByRole("heading", { name: "Home" })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole("heading", { name: "Visão geral" })).toBeVisible({ timeout: 20_000 });
   return payload!.data!;
 }
 
@@ -427,14 +427,14 @@ export function customerPayload(label: string) {
 
 export async function openAppPage(page: Page, key: string, title: string): Promise<void> {
   if (key === "editar-perfil") {
-    await page.getByRole("button", { name: new RegExp(`${RUN_ID}`, "i") }).click();
-    await page.getByRole("button", { name: "Meu Perfil", exact: true }).click();
+    await page.locator("#admin-sidebar").getByRole("button", { name: /^Menu de / }).click();
+    await page.getByRole("menuitem", { name: "Meu Perfil", exact: true }).click();
   } else if (key === "configuracoes") {
-    await page.getByRole("button", { name: new RegExp(`${RUN_ID}`, "i") }).click();
-    await page.getByRole("button", { name: "Configurações", exact: true }).click();
+    await page.locator("#admin-sidebar").getByRole("button", { name: /^Menu de / }).click();
+    await page.getByRole("menuitem", { name: "Configurações", exact: true }).click();
   } else {
     const labels: Record<string, string> = {
-      home: "Home",
+      home: "Visão geral",
       "cadastro-cliente": "Cliente",
       "cadastro-produto": "Produto",
       "historico-vendas": "Histórico de Vendas",

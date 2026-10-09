@@ -119,7 +119,7 @@ async function createAccountAndLogin(page: Page) {
   await page.getByLabel(/e-mail/i).fill(demo.email);
   await page.getByLabel(/^senha$/i).fill(PASSWORD);
   await page.getByRole("button", { name: /^entrar$/i }).click();
-  await expect(page.getByRole("heading", { name: "Home", exact: true })).toBeVisible({
+  await expect(page.getByRole("heading", { name: "Visão geral", exact: true })).toBeVisible({
     timeout: 25_000,
   });
   await caption(page, "Dashboard inicial conectado à API");
@@ -283,7 +283,7 @@ async function historyAndReports(page: Page) {
 }
 
 async function finishOnHome(page: Page) {
-  await openAppPage(page, "home", "Home");
+  await openAppPage(page, "home", "Visão geral");
   await caption(page, "Quack PDV pronto para operação de balcão");
   await pause(page, 1_200);
 }

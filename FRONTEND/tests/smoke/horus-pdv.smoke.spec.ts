@@ -161,7 +161,7 @@ async function createPublicAccount(page: Page) {
 }
 
 async function logoutAndLoginAgain(page: Page) {
-  await page.getByRole("button", { name: new RegExp(smoke.companyName, "i") }).click();
+  await page.locator("#admin-sidebar").getByRole("button", { name: /^Menu de / }).click();
   await page.getByRole("button", { name: /sair/i }).click();
   await expect(page.getByRole("heading", { name: /bem-vindo de volta/i })).toBeVisible();
   await loginBrowserSession(page);
@@ -199,7 +199,7 @@ async function loginBrowserSession(page: Page) {
     window.localStorage.setItem("horuspdv.activePage", "home");
     window.dispatchEvent(new CustomEvent("horuspdv-auth-change", { detail: { user: authenticatedUser } }));
   }, user);
-  await expect(page.getByRole("heading", { name: "Home" })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole("heading", { name: "Visão geral" })).toBeVisible({ timeout: 20_000 });
   return payload!.data!;
 }
 
@@ -214,7 +214,7 @@ async function validateGuidedTour(page: Page) {
 
 async function validateAllPagesRender(page: Page) {
   const pages = [
-    ["Home", "Home"],
+    ["Visão geral", "Visão geral"],
     ["Cliente", "Cadastro de Cliente"],
     ["Fornecedor", "Cadastro de Fornecedor"],
     ["Produto", "Cadastro de Produto"],
@@ -245,16 +245,16 @@ async function validateAllPagesRender(page: Page) {
   }
 
   await openUserMenu(page);
-  await page.getByRole("button", { name: "Meu Perfil", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Meu Perfil", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Perfil do usuário", exact: true })).toBeVisible();
 
   await openUserMenu(page);
-  await page.getByRole("button", { name: "Configurações", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Configurações", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Configurações", exact: true })).toBeVisible();
 }
 
 async function openUserMenu(page: Page) {
-  await page.getByRole("button", { name: new RegExp(smoke.companyName, "i") }).click();
+  await page.locator("#admin-sidebar").getByRole("button", { name: /^Menu de / }).click();
 }
 
 async function validateAdvancedModulesThroughUi(page: Page) {
@@ -283,7 +283,7 @@ async function validateAdvancedModulesThroughUi(page: Page) {
     await expect(row).toBeVisible();
 
     await row.getByLabel("Abrir ações").click();
-    await page.getByRole("button", { name: "Editar", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Editar", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Editar registro", exact: true })).toBeVisible();
     await page.getByLabel("Título").fill(editedTitle);
     await page.getByLabel("Descrição").fill(`Fluxo de ${title} editado pela tela.`);
@@ -295,7 +295,7 @@ async function validateAdvancedModulesThroughUi(page: Page) {
 
     if (!KEEP_DATA) {
       await editedRow.getByLabel("Abrir ações").click();
-      await page.getByRole("button", { name: "Excluir", exact: true }).click();
+      await page.getByRole("menuitem", { name: "Excluir", exact: true }).click();
       await page.getByRole("button", { name: "Sim", exact: true }).click();
       await expect(editedRow).toBeHidden();
     }
@@ -340,10 +340,10 @@ async function validateAuthenticatedCompanyScope(request: APIRequestContext) {
 async function openAppPage(page: Page, key: string, title: string) {
   if (key === "editar-perfil") {
     await openUserMenu(page);
-    await page.getByRole("button", { name: "Meu Perfil", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Meu Perfil", exact: true }).click();
   } else if (key === "configuracoes") {
     await openUserMenu(page);
-    await page.getByRole("button", { name: "Configurações", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Configurações", exact: true }).click();
   } else {
     await page.getByRole("button", { name: navigationLabelForPage(key), exact: true }).click();
   }
@@ -355,7 +355,7 @@ async function openAppPage(page: Page, key: string, title: string) {
 
 function navigationLabelForPage(key: string) {
   const labels: Record<string, string> = {
-    home: "Home",
+    home: "Visão geral",
     "cadastro-cliente": "Cliente",
     "cadastro-fornecedor": "Fornecedor",
     "cadastro-produto": "Produto",

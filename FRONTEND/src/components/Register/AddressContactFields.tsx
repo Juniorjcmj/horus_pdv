@@ -60,6 +60,8 @@ type AddressContactFieldsProps = {
   loadingCep: boolean;
   onChange: (field: keyof AddressContactValue, fieldValue: string) => void;
   onFillAddressFromCep: () => void;
+  addressRequired?: boolean;
+  phoneRequired?: boolean;
 };
 
 export default function AddressContactFields({
@@ -67,8 +69,10 @@ export default function AddressContactFields({
   loadingCep,
   onChange,
   onFillAddressFromCep,
+  addressRequired = true,
+  phoneRequired = false,
 }: AddressContactFieldsProps) {
-  const { maskCep, maskTelephoneBr, maskCellphoneBr, onlyDigits, sanitizeIntegerInput } =
+  const { maskCep, maskTelephoneBr, maskPhoneBr, maskCellphoneBr, onlyDigits, sanitizeIntegerInput } =
     useInputMasks();
   // Evita consultas repetidas do mesmo CEP durante digitação.
   const lastAutoLookupCepRef = useRef("");
@@ -110,7 +114,7 @@ export default function AddressContactFields({
         <div className="mt-3 grid gap-3 md:grid-cols-4">
           <label className="block">
             <span className="mb-1.5 block text-sm text-text-secondary">
-              CEP *
+              CEP{addressRequired ? " *" : ""}
             </span>
             <input
               value={value.cep}
@@ -132,7 +136,7 @@ export default function AddressContactFields({
           </label>
           <label className="block md:col-span-2">
             <span className="mb-1.5 block text-sm text-text-secondary">
-              Cidade *
+              Cidade{addressRequired ? " *" : ""}
             </span>
             <input
               value={value.city}
@@ -142,7 +146,7 @@ export default function AddressContactFields({
             />
           </label>
           <SearchableSelectField
-            label="UF *"
+            label={addressRequired ? "UF *" : "UF"}
             value={value.state}
             options={STATE_SELECT_OPTIONS}
             onChange={(nextValue) => onChange("state", nextValue)}
@@ -153,7 +157,7 @@ export default function AddressContactFields({
           />
           <label className="block md:col-span-2">
             <span className="mb-1.5 block text-sm text-text-secondary">
-              Endereço *
+              Endereço{addressRequired ? " *" : ""}
             </span>
             <input
               value={value.address}
@@ -164,7 +168,7 @@ export default function AddressContactFields({
           </label>
           <label className="block md:col-span-2">
             <span className="mb-1.5 block text-sm text-text-secondary">
-              Bairro *
+              Bairro{addressRequired ? " *" : ""}
             </span>
             <input
               value={value.neighborhood}
@@ -188,7 +192,7 @@ export default function AddressContactFields({
           </label>
           <label className="block">
             <span className="mb-1.5 block text-sm text-text-secondary">
-              Número *
+              Número{addressRequired ? " *" : ""}
             </span>
             <input
               value={value.number}
@@ -217,15 +221,18 @@ export default function AddressContactFields({
 
       <section className="card rounded-2xl p-4">
         <h4 className="text-sm font-semibold text-text-secondary">Contato</h4>
+        {phoneRequired && <p className="mt-1 text-sm text-text-secondary">Informe um telefone ou celular com DDD. Basta preencher um deles.</p>}
         <div className="mt-3 grid gap-3 md:grid-cols-3">
           <label className="block">
             <span className="mb-1.5 block text-sm text-text-secondary">
-              Telefone
+              Telefone{phoneRequired && !value.cellphone.trim() ? " *" : ""}
             </span>
             <input
               value={value.telephone}
+              type="tel"
+              aria-required={phoneRequired && !value.cellphone.trim()}
               onChange={(event) =>
-                onChange("telephone", maskTelephoneBr(event.target.value))
+                onChange("telephone", phoneRequired ? maskPhoneBr(event.target.value) : maskTelephoneBr(event.target.value))
               }
               className="input-field w-full"
               placeholder="(00) 0000-0000"
@@ -233,10 +240,12 @@ export default function AddressContactFields({
           </label>
           <label className="block">
             <span className="mb-1.5 block text-sm text-text-secondary">
-              Celular *
+              Celular{phoneRequired ? "" : " *"}
             </span>
             <input
               value={value.cellphone}
+              type="tel"
+              aria-required={phoneRequired ? !value.telephone.trim() : true}
               onChange={(event) =>
                 onChange("cellphone", maskCellphoneBr(event.target.value))
               }

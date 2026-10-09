@@ -5,8 +5,9 @@
  */
 
 import { LoaderCircle, MoreVertical } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import usePopupMenu from "@/hooks/usePopupMenu";
 
 type RowActionItem = {
   key: string;
@@ -44,6 +45,8 @@ export default function RowActionsMenu({
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const hasLoadingAction = items.some((action) => action.loading);
+  const panelId = useId();
+  usePopupMenu(open, setOpen, triggerRef, panelRef);
 
   useEffect(() => {
     // Fecha menu ao clicar fora do componente.
@@ -108,8 +111,11 @@ export default function RowActionsMenu({
           setOpen((current) => !current);
         }}
         aria-label={triggerLabel}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? panelId : undefined}
         title="Ações"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-primary text-text-secondary transition hover:bg-hover-light hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border-primary text-text-secondary transition hover:bg-hover-light hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-70"
       >
         {hasLoadingAction ? (
           <LoaderCircle size={16} className="animate-spin" aria-hidden="true" />
@@ -122,25 +128,30 @@ export default function RowActionsMenu({
         ? createPortal(
             <div
               ref={panelRef}
+              id={panelId}
+              role="menu"
+              aria-label={triggerLabel}
               style={{
                 top: panelTop,
                 left: panelLeft,
                 ...(typeof portalZIndex === "number" ? { zIndex: portalZIndex } : {}),
               }}
-              className="fixed z-layer-popover min-w-44 rounded-xl border border-border-secondary bg-bg-light p-1.5 shadow-lg"
+              className="fixed z-layer-popover max-h-[calc(100dvh-1rem)] min-w-44 overflow-y-auto rounded-xl border border-border-secondary bg-bg-light p-1.5 shadow-lg"
               data-placement={openUpwards ? "top" : "bottom"}
             >
               {items.map((action) => (
                 <button
                   key={action.key}
                   type="button"
+                  role="menuitem"
                   disabled={action.disabled || action.loading}
                   onClick={() => {
                     if (action.disabled || action.loading) return;
                     setOpen(false);
+                    triggerRef.current?.focus();
                     void action.onClick();
                   }}
-                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition ${
+                  className={`flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold transition ${
                     action.danger
                       ? "text-primary hover:bg-primary/10"
                       : "text-text-primary hover:bg-accent/10"

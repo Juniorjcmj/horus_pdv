@@ -19,6 +19,7 @@ import {
 } from "@/components/SettingsPage";
 import { Toast } from "@/hooks/Dialog";
 import PageLayout from "@/layout/PageLayout";
+import PageHeader from "@/components/Admin/PageHeader";
 import { sessionService } from "@/services/api/sessionService";
 import { getStoredAuthUser, hasFinanceiroAccess } from "@/utils/authStorage";
 import { getPrintPreviewEnabled, setPrintPreviewEnabled } from "@/utils/pdvPreferences";
@@ -87,15 +88,8 @@ export default function SettingsPage({
   return (
     <div className="flex-1 py-4 md:py-6 lg:py-8">
       <PageLayout>
-        <div className="card overflow-hidden">
-          <div className="border-b border-border-primary bg-gradient-to-r from-secondary/8 via-bg-light to-accent/8 px-6 py-5">
-            <h2 className="text-2xl font-semibold text-text-primary">Configurações</h2>
-            <p className="mt-1 text-sm text-text-secondary">
-              Personalize preferências visuais da sua experiência no sistema.
-            </p>
-          </div>
-
-          <div className="space-y-4 px-6 py-6">
+        <PageHeader title="Configurações" description="Ajuste aparência, impressão, conexão e segurança da loja." />
+          <div className="space-y-4">
             <ThemeSettingsCard themeMode={themeMode} onToggleTheme={onToggleTheme} />
             {isAdminOrManager && <ThemeColorsCard />}
             <PrintSettingsCard
@@ -116,7 +110,6 @@ export default function SettingsPage({
               onTerminateOtherSessions={handleTerminateOtherSessions}
             />
           </div>
-        </div>
       </PageLayout>
     </div>
   );

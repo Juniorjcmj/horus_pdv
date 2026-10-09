@@ -3,6 +3,7 @@
  * Objetivo: permite emitir NF-e modelo 55 (nota para empresas) selecionando uma venda
  * e preenchendo os dados do destinatário (CNPJ, IE, endereço).
  */
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import {
   AlertOctagon,
   Building2,
@@ -438,7 +439,7 @@ export default function NfeEmissaoPage() {
                   </p>
                 ) : (
                   <>
-                    <div className="overflow-x-auto">
+                    <TableScrollArea label="Itens e notas fiscais" className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-border-primary text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
@@ -485,7 +486,7 @@ export default function NfeEmissaoPage() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                    </TableScrollArea>
 
                     <div className="px-4 py-3">
                       <TablePagination
@@ -879,7 +880,7 @@ export default function NfeEmissaoPage() {
               Nenhuma NF-e emitida ainda.
             </p>
           ) : (
-            <div className="overflow-x-auto">
+            <TableScrollArea label="Itens e notas fiscais" className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border-primary bg-bg-light text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
@@ -952,7 +953,7 @@ export default function NfeEmissaoPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScrollArea>
           )}
         </section>
       )}

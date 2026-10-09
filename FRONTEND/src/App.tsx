@@ -3,7 +3,7 @@
  * Objetivo: orquestra o shell administrativo com sidebar, cabeçalho mobile e lazy loading das páginas.
  * Entradas esperadas: não recebe props; controla estado global de navegação local.
  */
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CircleHelp, Menu } from "lucide-react";
 import AppSidebar, { type PageKey } from "@/components/AppSidebar/AppSidebar";
 import LoadingBar from "@/components/Loading/LoadingBar";
@@ -180,6 +180,7 @@ export default function App() {
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const closeMobileSidebar = useCallback(() => setMobileSidebarOpen(false), []);
   const [tourOpen, setTourOpen] = useState(false);
   const [activePage, setActivePage] = useState<PageKey>(() => {
     if (typeof window === "undefined") return "home";
@@ -241,7 +242,7 @@ export default function App() {
   const [companyInfo, setCompanyInfo] = useState<{ name: string; cnpj: string } | null>(null);
 
   const pageTitleByKey: Record<PageKey, string> = {
-    home: "Home",
+    home: "Visão geral",
     "cadastro-cliente": "Cadastro de Cliente",
     "cadastro-fornecedor": "Cadastro de Fornecedor",
     "cadastro-produto": "Cadastro de Produto",
@@ -911,7 +912,8 @@ export default function App() {
   }
 
   return (
-    <div className="relative flex h-screen overflow-hidden bg-bg-primary text-text-primary font-sans">
+    <div className="rg-admin-surface relative flex h-dvh overflow-hidden bg-bg-primary text-text-primary font-sans">
+      <a href="#admin-content" className="rg-admin-skip-link">Ir para o conteúdo</a>
       <div className="fixed bottom-3 right-3 z-50">
         <SyncStatus />
       </div>
@@ -921,8 +923,10 @@ export default function App() {
             <button
               type="button"
               onClick={() => setMobileSidebarOpen(true)}
-              className="p-2 rounded-lg border border-border-primary bg-bg-light shadow-sm"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border-primary bg-bg-light"
               aria-label="Abrir menu"
+              aria-expanded={mobileSidebarOpen}
+              aria-controls="admin-sidebar"
             >
               <Menu size={20} className="text-accent" />
             </button>
@@ -939,7 +943,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => setTourOpen(true)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border-primary bg-bg-light text-secondary shadow-sm transition hover:bg-secondary/10"
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border-primary bg-bg-light text-secondary transition hover:bg-hover-light"
             aria-label="Abrir tour da tela"
             title="Tour da tela"
           >
@@ -976,7 +980,7 @@ export default function App() {
         onLogout={handleLogout}
         onOpenSalesInNewTab={handleOpenSalesInNewTab}
         mobileOpen={mobileSidebarOpen}
-        onCloseMobile={() => setMobileSidebarOpen(false)}
+        onCloseMobile={closeMobileSidebar}
       />
 
       <Suspense
@@ -987,6 +991,9 @@ export default function App() {
         }
       >
         <main
+          id="admin-content"
+          tabIndex={-1}
+          inert={mobileSidebarOpen}
           data-active-page={activePage}
           className="flex-1 h-full min-h-0 min-w-0 overflow-y-auto overflow-x-hidden pt-14 lg:pt-0"
         >

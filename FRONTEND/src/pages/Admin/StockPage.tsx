@@ -3,6 +3,7 @@
  * Objetivo: painel de gestão de estoque e inventário com KPIs, tabela de produtos,
  * indicadores visuais de nível e ajuste manual de quantidades.
  */
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import {
   AlertTriangle,
   ArrowDownCircle,
@@ -252,7 +253,7 @@ export default function StockPage() {
       />
 
       {/* KPI Cards */}
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:gap-4">
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4 lg:gap-4">
         <KpiCard
           icon={<Package size={22} className="text-secondary" />}
           label="Total de Produtos"
@@ -292,6 +293,7 @@ export default function StockPage() {
             <input
               type="text"
               placeholder="Buscar por nome, código, localização ou categoria..."
+              aria-label="Buscar produtos no estoque"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="input-field w-full pl-9 pr-8 text-sm"
@@ -300,7 +302,8 @@ export default function StockPage() {
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary"
+                aria-label="Limpar pesquisa do estoque"
+                className="absolute right-0 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center text-text-secondary hover:text-text-primary"
               >
                 <X size={14} />
               </button>
@@ -310,6 +313,7 @@ export default function StockPage() {
           <div className="flex items-center gap-2">
             <Filter size={16} className="shrink-0 text-text-tertiary" />
             <select
+              aria-label="Filtrar por situação do estoque"
               value={filter}
               onChange={(e) => setFilter(e.target.value as StockFilter)}
               className="select-field py-2 text-sm"
@@ -348,7 +352,7 @@ export default function StockPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <TableScrollArea label="Estoque" className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border-primary bg-bg-light text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
@@ -454,7 +458,7 @@ export default function StockPage() {
                   })}
                 </tbody>
               </table>
-            </div>
+            </TableScrollArea>
 
             <div className="px-4 py-4">
               <TablePagination
@@ -666,8 +670,8 @@ function KpiCard({
         {icon}
       </div>
       <div className="min-w-0">
-        <p className="truncate text-xs font-medium text-text-secondary">{label}</p>
-        <p className="text-lg font-bold tracking-tight text-text-primary">{value}</p>
+        <p className="text-xs font-medium text-text-secondary">{label}</p>
+        <p className="break-words text-lg font-bold tracking-tight tabular-nums text-text-primary">{value}</p>
       </div>
     </div>
   );

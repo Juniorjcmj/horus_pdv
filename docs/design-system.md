@@ -55,6 +55,9 @@ Raios: `--radius-sm` 8px, `--radius-md` 12px, `--radius-pill` 999px. Sombra flut
 - Existentes: `btn-success`, `btn-cancel`, `card`, `input-field` (compartilham a paleta via `--color-*`).
 - Novos (prefixo `rg-`, em `src/styles/components.css`): `rg-btn` (`--primary/--secondary/--text`), `rg-chip`,
   `rg-card`, `rg-badge`, `rg-star`, `rg-free`. Área de toque mínima 44px; foco 2px em `--brand-text`.
+- Administração: `rg-admin-surface` mantém campos com altura mínima de 44px, placeholders legíveis e números tabulares;
+  `rg-admin-skip-link` permite ir direto ao conteúdo. `TableScrollArea` (`rg-admin-table`) fornece uma região nomeada,
+  foco e orientação para rolar tabelas. `ListState` distingue carregamento, erro, lista vazia e ausência de resultados.
 
 ## Logos (em `FRONTEND/public/`)
 - `quack-logo-v5.png` — wordmark horizontal (texto marinho), para superfícies claras.
@@ -67,3 +70,5 @@ Raios: `--radius-sm` 8px, `--radius-md` 12px, `--radius-pill` 999px. Sombra flut
 3. Texto sobre `--highlight` (amarelo) sempre `#152238`, nos dois temas.
 4. Apenas uma ação primária por tela; foco visível 2px.
 5. Componente novo: reutilize tokens, prefixe com `rg-` e documente aqui.
+6. A janela de impressão dos relatórios usa Arial com fallback sans-serif para funcionar sem baixar fontes;
+   essa exceção se limita ao documento impresso. A interface administrativa mantém Nunito.

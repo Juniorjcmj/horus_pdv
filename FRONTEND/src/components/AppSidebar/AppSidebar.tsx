@@ -29,7 +29,7 @@ import {
   UserRoundPlus,
   WalletCards,
 } from "lucide-react";
-import { type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import UserMenu from "./UserMenu";
 
 export type PageKey =
@@ -100,15 +100,17 @@ function SidebarItem({
     <button
       type="button"
       onClick={onClick}
+      aria-label={label}
+      title={collapsed ? label : undefined}
       aria-current={active ? "page" : undefined}
-      className={`w-full flex items-center gap-3 p-3 rounded-xl transition border text-left focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_rgba(46,191,244,0.22)] ${
+      className={`w-full flex min-h-11 items-center gap-3 p-2.5 rounded-xl transition-colors border text-left ${
         active
           ? "border-secondary/30 bg-accent/12 text-text-primary shadow-sm"
           : "border-transparent hover:border-border-secondary hover:bg-accent/10 hover:text-text-primary"
       }`}
     >
-      <div className="text-accent">{icon}</div>
-      {!collapsed && <span className="flex-1 whitespace-nowrap">{label}</span>}
+      <div aria-hidden="true" className="shrink-0 text-accent">{icon}</div>
+      {!collapsed && <span className="min-w-0 flex-1">{label}</span>}
       {!collapsed && badge}
       {!collapsed && <ChevronRight size={14} className="text-text-secondary" />}
     </button>
@@ -139,7 +141,7 @@ type AppSidebarProps = {
 };
 
 export default function AppSidebar({
-  collapsed,
+  collapsed: desktopCollapsed,
   onToggle,
   activePage,
   onChangePage,
@@ -159,7 +161,52 @@ export default function AppSidebar({
   mobileOpen,
   onCloseMobile,
 }: AppSidebarProps) {
+  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
+  const asideRef = useRef<HTMLElement | null>(null);
+  const collapsed = desktopCollapsed && isDesktop;
   const isCaixaRole = currentUserRole.toLowerCase() === "caixa";
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const update = () => {
+      setIsDesktop(media.matches);
+      if (media.matches) onCloseMobile();
+    };
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, [onCloseMobile]);
+
+  useEffect(() => {
+    if (isDesktop || !mobileOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const buttons = () => Array.from(document.querySelectorAll<HTMLElement>(
+      '#admin-sidebar button:not(:disabled), [data-sidebar-popup] [role="menuitem"]:not(:disabled)',
+    )).filter(element => element.getBoundingClientRect().width > 0);
+    const frame = requestAnimationFrame(() => asideRef.current?.querySelector<HTMLElement>('nav [aria-current="page"]')?.focus());
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCloseMobile();
+      } else if (event.key === "Tab") {
+        const controls = buttons();
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", handleKeyDown);
+      previousFocus?.focus();
+    };
+  }, [isDesktop, mobileOpen, onCloseMobile]);
 
   const handleChangePage = (page: PageKey) => {
     onChangePage(page);
@@ -169,7 +216,14 @@ export default function AppSidebar({
   return (
     <>
       <aside
-        className={`fixed top-0 left-0 z-layer-sidebar h-screen bg-bg-light border-r border-border-primary shadow-sm transition-all duration-300 flex flex-col justify-between ${
+        id="admin-sidebar"
+        ref={asideRef}
+        role={isDesktop ? undefined : "dialog"}
+        aria-label="Menu principal"
+        aria-modal={!isDesktop && mobileOpen ? true : undefined}
+        aria-hidden={!isDesktop && !mobileOpen ? true : undefined}
+        inert={!isDesktop && !mobileOpen}
+        className={`fixed top-0 left-0 z-layer-sidebar h-dvh shrink-0 bg-bg-light border-r border-border-primary transition-[width,transform] duration-200 motion-reduce:transition-none flex flex-col justify-between ${
           collapsed ? "w-20" : "w-72"
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 lg:static`}
       >
@@ -206,7 +260,7 @@ export default function AppSidebar({
               type="button"
               onClick={onToggle}
               aria-label={collapsed ? "Expandir menu lateral" : "Recolher menu lateral"}
-              className="hidden lg:inline-flex p-2 rounded-lg hover:bg-accent/10 focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_rgba(46,191,244,0.22)]"
+              className="hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-lg hover:bg-accent/10"
             >
               <Menu size={20} className="text-accent" />
             </button>
@@ -214,7 +268,7 @@ export default function AppSidebar({
             <button
               type="button"
               onClick={onCloseMobile}
-              className="p-2 rounded-lg hover:bg-accent/10 lg:hidden focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_rgba(46,191,244,0.22)]"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-lg hover:bg-accent/10 lg:hidden"
               aria-label="Fechar menu"
             >
               <Menu size={20} className="text-accent" />
@@ -222,7 +276,7 @@ export default function AppSidebar({
           </div>
         </div>
 
-        <nav className="flex-1 min-h-0 space-y-3 overflow-y-auto overflow-x-hidden px-2 py-3 text-sm font-medium">
+        <nav aria-label="Navegação principal" className="flex-1 min-h-0 space-y-4 overflow-y-auto overflow-x-hidden px-2 py-3 text-sm font-medium">
           {isCaixaRole ? (
             <div className="space-y-2">
               <SidebarSectionTitle label="Caixa" collapsed={collapsed} />
@@ -255,7 +309,7 @@ export default function AppSidebar({
 
                 <SidebarItem
                   icon={<House size={20} />}
-                  label="Home"
+                  label="Visão geral"
                   active={activePage === "home"}
                   collapsed={collapsed}
                   onClick={() => handleChangePage("home")}

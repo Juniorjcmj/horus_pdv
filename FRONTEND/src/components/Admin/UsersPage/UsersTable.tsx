@@ -3,6 +3,7 @@
  * Objetivo: renderiza tabela/lista mobile da gestão de usuários.
   * Entradas esperadas: recebe usuários paginados, seleção atual e callbacks de ações por linha.
 */
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import { KeyRound, Pencil, Power } from "lucide-react";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
 import LoadingButton from "@/components/Loading/LoadingButton";
@@ -43,7 +44,8 @@ export default function UsersTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <>
+    <TableScrollArea label="Usuários" className="hidden overflow-x-auto md:block">
       <table className="hidden min-w-full text-sm md:table">
         <thead>
           <tr className="bg-bg-gray-theme text-left text-text-secondary">
@@ -121,6 +123,7 @@ export default function UsersTable({
           ))}
         </tbody>
       </table>
+    </TableScrollArea>
 
       <div className="space-y-3 p-3 md:hidden">
         {items.map((user) => (
@@ -155,7 +158,7 @@ export default function UsersTable({
               <button
                 type="button"
                 onClick={() => onEdit(user)}
-                className="btn-outline-secondary inline-flex h-9 w-9 items-center justify-center p-0"
+                className="btn-outline-secondary inline-flex h-11 w-11 items-center justify-center p-0"
                 aria-label="Editar usuário"
               >
                 <Pencil size={13} />
@@ -165,7 +168,7 @@ export default function UsersTable({
                 onClick={() => onToggleStatus(user)}
                 isLoading={isActionLoading(user, "status")}
                 loadingLabel={<span className="sr-only">Alterando status</span>}
-                className={`inline-flex h-9 w-9 items-center justify-center p-0 ${
+                className={`inline-flex h-11 w-11 items-center justify-center p-0 ${
                   user.status === "ativo" ? "btn-cancel" : "btn-success"
                 }`}
                 aria-label="Alterar status do usuário"
@@ -177,7 +180,7 @@ export default function UsersTable({
                 onClick={() => onResetPassword(user)}
                 isLoading={isActionLoading(user, "reset-password")}
                 loadingLabel={<span className="sr-only">Resetando senha</span>}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-border-primary p-0 text-text-primary transition hover:bg-hover-light"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border-primary p-0 text-text-primary transition hover:bg-hover-light"
                 aria-label="Resetar senha"
               >
                 <KeyRound size={13} />
@@ -186,6 +189,6 @@ export default function UsersTable({
           </article>
         ))}
       </div>
-    </div>
+    </>
   );
 }

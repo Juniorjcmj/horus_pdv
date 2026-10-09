@@ -3,6 +3,7 @@
  * Objetivo: Módulo de SuperAdmin para aprovação, auditoria, bloqueio e rejeição de empresas clientes no Hórus PDV.
  * Acesso exclusivo: Administradores da plataforma ('empresa-principal').
  */
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import { useEffect, useState, useCallback } from "react";
 import {
   AlertTriangle,
@@ -61,6 +62,7 @@ export default function GerenciamentoGeralPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState(() => Date.now());
   const [isUpdatingConfig, setIsUpdatingConfig] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
@@ -115,6 +117,7 @@ export default function GerenciamentoGeralPage() {
         setMetricas(metricasRes);
         setEmpresas(listRes.items);
         setTotalCount(listRes.totalCount);
+        setUpdatedAt(Date.now());
       } catch (err) {
         showToast(
           err instanceof Error ? err.message : "Erro ao carregar dados das empresas.",
@@ -330,7 +333,7 @@ export default function GerenciamentoGeralPage() {
   const formatRelativeTime = (isoString?: string | null) => {
     if (!isoString) return "";
     try {
-      const diffMs = Date.now() - new Date(isoString).getTime();
+      const diffMs = updatedAt - new Date(isoString).getTime();
       const diffMins = Math.floor(diffMs / 60000);
       if (diffMins < 1) return "agora mesmo";
       if (diffMins < 60) return `há ${diffMins} min`;
@@ -557,20 +560,20 @@ export default function GerenciamentoGeralPage() {
           }}
           className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${
             activeTab === "bloqueada"
-              ? "bg-purple-500/15 border-purple-500/40 shadow-lg shadow-purple-500/10"
-              : "bg-bg-light border-border-primary hover:border-purple-500/30 hover:bg-purple-500/5"
+              ? "bg-accent/10 border-accent/40"
+              : "bg-bg-light border-border-primary hover:border-border-secondary hover:bg-hover-light"
           }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
               Acesso Suspenso
             </span>
-            <div className="h-9 w-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-300">
+            <div className="h-9 w-9 rounded-xl bg-bg-gray-theme flex items-center justify-center text-text-secondary">
               <Lock size={18} />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-purple-300">{metricas.bloqueadas}</span>
+            <span className="text-3xl font-extrabold text-text-primary">{metricas.bloqueadas}</span>
           </div>
           <p className="mt-1 text-xs text-text-secondary">Empresas temporariamente travadas</p>
         </div>
@@ -706,7 +709,7 @@ export default function GerenciamentoGeralPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <TableScrollArea label="Empresas" className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-border-primary bg-slate-900/40 text-text-secondary font-medium">
@@ -928,7 +931,7 @@ export default function GerenciamentoGeralPage() {
                 })}
               </tbody>
             </table>
-          </div>
+          </TableScrollArea>
         )}
 
         {/* Paginação */}

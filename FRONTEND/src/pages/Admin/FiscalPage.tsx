@@ -5,6 +5,7 @@
  * Entradas esperadas: não recebe props; opera com estado local e APIs de fiscal/vendas.
  */
 
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import {
   AlertCircle,
   AlertOctagon,
@@ -366,7 +367,7 @@ export default function FiscalPage() {
     });
   };
 
-  const handleCopyChave = (doc: FiscalDocumentDto) => {
+  const handleCopyChave = (doc: Pick<FiscalDocumentDto, "id" | "chaveAcesso">) => {
     if (!doc.chaveAcesso) return;
     navigator.clipboard.writeText(doc.chaveAcesso);
     setCopiedChaveId(doc.id);
@@ -910,7 +911,7 @@ export default function FiscalPage() {
 
           {/* Tabela de Documentos Fiscais */}
           <section className="card overflow-hidden">
-            <div className="overflow-x-auto">
+            <TableScrollArea label="Documentos fiscais" className="overflow-x-auto">
               <table className="w-full min-w-[950px] text-left text-xs">
                 <thead className="bg-bg-primary text-text-secondary border-b border-border-primary">
                   <tr>
@@ -1231,7 +1232,7 @@ export default function FiscalPage() {
                     })}
                 </tbody>
               </table>
-            </div>
+            </TableScrollArea>
 
             {/* Paginação */}
             <div className="px-4 py-3 border-t border-border-primary">
@@ -1368,7 +1369,7 @@ export default function FiscalPage() {
 
           {/* Tabela de Notas em Contingência */}
           <div className="card overflow-hidden">
-            <div className="overflow-x-auto">
+            <TableScrollArea label="Documentos fiscais" className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-border-primary bg-bg-secondary text-text-secondary font-semibold uppercase tracking-wider text-[11px]">
@@ -1431,7 +1432,7 @@ export default function FiscalPage() {
                                 <span title={item.chaveAcesso}>{chaveFormatada}</span>
                                 <button
                                   type="button"
-                                  onClick={() => handleCopyChave({ id: item.id, chaveAcesso: item.chaveAcesso } as any)}
+                                  onClick={() => handleCopyChave({ id: item.id, chaveAcesso: item.chaveAcesso })}
                                   className="text-text-secondary hover:text-text-primary p-0.5 rounded"
                                   title="Copiar chave de 44 dígitos"
                                 >
@@ -1508,7 +1509,7 @@ export default function FiscalPage() {
                   )}
                 </tbody>
               </table>
-            </div>
+            </TableScrollArea>
           </div>
         </section>
       ) : activeTab === "inutilizacao" ? (

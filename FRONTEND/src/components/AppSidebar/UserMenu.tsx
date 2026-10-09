@@ -4,8 +4,9 @@
  * Entradas esperadas: dados do usuário e callbacks para páginas rápidas e logout.
  */
 import { Building2, ChevronUp, Info, LogOut, Settings, User, WalletCards } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import usePopupMenu from "@/hooks/usePopupMenu";
 
 type UserMenuProps = {
   collapsed: boolean;
@@ -47,6 +48,8 @@ export default function UserMenu({
   const [panelTop, setPanelTop] = useState(0);
   const [panelLeft, setPanelLeft] = useState(0);
   const panelWidth = 240;
+  const panelId = useId();
+  usePopupMenu(showUserMenu, setShowUserMenu, triggerRef, panelRef);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -108,9 +111,14 @@ export default function UserMenu({
         ref={triggerRef}
         type="button"
         onClick={() => setShowUserMenu((current) => !current)}
-        className="w-full flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-accent/10 focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_rgba(46,191,244,0.22)]"
+        aria-label={`Menu de ${currentUserName}`}
+        aria-haspopup="menu"
+        aria-expanded={showUserMenu}
+        aria-controls={showUserMenu ? panelId : undefined}
+        title={collapsed ? currentUserName : undefined}
+        className="w-full flex min-h-11 items-center gap-3 rounded-xl px-2 py-2 hover:bg-accent/10"
       >
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-secondary text-white text-xs font-semibold flex items-center justify-center shadow-sm overflow-hidden shrink-0">
+        <div className="w-9 h-9 rounded-full bg-(--color-action-accent) text-(--color-action-on-accent) text-xs font-semibold flex items-center justify-center overflow-hidden shrink-0">
           {avatarUrl ? (
             <img
               src={avatarUrl}
@@ -153,8 +161,12 @@ export default function UserMenu({
         ? createPortal(
             <div
               ref={panelRef}
+              id={panelId}
+              role="menu"
+              aria-label="Opções da conta"
+              data-sidebar-popup="true"
               style={{ top: panelTop, left: panelLeft, width: panelWidth }}
-              className="fixed z-layer-popover bg-bg-light border border-border-secondary rounded-xl shadow-lg p-1.5"
+              className="fixed z-layer-popover max-h-[calc(100dvh-1rem)] overflow-y-auto bg-bg-light border border-border-secondary rounded-xl shadow-lg p-1.5 [&_button]:min-h-11"
             >
               {companyName && (
                 <div className="px-3 py-2 border-b border-border-primary/60 mb-1 bg-accent/5 rounded-lg">
@@ -172,9 +184,11 @@ export default function UserMenu({
 
               <button
                 type="button"
+                role="menuitem"
                 onClick={() => {
                   onOpenProfile();
                   setShowUserMenu(false);
+                  triggerRef.current?.focus();
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-accent/10"
               >
@@ -184,9 +198,11 @@ export default function UserMenu({
 
               <button
                 type="button"
+                role="menuitem"
                 onClick={() => {
                   onOpenSettings();
                   setShowUserMenu(false);
+                  triggerRef.current?.focus();
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-accent/10"
               >
@@ -200,9 +216,11 @@ export default function UserMenu({
 
                   <button
                     type="button"
+                    role="menuitem"
                     onClick={() => {
                       onOpenCompany();
                       setShowUserMenu(false);
+                      triggerRef.current?.focus();
                     }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-accent/10"
                   >
@@ -212,9 +230,11 @@ export default function UserMenu({
 
                   <button
                     type="button"
+                    role="menuitem"
                     onClick={() => {
                       onOpenLicense();
                       setShowUserMenu(false);
+                      triggerRef.current?.focus();
                     }}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-accent/10"
                   >
@@ -226,9 +246,11 @@ export default function UserMenu({
 
               <button
                 type="button"
+                role="menuitem"
                 onClick={() => {
                   onOpenAbout();
                   setShowUserMenu(false);
+                  triggerRef.current?.focus();
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-accent/10"
               >
@@ -240,6 +262,7 @@ export default function UserMenu({
 
               <button
                 type="button"
+                role="menuitem"
                 onClick={() => {
                   onLogout();
                   setShowUserMenu(false);

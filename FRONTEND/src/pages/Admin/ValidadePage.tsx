@@ -7,6 +7,7 @@
  * Fase 1: o lote é informativo. A venda não baixa lote; o saldo mostrado é estimado assumindo que o
  * estoque é consumido na ordem FEFO (vence primeiro, sai primeiro).
  */
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import { AlertCircle, AlertTriangle, CalendarClock, Clock, PackageX, Plus, RefreshCw, Save, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/Admin/PageHeader";
@@ -469,7 +470,7 @@ export default function ValidadePage() {
                 <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Atualizar
               </button>
             </div>
-            <div className="overflow-x-auto">
+            <TableScrollArea label="Produtos e lotes" className="overflow-x-auto">
               <table className="w-full min-w-[900px] text-sm">
                 <thead className="bg-bg-primary text-left text-text-secondary">
                   <tr>
@@ -533,7 +534,7 @@ export default function ValidadePage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScrollArea>
           </section>
         </>
       ) : tab === "consulta" ? (
@@ -665,7 +666,7 @@ export default function ValidadePage() {
                   : "Saldo estimado: considera que o que vence primeiro sai primeiro."}
               </span>
             </div>
-            <div className="overflow-x-auto">
+            <TableScrollArea label="Produtos e lotes" className="overflow-x-auto">
               <table className="w-full min-w-[960px] text-sm">
                 <thead className="bg-bg-primary text-left text-text-secondary">
                   <tr>
@@ -721,7 +722,7 @@ export default function ValidadePage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScrollArea>
             <div className="px-4 py-4">
               <TablePagination
                 totalItems={consulta?.total ?? 0}
@@ -809,7 +810,7 @@ export default function ValidadePage() {
                 <RefreshCw size={13} className={fefoLoading ? "animate-spin" : ""} /> Atualizar
               </button>
             </div>
-            <div className="overflow-x-auto">
+            <TableScrollArea label="Produtos e lotes" className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-sm">
                 <thead className="bg-bg-primary text-left text-text-secondary">
                   <tr>
@@ -851,7 +852,7 @@ export default function ValidadePage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScrollArea>
           </section>
         </>
       ) : (
@@ -861,7 +862,7 @@ export default function ValidadePage() {
             <strong>Prazo padrão</strong>: validade sugerida na entrada quando você não informa a data (dias a contar do recebimento).{" "}
             <strong>Alerta</strong>: quantos dias antes do vencimento o lote entra em alerta. Subcategorias sem valor usam o do departamento.
           </div>
-          <div className="overflow-x-auto">
+          <TableScrollArea label="Produtos e lotes" className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
               <thead className="bg-bg-primary text-left text-text-secondary">
                 <tr>
@@ -927,7 +928,7 @@ export default function ValidadePage() {
                 })}
               </tbody>
             </table>
-          </div>
+          </TableScrollArea>
         </section>
       )}
 

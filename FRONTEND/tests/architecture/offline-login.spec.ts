@@ -262,7 +262,7 @@ test.describe("Login offline no aplicativo com Gateway ativo", () => {
       await closeCashLocal("100,00", "Troca de operador", undefined, "op-1", "Operador op-1", "fecha-primeiro");
     });
     await page.getByRole("button", { name: /Operador op-1/ }).click();
-    await page.getByRole("button", { name: "Sair", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Sair", exact: true }).click();
     await expect(page.getByRole("button", { name: "Entrar", exact: true })).toBeVisible();
     await enterFromScreen(page, user("op-2"));
     await expect.poll(() => storedUserId(page)).toBe("op-2");

@@ -111,8 +111,8 @@ test.describe("L — PWA", () => {
       page.getByRole("heading", { name: "Cadastro de Produto", exact: true }),
     ).toBeVisible({ timeout: 10_000 });
 
-    await page.getByRole("button", { name: "Home", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "Home" })).toBeVisible({
+    await page.getByRole("button", { name: "Visão geral", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Visão geral" })).toBeVisible({
       timeout: 10_000,
     });
 

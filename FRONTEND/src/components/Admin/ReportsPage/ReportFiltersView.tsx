@@ -4,6 +4,7 @@
  * Entradas esperadas: recebe definição do relatório selecionado e callback para voltar ao catálogo.
  */
 
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, FileSpreadsheet, FileText } from "lucide-react";
 import { DatePickerField, SearchableSelectField, TimePickerField } from "@/components/Form";
@@ -203,7 +204,7 @@ function exportToPdf(
         <meta charset="UTF-8" />
         <title>${escapeHtml(title)}</title>
         <style>
-          body { font-family: Arial, sans-serif; padding: 16px; color: #0f172a; }
+          body { font-family: Arial, sans-serif; padding: 16px; color: #0f172a; } /* impeccable-disable-line overused-font -- Fonte local para imprimir relatórios mesmo sem internet. */
           h2 { margin: 0 0 12px; }
           p { margin: 0 0 16px; font-size: 12px; color: #475569; }
           table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -235,6 +236,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
   const [resultColumns, setResultColumns] = useState<ReportResultColumn[]>([]);
   const [resultRows, setResultRows] = useState<ReportResultRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
   const [hasGenerated, setHasGenerated] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -267,6 +269,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
   };
 
   const handleReset = () => {
+    setReportError(null);
     setValues(initialValues);
     setSubmittedValues(initialValues);
     setResultColumns([]);
@@ -278,15 +281,19 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
   const handleGenerateReport = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
-
-    const result = await reportService.generate(report.id, values);
-
-    setSubmittedValues({ ...values });
-    setResultColumns(result.columns);
-    setResultRows(result.rows);
-    setHasGenerated(true);
-    setCurrentPage(1);
-    setIsLoading(false);
+    setReportError(null);
+    try {
+      const result = await reportService.generate(report.id, values);
+      setSubmittedValues({ ...values });
+      setResultColumns(result.columns);
+      setResultRows(result.rows);
+      setHasGenerated(true);
+      setCurrentPage(1);
+    } catch {
+      setReportError("Não foi possível gerar o relatório. Verifique a conexão e tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const totalPages = Math.max(1, Math.ceil(resultRows.length / Math.max(1, rowsPerPage)));
@@ -396,9 +403,10 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
                           key={option.value}
                           type="button"
                           onClick={() => handleMultiToggle(filter.id, option.value)}
+                          aria-pressed={selected}
                           className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
                             selected
-                              ? "border-accent bg-accent text-white"
+                              ? "border-accent bg-(--color-action-accent) text-(--color-action-on-accent)"
                               : "border-border-secondary bg-bg-light text-text-secondary hover:border-accent/50"
                           }`}
                         >
@@ -466,6 +474,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
             Limpar filtros
           </button>
         </div>
+        {reportError && <p role="alert" className="mt-3 text-sm text-primary">{reportError}</p>}
       </form>
 
       {hasGenerated && (
@@ -516,7 +525,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
             <>
               {report.chart && <ReportChartView chart={report.chart} rows={resultRows} />}
 
-              <div className="overflow-x-auto rounded-xl border border-border-primary bg-bg-light">
+              <TableScrollArea label="Resultado do relatório" className="overflow-x-auto rounded-xl border border-border-primary bg-bg-light">
                 <table className="min-w-full border-collapse text-sm">
                   <thead className="bg-bg-primary">
                     <tr>
@@ -549,7 +558,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScrollArea>
 
               <TablePagination
                 totalItems={resultRows.length}

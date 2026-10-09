@@ -62,7 +62,7 @@ export default function TablePagination({
           <select
             value={safeItemsPerPage}
             onChange={(event) => onItemsPerPageChange(Number(event.target.value))}
-            className="select-field px-2 py-1 text-xs"
+            className="select-field min-h-11 px-3 text-sm"
           >
             {itemsPerPageOptions.map((option) => (
               <option key={option} value={option}>
@@ -72,12 +72,12 @@ export default function TablePagination({
           </select>
         </label>
 
-        <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-2">
+        <nav aria-label="Paginação da lista" className="flex flex-wrap items-center justify-center gap-1">
           <button
             type="button"
             onClick={() => onPageChange(safeCurrentPage - 1)}
             disabled={safeCurrentPage <= 1}
-            className="rounded-lg border border-border-primary bg-bg-light px-2.5 py-1 text-xs font-semibold text-text-secondary transition hover:border-accent/40 hover:text-accent disabled:opacity-60"
+            className="min-h-11 rounded-lg border border-border-primary bg-bg-light px-3 text-sm font-semibold text-text-secondary transition hover:border-accent/40 hover:text-accent disabled:opacity-60"
           >
             Anterior
           </button>
@@ -88,9 +88,11 @@ export default function TablePagination({
                 key={item}
                 type="button"
                 onClick={() => onPageChange(item)}
-                className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
+                aria-label={`Página ${item}`}
+                aria-current={item === safeCurrentPage ? "page" : undefined}
+                className={`min-h-11 min-w-11 rounded-lg border px-3 text-sm font-semibold transition ${
                   item === safeCurrentPage
-                    ? "border-accent bg-accent text-white"
+                    ? "border-accent bg-(--color-action-accent) text-(--color-action-on-accent)"
                     : "border-border-primary bg-bg-light text-text-secondary hover:border-accent/40 hover:text-accent"
                 }`}
               >
@@ -107,11 +109,11 @@ export default function TablePagination({
             type="button"
             onClick={() => onPageChange(safeCurrentPage + 1)}
             disabled={safeCurrentPage >= totalPages}
-            className="rounded-lg border border-border-primary bg-bg-light px-2.5 py-1 text-xs font-semibold text-text-secondary transition hover:border-accent/40 hover:text-accent disabled:opacity-60"
+            className="min-h-11 rounded-lg border border-border-primary bg-bg-light px-3 text-sm font-semibold text-text-secondary transition hover:border-accent/40 hover:text-accent disabled:opacity-60"
           >
             Próxima
           </button>
-        </div>
+        </nav>
       </div>
     </div>
   );

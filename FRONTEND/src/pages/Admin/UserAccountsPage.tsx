@@ -23,6 +23,8 @@ import PageLayout from "@/layout/PageLayout";
 import { userService } from "@/services/api/userService";
 import { onlyDigits } from "@/utils/inputMasks";
 import { getStoredAuthUser } from "@/utils/authStorage";
+import ListState from "@/components/Admin/ListState";
+import useRemoteList from "@/hooks/useRemoteList";
 
 const UsersFilters = lazy(() => import("@/components/Admin/UsersPage/UsersFilters"));
 const UsersTable = lazy(() => import("@/components/Admin/UsersPage/UsersTable"));
@@ -59,13 +61,12 @@ function toInputForm(user: AdminUser): UserFormState {
 export default function UserAccountsPage() {
   // Só o administrador dá perfis adicionais (ex.: Financeiro); a API ignora o campo vindo de outro perfil.
   const canEditPerfisAdicionais = getStoredAuthUser()?.role?.toLowerCase() === "administrador";
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const { items: users, setItems: setUsers, isLoading, error: usersError, reload: reloadUsers } = useRemoteList<AdminUser>(userService.list, "Não foi possível carregar os usuários.");
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRoleFilter>("todos");
   const [statusFilter, setStatusFilter] = useState<UserStatusFilter>("todos");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSavingUser, setIsSavingUser] = useState(false);
   const [userActionLoadingKeys, setUserActionLoadingKeys] = useState<Set<string>>(
     () => new Set(),
@@ -107,10 +108,6 @@ export default function UserAccountsPage() {
   }, [searchTerm, roleFilter, statusFilter]);
   const hasActiveFilters = activeFilterCount > 0;
 
-  useEffect(() => {
-    userService.list().then(setUsers).catch(() => setUsers([]));
-  }, []);
-
   const filteredUsers = useMemo(() => {
     const normalizedSearch = normalizeText(searchTerm);
 
@@ -134,12 +131,6 @@ export default function UserAccountsPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, roleFilter, statusFilter]);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timeoutId = window.setTimeout(() => setIsLoading(false), 140);
-    return () => window.clearTimeout(timeoutId);
-  }, [filteredUsers, currentPage, itemsPerPage]);
 
   useEffect(() => {
     if (!showResetFeedback) return;
@@ -335,9 +326,14 @@ export default function UserAccountsPage() {
 
       <section className="card overflow-hidden rounded-2xl">
         {isLoading ? (
-          <div className="p-5">
-            <LoadingBar />
-          </div>
+          <ListState loading title="Carregando usuários" />
+        ) : usersError ? (
+          <ListState error title={usersError} description="Tente carregar a lista novamente." actionLabel="Tentar novamente" onAction={() => void reloadUsers()} />
+        ) : filteredUsers.length === 0 ? (
+          <ListState title={users.length ? "Nenhum usuário encontrado" : "Nenhum usuário cadastrado"}
+            description={users.length ? "Ajuste os filtros para visualizar outros resultados." : "Cadastre os usuários que terão acesso ao sistema."}
+            actionLabel={users.length ? "Limpar filtros" : "Cadastrar usuário"}
+            onAction={users.length ? resetFilters : openCreateDrawer} />
         ) : (
           <>
             <Suspense fallback={<LoadingBar />}>

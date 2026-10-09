@@ -4,10 +4,13 @@
  * Entradas esperadas: não recebe props; processa lista local, formulário em drawer e validações de cadastro.
  */
 
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import PageHeader from "@/components/Admin/PageHeader";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
+import ListState from "@/components/Admin/ListState";
+import useRemoteList from "@/hooks/useRemoteList";
 import LoadingButton from "@/components/Loading/LoadingButton";
 import TablePagination from "@/components/Pagination/TablePagination";
 import AddressContactFields from "@/components/Register/AddressContactFields";
@@ -183,7 +186,7 @@ function SupplierFormDrawer({
 
 export default function SupplierRegisterPage() {
   const statusDialog = useStatusDialog();
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const { items: suppliers, setItems: setSuppliers, isLoading, error: loadError, reload } = useRemoteList<Supplier>(supplierService.list, "Não foi possível carregar os fornecedores.");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -195,15 +198,6 @@ export default function SupplierRegisterPage() {
   const [deletingSupplierIds, setDeletingSupplierIds] = useState<Set<string>>(() => new Set());
   const [loadingCep, setLoadingCep] = useState(false);
   const [form, setForm] = useState<SupplierFormData>(EMPTY_FORM);
-
-  useEffect(() => {
-    supplierService
-      .list()
-      .then(setSuppliers)
-      .catch(() => {
-        Toast.error("Não foi possível carregar fornecedores da API.");
-      });
-  }, []);
 
   const filteredSuppliers = useMemo(() => {
     const normalized = search.trim().toLowerCase();
@@ -410,7 +404,7 @@ export default function SupplierRegisterPage() {
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
         title="Cadastro de Fornecedor"
-        description="Cadastro e manutenção de fornecedores com os campos do sistema legado."
+        description="Cadastre fornecedores e mantenha dados fiscais, contatos e endereços atualizados."
         action={
           <button type="button" onClick={openCreateDrawer} className="btn-primary inline-flex items-center gap-2">
             <Plus size={16} />
@@ -434,6 +428,7 @@ export default function SupplierRegisterPage() {
             }}
             className="input-field w-full pl-9"
             placeholder="Pesquise por nome ou CNPJ"
+            aria-label="Buscar fornecedores por nome ou CNPJ"
           />
         </label>
       </section>
@@ -456,7 +451,7 @@ export default function SupplierRegisterPage() {
             </LoadingButton>
           </div>
         ) : null}
-        <div className="overflow-x-auto">
+        <TableScrollArea label="Fornecedores" className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-sm">
             <thead className="bg-bg-primary text-left text-text-secondary">
               <tr>
@@ -478,7 +473,15 @@ export default function SupplierRegisterPage() {
               </tr>
             </thead>
             <tbody>
-              {paginatedSuppliers.map((supplier) => (
+              {(isLoading || loadError || paginatedSuppliers.length === 0) && (
+                <tr><td colSpan={7}><ListState loading={isLoading} error={Boolean(loadError)}
+                  title={isLoading ? "Carregando fornecedores…" : loadError || (search ? "Nenhum fornecedor encontrado" : "Nenhum fornecedor cadastrado")}
+                  description={loadError ? "Verifique a conexão e tente novamente." : search ? "Tente outro nome ou CNPJ." : isLoading ? undefined : "Cadastre um fornecedor quando precisar vincular compras ou produtos."}
+                  actionLabel={isLoading ? undefined : loadError ? "Tentar novamente" : search ? "Limpar pesquisa" : "Cadastrar fornecedor"}
+                  onAction={isLoading ? undefined : loadError ? () => void reload() : search ? () => setSearch("") : openCreateDrawer} />
+                </td></tr>
+              )}
+              {!isLoading && !loadError && paginatedSuppliers.map((supplier) => (
                 <tr key={supplier.id} className="border-t border-border-primary">
                   <td className="px-4 py-3">
                     <input
@@ -519,7 +522,7 @@ export default function SupplierRegisterPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScrollArea>
         <div className="px-4 py-4">
           <TablePagination
             totalItems={filteredSuppliers.length}

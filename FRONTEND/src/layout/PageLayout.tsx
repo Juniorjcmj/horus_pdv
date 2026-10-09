@@ -25,7 +25,7 @@ export default function PageLayout({
 }: PageLayoutProps) {
   return (
     <section
-      className={`mx-auto w-full px-3 sm:px-4 md:px-5 lg:px-5 2xl:px-4 ${SIZE_CLASS[size]} ${className}`.trim()}
+      className={`mx-auto min-w-0 w-full px-3 sm:px-4 md:px-5 lg:px-5 2xl:px-4 ${SIZE_CLASS[size]} ${className}`.trim()}
     >
       {children}
     </section>

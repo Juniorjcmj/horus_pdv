@@ -10,6 +10,7 @@
  * final. O produto novo nasce com os defaults de sempre (ver NfeImportService no backend) e pode
  * ser revisado depois em Cadastro de Produto.
  */
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import {
   AlertCircle,
   Check,
@@ -783,7 +784,7 @@ export default function NfeImportModal({
               </section>
 
               <section className="overflow-hidden rounded-xl border border-border-secondary">
-                <div className="overflow-x-auto">
+                <TableScrollArea label="Registros" className="overflow-x-auto">
                   <table className="w-full min-w-[760px] text-left text-sm">
                     <thead className="bg-bg-primary/60 text-xs uppercase text-text-tertiary">
                       <tr>
@@ -1052,7 +1053,7 @@ export default function NfeImportModal({
                       })}
                     </tbody>
                   </table>
-                </div>
+                </TableScrollArea>
               </section>
             </>
           )}

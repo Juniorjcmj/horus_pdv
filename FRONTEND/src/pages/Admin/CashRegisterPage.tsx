@@ -8,6 +8,7 @@
  * partir das vendas em dinheiro do turno + reforços - sangrias) — a tela só espelha esses
  * valores e, quando há qualquer diferença, exige o motivo antes de deixar fechar.
  */
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -583,7 +584,7 @@ export default function CashRegisterPage() {
           <h2 className="text-lg font-semibold text-text-primary">Histórico de caixa</h2>
           <p className="text-sm text-text-secondary">Últimas aberturas e fechamentos, com diferença de conferência.</p>
         </div>
-        <div className="overflow-x-auto">
+        <TableScrollArea label="Movimentações de caixa" className="overflow-x-auto">
           <table className="min-w-[960px] w-full text-sm">
             <thead className="bg-bg-gray-theme text-xs uppercase text-text-secondary">
               <tr>
@@ -603,7 +604,7 @@ export default function CashRegisterPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScrollArea>
         <div className="px-4 py-4">
           <TablePagination
             totalItems={historyRows.length}

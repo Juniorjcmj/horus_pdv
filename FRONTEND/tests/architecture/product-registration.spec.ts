@@ -73,7 +73,7 @@ test.describe("Cadastro com descrição, custo e venda obrigatórios", () => {
     await expect(page.getByText("Produto cadastrado com sucesso.", { exact: true })).toBeVisible();
     const row = page.getByRole("row").filter({ hasText: "P-CODIGO-GERADO" });
     await row.getByRole("button", { name: /ações/i }).click();
-    await page.getByRole("button", { name: "Editar", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Editar", exact: true }).click();
     await page.getByRole("textbox", { name: "Valor de Venda *", exact: true }).fill("1800");
     await page.getByRole("button", { name: "Salvar produto", exact: true }).click();
     await expect(page.getByText("Produto atualizado com sucesso.", { exact: true })).toBeVisible();

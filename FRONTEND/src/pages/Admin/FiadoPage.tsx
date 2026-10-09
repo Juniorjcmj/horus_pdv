@@ -3,6 +3,7 @@
  * Objetivo: controle e gestão de conta corrente de clientes (fiado), acompanhamento de inadimplência,
  *           recebimento de débitos e emissão de extrato térmico 80mm.
  */
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import {
   AlertTriangle,
   ArrowDownLeft,
@@ -575,7 +576,7 @@ export default function FiadoPage() {
 
       {/* Tabela de Devedores */}
       <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        <TableScrollArea label="Contas e recebimentos" className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-sm">
             <thead className="bg-bg-primary text-left text-text-secondary">
               <tr>
@@ -672,7 +673,7 @@ export default function FiadoPage() {
               )}
             </tbody>
           </table>
-        </div>
+        </TableScrollArea>
 
         {filteredDevedores.length > itemsPerPage && (
           <div className="border-t border-border-primary p-3">

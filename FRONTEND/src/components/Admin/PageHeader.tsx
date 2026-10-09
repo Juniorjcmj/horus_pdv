@@ -25,15 +25,15 @@ export default function PageHeader({
       data-tour="page-header"
       className={`mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between ${className}`.trim()}
     >
-      <div className="min-w-0 shrink-0">
+      <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl whitespace-nowrap">
+          <h1 className="min-w-0 break-words text-2xl font-bold text-text-primary sm:text-3xl">
             {title}
           </h1>
           <button
             type="button"
             onClick={openGuidedTour}
-            className="hidden h-7 shrink-0 items-center gap-1.5 rounded-full border border-secondary/35 bg-bg-light px-2.5 text-xs font-semibold text-secondary transition hover:bg-secondary/10 lg:inline-flex"
+            className="hidden min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-border-secondary bg-bg-light px-3 text-sm font-semibold text-secondary transition hover:bg-hover-light lg:inline-flex"
             aria-label="Abrir tour da tela"
             title="Tour da tela"
           >
@@ -48,7 +48,7 @@ export default function PageHeader({
       {action ? (
         <div
           data-tour="page-header-action"
-          className="flex flex-wrap items-center gap-2 xl:justify-end"
+          className="flex min-w-0 flex-wrap items-center gap-2 xl:justify-end"
         >
           {action}
         </div>

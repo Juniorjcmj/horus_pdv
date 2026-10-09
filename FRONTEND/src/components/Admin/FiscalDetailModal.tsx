@@ -5,6 +5,7 @@
  * Entradas esperadas: documento fiscal, dados da empresa, callbacks para ações.
  */
 
+import TableScrollArea from "@/components/Admin/TableScrollArea";
 import { useEffect, useState } from "react";
 import {
   AlertCircle,
@@ -301,7 +302,7 @@ export default function FiscalDetailModal({
             </div>
 
             <div className="rounded-xl border border-border-primary overflow-hidden">
-              <div className="overflow-x-auto max-h-56">
+              <TableScrollArea label="Registros" className="overflow-x-auto max-h-56">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-bg-primary text-text-secondary sticky top-0">
                     <tr>
@@ -346,7 +347,7 @@ export default function FiscalDetailModal({
                     )}
                   </tbody>
                 </table>
-              </div>
+              </TableScrollArea>
             </div>
           </div>
         </div>
