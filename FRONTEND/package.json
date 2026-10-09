@@ -18,6 +18,8 @@
     "smoke:install": "playwright install chromium",
     "demo:video": "playwright test --config playwright.demo.config.ts",
     "test:arch": "playwright test --config playwright.arch.config.ts",
+    "test:offline-auth": "playwright test --config playwright.offline-auth.config.ts",
+    "test:products": "playwright test --config playwright.products.config.ts",
     "test:homolog": "playwright test --config playwright.homolog.config.ts",
     "test:homolog:headed": "playwright test --config playwright.homolog.config.ts --headed"
   },

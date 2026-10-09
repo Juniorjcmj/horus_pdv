@@ -143,7 +143,7 @@ const EMPTY_FORM: ProductFormData = {
   productCode: "",
   productSupplier: "",
   productDescription: "",
-  productQnt: "",
+  productQnt: "0",
   estoqueMinimo: "0",
   productUnitPrice: "",
   productSalePrice: "",
@@ -556,8 +556,8 @@ function ProductFormDrawer({
             </h3>
             <p className="mt-1 text-sm text-text-secondary">
               {cloneSourceName
-                ? `Clone de "${cloneSourceName}": dados fiscais e comerciais copiados. Informe código, quantidade e ajuste descrição e preço.`
-                : "Cadastre produto com fornecedor, preços e quantidade."}
+                ? `Clone de "${cloneSourceName}": dados fiscais e comerciais copiados. Ajuste a descrição e os preços. O código será gerado se não for informado.`
+                : "Informe descrição, custo e preço de venda. Fornecedor e estoque inicial são opcionais."}
             </p>
           </div>
           <button
@@ -635,25 +635,25 @@ function ProductFormDrawer({
                 </div>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">Nome do Produto *</span>
+                <span className="mb-1.5 block text-sm text-text-secondary">Descrição do Produto *</span>
                 <input
                   value={value.productName}
                   onChange={(event) => setField("productName", event.target.value)}
                   className="input-field w-full"
-                  placeholder="Nome do Produto"
+                  placeholder="Ex.: Arroz branco 5 kg"
                 />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm text-text-secondary">Código do Produto *</span>
+                <span className="mb-1.5 block text-sm text-text-secondary">Código do Produto</span>
                 <input
                   value={value.productCode}
                   onChange={(event) => setField("productCode", event.target.value)}
                   className="input-field w-full"
-                  placeholder="Código"
+                  placeholder="Gerado automaticamente se não informado"
                 />
               </label>
               <SearchableSelectField
-                label="Fornecedor *"
+                label="Fornecedor (opcional)"
                 value={value.productSupplier}
                 options={supplierOptions}
                 onChange={(nextValue) => setField("productSupplier", nextValue)}
@@ -694,13 +694,13 @@ function ProductFormDrawer({
               </label>
               <label className="block md:col-span-2">
                 <span className="mb-1.5 block text-sm text-text-secondary">
-                  Descrição do Produto *
+                  Descrição complementar (opcional)
                 </span>
                 <textarea
                   value={value.productDescription}
                   onChange={(event) => setField("productDescription", event.target.value)}
                   className="input-field min-h-[96px] w-full"
-                  placeholder="Descrição do Produto"
+                  placeholder="Detalhes adicionais do produto"
                 />
               </label>
             </div>
@@ -776,7 +776,7 @@ function ProductFormDrawer({
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <label className="block">
                 <span className="mb-1.5 block text-sm font-semibold text-text-primary">
-                  Unidade de Medida (Venda / Estoque) *
+                  Unidade de Medida (Venda / Estoque)
                 </span>
                 <select
                   value={value.unidadeComercial || "UN"}
@@ -796,7 +796,7 @@ function ProductFormDrawer({
 
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
-                  Quantidade do Produto ({value.unidadeComercial || "UN"}) *
+                  Quantidade do Produto ({value.unidadeComercial || "UN"})
                 </span>
                 <input
                   value={value.productQnt}
@@ -888,7 +888,7 @@ function ProductFormDrawer({
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
-                  Preço Unitário do Produto *
+                  Valor de Custo *
                 </span>
                 <input
                   value={value.productUnitPrice}
@@ -922,7 +922,7 @@ function ProductFormDrawer({
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
-                  Preço de Venda do Produto *
+                  Valor de Venda *
                 </span>
                 <input
                   value={value.productSalePrice}
@@ -937,7 +937,7 @@ function ProductFormDrawer({
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm text-text-secondary">
-                  Preço Total em Produto *
+                  Valor Total em Estoque (calculado)
                 </span>
                 <input
                   value={value.totalPriceOnProduct}
@@ -1964,7 +1964,7 @@ export default function ProductRegisterPage() {
       ...(cloned as ProductFormData),
       productCode: "",
       gtin: "SEM GTIN",
-      productQnt: "",
+      productQnt: "0",
       totalPriceOnProduct: "",
       dataValidade: "",
       diasRestantes: null,
@@ -2096,33 +2096,28 @@ export default function ProductRegisterPage() {
   const validateForm = () => {
     const requiredFields: Array<keyof ProductFormData> = [
       "productName",
-      "productCode",
-      "productSupplier",
-      "productDescription",
-      "productQnt",
       "productUnitPrice",
       "productSalePrice",
-      "totalPriceOnProduct",
     ];
 
     const missing = requiredFields.some((field) => !String(form[field]).trim());
     if (missing) {
-      Toast.error("Preencha os campos obrigatórios.");
+      Toast.error("Preencha a descrição, o valor de custo e o valor de venda.");
       return false;
     }
 
-    if (form.productName.trim().length < 3) {
-      Toast.error("O nome do produto deve ter no mínimo 3 caracteres.");
+    if (parseMoneyBr(form.productUnitPrice) <= 0) {
+      Toast.error("O valor de custo deve ser maior que zero.");
       return false;
     }
 
-    if (parseMoneyBr(form.productQnt) <= 0) {
-      Toast.error("A quantidade do produto deve ser maior que 0.");
+    if (parseMoneyBr(form.productSalePrice) <= 0) {
+      Toast.error("O valor de venda deve ser maior que zero.");
       return false;
     }
 
-    if (!form.productSupplier) {
-      Toast.error("Selecione um fornecedor.");
+    if (parseMoneyBr(form.productQnt || "0") < 0) {
+      Toast.error("A quantidade do produto não pode ser negativa.");
       return false;
     }
 

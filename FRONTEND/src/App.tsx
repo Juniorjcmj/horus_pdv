@@ -536,6 +536,9 @@ export default function App() {
       setAuthSession(result.user, remember);
       setCurrentUser(toCurrentUser(result.user));
       setIsAuthenticated(true);
+      if (result.offlineAccessReady === false) {
+        Toast.info("Você entrou, mas não foi possível preparar seu acesso sem internet neste computador. Faça login novamente com internet antes de operar offline.", 10_000);
+      }
       const isCaixaRoleUser = result.user.role.toLowerCase() === "caixa";
       setActivePage(isStandalonePos ? "vendas" : isCaixaRoleUser ? "caixa" : "home");
       return { success: true, message: "Login realizado com sucesso." };

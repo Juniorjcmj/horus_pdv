@@ -19,6 +19,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
 
     public async Task<ProdutoModel> CriarAsync(string companyId, ProdutoRequest request)
     {
+        NormalizeRequest(request);
         Validate(request);
         await ValidateBusinessRulesAsync(companyId, request, null);
         var product = MapRequest($"pr-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", request);
@@ -41,13 +42,14 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
 
     public async Task<ProdutoModel?> AtualizarAsync(string companyId, string id, ProdutoRequest request)
     {
-        Validate(request);
         var current = await produtosAB.ObterAsync(companyId, id);
         if (current is null)
         {
             return null;
         }
 
+        NormalizeRequest(request, current.ProductCode);
+        Validate(request);
         await ValidateBusinessRulesAsync(companyId, request, id);
         return ToModel(await produtosAB.SalvarAsync(companyId, MapRequest(id, request)));
     }
@@ -109,26 +111,31 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
         return ok;
     }
 
+    private static void NormalizeRequest(ProdutoRequest request, string? existingCode = null)
+    {
+        // A descrição principal é o nome usado no catálogo e no PDV. Aceita também clientes
+        // que enviam apenas ProductDescription, sem exigir duas descrições do mesmo produto.
+        request.ProductName = string.IsNullOrWhiteSpace(request.ProductName)
+            ? request.ProductDescription?.Trim() ?? string.Empty
+            : request.ProductName.Trim();
+        request.ProductDescription = request.ProductDescription?.Trim() ?? string.Empty;
+        request.ProductSupplier = request.ProductSupplier?.Trim() ?? string.Empty;
+        request.ProductCode = string.IsNullOrWhiteSpace(request.ProductCode)
+            ? (string.IsNullOrWhiteSpace(existingCode) ? $"P-{Guid.NewGuid():N}" : existingCode)
+            : request.ProductCode.Trim();
+        if (string.IsNullOrWhiteSpace(request.ProductQnt)) request.ProductQnt = "0";
+    }
+
     private static void Validate(ProdutoRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.ProductName) || request.ProductName.Trim().Length < 3)
+        if (string.IsNullOrWhiteSpace(request.ProductName))
         {
-            throw new InvalidOperationException("Nome do produto deve ter no minimo 3 caracteres.");
+            throw new InvalidOperationException("Descrição do produto é obrigatória.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.ProductCode))
+        if (!HorusMoneyFormat.TryParseDecimal(request.ProductQnt, out var quantity) || quantity < 0)
         {
-            throw new InvalidOperationException("Codigo do produto e obrigatorio.");
-        }
-
-        if (string.IsNullOrWhiteSpace(request.ProductSupplier))
-        {
-            throw new InvalidOperationException("Fornecedor do produto e obrigatorio.");
-        }
-
-        if (HorusMoneyFormat.ParseDecimal(request.ProductQnt) <= 0)
-        {
-            throw new InvalidOperationException("Quantidade do produto deve ser maior que zero.");
+            throw new InvalidOperationException("Quantidade do produto deve ser um número maior ou igual a zero.");
         }
 
         if (HorusMoneyFormat.ParseDecimal(request.ProductUnitPrice) <= 0)
@@ -153,8 +160,10 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
             throw new InvalidOperationException("Já existe produto com este código.");
         }
 
-        var suppliers = await fornecedoresAB.ListarAsync(companyId);
         var supplierName = request.ProductSupplier.Trim();
+        if (string.IsNullOrEmpty(supplierName)) return;
+
+        var suppliers = await fornecedoresAB.ListarAsync(companyId);
         if (!suppliers.Any(item =>
                 item.FantasyName.Equals(supplierName, StringComparison.OrdinalIgnoreCase) ||
                 item.CompanyName.Equals(supplierName, StringComparison.OrdinalIgnoreCase)))
@@ -185,7 +194,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
             EstoqueMinimo = HorusMoneyFormat.ParseDecimal(request.EstoqueMinimo),
             ProductUnitPrice = custoUnitario,
             ProductSalePrice = precoVenda,
-            TotalPriceOnProduct = HorusMoneyFormat.ParseDecimal(request.TotalPriceOnProduct),
+            TotalPriceOnProduct = custoUnitario * HorusMoneyFormat.ParseDecimal(request.ProductQnt),
             Lucro = lucro,
             MargemDesejadaPercentual = string.IsNullOrWhiteSpace(request.MargemDesejadaPercentual)
                 ? null

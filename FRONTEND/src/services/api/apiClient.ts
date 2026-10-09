@@ -48,7 +48,7 @@ export async function apiRequest<T>(
   options: ApiRequestOptions = {},
 ): Promise<ApiResponse<T>> {
   if (!navigator.onLine) {
-    throw new Error("Sem conexão com a internet.");
+    throw new ApiError("Sem conexão com a internet.", 0);
   }
 
   const { skipAuth: _skipAuth, headers, timeoutMs, ...requestOptions } = options;
@@ -57,47 +57,61 @@ export async function apiRequest<T>(
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs ?? API_TIMEOUT_MS);
 
-  let response: Response;
   try {
-    response = await fetch(endpointUrl, {
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
-      signal: controller.signal,
-      ...requestOptions,
-    });
-  } catch (err) {
-    if (err instanceof DOMException && err.name === "AbortError") {
-      throw new Error("A requisição demorou demais e foi cancelada. Verifique sua conexão ou tente novamente.");
+    let response: Response;
+    try {
+      response = await fetch(endpointUrl, {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...headers,
+        },
+        signal: controller.signal,
+        ...requestOptions,
+      });
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        throw new ApiError("A requisição demorou demais e foi cancelada. Verifique sua conexão ou tente novamente.", 0);
+      }
+      // Falhas do fetch não têm resposta HTTP. O status 0 permite tratar conectividade sem
+      // depender da mensagem (que varia entre Chromium, Electron e outros navegadores).
+      throw new ApiError(err instanceof Error ? err.message : "Não foi possível conectar à API.", 0);
     }
-    throw err;
+
+    // Resposta real da API (não 5xx: 502/503 do proxy = API fora) prova conectividade para o
+    // ConnectivityService, evitando "API indisponível" por um health check lento isolado.
+    if (response.status < 500) {
+      window.dispatchEvent(new CustomEvent("horus-api-responded"));
+    }
+
+    if (response.status === 401) {
+      clearAuthSession();
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    let payload: ApiResponse<T>;
+    try {
+      payload = contentType.includes("application/json")
+        ? ((await response.json()) as ApiResponse<T>)
+        : {
+            success: response.ok,
+            message: response.ok ? "Operação concluída." : "Erro ao comunicar com a API.",
+          };
+    } catch (error) {
+      // Rede também pode cair depois dos cabeçalhos, enquanto o corpo ainda é recebido.
+      // Uma recusa HTTP já recebida continua valendo; só uma resposta de sucesso interrompida
+      // é tratada como falta de conexão. JSON inválido preserva o status recebido.
+      const interrupted = error instanceof TypeError || (error instanceof DOMException && error.name === "AbortError");
+      throw new ApiError("Erro ao ler a resposta da API.", response.ok && interrupted ? 0 : response.status, error);
+    }
+
+    if (!response.ok || !payload?.success) {
+      throw new ApiError(payload?.message || "Erro ao comunicar com a API.", response.status, payload);
+    }
+
+    return payload;
   } finally {
+    // O prazo cobre a leitura do corpo, além da conexão inicial.
     window.clearTimeout(timeoutId);
   }
-
-  // Resposta real da API (não 5xx: 502/503 do proxy = API fora) prova conectividade para o
-  // ConnectivityService, evitando "API indisponível" por um health check lento isolado.
-  if (response.status < 500) {
-    window.dispatchEvent(new CustomEvent("horus-api-responded"));
-  }
-
-  const contentType = response.headers.get("content-type") || "";
-  const payload = contentType.includes("application/json")
-    ? ((await response.json()) as ApiResponse<T>)
-    : ({
-        success: response.ok,
-        message: response.ok ? "Operação concluída." : "Erro ao comunicar com a API.",
-      } as ApiResponse<T>);
-
-  if (response.status === 401) {
-    clearAuthSession();
-  }
-
-  if (!response.ok || !payload.success) {
-    throw new ApiError(payload.message || "Erro ao comunicar com a API.", response.status, payload);
-  }
-
-  return payload;
 }

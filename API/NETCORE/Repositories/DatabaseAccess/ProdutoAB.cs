@@ -481,6 +481,8 @@ public class ProdutoAB(Connection connection)
 
     private async Task<string?> ResolveSupplierIdAsync(string companyId, string supplierName)
     {
+        if (string.IsNullOrWhiteSpace(supplierName)) return null;
+
         const string sql = """
             SELECT TOP 1 Id
             FROM Fornecedores

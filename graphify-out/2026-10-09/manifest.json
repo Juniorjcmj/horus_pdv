@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs": {
-    "mtime": 1791575208.4863214,
-    "seen": 1791575436.1494415,
-    "ast_hash": "876e442a360f7ff465b72d4c472cd742",
+    "mtime": 1791049904.1933389,
+    "seen": 1791049938.0205314,
+    "ast_hash": "d9866a5ccbb8ca8773a37a440ef87a11",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
-    "mtime": 1791575167.061342,
-    "seen": 1791575436.157193,
-    "ast_hash": "5a495d3c99440d14f0cfa2d3dee743a3",
+    "mtime": 1791051090.225282,
+    "seen": 1791051228.761998,
+    "ast_hash": "f490be480907be0f9dc4f29f02bafb6e",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusAuthorizeRolesAttribute.cs": {
@@ -630,9 +630,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/package.json": {
-    "mtime": 1791575287.5440536,
-    "seen": 1791575436.1627543,
-    "ast_hash": "1b40ae34a9990d4cb2981d4cfeec0cb9",
+    "mtime": 1791556486.282036,
+    "seen": 1791556779.838437,
+    "ast_hash": "5d9bdd70fe794234b8abcfa93e090eb3",
     "semantic_hash": ""
   },
   "FRONTEND/playwright.config.ts": {
@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1791575167.0823896,
-    "seen": 1791575436.1990669,
-    "ast_hash": "59f0ee4c8e84ff73822c2246f26c7d76",
+    "mtime": 1791045792.9802382,
+    "seen": 1791045837.728224,
+    "ast_hash": "0c615f778bf02afddab96f31b9506723",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
@@ -4053,18 +4053,6 @@
     "mtime": 1791557028.485656,
     "seen": 1791557078.2199407,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
-    "semantic_hash": ""
-  },
-  "FRONTEND/playwright.products.config.ts": {
-    "mtime": 1791575287.5420527,
-    "seen": 1791575436.1639044,
-    "ast_hash": "a6062c3edf6f3d12b99279d812074103",
-    "semantic_hash": ""
-  },
-  "FRONTEND/tests/architecture/product-registration.spec.ts": {
-    "mtime": 1791575491.834294,
-    "seen": 1791575582.0665486,
-    "ast_hash": "285a113bba29e2f57d758db1616a8310",
     "semantic_hash": ""
   }
 }

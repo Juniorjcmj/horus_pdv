@@ -3,7 +3,7 @@
  * Objetivo: encapsula chamadas HTTP de autenticação, cadastro e recuperação de senha.
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
-import { apiRequest, requireEnvUrl } from "./apiClient";
+import { ApiError, apiRequest, requireEnvUrl } from "./apiClient";
 import type { AuthenticatedUser } from "@/utils/authStorage";
 import { userRepository } from "@/infrastructure/database/repositories/UserRepository";
 
@@ -21,6 +21,8 @@ export type LoginResponse = {
   expiresInSeconds: number;
   sessionId: string;
   user: AuthenticatedUser;
+  /** Resultado do salvamento local após um login online. */
+  offlineAccessReady?: boolean;
 };
 
 export type RegisterPayload = {
@@ -42,6 +44,7 @@ export type ForgotPasswordResponse = {
 
 export const authService = {
   async login(payload: LoginPayload) {
+    let result: LoginResponse | undefined;
     try {
       const response = await apiRequest<LoginResponse>(`${AUTH_API_URL}/login`, {
         method: "POST",
@@ -49,23 +52,12 @@ export const authService = {
         skipAuth: true,
       });
 
-      if (response.data?.user) {
-        // Salva hash local para permitir login offline posterior
-        void userRepository.saveUserForOfflineAuth(response.data.user, payload.password);
-      }
-
-      return response.data;
+      result = response.data;
     } catch (onlineError) {
-      // Se for falha de conectividade ou rede indisponível, tenta login offline local
-      const isNetworkError =
-        onlineError instanceof Error &&
-        (onlineError.message.includes("Failed to fetch") ||
-          onlineError.message.includes("NetworkError") ||
-          onlineError.message.includes("Network Error") ||
-          onlineError.message.includes("Load failed") ||
-          onlineError.message.includes("timeout") ||
-          onlineError.message.includes("servidor") ||
-          (typeof navigator !== "undefined" && !navigator.onLine));
+      // Só indisponibilidade permite autenticação local. 400/401/403 e limite de tentativas
+      // (429) continuam sendo recusas do servidor, mesmo se a rede cair logo após a resposta.
+      const isNetworkError = onlineError instanceof ApiError &&
+        (onlineError.status === 0 || onlineError.status === 408 || onlineError.status >= 500);
 
       if (isNetworkError) {
         const offlineUser = await userRepository.authenticateOffline(payload.email, payload.password);
@@ -74,10 +66,22 @@ export const authService = {
           expiresInSeconds: 86400,
           sessionId: `sess-offline-${Date.now()}`,
           user: offlineUser,
+          offlineAccessReady: true,
         };
       }
 
       throw onlineError;
+    }
+
+    if (!result?.user) return result;
+
+    // Confirma o salvamento antes de liberar a sessão: sair logo após o login não pode
+    // interromper a preparação do acesso offline. Falha local não invalida o login online.
+    try {
+      await userRepository.saveUserForOfflineAuth(result.user, payload.password);
+      return { ...result, offlineAccessReady: true };
+    } catch {
+      return { ...result, offlineAccessReady: false };
     }
   },
 

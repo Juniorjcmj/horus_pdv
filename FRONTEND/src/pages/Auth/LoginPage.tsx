@@ -38,7 +38,7 @@ export default function LoginPage({
   const [feedback, setFeedback] = useState<AuthActionResult | null>(null);
 
   const runRecaptcha = () =>
-    isRecaptchaConfigured ? executeRecaptcha("login") : Promise.resolve("");
+    isRecaptchaConfigured && navigator.onLine ? executeRecaptcha("login") : Promise.resolve("");
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -51,7 +51,9 @@ export default function LoginPage({
 
     setIsSubmitting(true);
     try {
-      const recaptchaToken = await runRecaptcha();
+      // Google indisponível não deve impedir a tentativa de login. O servidor ainda valida
+      // reCAPTCHA quando acessível; só sua indisponibilidade permite o login local por senha.
+      const recaptchaToken = await runRecaptcha().catch(() => "");
       setFeedback(await onLogin(email, password, remember, recaptchaToken));
     } catch (error) {
       setFeedback(
