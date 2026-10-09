@@ -2838,9 +2838,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/tests/homologation/A-login.spec.ts": {
-    "mtime": 1791578517.5275629,
-    "seen": 1791578545.5714102,
-    "ast_hash": "0ff7e6f7812bdddd27d1225ecc092e43",
+    "mtime": 1791578584.7620263,
+    "seen": 1791578625.0872478,
+    "ast_hash": "aaa0d5e0d80749d093a9fddff5cdac32",
     "semantic_hash": ""
   },
   "FRONTEND/tests/homologation/B-products.spec.ts": {

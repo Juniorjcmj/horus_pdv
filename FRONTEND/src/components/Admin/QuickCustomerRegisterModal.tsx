@@ -12,6 +12,7 @@ import {
   maskPhoneBr,
   maskMoneyBr,
   maskCep,
+  onlyDigits,
 } from "@/utils/inputMasks";
 import { lookupAddressByCep, sanitizeCep } from "@/utils/cepLookup";
 import { getCustomerValidationError } from "@/utils/customerValidation";

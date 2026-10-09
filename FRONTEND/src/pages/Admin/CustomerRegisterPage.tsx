@@ -23,6 +23,7 @@ import { getStoredAuthUser } from "@/utils/authStorage";
 import { lookupAddressByCep } from "@/utils/cepLookup";
 import { getAgeFromBirthDate } from "@/utils/validators";
 import { getCustomerValidationError } from "@/utils/customerValidation";
+import { onlyDigits } from "@/utils/inputMasks";
 
 type Customer = {
   id: string;

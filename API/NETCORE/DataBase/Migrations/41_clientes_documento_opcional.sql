@@ -21,6 +21,15 @@ BEGIN
     ALTER TABLE dbo.Clientes DROP CONSTRAINT UQ_Clientes_Company_Document;
 END;
 GO
+IF EXISTS (
+    SELECT 1 FROM sys.indexes
+    WHERE object_id = OBJECT_ID(N'dbo.Clientes') AND name = N'UQ_Clientes_Company_Document'
+      AND is_unique_constraint = 0 AND has_filter = 0
+)
+BEGIN
+    DROP INDEX UQ_Clientes_Company_Document ON dbo.Clientes;
+END;
+GO
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes
     WHERE object_id = OBJECT_ID(N'dbo.Clientes') AND name = N'UQ_Clientes_Company_Document'
