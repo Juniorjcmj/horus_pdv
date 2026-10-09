@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 # Arquivo: FRONTEND/Dockerfile
 # Objetivo: build multi-stage do frontend (Vite) do Hórus PDV, servido por nginx em produção.
 # Contexto de build esperado: FRONTEND (ver .github/workflows/docker-publish.yml).
@@ -7,7 +6,9 @@
 # por isso o hostname da API entra aqui como build-arg e é aplicado em cima do .env.prod já
 # versionado (que traz o padrão de nome de cada variável; só o host muda).
 
-FROM node:20-alpine AS build
+# Imagens oficiais no ECR Public evitam o limite de downloads do Docker Hub no CI.
+# Usa o frontend Dockerfile integrado ao BuildKit, sem baixar docker/dockerfile do Hub.
+FROM public.ecr.aws/docker/library/node:20-alpine AS build
 WORKDIR /app
 
 ARG VITE_API_ORIGIN=https://api-pdv.quacksistemas.com.br
@@ -29,7 +30,7 @@ RUN if [ ! -f .env.prod ] && [ -f .env.production ]; then cp .env.production .en
 
 RUN npm run build:prod
 
-FROM nginx:1.27-alpine AS final
+FROM public.ecr.aws/docker/library/nginx:1.27-alpine AS final
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 

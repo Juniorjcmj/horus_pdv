@@ -1758,9 +1758,9 @@
     "semantic_hash": ""
   },
   "DEPLOY.md": {
-    "mtime": 1790876058.8673189,
-    "seen": 1790876154.6648571,
-    "ast_hash": "46ed77666ea7d7b5ddb616dd2cffc87c",
+    "mtime": 1791579852.227897,
+    "seen": 1791579907.8964548,
+    "ast_hash": "fa29f3dab12a8b9e824dd50081c1014b",
     "semantic_hash": ""
   },
   "FRONTEND/index.html": {
@@ -4116,9 +4116,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/tests/architecture/customer-registration.spec.ts": {
-    "mtime": 1791579421.34596,
-    "seen": 1791579531.4242742,
-    "ast_hash": "6b5ef3d495ea54201d86c165c4383893",
+    "mtime": 1791579688.323903,
+    "seen": 1791579749.4738374,
+    "ast_hash": "0cdd298693db76c54571419bf434b97e",
     "semantic_hash": ""
   },
   "FRONTEND/tests/fixtures/customer-quick.fixture.tsx": {

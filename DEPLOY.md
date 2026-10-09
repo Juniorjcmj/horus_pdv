@@ -112,6 +112,19 @@ só falta você clicar em "Pull and redeploy" no Portainer depois.
 4. Configure os dados fiscais em **Minha Empresa** (CRT, ambiente, CSC, certificado) antes
    da primeira venda — ver `MODULO-FISCAL-E-PEDIDOS.md`.
 
+## Falha `429 Too Many Requests` ao baixar imagens no build
+
+Esse erro durante o download de `node:20-alpine` ou `nginx:1.27-alpine` vem do limite
+de requisições do Docker Hub. O frontend usa as mesmas versões das imagens oficiais
+disponíveis em `public.ecr.aws/docker/library/`, sem exigir conta ou secrets da AWS.
+O Dockerfile também usa o interpretador integrado ao BuildKit para evitar o download
+adicional de `docker/dockerfile:1` do Docker Hub.
+
+Envie a correção para `main` para iniciar uma publicação com o Dockerfile atualizado.
+Reexecutar o job do commit antigo continua usando o arquivo antigo. Também é possível
+iniciar o workflow manualmente em **Actions**, selecionando a branch que contém a correção.
+O aviso de depreciação de `punycode` não é a causa dessa falha.
+
 ## Aviso esperado nos logs da API
 
 O container só escuta HTTP na porta 8080 (quem termina TLS é o Traefik) — o
