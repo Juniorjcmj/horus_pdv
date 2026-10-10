@@ -447,7 +447,7 @@ public class DocumentoFiscalAB(
     }
 
     /// <summary>Recupera o XML oficial (autorizado ou cancelamento) para download individual.</summary>
-    public async Task<(string? Xml, string? ChaveAcesso, StatusDocumentoFiscal Status, string? XmlCancelamento)?> ObterXmlAsync(string companyId, string id)
+    public async Task<(string? Xml, string? ChaveAcesso, StatusDocumentoFiscal Status, string? XmlCancelamento)?> ObterXmlAsync(string companyId, string id, bool somenteCancelamento = false)
     {
         const string sql = """
             SELECT ChaveAcesso, Status, XmlAssinado, XmlProtocolado, XmlCancelamento
@@ -468,7 +468,7 @@ public class DocumentoFiscalAB(
         var protocolado = ReadNullableString(reader, "XmlProtocolado");
         var cancelamento = ReadNullableString(reader, "XmlCancelamento");
 
-        return (protocolado ?? assinado, chave, status, cancelamento);
+        return (somenteCancelamento ? null : FiscalXmlArchive.Complete(assinado, protocolado, status is StatusDocumentoFiscal.Autorizado or StatusDocumentoFiscal.Cancelado), chave, status, cancelamento);
     }
 
     /// <summary>Obtém os itens detalhados da venda vinculada ao documento fiscal para a visão Raio-X.</summary>
@@ -631,7 +631,7 @@ public class DocumentoFiscalAB(
             SELECT d.Id, v.SaleNumber, d.Serie, d.NumeroNf, d.Status, d.ChaveAcesso, d.Protocolo,
                    d.DhAutorizacao, d.CriadoEm, d.XmlAssinado, d.XmlProtocolado, d.XmlCancelamento
             FROM DocumentosFiscais d
-            INNER JOIN Vendas v ON v.Id = d.VendaId
+            LEFT JOIN Vendas v ON v.Id = d.VendaId AND v.CompanyId = d.CompanyId
             WHERE d.CompanyId = @CompanyId
               AND d.Status IN (3, 6, 8) -- Autorizado, Cancelado, ContingenciaPendente
               AND YEAR(COALESCE(d.DhAutorizacao, d.CriadoEm)) = @Ano

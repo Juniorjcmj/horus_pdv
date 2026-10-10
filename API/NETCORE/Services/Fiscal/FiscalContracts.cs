@@ -181,8 +181,8 @@ public sealed record ItemFiscal
     public required string CstPis { get; init; }
     public required string CstCofins { get; init; }
 
-    // NT 2025.002 — grupo UB. Preenchido só quando o emitente está obrigado
-    // (CRT 3 desde 03/08/2026; CRT 1 e 4 a partir de 04/01/2027).
+    // NT 2025.002 — grupo UB. Enquadramento informado pela empresa;
+    // validade e suporte conferidos no emissor, sem inferência pela descrição.
     public string? CstIbsCbs { get; init; }
     public string? CClassTrib { get; init; }
 }

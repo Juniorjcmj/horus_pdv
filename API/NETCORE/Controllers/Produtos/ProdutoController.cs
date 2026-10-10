@@ -7,6 +7,9 @@ using HORUSPDV_API.Models.Produtos;
 using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Models.Response;
 using HORUSPDV_API.Services.Produtos;
+using HORUSPDV_API.Services.Fiscal;
+using HORUSPDV_API.Services.Shared;
+using HORUSPDV_API.Repositories.DatabaseAccess;
 using HORUSPDV_API.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +17,7 @@ namespace HORUSPDV_API.Controllers.Produtos;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProdutoController(IProdutoService produtoService) : ControllerBase
+public class ProdutoController(IProdutoService produtoService, ProdutoAB produtos, EmpresaAB empresas, FiscalReferenceTables tabelas) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<ProdutoModel>>), StatusCodes.Status200OK)]
@@ -29,6 +32,21 @@ public class ProdutoController(IProdutoService produtoService) : ControllerBase
             Message = "Produtos obtidos com sucesso.",
             Data = data
         });
+    }
+
+    [HttpGet("{id}/verificacao-fiscal")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+    public async Task<IActionResult> VerificarFiscal(string id, CancellationToken ct)
+    {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var product = await produtos.ObterAsync(user.CompanyId, id);
+        if (product is null) return NotFound(new ApiResponse<object> { Success = false, Message = "Produto não encontrado." });
+        var company = await empresas.ObterExataAsync(user.CompanyId);
+        if (company is null) return BadRequest(new ApiResponse<object> { Success = false, Message = "Cadastre os dados fiscais em Minha Empresa antes da conferência." });
+        Response.Headers.CacheControl = "no-store";
+        return Ok(new ApiResponse<ProductFiscalReport> { Success = true,
+            Data = ProductFiscalReview.Check(product, company, await tabelas.GetAsync(ct), HorusDateTime.Now) });
     }
 
     [HttpPost]

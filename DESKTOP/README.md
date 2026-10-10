@@ -11,6 +11,13 @@ IndexedDB das versões anteriores. O instalador contém o frontend e o Gateway; 
 central ainda precisam ser publicadas no servidor. Abrir as telas sem internet não substitui o
 login offline: o operador precisa ter suas credenciais salvas neste computador.
 
+Desde a versão **1.3.6**, entradas por NF-e/NFC-e armazenam o XML original (quando enviado ou
+obtido da SEFAZ) e os itens confirmados. Consulte **Produtos → Importar / Cargas → Notas de entrada**
+ou **Fiscal → Notas de entrada**. Cupons digitados conservam chave e itens, identificados como sem XML.
+A API deve estar atualizada para aplicar a migração `42_notas_entrada_arquivo.sql`. O arquivo fica no
+banco central e faz parte do backup completo. Entradas anteriores não possuem XML recuperável
+automaticamente; não reimporte notas antigas para arquivá-las, pois isso somaria estoque.
+
 ## Por que usar no caixa (em vez do navegador)
 
 - O IndexedDB (vendas offline, fiado, catálogo) fica no perfil do programa, em `%APPDATA%\Quack PDV`,
@@ -28,6 +35,12 @@ login offline: o operador precisa ter suas credenciais salvas neste computador.
   NFC-e pode entrar pelo XML do fornecedor ou por itens digitados do cupom, com fornecedor e
   produtos existentes reaproveitados e revisão de quantidades/custos antes da gravação. A chave
   identifica o documento; o download no Ambiente Nacional continua exclusivo de NF-e (55).
+- Desde a versão **1.3.4**, a janela "Vendas do Caixa Atual" apresenta somente os dados de venda
+  e pagamento, sem a coluna Status Fiscal nem o resumo Notas Autorizadas. A emissão automática,
+  a impressão dos documentos e o acompanhamento no painel fiscal continuam funcionando.
+- Desde a versão **1.3.5**, o Administrador Geral pode gerar e baixar um backup completo do banco
+  central no Gerenciamento Geral de Empresas. Requer atualizar também a API e os volumes do stack
+  conforme `DEPLOY.md`; o backup das pendências locais continua disponível nas Configurações.
 
 ## Uso
 
@@ -151,3 +164,12 @@ O F12 não é capturado pelo programa: é o atalho de **Pagamento** do PDV.
 - O instalador tem ~150 MB (com o Gateway) e **não é versionado** (`DESKTOP/release/` está no `.gitignore`).
 - Os dados do navegador **não são migrados**: no programa, o caixa começa com o IndexedDB vazio e
   faz login e sincronização de novo. Envie as vendas pendentes do navegador antes de trocar.
+
+
+## Versão 1.3.7 — conferência fiscal
+
+No cadastro de produtos, abra as ações e escolha **Verificar situação fiscal**. O painel confere os códigos salvos, mostra a descrição oficial do NCM, vigência e compatibilidade da classificação IBS/CBS e orienta a revisão contábil. Não altera dados automaticamente nem muda o cadastro mínimo. **Editar dados fiscais** abre o formulário, incluindo CST IBS/CBS e cClassTrib.
+
+Requer publicar a API atualizada: o instalador sozinho não muda a emissão do servidor. A API também corrige exportações antigas que ofereciam apenas o protocolo de autorização. Depois da publicação, exporte novamente o mês para obter nota e protocolo juntos. A recuperação exige o XML assinado original salvo no banco.
+
+A análise e seus limites estão em `docs/AUDITORIA_FISCAL_2026-10-10.md`. A conferência não equivale a homologação pela SEFAZ e não confirma enquadramento legal só pelo nome ou pelo NCM.

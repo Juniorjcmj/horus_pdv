@@ -281,6 +281,23 @@ public class NfceController(
             });
         }
 
+        var completeXmls = new Dictionary<string, string>();
+        foreach (var doc in docs)
+        {
+            try
+            {
+                var xml = FiscalXmlArchive.Complete(doc.XmlAssinado, doc.XmlProtocolado,
+                    doc.Status is StatusDocumentoFiscal.Autorizado or StatusDocumentoFiscal.Cancelado);
+                if (string.IsNullOrWhiteSpace(xml)) throw new InvalidOperationException("XML assinado não disponível.");
+                completeXmls.Add(doc.Id, xml);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or System.Xml.XmlException)
+            {
+                return Conflict(new ApiResponse<object> { Success = false,
+                    Message = $"Não foi possível exportar a nota {doc.NumeroNf}, série {doc.Serie}: {ex.Message}" });
+            }
+        }
+
         using var memoryStream = new MemoryStream();
         using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, leaveOpen: true))
         {
@@ -289,7 +306,7 @@ public class NfceController(
                 var chaveOuNum = !string.IsNullOrWhiteSpace(doc.ChaveAcesso) ? doc.ChaveAcesso : $"NFCe_S{doc.Serie}_N{doc.NumeroNf}";
 
                 // 1. XML da NFC-e (autorizada ou contingência):
-                var xmlNota = !string.IsNullOrWhiteSpace(doc.XmlProtocolado) ? doc.XmlProtocolado : doc.XmlAssinado;
+                var xmlNota = completeXmls[doc.Id];
                 if (!string.IsNullOrWhiteSpace(xmlNota))
                 {
                     var entry = archive.CreateEntry($"{chaveOuNum}-nfe.xml", CompressionLevel.Optimal);
@@ -323,13 +340,16 @@ public class NfceController(
         var currentUser = GetCurrentUser();
         if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
 
-        var dados = await documentoFiscalAB.ObterXmlAsync(currentUser.CompanyId, id);
+        var isCancelamento = string.Equals(tipo, "cancelamento", StringComparison.OrdinalIgnoreCase);
+        (string? Xml, string? ChaveAcesso, StatusDocumentoFiscal Status, string? XmlCancelamento)? dados;
+        try { dados = await documentoFiscalAB.ObterXmlAsync(currentUser.CompanyId, id, isCancelamento); }
+        catch (Exception ex) when (ex is InvalidOperationException or System.Xml.XmlException)
+        { return Conflict(new ApiResponse<object> { Success = false, Message = ex.Message }); }
         if (dados is null)
         {
             return NotFound(new ApiResponse<object> { Success = false, Message = "Documento fiscal não encontrado." });
         }
 
-        var isCancelamento = string.Equals(tipo, "cancelamento", StringComparison.OrdinalIgnoreCase);
         var xml = isCancelamento ? dados.Value.XmlCancelamento : dados.Value.Xml;
 
         if (string.IsNullOrWhiteSpace(xml))

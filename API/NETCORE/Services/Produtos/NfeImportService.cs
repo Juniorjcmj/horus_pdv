@@ -14,6 +14,8 @@
  */
 using HORUSPDV_API.Models.Produtos;
 using HORUSPDV_API.Models.Requests;
+using HORUSPDV_API.Repositories;
+using Microsoft.Data.SqlClient;
 using HORUSPDV_API.Repositories.DataAccess;
 using HORUSPDV_API.Repositories.DatabaseAccess;
 using HORUSPDV_API.Services.Fiscal;
@@ -26,7 +28,9 @@ public class NfeImportService(
     FornecedorAB fornecedoresAB,
     MapeamentoProdutoFornecedorAB mapeamentoAB,
     SefazDFeDownloadService sefazDownloadService,
-    LoteAB loteAB)
+    LoteAB loteAB,
+    Connection connection,
+    NotaEntradaArquivoService arquivoService)
 {
     private const string OrigemLoteNfe = "nfe";
     private const string CriadoPorImportacao = "Importação NF-e";
@@ -49,6 +53,8 @@ public class NfeImportService(
         {
             throw new InvalidOperationException("Nenhum arquivo XML enviado.");
         }
+
+        if (request.XmlBase64.Length > 14_000_000) throw new InvalidOperationException("O XML deve ter no máximo 10 MB.");
 
         byte[] xmlBytes;
         try
@@ -162,6 +168,7 @@ public class NfeImportService(
 
         return new NfeImportPreviewModel
         {
+            Documento = new NfeImportDocumentoInput { XmlBase64 = Convert.ToBase64String(xmlBytes), ChaveAcesso = parsed.ChaveAcesso, Modelo = parsed.Modelo, NumeroNota = parsed.NumeroNota, Serie = parsed.Serie },
             Modelo = parsed.Modelo,
             NumeroNota = parsed.NumeroNota,
             Serie = parsed.Serie,
@@ -170,7 +177,7 @@ public class NfeImportService(
         };
     }
 
-    public async Task<NfeImportResultModel> ConfirmarAsync(string companyId, NfeImportConfirmRequest request)
+    public async Task<NfeImportResultModel> ConfirmarAsync(string companyId, NfeImportConfirmRequest request, string usuarioId = "", string usuarioNome = "")
     {
         if (request.Itens.Count == 0)
         {
@@ -187,6 +194,12 @@ public class NfeImportService(
         {
             throw new InvalidOperationException("Razão social do fornecedor é obrigatória.");
         }
+
+        var documento = arquivoService.Preparar(request);
+        await using var db = await connection.OpenConnectionAsync();
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+        using var scope = connection.UseImportTransaction(transaction);
+        await arquivoService.ReservarAsync(companyId, documento);
 
         var produtosAtuais = await produtosAB.ListarAsync(companyId);
 
@@ -366,11 +379,14 @@ public class NfeImportService(
                 CClassTrib = null,
             };
             await produtosAB.SalvarAsync(companyId, novoProduto);
+            item.ProdutoExistenteId = novoProduto.Id;
             resultado.ProdutosCriados++;
             await loteAB.RegistrarEntradaAsync(
                 companyId, novoProduto.Id, ParseValidade(item), quantidade, item.NumeroLote, OrigemLoteNfe, CriadoPorImportacao);
         }
 
+        resultado.NotaEntradaId = await arquivoService.SalvarAsync(companyId, request, documento, usuarioId, usuarioNome);
+        await transaction.CommitAsync();
         return resultado;
     }
 }

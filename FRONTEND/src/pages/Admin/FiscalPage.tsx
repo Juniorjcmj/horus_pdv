@@ -42,6 +42,7 @@ import DanfePreviewModal from "@/components/Admin/DanfePreviewModal";
 import PdvNfceCancelModal from "@/components/Admin/PdvNfceCancelModal";
 import FiscalDetailModal from "@/components/Admin/FiscalDetailModal";
 import FiscalErrorModal from "@/components/Admin/FiscalErrorModal";
+import NotasEntradaPanel from "@/components/Admin/NotasEntradaPanel";
 import NfeImportModal from "@/components/Admin/NfeImportModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import ReceiptPreviewModal, { type SaleReceipt } from "@/components/Admin/ReceiptPreviewModal";
@@ -66,7 +67,7 @@ import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { getStoredAuthUser } from "@/utils/authStorage";
 import { formatNumeroNf, getSefazConsultaUrl } from "@/utils/danfePrint";
 
-type FiscalTab = "notas" | "contingencia" | "inutilizacao" | "regras";
+type FiscalTab = "entradas" | "notas" | "contingencia" | "inutilizacao" | "regras";
 type StatusFilter = "todos" | "autorizado" | "cancelado" | "devolvido" | "rejeitado" | "contingencia";
 type PeriodFilter = "todos" | "hoje" | "7dias" | "mes";
 
@@ -533,7 +534,11 @@ export default function FiscalPage() {
               <PackagePlus size={15} />
               Entrada de NF-e / NFC-e
             </button>
-            <button
+            <button type="button" onClick={() => setActiveTab("entradas")}
+          className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-semibold transition-colors ${activeTab === "entradas" ? "border-accent text-accent" : "border-transparent text-text-secondary hover:text-text-primary"}`}>
+          <FileArchive size={14} /> Notas de entrada
+        </button>
+        <button
               type="button"
               onClick={() => setExportModalOpen(true)}
               className="btn-primary inline-flex items-center gap-2 text-xs font-medium"
@@ -746,7 +751,7 @@ export default function FiscalPage() {
         </button>
       </div>
 
-      {activeTab === "notas" ? (
+      {activeTab === "entradas" ? <NotasEntradaPanel /> : activeTab === "notas" ? (
         <>
           {/* Barra de Filtros e Busca */}
           <section className="card p-4 space-y-3">
@@ -1601,6 +1606,7 @@ export default function FiscalPage() {
           onSuccess={() => {
             setDocToCancel(null);
             loadDocuments();
+            setActiveTab("entradas");
           }}
         />
       )}
@@ -1763,6 +1769,7 @@ export default function FiscalPage() {
           onImported={() => {
             setImportNfeModalOpen(false);
             loadDocuments();
+            setActiveTab("entradas");
           }}
         />
       )}

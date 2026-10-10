@@ -39,6 +39,7 @@ import {
   type NfeImportFornecedorPreview,
   type NfeImportItemPreview,
   type NfeImportPreview,
+  type NfeImportDocumento,
 } from "@/services/api/nfeImportService";
 import { productService, type ProductDto } from "@/services/api/productService";
 import { supplierService } from "@/services/api/supplierService";
@@ -142,6 +143,7 @@ export default function NfeImportModal({
   const [numeroNota, setNumeroNota] = useState("");
   const [serie, setSerie] = useState("");
   const [modelo, setModelo] = useState(55);
+  const [documento, setDocumento] = useState<NfeImportDocumento | undefined>();
   const [manualEntry, setManualEntry] = useState(false);
   const [fornecedor, setFornecedor] = useState<NfeImportFornecedorPreview | null>(null);
   const [itens, setItens] = useState<EditableItem[]>([]);
@@ -161,6 +163,7 @@ export default function NfeImportModal({
   const aplicarPreview = (preview: NfeImportPreview, manual = false) => {
     setErrorDetails(null);
     setManualEntry(manual);
+    setDocumento(manual ? { chaveAcesso: cleanKey, modelo: 65, numeroNota: preview.numeroNota, serie: preview.serie } : preview.documento);
     setModelo(preview.modelo ?? 55);
     setNumeroNota(preview.numeroNota);
     setSerie(preview.serie);
@@ -486,6 +489,7 @@ export default function NfeImportModal({
     setConfirming(true);
     try {
       const resultado = await nfeImportService.confirmar({
+        documento,
         fornecedor: {
           cnpj: fornecedor.cnpj,
           companyName: fornecedor.companyName,
@@ -528,6 +532,7 @@ export default function NfeImportModal({
         resultado.fornecedorCriado ? "fornecedor cadastrado" : null,
       ].filter(Boolean);
       Toast.success(partes.length > 0 ? partes.join(" · ") : "Importação concluída.");
+      if (resultado.notaEntradaId) Toast.info("Nota armazenada em Notas de entrada.");
       onImported();
       onClose();
     } catch (error) {

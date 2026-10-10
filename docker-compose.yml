@@ -18,8 +18,23 @@ networks:
 
 volumes:
   horus-pdv-mssql-data:
+  horus-pdv-backups:
 
 services:
+  # Prepara só o volume de backups; SQL Server e API continuam com seus usuários não-root.
+  pdv-backup-init:
+    image: "mcr.microsoft.com/dotnet/aspnet:8.0"
+    user: "0:0"
+    restart: "no"
+    deploy:
+      restart_policy:
+        condition: none
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["chown 10001:0 /backups && chmod 2770 /backups"]
+    volumes:
+      - "horus-pdv-backups:/backups"
+    network_mode: none
+
   pdv-sqlserver:
     image: "mcr.microsoft.com/mssql/server:2022-latest"
     restart: unless-stopped
@@ -29,6 +44,7 @@ services:
       MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:?defina MSSQL_SA_PASSWORD no ambiente do stack}"
     volumes:
       - "horus-pdv-mssql-data:/var/opt/mssql"
+      - "horus-pdv-backups:/var/opt/mssql/backups"
     networks:
       - OrionNet
     healthcheck:
@@ -47,8 +63,15 @@ services:
     restart: unless-stopped
     depends_on:
       - pdv-sqlserver
+      - pdv-backup-init
+    group_add:
+      - "0"
+    volumes:
+      - "horus-pdv-backups:/var/opt/horus/backups"
     environment:
       ConnectionStrings__HorusPdv: "Server=pdv-sqlserver,1433;Database=HorusPdv;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=True"
+      DatabaseBackup__StorageDirectory: "/var/opt/horus/backups"
+      DatabaseBackup__SqlDirectory: "/var/opt/mssql/backups"
       Auth__JwtSecret: "${JWT_SECRET:?defina JWT_SECRET no ambiente do stack (string aleatória longa)}"
       Security__EncryptionKey: "${ENCRYPTION_KEY:?defina ENCRYPTION_KEY no ambiente do stack — string aleatória longa e ESTÁVEL, nunca troque depois de configurar CSC ou certificado}"
       Security__CorsOrigins: "https://pdv.quacksistemas.com.br,https://pdv.wootchat.com.br"

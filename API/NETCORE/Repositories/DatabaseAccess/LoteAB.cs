@@ -104,8 +104,8 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
 
     public async Task<List<LoteLinha>> ListarLinhasAsync(string companyId, string? produtoId = null, CancellationToken cancellationToken = default)
     {
-        await using var db = await connection.OpenConnectionAsync(cancellationToken);
-        await using var command = new SqlCommand(LinhasSql, db);
+        await using var db = await connection.OpenLeaseAsync(cancellationToken);
+        await using var command = connection.CreateCommand(LinhasSql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@ProdutoId", (object?)produtoId ?? DBNull.Value);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
@@ -152,8 +152,8 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
               AND NOT EXISTS (SELECT 1 FROM ProdutoLotes l WHERE l.CompanyId = p.CompanyId AND l.ProdutoId = p.Id);
             """;
 
-        await using var db = await connection.OpenConnectionAsync(cancellationToken);
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync(cancellationToken);
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         var value = await command.ExecuteScalarAsync(cancellationToken);
         return (value is null or DBNull) ? 0 : Convert.ToInt32(value);
@@ -170,8 +170,8 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
             WHERE p.Id = @ProdutoId AND p.CompanyId = @CompanyId;
             """;
 
-        await using var db = await connection.OpenConnectionAsync(cancellationToken);
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync(cancellationToken);
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@ProdutoId", produtoId);
         var value = await command.ExecuteScalarAsync(cancellationToken);
@@ -196,8 +196,8 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
 
         var id = $"lt-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}-{Guid.NewGuid().ToString("N")[..8]}";
 
-        await using var db = await connection.OpenConnectionAsync(cancellationToken);
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync(cancellationToken);
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@Id", id);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@ProdutoId", produtoId);
@@ -269,8 +269,8 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
              WHERE Id = @ProdutoId AND CompanyId = @CompanyId;
             """;
 
-        await using var db = await connection.OpenConnectionAsync(cancellationToken);
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync(cancellationToken);
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@ProdutoId", produtoId);
         command.Parameters.AddWithValue("@DataValidade", comSaldo.Min(linha => linha.DataValidade).Date);
@@ -286,8 +286,8 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
             ORDER BY Ordem, Nome;
             """;
 
-        await using var db = await connection.OpenConnectionAsync(cancellationToken);
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync(cancellationToken);
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
 
@@ -317,8 +317,8 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
              WHERE Id = @Id AND CompanyId = @CompanyId;
             """;
 
-        await using var db = await connection.OpenConnectionAsync(cancellationToken);
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync(cancellationToken);
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Id", categoriaId);
         command.Parameters.AddWithValue("@Prazo", (object?)prazoPadraoDias ?? DBNull.Value);
@@ -335,8 +335,8 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
     {
         const string sql = "SELECT Modo FROM LoteConfig WHERE CompanyId = @CompanyId;";
 
-        await using var db = await connection.OpenConnectionAsync(cancellationToken);
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync(cancellationToken);
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         var value = await command.ExecuteScalarAsync(cancellationToken);
         var modo = (value is null or DBNull) ? null : Convert.ToString(value)?.Trim().ToLowerInvariant();
@@ -351,8 +351,8 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
                 INSERT INTO LoteConfig (CompanyId, Modo) VALUES (@CompanyId, @Modo);
             """;
 
-        await using var db = await connection.OpenConnectionAsync(cancellationToken);
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync(cancellationToken);
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Modo", modo);
         await command.ExecuteNonQueryAsync(cancellationToken);
@@ -382,7 +382,7 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
             if (agrupados.Count == 0) return;
 
             var afetados = new List<string>();
-            await using (var db = await connection.OpenConnectionAsync(cancellationToken))
+            await using (var db = await connection.OpenLeaseAsync(cancellationToken))
             await using (var transaction = (SqlTransaction)await db.BeginTransactionAsync(cancellationToken))
             {
                 try
@@ -430,7 +430,7 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
             if (quantidade <= 0 || await ObterModoAsync(companyId, cancellationToken) == ModoDesligado) return;
 
             var consumiu = false;
-            await using (var db = await connection.OpenConnectionAsync(cancellationToken))
+            await using (var db = await connection.OpenLeaseAsync(cancellationToken))
             await using (var transaction = (SqlTransaction)await db.BeginTransactionAsync(cancellationToken))
             {
                 try
@@ -467,13 +467,13 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
         try
         {
             var afetados = new List<string>();
-            await using (var db = await connection.OpenConnectionAsync(cancellationToken))
+            await using (var db = await connection.OpenLeaseAsync(cancellationToken))
             await using (var transaction = (SqlTransaction)await db.BeginTransactionAsync(cancellationToken))
             {
                 try
                 {
                     var consumos = new List<(string Id, string ProdutoId, string? LoteId, decimal Quantidade)>();
-                    await using (var select = new SqlCommand(
+                    await using (var select = connection.CreateCommand(
                         """
                         SELECT Id, ProdutoId, LoteId, Quantidade
                         FROM LoteConsumos WITH (UPDLOCK, ROWLOCK)
@@ -500,7 +500,7 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
                     {
                         if (consumo.LoteId is not null)
                         {
-                            await using var devolve = new SqlCommand(
+                            await using var devolve = connection.CreateCommand(
                                 "UPDATE ProdutoLotes SET QtdAtual = ISNULL(QtdAtual, 0) + @Quantidade WHERE Id = @LoteId AND CompanyId = @CompanyId;",
                                 db,
                                 transaction);
@@ -511,7 +511,7 @@ public class LoteAB(Connection connection, ILogger<LoteAB> logger)
                             afetados.Add(consumo.ProdutoId);
                         }
 
-                        await using var marca = new SqlCommand(
+                        await using var marca = connection.CreateCommand(
                             "UPDATE LoteConsumos SET Estornado = 1 WHERE Id = @Id;",
                             db,
                             transaction);

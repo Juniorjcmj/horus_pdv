@@ -15,7 +15,7 @@ namespace HORUSPDV_API.Controllers.Produtos;
 [ApiController]
 [Route("api/[controller]")]
 [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
-public class NfeImportController(NfeImportService nfeImportService) : ControllerBase
+public class NfeImportController(NfeImportService nfeImportService, NotaEntradaArquivoService arquivoService) : ControllerBase
 {
     [HttpPost("preview")]
     [ProducesResponseType(typeof(ApiResponse<NfeImportPreviewModel>), StatusCodes.Status200OK)]
@@ -88,7 +88,7 @@ public class NfeImportController(NfeImportService nfeImportService) : Controller
 
         try
         {
-            var resultado = await nfeImportService.ConfirmarAsync(currentUser.CompanyId, request);
+            var resultado = await nfeImportService.ConfirmarAsync(currentUser.CompanyId, request, currentUser.Id, currentUser.Name);
             return Ok(new ApiResponse<NfeImportResultModel>
             {
                 Success = true,
@@ -100,6 +100,34 @@ public class NfeImportController(NfeImportService nfeImportService) : Controller
         {
             return BadRequest(new ApiResponse<NfeImportResultModel> { Success = false, Message = ex.Message });
         }
+    }
+
+    [HttpGet("notas-entrada")]
+    public async Task<IActionResult> ListarNotas([FromQuery] string? busca, [FromQuery] int pagina = 1, [FromQuery] int tamanhoPagina = 20)
+    {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        return Ok(new ApiResponse<NotaEntradaPagina> { Success = true, Data = await arquivoService.ListarAsync(user.CompanyId, busca, pagina, tamanhoPagina) });
+    }
+
+    [HttpGet("notas-entrada/{id}")]
+    public async Task<IActionResult> ObterNota(string id)
+    {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var nota = await arquivoService.ObterAsync(user.CompanyId, id);
+        return nota is null ? NotFound() : Ok(new ApiResponse<NotaEntradaDetalhe> { Success = true, Data = nota });
+    }
+
+    [HttpGet("notas-entrada/{id}/xml")]
+    public async Task<IActionResult> DownloadXml(string id)
+    {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var xml = await arquivoService.ObterXmlAsync(user.CompanyId, id);
+        if (xml is null) return NotFound(new { message = "XML não disponível para esta entrada." });
+        Response.Headers.CacheControl = "no-store";
+        return File(xml, "application/xml", $"nota-entrada-{id}.xml");
     }
 
     private AuthenticatedUser? GetCurrentUser()

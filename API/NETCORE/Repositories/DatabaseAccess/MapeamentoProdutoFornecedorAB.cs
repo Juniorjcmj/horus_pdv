@@ -36,8 +36,8 @@ public class MapeamentoProdutoFornecedorAB(Connection connection)
                   )
             ORDER BY UpdatedAt DESC;";
 
-        await using var conn = await connection.OpenConnectionAsync(cancellationToken);
-        await using var cmd = new SqlCommand(sql, conn);
+        await using var conn = await connection.OpenLeaseAsync(cancellationToken);
+        await using var cmd = connection.CreateCommand(sql, conn);
         cmd.Parameters.AddWithValue("@CompanyId", companyId);
         cmd.Parameters.AddWithValue("@FornecedorCnpj", cnpjLimpo);
         cmd.Parameters.AddWithValue("@CodigoProdutoFornecedor", codigoProdutoFornecedor.Trim());
@@ -83,8 +83,8 @@ public class MapeamentoProdutoFornecedorAB(Connection connection)
                 INSERT (Id, CompanyId, FornecedorCnpj, CodigoProdutoFornecedor, GtinFornecedor, DescricaoFornecedor, ProdutoId, CreatedAt, UpdatedAt)
                 VALUES (@Id, @CompanyId, @FornecedorCnpj, @CodigoProdutoFornecedor, @GtinFornecedor, @DescricaoFornecedor, @ProdutoId, SYSUTCDATETIME(), SYSUTCDATETIME());";
 
-        await using var conn = await connection.OpenConnectionAsync(cancellationToken);
-        await using var cmd = new SqlCommand(sql, conn);
+        await using var conn = await connection.OpenLeaseAsync(cancellationToken);
+        await using var cmd = connection.CreateCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Id", $"map-{Guid.NewGuid():N}");
         cmd.Parameters.AddWithValue("@CompanyId", companyId);
         cmd.Parameters.AddWithValue("@FornecedorCnpj", cnpjLimpo);

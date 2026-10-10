@@ -42,7 +42,7 @@ test("chave NFC-e abre entrada, preserva fornecedor e envia itens revisados sem 
   await page.getByRole("button", { name: /Confirmar entrada/ }).click();
   await expect.poll(() => writes.length).toBe(1);
   expect(queries).toBe(0);
-  expect(writes[0]).toMatchObject({ fornecedor: { cnpj: supplier.cnpj, address: supplier.address, cep: supplier.cep }, itens: [{ quantidade: "4", precoCusto: "7,45", precoVenda: "10,00", productName: "Sal grosso", gtin: "SEM GTIN" }] });
+  expect(writes[0]).toMatchObject({ documento: { chaveAcesso: key, modelo: 65, numeroNota: "10489", serie: "116" }, fornecedor: { cnpj: supplier.cnpj, address: supplier.address, cep: supplier.cep }, itens: [{ quantidade: "4", precoCusto: "7,45", precoVenda: "10,00", productName: "Sal grosso", gtin: "SEM GTIN" }] });
 });
 
 test("cupom vincula produto existente e conserva preço de venda", async ({ page }) => {

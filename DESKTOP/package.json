@@ -1,7 +1,7 @@
 {
   "name": "quack-pdv-desktop",
   "productName": "Quack PDV",
-  "version": "1.3.3",
+  "version": "1.3.7",
   "description": "Casca desktop (Electron) do Quack PDV",
   "author": "Quack Sistemas",
   "private": true,
@@ -34,8 +34,14 @@
       "build/icon.png"
     ],
     "extraResources": [
-      { "from": "gateway-bin", "to": "gateway" },
-      { "from": "frontend-bin", "to": "frontend" }
+      {
+        "from": "gateway-bin",
+        "to": "gateway"
+      },
+      {
+        "from": "frontend-bin",
+        "to": "frontend"
+      }
     ],
     "win": {
       "target": "nsis",

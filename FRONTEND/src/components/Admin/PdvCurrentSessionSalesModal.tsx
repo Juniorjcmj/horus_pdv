@@ -12,9 +12,6 @@ import {
   ShoppingBag,
   Clock,
   ArrowRight,
-  ShieldCheck,
-  AlertOctagon,
-  RotateCcw,
   DollarSign,
   Receipt,
   User,
@@ -23,8 +20,6 @@ import {
   salesHistoryService,
   type SaleHistoryDto,
 } from "@/services/api/salesHistoryService";
-import { FISCAL_STATUS } from "@/services/api/fiscalService";
-import { formatNumeroNf } from "@/utils/danfePrint";
 import { getPendingLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
 import {
   PAYMENT_GROUP_LABEL,
@@ -58,12 +53,6 @@ type GroupedSale = {
   itemsCount: number;
   cancelled: boolean;
   payments: SalePayment[];
-  fiscalDocId?: string | null;
-  fiscalModelo?: number | null;
-  fiscalNumeroNf?: number | null;
-  fiscalSerie?: number | null;
-  fiscalStatus?: number | null;
-  fiscalChaveAcesso?: string | null;
 };
 
 const PAYMENT_FILTER_LABEL: Record<PaymentFilter, string> = {
@@ -186,25 +175,10 @@ export default function PdvCurrentSessionSalesModal({
           itemsCount: 1,
           cancelled: isCancelledStatus(row.status),
           payments: buildPayments(row.paymentBreakdown, paymentType, totalNum),
-          fiscalDocId: row.fiscalDocId,
-          fiscalModelo: row.fiscalModelo,
-          fiscalNumeroNf: row.fiscalNumeroNf,
-          fiscalSerie: row.fiscalSerie,
-          fiscalStatus: row.fiscalStatus,
-          fiscalChaveAcesso: row.fiscalChaveAcesso,
         });
       } else {
         const existing = map.get(row.saleNumber)!;
         existing.itemsCount += 1;
-        // Se a linha tiver dados fiscais atualizados, preenche
-        if (!existing.fiscalDocId && row.fiscalDocId) {
-          existing.fiscalDocId = row.fiscalDocId;
-          existing.fiscalModelo = row.fiscalModelo;
-          existing.fiscalNumeroNf = row.fiscalNumeroNf;
-          existing.fiscalSerie = row.fiscalSerie;
-          existing.fiscalStatus = row.fiscalStatus;
-          existing.fiscalChaveAcesso = row.fiscalChaveAcesso;
-        }
       }
     }
 
@@ -227,9 +201,7 @@ export default function PdvCurrentSessionSalesModal({
         sale.saleNumber.toLowerCase().includes(term) ||
         sale.customerName.toLowerCase().includes(term) ||
         sale.customerCpf.toLowerCase().includes(term) ||
-        sale.paymentType.toLowerCase().includes(term) ||
-        (sale.fiscalNumeroNf && String(sale.fiscalNumeroNf).includes(term)) ||
-        (sale.fiscalChaveAcesso && sale.fiscalChaveAcesso.includes(term));
+        sale.paymentType.toLowerCase().includes(term);
 
       const matchPayment =
         paymentFilter === "all" || sale.payments.some((p) => p.group === paymentFilter);
@@ -243,8 +215,7 @@ export default function PdvCurrentSessionSalesModal({
     const valid = filteredSales.filter((sale) => !sale.cancelled);
     const totalVendas = valid.length;
     const totalValor = valid.reduce((acc, sale) => acc + amountInFilter(sale), 0);
-    const totalAutorizadas = valid.filter((sale) => sale.fiscalStatus === FISCAL_STATUS.Autorizado).length;
-    return { totalVendas, totalValor, totalAutorizadas };
+    return { totalVendas, totalValor };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredSales, paymentFilter]);
 
@@ -252,7 +223,7 @@ export default function PdvCurrentSessionSalesModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-xs animate-in fade-in duration-150 sm:p-4">
-      <div className="relative flex max-h-[92vh] w-full max-w-4xl flex-col rounded-2xl border border-border-primary bg-bg-primary shadow-2xl text-text-primary overflow-hidden">
+      <div role="dialog" aria-modal="true" aria-labelledby="pdv-session-sales-title" className="relative flex max-h-[92vh] w-full max-w-4xl flex-col rounded-2xl border border-border-primary bg-bg-primary shadow-2xl text-text-primary overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border-primary bg-bg-secondary px-5 py-4">
           <div className="flex items-center gap-3">
@@ -261,7 +232,7 @@ export default function PdvCurrentSessionSalesModal({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-text-primary">
+                <h2 id="pdv-session-sales-title" className="text-lg font-bold text-text-primary">
                   Vendas do Caixa Atual
                 </h2>
                 <span className="rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold text-accent">
@@ -307,7 +278,7 @@ export default function PdvCurrentSessionSalesModal({
         </div>
 
         {/* Resumo Financeiro no Topo (acompanha os filtros) */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border-b border-border-primary bg-bg-secondary/50 px-5 py-3 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-border-primary bg-bg-secondary/50 px-5 py-3 text-xs">
           <div className="flex items-center gap-3 rounded-xl border border-border-primary/60 bg-bg-primary/60 p-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/15 text-accent">
               <ShoppingBag size={16} />
@@ -334,17 +305,6 @@ export default function PdvCurrentSessionSalesModal({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-border-primary/60 bg-bg-primary/60 p-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/15 text-blue-500">
-              <ShieldCheck size={16} />
-            </div>
-            <div>
-              <span className="text-[11px] text-text-secondary block">Notas Autorizadas</span>
-              <strong className="text-sm text-blue-600 dark:text-blue-400">
-                {summary.totalAutorizadas} na SEFAZ
-              </strong>
-            </div>
-          </div>
         </div>
 
         {/* Barra de Filtros e Busca */}
@@ -359,7 +319,7 @@ export default function PdvCurrentSessionSalesModal({
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por nº da venda, cliente, CPF ou nota fiscal..."
+                placeholder="Buscar por nº da venda, cliente ou CPF..."
                 className="w-full rounded-xl border border-border-primary bg-bg-primary pl-9 pr-3 py-1.5 text-xs text-text-primary focus:border-accent focus:outline-none transition shadow-xs"
               />
             </div>
@@ -416,15 +376,11 @@ export default function PdvCurrentSessionSalesModal({
                   <th className="px-3 py-2.5 text-right font-medium">
                     {paymentFilter === "all" ? "Total" : `Total • ${PAYMENT_FILTER_LABEL[paymentFilter]}`}
                   </th>
-                  <th className="px-3 py-2.5 text-center font-medium">Status Fiscal</th>
                   <th className="px-4 py-2.5 text-right font-medium">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-primary">
                 {filteredSales.map((sale) => {
-                  const isAuth = sale.fiscalStatus === FISCAL_STATUS.Autorizado;
-                  const isCanc = sale.fiscalStatus === FISCAL_STATUS.Cancelado;
-                  const isRet = sale.fiscalStatus === FISCAL_STATUS.Devolvido;
                   const inFilter = amountInFilter(sale);
                   const partial = paymentFilter !== "all" && Math.abs(inFilter - sale.totalAmountNum) > 0.005;
 
@@ -471,32 +427,6 @@ export default function PdvCurrentSessionSalesModal({
                           </span>
                         ) : null}
                       </td>
-                      <td className="px-3 py-3 text-center whitespace-nowrap">
-                        {sale.fiscalDocId || sale.fiscalNumeroNf ? (
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                              isAuth
-                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                                : isCanc
-                                ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
-                                : isRet
-                                ? "bg-purple-500/15 text-purple-600 dark:text-purple-400"
-                                : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                            }`}
-                          >
-                            {isAuth && <ShieldCheck size={11} />}
-                            {isCanc && <AlertOctagon size={11} />}
-                            {isRet && <RotateCcw size={11} />}
-                            {sale.fiscalModelo === 55 ? "NF-e" : "NFC-e"}{" "}
-                            {sale.fiscalNumeroNf ? `#${formatNumeroNf(sale.fiscalNumeroNf)}` : ""}{" "}
-                            ({isAuth ? "Autorizada" : isCanc ? "Cancelada" : isRet ? "Devolvida" : "Pendente"})
-                          </span>
-                        ) : (
-                          <span className="text-[11px] text-text-secondary italic">
-                            Sem nota
-                          </span>
-                        )}
-                      </td>
                       <td className="px-4 py-3 text-right">
                         <button
                           type="button"
@@ -521,7 +451,7 @@ export default function PdvCurrentSessionSalesModal({
         {/* Footer */}
         <div className="flex items-center justify-between border-t border-border-primary bg-bg-secondary px-5 py-3 text-xs">
           <span className="text-text-secondary">
-            Clique em qualquer venda para ver itens, pagamentos e emitir cancelamento fiscal.
+            Clique em qualquer venda para ver os itens e pagamentos.
           </span>
           <button
             type="button"

@@ -486,7 +486,10 @@ public class NfeController(
         if (currentUser is null)
             return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
 
-        var dados = await documentoFiscalAB.ObterXmlAsync(currentUser.CompanyId, id);
+        (string? Xml, string? ChaveAcesso, StatusDocumentoFiscal Status, string? XmlCancelamento)? dados;
+        try { dados = await documentoFiscalAB.ObterXmlAsync(currentUser.CompanyId, id); }
+        catch (Exception ex) when (ex is InvalidOperationException or System.Xml.XmlException)
+        { return Conflict(new ApiResponse<object> { Success = false, Message = ex.Message }); }
         if (dados is null || string.IsNullOrWhiteSpace(dados.Value.Xml))
             return NotFound(new ApiResponse<object> { Success = false, Message = "XML não disponível." });
 

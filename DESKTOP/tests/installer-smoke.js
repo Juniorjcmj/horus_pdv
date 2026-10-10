@@ -50,6 +50,33 @@ async function mockApi() {
       const headers = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS" };
       if (method === "OPTIONS") return new Response(null, { status: 204, headers });
+      const backup = { id: "11111111-2222-3333-4444-555555555555", status: "concluido",
+        fileName: "quack-pdv-completo-instalador.bak", createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(), sizeBytes: 1048576 };
+      if (url.pathname.endsWith("/Admin/Empresas/backup") && method === "POST")
+        return Response.json({ success: true, data: { ...backup, status: "gerando" } }, { status: 202, headers });
+      if (url.pathname.endsWith(`/backup/${backup.id}/arquivo`))
+        return new Response("BAK-INSTALADOR-TESTE", { headers: { ...headers, "Content-Type": "application/octet-stream",
+          "Content-Disposition": `attachment; filename="${backup.fileName}"`, "Cache-Control": "no-store" } });
+      if (url.pathname.endsWith(`/backup/${backup.id}`)) return Response.json({ success: true, data: backup }, { headers });
+      if (url.pathname.endsWith("/verificacao-fiscal")) {
+        globalThis.installerSmokeFiscalReads = (globalThis.installerSmokeFiscalReads || 0) + 1;
+        if (globalThis.installerSmokeFiscalFail) return Response.json({ success: false, message: "Conexão indisponível no teste." }, { status: 503, headers });
+        return Response.json({ success: true, data: { produtoId: "leite", produtoNome: "Leite instalador", verificadoEm: new Date().toISOString(), uf: "RJ", crt: 1, ambiente: 1,
+          fontesOnline: false, dataBase: "2026-10-10", descricaoNcm: null, descricaoClassificacao: null,
+          apontamentos: [{ nivel: "erro", campo: "NCM", mensagem: "Código ausente ou não encontrado na tabela oficial. Confira o NCM do produto." },
+            { nivel: "aviso", campo: "Fontes", mensagem: "As fontes oficiais estão indisponíveis. A conferência usa uma referência datada e pode não incluir alterações recentes." },
+            { nivel: "aviso", campo: "Revisão contábil", mensagem: "Confirme composição e uso do produto, CEST/ST, benefícios e FECP do RJ com a contabilidade." }] } }, { headers });
+      }
+      const notaEntrada = { id: "ne-teste-xml", chaveAcesso: "33261036716865000104651160000104891000214277", modelo: 65, numeroNota: "10489", serie: "116",
+        fornecedorNome: "FORNECEDOR DO TESTE", fornecedorCnpj: "36716865000104", dataEmissao: "2026-10-10T09:37:00-03:00", valorNota: 29.80,
+        valorEntrada: 29.80, quantidadeItens: 1, origem: "xml", temXml: true, criadaEm: new Date().toISOString(), usuarioNome: user.name };
+      if (url.pathname.endsWith("/NfeImport/notas-entrada/ne-teste-xml/xml"))
+        return new Response('<NFe xmlns="http://www.portalfiscal.inf.br/nfe">XML-ORIGINAL-TESTE</NFe>', { headers: { ...headers, "Content-Type": "application/xml" } });
+      if (url.pathname.endsWith("/NfeImport/notas-entrada/ne-teste-xml"))
+        return Response.json({ success: true, data: { nota: notaEntrada, entrada: { fornecedor: {}, itens: [{ numeroItem: 1, productCode: "SKU-TESTE", productName: "Sal grosso do teste", quantidade: "4", precoCusto: "7,45", unidadeComercial: "UN", numeroLote: null, dataValidade: null }] } } }, { headers });
+      if (url.pathname.endsWith("/NfeImport/notas-entrada"))
+        return Response.json({ success: true, data: { notas: [notaEntrada], total: 1, pagina: 1, tamanhoPagina: 20 } }, { headers });
       let data = [];
       if (method !== "GET") {
         const payload = typeof input.json === "function" ? await input.json() : JSON.parse(options.body);
@@ -58,8 +85,11 @@ async function mockApi() {
           ? { saleNumber: `TESTE-${globalThis.installerSmokeWrites.length}`, emitirFiscal: false, fiscalQueued: false }
           : url.pathname.endsWith("/NfeImport/confirmar") ? { produtosCriados: 1, produtosAtualizados: 0, fornecedorCriado: true }
           : { ...payload, id: "cadastro-instalador" };
-      } else if (url.pathname.endsWith("/Auth/me")) data = user;
+      } else if (url.pathname.endsWith("/Auth/me")) data = globalThis.installerSmokeUser || user;
+      else if (url.pathname.endsWith("/Admin/Empresas/metricas")) data = { total: 0, pendentes: 0, aprovadas: 0, rejeitadas: 0, bloqueadas: 0, requireApprovalForNewCompanies: true };
+      else if (url.pathname.endsWith("/Admin/Empresas")) data = { items: [], totalCount: 0, page: 1, pageSize: 15 };
       else if (url.pathname.endsWith("/Produto")) data = products;
+      else if (url.pathname.endsWith("/HistoricoVendas")) data = globalThis.installerSmokeSessionSales || [];
       else if (url.pathname.endsWith("/Empresa")) data = null;
       else if (url.pathname.endsWith("/Caixa/status")) {
         const totals = {};
@@ -162,6 +192,47 @@ async function scan(page, code) {
   await page.keyboard.press("Enter");
 }
 
+async function checkSessionSales(page) {
+  const common = { operatorName: user.name, customerCpf: "11122233344", saleDate: "10/10/2026 09:36:40",
+    productCode: milkCode, productName: "Leite instalador", quantity: 1, unitPrice: "7,45", itemTotal: "7,45",
+    fiscalModelo: 65, fiscalSerie: 1, fiscalNumeroNf: 10489, fiscalDocId: "nota-teste" };
+  const mixed = { ...common, saleNumber: "CAIXA-001", customerName: "Cliente do teste", totalAmount: "7,45",
+    paymentType: "Dinheiro + PIX", paymentBreakdown: "dinheiro=5.00;pix=2.45", status: "Concluida", fiscalStatus: 2 };
+  const rows = [mixed, { ...mixed, productCode: coffeeCode },
+    { ...common, saleNumber: "CAIXA-002", customerName: "Consumidor", totalAmount: "10,00",
+      paymentType: "PIX", paymentBreakdown: "pix=10.00", status: "Concluida", fiscalStatus: 3 },
+    { ...common, saleNumber: "CAIXA-003", customerName: "Consumidor", totalAmount: "20,00",
+      paymentType: "Dinheiro", paymentBreakdown: "dinheiro=20.00", status: "Cancelada", fiscalStatus: 6 }];
+  await application.evaluate((_electron, rows) => { globalThis.installerSmokeSessionSales = rows; }, rows);
+  await page.locator('[title="Visualizar todas as vendas deste caixa/turno (F9 ou Alt+V)"]').click();
+  const dialog = page.getByRole("dialog", { name: "Vendas do Caixa Atual", exact: true });
+  await expect(dialog.getByRole("row")).toHaveCount(4);
+  await expect(dialog.getByText("2 concluídas", { exact: true })).toBeVisible();
+  await expect(dialog.getByText(/R\$\s*17,45/, { exact: true })).toBeVisible();
+  await expect(dialog.getByText(/Status Fiscal|Notas Autorizadas|SEFAZ|NFC-e|NF-e|Sem nota|Pendente|Autorizada/)).toHaveCount(0);
+  await expect(dialog.getByRole("row").filter({ hasText: "CAIXA-003" })).toContainText("Cancelada");
+  await expect(dialog.getByRole("row").filter({ hasText: "CAIXA-001" }).getByRole("cell").nth(4)).toHaveText("2");
+  await expect(dialog.getByRole("button", { name: "Ver", exact: true })).toHaveCount(3);
+  await page.screenshot({ path: path.join(profile, "vendas-caixa.png") });
+  await dialog.getByRole("button", { name: "PIX", exact: true }).click();
+  await expect(dialog.getByRole("row")).toHaveCount(3);
+  await expect(dialog.getByText(/R\$\s*12,45/, { exact: true })).toBeVisible();
+  await dialog.getByRole("button", { name: "Dinheiro", exact: true }).click();
+  await expect(dialog.getByText("1 concluídas", { exact: true })).toBeVisible();
+  await expect(dialog.getByText(/R\$\s*5,00/, { exact: true }).first()).toBeVisible();
+  await dialog.getByRole("button", { name: "Todos", exact: true }).click();
+  const search = dialog.getByPlaceholder("Buscar por nº da venda, cliente ou CPF...");
+  for (const term of ["CAIXA-001", "Cliente do teste"]) {
+    await search.fill(term);
+    await expect(dialog.getByRole("row")).toHaveCount(2);
+  }
+  await search.fill("11122233344");
+  await expect(dialog.getByRole("row")).toHaveCount(4);
+  await dialog.getByRole("button", { name: "Fechar (Esc)", exact: true }).last().click();
+  await application.evaluate(() => { globalThis.installerSmokeSessionSales = []; });
+  console.log("OK: Vendas do Caixa Atual sem status fiscal, com totais, pagamentos, busca e canceladas preservados.");
+}
+
 async function run() {
   assert.ok(fs.existsSync(executablePath), "Gere o instalador com npm run dist antes do teste.");
   application = await launch();
@@ -198,6 +269,7 @@ async function run() {
     });
   }, user);
   await page.reload();
+  await checkSessionSales(page);
   const product = page.getByRole("textbox", { name: /^Produto:/ });
   await product.fill(milkCode);
   await expect(page.getByText("Leite instalador", { exact: true }).first()).toBeVisible();
@@ -263,6 +335,55 @@ async function run() {
   assert.equal(cupomEntry.payload.itens[0].gtin, "SEM GTIN");
   assert.equal((await getWrites()).filter(write => write.path.endsWith("/NfeImport/buscar-sefaz")).length, 0);
   console.log("OK: chave NFC-e abre entrada de cupom revisável no executável, sem consulta de NF-e.");
+  assert.equal(cupomEntry.payload.documento.chaveAcesso, "33261036716865000104651160000104891000214277");
+  assert.equal(cupomEntry.payload.documento.modelo, 65);
+  assert.equal(cupomEntry.payload.documento.xmlBase64, undefined);
+  await page.getByRole("button", { name: "Importar / Cargas" }).click();
+  await page.getByRole("button", { name: /Notas de entrada/ }).click();
+  await expect(page.getByRole("heading", { name: "Notas de entrada", exact: true })).toBeVisible();
+  await expect(page.getByText("XML armazenado", { exact: true })).toBeVisible();
+  await page.getByRole("textbox", { name: "Fornecedor, número ou chave da nota" }).fill("10489");
+  await page.getByRole("button", { name: "Buscar", exact: true }).click();
+  await page.screenshot({ path: path.join(profile, "notas-entrada.png") });
+  await page.getByRole("button", { name: "Ver NFC-e 10489 · Série 116", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Itens recebidos", exact: true })).toBeVisible();
+  await expect(page.getByText("SKU-TESTE", { exact: true })).toBeVisible();
+  await page.screenshot({ path: path.join(profile, "nota-entrada-detalhe.png") });
+  const invoiceDownload = path.join(profile, "nota-entrada-teste.xml");
+  await application.evaluate(({ session }, filename) => {
+    session.defaultSession.once("will-download", (_event, item) => {
+      item.setSavePath(filename);
+      item.once("done", (_event, state) => { globalThis.installerSmokeInvoiceDownload = state; });
+    });
+  }, invoiceDownload);
+  await page.getByRole("button", { name: "Baixar XML original", exact: true }).click();
+  await expect.poll(() => application.evaluate(() => globalThis.installerSmokeInvoiceDownload)).toBe("completed");
+  assert.equal(fs.readFileSync(invoiceDownload, "utf8"), '<NFe xmlns="http://www.portalfiscal.inf.br/nfe">XML-ORIGINAL-TESTE</NFe>');
+  await page.getByRole("button", { name: "Voltar às notas", exact: true }).click();
+  await page.getByRole("button", { name: "Voltar ao cadastro de produtos", exact: true }).click();
+  console.log("OK: histórico de entradas, itens e download do XML original funcionam no executável.");
+
+  const writesBeforeFiscal = (await getWrites()).length;
+  await page.getByRole("button", { name: "Abrir ações", exact: true }).first().click();
+  await page.getByRole("menuitem", { name: "Verificar situação fiscal", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Verificação fiscal", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "1 inconsistência encontrada", exact: true })).toBeVisible();
+  await expect(page.getByText(/usando referência local/)).toBeVisible();
+  await page.screenshot({ path: path.join(profile, "verificacao-fiscal.png") });
+  await application.evaluate(() => { globalThis.installerSmokeFiscalFail = true; });
+  await page.getByRole("button", { name: "Conferir novamente", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("Conexão indisponível no teste.");
+  await application.evaluate(() => { globalThis.installerSmokeFiscalFail = false; });
+  await page.getByRole("button", { name: "Conferir novamente", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "1 inconsistência encontrada", exact: true })).toBeVisible();
+  assert.equal((await getWrites()).length, writesBeforeFiscal);
+  await page.getByRole("button", { name: "Editar dados fiscais", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "CST IBS/CBS", exact: true })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "cClassTrib IBS/CBS", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Cancelar", exact: true }).click();
+  console.log("OK: conferência fiscal apresenta inconsistências e fonte datada, trata erro e permite editar, sem gravar alterações automaticamente.");
+
+
 
   await page.evaluate(() => localStorage.setItem("horuspdv.activePage", "cadastro-cliente"));
   await page.reload();
@@ -273,6 +394,29 @@ async function run() {
   await expect(page.getByText("Cliente cadastrado com sucesso.", { exact: true })).toBeVisible();
   assert.equal((await getWrites()).find(write => write.path.endsWith("/Cliente")).payload.document, "");
   console.log("OK 4: cadastro mínimo de produtos e clientes está no executável.");
+
+  const platformAdmin = { ...user, companyId: "empresa-principal", role: "administrador" };
+  await application.evaluate((_electron, user) => { globalThis.installerSmokeUser = user; }, platformAdmin);
+  await page.evaluate(user => {
+    localStorage.setItem("horuspdv.auth.user", JSON.stringify(user));
+    localStorage.setItem("horuspdv.activePage", "gerenciamento-geral");
+  }, platformAdmin);
+  const backupDownload = path.join(profile, "quack-pdv-completo-instalador.bak");
+  await application.evaluate(({ session }, filename) => {
+    session.defaultSession.on("will-download", (_event, item) => {
+      item.setSavePath(filename);
+      item.once("done", (_event, state) => { globalThis.installerSmokeBackupDownload = state; });
+    });
+  }, backupDownload);
+  await page.reload();
+  await page.getByRole("button", { name: "Fazer backup completo", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Baixar backup", exact: true })).toBeVisible();
+  await page.screenshot({ path: path.join(profile, "backup-banco.png") });
+  await page.getByRole("button", { name: "Baixar backup", exact: true }).click();
+  await expect.poll(() => application.evaluate(() => globalThis.installerSmokeBackupDownload), { timeout: 20_000 }).toBe("completed");
+  assert.equal(fs.readFileSync(backupDownload, "utf8"), "BAK-INSTALADOR-TESTE");
+  assert.equal(new URL(page.url()).origin, origin);
+  console.log("OK: Administrador Geral baixa backup pelo aplicativo, dentro do perfil isolado e sem sair do painel.");
 
   await application.close();
   application = await launch();

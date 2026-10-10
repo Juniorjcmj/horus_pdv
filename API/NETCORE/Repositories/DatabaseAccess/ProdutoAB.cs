@@ -37,8 +37,8 @@ public class ProdutoAB(Connection connection)
             ORDER BY p.ProductName;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         await using var reader = await command.ExecuteReaderAsync();
         var rows = new List<ProdutoAD>();
@@ -59,8 +59,8 @@ public class ProdutoAB(Connection connection)
             WHERE p.Id = @Id AND p.CompanyId = @CompanyId;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Id", id);
         await using var reader = await command.ExecuteReaderAsync();
@@ -87,11 +87,9 @@ public class ProdutoAB(Connection connection)
         // Garante que a carga seja aplicada exclusivamente na empresa solicitante
         cleanScript = cleanScript.Replace("VALUES (N'empresa-principal');", "VALUES (@TargetCompanyId);");
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(cleanScript, db)
-        {
-            CommandTimeout = 300
-        };
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(cleanScript, db);
+        command.CommandTimeout = 300;
         command.Parameters.AddWithValue("@TargetCompanyId", companyId);
         return await command.ExecuteNonQueryAsync();
     }
@@ -106,8 +104,8 @@ public class ProdutoAB(Connection connection)
             WHERE p.CompanyId = @CompanyId AND p.ProductCode = @ProductCode;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@ProductCode", productCode);
         await using var reader = await command.ExecuteReaderAsync();
@@ -129,8 +127,8 @@ public class ProdutoAB(Connection connection)
             WHERE p.CompanyId = @CompanyId AND p.Gtin = @Gtin;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Gtin", gtin.Trim());
         await using var reader = await command.ExecuteReaderAsync();
@@ -144,11 +142,12 @@ public class ProdutoAB(Connection connection)
     /// </summary>
     public async Task<ProdutoAD> EntradaEstoqueAsync(string companyId, string productId, decimal quantidadeRecebida, decimal custoUnitario)
     {
-        await using var db = await connection.OpenConnectionAsync();
-        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+        await using var db = await connection.OpenLeaseAsync();
+        await using var ownedTransaction = connection.CurrentImportTransaction is null ? (SqlTransaction)await db.BeginTransactionAsync() : null;
+        var transaction = connection.CurrentImportTransaction ?? ownedTransaction!;
         try
         {
-            await using var select = new SqlCommand(
+            await using var select = connection.CreateCommand(
                 $"""
                 SELECT {Columns}
                 FROM Produtos p WITH (UPDLOCK, ROWLOCK)
@@ -183,7 +182,7 @@ public class ProdutoAB(Connection connection)
                 ? custoUnitario * (1 + margem / 100m)
                 : current.ProductSalePrice;
 
-            await using var update = new SqlCommand(
+            await using var update = connection.CreateCommand(
                 """
                 UPDATE Produtos
                    SET ProductQnt = @ProductQnt,
@@ -205,7 +204,7 @@ public class ProdutoAB(Connection connection)
             update.Parameters.AddWithValue("@CompanyId", companyId);
             await update.ExecuteNonQueryAsync();
 
-            await transaction.CommitAsync();
+            if (ownedTransaction is not null) await ownedTransaction.CommitAsync();
 
             current.ProductQnt = nextQuantity;
             current.ProductUnitPrice = custoUnitario;
@@ -216,7 +215,7 @@ public class ProdutoAB(Connection connection)
         }
         catch
         {
-            await transaction.RollbackAsync();
+            if (ownedTransaction is not null) await ownedTransaction.RollbackAsync();
             throw;
         }
     }
@@ -311,8 +310,8 @@ public class ProdutoAB(Connection connection)
             END;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         AddParameters(command, product, supplierId);
         await command.ExecuteNonQueryAsync();
@@ -321,8 +320,8 @@ public class ProdutoAB(Connection connection)
 
     public async Task<bool> ExcluirAsync(string companyId, string id)
     {
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand("DELETE FROM Produtos WHERE Id = @Id AND CompanyId = @CompanyId;", db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand("DELETE FROM Produtos WHERE Id = @Id AND CompanyId = @CompanyId;", db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Id", id);
         return await command.ExecuteNonQueryAsync() > 0;
@@ -341,8 +340,8 @@ public class ProdutoAB(Connection connection)
             ORDER BY p.DataValidade ASC, p.ProductName ASC;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Dias", dias);
         await using var reader = await command.ExecuteReaderAsync();
@@ -369,8 +368,8 @@ public class ProdutoAB(Connection connection)
             WHERE CompanyId = @CompanyId;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         await using var reader = await command.ExecuteReaderAsync();
         if (await reader.ReadAsync())
@@ -397,8 +396,8 @@ public class ProdutoAB(Connection connection)
              WHERE Id = @Id AND CompanyId = @CompanyId;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Id", produtoId);
         command.Parameters.AddWithValue("@DataValidade", (object?)dataValidade?.Date ?? DBNull.Value);
@@ -412,7 +411,7 @@ public class ProdutoAB(Connection connection)
             .Select(group => new { ProductCode = group.Key, Quantity = group.Sum(item => item.Quantity) })
             .ToList();
 
-        await using var db = await connection.OpenConnectionAsync();
+        await using var db = await connection.OpenLeaseAsync();
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
 
         try
@@ -425,7 +424,7 @@ public class ProdutoAB(Connection connection)
                     throw new InvalidOperationException("Quantidade da venda deve ser maior que zero.");
                 }
 
-                await using var select = new SqlCommand(
+                await using var select = connection.CreateCommand(
                     """
                     SELECT Id, ProductName, ProductQnt, ProductUnitPrice
                     FROM Produtos WITH (UPDLOCK, ROWLOCK)
@@ -454,7 +453,7 @@ public class ProdutoAB(Connection connection)
                 }
 
                 var nextStock = currentStock - item.Quantity;
-                await using var update = new SqlCommand(
+                await using var update = connection.CreateCommand(
                     """
                     UPDATE Produtos
                        SET ProductQnt = @ProductQnt,
@@ -489,8 +488,8 @@ public class ProdutoAB(Connection connection)
             WHERE CompanyId = @CompanyId AND (FantasyName = @Name OR CompanyName = @Name);
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Name", supplierName);
         var result = await command.ExecuteScalarAsync();
@@ -658,11 +657,11 @@ public class ProdutoAB(Connection connection)
     /// </summary>
     public async Task<bool> AjustarEstoqueAsync(string companyId, string productId, string tipo, decimal quantidade)
     {
-        await using var db = await connection.OpenConnectionAsync();
+        await using var db = await connection.OpenLeaseAsync();
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
         try
         {
-            await using var select = new SqlCommand(
+            await using var select = connection.CreateCommand(
                 """
                 SELECT ProductQnt, ProductUnitPrice
                 FROM Produtos WITH (UPDLOCK, ROWLOCK)
@@ -692,7 +691,7 @@ public class ProdutoAB(Connection connection)
                 throw new InvalidOperationException(
                     $"Estoque insuficiente. Disponível: {currentQty}, solicitado: {quantidade}.");
 
-            await using var update = new SqlCommand(
+            await using var update = connection.CreateCommand(
                 """
                 UPDATE Produtos
                    SET ProductQnt = @ProductQnt,

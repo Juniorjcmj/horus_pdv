@@ -44,6 +44,7 @@ public class NfeImportItemPreview
 
 public class NfeImportPreviewModel
 {
+    public HORUSPDV_API.Models.Requests.NfeImportDocumentoInput? Documento { get; set; }
     public int Modelo { get; set; } = 55;
     public string NumeroNota { get; set; } = string.Empty;
     public string Serie { get; set; } = string.Empty;
@@ -53,6 +54,7 @@ public class NfeImportPreviewModel
 
 public class NfeImportResultModel
 {
+    public string NotaEntradaId { get; set; } = string.Empty;
     public bool FornecedorCriado { get; set; }
     public int ProdutosCriados { get; set; }
     public int ProdutosAtualizados { get; set; }

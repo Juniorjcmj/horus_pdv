@@ -20,8 +20,8 @@ public class FornecedorAB(Connection connection)
             ORDER BY FantasyName;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         await using var reader = await command.ExecuteReaderAsync();
         var rows = new List<FornecedorAD>();
@@ -55,8 +55,8 @@ public class FornecedorAB(Connection connection)
             WHERE Id = @Id AND CompanyId = @CompanyId;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Id", id);
         await using var reader = await command.ExecuteReaderAsync();
@@ -96,8 +96,8 @@ public class FornecedorAB(Connection connection)
             END;
             """;
 
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand(sql, db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         AddParameters(command, supplier);
         await command.ExecuteNonQueryAsync();
@@ -106,8 +106,8 @@ public class FornecedorAB(Connection connection)
 
     public async Task<bool> ExcluirAsync(string companyId, string id)
     {
-        await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand("DELETE FROM Fornecedores WHERE Id = @Id AND CompanyId = @CompanyId;", db);
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand("DELETE FROM Fornecedores WHERE Id = @Id AND CompanyId = @CompanyId;", db);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@Id", id);
         return await command.ExecuteNonQueryAsync() > 0;

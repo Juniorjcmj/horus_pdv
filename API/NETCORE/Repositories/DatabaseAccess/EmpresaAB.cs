@@ -32,18 +32,24 @@ public class EmpresaAB(Connection connection, HorusSecretProtector secretProtect
     public Task<EmpresaAD?> ObterPrincipalAsync()
         => ObterAsync("empresa-principal");
 
-    public async Task<EmpresaAD?> ObterAsync(string companyId)
+    public Task<EmpresaAD?> ObterAsync(string companyId) => ConsultarAsync(companyId, true);
+
+    /// <summary>Fiscal reviews must not inherit another company's tax regime or certificate configuration.</summary>
+    public Task<EmpresaAD?> ObterExataAsync(string companyId) => ConsultarAsync(companyId, false);
+
+    private async Task<EmpresaAD?> ConsultarAsync(string companyId, bool permitirPrincipal)
     {
         var sql = $"""
             SELECT TOP 1 {Columns}
             FROM Empresas
-            WHERE Id = @Id OR Id = 'empresa-principal'
+            WHERE Id = @Id OR (@PermitirPrincipal = 1 AND Id = 'empresa-principal')
             ORDER BY CASE WHEN Id = @Id THEN 0 ELSE 1 END;
             """;
 
         await using var db = await connection.OpenConnectionAsync();
         await using var command = new SqlCommand(sql, db);
         command.Parameters.AddWithValue("@Id", companyId);
+        command.Parameters.AddWithValue("@PermitirPrincipal", permitirPrincipal);
         await using var reader = await command.ExecuteReaderAsync();
         return await reader.ReadAsync() ? Map(reader) : null;
     }

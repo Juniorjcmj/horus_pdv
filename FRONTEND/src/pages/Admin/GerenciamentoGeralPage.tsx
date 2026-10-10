@@ -4,6 +4,7 @@
  * Acesso exclusivo: Administradores da plataforma ('empresa-principal').
  */
 import TableScrollArea from "@/components/Admin/TableScrollArea";
+import DatabaseBackupPanel from "@/components/Admin/DatabaseBackupPanel";
 import { useEffect, useState, useCallback } from "react";
 import {
   AlertTriangle,
@@ -438,6 +439,8 @@ export default function GerenciamentoGeralPage() {
           </div>
         }
       />
+
+      <DatabaseBackupPanel />
 
       {/* Feedback Alert */}
       {feedback && (

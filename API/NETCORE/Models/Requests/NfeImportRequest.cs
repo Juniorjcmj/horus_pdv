@@ -71,6 +71,16 @@ public class NfeImportItemInput
 
 public class NfeImportConfirmRequest
 {
+    public NfeImportDocumentoInput? Documento { get; set; }
     public NfeImportFornecedorInput Fornecedor { get; set; } = new();
     public List<NfeImportItemInput> Itens { get; set; } = [];
+}
+
+public class NfeImportDocumentoInput
+{
+    public string? XmlBase64 { get; set; }
+    public string? ChaveAcesso { get; set; }
+    public int Modelo { get; set; } = 55;
+    public string NumeroNota { get; set; } = string.Empty;
+    public string Serie { get; set; } = string.Empty;
 }

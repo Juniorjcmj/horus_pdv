@@ -26,3 +26,5 @@ dotnet run --project API/tests/ProductRegistrationChecks -- `
 O projeto referencia a API compilada e não restaura nem atualiza seus pacotes fiscais.
 Os scripts SQL de inicialização são aplicados somente ao container descartável. Ao terminar,
 remova esse container e o arquivo temporário da senha.
+
+Também cobre a conferência fiscal HTTP com regime por empresa, ausência de usuário, leitura entre empresas recusada, ausência de certificado/CSC na resposta e exportação de XMLs legados completos sem alterar o banco. O host simula o usuário; a declaração de perfis do endpoint é inspecionada separadamente.

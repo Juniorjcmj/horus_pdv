@@ -143,9 +143,7 @@ public sealed class ZeusFiscalProvider(
                     Protocolo = protNfe?.infProt?.nProt.ToString(),
                     DhAutorizacao = protNfe?.infProt?.dhRecbto,
                     XmlAssinado = xmlAssinado,
-                    // Não há um "nfeProc" pronto na API desta versão da lib — guardamos a
-                    // resposta completa da SEFAZ (RetornoCompletoStr) como registro de auditoria.
-                    XmlProtocolado = retorno.RetornoCompletoStr
+                    XmlProtocolado = FiscalXmlArchive.Complete(xmlAssinado, retorno.RetornoCompletoStr, true)
                 };
             }
 
@@ -176,6 +174,11 @@ public sealed class ZeusFiscalProvider(
                 XmlAssinado = xmlAssinado,
                 Retentavel = EhRejeicaoTransitoria(cStat)
             };
+        }
+        catch (FiscalConfigurationException ex)
+        {
+            return new ResultadoFiscal { Status = StatusDocumentoFiscal.Rejeitado, CodigoStatus = 0,
+                MotivoStatus = ex.Message, Retentavel = false };
         }
         catch (NFe.Utils.Excecoes.ValidacaoSchemaException ex)
         {
@@ -350,7 +353,7 @@ public sealed class ZeusFiscalProvider(
                     Protocolo = protNfe?.infProt?.nProt.ToString(),
                     DhAutorizacao = protNfe?.infProt?.dhRecbto,
                     XmlAssinado = xmlAssinado,
-                    XmlProtocolado = retorno.RetornoCompletoStr,
+                    XmlProtocolado = FiscalXmlArchive.Complete(xmlAssinado, retorno.RetornoCompletoStr, true),
                     QrCodeUrl = nfe.infNFeSupl?.qrCode
                 });
             }
@@ -373,7 +376,7 @@ public sealed class ZeusFiscalProvider(
                         Protocolo = protCons.infProt.nProt.ToString(),
                         DhAutorizacao = protCons.infProt.dhRecbto,
                         XmlAssinado = xmlAssinado,
-                        XmlProtocolado = consSit.RetornoCompletoStr,
+                        XmlProtocolado = FiscalXmlArchive.Complete(xmlAssinado, consSit.RetornoCompletoStr, true),
                         QrCodeUrl = nfe.infNFeSupl?.qrCode
                     });
                 }
@@ -620,7 +623,7 @@ public sealed class ZeusFiscalProvider(
                     Protocolo = protNfe?.infProt?.nProt.ToString(),
                     DhAutorizacao = protNfe?.infProt?.dhRecbto,
                     XmlAssinado = xmlAssinado,
-                    XmlProtocolado = retorno.RetornoCompletoStr
+                    XmlProtocolado = FiscalXmlArchive.Complete(xmlAssinado, retorno.RetornoCompletoStr, true)
                 };
             }
 
@@ -650,6 +653,11 @@ public sealed class ZeusFiscalProvider(
                 XmlAssinado = xmlAssinado,
                 Retentavel = EhRejeicaoTransitoria(cStat)
             };
+        }
+        catch (FiscalConfigurationException ex)
+        {
+            return new ResultadoFiscal { Status = StatusDocumentoFiscal.Rejeitado, CodigoStatus = 0,
+                MotivoStatus = ex.Message, Retentavel = false };
         }
         catch (NFe.Utils.Excecoes.ValidacaoSchemaException ex)
         {
@@ -798,17 +806,18 @@ public sealed class ZeusFiscalProvider(
             fone = ParseFoneNumerico(d.Fone)
         };
 
-        var detalhes = request.Itens.Select(item => MontarItem(item, request.Finalidade, request.TipoOperacao)).ToList();
+        var detalhes = request.Itens.Select(item => MontarItem(item, request.Finalidade, request.TipoOperacao, e.Crt, 55, ide.dhEmi)).ToList();
 
         if (e.Ambiente == 2 && detalhes.Count > 0)
             detalhes[0].prod.xProd = "NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL";
 
         var total = new total
         {
+            IBSCBSTot = FiscalTaxRules.Totals(detalhes),
             ICMSTot = new ICMSTot
             {
-                vBC = 0,
-                vICMS = 0,
+                vBC = FiscalTaxRules.IcmsBase(detalhes),
+                vICMS = FiscalTaxRules.IcmsTotal(detalhes),
                 vICMSDeson = 0,
                 vFCP = 0,
                 vBCST = 0,
@@ -1056,7 +1065,7 @@ public sealed class ZeusFiscalProvider(
                 dest.xNome = "NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL";
         }
 
-        var detalhes = request.Itens.Select(MontarItem).ToList();
+        var detalhes = request.Itens.Select(item => MontarItem(item, 1, 1, e.Crt, 65, ide.dhEmi)).ToList();
 
         // Em homologação a SEFAZ exige que o xProd do 1º item seja esta literal (rejeição 373)
         if (e.Ambiente == 2 && detalhes.Count > 0)
@@ -1064,10 +1073,11 @@ public sealed class ZeusFiscalProvider(
 
         var total = new total
         {
+            IBSCBSTot = FiscalTaxRules.Totals(detalhes),
             ICMSTot = new ICMSTot
             {
-                vBC = 0,
-                vICMS = 0,
+                vBC = FiscalTaxRules.IcmsBase(detalhes),
+                vICMS = FiscalTaxRules.IcmsTotal(detalhes),
                 vICMSDeson = 0,
                 vFCP = 0,
                 vBCST = 0,
@@ -1144,13 +1154,17 @@ public sealed class ZeusFiscalProvider(
                 return 2202;
             }
         }
-        return int.TryParse(cfopOriginal, NumberStyles.Integer, Inv, out var parsed) ? parsed : 5102;
+        if (cfopOriginal?.Length != 4 || !cfopOriginal.All(char.IsAsciiDigit) ||
+            !int.TryParse(cfopOriginal, NumberStyles.Integer, Inv, out var parsed))
+            throw new FiscalConfigurationException("CFOP inválido: informe quatro dígitos conforme a operação.");
+        return parsed;
     }
 
-    private static det MontarItem(ItemFiscal item) => MontarItem(item, 1, 1);
-
-    private static det MontarItem(ItemFiscal item, byte finalidade, byte tipoOperacao)
+    private static det MontarItem(ItemFiscal item, byte finalidade, byte tipoOperacao, byte crt, int modelo, DateTimeOffset dataEmissao)
     {
+        if (crt is not (1 or 2 or 3 or 4)) throw new FiscalConfigurationException("Regime tributário da empresa não reconhecido.");
+        if (item.AliquotaIcms is < 0 or > 100 || item.Desconto < 0 || item.Desconto > item.ValorTotal)
+            throw new FiscalConfigurationException($"{item.Descricao}: alíquota ICMS ou desconto inválido.");
         var prod = new prod
         {
             cProd = item.CodigoProduto,
@@ -1176,7 +1190,7 @@ public sealed class ZeusFiscalProvider(
             ICMS = new ICMS
             {
                 // CRT 1/4 usa CSOSN; CRT 3 usa CST. O builder escolhe pelo cadastro.
-                TipoICMS = item.Csosn is not null
+                TipoICMS = crt is 1 or 4
                     ? MontarIcmsSn(item)
                     : MontarIcmsNormal(item)
             },
@@ -1190,25 +1204,8 @@ public sealed class ZeusFiscalProvider(
             }
         };
 
-        // NT 2025.002 — grupo UB. Só preenche quando o cadastro traz a classificação
-        // completa (CST + cClassTrib); sem os dois, as regras de validação de IBS/CBS
-        // não são executadas e o grupo fica de fora do XML.
-        var cstIbsCbs = TryParseCstIbsCbs(item.CstIbsCbs);
-        if (!string.IsNullOrWhiteSpace(item.CClassTrib) && cstIbsCbs is not null)
-        {
-            imposto.IBSCBS = new IBSCBS
-            {
-                CST = cstIbsCbs.Value,
-                cClassTrib = item.CClassTrib,
-                gIBSCBS = new gIBSCBS
-                {
-                    vBC = item.ValorTotal,
-                    gIBSUF = new gIBSUF { pIBSUF = 0.0000m, vIBSUF = 0 },
-                    gIBSMun = new gIBSMun { pIBSMun = 0.1000m, vIBSMun = 0 },
-                    gCBS = new gCBS { pCBS = 0.9000m, vCBS = 0 }
-                }
-            };
-        }
+        imposto.IBSCBS = FiscalTaxRules.Build(item, crt, modelo, dataEmissao,
+            (imposto.ICMS.TipoICMS as ICMS00)?.vICMS ?? 0m);
 
         return new det
         {
@@ -1230,11 +1227,7 @@ public sealed class ZeusFiscalProvider(
             orig = (OrigemMercadoria)item.Origem,
             CSOSN = Csosnicms.Csosn500
         },
-        _ => new ICMSSN102
-        {
-            orig = (OrigemMercadoria)item.Origem,
-            CSOSN = Csosnicms.Csosn102
-        }
+        _ => throw new FiscalConfigurationException($"{item.Descricao}: CSOSN ausente ou não suportado. Confira os dados fiscais antes de emitir.")
     };
 
     private static ICMSBasico MontarIcmsNormal(ItemFiscal item) => item.CstIcms switch
@@ -1244,20 +1237,29 @@ public sealed class ZeusFiscalProvider(
             orig = (OrigemMercadoria)item.Origem,
             CST = Csticms.Cst60
         },
-        _ => new ICMS00
+        "40" or "41" or "50" => new ICMS40
+        {
+            orig = (OrigemMercadoria)item.Origem,
+            CST = Enum.Parse<Csticms>("Cst" + item.CstIcms)
+        },
+        "00" => new ICMS00
         {
             orig = (OrigemMercadoria)item.Origem,
             CST = Csticms.Cst00,
             modBC = DeterminacaoBaseIcms.DbiValorOperacao,
-            vBC = item.ValorTotal,
+            vBC = item.ValorTotal - item.Desconto,
             pICMS = item.AliquotaIcms,
-            vICMS = Math.Round(item.ValorTotal * item.AliquotaIcms / 100m, 2)
-        }
+            vICMS = FiscalTaxRules.Money((item.ValorTotal - item.Desconto) * item.AliquotaIcms / 100m)
+        },
+        _ => throw new FiscalConfigurationException($"{item.Descricao}: CST ICMS ausente ou não suportado. Confira os dados fiscais antes de emitir.")
     };
 
     private static PISBasico MontarPis(string? cstPis)
     {
-        var cst = string.IsNullOrWhiteSpace(cstPis) ? "49" : cstPis.Trim().PadLeft(2, '0');
+        if (string.IsNullOrWhiteSpace(cstPis)) throw new FiscalConfigurationException("CST PIS não informado.");
+        var cst = cstPis.Trim().PadLeft(2, '0');
+        if (cst is not ("04" or "05" or "06" or "07" or "08" or "09" or "49" or "99"))
+            throw new FiscalConfigurationException("CST PIS exige cálculo ainda não disponível. Configure a tributação com a contabilidade.");
         var parsedCst = Enum.Parse<CSTPIS>("pis" + cst);
 
         return cst switch
@@ -1278,7 +1280,10 @@ public sealed class ZeusFiscalProvider(
 
     private static COFINSBasico MontarCofins(string? cstCofins)
     {
-        var cst = string.IsNullOrWhiteSpace(cstCofins) ? "49" : cstCofins.Trim().PadLeft(2, '0');
+        if (string.IsNullOrWhiteSpace(cstCofins)) throw new FiscalConfigurationException("CST COFINS não informado.");
+        var cst = cstCofins.Trim().PadLeft(2, '0');
+        if (cst is not ("04" or "05" or "06" or "07" or "08" or "09" or "49" or "99"))
+            throw new FiscalConfigurationException("CST COFINS exige cálculo ainda não disponível. Configure a tributação com a contabilidade.");
         var parsedCst = Enum.Parse<CSTCOFINS>("cofins" + cst);
 
         return cst switch
@@ -1359,10 +1364,12 @@ public sealed class ZeusFiscalProvider(
     }
 
     /// <summary>
-    /// CClassTrib/CstIbsCbs ainda são opcionais (Simples/MEI não obrigados até 04/01/2027) —
-    /// se o cadastro trouxer um código que não bate com o enum da NT vigente, prefere deixar
-    /// nulo a travar a emissão do item inteiro.
+    /// A presença e a validade dos códigos são conferidas por FiscalTaxRules.
+    /// A ausência de rejeição automática não comprova cumprimento da obrigação tributária.
     /// </summary>
+    internal static CSTIBSCBS ParseIbsCbs(string value) => TryParseCstIbsCbs(value)
+        ?? throw new FiscalConfigurationException("CST IBS/CBS não reconhecido.");
+
     private static CSTIBSCBS? TryParseCstIbsCbs(string? cst)
     {
         if (string.IsNullOrWhiteSpace(cst)) return null;

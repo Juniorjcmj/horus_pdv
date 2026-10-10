@@ -15,6 +15,7 @@ import {
   Database,
   DollarSign,
   FileUp,
+  FileCheck2,
   Filter,
   Loader2,
   PackageX,
@@ -32,6 +33,8 @@ import {
 import { type ClipboardEvent, type FormEvent, type KeyboardEvent as ReactKeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import BalancaImportModal from "@/components/Admin/BalancaImportModal";
 import GondolaLabelModal from "@/components/Admin/GondolaLabelModal";
+import ProductFiscalPanel from "@/components/Admin/ProductFiscalPanel";
+import NotasEntradaPanel from "@/components/Admin/NotasEntradaPanel";
 import NfeImportModal from "@/components/Admin/NfeImportModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
@@ -1382,6 +1385,18 @@ function ProductFormDrawer({
                   placeholder="07"
                 />
               </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">CST IBS/CBS</span>
+                <input value={value.cstIbsCbs ?? ""} inputMode="numeric" maxLength={3}
+                  onChange={event => setField("cstIbsCbs", onlyDigits(event.target.value).slice(0, 3) || null)}
+                  className="input-field w-full" placeholder="Ex.: 000, 200" />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-sm text-text-secondary">cClassTrib IBS/CBS</span>
+                <input value={value.cClassTrib ?? ""} inputMode="numeric" maxLength={6}
+                  onChange={event => setField("cClassTrib", onlyDigits(event.target.value).slice(0, 6) || null)}
+                  className="input-field w-full" placeholder="Ex.: 000001" />
+              </label>
             </div>
             <p className="mt-3 text-xs text-text-secondary">
               Preencha CSOSN quando a empresa for Simples/MEI ou CST ICMS quando for Regime
@@ -1400,7 +1415,7 @@ function ProductFormDrawer({
               onClick={onSave}
               isLoading={isSaving}
               loadingLabel="Salvando..."
-              className="btn-primary"
+              className="btn-primary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {isEditMode ? "Salvar produto" : "Criar produto"}
             </LoadingButton>
@@ -1502,7 +1517,7 @@ function ProductFormDrawer({
                 type="submit"
                 isLoading={savingSupplier}
                 loadingLabel="Salvando..."
-                className="btn-primary"
+                className="btn-primary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 Salvar fornecedor
               </LoadingButton>
@@ -1524,6 +1539,8 @@ export default function ProductRegisterPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(() => new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [notasEntradaOpen, setNotasEntradaOpen] = useState(false);
+  const [fiscalProduct, setFiscalProduct] = useState<Product | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [balancaModalOpen, setBalancaModalOpen] = useState(false);
   const [isImportingMercado, setIsImportingMercado] = useState(false);
@@ -2169,6 +2186,20 @@ export default function ProductRegisterPage() {
     }
   };
 
+  if (fiscalProduct) return (
+    <PageLayout className="space-y-4 py-4 md:py-6 lg:py-8">
+      <ProductFiscalPanel product={fiscalProduct} onBack={() => setFiscalProduct(null)}
+        onEdit={() => { openEditDrawer(fiscalProduct); setFiscalProduct(null); }} />
+    </PageLayout>
+  );
+
+  if (notasEntradaOpen) return (
+    <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
+      <button className="btn-outline-secondary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50" type="button" onClick={() => setNotasEntradaOpen(false)}>Voltar ao cadastro de produtos</button>
+      <NotasEntradaPanel />
+    </PageLayout>
+  );
+
   return (
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <PageHeader
@@ -2202,6 +2233,11 @@ export default function ProductRegisterPage() {
                     Entrada & Importação
                   </div>
 
+                  <button type="button" className="flex w-full items-start gap-3 rounded-lg p-2.5 text-left transition hover:bg-accent/10"
+                    onClick={() => { setImportMenuOpen(false); setNotasEntradaOpen(true); }}>
+                    <FileUp size={18} className="mt-1 shrink-0 text-accent" />
+                    <div><div className="text-sm font-semibold text-text-primary">Notas de entrada</div><div className="text-xs text-text-secondary">Histórico, itens recebidos e XMLs armazenados</div></div>
+                  </button>
                   {/* Entrada de NF-e */}
                   <button
                     type="button"
@@ -2286,7 +2322,7 @@ export default function ProductRegisterPage() {
             <button
               type="button"
               onClick={() => handleOpenGondolaModal(selectedProductIds.size > 0)}
-              className="btn-secondary inline-flex items-center gap-2 font-medium"
+              className="btn-outline-secondary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 inline-flex items-center gap-2 font-medium"
               title="Gerar e imprimir etiquetas de gôndola/prateleira (A4 Pimaco ou Bobina Térmica)"
             >
               <Tag size={16} className="text-text-secondary" />
@@ -2736,7 +2772,7 @@ export default function ProductRegisterPage() {
               <button
                 type="button"
                 onClick={() => handleOpenGondolaModal(true)}
-                className="btn-secondary inline-flex items-center justify-center gap-2 text-xs"
+                className="btn-outline-secondary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 inline-flex items-center justify-center gap-2 text-xs"
                 title="Imprimir etiquetas de gôndola para os produtos selecionados"
               >
                 <Tag size={14} />
@@ -2985,6 +3021,12 @@ export default function ProductRegisterPage() {
                           label: "Imprimir Etiqueta",
                           icon: <Tag size={13} />,
                           onClick: () => handlePrintSingleGondolaLabel(product),
+                        },
+                        {
+                          key: "fiscal",
+                          label: "Verificar situação fiscal",
+                          icon: <FileCheck2 size={13} />,
+                          onClick: () => setFiscalProduct(product),
                         },
                         {
                           key: "edit",

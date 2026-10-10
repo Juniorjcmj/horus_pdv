@@ -7,6 +7,7 @@ using HORUSPDV_API.Middlewares;
 using HORUSPDV_API.Repositories;
 using HORUSPDV_API.Repositories.DatabaseAccess;
 using HORUSPDV_API.Services.Caixa;
+using HORUSPDV_API.Services.Admin;
 using HORUSPDV_API.Services.Categorias;
 using HORUSPDV_API.Services.Clientes;
 using HORUSPDV_API.Services.Email;
@@ -84,6 +85,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddSingleton<Connection>();
+builder.Services.AddSingleton<DatabaseBackupService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<DatabaseBackupService>());
 builder.Services.AddScoped<ProdutoAB>();
 builder.Services.AddScoped<LoteAB>();
 builder.Services.AddScoped<AutorizacaoPrecoAB>();
@@ -122,9 +125,12 @@ builder.Services.AddScoped<IProdutoService, ProdutoService>();
 builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IFornecedorService, FornecedorService>();
 builder.Services.AddScoped<NfeImportService>();
+builder.Services.AddScoped<NotaEntradaArquivoService>();
 builder.Services.AddScoped<SefazDFeDownloadService>();
 
 // Módulo fiscal (NFC-e modelo 65) — ver API/NETCORE/DataBase/README-FISCAL.md
+builder.Services.AddSingleton<FiscalReferenceTables>(services => new FiscalReferenceTables(
+    services.GetRequiredService<IWebHostEnvironment>(), services.GetRequiredService<ILogger<FiscalReferenceTables>>()));
 builder.Services.AddScoped<IFiscalProvider, ZeusFiscalProvider>();
 builder.Services.AddScoped<DocumentoFiscalAB>();
 builder.Services.AddScoped<EmitenteFiscalStore>();

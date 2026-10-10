@@ -38,7 +38,10 @@ export type NfeImportItemPreview = {
   precoVendaSugerido: string;
 };
 
+export type NfeImportDocumento = { xmlBase64?: string | null; chaveAcesso?: string | null; modelo: number; numeroNota: string; serie: string };
+
 export type NfeImportPreview = {
+  documento?: NfeImportDocumento;
   modelo?: number;
   numeroNota: string;
   serie: string;
@@ -69,6 +72,7 @@ export type NfeImportItemInput = {
 };
 
 export type NfeImportConfirmPayload = {
+  documento?: NfeImportDocumento;
   fornecedor: {
     cnpj: string;
     companyName: string;
@@ -85,6 +89,7 @@ export type NfeImportConfirmPayload = {
 };
 
 export type NfeImportResult = {
+  notaEntradaId?: string;
   fornecedorCriado: boolean;
   produtosCriados: number;
   produtosAtualizados: number;
@@ -112,7 +117,7 @@ export const nfeImportService = {
       body: JSON.stringify({ xmlBase64 }),
       timeoutMs: 30_000,
     });
-    return response.data ?? null;
+    return response.data ? { ...response.data, documento: response.data.documento ?? { xmlBase64, modelo: response.data.modelo ?? 55, numeroNota: response.data.numeroNota, serie: response.data.serie } } : null;
   },
   async previewPorChave(chaveAcesso: string) {
     // Consulta SEFAZ pode levar 10-40s (query + Ciência da Operação + retries)
@@ -127,7 +132,43 @@ export const nfeImportService = {
     const response = await apiRequest<NfeImportResult>(`${NFE_IMPORT_API_URL}/confirmar`, {
       method: "POST",
       body: JSON.stringify(payload),
+      timeoutMs: 60_000,
     });
     return response.data ?? null;
   },
+  async listarNotas(busca = "", pagina = 1) {
+    const query = new URLSearchParams({ busca, pagina: String(pagina), tamanhoPagina: "20" });
+    const response = await apiRequest<NotaEntradaPagina>(`${NFE_IMPORT_API_URL}/notas-entrada?${query}`);
+    if (!response.data) throw new Error("Não foi possível carregar as notas de entrada.");
+    return response.data;
+  },
+  async obterNota(id: string) {
+    const response = await apiRequest<NotaEntradaDetalhe>(`${NFE_IMPORT_API_URL}/notas-entrada/${encodeURIComponent(id)}`);
+    if (!response.data) throw new Error("Nota de entrada não encontrada.");
+    return response.data;
+  },
+  async baixarXml(nota: NotaEntradaResumo) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 30_000);
+    try {
+      const response = await fetch(`${NFE_IMPORT_API_URL}/notas-entrada/${encodeURIComponent(nota.id)}/xml`, { credentials: "include", signal: controller.signal });
+      if (!response.ok) throw new Error(response.status === 404 ? "XML não disponível para esta entrada." : "Não foi possível baixar o XML. Confira sua conexão e sessão.");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url; link.download = `nota-entrada-${nota.chaveAcesso || nota.id}.xml`;
+      document.body.appendChild(link); link.click(); link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } finally { window.clearTimeout(timer); }
+  },
 };
+
+
+export type NotaEntradaResumo = {
+  id: string; chaveAcesso: string | null; modelo: number; numeroNota: string; serie: string;
+  fornecedorNome: string; fornecedorCnpj: string; dataEmissao: string | null;
+  valorNota: number | null; valorEntrada: number; quantidadeItens: number; origem: string;
+  temXml: boolean; criadaEm: string; usuarioNome: string;
+};
+export type NotaEntradaPagina = { notas: NotaEntradaResumo[]; total: number; pagina: number; tamanhoPagina: number };
+export type NotaEntradaDetalhe = { nota: NotaEntradaResumo; entrada: { fornecedor: NfeImportFornecedorPreview; itens: NfeImportItemInput[] } };

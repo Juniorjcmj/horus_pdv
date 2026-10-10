@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <ApiOutput>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../NETCORE/bin/$(Configuration)/net8.0'))</ApiOutput>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="HORUSPDV-API"><HintPath>$(ApiOutput)/HORUSPDV-API.dll</HintPath></Reference>
+    <Reference Include="NFe.Classes"><HintPath>$(ApiOutput)/NFe.Classes.dll</HintPath></Reference>
+    <Reference Include="NFe.Utils"><HintPath>$(ApiOutput)/NFe.Utils.dll</HintPath></Reference>
+    <Reference Include="DFe.Classes"><HintPath>$(ApiOutput)/DFe.Classes.dll</HintPath></Reference>
+    <Reference Include="System.Security.Cryptography.Xml"><HintPath>$(ApiOutput)/System.Security.Cryptography.Xml.dll</HintPath></Reference>
+    <Content Include="$(ApiOutput)/DataBase/FiscalTables/*.json" Link="DataBase/FiscalTables/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

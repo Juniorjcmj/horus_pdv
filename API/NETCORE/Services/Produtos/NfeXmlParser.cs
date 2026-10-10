@@ -43,7 +43,10 @@ public sealed record NfeParsedDocument(
     string NumeroNota,
     string Serie,
     NfeParsedEmitente Emitente,
-    List<NfeParsedItem> Itens);
+    List<NfeParsedItem> Itens,
+    string? ChaveAcesso = null,
+    string? DataEmissao = null,
+    decimal? ValorNota = null);
 
 public static class NfeXmlParser
 {
@@ -118,7 +121,15 @@ public static class NfeXmlParser
             throw new InvalidOperationException("XML não tem nenhum item (<det>) para importar.");
         }
 
-        return new NfeParsedDocument(modelo, Value(ide, "nNF"), Value(ide, "serie"), emitente, itens);
+        var id = infNFe.Attribute("Id")?.Value;
+        var chave = id?.StartsWith("NFe", StringComparison.Ordinal) == true ? id[3..] : null;
+        var protocolo = doc.Descendants(Ns + "chNFe").FirstOrDefault()?.Value.Trim();
+        if (!string.IsNullOrWhiteSpace(chave) && !string.IsNullOrWhiteSpace(protocolo) && chave != protocolo)
+            throw new InvalidOperationException("Chaves divergentes no XML e no protocolo da nota.");
+        var total = Value(infNFe.Element(Ns + "total")?.Element(Ns + "ICMSTot"), "vNF");
+        return new NfeParsedDocument(modelo, Value(ide, "nNF"), Value(ide, "serie"), emitente, itens,
+            chave ?? EmptyToNull(protocolo ?? ""), EmptyToNull(Value(ide, "dhEmi")) ?? EmptyToNull(Value(ide, "dEmi")),
+            decimal.TryParse(total, NumberStyles.Number, CultureInfo.InvariantCulture, out var valor) ? valor : null);
     }
 
     private static bool IsGtinValido(string value) =>

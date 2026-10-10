@@ -91,7 +91,17 @@ export type VencimentoResumo = {
   semDataInformada: number;
 };
 
+export type ProductFiscalReport = {
+  produtoId: string; produtoNome: string; verificadoEm: string; uf: string; crt: number; ambiente: number;
+  fontesOnline: boolean; dataBase: string; descricaoNcm: string | null; descricaoClassificacao: string | null;
+  apontamentos: { nivel: "erro" | "aviso" | "informacao"; campo: string; mensagem: string }[];
+};
+
 export const productService = {
+  async verifyFiscal(id: string) {
+    const response = await apiRequest<ProductFiscalReport>(`${PRODUTO_API_URL}/${encodeURIComponent(id)}/verificacao-fiscal`, { timeoutMs: 35000 });
+    return response.data;
+  },
   async list() {
     const response = await apiRequest<ProductDto[]>(PRODUTO_API_URL);
     return response.data ?? [];

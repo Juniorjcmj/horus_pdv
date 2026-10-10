@@ -138,8 +138,80 @@ já que o tráfego externo já chega como HTTPS via Traefik).
 - O SQL Server sobe com `MSSQL_PID=Express` (grátis, licenciado para produção, até 10 GB
   por banco e uso limitado de CPU/memória) — se o PDV crescer além disso, troque para uma
   edição paga ajustando essa variável.
-- O volume `horus-pdv-mssql-data` é o único dado que precisa de backup regular — é onde
-  fica o banco inteiro (vendas, produtos, documentos fiscais).
+- O volume `horus-pdv-mssql-data` contém o banco inteiro. Use o backup nativo descrito abaixo
+  para obter uma cópia consistente; preserve também os segredos de configuração da API.
 - Este runbook cobre o deploy em si; ele **não substitui** rodar `dotnet build` localmente
   pelo menos uma vez antes do primeiro push — ver `MODULO-FISCAL-E-PEDIDOS.md` para o que
   ainda falta verificar no código.
+
+## Backup completo pelo Administrador Geral
+
+No **Gerenciamento Geral de Empresas**, use **Fazer backup completo**. Quando a geração e a
+verificação terminarem, clique em **Baixar backup**. A cópia `.bak` inclui todas as empresas,
+tabelas, relacionamentos, índices e dados do banco configurado em `ConnectionStrings:HorusPdv`,
+inclusive documentos fiscais e certificados armazenados nele. O arquivo é transmitido diretamente
+ao aplicativo/navegador, sem montar um JSON ou carregar o banco inteiro na memória da frente de caixa.
+
+Publique **API e frontend** e atualize o **stack inteiro** com o `docker-compose.yml` deste
+repositório. Atualizar somente as imagens não adiciona os volumes. O serviço `pdv-backup-init`
+prepara o volume `horus-pdv-backups` com dono `10001:0` e modo `2770`, sem alterar o volume de dados.
+O bit de grupo herdado faz o arquivo nativo do SQL Server pertencer ao grupo `0`, permitindo
+que a API leia a cópia sem liberar acesso a outros usuários do servidor.
+SQL Server e API acessam a mesma pasta pelas configurações:
+
+- `DatabaseBackup__SqlDirectory=/var/opt/mssql/backups`: pasta vista pelo SQL Server, com escrita.
+- `DatabaseBackup__StorageDirectory=/var/opt/horus/backups`: mesma pasta montada na API, com leitura
+  e limpeza; a API permanece no usuário `app`, com grupo suplementar `0`.
+
+Em Swarm com vários nós, mantenha SQL Server, API e inicialização no mesmo nó que já contém o
+volume SQL, ou utilize armazenamento compartilhado apropriado. Volumes locais com nomes iguais
+em nós diferentes não representam a mesma pasta. O serviço de inicialização deve ser executado
+uma vez para provisionar as permissões antes do primeiro backup.
+
+As três rotas `/api/Admin/Empresas/backup`, `/{id}` e `/{id}/arquivo` exigem sessão ativa com
+perfil principal `administrador` e empresa `empresa-principal`. O download é restrito ao usuário
+que solicitou a cópia, com `Cache-Control: no-store`; solicitação, conclusão e download ficam
+na auditoria. Existe uma geração por vez, que continua no servidor após sair da tela.
+O painel acompanha novamente o pedido ao voltar ou recarregar a mesma aba. Os arquivos ficam
+disponíveis por seis horas e a limpeza roda a cada 30 minutos. Após reiniciar a API, pedidos em
+memória deixam de estar disponíveis: gere outro backup; arquivos antigos são removidos pela limpeza.
+
+A geração usa [`BACKUP DATABASE ... WITH COPY_ONLY, CHECKSUM`](https://learn.microsoft.com/en-us/sql/t-sql/statements/backup-transact-sql)
+e `RESTORE VERIFYONLY ... WITH CHECKSUM`, sem compressão para funcionar no SQL Server Express.
+`COPY_ONLY` preserva a sequência dos backups existentes. Verificação não substitui testar uma
+restauração: faça o teste em uma instância isolada, nunca sobre a base em uso.
+
+Para restaurar em outro servidor, mantenha a mesma `Security__EncryptionKey` em um cofre seguro:
+ela é necessária para ler CSC, senhas e certificados cifrados presentes no banco. Segredos do
+stack, arquivos externos, bancos do Gateway e vendas offline ainda não sincronizadas não fazem
+parte do banco central; preserve suas configurações e backups locais separadamente.
+
+
+### Arquivo de notas fiscais de entrada (desktop 1.3.6)
+
+Publique a API junto com o frontend/instalador. Na inicialização, a API aplica a migração
+`42_notas_entrada_arquivo.sql` e cria `NotasEntradaArquivo`. Nenhum diretório ou serviço de
+arquivos adicional é necessário: o XML original fica como binário no SQL Server, incluído
+no backup completo do banco. Confira o espaço disponível no banco conforme o volume de XMLs.
+
+A confirmação grava fornecedor, produtos, estoque, lotes e nota em uma única transação SQL
+local. Chaves repetidas na mesma empresa são recusadas antes de alterar estoque, inclusive
+em confirmações concorrentes. Arquivos sem chave usam o hash do XML para detectar repetição.
+Pré-visualizar ou cancelar a importação não arquiva a nota. Cada entrada conserva os itens
+revisados, a data e o operador; o valor fiscal do XML é exibido separadamente do custo dos
+itens recebidos. Download do XML exige sessão e pertence somente à empresa da nota.
+
+Cupons digitados registram chave e itens como `digitada`, sem fabricar XML. Clientes antigos
+que não enviam documento conservam o movimento como `sem-documento`; atualizar o instalador
+é necessário para enviar o arquivo original. Notas anteriores à implantação não podem ser
+recuperadas automaticamente. Não reimporte notas antigas somente para guardar XML, pois
+se ainda não houver registro da chave isso dará uma nova entrada no estoque.
+
+
+### Conferência fiscal e XML completo (1.3.7)
+
+Publique a API e o frontend juntos. A API deve incluir `DataBase/FiscalTables/ncm.json` e `cclass.json` (já configurados no projeto para saída/publicação), além dos schemas fiscais existentes. A nova rota de produto é somente leitura e exige perfil administrador, gerente ou atendente. Os códigos fiscais não se tornam campos obrigatórios para salvar produto.
+
+A consulta de referências tenta as fontes públicas Siscomex e SVRS, com limite de tempo e cache; sem internet, retorna a referência datada e indica a limitação. Nenhum dado da loja é enviado. O cálculo do emissor usa uma referência versionada e cobre os casos comuns documentados de 2026; códigos especiais não suportados exigem revisão, sem substituição silenciosa. Alterações de lei, opções tributárias para 2027, FECP/ST/benefícios e classificações por composição precisam de revisão contábil e técnica específica.
+
+Não é necessária migração para recuperar as notas antigas: os downloads compõem `nfeProc` usando `XmlAssinado` e o protocolo anteriormente salvo em `XmlProtocolado`, validando chave/digest e preservando a assinatura. O banco original não é regravado. Se um dos registros necessários não existir, a exportação informa a pendência. Reexportar o mês após publicar para fornecer XMLs completos à contabilidade; o ZIP antigo de protocolos não contém NCM ou tributos.

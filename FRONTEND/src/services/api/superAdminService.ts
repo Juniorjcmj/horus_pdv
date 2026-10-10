@@ -9,6 +9,16 @@ const SUPER_ADMIN_API_URL = requireEnvUrl("VITE_SUPER_ADMIN_API_URL");
 
 export type EmpresaStatus = "pendente" | "aprovada" | "rejeitada" | "bloqueada";
 
+export type DatabaseBackupStatus = {
+  id: string;
+  status: "gerando" | "verificando" | "concluido" | "falhou";
+  fileName: string;
+  createdAt: string;
+  expiresAt: string;
+  sizeBytes?: number | null;
+  message?: string | null;
+};
+
 export type EmpresaAdminItem = {
   id: string;
   fantasyName: string;
@@ -56,6 +66,29 @@ export type ListEmpresasParams = {
 };
 
 export const superAdminService = {
+  async startDatabaseBackup(): Promise<DatabaseBackupStatus> {
+    const response = await apiRequest<DatabaseBackupStatus>(`${SUPER_ADMIN_API_URL}/backup`, { method: "POST" });
+    if (!response.data) throw new Error("O servidor não retornou o backup solicitado.");
+    return response.data;
+  },
+
+  async getDatabaseBackup(id: string): Promise<DatabaseBackupStatus> {
+    const response = await apiRequest<DatabaseBackupStatus>(`${SUPER_ADMIN_API_URL}/backup/${encodeURIComponent(id)}`);
+    if (!response.data) throw new Error("O servidor não retornou a situação do backup.");
+    return response.data;
+  },
+
+  downloadDatabaseBackup(id: string): void {
+    // O navegador/Electron recebe o arquivo diretamente, sem carregar um banco inteiro na memória do PDV.
+    const frame = document.createElement("iframe");
+    frame.hidden = true;
+    frame.title = "Download do backup completo";
+    frame.setAttribute("sandbox", "allow-downloads allow-same-origin");
+    frame.src = `${SUPER_ADMIN_API_URL}/backup/${encodeURIComponent(id)}/arquivo`;
+    document.body.appendChild(frame);
+    window.setTimeout(() => frame.remove(), 60 * 60 * 1000);
+  },
+
   async getMetrics(): Promise<EmpresasMetricas> {
     const response = await apiRequest<EmpresasMetricas>(`${SUPER_ADMIN_API_URL}/metricas`);
     return (
