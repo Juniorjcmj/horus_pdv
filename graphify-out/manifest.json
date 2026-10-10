@@ -1728,9 +1728,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/pages.yml": {
-    "mtime": 1788665266.5238416,
-    "seen": 1788888974.3524451,
-    "ast_hash": "c8cff64292f4dc8e5e899aa535aa741f",
+    "mtime": 1791659825.305666,
+    "seen": 1791659857.1976635,
+    "ast_hash": "8f544191de2dc0e8d28507b9d8ece93e",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -1758,9 +1758,9 @@
     "semantic_hash": ""
   },
   "DEPLOY.md": {
-    "mtime": 1791658989.5282059,
-    "seen": 1791659093.5770073,
-    "ast_hash": "c40382a4f24d578af7fe0941f5ef59f4",
+    "mtime": 1791659825.3081808,
+    "seen": 1791659857.1991947,
+    "ast_hash": "8c642f5b2e36066d51e00f5d815a62a4",
     "semantic_hash": ""
   },
   "FRONTEND/index.html": {
@@ -4386,9 +4386,9 @@
     "semantic_hash": ""
   },
   "docs/AUDITORIA_FISCAL_2026-10-10.md": {
-    "mtime": 1791658817.6925735,
-    "seen": 1791659093.5791922,
-    "ast_hash": "e7a480a6a2fa27d32700e0406a0a30e6",
+    "mtime": 1791659150.3449104,
+    "seen": 1791659857.201805,
+    "ast_hash": "54ec36f58b4dd1d5af5a70284af5b54c",
     "semantic_hash": ""
   }
 }

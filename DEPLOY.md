@@ -5,6 +5,22 @@ Runbook de configuração inicial. Depois de feito uma vez, o fluxo do dia a dia
 
 ## Visão geral
 
+### Página de documentação (GitHub Pages)
+
+O workflow `Deploy Docs` publica a pasta `docs` e é independente da publicação
+da API e do frontend pelo Docker. Para ativá-lo, abra **Settings → Pages → Build
+and deployment → Source** no repositório e selecione **GitHub Actions**. Depois,
+execute **Actions → Deploy Docs → Run workflow**.
+
+Quando Pages não está configurado ou não está acessível ao token do workflow,
+a publicação da documentação é ignorada com um aviso e instruções no resumo.
+Falhas de autenticação, permissões e serviço diferentes de HTTP 404 continuam
+interrompendo a execução. Uma execução ignorada não significa site publicado.
+
+Não basta adicionar `enablement: true` em `actions/configure-pages`: a habilitação
+automática exige um token diferente de `GITHUB_TOKEN`, com as permissões indicadas
+na [documentação oficial da ação](https://github.com/actions/configure-pages/blob/v5/action.yml).
+
 ```
 push na main
    │
