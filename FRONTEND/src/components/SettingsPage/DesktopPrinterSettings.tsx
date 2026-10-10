@@ -69,8 +69,8 @@ export default function DesktopPrinterSettings() {
         Impressora deste computador
       </p>
       <p className="mt-1 text-sm text-text-secondary">
-        Cupom, DANFE NFC-e, fechamento de caixa e demais comprovantes. Com "imprimir direto", saem na impressora
-        escolhida sem abrir a janela de impressão.
+        Ao finalizar uma venda no aplicativo atualizado, o cupom sai automaticamente na impressora padrão do Windows.
+        As opções abaixo configuram a impressão dos demais comprovantes e relatórios.
       </p>
 
       {settings ? (

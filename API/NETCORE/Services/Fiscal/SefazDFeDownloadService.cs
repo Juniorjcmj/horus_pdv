@@ -13,6 +13,7 @@ using DFe.Classes.Entidades;
 using DFe.Classes.Flags;
 using DFe.Utils;
 using HORUSPDV_API.Repositories.DatabaseAccess;
+using HORUSPDV_API.Services.Produtos;
 using NFe.Classes.Informacoes.Identificacao.Tipos;
 using NFe.Classes.Servicos.Tipos;
 using NFe.Servicos;
@@ -36,11 +37,7 @@ public class SefazDFeDownloadService(
     /// </summary>
     public async Task<byte[]> BuscarXmlNfePorChaveAsync(string companyId, string chaveAcesso, CancellationToken ct = default)
     {
-        var chaveLimpa = new string(chaveAcesso.Where(char.IsDigit).ToArray());
-        if (chaveLimpa.Length != 44)
-        {
-            throw new InvalidOperationException("Chave de acesso inválida. A chave da NF-e deve conter exatamente 44 dígitos numéricos.");
-        }
+        var chaveLimpa = NfeAccessKey.ValidateDistributionKey(chaveAcesso);
 
         var empresa = await empresaAB.ObterAsync(companyId);
         if (empresa is null)

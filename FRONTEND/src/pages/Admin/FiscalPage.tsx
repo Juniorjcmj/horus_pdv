@@ -531,7 +531,7 @@ export default function FiscalPage() {
               title="Dar entrada em notas fiscais de compra por chave SEFAZ ou arquivo XML"
             >
               <PackagePlus size={15} />
-              Entrada de NF-e
+              Entrada de NF-e / NFC-e
             </button>
             <button
               type="button"

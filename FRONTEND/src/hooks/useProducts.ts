@@ -12,6 +12,7 @@ type Product = {
   id: string;
   name: string;
   code: string;
+  barcode?: string;
   stock: number;
   salePrice: number;
   imageUrl?: string;
@@ -39,6 +40,7 @@ function toProduct(r: LocalProductRecord): Product {
     id: r.id,
     name: r.productName,
     code: r.productCode,
+    barcode: r.barcode,
     stock: r.stock,
     salePrice: r.salePrice,
     imageUrl: r.imageUrl || undefined,

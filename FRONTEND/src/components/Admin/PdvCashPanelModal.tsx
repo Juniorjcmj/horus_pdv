@@ -5,11 +5,11 @@
  *           inclusive o modo offline. O histórico de turnos continua na tela de Caixa.
  */
 import { ArrowDownCircle, ArrowUpCircle, LockKeyhole, UnlockKeyhole, Wallet, X } from "lucide-react";
-import { type ClipboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type ClipboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CashClosingSummaryModal, { printCashClosingReceipt } from "@/components/Admin/CashClosingSummaryModal";
 import CashMovementModal from "@/components/Admin/CashMovementModal";
 import LoadingButton from "@/components/Loading/LoadingButton";
-import { useStatusDialog } from "@/hooks/Dialog";
+import { Toast, useStatusDialog } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import { useCashRegisterActions } from "@/hooks/useCashRegisterActions";
 import type { CompanyDto } from "@/services/api/companyService";
@@ -28,6 +28,7 @@ import {
 
 type PdvCashPanelModalProps = {
   cashStatus: CashRegisterStatusDto | null;
+  onRefreshStatus: () => Promise<CashRegisterStatusDto | null>;
   company: CompanyDto | null;
   onStatusChange: (status: CashRegisterStatusDto | null) => void;
   onClose: () => void;
@@ -37,6 +38,7 @@ type PdvCashPanelModalProps = {
 
 export default function PdvCashPanelModal({
   cashStatus,
+  onRefreshStatus,
   company,
   onStatusChange,
   onClose,
@@ -64,6 +66,29 @@ export default function PdvCashPanelModal({
   const [closingFormOpen, setClosingFormOpen] = useState(false);
   const [movementType, setMovementType] = useState<CashMovementType | null>(null);
   const [closingSummary, setClosingSummary] = useState<CashRegisterSessionDto | null>(null);
+  const [refreshing, setRefreshing] = useState(true);
+  const [refreshFailed, setRefreshFailed] = useState(false);
+
+  const refreshStatus = useCallback(async () => {
+    setRefreshing(true);
+    setRefreshFailed(false);
+    try {
+      const status = await onRefreshStatus();
+      if (!status) throw new Error("Status do caixa indisponível.");
+      return status;
+    } catch {
+      setRefreshFailed(true);
+      Toast.error("Não foi possível atualizar os totais do caixa. Tente novamente antes de fechar.");
+      return null;
+    } finally {
+      setRefreshing(false);
+    }
+  }, [onRefreshStatus]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void refreshStatus();
+  }, [refreshStatus]);
 
   const openingInputRef = useRef<HTMLInputElement>(null);
   const closingInputRef = useRef<HTMLInputElement>(null);
@@ -83,7 +108,7 @@ export default function PdvCashPanelModal({
       target.select();
     }, 60);
     return () => window.clearTimeout(timer);
-  }, [hasOpenSession, closingFormOpen]);
+  }, [hasOpenSession, closingFormOpen, refreshing]);
 
   // Esc: com a confirmação aberta responde "Não"; senão fecha o painel (sangria/reforço e resumo tratam o próprio Esc).
   const confirmOpen = statusDialog.Dialog !== null;
@@ -110,19 +135,27 @@ export default function PdvCashPanelModal({
     if (await openCash(openingAmount)) onClose();
   };
 
-  const startClosing = () => {
-    setClosingAmount(expectedCash);
+  const startClosing = async () => {
+    const latest = await refreshStatus();
+    if (!latest?.currentSession) return;
+    setClosingAmount(latest.currentSession.expectedCashAmount || "0,00");
     setDifferenceReason("");
     setClosingFormOpen(true);
   };
 
   const handleClose = async () => {
-    if (saving) return;
-    if (hasDifference && differenceReason.trim().length < 3) return;
+    if (saving || refreshing) return;
+    const latest = await refreshStatus();
+    if (!latest?.currentSession) return;
+    const latestDifference = Math.round((parseMoneyBr(closingAmount) - parseMoneyBr(latest.currentSession.expectedCashAmount || "0,00")) * 100) / 100;
+    if (latestDifference !== 0 && differenceReason.trim().length < 3) {
+      Toast.error("Confira os totais atualizados e informe o motivo da diferença antes de fechar.");
+      return;
+    }
     const confirmed = await statusDialog.confirm("Fechar o caixa atual? As vendas ficam bloqueadas até nova abertura.");
     if (!confirmed) return;
 
-    const closed = await closeCash(closingAmount, closingNote, hasDifference ? differenceReason.trim() : undefined);
+    const closed = await closeCash(closingAmount, closingNote, latestDifference !== 0 ? differenceReason.trim() : undefined);
     if (closed === null) return;
     setClosingFormOpen(false);
     setClosingNote("");
@@ -165,7 +198,11 @@ export default function PdvCashPanelModal({
           </button>
         </div>
 
-        {!hasOpenSession ? (
+        {refreshing ? (
+          <p role="status" className="py-4 text-sm text-text-secondary">Atualizando totais do caixa...</p>
+        ) : refreshFailed ? (
+          <button type="button" onClick={() => void refreshStatus()} className="btn-primary">Tentar atualizar novamente</button>
+        ) : !hasOpenSession ? (
           <form
             className="space-y-3"
             onSubmit={(event) => {

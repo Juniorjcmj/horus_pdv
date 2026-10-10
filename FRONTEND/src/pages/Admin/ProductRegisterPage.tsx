@@ -2216,10 +2216,10 @@ export default function ProductRegisterPage() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-semibold text-text-primary">
-                        Entrada de NF-e (XML / SEFAZ)
+                        Entrada de NF-e / NFC-e
                       </div>
                       <div className="text-[11px] text-text-secondary">
-                        Baixar direto da SEFAZ por chave ou enviar arquivo XML
+                        NF-e por chave; NFC-e por XML ou itens do cupom
                       </div>
                     </div>
                   </button>

@@ -162,6 +162,7 @@ public class NfeImportService(
 
         return new NfeImportPreviewModel
         {
+            Modelo = parsed.Modelo,
             NumeroNota = parsed.NumeroNota,
             Serie = parsed.Serie,
             Fornecedor = fornecedorPreview,
@@ -228,10 +229,26 @@ public class NfeImportService(
                 $"Já existe produto cadastrado com o código \"{codigoJaCadastrado}\" — ajuste antes de confirmar.");
         }
 
-        // Valida as datas de validade antes de gravar qualquer coisa.
+        // Também atende à entrada digitada de cupom: valida o lote inteiro antes de gravar.
         foreach (var item in request.Itens)
         {
             _ = ParseValidade(item);
+            if (!HorusMoneyFormat.TryParseDecimal(item.Quantidade, out var quantidade) || quantidade <= 0)
+                throw new InvalidOperationException($"Quantidade inválida no item \"{item.ProductName}\".");
+            if (!HorusMoneyFormat.TryParseDecimal(item.PrecoCusto, out var custo) || custo < 0)
+                throw new InvalidOperationException($"Custo inválido no item \"{item.ProductName}\".");
+            if (!string.IsNullOrWhiteSpace(item.ProdutoExistenteId))
+            {
+                if (!produtosAtuais.Any(produto => produto.Id == item.ProdutoExistenteId))
+                    throw new InvalidOperationException($"Produto vinculado não encontrado no item {item.NumeroItem}.");
+                continue;
+            }
+            if (string.IsNullOrWhiteSpace(item.ProductCode))
+                throw new InvalidOperationException($"Código do produto é obrigatório no item {item.NumeroItem}.");
+            if (string.IsNullOrWhiteSpace(item.ProductName) || item.ProductName.Trim().Length < 3)
+                throw new InvalidOperationException($"Nome do produto muito curto no item {item.NumeroItem}.");
+            if (!HorusMoneyFormat.TryParseDecimal(item.PrecoVenda, out var venda) || venda <= 0)
+                throw new InvalidOperationException($"Preço de venda deve ser maior que zero no item \"{item.ProductName}\".");
         }
 
         var fantasyName = string.IsNullOrWhiteSpace(request.Fornecedor.FantasyName)

@@ -20,6 +20,8 @@ contextBridge.exposeInMainWorld("quackDesktop", {
 
   /** Impressora do caixa: { mode: "direct" | "dialog", deviceName, copies }. */
   printer: {
+    /** Envia o cupom à impressora padrão do Windows, sem diálogo nem janela auxiliar visível. */
+    printReceipt: (html) => ipcRenderer.invoke("quack:print-receipt", html),
     list: () => ipcRenderer.invoke("quack:printer-list"),
     getSettings: () => ipcRenderer.invoke("quack:printer-settings"),
     saveSettings: (settings) => ipcRenderer.invoke("quack:printer-save", settings),

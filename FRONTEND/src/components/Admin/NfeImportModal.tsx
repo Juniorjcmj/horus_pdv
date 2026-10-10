@@ -21,6 +21,7 @@ import {
   Link2,
   Loader2,
   PackageSearch,
+  Plus,
   RotateCcw,
   Scale,
   Search,
@@ -40,6 +41,8 @@ import {
   type NfeImportPreview,
 } from "@/services/api/nfeImportService";
 import { productService, type ProductDto } from "@/services/api/productService";
+import { supplierService } from "@/services/api/supplierService";
+import { readInvoiceAccessKey } from "@/utils/invoiceAccessKey";
 import { formatMoneyBr as fmtMoney, parseMoneyBr as parseMoney } from "@/utils/inputMasks";
 
 type EditableItem = NfeImportItemPreview & {
@@ -138,6 +141,8 @@ export default function NfeImportModal({
   const [confirming, setConfirming] = useState(false);
   const [numeroNota, setNumeroNota] = useState("");
   const [serie, setSerie] = useState("");
+  const [modelo, setModelo] = useState(55);
+  const [manualEntry, setManualEntry] = useState(false);
   const [fornecedor, setFornecedor] = useState<NfeImportFornecedorPreview | null>(null);
   const [itens, setItens] = useState<EditableItem[]>([]);
 
@@ -150,9 +155,13 @@ export default function NfeImportModal({
 
   const hasPreview = fornecedor !== null;
   const cleanKey = chaveAcesso.replace(/\D/g, "");
+  const keyInfo = readInvoiceAccessKey(cleanKey);
+  const isNfceKey = keyInfo?.model === "65";
 
-  const aplicarPreview = (preview: NfeImportPreview) => {
+  const aplicarPreview = (preview: NfeImportPreview, manual = false) => {
     setErrorDetails(null);
+    setManualEntry(manual);
+    setModelo(preview.modelo ?? 55);
     setNumeroNota(preview.numeroNota);
     setSerie(preview.serie);
     setFornecedor(preview.fornecedor);
@@ -217,6 +226,7 @@ export default function NfeImportModal({
             ...it,
             produtoExistenteId: produto.id,
             produtoExistenteNome: produto.productName,
+            ...(manualEntry ? { productName: produto.productName, ncm: produto.ncm || "00000000", gtin: produto.gtin || "SEM GTIN", unidadeOriginal: produto.unidadeComercial || "UN" } : {}),
             productCode: produto.productCode,
             unidadeComercial: produto.unidadeComercial || "UN",
             precoVenda: formatMoneyBr(precoProjetado),
@@ -278,8 +288,26 @@ export default function NfeImportModal({
   }, [produtosCadastrados, buscaProdutoModal, filtroBalancaModal, itemParaVincular]);
 
   const handleBuscarSefaz = async () => {
-    if (cleanKey.length !== 44) {
-      Toast.error("A chave de acesso da NF-e deve ter exatamente 44 dígitos numéricos.");
+    if (!keyInfo) {
+      Toast.error("Chave inválida. Confira os 44 dígitos de uma NF-e ou NFC-e.");
+      return;
+    }
+
+    if (isNfceKey) {
+      setLoading(true);
+      try {
+        const suppliers = await supplierService.list();
+        const existing = suppliers.find(supplier => supplier.cnpj.replace(/\D/g, "") === keyInfo.cnpj);
+        aplicarPreview({ modelo: 65, numeroNota: keyInfo.numeroNota, serie: keyInfo.serie,
+          fornecedor: existing ? { ...existing, jaExiste: true } : { jaExiste: false, cnpj: keyInfo.cnpj,
+            companyName: "", fantasyName: "", cep: "", city: "", state: "", address: "", neighborhood: "", number: "", telephone: "" },
+          itens: [newManualItem(1)],
+        }, true);
+      } catch (error) {
+        Toast.error(error instanceof Error ? error.message : "Não foi possível carregar os fornecedores. Tente novamente.");
+      } finally {
+        setLoading(false);
+      }
       return;
     }
 
@@ -328,7 +356,7 @@ export default function NfeImportModal({
       const preview = await nfeImportService.preview(file);
       if (!preview) return;
       aplicarPreview(preview);
-      Toast.success(`XML da NF-e nº ${preview.numeroNota} carregado com sucesso!`);
+      Toast.success(`XML da ${preview.modelo === 65 ? "NFC-e" : "NF-e"} nº ${preview.numeroNota} carregado com sucesso!`);
     } catch (error) {
       Toast.error(error instanceof Error ? error.message : "Erro ao ler o XML da nota.");
     } finally {
@@ -342,6 +370,18 @@ export default function NfeImportModal({
     fieldValue: NfeImportFornecedorPreview[K],
   ) => {
     setFornecedor((current) => (current ? { ...current, [key]: fieldValue } : current));
+  };
+
+  function newManualItem(numeroItem: number): NfeImportItemPreview {
+    return { numeroItem, produtoExistenteId: null, produtoExistenteNome: null, codigoFornecedor: null,
+      productCode: `CP-${keyInfo?.key.slice(2, 34)}-${numeroItem}`, productName: "", gtin: "SEM GTIN", ncm: "00000000", cest: null,
+      unidadeComercial: "UN", quantidade: "1", precoCusto: "", precoVendaSugerido: "" };
+  }
+
+  const addManualItem = () => {
+    const base = newManualItem(Math.max(0, ...itens.map(item => item.numeroItem)) + 1);
+    setItens(current => [...current, { ...base, margem: "", lucro: "", margemManual: false, precoVenda: "", fatorConversao: "1",
+      quantidadeOriginal: 1, precoCustoOriginal: 0, precoVendaOriginal: 0, unidadeOriginal: "UN", productCodeOriginal: base.productCode, dataValidade: "", numeroLote: "" }]);
   };
 
   const setItemField = <K extends keyof EditableItem>(
@@ -365,7 +405,10 @@ export default function NfeImportModal({
           };
         }
 
-        return { ...item, [key]: fieldValue };
+        return { ...item, [key]: fieldValue,
+          ...(manualEntry && key === "quantidade" ? { quantidadeOriginal: parseMoney(String(fieldValue)) / (Number(item.fatorConversao) || 1) } : {}),
+          ...(manualEntry && key === "unidadeComercial" ? { unidadeOriginal: String(fieldValue) } : {}),
+        };
       }),
     );
   };
@@ -421,13 +464,25 @@ export default function NfeImportModal({
   const updateItemPricing = (numeroItem: number, patch: Partial<EditableItem>, source: PricingSource) => {
     setItens((current) =>
       current.map((item) =>
-        item.numeroItem === numeroItem ? applyPricing({ ...item, ...patch }, source) : item,
+        item.numeroItem === numeroItem ? applyPricing({ ...item, ...patch,
+          ...(manualEntry && patch.precoCusto !== undefined ? { precoCustoOriginal: parseMoney(patch.precoCusto) * (Number(item.fatorConversao) || 1) } : {}),
+          ...(manualEntry && patch.precoVenda !== undefined ? { precoVendaOriginal: parseMoney(patch.precoVenda) * (Number(item.fatorConversao) || 1) } : {}),
+        }, source) : item,
       ),
     );
   };
 
   const handleConfirmar = async () => {
     if (!fornecedor) return;
+    if (!fornecedor.companyName.trim() || fornecedor.cnpj.replace(/\D/g, "").length !== 14) {
+      Toast.error("Preencha o CNPJ e a razão social do fornecedor.");
+      return;
+    }
+    if (!itens.length || itens.some(item => !item.productCode.trim() || parseMoney(item.quantidade) <= 0 ||
+      parseMoney(item.precoCusto) <= 0 || (!item.produtoExistenteId && (item.productName.trim().length < 3 || parseMoney(item.precoVenda) <= 0)))) {
+      Toast.error("Confira os itens: descrição, código, quantidade e custo; produtos novos também precisam do preço de venda.");
+      return;
+    }
     setConfirming(true);
     try {
       const resultado = await nfeImportService.confirmar({
@@ -492,11 +547,11 @@ export default function NfeImportModal({
             </span>
             <div>
               <h2 className="text-base font-semibold text-text-primary">
-                Entrada de NF-e · Importação de Produtos
+                Entrada de mercadorias · NF-e / NFC-e
               </h2>
               <p className="text-xs text-text-secondary">
                 {hasPreview
-                  ? `Nota ${numeroNota} · Série ${serie} · Se o produto veio em caixa ou fardo, ajuste o Fator para converter em unidades.`
+                  ? `${modelo === 65 ? "NFC-e" : "NF-e"} ${numeroNota} · Série ${serie} · Se o produto veio em caixa ou fardo, ajuste o Fator para converter em unidades.`
                   : "Busque diretamente da SEFAZ pela chave de acesso ou selecione o arquivo XML de compra."}
               </p>
             </div>
@@ -517,7 +572,7 @@ export default function NfeImportModal({
               type="button"
               onClick={onClose}
               className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border-primary text-text-secondary hover:bg-hover-light"
-              aria-label="Fechar importação de NF-e"
+              aria-label="Fechar entrada de mercadorias"
             >
               <X size={16} />
             </button>
@@ -561,7 +616,7 @@ export default function NfeImportModal({
                   <div className="rounded-xl border border-border-secondary bg-bg-primary/30 p-5">
                     <div className="mb-2 flex items-center justify-between">
                       <label className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-                        Chave de Acesso da NF-e (44 dígitos numéricos)
+                        Chave de acesso da NF-e ou NFC-e (44 dígitos)
                       </label>
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono transition-colors ${
@@ -578,6 +633,7 @@ export default function NfeImportModal({
                     <div className="relative flex items-center">
                       <input
                         type="text"
+                        aria-label="Chave de acesso da nota"
                         value={chaveAcesso}
                         onChange={(e) => {
                           const digits = e.target.value.replace(/\D/g, "").slice(0, 44);
@@ -618,11 +674,20 @@ export default function NfeImportModal({
                       </div>
                     </div>
 
+                    {isNfceKey && (
+                      <div className="mt-4 space-y-2 rounded-lg border border-accent/30 bg-accent/5 p-3 text-xs text-text-secondary" role="status">
+                        <p className="font-semibold text-text-primary">NFC-e (modelo 65) · Nº {keyInfo.numeroNota} · Série {keyInfo.serie}</p>
+                        <p>Este cupom não é baixado pela consulta de NF-e. Envie o XML do fornecedor ou digite os itens para dar entrada no estoque. A chave identifica a nota e o CNPJ; os produtos e valores precisam ser informados.</p>
+                        <button type="button" className="text-accent font-semibold hover:underline" onClick={() => setImportMethod("xml")}>Enviar XML da NFC-e</button>
+                        {keyInfo.uf === "33" && <a className="ml-3 text-accent font-semibold hover:underline" href="https://consulta.dfe.fazenda.rj.gov.br/consultaDFE/paginas/consultaChaveAcesso.faces" target="_blank" rel="noopener noreferrer">Consultar cupom na SEFAZ-RJ</a>}
+                      </div>
+                    )}
+
                     <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-start gap-2 text-xs text-text-secondary">
                         <ShieldCheck size={16} className="mt-0.5 shrink-0 text-accent" />
                         <p>
-                          A consulta utiliza o <strong>Certificado Digital A1</strong> da empresa. Caso a SEFAZ retorne apenas o resumo, o sistema enviará a <strong>Ciência da Operação</strong> para obter a nota completa com todos os itens.
+                          {isNfceKey ? "Você poderá revisar fornecedor, quantidades e custos antes de confirmar a entrada." : <>A consulta de NF-e utiliza o <strong>Certificado Digital A1</strong> da empresa. Caso a SEFAZ retorne apenas o resumo, o sistema enviará a <strong>Ciência da Operação</strong> para obter a nota completa com todos os itens.</>}
                         </p>
                       </div>
 
@@ -640,7 +705,7 @@ export default function NfeImportModal({
                         ) : (
                           <>
                             <Search size={16} />
-                            <span>Consultar e Baixar Nota</span>
+                            <span>{isNfceKey ? "Digitar itens do cupom" : "Consultar e Baixar Nota"}</span>
                           </>
                         )}
                       </button>
@@ -703,7 +768,7 @@ export default function NfeImportModal({
                       <UploadCloud size={32} className="text-text-tertiary" />
                       <div>
                         <p className="text-sm font-medium text-text-primary">
-                          Selecione o XML autorizado da nota de compra
+                          Selecione o XML da NF-e (55) ou NFC-e (65) do fornecedor
                         </p>
                         <p className="mt-1 text-xs text-text-secondary">
                           Os produtos, o preço de custo e o fornecedor vêm da nota — dados fiscais de venda
@@ -736,6 +801,7 @@ export default function NfeImportModal({
             </div>
           ) : (
             <>
+              {manualEntry && <p className="rounded-xl border border-accent/30 bg-accent/5 p-3 text-sm text-text-secondary">Entrada pelo cupom: informe os itens e custos impressos. Para mercadorias já cadastradas, use “Atrelar a produto existente”. Confira tudo antes de salvar.</p>}
               <section className="rounded-xl border border-border-secondary p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-text-primary">Fornecedor</h3>
@@ -784,6 +850,7 @@ export default function NfeImportModal({
               </section>
 
               <section className="overflow-hidden rounded-xl border border-border-secondary">
+                {manualEntry && <div className="flex items-center justify-between gap-3 border-b border-border-primary p-3"><span className="text-xs text-text-secondary">Código interno preenchido para novos produtos; substitua pelo código de barras quando houver.</span><button type="button" onClick={addManualItem} className="btn-secondary inline-flex shrink-0 items-center gap-1 text-xs"><Plus size={14} />Adicionar item</button></div>}
                 <TableScrollArea label="Registros" className="overflow-x-auto">
                   <table className="w-full min-w-[760px] text-left text-sm">
                     <thead className="bg-bg-primary/60 text-xs uppercase text-text-tertiary">
@@ -820,7 +887,7 @@ export default function NfeImportModal({
                         return (
                           <tr key={item.numeroItem} className="hover:bg-hover-light/40 transition-colors">
                             <td className="px-3 py-2 max-w-xs">
-                              <p className="font-semibold text-text-primary text-xs">{item.productName}</p>
+                              {manualEntry ? <input className="input-field w-48 text-xs" aria-label={`Descrição item ${item.numeroItem}`} placeholder="Descrição do produto" value={item.productName} onChange={event => setItemField(item.numeroItem, "productName", event.target.value)} /> : <p className="font-semibold text-text-primary text-xs">{item.productName}</p>}
                               <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-[11px] text-text-tertiary">
                                 <span>NCM {item.ncm}</span>
                                 {item.codigoFornecedor && (
@@ -836,6 +903,7 @@ export default function NfeImportModal({
                                   <span>Unid. {item.unidadeOriginal}</span>
                                 )}
                               </div>
+                              {manualEntry && <div className="mt-1 flex gap-1"><input aria-label={`NCM item ${item.numeroItem}`} title="NCM: informe o código correto antes da venda fiscal" className="input-field w-24 text-xs" value={item.ncm} onChange={event => setItemField(item.numeroItem, "ncm", event.target.value.replace(/\D/g, "").slice(0, 8))} /><input aria-label={`Unidade item ${item.numeroItem}`} className="input-field w-14 text-xs" value={item.unidadeComercial} onChange={event => setItemField(item.numeroItem, "unidadeComercial", event.target.value.toUpperCase().slice(0, 6))} /></div>}
 
                               {/* Vínculo com Produto Existente */}
                               {existente ? (
@@ -880,6 +948,7 @@ export default function NfeImportModal({
                             <td className="px-3 py-2">
                               <input
                                 className="input-field w-32 font-mono text-xs"
+                                aria-label={`Código item ${item.numeroItem}`}
                                 value={item.productCode}
                                 placeholder="Código / EAN"
                                 title="Código de barras da unidade individual"
@@ -918,6 +987,7 @@ export default function NfeImportModal({
                               <div className="flex items-center gap-1">
                                 <input
                                   className="input-field w-20 text-right font-medium"
+                                  aria-label={`Quantidade item ${item.numeroItem}`}
                                   value={item.quantidade}
                                   onChange={(event) =>
                                     setItemField(
@@ -935,6 +1005,7 @@ export default function NfeImportModal({
                             <td className="px-3 py-2">
                               <input
                                 className="input-field w-24"
+                                aria-label={`Custo item ${item.numeroItem}`}
                                 value={item.precoCusto}
                                 onChange={(event) =>
                                   updateItemPricing(
@@ -952,6 +1023,7 @@ export default function NfeImportModal({
                             <td className="px-3 py-2">
                               <input
                                 className="input-field w-24 disabled:cursor-not-allowed disabled:opacity-60"
+                                aria-label={`Venda item ${item.numeroItem}`}
                                 value={item.precoVenda}
                                 disabled={existente}
                                 title={existente ? "Produto já cadastrado — preço de venda não muda na importação." : undefined}
@@ -1047,6 +1119,7 @@ export default function NfeImportModal({
                                   </span>
                                 </div>
                               )}
+                              {manualEntry && <button type="button" aria-label={`Remover item ${item.numeroItem}`} className="mt-2 text-xs text-danger hover:underline" onClick={() => setItens(current => current.filter(row => row.numeroItem !== item.numeroItem))}>Remover</button>}
                             </td>
                           </tr>
                         );
@@ -1071,7 +1144,7 @@ export default function NfeImportModal({
               onClick={handleConfirmar}
               className="btn-primary inline-flex items-center gap-2"
             >
-              Confirmar importação ({itens.length} {itens.length === 1 ? "item" : "itens"})
+              {manualEntry ? "Confirmar entrada" : "Confirmar importação"} ({itens.length} {itens.length === 1 ? "item" : "itens"})
             </LoadingButton>
           ) : null}
         </div>

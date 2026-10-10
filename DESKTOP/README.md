@@ -1,8 +1,15 @@
 # Quack PDV — Desktop (Electron)
 
-Casca desktop do PDV. Abre o PDV publicado (`https://pdv.quacksistemas.com.br`) numa janela própria,
-em tela cheia, sem barra de endereço nem abas. O código do PDV continua vindo do servidor, então o
-programa **não precisa ser reinstalado a cada deploy do frontend**.
+Aplicativo desktop do PDV. Abre o PDV em `https://pdv.quacksistemas.com.br` numa janela própria,
+em tela cheia, sem barra de endereço nem abas. Desde a versão **1.3.0**, o instalador inclui as
+telas compiladas do código atual. Ao abrir, usa uma versão mais nova publicada no servidor quando
+`build-info.json` indicar uma compilação posterior; sem conexão ou com o servidor antigo, usa a
+cópia incluída no programa. Assim, as melhorias do instalador chegam mesmo antes do deploy do frontend.
+
+O endereço e o perfil `%APPDATA%\\Quack PDV` continuam os mesmos, preservando login, configurações e
+IndexedDB das versões anteriores. O instalador contém o frontend e o Gateway; alterações da API
+central ainda precisam ser publicadas no servidor. Abrir as telas sem internet não substitui o
+login offline: o operador precisa ter suas credenciais salvas neste computador.
 
 ## Por que usar no caixa (em vez do navegador)
 
@@ -10,7 +17,17 @@ programa **não precisa ser reinstalado a cada deploy do frontend**.
   e **não é apagado** ao limpar o histórico ou os dados de navegação do Chrome/Edge.
 - Ninguém fecha a aba do caixa sem querer: fechar a janela pede confirmação.
 - Abre direto em tela cheia, com atalho na área de trabalho.
+- Na frente de caixa, leituras rápidas do leitor USB encerradas por Enter ou Tab buscam o produto
+  mesmo depois de clicar em outro campo ou botão. Uma leitura durante o pagamento ou outra janela
+  fica guardada até a janela fechar, preservando os valores preenchidos e sem confirmar a venda.
 - Depois da primeira abertura com internet, o PDV abre também sem conexão (service worker).
+- Desde a versão **1.3.2**, o painel de caixa atualiza os totais após a venda, ao abrir e antes de fechar.
+  A contagem compara com os valores atuais do servidor; sem conexão, lê o resumo local com as vendas
+  pendentes de sincronização. Falha ao atualizar oferece nova tentativa antes do fechamento.
+- Desde a versão **1.3.3**, a entrada de mercadorias reconhece NF-e (55) e NFC-e (65).
+  NFC-e pode entrar pelo XML do fornecedor ou por itens digitados do cupom, com fornecedor e
+  produtos existentes reaproveitados e revisão de quantidades/custos antes da gravação. A chave
+  identifica o documento; o download no Ambiente Nacional continua exclusivo de NF-e (55).
 
 ## Uso
 
@@ -18,10 +35,18 @@ programa **não precisa ser reinstalado a cada deploy do frontend**.
 npm install
 node node_modules/electron/install.js   # baixa o binário do Electron (o npm 11 bloqueia o script de instalação)
 npm start                                # roda em modo desenvolvimento
+npm run prepare-frontend                 # compila as telas para o instalador
 npm run dist                             # gera release/quack-pdv-setup-<versão>.exe (com o Gateway)
 ```
 
 Para apontar para outro ambiente (ex.: frontend local): `QUACK_PDV_URL=http://localhost:5173 npm start`.
+Para testar a cópia incluída: `QUACK_PDV_FRONTEND_SOURCE=bundled npm start` (depois de preparar o frontend).
+O `config.json` aceita `"frontendSource": "auto"` (padrão), `"bundled"` ou `"remote"` para suporte.
+
+Para verificar o instalador gerado: `npm test` valida impressão, seleção da versão e resolução dos arquivos;
+`node tests/installer-smoke.js` abre o executável empacotado em um perfil isolado e invisível, com API
+simulada, conferindo leitor, pagamento, impressão automática (saída física simulada), falha e reimpressão,
+cadastros mínimos e preservação dos dados ao reabrir offline. Os backups ficam dentro do perfil isolado.
 
 ## Configuração na máquina do cliente (opcional)
 
@@ -78,7 +103,12 @@ antes, senão o programa leva o Gateway antigo. Para testar com `npm start`: `np
 
 ## Impressora (impressão direta) — versão 1.2.0+
 
-No PDV, **Configurações → Impressão no PDV → Impressora deste computador**: escolha a impressora
+Desde a versão **1.3.1**, finalizar uma venda envia o cupom ou DANFE automaticamente à **impressora padrão
+do Windows**, sem diálogo e sem abrir uma janela visível. Funciona também em vendas offline e ao reimprimir
+pela prévia. A prévia opcional não interfere nesse envio. Falhas são avisadas e a venda continua salva;
+use **Imprimir última venda** após conferir a impressora. O número de cópias configurado é respeitado.
+
+Para os demais documentos, no PDV, **Configurações → Impressão no PDV → Impressora deste computador**: escolha a impressora
 (ex.: a térmica do cupom), o número de cópias e ligue **Imprimir direto**. A partir daí cupom, DANFE
 NFC-e, fechamento de caixa, sangria/reforço, fiado e relatórios saem direto nela, **sem abrir a janela
 de impressão do Windows**. "Imprimir página de teste" confere impressora, acentos e largura (80mm).

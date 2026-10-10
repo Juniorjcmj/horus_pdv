@@ -39,6 +39,7 @@ export type NfeImportItemPreview = {
 };
 
 export type NfeImportPreview = {
+  modelo?: number;
   numeroNota: string;
   serie: string;
   fornecedor: NfeImportFornecedorPreview;

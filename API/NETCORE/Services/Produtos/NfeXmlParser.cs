@@ -1,6 +1,6 @@
 /**
  * Arquivo: API/NETCORE/Services/Produtos/NfeXmlParser.cs
- * Objetivo: extrai emitente e itens de um XML de NF-e (nota de compra do fornecedor, modelo 55)
+ * Objetivo: extrai emitente e itens de XML de NF-e (55) ou NFC-e (65) do fornecedor
  *           para alimentar a importação de cadastro de produtos.
  * Entradas esperadas: recebe o XML bruto (bytes) de uma NF-e autorizada — aceita tanto o
  *           envelope completo <nfeProc> (com protocolo) quanto o <NFe> isolado.
@@ -39,6 +39,7 @@ public sealed record NfeParsedItem(
     decimal ValorUnitario);
 
 public sealed record NfeParsedDocument(
+    int Modelo,
     string NumeroNota,
     string Serie,
     NfeParsedEmitente Emitente,
@@ -69,6 +70,8 @@ public static class NfeXmlParser
             ?? throw new InvalidOperationException("XML sem o bloco <ide> — nota fiscal inválida.");
         var emit = infNFe.Element(Ns + "emit")
             ?? throw new InvalidOperationException("XML sem o bloco <emit> — nota fiscal inválida.");
+        if (!int.TryParse(Value(ide, "mod"), out var modelo) || modelo is not (55 or 65))
+            throw new InvalidOperationException("Envie o XML de uma NF-e (modelo 55) ou NFC-e (modelo 65).");
         var enderEmit = emit.Element(Ns + "enderEmit");
 
         var cnpj = Value(emit, "CNPJ");
@@ -115,7 +118,7 @@ public static class NfeXmlParser
             throw new InvalidOperationException("XML não tem nenhum item (<det>) para importar.");
         }
 
-        return new NfeParsedDocument(Value(ide, "nNF"), Value(ide, "serie"), emitente, itens);
+        return new NfeParsedDocument(modelo, Value(ide, "nNF"), Value(ide, "serie"), emitente, itens);
     }
 
     private static bool IsGtinValido(string value) =>

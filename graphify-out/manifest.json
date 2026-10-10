@@ -186,9 +186,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/NfeImportModels.cs": {
-    "mtime": 1790969081.6829717,
-    "seen": 1790969442.0367024,
-    "ast_hash": "91fe43efb33496924ebf63152683ef67",
+    "mtime": 1791637263.996907,
+    "seen": 1791637953.3192,
+    "ast_hash": "549967a2c107454724f57bae78aad199",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/ProdutoModel.cs": {
@@ -546,15 +546,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
-    "mtime": 1791049904.2505736,
-    "seen": 1791049938.025912,
-    "ast_hash": "b362bfdb5a3dbc07ec49cb54ab168f82",
+    "mtime": 1791637447.160287,
+    "seen": 1791637953.3360083,
+    "ast_hash": "c4a349c37bcb3a12c186d930d6f52397",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeXmlParser.cs": {
-    "mtime": 1788705407.1389654,
-    "seen": 1788888974.351959,
-    "ast_hash": "a0f954bfd706a1ce81cd60359b908d68",
+    "mtime": 1791637263.993147,
+    "seen": 1791637953.3360105,
+    "ast_hash": "fc44fbee6d8b94b161cf0c15786ed0f3",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
@@ -630,9 +630,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/package.json": {
-    "mtime": 1791579192.2845008,
-    "seen": 1791579531.3335242,
-    "ast_hash": "058c9f9d1b3736966140272aced3abdf",
+    "mtime": 1791637789.7035296,
+    "seen": 1791637953.3437145,
+    "ast_hash": "3be9144708bbd7ba0321c4d72694e644",
     "semantic_hash": ""
   },
   "FRONTEND/playwright.config.ts": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NfeImportModal.tsx": {
-    "mtime": 1791577549.4272254,
-    "seen": 1791578390.3454576,
-    "ast_hash": "ff0eca29fd7b80617beb808c5b679665",
+    "mtime": 1791637977.6642513,
+    "seen": 1791638300.0591605,
+    "ast_hash": "f0e365831c61cc7d40edef8c1d35e452",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PageHeader.tsx": {
@@ -708,9 +708,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReceiptPreviewModal.tsx": {
-    "mtime": 1790466361.2564678,
-    "seen": 1790466496.8243723,
-    "ast_hash": "a5ba79431446a1d99ab8f19773f25c92",
+    "mtime": 1791634146.489556,
+    "seen": 1791634496.485436,
+    "ast_hash": "2703d02193946377a30dd11e807de650",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/ReportCardsGrid.tsx": {
@@ -996,9 +996,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiscalPage.tsx": {
-    "mtime": 1791578183.980492,
-    "seen": 1791578390.3599858,
-    "ast_hash": "e0f3930d230bb9d76cc2d7a08d156617",
+    "mtime": 1791637340.53248,
+    "seen": 1791637953.3672485,
+    "ast_hash": "4908412cbe229239fe4745e115e11689",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/HomePage.tsx": {
@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1791577549.2610927,
-    "seen": 1791578390.3606029,
-    "ast_hash": "9422063ffccf3b8f4b4f77e7f2ff7057",
+    "mtime": 1791637340.5256076,
+    "seen": 1791637953.410194,
+    "ast_hash": "c7c9c8fe8d05ef6b30dd16e4b56f4147",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791279614.1092436,
-    "seen": 1791280032.4056122,
-    "ast_hash": "0569c510bd68138407bd5430b32e1060",
+    "mtime": 1791636696.7165728,
+    "seen": 1791636777.6107256,
+    "ast_hash": "acfd23e98225c75788f2d22df5f7c638",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/nfeImportService.ts": {
-    "mtime": 1791049598.250117,
-    "seen": 1791049660.4306715,
-    "ast_hash": "c238a78b684ceeca6f77cbf52978739b",
+    "mtime": 1791637264.0152152,
+    "seen": 1791637953.4314265,
+    "ast_hash": "89481cce59c836a82a50bebb453a8321",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/pedidoService.ts": {
@@ -1302,9 +1302,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/vite.config.ts": {
-    "mtime": 1790424036.2202642,
-    "seen": 1790426295.5709028,
-    "ast_hash": "2282692e8e8f751340460b26f4474757",
+    "mtime": 1791593679.2849452,
+    "seen": 1791594327.7649245,
+    "ast_hash": "194e1ad435bd791368d93c99fcfc4249",
     "semantic_hash": ""
   },
   "doc fiscal pdv/FiscalContracts.cs": {
@@ -2106,9 +2106,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/SefazDFeDownloadService.cs": {
-    "mtime": 1790956440.518355,
-    "seen": 1790956635.5644267,
-    "ast_hash": "0d514d7643f8d24c4c7b4c60176d7446",
+    "mtime": 1791637263.9886277,
+    "seen": 1791637953.335122,
+    "ast_hash": "cb0b1a4b47e95dd92d6255bdad1ca76e",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Categorias/CategoriaController.cs": {
@@ -2592,9 +2592,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useProducts.ts": {
-    "mtime": 1791245947.6045067,
-    "seen": 1791246146.692827,
-    "ast_hash": "fb0d90b49286eada59e75407c68a72c6",
+    "mtime": 1791591466.6872754,
+    "seen": 1791592000.5514603,
+    "ast_hash": "2b40af66271e9f54f25db22344cc897b",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useSyncStatus.ts": {
@@ -2616,8 +2616,8 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CashSessionRepository.ts": {
-    "mtime": 1791321704.051201,
-    "seen": 1791322218.9840577,
+    "mtime": 1791636696.7120502,
+    "seen": 1791636777.6013415,
     "ast_hash": "9445d37fa392ee5ccc34abaf8f745c53",
     "semantic_hash": ""
   },
@@ -3786,21 +3786,21 @@
     "semantic_hash": ""
   },
   "DESKTOP/main.js": {
-    "mtime": 1791282323.0564868,
-    "seen": 1791322218.964495,
-    "ast_hash": "db80c6d4944ffbf98f8cbecae5f96b8d",
+    "mtime": 1791634091.187765,
+    "seen": 1791634496.4669597,
+    "ast_hash": "3f21bbfc97b92c1b57d850204bacece7",
     "semantic_hash": ""
   },
   "DESKTOP/package.json": {
-    "mtime": 1791282323.055015,
-    "seen": 1791322218.9644988,
-    "ast_hash": "c8861c1433b79ccaa47407f191e4ded8",
+    "mtime": 1791638144.9507542,
+    "seen": 1791638300.0471365,
+    "ast_hash": "04dcdbd6102175f9db89c1f0fba43fc0",
     "semantic_hash": ""
   },
   "DESKTOP/README.md": {
-    "mtime": 1791282332.3674679,
-    "seen": 1791322219.048409,
-    "ast_hash": "5a4971dec87801ea007e73bd54c7181c",
+    "mtime": 1791637789.706076,
+    "seen": 1791637953.4937973,
+    "ast_hash": "e865106c4a092ff26ffa5f4fb677040c",
     "semantic_hash": ""
   },
   "DESKTOP/offline.html": {
@@ -3810,9 +3810,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PdvCashPanelModal.tsx": {
-    "mtime": 1791240243.1240177,
-    "seen": 1791240357.0491605,
-    "ast_hash": "3261cbe642cb588b529005095f8760f2",
+    "mtime": 1791636279.8240354,
+    "seen": 1791636777.5835252,
+    "ast_hash": "165ef9cfccb240c5ae16acdb8814815b",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useCashRegisterActions.ts": {
@@ -3834,9 +3834,9 @@
     "semantic_hash": ""
   },
   "DESKTOP/preload.js": {
-    "mtime": 1791281839.9442995,
-    "seen": 1791322218.9645011,
-    "ast_hash": "cea0462d5f4602cbf19bd5da53c386bc",
+    "mtime": 1791634091.1899188,
+    "seen": 1791634496.4669719,
+    "ast_hash": "8929f97e01f755103a779c037178631d",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/desktop/pendingBackup.ts": {
@@ -3954,9 +3954,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/desktop/bridge.ts": {
-    "mtime": 1791282238.1186419,
-    "seen": 1791322218.98469,
-    "ast_hash": "4dde07ec7391cce8a5e1546088529211",
+    "mtime": 1791634091.1919422,
+    "seen": 1791634496.5097795,
+    "ast_hash": "b1890bda6ae029df20ede23496475bce",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/desktop/desktopGateway.ts": {
@@ -3978,15 +3978,15 @@
     "semantic_hash": ""
   },
   "DESKTOP/printer.js": {
-    "mtime": 1791281800.9730642,
-    "seen": 1791322218.9645038,
-    "ast_hash": "d629d37fcb1ae1724f81474cdb9745a7",
+    "mtime": 1791634146.4860215,
+    "seen": 1791634496.4669755,
+    "ast_hash": "4127f201207c7c6f24c5be0e11db57e0",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/DesktopPrinterSettings.tsx": {
-    "mtime": 1791282238.2455237,
-    "seen": 1791322218.9774501,
-    "ast_hash": "4af068fdef1e4c5af593c57ab4f0f36b",
+    "mtime": 1791634091.2258646,
+    "seen": 1791634496.4950395,
+    "ast_hash": "3758d39e593e15105244e766be6f8607",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/localTenant.ts": {
@@ -4143,6 +4143,126 @@
     "mtime": 1791583132.819043,
     "seen": 1791583249.4965153,
     "ast_hash": "647c82247d9fec5dc9ef24c7b413e8ea",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.scanner.config.ts": {
+    "mtime": 1791591815.8179142,
+    "seen": 1791592000.5331805,
+    "ast_hash": "bfd05e6689ec8f2dbb298ab59b2a4636",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/infrastructure/desktop/barcodeScanner.ts": {
+    "mtime": 1791591636.9682055,
+    "seen": 1791592000.5535123,
+    "ast_hash": "4b2b9076b41618cc212624df25f69686",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/barcode-scanner.spec.ts": {
+    "mtime": 1791592192.6561522,
+    "seen": 1791592204.8043737,
+    "ast_hash": "5644fd65e5b55a2ef58c0a915ac7a207",
+    "semantic_hash": ""
+  },
+  "DESKTOP/frontend.js": {
+    "mtime": 1791593679.2789185,
+    "seen": 1791594327.7270098,
+    "ast_hash": "c257f35caa15ef22649e91bf6b856c0f",
+    "semantic_hash": ""
+  },
+  "DESKTOP/scripts/prepare-frontend.js": {
+    "mtime": 1791593710.1949768,
+    "seen": 1791594327.7274015,
+    "ast_hash": "63ce005fe747f352f342d4976e2b02c5",
+    "semantic_hash": ""
+  },
+  "DESKTOP/tests/frontend.test.js": {
+    "mtime": 1791593710.1896448,
+    "seen": 1791594327.7275484,
+    "ast_hash": "87fe0b1edf4624a3d1e935c44c48c38e",
+    "semantic_hash": ""
+  },
+  "DESKTOP/tests/installer-smoke.js": {
+    "mtime": 1791637900.7222552,
+    "seen": 1791637953.3432193,
+    "ast_hash": "30805f10a9e8b66228f9e0a27a110b58",
+    "semantic_hash": ""
+  },
+  "DESKTOP/tests/printer.test.js": {
+    "mtime": 1791634146.4905481,
+    "seen": 1791634496.4685469,
+    "ast_hash": "cd8d7bcf237b7ce9b4df02df784c7688",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/printSaleReceipt.ts": {
+    "mtime": 1791634091.2035213,
+    "seen": 1791634496.5414748,
+    "ast_hash": "18446f3eec716030cd3fb1b098185ecc",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.cash-closing.config.ts": {
+    "mtime": 1791636405.892074,
+    "seen": 1791636777.5787234,
+    "ast_hash": "321567f0fffc1ec3717438ab6d37a940",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/cash-closing-refresh.spec.ts": {
+    "mtime": 1791636696.7176635,
+    "seen": 1791636777.62272,
+    "ast_hash": "951a8cc30f4c8322e6a6645a39899f03",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Produtos/NfeAccessKey.cs": {
+    "mtime": 1791637263.9866204,
+    "seen": 1791637953.3360045,
+    "ast_hash": "9677522725e39cba19634c1916b138e1",
+    "semantic_hash": ""
+  },
+  "API/tests/InvoiceImportChecks/InvoiceImportChecks.csproj": {
+    "mtime": 1791637447.1647508,
+    "seen": 1791637953.3386567,
+    "ast_hash": "e68834460ec86f1aa81086112c1b7198",
+    "semantic_hash": ""
+  },
+  "API/tests/InvoiceImportChecks/Program.cs": {
+    "mtime": 1791637447.1657622,
+    "seen": 1791637953.3386595,
+    "ast_hash": "4e14920a4519f44ff68b640adc652bec",
+    "semantic_hash": ""
+  },
+  "API/tests/InvoiceImportHttpChecks/InvoiceImportHttpChecks.csproj": {
+    "mtime": 1791637600.3117156,
+    "seen": 1791637953.338662,
+    "ast_hash": "e0aa76a883a2eb98a41367e958129980",
+    "semantic_hash": ""
+  },
+  "API/tests/InvoiceImportHttpChecks/Program.cs": {
+    "mtime": 1791637705.596341,
+    "seen": 1791637953.3386636,
+    "ast_hash": "ed3e5047ee862bc713b7b0d8ef2e44b9",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.invoice-import.config.ts": {
+    "mtime": 1791637447.1667633,
+    "seen": 1791637953.3448458,
+    "ast_hash": "a9371a7b7ddeffb3ca7b7765877d0dff",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/invoiceAccessKey.ts": {
+    "mtime": 1791637263.9856105,
+    "seen": 1791637953.442058,
+    "ast_hash": "c14075abbfc2a8a68eee3d42739d37b0",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/invoice-import.spec.ts": {
+    "mtime": 1791637541.433355,
+    "seen": 1791637953.4532182,
+    "ast_hash": "ed0bf1b5c6abfcdec24e1988a458ba40",
+    "semantic_hash": ""
+  },
+  "API/tests/InvoiceImportChecks/README.md": {
+    "mtime": 1791637789.7070878,
+    "seen": 1791637953.4922507,
+    "ast_hash": "6bac41d10be5e58a21ad8dc071a851d7",
     "semantic_hash": ""
   }
 }

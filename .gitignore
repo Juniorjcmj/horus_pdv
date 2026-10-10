@@ -28,3 +28,5 @@ obj/
 DESKTOP/release/
 # Gateway copiado do kit para o instalador do programa (DESKTOP/scripts/prepare-gateway.js)
 DESKTOP/gateway-bin/
+# Frontend compilado incluído no instalador; gerado por prepare-frontend.js
+DESKTOP/frontend-bin/

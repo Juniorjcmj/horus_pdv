@@ -2,7 +2,7 @@
  * Arquivo: DESKTOP/main.js
  * Objetivo: casca desktop (Electron) do Quack PDV — etapa 1.
  *           Abre o PDV publicado (https://pdv.quacksistemas.com.br) numa janela própria em tela cheia,
- *           sem barra de endereço/abas. O código do PDV continua vindo do servidor (atualiza a cada deploy);
+ *           sem barra de endereço/abas. Traz as telas no instalador e usa versões mais novas do servidor;
  *           service worker e IndexedDB funcionam como no navegador, mas os dados ficam no perfil do
  *           programa (%APPDATA%\Quack PDV) e não somem ao limpar o histórico do Chrome/Edge.
  *
@@ -24,11 +24,12 @@
  * Atalhos: F11 tela cheia | F5 / Ctrl+R recarregar | Ctrl+Shift+R recarregar sem cache | Ctrl+Shift+I DevTools (suporte)
  *          Ctrl+= / Ctrl+- aumentar/diminuir | Ctrl+0 voltar ao tamanho automático
  */
-const { app, BrowserWindow, dialog, ipcMain, safeStorage, screen, shell } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, net, protocol, safeStorage, screen, shell } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
 const { EmbeddedGateway, validateConfigureInput } = require("./gateway");
-const { normalizePrinterSettings, listPrinters, printSilently, printTestPage } = require("./printer");
+const { normalizePrinterSettings, listPrinters, printSilently, printReceipt, printTestPage } = require("./printer");
+const { configureFrontend } = require("./frontend");
 
 const DEFAULT_CONFIG = {
   url: "https://pdv.quacksistemas.com.br",
@@ -236,6 +237,7 @@ if (!app.requestSingleInstanceLock()) {
     });
     mainWindow.removeMenu();
     mainWindow.once("ready-to-show", () => {
+      if (process.env.QUACK_PDV_TEST_MODE === "1") return;
       if (!config.fullscreen) mainWindow.maximize();
       mainWindow.show();
     });
@@ -389,8 +391,10 @@ if (!app.requestSingleInstanceLock()) {
   /** webContents (janela principal + janelas abertas por ela) que podem pedir impressão. */
   const printSenders = new Set();
 
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
     config = loadConfig();
+    await configureFrontend({ app, net, protocol, url: config.url,
+      source: process.env.QUACK_PDV_FRONTEND_SOURCE || config.frontendSource || "auto" });
 
     // Só a página do PDV (mesma origem da URL configurada) fala com o programa.
     const assertAppOrigin = (event) => {
@@ -434,6 +438,10 @@ if (!app.requestSingleInstanceLock()) {
 
     // Impressora (ver printer.js). O window.print() das telas chega aqui pelo preload.
     const printerSettings = () => normalizePrinterSettings(readFileConfig().printer);
+    ipcMain.handle("quack:print-receipt", (event, html) => {
+      assertAppOrigin(event);
+      return printReceipt(html, printerSettings().copies);
+    });
     ipcMain.handle("quack:print-page", async (event) => {
       const fromMain = mainWindow && !mainWindow.isDestroyed() && event.sender === mainWindow.webContents;
       if (!fromMain && !printSenders.has(event.sender.id)) throw new Error("Janela não autorizada a imprimir.");

@@ -46,10 +46,35 @@ async function printSilently(webContents, settings) {
         printBackground: true,
         deviceName: settings.deviceName || undefined,
         copies: settings.copies,
+        ...(settings.usePrinterDefaultPageSize ? { usePrinterDefaultPageSize: true } : {}),
       },
       (success, failureReason) => resolve(success ? { printed: true } : { printed: false, error: failureReason || "falha ao imprimir" }),
     );
   });
+}
+
+/** Cupom de venda: sempre automático na impressora padrão, em uma janela invisível. */
+async function printReceipt(html, copies = 1) {
+  if (typeof html !== "string" || !html.trim() || Buffer.byteLength(html, "utf8") > 5 * 1024 * 1024) {
+    return { printed: false, error: "Cupom inválido para impressão." };
+  }
+  let win;
+  try {
+    win = new BrowserWindow({
+      show: false,
+      webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false, javascript: false },
+    });
+    win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+    // O HTML já contém estilos e QR Code. Scripts desativados impedem uma segunda impressão.
+    await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+    return await printSilently(win.webContents, {
+      deviceName: "", copies: normalizePrinterSettings({ copies }).copies, usePrinterDefaultPageSize: true,
+    });
+  } catch (error) {
+    return { printed: false, error: error instanceof Error ? error.message : "Não foi possível imprimir o cupom." };
+  } finally {
+    if (win && !win.isDestroyed()) win.destroy();
+  }
 }
 
 const TEST_PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>
@@ -79,4 +104,4 @@ async function printTestPage(settings) {
   }
 }
 
-module.exports = { normalizePrinterSettings, listPrinters, printSilently, printTestPage };
+module.exports = { normalizePrinterSettings, listPrinters, printSilently, printReceipt, printTestPage };

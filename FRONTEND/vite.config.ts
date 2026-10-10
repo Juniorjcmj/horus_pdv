@@ -86,6 +86,9 @@ function horusPwaPlugin(): Plugin {
       output = output.replace("const PRECACHE_URLS = [];", `const PRECACHE_URLS = ${JSON.stringify(precacheUrls, null, 2)};`);
 
       writeFileSync(swPath, output, "utf-8");
+      writeFileSync(join(distDir, "build-info.json"), JSON.stringify({
+        version: cacheVersion, builtAt: new Date().toISOString(),
+      }), "utf-8");
     },
   };
 }

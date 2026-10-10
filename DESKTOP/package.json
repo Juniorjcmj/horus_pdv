@@ -1,7 +1,7 @@
 {
   "name": "quack-pdv-desktop",
   "productName": "Quack PDV",
-  "version": "1.2.0",
+  "version": "1.3.3",
   "description": "Casca desktop (Electron) do Quack PDV",
   "author": "Quack Sistemas",
   "private": true,
@@ -9,7 +9,9 @@
   "scripts": {
     "start": "electron .",
     "prepare-gateway": "node scripts/prepare-gateway.js",
-    "dist": "node scripts/prepare-gateway.js && electron-builder --win nsis"
+    "prepare-frontend": "node scripts/prepare-frontend.js",
+    "test": "node --test tests/frontend.test.js tests/printer.test.js",
+    "dist": "node scripts/prepare-frontend.js && node scripts/prepare-gateway.js && electron-builder --win nsis"
   },
   "devDependencies": {
     "electron": "^44.5.1",
@@ -24,6 +26,7 @@
     },
     "files": [
       "main.js",
+      "frontend.js",
       "preload.js",
       "gateway.js",
       "printer.js",
@@ -31,11 +34,12 @@
       "build/icon.png"
     ],
     "extraResources": [
-      { "from": "gateway-bin", "to": "gateway" }
+      { "from": "gateway-bin", "to": "gateway" },
+      { "from": "frontend-bin", "to": "frontend" }
     ],
     "win": {
       "target": "nsis",
-      "icon": "build/icon.png"
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": false,

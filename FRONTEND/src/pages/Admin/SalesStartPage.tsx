@@ -89,7 +89,10 @@ import { getStoredAuthUser } from "@/utils/authStorage";
 import { MANAGER_ROLES } from "@/utils/cashRegisterFormat";
 import { buildDanfePrintHtml } from "@/utils/danfePrint";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
+import { getDesktopBridge } from "@/infrastructure/desktop/bridge";
+import { listenForBarcodeScans, type BarcodeScanOrigin } from "@/infrastructure/desktop/barcodeScanner";
 import { getPrintPreviewEnabled } from "@/utils/pdvPreferences";
+import { printSaleReceipt } from "@/utils/printSaleReceipt";
 import { QuickCustomerRegisterModal } from "@/components/Admin/QuickCustomerRegisterModal";
 import { lookupAddressByCep } from "@/utils/cepLookup";
 import { onlyDigits } from "@/utils/inputMasks";
@@ -111,6 +114,7 @@ type Product = {
   id: string;
   name: string;
   code: string;
+  barcode?: string;
   stock: number;
   salePrice: number;
   imageUrl?: string;
@@ -436,6 +440,7 @@ export default function SalesStartPage({
         (item) =>
           item.name.toLowerCase().includes(normalized) ||
           item.code.toLowerCase().includes(normalized) ||
+          item.barcode?.toLowerCase().includes(normalized) ||
           (item.marca && item.marca.toLowerCase().includes(normalized)),
       );
     }
@@ -667,11 +672,12 @@ export default function SalesStartPage({
   const loadCashStatus = useCallback(async () => {
     try {
       const status = await cashRegisterService.status();
+      if (status) {
+        // Aguarda a gravação para o painel offline também consultar a base mais recente.
+        await saveCashStatus(status).catch((error) => console.warn("Não foi possível guardar o status do caixa:", error));
+      }
       const result = status ?? null;
       setCashStatus(result);
-      if (result) {
-        void saveCashStatus(result);
-      }
       return result;
     } catch {
       const cached = await loadCachedCashStatus();
@@ -901,13 +907,13 @@ export default function SalesStartPage({
   );
 
   const selectProductOption = useCallback(
-    (product: Product) => {
+    (product: Product, requestedQuantity = quantity) => {
       if (cartLocked) {
         Toast.error("Este carrinho veio de um pedido — solte o pedido para adicionar itens à mão.");
         return;
       }
 
-      const qty = quantity > 0 ? quantity : 1;
+      const qty = requestedQuantity > 0 ? requestedQuantity : 1;
       if (!addProductToCart(product, qty)) return;
 
       setSelectedProductId("");
@@ -1710,21 +1716,17 @@ export default function SalesStartPage({
       // catálogo e a lista de clientes INTEIROS do servidor a cada venda (carga pesada na API).
       await Promise.all([refreshProductsLocal(), refreshCustomersLocal()]);
       saveLastReceipt(receipt);
+      await loadCashStatus().catch((error) => console.warn("Venda salva; não foi possível atualizar os totais do caixa:", error));
 
-      // Impressão automática na impressora padrão (Blob garante UTF-8)
-      const printHtml = fiscalDetail
-        ? buildDanfePrintHtml(receipt, fiscalDetail, formatMoneyBr)
-        : buildReceiptPrintHtml(receipt, formatMoneyBr, fiscalDetail);
-      const printBlob = new Blob([printHtml], { type: "text/html;charset=utf-8" });
-      const printUrl = URL.createObjectURL(printBlob);
-      const printPopup = window.open(printUrl, "_blank", "width=420,height=720");
-      if (printPopup) {
-        printPopup.addEventListener("afterprint", () => {
-          printPopup.close();
-          URL.revokeObjectURL(printUrl);
-        });
-      } else {
-        URL.revokeObjectURL(printUrl);
+      // Falha de impressão não desfaz uma venda já salva nem mantém o carrinho para cobrar novamente.
+      try {
+        const printHtml = fiscalDetail
+          ? buildDanfePrintHtml(receipt, fiscalDetail, formatMoneyBr)
+          : buildReceiptPrintHtml(receipt, formatMoneyBr, fiscalDetail);
+        await printSaleReceipt(printHtml);
+      } catch (printError) {
+        console.warn("Venda salva, mas o cupom não foi enviado:", printError);
+        Toast.error('Venda salva, mas não foi possível imprimir. Confira a impressora e use "Imprimir última venda".');
       }
 
       if (printPreviewEnabled) {
@@ -1763,6 +1765,52 @@ export default function SalesStartPage({
     setNfeMatchedCustomer(null);
     window.setTimeout(() => productInputRef.current?.focus(), 0);
   };
+
+  const scannerBlocked = checkoutOpen || isConfirmingSale || !!receiptPreview || customerModalOpen
+    || quickCustomerModalOpen || cashPanelOpen || !!cashMovementType || outboxModalOpen
+    || nfceCancelModalOpen || sessionSalesModalOpen || saleDetailModalOpen || !!saleToCancel || !!priceOverrideId
+    || !!statusDialog.Dialog;
+  const pendingScansRef = useRef<{ code: string; quantity: number }[]>([]);
+  const searchScannedProduct = useCallback((code: string, requestedQuantity: number) => {
+    setSelectedProductId("");
+    setProductSearch(code);
+    setHighlightedProductIndex(0);
+    productInputRef.current?.focus();
+    setShowProductOptions(true);
+    const normalized = code.trim().toLowerCase();
+    const product = products.find(item => item.code.trim().toLowerCase() === normalized
+      || item.barcode?.trim().toLowerCase() === normalized);
+    if (product) {
+      selectProductOption(product, requestedQuantity);
+      return;
+    }
+    if (!addFromBalancaBarcode(code)) Toast.error("Produto não encontrado.");
+  }, [addFromBalancaBarcode, products, selectProductOption]);
+
+  const receiveScan = useCallback((code: string, origin: BarcodeScanOrigin) => {
+    // The reader may have typed into quantity; use its value from before the burst.
+    const requestedQuantity = origin.input === qtyInputRef.current
+      ? Number(origin.value) : quantity;
+    if (scannerBlocked) {
+      if (pendingScansRef.current.length === 0) {
+        Toast.info("Leitura guardada. A busca será feita ao fechar esta janela.");
+      }
+      pendingScansRef.current.push({ code, quantity: requestedQuantity });
+      return;
+    }
+    searchScannedProduct(code, requestedQuantity);
+  }, [quantity, scannerBlocked, searchScannedProduct]);
+  const receiveScanRef = useRef(receiveScan);
+  useEffect(() => { receiveScanRef.current = receiveScan; });
+  useEffect(() => {
+    if (!getDesktopBridge()) return;
+    return listenForBarcodeScans((code, origin) => receiveScanRef.current(code, origin));
+  }, []);
+  useEffect(() => {
+    if (scannerBlocked) return;
+    const pending = pendingScansRef.current.splice(0);
+    for (const scan of pending) searchScannedProduct(scan.code, scan.quantity);
+  }, [scannerBlocked, searchScannedProduct]);
 
   // Versão mais recente de confirmPayment para o atalho global de Enter (o handler não re-registra a cada render).
   const confirmPaymentRef = useRef(confirmPayment);
@@ -3362,6 +3410,7 @@ export default function SalesStartPage({
                 <button
                   type="button"
                   onClick={() => setCustomerModalOpen(false)}
+                  aria-label="Fechar seleção de cliente"
                   className="rounded-lg p-1.5 text-text-secondary hover:bg-hover-light"
                 >
                   <X size={16} />
@@ -3507,6 +3556,7 @@ export default function SalesStartPage({
       {cashPanelOpen ? (
         <PdvCashPanelModal
           cashStatus={cashStatus}
+          onRefreshStatus={loadCashStatus}
           company={company}
           onStatusChange={setCashStatus}
           onClose={() => {

@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ProdutoRequest.cs": {
-    "mtime": 1791045713.4405205,
-    "seen": 1791045837.6966298,
-    "ast_hash": "cc01ff0e814fec472f34b584243e5db1",
+    "mtime": 1791583030.5911453,
+    "seen": 1791583249.3889945,
+    "ast_hash": "2370808c2979bdc2d44017eef435b2ec",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/ResetPasswordWithTokenRequest.cs": {
@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
-    "mtime": 1791575167.061342,
-    "seen": 1791575436.157193,
-    "ast_hash": "5a495d3c99440d14f0cfa2d3dee743a3",
+    "mtime": 1791583030.5921667,
+    "seen": 1791583249.4046428,
+    "ast_hash": "ae80533429c5b017d95256ecacc7f324",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusAuthorizeRolesAttribute.cs": {
@@ -630,9 +630,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/package.json": {
-    "mtime": 1791579192.2845008,
-    "seen": 1791579531.3335242,
-    "ast_hash": "058c9f9d1b3736966140272aced3abdf",
+    "mtime": 1791591527.3081515,
+    "seen": 1791592000.531768,
+    "ast_hash": "e3ebd0a8a37fa3db87eb537fb499ddef",
     "semantic_hash": ""
   },
   "FRONTEND/playwright.config.ts": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791279614.1092436,
-    "seen": 1791280032.4056122,
-    "ast_hash": "0569c510bd68138407bd5430b32e1060",
+    "mtime": 1791592027.1447475,
+    "seen": 1791592204.7884252,
+    "ast_hash": "b293840c58ca6bcde03c8df5cae9f2d2",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1302,9 +1302,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/vite.config.ts": {
-    "mtime": 1790424036.2202642,
-    "seen": 1790426295.5709028,
-    "ast_hash": "2282692e8e8f751340460b26f4474757",
+    "mtime": 1791593679.2849452,
+    "seen": 1791594327.7649245,
+    "ast_hash": "194e1ad435bd791368d93c99fcfc4249",
     "semantic_hash": ""
   },
   "doc fiscal pdv/FiscalContracts.cs": {
@@ -2592,9 +2592,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useProducts.ts": {
-    "mtime": 1791245947.6045067,
-    "seen": 1791246146.692827,
-    "ast_hash": "fb0d90b49286eada59e75407c68a72c6",
+    "mtime": 1791591466.6872754,
+    "seen": 1791592000.5514603,
+    "ast_hash": "2b40af66271e9f54f25db22344cc897b",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useSyncStatus.ts": {
@@ -3786,21 +3786,21 @@
     "semantic_hash": ""
   },
   "DESKTOP/main.js": {
-    "mtime": 1791282323.0564868,
-    "seen": 1791322218.964495,
-    "ast_hash": "db80c6d4944ffbf98f8cbecae5f96b8d",
+    "mtime": 1791593679.2813616,
+    "seen": 1791594327.7271447,
+    "ast_hash": "f58cb603f48bac011dbf66ca1c5ba01d",
     "semantic_hash": ""
   },
   "DESKTOP/package.json": {
-    "mtime": 1791282323.055015,
-    "seen": 1791322218.9644988,
-    "ast_hash": "c8861c1433b79ccaa47407f191e4ded8",
+    "mtime": 1791593679.28342,
+    "seen": 1791594327.7271464,
+    "ast_hash": "7fc5c96ee4e1be36dd6e0993d59f7128",
     "semantic_hash": ""
   },
   "DESKTOP/README.md": {
-    "mtime": 1791282332.3674679,
-    "seen": 1791322219.048409,
-    "ast_hash": "5a4971dec87801ea007e73bd54c7181c",
+    "mtime": 1791594095.594653,
+    "seen": 1791594327.7865074,
+    "ast_hash": "f5a52b18720b4a116da8acf45cee1e6c",
     "semantic_hash": ""
   },
   "DESKTOP/offline.html": {
@@ -4125,6 +4125,66 @@
     "mtime": 1791579322.3312564,
     "seen": 1791579531.4263437,
     "ast_hash": "c7590df97238ef9d4f5652e42eab5383",
+    "semantic_hash": ""
+  },
+  "API/tests/ProductRegistrationChecks/ProductRegistrationChecks.csproj": {
+    "mtime": 1791583132.816516,
+    "seen": 1791583249.4098299,
+    "ast_hash": "e04c8afd5817112dd06c13d0e099adf6",
+    "semantic_hash": ""
+  },
+  "API/tests/ProductRegistrationChecks/Program.cs": {
+    "mtime": 1791583132.8180327,
+    "seen": 1791583249.4098358,
+    "ast_hash": "fbcb4b89d2492a81e49720a015d9e4fe",
+    "semantic_hash": ""
+  },
+  "API/tests/ProductRegistrationChecks/README.md": {
+    "mtime": 1791583132.819043,
+    "seen": 1791583249.4965153,
+    "ast_hash": "647c82247d9fec5dc9ef24c7b413e8ea",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.scanner.config.ts": {
+    "mtime": 1791591815.8179142,
+    "seen": 1791592000.5331805,
+    "ast_hash": "bfd05e6689ec8f2dbb298ab59b2a4636",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/infrastructure/desktop/barcodeScanner.ts": {
+    "mtime": 1791591636.9682055,
+    "seen": 1791592000.5535123,
+    "ast_hash": "4b2b9076b41618cc212624df25f69686",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/barcode-scanner.spec.ts": {
+    "mtime": 1791592192.6561522,
+    "seen": 1791592204.8043737,
+    "ast_hash": "5644fd65e5b55a2ef58c0a915ac7a207",
+    "semantic_hash": ""
+  },
+  "DESKTOP/frontend.js": {
+    "mtime": 1791593679.2789185,
+    "seen": 1791594327.7270098,
+    "ast_hash": "c257f35caa15ef22649e91bf6b856c0f",
+    "semantic_hash": ""
+  },
+  "DESKTOP/scripts/prepare-frontend.js": {
+    "mtime": 1791593710.1949768,
+    "seen": 1791594327.7274015,
+    "ast_hash": "63ce005fe747f352f342d4976e2b02c5",
+    "semantic_hash": ""
+  },
+  "DESKTOP/tests/frontend.test.js": {
+    "mtime": 1791593710.1896448,
+    "seen": 1791594327.7275484,
+    "ast_hash": "87fe0b1edf4624a3d1e935c44c48c38e",
+    "semantic_hash": ""
+  },
+  "DESKTOP/tests/installer-smoke.js": {
+    "mtime": 1791594182.052607,
+    "seen": 1791594327.7275505,
+    "ast_hash": "f9e5ee6fefd2a6987dcb2a2de5982f77",
     "semantic_hash": ""
   }
 }

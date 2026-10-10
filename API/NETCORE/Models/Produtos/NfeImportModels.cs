@@ -44,6 +44,7 @@ public class NfeImportItemPreview
 
 public class NfeImportPreviewModel
 {
+    public int Modelo { get; set; } = 55;
     public string NumeroNota { get; set; } = string.Empty;
     public string Serie { get; set; } = string.Empty;
     public NfeImportFornecedorPreview Fornecedor { get; set; } = new();

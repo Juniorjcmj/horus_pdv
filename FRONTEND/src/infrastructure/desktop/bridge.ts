@@ -54,6 +54,8 @@ export type QuackDesktopBridge = {
   };
   /** Ausente nas versões do programa anteriores à 1.2.0. */
   printer?: {
+    /** Versão 1.3.1+: cupom automático na impressora padrão, independente do modo dos demais documentos. */
+    printReceipt?: (html: string) => Promise<DesktopPrintResult>;
     list: () => Promise<DesktopPrinterInfo[]>;
     getSettings: () => Promise<DesktopPrinterSettings>;
     saveSettings: (settings: Partial<DesktopPrinterSettings>) => Promise<DesktopPrinterSettings>;

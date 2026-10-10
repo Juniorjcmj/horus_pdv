@@ -16,6 +16,8 @@ import {
   X,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { Toast } from "@/hooks/Dialog";
+import { printSaleReceipt } from "@/utils/printSaleReceipt";
 import {
   fiscalService,
   FISCAL_STATUS,
@@ -408,20 +410,20 @@ export default function ReceiptPreviewModal({
       ].filter(Boolean).join("\n")
     : "";
 
-  const printReceipt = () => {
-    const html = (isDanfe && currentFiscal)
-      ? buildDanfePrintHtml(receipt, currentFiscal, formatMoney)
-      : buildReceiptPrintHtml(receipt, formatMoney, currentFiscal);
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const popup = window.open(url, "_blank", "width=420,height=720");
-    if (popup) {
-      popup.addEventListener("afterprint", () => {
-        popup.close();
-        URL.revokeObjectURL(url);
-      });
-    } else {
-      URL.revokeObjectURL(url);
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  const printReceipt = async () => {
+    if (isPrinting) return;
+    setIsPrinting(true);
+    try {
+      const html = (isDanfe && currentFiscal)
+        ? buildDanfePrintHtml(receipt, currentFiscal, formatMoney)
+        : buildReceiptPrintHtml(receipt, formatMoney, currentFiscal);
+      await printSaleReceipt(html);
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Não foi possível imprimir o cupom.");
+    } finally {
+      setIsPrinting(false);
     }
   };
 
@@ -796,6 +798,7 @@ export default function ReceiptPreviewModal({
           <button
             type="button"
             onClick={printReceipt}
+            disabled={isPrinting}
             className="btn-primary inline-flex items-center justify-center gap-2"
           >
             <Printer size={16} />
