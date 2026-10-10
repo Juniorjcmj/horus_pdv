@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfceController.cs": {
-    "mtime": 1791658466.9972966,
-    "seen": 1791658847.3952863,
-    "ast_hash": "dbc1dce79f8b023a0ea2308bff5d8ecc",
+    "mtime": 1791658989.5233655,
+    "seen": 1791659093.468507,
+    "ast_hash": "dfb43b6ceaf78b7a8b600e3df077eb81",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fornecedores/FornecedorController.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1791657734.4699175,
-    "seen": 1791658847.4170492,
-    "ast_hash": "5b838037d81699d87aeb0f38ef101442",
+    "mtime": 1791658901.82115,
+    "seen": 1791659093.47999,
+    "ast_hash": "c12818563baa0951ee1dcd828f29c951",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1791658466.9953074,
-    "seen": 1791658847.4237854,
-    "ast_hash": "6fd3bee73028caa55e8f1f97ccddb93b",
+    "mtime": 1791658989.5218375,
+    "seen": 1791659093.483205,
+    "ast_hash": "ab0bd88b62d4e902bc084dfa88136442",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -522,9 +522,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs": {
-    "mtime": 1791658466.989164,
-    "seen": 1791658847.4365857,
-    "ast_hash": "75537e6365d194a9f2a18415915cf00b",
+    "mtime": 1791658901.8232756,
+    "seen": 1791659093.4887872,
+    "ast_hash": "cc695baea2538de7bde15b8bdbcc9b3d",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/FornecedorService.cs": {
@@ -1728,9 +1728,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/pages.yml": {
-    "mtime": 1788665266.5238416,
-    "seen": 1788888974.3524451,
-    "ast_hash": "c8cff64292f4dc8e5e899aa535aa741f",
+    "mtime": 1791659825.305666,
+    "seen": 1791659857.1976635,
+    "ast_hash": "8f544191de2dc0e8d28507b9d8ece93e",
     "semantic_hash": ""
   },
   "AGENTS.md": {
@@ -1758,9 +1758,9 @@
     "semantic_hash": ""
   },
   "DEPLOY.md": {
-    "mtime": 1791647991.2914584,
-    "seen": 1791648349.7946038,
-    "ast_hash": "d049a9765e512907dee21fd921198c7e",
+    "mtime": 1791659825.3081808,
+    "seen": 1791659857.1991947,
+    "ast_hash": "8c642f5b2e36066d51e00f5d815a62a4",
     "semantic_hash": ""
   },
   "FRONTEND/index.html": {
@@ -3798,9 +3798,9 @@
     "semantic_hash": ""
   },
   "DESKTOP/README.md": {
-    "mtime": 1791647905.6103387,
-    "seen": 1791648349.7946105,
-    "ast_hash": "ec37b3b0564e6dc07624de513d30c9e6",
+    "mtime": 1791658989.5271814,
+    "seen": 1791659093.5770102,
+    "ast_hash": "d3f49a77c84943da763ed4c7844b9340",
     "semantic_hash": ""
   },
   "DESKTOP/offline.html": {
@@ -4134,9 +4134,9 @@
     "semantic_hash": ""
   },
   "API/tests/ProductRegistrationChecks/Program.cs": {
-    "mtime": 1791658467.000299,
-    "seen": 1791658847.4490879,
-    "ast_hash": "dc10ee378f722851f33164bd50f37afa",
+    "mtime": 1791659031.4550023,
+    "seen": 1791659093.4943354,
+    "ast_hash": "a2a393bfbd0ce5389728762d69819823",
     "semantic_hash": ""
   },
   "API/tests/ProductRegistrationChecks/README.md": {
@@ -4182,9 +4182,9 @@
     "semantic_hash": ""
   },
   "DESKTOP/tests/installer-smoke.js": {
-    "mtime": 1791658233.0359912,
-    "seen": 1791658847.4533672,
-    "ast_hash": "452e99616c3da2fbd41764dca2284db4",
+    "mtime": 1791658989.5258775,
+    "seen": 1791659093.4961858,
+    "ast_hash": "ac11c0f006967b48d1f3e43dccfcd203",
     "semantic_hash": ""
   },
   "DESKTOP/tests/printer.test.js": {
@@ -4332,9 +4332,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalReferenceTables.cs": {
-    "mtime": 1791658122.050611,
-    "seen": 1791658847.4358215,
-    "ast_hash": "8d8fc24a093bec6aa0e65fad2ec4d1fc",
+    "mtime": 1791658901.82115,
+    "seen": 1791659093.488044,
+    "ast_hash": "d300fced5667c290f1fb2d336c55b333",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalTaxRules.cs": {
@@ -4371,6 +4371,24 @@
     "mtime": 1791658122.050611,
     "seen": 1791658847.466707,
     "ast_hash": "bec33662ccf2141ff3624fe1ec3f4a3f",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/FiscalTables/README.md": {
+    "mtime": 1791658817.6905403,
+    "seen": 1791659093.5758512,
+    "ast_hash": "d42d1682952a7079082b6faeb5c690df",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalReviewChecks/README.md": {
+    "mtime": 1791658817.6946099,
+    "seen": 1791659093.5762842,
+    "ast_hash": "f430089f4354c92db09ac1e73c83a636",
+    "semantic_hash": ""
+  },
+  "docs/AUDITORIA_FISCAL_2026-10-10.md": {
+    "mtime": 1791659150.3449104,
+    "seen": 1791659857.201805,
+    "ast_hash": "54ec36f58b4dd1d5af5a70284af5b54c",
     "semantic_hash": ""
   }
 }

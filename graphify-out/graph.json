@@ -9649,7 +9649,7 @@
       "file_type": "code",
       "norm_label": "offlinehandler",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L126"
+      "source_location": "L131"
     },
     {
       "id": "gateway_tests_horusgateway_tests_cloudconnectionmonitortests_horusgateway_tests_fakehttpclientfactory",
@@ -12349,7 +12349,7 @@
       "file_type": "code",
       "norm_label": "testenvironment",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L130"
+      "source_location": "L135"
     },
     {
       "id": "frontend_src_pages_admin_salesstartpage_cartitem",
@@ -38989,7 +38989,7 @@
       },
       "norm_label": ".validgtin()",
       "source_file": "API/NETCORE/Services/Fiscal/ProductFiscalReview.cs",
-      "source_location": "L75"
+      "source_location": "L77"
     },
     {
       "id": "frontend_tests_architecture_bloco11_tenant_isolation_spec_extractsqlblocks",
@@ -40553,7 +40553,7 @@
       "file_type": "code",
       "norm_label": ".sendasync()",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L128"
+      "source_location": "L133"
     },
     {
       "id": "gateway_tests_horusgateway_tests_cloudconnectionmonitortests_horusgateway_tests_fakehttpclientfactory_createclient",
@@ -111822,7 +111822,7 @@
       "file_type": "code",
       "norm_label": "applicationname",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L131"
+      "source_location": "L136"
     },
     {
       "id": "api_tests_fiscalreviewchecks_program_testenvironment_contentrootfileprovider",
@@ -111833,7 +111833,7 @@
       "file_type": "code",
       "norm_label": "contentrootfileprovider",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L133"
+      "source_location": "L138"
     },
     {
       "id": "api_tests_fiscalreviewchecks_program_testenvironment_contentrootpath",
@@ -111844,7 +111844,7 @@
       "file_type": "code",
       "norm_label": "contentrootpath",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L133"
+      "source_location": "L138"
     },
     {
       "id": "api_tests_fiscalreviewchecks_program_testenvironment_environmentname",
@@ -111855,7 +111855,7 @@
       "file_type": "code",
       "norm_label": "environmentname",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L131"
+      "source_location": "L136"
     },
     {
       "id": "api_tests_fiscalreviewchecks_program_testenvironment_webrootfileprovider",
@@ -111866,7 +111866,7 @@
       "file_type": "code",
       "norm_label": "webrootfileprovider",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L132"
+      "source_location": "L137"
     },
     {
       "id": "api_tests_fiscalreviewchecks_program_testenvironment_webrootpath",
@@ -111877,7 +111877,7 @@
       "file_type": "code",
       "norm_label": "webrootpath",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L132"
+      "source_location": "L137"
     },
     {
       "id": "ifileprovider",
@@ -148059,7 +148059,7 @@
         "ref_token": "IFileProvider"
       },
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L133",
+      "source_location": "L138",
       "weight": 1.0
     },
     {
@@ -167913,7 +167913,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L131",
+      "source_location": "L136",
       "weight": 1.0
     },
     {
@@ -167925,7 +167925,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L131",
+      "source_location": "L136",
       "weight": 1.0
     },
     {
@@ -167937,7 +167937,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L132",
+      "source_location": "L137",
       "weight": 1.0
     },
     {
@@ -167949,7 +167949,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L132",
+      "source_location": "L137",
       "weight": 1.0
     },
     {
@@ -167961,7 +167961,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L133",
+      "source_location": "L138",
       "weight": 1.0
     },
     {
@@ -167973,7 +167973,7 @@
       "confidence_score": 1.0,
       "context": "field",
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L133",
+      "source_location": "L138",
       "weight": 1.0
     },
     {
@@ -174090,7 +174090,7 @@
         "ref_token": "HttpResponseMessage"
       },
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L128",
+      "source_location": "L133",
       "weight": 1.0
     },
     {
@@ -198904,7 +198904,7 @@
         "ref_token": "CancellationToken"
       },
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L128",
+      "source_location": "L133",
       "weight": 1.0
     },
     {
@@ -203314,7 +203314,7 @@
         "ref_token": "HttpRequestMessage"
       },
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L128",
+      "source_location": "L133",
       "weight": 1.0
     },
     {
@@ -218476,7 +218476,7 @@
         "ref_token": "Task"
       },
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L128",
+      "source_location": "L133",
       "weight": 1.0
     },
     {
@@ -221537,7 +221537,7 @@
         "ref_token": "HttpMessageHandler"
       },
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L126",
+      "source_location": "L131",
       "weight": 1.0
     },
     {
@@ -222097,7 +222097,7 @@
         "ref_token": "IWebHostEnvironment"
       },
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L130",
+      "source_location": "L135",
       "weight": 1.0
     },
     {
@@ -228166,7 +228166,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L126",
+      "source_location": "L131",
       "weight": 1.0
     },
     {
@@ -228177,7 +228177,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L130",
+      "source_location": "L135",
       "weight": 1.0
     },
     {
@@ -263372,7 +263372,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Services/Fiscal/ProductFiscalReview.cs",
-      "source_location": "L75",
+      "source_location": "L77",
       "weight": 1.0
     },
     {
@@ -265044,7 +265044,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/tests/FiscalReviewChecks/Program.cs",
-      "source_location": "L128",
+      "source_location": "L133",
       "weight": 1.0
     },
     {
@@ -283630,5 +283630,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "595d40ef545f2db9b7391910576802b74e793a70"
+  "built_at_commit": "ae0bdeb58fda6ef7bec7c2d1ec0a6ebd6c8eb5b9"
 }

@@ -22,6 +22,13 @@ export default function ProductFiscalPanel({ product, onBack, onEdit }: Props) {
     return () => { active = false; };
   }, [product.id, attempt]);
   const errors = report?.apontamentos.filter(item => item.nivel === "erro") ?? [];
+  const hasIbsCbs = Boolean(product.cstIbsCbs?.trim() || product.cClassTrib?.trim());
+  const simples2026 = report && (report.crt === 1 || report.crt === 4) && new Date(report.verificadoEm).getFullYear() === 2026;
+  const classificationMessage = report?.descricaoClassificacao ?? (hasIbsCbs
+    ? "Classificação não encontrada na referência consultada. Confira os códigos informados e a disponibilidade das fontes oficiais."
+    : simples2026
+      ? "Simples Nacional/MEI em 2026: o emissor não aplica IBS/CBS do regime normal. Estes campos vazios não indicam erro de emissão. Revise o enquadramento para 2027 com a contabilidade."
+      : "CST IBS/CBS e cClassTrib ainda não foram cadastrados. Confirme com a contabilidade o enquadramento aplicável ao produto.");
   return (
     <section aria-label="Verificação fiscal do produto" className="space-y-5">
       <button type="button" onClick={onBack} className={`btn-outline-secondary inline-flex min-h-10 items-center gap-2 ${focus}`}><ArrowLeft size={16} />Voltar aos produtos</button>
@@ -46,12 +53,12 @@ export default function ProductFiscalPanel({ product, onBack, onEdit }: Props) {
         </div>
         <div className="space-y-5">
           <div><h2 className="font-semibold text-text-primary">NCM {product.ncm || "não informado"}</h2><p className="mt-1 max-w-prose text-sm text-text-secondary">{report.descricaoNcm ?? "Descrição oficial não disponível para o código cadastrado."}</p></div>
-          <div><h2 className="font-semibold text-text-primary">IBS/CBS · CST {product.cstIbsCbs || "não informado"} · cClassTrib {product.cClassTrib || "não informado"}</h2><p className="mt-1 max-w-prose text-sm text-text-secondary">{report.descricaoClassificacao ?? "Classificação oficial não disponível para o código cadastrado."}</p></div>
+          <div><h2 className="font-semibold text-text-primary">{hasIbsCbs ? `IBS/CBS · CST ${product.cstIbsCbs || "não informado"} · cClassTrib ${product.cClassTrib || "não informado"}` : "IBS/CBS · Classificação não cadastrada"}</h2><p className="mt-1 max-w-prose text-sm text-text-secondary">{classificationMessage}</p></div>
         </div>
         <div className="overflow-hidden rounded-xl border border-border-primary">
           <h2 className="bg-bg-secondary px-4 py-3 font-semibold text-text-primary">Resultado da conferência</h2>
           <ul className="divide-y divide-border-primary">{report.apontamentos.map((item, index) => <li key={`${item.campo}-${index}`} className="grid gap-1 px-4 py-3 sm:grid-cols-[11rem_1fr] sm:gap-4">
-            <div><span className="block text-sm font-semibold text-text-primary">{item.campo}</span><span className={`text-xs font-medium ${item.nivel === "erro" ? "text-danger" : "text-text-secondary"}`}>{item.nivel === "erro" ? "Corrigir" : item.nivel === "aviso" ? "Conferir" : "Verificado"}</span></div>
+            <div><span className="block text-sm font-semibold text-text-primary">{item.campo}</span><span className={`text-xs font-medium ${item.nivel === "erro" ? "text-danger" : "text-text-secondary"}`}>{item.nivel === "erro" ? "Corrigir" : item.nivel === "aviso" ? "Conferir" : "Informação"}</span></div>
             <p className="max-w-prose text-sm text-text-secondary">{item.mensagem}</p>
           </li>)}</ul>
         </div>

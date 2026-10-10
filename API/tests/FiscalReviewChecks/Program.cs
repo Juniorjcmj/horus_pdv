@@ -41,6 +41,11 @@ var product = new ProdutoAD { Id = "teste", ProductName = "Produto teste", Ncm =
 var company = new EmpresaAD { Uf = "RJ", Crt = 1, AmbienteFiscal = 1 };
 var report = ProductFiscalReview.Check(product, company, table, date);
 Check(!report.Apontamentos.Any(f => f.Nivel == "erro") && report.DescricaoNcm is not null && report.Apontamentos.Any(f => f.Campo == "Revisão contábil"), "NCM válido inclui descrição e limites da conferência, sem aprovação fiscal falsa");
+Check(report.Apontamentos.Single(f => f.Campo == "IBS/CBS").Nivel == "informacao", "Simples em 2026 sem classificação IBS/CBS recebe informação, sem aviso de irregularidade");
+Check(ProductFiscalReview.Check(product, company, table, date.AddYears(1)).Apontamentos.Single(f => f.Campo == "IBS/CBS").Nivel == "aviso", "Ausência de classificação no Simples exige revisão em 2027");
+company.Crt = 3;
+Check(ProductFiscalReview.Check(product, company, table, date).Apontamentos.Single(f => f.Campo == "IBS/CBS").Nivel == "aviso", "Regime normal não herda a orientação de Simples em 2026");
+company.Crt = 1;
 product.Ncm = "00000000"; Check(ProductFiscalReview.Check(product, company, table, date).Apontamentos.Any(f => f.Campo == "NCM" && f.Nivel == "erro"), "NCM padrão zerado é apontado");
 product.Ncm = "10063021"; product.CstIbsCbs = "200"; product.CClassTrib = "000001";
 Check(ProductFiscalReview.Check(product, company, table, date).Apontamentos.Any(f => f.Campo == "IBS/CBS" && f.Nivel == "erro"), "CST incompatível com cClassTrib é apontado");

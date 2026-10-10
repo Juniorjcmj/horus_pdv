@@ -62,6 +62,8 @@ public static class ProductFiscalReview
                 if (classification.Especial || classification.Cst is not ("000" or "200" or "400" or "410")) Add("erro", "IBS/CBS", "Este enquadramento exige grupos específicos ainda não implementados pelo emissor. A emissão não deve substituir o código por um padrão.");
             }
         }
+        else if (e.Crt is 1 or 4 && date.Year == 2026)
+            Add("informacao", "IBS/CBS", "Simples Nacional/MEI em 2026: o emissor não aplica IBS/CBS do regime normal. A ausência de CST IBS/CBS e cClassTrib não é apontada como erro de emissão. Revise o enquadramento para 2027 com a contabilidade.");
         else Add("aviso", "IBS/CBS", e.Crt is 1 or 4
             ? "Sem classificação IBS/CBS. Confirme as obrigações do Simples/MEI e a opção de apuração para 2027 com a contabilidade."
             : "Sem classificação IBS/CBS. O adiamento da rejeição automática pela ausência dos campos não comprova conformidade tributária; confirme as obrigações vigentes.");
