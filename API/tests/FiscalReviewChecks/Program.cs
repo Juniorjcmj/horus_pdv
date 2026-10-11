@@ -122,6 +122,59 @@ var schemaErrors = new List<string>();
 XDocument.Parse(builtXml).Validate(schemas, (_, issue) => schemaErrors.Add(issue.Message));
 Check(schemaErrors.Count == 0, "NFC-e completa assinada com IBS/CBS passa nos schemas locais: " + string.Join("; ", schemaErrors));
 Check(invoice.infNFe.total.ICMSTot.vICMS == 18 && invoice.infNFe.total.IBSCBSTot.gCBS.vCBS == .65m, "Builder de documento agrega ICMS e IBS/CBS corretos no XML");
+
+var cash = new VendaPagamentoAD { PaymentType = "dinheiro", Amount = 7.45m, CashGiven = 10m, ChangeAmount = 2.55m };
+Check(FiscalPaymentRules.DeclaredAmount(cash) == 10m, "vPag em dinheiro inclui o valor recebido antes do troco");
+cash.CashGiven = 0;
+Check(FiscalPaymentRules.DeclaredAmount(cash) == 10m, "Pagamento legado recupera recebido pela parcela mais troco");
+cash.CashGiven = 11;
+Reject(() => FiscalPaymentRules.DeclaredAmount(cash), "Recebido inconsistente exige revisão em vez de gerar troco inválido");
+Reject(() => FiscalPaymentRules.DeclaredAmount(new VendaPagamentoAD { PaymentType = "pix", Amount = 7.45m, ChangeAmount = 1m }), "Troco em PIX não é enviado como se fosse dinheiro");
+FiscalPaymentRules.Validate([new() { Tipo = "01", Valor = 10m }], 7.45m, 2.55m);
+Check(true, "Venda 7,45 recebida com 10 confere vPag menos vTroco com vNF");
+FiscalPaymentRules.Validate([new() { Tipo = "01", Valor = 10m }, new() { Tipo = "17", Valor = 6m }], 11m, 5m);
+Check(true, "Pagamentos mistos somam o recebido e descontam somente o troco em dinheiro");
+Reject(() => FiscalPaymentRules.Validate([new() { Tipo = "01", Valor = 7.45m }], 7.45m, 2.55m), "XML com troco e pagamento líquido incompatível é bloqueado antes de transmitir");
+FiscalPaymentRules.Validate([new() { Tipo = "90", Valor = 0m }], 100m, 0m, true);
+Check(true, "NF-e de devolução sem pagamento continua permitida");
+
+var alertResponse = response.Replace("<cStat>100", "<cStat>120").Replace("</infProt>",
+    "<cMsg>1</cMsg><xMsg>Primeiro alerta</xMsg><cMsg>2</cMsg><xMsg>Segundo alerta</xMsg><xMsg>Alerta sem código</xMsg><cMsg>4</cMsg><xMsg>Quarto alerta</xMsg><cMsg>5</cMsg><xMsg>Quinto alerta</xMsg></infProt>");
+var withAlerts = FiscalXmlArchive.Complete(document.OuterXml, alertResponse, true)!;
+Check(XDocument.Parse(withAlerts).Descendants(xn + "cStat").Single().Value == "120" && withAlerts.Contains("Quinto alerta"), "Autorização 120 é arquivada e exportada com as cinco mensagens originais");
+var alerts = FiscalXmlArchive.Alerts(withAlerts);
+Check(alerts.Count == 5 && alerts[0].Codigo == "1" && alerts[2].Codigo is null, "Códigos opcionais e mensagens de alerta são apresentados sem confundir com rejeição");
+var alertResult = FiscalXmlArchive.ReadResponse(document.OuterXml, alertResponse);
+Check(alertResult.Status == StatusDocumentoFiscal.Autorizado && alertResult.CodigoStatus == 120 && alertResult.AlertasAutorizacao.Count == 5,
+    "Retorno 120 segue o caminho autorizado sem nova emissão");
+var protectedDocument = new XmlDocument { PreserveWhitespace = true }; protectedDocument.LoadXml(withAlerts);
+var preservedVerifier = new SignedXml(protectedDocument); preservedVerifier.LoadXml((XmlElement)protectedDocument.GetElementsByTagName("Signature", SignedXml.XmlDsigNamespaceUrl)[0]!);
+Check(preservedVerifier.CheckSignature(rsa), "Assinatura original permanece válida ao arquivar protocolo com alertas");
+var consultCount = 0; var sends = 0;
+ResultadoFiscal Missing() => new() { Status = StatusDocumentoFiscal.Rejeitado, CodigoStatus = 217, XmlAssinado = document.OuterXml, ChaveAcesso = key };
+var recoveredAuthorized = FiscalRetryRules.RecoverAndTransmit(() => { consultCount++; return alertResult; }, () => { sends++; return alertResult; });
+Check(recoveredAuthorized.Status == StatusDocumentoFiscal.Autorizado && sends == 0 && consultCount == 1, "Resposta perdida é recuperada pela chave e não cria outra nota");
+var uncertain = FiscalRetryRules.RecoverAndTransmit(() => new() { Status = StatusDocumentoFiscal.Assinado, CodigoStatus = 108, XmlAssinado = document.OuterXml, ChaveAcesso = key },
+    () => { sends++; return alertResult; });
+Check(sends == 0 && uncertain.Retentavel && uncertain.XmlAssinado == document.OuterXml && uncertain.ChaveAcesso == key,
+    "Consulta indisponível preserva XML e chave sem retransmitir ou renumerar");
+consultCount = 0;
+var duplicateRecovered = FiscalRetryRules.RecoverAndTransmit(() => ++consultCount == 1 ? Missing() : alertResult,
+    () => { sends++; return new() { Status = StatusDocumentoFiscal.Rejeitado, CodigoStatus = 204 }; });
+Check(duplicateRecovered.Status == StatusDocumentoFiscal.Autorizado && sends == 1 && consultCount == 2, "Duplicidade 204 recupera protocolo original antes de decidir nova ação");
+var unresolved = FiscalRetryRules.RecoverAndTransmit(Missing, () => new() { Status = StatusDocumentoFiscal.Rejeitado, CodigoStatus = 539, XmlAssinado = document.OuterXml, ChaveAcesso = key });
+Check(unresolved.Status == StatusDocumentoFiscal.Rejeitado && !unresolved.Retentavel && unresolved.CodigoStatus == 539 && unresolved.ChaveAcesso == key,
+    "Duplicidade 539 não recuperada exige conferência e nunca renumera automaticamente");
+var cancelled = FiscalXmlArchive.ReadResponse(document.OuterXml, response.Replace("<cStat>104", "<cStat>101"));
+var sendBeforeCancelled = sends;
+var blockedCancellation = FiscalRetryRules.RecoverAndTransmit(() => cancelled, () => { sends++; return alertResult; });
+Check(blockedCancellation.Status == StatusDocumentoFiscal.Cancelado && sends == sendBeforeCancelled, "Consulta de cancelamento impede reenvio do documento original");
+
+var preparation = new ZeusFiscalProvider(env, NullLogger<ZeusFiscalProvider>.Instance);
+var localIssuer = issuer with { CertificadoPfx = cert.Export(X509ContentType.Pfx, "fictitious"), CertificadoSenha = "fictitious" };
+var prepared = await preparation.PrepararNfceAsync(request with { Emitente = localIssuer });
+Check(prepared.Status == StatusDocumentoFiscal.Assinado && prepared.XmlAssinado is not null && prepared.ChaveAcesso?.Length == 44,
+    "Preparação gera XML assinado sem transmitir e permite persistir antes da primeira chamada externa");
 if (args.Contains("--live")) {
     var live = await new FiscalReferenceTables(env, NullLogger<FiscalReferenceTables>.Instance).GetAsync();
     Check(live.Online && live.Ncms.ContainsKey("10063021") && live.Classes.ContainsKey("000001"), "Consulta real das duas fontes oficiais sem dados da loja");

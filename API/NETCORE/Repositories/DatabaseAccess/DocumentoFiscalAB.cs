@@ -36,9 +36,36 @@ public class DocumentoFiscalAB(
 
         try
         {
+            string saleStatus;
+            await using (var sale = new SqlCommand("""
+                SELECT COALESCE(Status, 'finalizada') FROM Vendas WITH (UPDLOCK, HOLDLOCK)
+                 WHERE CompanyId = @CompanyId AND Id = @VendaId;
+                """, db, transaction))
+            {
+                sale.Parameters.AddWithValue("@CompanyId", companyId);
+                sale.Parameters.AddWithValue("@VendaId", vendaId);
+                saleStatus = await sale.ExecuteScalarAsync(ct) as string
+                    ?? throw new InvalidOperationException("Venda não encontrada para a empresa.");
+            }
+            await using (var existing = new SqlCommand("""
+                SELECT TOP 1 Id FROM DocumentosFiscais WITH (UPDLOCK, HOLDLOCK)
+                 WHERE CompanyId = @CompanyId AND VendaId = @VendaId AND Modelo = 65;
+                """, db, transaction))
+            {
+                existing.Parameters.AddWithValue("@CompanyId", companyId);
+                existing.Parameters.AddWithValue("@VendaId", vendaId);
+                var existingId = await existing.ExecuteScalarAsync(ct) as string;
+                if (existingId is not null)
+                {
+                    await transaction.CommitAsync(ct);
+                    return existingId;
+                }
+            }
+            if (saleStatus.Equals("cancelada", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Uma venda cancelada não pode gerar nova NFC-e.");
             var (ambiente, serie) = await ObterConfigFiscalAsync(db, transaction, companyId, ct);
             var numero = await AlocarProximoNumeroAsync(db, transaction, companyId, ModeloNfce, serie, ambiente, ct);
-            var id = $"doc-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            var id = $"doc-{Guid.NewGuid():N}";
 
             await using (var insert = new SqlCommand(
                              """
@@ -68,6 +95,38 @@ public class DocumentoFiscalAB(
             await transaction.RollbackAsync(ct);
             throw;
         }
+    }
+
+    public async Task<bool> TemDocumentoAtivoParaVendaAsync(string companyId, string vendaId, CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var command = new SqlCommand("""
+            SELECT TOP 1 1 FROM DocumentosFiscais
+             WHERE CompanyId = @CompanyId AND VendaId = @VendaId AND Modelo = 65
+               AND (Status <> 4 OR CodigoStatus IN (204, 539));
+            """, db);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@VendaId", vendaId);
+        return await command.ExecuteScalarAsync(ct) is not null;
+    }
+
+    public async Task<IReadOnlyList<(string CompanyId, string VendaId)>> ObterVendasSemDocumentoFiscalAsync(int limite, CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var command = new SqlCommand("""
+            SELECT TOP (@Limite) v.CompanyId, v.Id
+              FROM Vendas v
+             WHERE v.EmitirNfce = 1
+               AND COALESCE(v.Status, 'finalizada') <> 'cancelada'
+               AND NOT EXISTS (SELECT 1 FROM DocumentosFiscais d
+                                WHERE d.CompanyId = v.CompanyId AND d.VendaId = v.Id AND d.Modelo = 65)
+             ORDER BY v.Id;
+            """, db);
+        command.Parameters.AddWithValue("@Limite", limite);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        var rows = new List<(string CompanyId, string VendaId)>();
+        while (await reader.ReadAsync(ct)) rows.Add((reader.GetString(0), reader.GetString(1)));
+        return rows;
     }
 
     /// <summary>
@@ -183,7 +242,7 @@ public class DocumentoFiscalAB(
             pagamentosFiscais = pagamentosCadastrados.Select(p => new PagamentoFiscal
             {
                 Tipo = MapearFormaPagamento(p.PaymentType),
-                Valor = p.Amount
+                Valor = FiscalPaymentRules.DeclaredAmount(p)
             }).ToList();
             valorTrocoTotal = pagamentosCadastrados.Sum(p => p.ChangeAmount);
         }
@@ -332,7 +391,7 @@ public class DocumentoFiscalAB(
             pagamentosFiscais = pagamentosCadastrados.Select(p => new PagamentoFiscal
             {
                 Tipo = MapearFormaPagamento(p.PaymentType),
-                Valor = p.Amount
+                Valor = FiscalPaymentRules.DeclaredAmount(p)
             }).ToList();
             valorTrocoTotal = pagamentosCadastrados.Sum(p => p.ChangeAmount);
         }
@@ -515,7 +574,7 @@ public class DocumentoFiscalAB(
         const string sql = """
             SELECT d.Id, v.SaleNumber, d.Serie, d.NumeroNf, d.Status, d.ChaveAcesso, d.Protocolo,
                    d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas, d.XmlProtocolado, d.XmlAssinado,
-                   d.Modelo
+                   d.Modelo, d.CodigoStatus
             FROM DocumentosFiscais d
             INNER JOIN Vendas v ON v.Id = d.VendaId
             WHERE d.CompanyId = @CompanyId AND v.SaleNumber = @SaleNumber
@@ -545,7 +604,10 @@ public class DocumentoFiscalAB(
             CriadoEm = reader.GetDateTimeOffset(reader.GetOrdinal("CriadoEm")),
             Tentativas = ReadInt(reader, "Tentativas"),
             Modelo = (short)ReadInt(reader, "Modelo"),
-            QrCodeUrl = ExtrairQrCode(xmlProtocolado) ?? ExtrairQrCode(xmlAssinado)
+            QrCodeUrl = ExtrairQrCode(xmlProtocolado) ?? ExtrairQrCode(xmlAssinado),
+            CodigoStatus = ReadInt(reader, "CodigoStatus"),
+            XmlDocumento = FiscalXmlArchive.Complete(xmlAssinado, xmlProtocolado),
+            AlertasAutorizacao = FiscalXmlArchive.Alerts(xmlProtocolado)
         };
     }
 
@@ -564,7 +626,7 @@ public class DocumentoFiscalAB(
         const string sql = """
             SELECT TOP 1 d.Id, v.SaleNumber, d.Serie, d.NumeroNf, d.Status, d.ChaveAcesso, d.Protocolo,
                    d.MotivoStatus, d.DhAutorizacao, d.CriadoEm, d.Tentativas, d.XmlProtocolado, d.XmlAssinado,
-                   v.TotalAmount, v.CustomerName, v.CustomerCpf, v.PaymentType, d.Modelo,
+                   v.TotalAmount, v.CustomerName, v.CustomerCpf, v.PaymentType, d.Modelo, d.CodigoStatus,
                    CASE WHEN d.XmlProtocolado IS NOT NULL OR d.XmlAssinado IS NOT NULL THEN 1 ELSE 0 END AS HasXml,
                    CASE WHEN d.XmlCancelamento IS NOT NULL THEN 1 ELSE 0 END AS HasCancelXml
             FROM DocumentosFiscais d
@@ -620,7 +682,10 @@ public class DocumentoFiscalAB(
             Modelo = (short)ReadInt(reader, "Modelo"),
             HasXml = reader.GetInt32(reader.GetOrdinal("HasXml")) == 1,
             HasCancelXml = reader.GetInt32(reader.GetOrdinal("HasCancelXml")) == 1,
-            QrCodeUrl = ExtrairQrCode(xmlProtocolado) ?? ExtrairQrCode(xmlAssinado)
+            QrCodeUrl = ExtrairQrCode(xmlProtocolado) ?? ExtrairQrCode(xmlAssinado),
+            CodigoStatus = ReadInt(reader, "CodigoStatus"),
+            XmlDocumento = FiscalXmlArchive.Complete(xmlAssinado, xmlProtocolado),
+            AlertasAutorizacao = FiscalXmlArchive.Alerts(xmlProtocolado)
         };
     }
 
@@ -669,7 +734,7 @@ public class DocumentoFiscalAB(
         return rows;
     }
 
-    /// <summary>Reenfileira um documento rejeitado definitivamente. Se foi duplicidade (539) ou mudança de série, aloca nova numeração.</summary>
+    /// <summary>Reenfileira uma rejeição. Duplicidade consulta a mesma chave/XML; somente mudança de série permite nova numeração.</summary>
     public async Task<bool> ReemitirAsync(string companyId, string id)
     {
         const int MaxRetries = 5;
@@ -682,8 +747,10 @@ public class DocumentoFiscalAB(
             {
                 int? codigoStatus;
                 int serieAtual;
+                string? xmlOriginal;
+                string? chaveOriginal;
                 await using (var checkCmd = new SqlCommand(
-                    "SELECT CodigoStatus, Serie FROM DocumentosFiscais WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;",
+                    "SELECT CodigoStatus, Serie, XmlAssinado, ChaveAcesso FROM DocumentosFiscais WITH (UPDLOCK, HOLDLOCK) WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;",
                     db, transaction))
                 {
                     checkCmd.Parameters.AddWithValue("@Id", id);
@@ -692,13 +759,30 @@ public class DocumentoFiscalAB(
                     if (!await reader.ReadAsync()) return false;
                     codigoStatus = reader.IsDBNull(0) ? null : Convert.ToInt32(reader.GetValue(0));
                     serieAtual = Convert.ToInt32(reader.GetValue(1));
+                    xmlOriginal = ReadNullableString(reader, "XmlAssinado");
+                    chaveOriginal = ReadNullableString(reader, "ChaveAcesso");
+                }
+
+                if (codigoStatus is 204 or 539)
+                {
+                    if (string.IsNullOrWhiteSpace(xmlOriginal) || string.IsNullOrWhiteSpace(chaveOriginal))
+                        throw new InvalidOperationException("Duplicidade sem XML/chave original disponível. Confira a autorização na SEFAZ antes de emitir outra nota.");
+                    await using var replay = new SqlCommand("""
+                        UPDATE DocumentosFiscais SET Status = 1, Tentativas = 0, ProximaTentativaEm = NULL,
+                            UltimoErro = NULL, AtualizadoEm = SYSDATETIMEOFFSET()
+                         WHERE Id = @Id AND CompanyId = @CompanyId AND Status = 4;
+                        """, db, transaction);
+                    replay.Parameters.AddWithValue("@Id", id);
+                    replay.Parameters.AddWithValue("@CompanyId", companyId);
+                    var replayed = await replay.ExecuteNonQueryAsync();
+                    await transaction.CommitAsync();
+                    return replayed == 1;
                 }
 
                 var (ambiente, serieConfigurada) = await ObterConfigFiscalAsync(db, transaction, companyId, default);
 
-                // Se a nota foi rejeitada por duplicidade (539) ou sua série for diferente da série ativa na empresa:
-                // aloca nova numeração na série ativa para permitir que a SEFAZ autorize sem erro de duplicidade.
-                var precisaNovaNumeracao = codigoStatus == 539 || serieAtual != serieConfigurada;
+                // Explicit content rejection may be corrected; an unknown authorization never reaches this branch.
+                var precisaNovaNumeracao = serieAtual != serieConfigurada;
 
                 int? novoNumero = null;
                 if (precisaNovaNumeracao)
@@ -1330,6 +1414,33 @@ public class DocumentoFiscalAB(
         await command.ExecuteNonQueryAsync(ct);
     }
 
+    /// <summary>Must complete before any webservice transmission; concurrent preparation cannot replace the original.</summary>
+    public async Task GuardarAssinaturaAsync(string companyId, string id, ResultadoFiscal prepared, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(prepared.XmlAssinado) || string.IsNullOrWhiteSpace(prepared.ChaveAcesso))
+            throw new InvalidOperationException("XML assinado e chave são obrigatórios antes da transmissão.");
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var command = new SqlCommand("""
+            UPDATE DocumentosFiscais
+               SET XmlAssinado = @Xml, ChaveAcesso = @Chave, QrCodeUrl = @Qr,
+                   AtualizadoEm = SYSDATETIMEOFFSET()
+             WHERE Id = @Id AND CompanyId = @CompanyId AND Status IN (1, 2, 8)
+               AND (XmlAssinado IS NULL OR XmlAssinado = @Xml);
+            """, db);
+        command.Parameters.AddWithValue("@Id", id);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Xml", prepared.XmlAssinado);
+        command.Parameters.AddWithValue("@Chave", prepared.ChaveAcesso);
+        command.Parameters.AddWithValue("@Qr", (object?)prepared.QrCodeUrl ?? DBNull.Value);
+        if (await command.ExecuteNonQueryAsync(ct) != 1)
+            throw new InvalidOperationException("O documento mudou durante a preparação; a transmissão foi suspensa para preservar a chave original.");
+    }
+
+    public Task MarcarCancelamentoConsultadoAsync(string id, ResultadoFiscal result, CancellationToken ct = default)
+        => AtualizarStatusAsync(id, (int)StatusDocumentoFiscal.Cancelado, result, ct,
+            "ChaveAcesso = @ChaveAcesso, Protocolo = @Protocolo, XmlAssinado = @XmlAssinado, " +
+            "XmlProtocolado = COALESCE(@XmlProtocolado, XmlProtocolado), ProximaTentativaEm = NULL");
+
     public async Task PromoverParaContingenciaAsync(
         string id,
         string justificativa,
@@ -1381,7 +1492,34 @@ public class DocumentoFiscalAB(
         CancellationToken ct = default)
     {
         await using var db = await connection.OpenConnectionAsync(ct);
-        var id = $"nfce-cont-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync(ct);
+        await using (var check = new SqlCommand("""
+            SELECT Id, VendaId, ChaveAcesso, XmlAssinado
+              FROM DocumentosFiscais WITH (UPDLOCK, HOLDLOCK)
+             WHERE CompanyId = @CompanyId AND Modelo = 65
+               AND (ChaveAcesso = @Chave OR VendaId = @VendaId);
+            """, db, transaction))
+        {
+            check.Parameters.AddWithValue("@CompanyId", companyId);
+            check.Parameters.AddWithValue("@VendaId", vendaId);
+            check.Parameters.AddWithValue("@Chave", chaveAcesso);
+            await using var reader = await check.ExecuteReaderAsync(ct);
+            string? existingId = null;
+            while (await reader.ReadAsync(ct))
+            {
+                if (ReadString(reader, "VendaId") != vendaId || ReadNullableString(reader, "ChaveAcesso") != chaveAcesso ||
+                    ReadNullableString(reader, "XmlAssinado") != xmlAssinado)
+                    throw new InvalidOperationException("Esta venda ou chave já possui outro documento fiscal. A importação foi suspensa para evitar duplicidade.");
+                existingId = ReadString(reader, "Id");
+            }
+            await reader.DisposeAsync();
+            if (existingId is not null)
+            {
+                await transaction.CommitAsync(ct);
+                return existingId;
+            }
+        }
+        var id = $"nfce-{Guid.NewGuid():N}";
 
         const string sql = """
             INSERT INTO DocumentosFiscais
@@ -1394,7 +1532,7 @@ public class DocumentoFiscalAB(
                  @XmlAssinado, @QrCodeUrl);
             """;
 
-        await using var command = new SqlCommand(sql, db);
+        await using var command = new SqlCommand(sql, db, transaction);
         command.Parameters.AddWithValue("@Id", id);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         command.Parameters.AddWithValue("@VendaId", vendaId);
@@ -1409,8 +1547,17 @@ public class DocumentoFiscalAB(
         command.Parameters.AddWithValue("@QrCodeUrl", (object?)qrCodeUrl ?? DBNull.Value);
 
         await command.ExecuteNonQueryAsync(ct);
+        await transaction.CommitAsync(ct);
         return id;
     }
+
+    // The controller validates issuer, signature, schema, sale amounts and tpEmis=9 before this durable import.
+    public Task<string> ImportarContingenciaGatewayAsync(
+        string companyId, string vendaId, int serie, int numeroNf, byte ambiente,
+        string chaveAcesso, string xmlAssinado, string justificativa, DateTimeOffset dhContingencia,
+        string? qrCodeUrl = null, CancellationToken ct = default)
+        => EnfileirarContingenciaAsync(companyId, vendaId, serie, numeroNf, ambiente, chaveAcesso,
+            xmlAssinado, justificativa, dhContingencia, qrCodeUrl, ct);
 
     /// <summary>
     /// Lista os documentos em contingência pendente (Status = 8) com cálculo do prazo legal de 24 horas.
@@ -1743,6 +1890,7 @@ public record DocumentoFiscalResumo
     public string? ChaveAcesso { get; init; }
     public string? Protocolo { get; init; }
     public string? MotivoStatus { get; init; }
+    public int? CodigoStatus { get; init; }
     public DateTimeOffset? DhAutorizacao { get; init; }
     public required DateTimeOffset CriadoEm { get; init; }
     public required int Tentativas { get; init; }
@@ -1777,6 +1925,8 @@ public sealed record DocumentoFiscalItemResumo
 public sealed record DocumentoFiscalDetalhe : DocumentoFiscalResumo
 {
     public string? QrCodeUrl { get; init; }
+    public string? XmlDocumento { get; init; }
+    public IReadOnlyList<FiscalAuthorizationAlert> AlertasAutorizacao { get; init; } = [];
 }
 
 /// <summary>Registro com XMLs completos para exportação mensal de contabilidade em arquivo ZIP.</summary>

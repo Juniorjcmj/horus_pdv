@@ -59,13 +59,27 @@ public sealed class ZeusFiscalProvider(
     private bool SchemasDisponiveis
         => Directory.Exists(DiretorioSchemas) && Directory.EnumerateFiles(DiretorioSchemas, "*.xsd").Any();
 
-    public Task<ResultadoFiscal> EmitirNfceAsync(EmissaoNfceRequest request, CancellationToken ct = default)
-        => Task.Run(() => Emitir(request), ct);
+    public async Task<ResultadoFiscal> EmitirNfceAsync(EmissaoNfceRequest request, CancellationToken ct = default)
+    {
+        var prepared = await PrepararNfceAsync(request, ct);
+        return string.IsNullOrWhiteSpace(prepared.XmlAssinado) ? prepared :
+            await TransmitirDocumentoAsync(request.Emitente, prepared.XmlAssinado, ct);
+    }
 
-    public Task<ResultadoFiscal> EmitirNfeAsync(EmissaoNfeRequest request, CancellationToken ct = default)
-        => Task.Run(() => EmitirNfe(request), ct);
+    public Task<ResultadoFiscal> PrepararNfceAsync(EmissaoNfceRequest request, CancellationToken ct = default)
+        => Task.Run(() => PrepararNfce(request), ct);
 
-    private ResultadoFiscal Emitir(EmissaoNfceRequest request)
+    public async Task<ResultadoFiscal> EmitirNfeAsync(EmissaoNfeRequest request, CancellationToken ct = default)
+    {
+        var prepared = await PrepararNfeAsync(request, ct);
+        return string.IsNullOrWhiteSpace(prepared.XmlAssinado) ? prepared :
+            await TransmitirDocumentoAsync(request.Emitente, prepared.XmlAssinado, ct);
+    }
+
+    public Task<ResultadoFiscal> PrepararNfeAsync(EmissaoNfeRequest request, CancellationToken ct = default)
+        => Task.Run(() => PrepararNfe(request), ct);
+
+    private ResultadoFiscal PrepararNfce(EmissaoNfceRequest request)
     {
         var emitente = request.Emitente;
 
@@ -97,8 +111,7 @@ public sealed class ZeusFiscalProvider(
             nfe.Assina(cfg, certificado);
 
             nfe.infNFeSupl = new infNFeSupl();
-            // O cIdToken no QR-Code deve ter exatamente 6 dígitos com zeros à esquerda (spec NFC-e).
-            // Se o cadastro veio sem padding (ex: "1"), formata para "000001".
+            // Hercules normalizes the identifier without insignificant zeros for QR-Code v2.
             var cscIdPadded = int.TryParse(emitente.CscId, out var cscIdNum)
                 ? cscIdNum.ToString("D6")
                 : emitente.CscId.PadLeft(6, '0');
@@ -119,60 +132,14 @@ public sealed class ZeusFiscalProvider(
             var xmlAssinado = nfe.ObterXmlString();
             var chave = nfe.infNFe.Id?.Replace("NFe", string.Empty, StringComparison.OrdinalIgnoreCase);
 
-            using var servico = new ServicosNFe(cfg, certificado);
-            var retorno = servico.NFeAutorizacao(
-                idLote: 1,
-                indSinc: IndicadorSincronizacao.Sincrono,
-                nFes: [nfe],
-                compactarMensagem: true);
-
-            var protNfe = retorno.Retorno?.protNFe;
-            var cStat = protNfe?.infProt?.cStat ?? retorno.Retorno?.cStat ?? 0;
-            var xMotivo = protNfe?.infProt?.xMotivo ?? retorno.Retorno?.xMotivo ?? "Sem retorno da SEFAZ.";
-
-            // 100 = Autorizado o uso da NF-e
-            // 150 = Autorizado fora de prazo (contingência transmitida depois)
-            if (cStat is 100 or 150)
-            {
-                return new ResultadoFiscal
-                {
-                    Status = StatusDocumentoFiscal.Autorizado,
-                    CodigoStatus = cStat,
-                    MotivoStatus = xMotivo,
-                    ChaveAcesso = protNfe?.infProt?.chNFe ?? chave,
-                    Protocolo = protNfe?.infProt?.nProt.ToString(),
-                    DhAutorizacao = protNfe?.infProt?.dhRecbto,
-                    XmlAssinado = xmlAssinado,
-                    XmlProtocolado = FiscalXmlArchive.Complete(xmlAssinado, retorno.RetornoCompletoStr, true)
-                };
-            }
-
-            // 110/301/302 = uso denegado. Numeração é consumida e não pode ser reaproveitada.
-            if (cStat is 110 or 301 or 302 or 303)
-            {
-                return new ResultadoFiscal
-                {
-                    Status = StatusDocumentoFiscal.Denegado,
-                    CodigoStatus = cStat,
-                    MotivoStatus = xMotivo,
-                    ChaveAcesso = chave,
-                    XmlAssinado = xmlAssinado,
-                    Retentavel = false
-                };
-            }
-
-            logger.LogWarning(
-                "NFC-e rejeitada. Empresa {CompanyId} serie {Serie} numero {Numero} cStat {CStat}: {Motivo}",
-                emitente.CompanyId, request.Serie, request.NumeroNf, cStat, xMotivo);
-
             return new ResultadoFiscal
             {
-                Status = StatusDocumentoFiscal.Rejeitado,
-                CodigoStatus = cStat,
-                MotivoStatus = xMotivo,
+                Status = request.TipoEmissao == TipoEmissaoFiscal.ContingenciaOffline
+                    ? StatusDocumentoFiscal.ContingenciaPendente : StatusDocumentoFiscal.Assinado,
                 ChaveAcesso = chave,
                 XmlAssinado = xmlAssinado,
-                Retentavel = EhRejeicaoTransitoria(cStat)
+                QrCodeUrl = nfe.infNFeSupl?.qrCode,
+                MotivoStatus = "XML preparado e validado; nenhuma transmissão realizada."
             };
         }
         catch (FiscalConfigurationException ex)
@@ -196,18 +163,16 @@ public sealed class ZeusFiscalProvider(
         }
         catch (Exception ex)
         {
-            // Falha de rede, timeout ou SEFAZ fora. Não é rejeição: o documento
-            // continua na fila e o worker decide se entra em contingência.
             logger.LogError(ex,
-                "Falha ao transmitir NFC-e. Empresa {CompanyId} serie {Serie} numero {Numero}",
+                "Falha ao preparar NFC-e. Empresa {CompanyId} serie {Serie} numero {Numero}",
                 emitente.CompanyId, request.Serie, request.NumeroNf);
 
             return new ResultadoFiscal
             {
-                Status = StatusDocumentoFiscal.Assinado,
+                Status = StatusDocumentoFiscal.Rejeitado,
                 CodigoStatus = 0,
                 MotivoStatus = ex.Message,
-                Retentavel = true
+                Retentavel = false
             };
         }
     }
@@ -310,111 +275,68 @@ public sealed class ZeusFiscalProvider(
     /// Preserva o XML, Chave e dados originais.
     /// </summary>
     public Task<ResultadoFiscal> TransmitirContingenciaAsync(ContextoEmitente emitente, string xmlAssinado, CancellationToken ct = default)
+        => TransmitirDocumentoAsync(emitente, xmlAssinado, ct);
+
+    public Task<ResultadoFiscal> ConsultarDocumentoAsync(ContextoEmitente emitente, string xmlAssinado, CancellationToken ct = default)
+        => Task.Run(() => ExecutarDocumentoPreservado(emitente, xmlAssinado, consultarSomente: true), ct);
+
+    public Task<ResultadoFiscal> TransmitirDocumentoAsync(ContextoEmitente emitente, string xmlAssinado, CancellationToken ct = default)
+        => Task.Run(() => ExecutarDocumentoPreservado(emitente, xmlAssinado, consultarSomente: false), ct);
+
+    private ResultadoFiscal ExecutarDocumentoPreservado(ContextoEmitente emitente, string xmlAssinado, bool consultarSomente)
     {
-        if (string.IsNullOrWhiteSpace(xmlAssinado))
-        {
-            return Task.FromResult(new ResultadoFiscal
-            {
-                Status = StatusDocumentoFiscal.Rejeitado,
-                CodigoStatus = 0,
-                MotivoStatus = "XML assinado não informado para transmissão em contingência.",
-                Retentavel = false
-            });
-        }
-
-        using var certificado = CarregarCertificado(emitente);
-        var cfg = MontarConfiguracao(emitente, TipoEmissaoFiscal.ContingenciaOffline);
-
+        string? chave = null;
+        var pendingStatus = StatusDocumentoFiscal.Assinado;
         try
         {
+            // Reject entities before the external library reads a document received from durable storage.
+            using (var input = new StringReader(xmlAssinado))
+            using (var reader = System.Xml.XmlReader.Create(input, new System.Xml.XmlReaderSettings
+            { DtdProcessing = System.Xml.DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersInDocument = 10_000_000 }))
+                while (reader.Read()) { }
             var nfe = new NFe.Classes.NFe().CarregarDeXmlString(xmlAssinado);
-            var chave = nfe.infNFe.Id?.Replace("NFe", string.Empty, StringComparison.OrdinalIgnoreCase);
-
+            chave = nfe.infNFe.Id?.Replace("NFe", string.Empty, StringComparison.Ordinal);
+            if (chave?.Length != 44 || nfe.infNFe.emit.CNPJ != emitente.Cnpj ||
+                (int)nfe.infNFe.ide.tpAmb != emitente.Ambiente ||
+                nfe.infNFe.ide.mod is not (ModeloDocumento.NFCe or ModeloDocumento.NFe))
+                throw new FiscalConfigurationException("O XML preservado não corresponde à empresa, ao ambiente ou ao modelo fiscal.");
+            var emission = nfe.infNFe.ide.tpEmis == TipoEmissao.teOffLine
+                ? TipoEmissaoFiscal.ContingenciaOffline : TipoEmissaoFiscal.Normal;
+            pendingStatus = emission == TipoEmissaoFiscal.ContingenciaOffline
+                ? StatusDocumentoFiscal.ContingenciaPendente : StatusDocumentoFiscal.Assinado;
+            var cfg = nfe.infNFe.ide.mod == ModeloDocumento.NFe
+                ? MontarConfiguracaoNfe(emitente, emission) : MontarConfiguracao(emitente, emission);
+            using var certificado = CarregarCertificado(emitente);
             using var servico = new ServicosNFe(cfg, certificado);
-            var retorno = servico.NFeAutorizacao(
-                idLote: 1,
-                indSinc: IndicadorSincronizacao.Sincrono,
-                nFes: [nfe],
-                compactarMensagem: true);
-
-            var protNfe = retorno.Retorno?.protNFe;
-            var cStat = protNfe?.infProt?.cStat ?? retorno.Retorno?.cStat ?? 0;
-            var xMotivo = protNfe?.infProt?.xMotivo ?? retorno.Retorno?.xMotivo ?? "Sem retorno da SEFAZ.";
-
-            if (cStat is 100 or 150)
+            ResultadoFiscal Consult()
+                => FiscalXmlArchive.ReadResponse(xmlAssinado, servico.NfeConsultaProtocolo(chave).RetornoCompletoStr);
+            ResultadoFiscal Send()
             {
-                logger.LogInformation("NFC-e em contingência autorizada com sucesso na SEFAZ. Chave {Chave} Prot {Prot}", chave, protNfe?.infProt?.nProt);
-                return Task.FromResult(new ResultadoFiscal
-                {
-                    Status = StatusDocumentoFiscal.Autorizado,
-                    CodigoStatus = cStat,
-                    MotivoStatus = xMotivo,
-                    ChaveAcesso = protNfe?.infProt?.chNFe ?? chave,
-                    Protocolo = protNfe?.infProt?.nProt.ToString(),
-                    DhAutorizacao = protNfe?.infProt?.dhRecbto,
-                    XmlAssinado = xmlAssinado,
-                    XmlProtocolado = FiscalXmlArchive.Complete(xmlAssinado, retorno.RetornoCompletoStr, true),
-                    QrCodeUrl = nfe.infNFeSupl?.qrCode
-                });
+                if (cfg.ValidarSchemas) nfe.Valida(cfg);
+                var response = servico.NFeAutorizacao(1, IndicadorSincronizacao.Sincrono, [nfe], compactarMensagem: true);
+                return FiscalXmlArchive.ReadResponse(xmlAssinado, response.RetornoCompletoStr);
             }
-
-            // cStat 539: Duplicidade de NF-e com diferença na Chave de Acesso
-            if (cStat == 539 && !string.IsNullOrWhiteSpace(chave))
-            {
-                logger.LogWarning("SEFAZ retornou duplicidade (539) para contingência. Consultando situação da chave {Chave}...", chave);
-                var consSit = servico.NfeConsultaProtocolo(chave);
-                var protCons = consSit.Retorno?.protNFe;
-                if (protCons?.infProt?.cStat is 100 or 150)
-                {
-                    logger.LogInformation("NFC-e recuperada da SEFAZ via consulta de protocolo. Chave {Chave} Prot {Prot}", chave, protCons.infProt.nProt);
-                    return Task.FromResult(new ResultadoFiscal
-                    {
-                        Status = StatusDocumentoFiscal.Autorizado,
-                        CodigoStatus = protCons.infProt.cStat,
-                        MotivoStatus = protCons.infProt.xMotivo,
-                        ChaveAcesso = protCons.infProt.chNFe ?? chave,
-                        Protocolo = protCons.infProt.nProt.ToString(),
-                        DhAutorizacao = protCons.infProt.dhRecbto,
-                        XmlAssinado = xmlAssinado,
-                        XmlProtocolado = FiscalXmlArchive.Complete(xmlAssinado, consSit.RetornoCompletoStr, true),
-                        QrCodeUrl = nfe.infNFeSupl?.qrCode
-                    });
-                }
-            }
-
-            if (cStat is 110 or 301 or 302 or 303)
-            {
-                return Task.FromResult(new ResultadoFiscal
-                {
-                    Status = StatusDocumentoFiscal.Denegado,
-                    CodigoStatus = cStat,
-                    MotivoStatus = xMotivo,
-                    ChaveAcesso = chave,
-                    XmlAssinado = xmlAssinado,
-                    Retentavel = false
-                });
-            }
-
-            return Task.FromResult(new ResultadoFiscal
-            {
-                Status = StatusDocumentoFiscal.Rejeitado,
-                CodigoStatus = cStat,
-                MotivoStatus = xMotivo,
-                ChaveAcesso = chave,
-                XmlAssinado = xmlAssinado,
-                Retentavel = EhRejeicaoTransitoria(cStat)
-            });
+            var result = consultarSomente ? Consult() : FiscalRetryRules.RecoverAndTransmit(Consult, Send);
+            return result.Status == StatusDocumentoFiscal.Assinado
+                ? result with { Status = pendingStatus } : result;
+        }
+        catch (FiscalConfigurationException ex)
+        {
+            return new ResultadoFiscal { Status = StatusDocumentoFiscal.Rejeitado, ChaveAcesso = chave,
+                XmlAssinado = xmlAssinado, MotivoStatus = ex.Message, Retentavel = false };
+        }
+        catch (NFe.Utils.Excecoes.ValidacaoSchemaException ex)
+        {
+            return new ResultadoFiscal { Status = StatusDocumentoFiscal.Rejeitado, ChaveAcesso = chave,
+                XmlAssinado = xmlAssinado, MotivoStatus = "XML preservado incompatível com o schema fiscal: " + ex.Message,
+                Retentavel = false };
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Falha de comunicação ao transmitir lote de contingência.");
-            return Task.FromResult(new ResultadoFiscal
-            {
-                Status = StatusDocumentoFiscal.ContingenciaPendente,
-                CodigoStatus = 0,
-                MotivoStatus = ex.Message,
-                Retentavel = true
-            });
+            logger.LogWarning(ex, "Situação da chave fiscal original {Chave} ainda não confirmada; XML preservado para consulta.", chave);
+            return new ResultadoFiscal { Status = pendingStatus, ChaveAcesso = chave, XmlAssinado = xmlAssinado,
+                MotivoStatus = "Falha de comunicação fiscal. A chave original foi preservada para consulta antes de qualquer retransmissão.",
+                Retentavel = true };
         }
     }
 
@@ -524,7 +446,7 @@ public sealed class ZeusFiscalProvider(
     /* NF-e modelo 55                                                         */
     /* --------------------------------------------------------------------- */
 
-    private ResultadoFiscal EmitirNfe(EmissaoNfeRequest request)
+    private ResultadoFiscal PrepararNfe(EmissaoNfeRequest request)
     {
         var emitente = request.Emitente;
 
@@ -601,57 +523,14 @@ public sealed class ZeusFiscalProvider(
             var xmlAssinado = nfe.ObterXmlString();
             var chave = nfe.infNFe.Id?.Replace("NFe", string.Empty, StringComparison.OrdinalIgnoreCase);
 
-            using var servico = new ServicosNFe(cfg, certificado);
-            var retorno = servico.NFeAutorizacao(
-                idLote: 1,
-                indSinc: IndicadorSincronizacao.Sincrono,
-                nFes: [nfe],
-                compactarMensagem: true);
-
-            var protNfe = retorno.Retorno?.protNFe;
-            var cStat = protNfe?.infProt?.cStat ?? retorno.Retorno?.cStat ?? 0;
-            var xMotivo = protNfe?.infProt?.xMotivo ?? retorno.Retorno?.xMotivo ?? "Sem retorno da SEFAZ.";
-
-            if (cStat is 100 or 150)
-            {
-                return new ResultadoFiscal
-                {
-                    Status = StatusDocumentoFiscal.Autorizado,
-                    CodigoStatus = cStat,
-                    MotivoStatus = xMotivo,
-                    ChaveAcesso = protNfe?.infProt?.chNFe ?? chave,
-                    Protocolo = protNfe?.infProt?.nProt.ToString(),
-                    DhAutorizacao = protNfe?.infProt?.dhRecbto,
-                    XmlAssinado = xmlAssinado,
-                    XmlProtocolado = FiscalXmlArchive.Complete(xmlAssinado, retorno.RetornoCompletoStr, true)
-                };
-            }
-
-            if (cStat is 110 or 301 or 302 or 303)
-            {
-                return new ResultadoFiscal
-                {
-                    Status = StatusDocumentoFiscal.Denegado,
-                    CodigoStatus = cStat,
-                    MotivoStatus = xMotivo,
-                    ChaveAcesso = chave,
-                    XmlAssinado = xmlAssinado,
-                    Retentavel = false
-                };
-            }
-
-            logger.LogWarning(
-                "NF-e rejeitada. Empresa {CompanyId} serie {Serie} numero {Numero} cStat {CStat}: {Motivo}",
-                emitente.CompanyId, request.Serie, request.NumeroNf, cStat, xMotivo);
-
             return new ResultadoFiscal
             {
-                Status = StatusDocumentoFiscal.Rejeitado,
-                CodigoStatus = cStat,
-                MotivoStatus = xMotivo,
+                Status = request.TipoEmissao == TipoEmissaoFiscal.ContingenciaOffline
+                    ? StatusDocumentoFiscal.ContingenciaPendente : StatusDocumentoFiscal.Assinado,
                 ChaveAcesso = chave,
                 XmlAssinado = xmlAssinado,
-                Retentavel = EhRejeicaoTransitoria(cStat)
+                QrCodeUrl = nfe.infNFeSupl?.qrCode,
+                MotivoStatus = "XML preparado e validado; nenhuma transmissão realizada."
             };
         }
         catch (FiscalConfigurationException ex)
@@ -676,21 +555,23 @@ public sealed class ZeusFiscalProvider(
         catch (Exception ex)
         {
             logger.LogError(ex,
-                "Falha ao transmitir NF-e. Empresa {CompanyId} serie {Serie} numero {Numero}",
+                "Falha ao preparar NF-e. Empresa {CompanyId} serie {Serie} numero {Numero}",
                 emitente.CompanyId, request.Serie, request.NumeroNf);
 
             return new ResultadoFiscal
             {
-                Status = StatusDocumentoFiscal.Assinado,
+                Status = StatusDocumentoFiscal.Rejeitado,
                 CodigoStatus = 0,
                 MotivoStatus = ex.Message,
-                Retentavel = true
+                Retentavel = false
             };
         }
     }
 
     private static NFe.Classes.NFe MontarNfeModelo55(EmissaoNfeRequest request)
     {
+        FiscalPaymentRules.Validate(request.Pagamentos, request.Itens.Sum(i => i.ValorTotal - i.Desconto),
+            request.ValorTroco, allowNoPayment: request.Finalidade == 4);
         var e = request.Emitente;
         var ufEmitente = ParseUf(e.Uf);
 
@@ -990,6 +871,7 @@ public sealed class ZeusFiscalProvider(
 
     private static NFe.Classes.NFe MontarNfe(EmissaoNfceRequest request)
     {
+        FiscalPaymentRules.Validate(request.Pagamentos, request.Itens.Sum(i => i.ValorTotal - i.Desconto), request.ValorTroco);
         var e = request.Emitente;
 
         var ide = new ide

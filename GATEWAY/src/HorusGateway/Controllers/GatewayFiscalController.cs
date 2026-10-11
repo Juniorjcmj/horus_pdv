@@ -15,6 +15,7 @@ namespace HorusGateway.Controllers;
 [Route("api/gateway/fiscal")]
 public sealed class GatewayFiscalController : ControllerBase
 {
+    private static readonly SemaphoreSlim EmissionGate = new(1, 1);
     private readonly LocalFiscalSigner _signer;
     private readonly LocalFiscalStore _store;
     private readonly GatewayCertificateService _certificateService;
@@ -49,7 +50,7 @@ public sealed class GatewayFiscalController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(request.VendaId) ||
             string.IsNullOrWhiteSpace(request.TerminalId) ||
-            request.Itens.Count == 0)
+            request.Itens is null || request.Itens.Count == 0)
         {
             return BadRequest(new LocalNfceContingenciaResponse
             {
@@ -59,7 +60,7 @@ public sealed class GatewayFiscalController : ControllerBase
         }
 
         // Validação de terminal se exigido
-        if (_options.RequireTerminalAuth)
+        if (_options.RequireTerminalAuth || request.Emitente is not null)
         {
             var headerAuth = Request.Headers["X-Terminal-Key"].FirstOrDefault();
             var auth = await _terminalStore.AuthenticateAsync(request.TerminalId, headerAuth, ct);
@@ -73,7 +74,17 @@ public sealed class GatewayFiscalController : ControllerBase
             }
         }
 
-        var serie = _options.SerieNfceContingencia > 0 ? _options.SerieNfceContingencia : 900;
+        await EmissionGate.WaitAsync(ct);
+        try
+        {
+        var saved = _store.Find(_options.CompanyId, request.TerminalId, request.VendaId);
+        if (saved.HasValue)
+        {
+            if (saved.Value.Hash is not null && saved.Value.Hash != LocalFiscalStore.RequestHash(request))
+                return Conflict(new LocalNfceContingenciaResponse { Success = false, Message = "Esta venda já possui uma NFC-e local com dados diferentes. Recupere o documento original." });
+            return Ok(saved.Value.Response);
+        }
+        var serie = _options.SerieNfceContingencia;
         var numeroNf = _store.AlocarProximoNumero(_options.CompanyId, serie);
         var dhContingencia = DateTimeOffset.UtcNow;
 
@@ -89,12 +100,26 @@ public sealed class GatewayFiscalController : ControllerBase
         }
 
         // Persiste duravelmente e despacha evento para sincronização com a Cloud
-        await _store.PersistirEDespacharAsync(_options.CompanyId, resultado, request, ct);
+        // A disconnected browser must not cancel persistence after the XML has been signed.
+        await _store.PersistirEDespacharAsync(_options.CompanyId, resultado, request, CancellationToken.None);
 
         _logger.LogInformation(
             "NFC-e contingência emitida e persistida com sucesso na LAN. Chave: {Chave}", resultado.ChaveAcesso);
 
         return Ok(resultado);
+        }
+        finally { EmissionGate.Release(); }
+    }
+
+    /// <summary>Resolve an uncertain POST without allocating another fiscal number. Terminal identity is mandatory.</summary>
+    [HttpGet("nfce/contingencia/{vendaId}")]
+    public async Task<IActionResult> ObterContingencia(string vendaId, CancellationToken ct = default)
+    {
+        var terminalId = Request.Headers["X-Terminal-Id"].FirstOrDefault();
+        var auth = await _terminalStore.AuthenticateAsync(terminalId, Request.Headers["X-Terminal-Key"].FirstOrDefault(), ct);
+        if (!auth.Authenticated) return Unauthorized(new { success = false, message = "Terminal não autorizado para recuperar o documento fiscal." });
+        var saved = _store.Find(_options.CompanyId, terminalId!, vendaId);
+        return saved.HasValue ? Ok(saved.Value.Response) : NotFound(new { success = false, message = "Não há NFC-e local armazenada para esta venda e terminal." });
     }
 
     /// <summary>Retorna diagnóstico do módulo fiscal do Gateway (certificado A1, CSC e total de notas offline).</summary>

@@ -16,4 +16,13 @@
     <PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The same official fiscal package ships with API and LAN Gateway, including self-contained publishes. -->
+    <Content Include="../../../API/NETCORE/DataBase/Schemas/nfe_v4.00.xsd;../../../API/NETCORE/DataBase/Schemas/leiauteNFe_v4.00.xsd;../../../API/NETCORE/DataBase/Schemas/tiposBasico_v4.00.xsd;../../../API/NETCORE/DataBase/Schemas/DFeTiposBasicos_v1.00.xsd;../../../API/NETCORE/DataBase/Schemas/xmldsig-core-schema_v1.01.xsd"
+             Link="DataBase/Schemas/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="../../../API/NETCORE/DataBase/FiscalTables/cclass.json"
+             Link="DataBase/FiscalTables/cclass.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Compile Include="../../../API/NETCORE/Services/Fiscal/FiscalReferenceTables.cs" Link="Services/FiscalReferenceTables.cs" />
+  </ItemGroup>
+
 </Project>

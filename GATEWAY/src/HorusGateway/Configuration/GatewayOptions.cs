@@ -116,7 +116,15 @@ public sealed class GatewayOptions
     public string EmitenteInscricaoEstadual { get; set; } = string.Empty;
 
     /// <summary>Código do município IBGE do emitente (ex: 3304557 para Rio de Janeiro).</summary>
-    public string EmitenteCodigoMunicipioIbge { get; set; } = "3304557";
+    public string EmitenteCodigoMunicipioIbge { get; set; } = string.Empty;
+
+    public string EmitenteLogradouro { get; set; } = string.Empty;
+    public string EmitenteNumero { get; set; } = string.Empty;
+    public string EmitenteComplemento { get; set; } = string.Empty;
+    public string EmitenteBairro { get; set; } = string.Empty;
+    public string EmitenteMunicipio { get; set; } = string.Empty;
+    public string EmitenteCep { get; set; } = string.Empty;
+    public string EmitenteFone { get; set; } = string.Empty;
 
     /// <summary>Código da UF do emitente (ex: 33 para RJ, 35 para SP).</summary>
     public byte EmitenteCodigoUf { get; set; } = 33;

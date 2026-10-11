@@ -13,6 +13,8 @@ public sealed class LocalNfceContingenciaRequest
     public string? CustomerCpf { get; set; }
     public string? CustomerName { get; set; }
     public string? Justificativa { get; set; }
+    /// <summary>Cadastro real em cache, restrito ao CNPJ já vinculado ao Gateway. Nunca inclui CSC ou certificado.</summary>
+    public LocalEmitenteFiscal? Emitente { get; set; }
     public List<LocalItemFiscal> Itens { get; set; } = [];
     public List<LocalPagamentoFiscal> Pagamentos { get; set; } = [];
     public decimal ValorTroco { get; set; }
@@ -23,13 +25,42 @@ public sealed class LocalItemFiscal
     public int Numero { get; set; }
     public required string CodigoProduto { get; set; }
     public required string Descricao { get; set; }
-    public string Ncm { get; set; } = "00000000";
-    public string Cfop { get; set; } = "5102";
-    public string UnidadeComercial { get; set; } = "UN";
+    public string Ncm { get; set; } = string.Empty;
+    public string? Cest { get; set; }
+    public string Cfop { get; set; } = string.Empty;
+    public string UnidadeComercial { get; set; } = string.Empty;
+    public string? UnidadeTributavel { get; set; }
+    public string Gtin { get; set; } = string.Empty;
+    public string? GtinTributavel { get; set; }
+    public byte? OrigemMercadoria { get; set; }
+    public string? CsosnIcms { get; set; }
+    public string? CstIcms { get; set; }
+    public decimal? AliquotaIcms { get; set; }
+    public string CstPis { get; set; } = string.Empty;
+    public string CstCofins { get; set; } = string.Empty;
+    public string? CstIbsCbs { get; set; }
+    public string? CClassTrib { get; set; }
     public decimal Quantidade { get; set; }
     public decimal ValorUnitario { get; set; }
     public decimal ValorTotal { get; set; }
     public decimal Desconto { get; set; }
+}
+
+public sealed class LocalEmitenteFiscal
+{
+    public string Cnpj { get; set; } = string.Empty;
+    public string RazaoSocial { get; set; } = string.Empty;
+    public string? NomeFantasia { get; set; }
+    public string InscricaoEstadual { get; set; } = string.Empty;
+    public string Logradouro { get; set; } = string.Empty;
+    public string Numero { get; set; } = string.Empty;
+    public string? Complemento { get; set; }
+    public string Bairro { get; set; } = string.Empty;
+    public string Municipio { get; set; } = string.Empty;
+    public string CodigoMunicipioIbge { get; set; } = string.Empty;
+    public string Uf { get; set; } = string.Empty;
+    public string Cep { get; set; } = string.Empty;
+    public string? Fone { get; set; }
 }
 
 public sealed class LocalPagamentoFiscal
@@ -48,7 +79,10 @@ public sealed class LocalNfceContingenciaResponse
     public int Serie { get; set; }
     public int NumeroNf { get; set; }
     public DateTimeOffset DhContingencia { get; set; }
+    public byte Ambiente { get; set; }
     public string XmlAssinado { get; set; } = string.Empty;
+    /// <summary>XML integral para o DANFE. A contingência não possui protocolo de autorização.</summary>
+    public string XmlDocumento => XmlAssinado;
     public string QrCodeUrl { get; set; } = string.Empty;
     public string DigestValue { get; set; } = string.Empty;
     public DanfeThermalData? DanfeData { get; set; }

@@ -87,7 +87,10 @@ import { useCashRegisterActions } from "@/hooks/useCashRegisterActions";
 import type { CashMovementType } from "@/services/api/cashRegisterService";
 import { getStoredAuthUser } from "@/utils/authStorage";
 import { MANAGER_ROLES } from "@/utils/cashRegisterFormat";
-import { buildDanfePrintHtml } from "@/utils/danfePrint";
+import { enqueueDanfePrint, flushPendingDanfePrints } from "@/utils/pendingDanfePrint";
+import { resolveGatewayFiscalAttempts } from "@/utils/gatewayFiscalAttempt";
+import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
+import type { ProductFiscalData } from "@/services/api/productService";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getDesktopBridge } from "@/infrastructure/desktop/bridge";
 import { listenForBarcodeScans, type BarcodeScanOrigin } from "@/infrastructure/desktop/barcodeScanner";
@@ -119,6 +122,7 @@ type Product = {
   salePrice: number;
   imageUrl?: string;
   unit: string;
+  fiscal?: ProductFiscalData;
   marca?: string | null;
   categoriaId?: string | null;
   dataValidade?: string | null;
@@ -144,6 +148,7 @@ type CartItem = {
   name: string;
   quantity: number;
   unitPrice: number;
+  unit?: string;
   categoriaId?: string | null;
   dataValidade?: string | null;
   controlaValidade?: boolean;
@@ -310,6 +315,16 @@ export default function SalesStartPage({
 
   const [lastReceipt, setLastReceipt] = useState<SaleReceipt | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<SaleReceipt | null>(null);
+  useEffect(() => {
+    const flush = () => void resolveGatewayFiscalAttempts().then(() => flushPendingDanfePrints(formatMoneyBr, receipt => {
+      setLastReceipt(receipt);
+      try { localStorage.setItem(LAST_RECEIPT_STORAGE_KEY, JSON.stringify(receipt)); } catch { /* O documento permanece na API. */ }
+    }));
+    const timer = setInterval(flush, 3000);
+    window.addEventListener("online", flush);
+    flush();
+    return () => { clearInterval(timer); window.removeEventListener("online", flush); };
+  }, []);
   const [printPreviewEnabled, setPrintPreviewEnabled] = useState(() =>
     getPrintPreviewEnabled(),
   );
@@ -882,6 +897,7 @@ export default function SalesStartPage({
               name: product.name,
               quantity: quantityToAdd,
               unitPrice: product.salePrice,
+              unit: product.unit,
               categoriaId: product.categoriaId,
               dataValidade: product.dataValidade,
               controlaValidade: product.controlaValidade,
@@ -1445,6 +1461,8 @@ export default function SalesStartPage({
         })),
         payments: payloadPayments,
         payloadHash: "",
+        xmlNfceContingencia: undefined as string | undefined,
+        gatewayFiscalAttempt: undefined as import("@/services/api/salesHistoryService").RegisterSalePayload["gatewayFiscalAttempt"],
       };
 
       try {
@@ -1457,8 +1475,11 @@ export default function SalesStartPage({
       let isOfflineSale = false;
       let fiscalDetail: FiscalDocumentDetailDto | null = null;
       let result: any = null;
+      let needsFiscalPrint = fiscalModel !== "nfe";
+      const offlineBeforeRegister = !connectivityService.isApiReachable();
 
       try {
+        if (offlineBeforeRegister) throw new Error("Venda iniciada sem conexão com a API.");
         result = activePedido
           ? await pedidoService.finalize(activePedido.orderNumber, primaryPaymentType, payloadPayments)
           : await salesHistoryService.register(registerPayload);
@@ -1472,7 +1493,8 @@ export default function SalesStartPage({
         );
 
         // Aguarda brevemente a autorização da SEFAZ pelo outbox worker se a venda foi qualificada para emissão fiscal
-        const shouldEmitNfce = (result as any)?.emitirFiscal !== false && (result as any)?.fiscalQueued !== false;
+        const shouldEmitNfce = fiscalModel !== "nfe" && (result as any)?.emitirFiscal !== false;
+        needsFiscalPrint = shouldEmitNfce;
 
         if (shouldEmitNfce && result?.saleNumber) {
           for (let attempt = 0; attempt < 3; attempt++) {
@@ -1492,37 +1514,6 @@ export default function SalesStartPage({
             await new Promise((resolve) => setTimeout(resolve, 500));
           }
 
-          // Fallback suave de contingência na Cloud se a SEFAZ estiver em timeout
-          if (!fiscalDetail && fiscalModel !== "nfe" && result?.saleNumber) {
-            try {
-              const resCont = await fiscalService.emitirContingenciaManual(
-                result.saleNumber,
-                "Emissão em contingência offline por timeout de resposta SEFAZ"
-              );
-              if (resCont?.chaveAcesso) {
-                fiscalDetail = {
-                  id: resCont.protocolo || result.saleNumber,
-                  saleNumber: result.saleNumber,
-                  serie: resCont.serie || 2,
-                  numeroNf: resCont.numeroNf || 0,
-                  status: FISCAL_STATUS.ContingenciaPendente,
-                  chaveAcesso: resCont.chaveAcesso,
-                  protocolo: null,
-                  motivoStatus: "Emitida em Contingência Offline (tpEmis = 9)",
-                  dhAutorizacao: null,
-                  dhContingencia: resCont.dhContingencia || new Date().toISOString(),
-                  justContingencia: "Emissão em contingência offline por timeout de resposta SEFAZ",
-                  criadoEm: new Date().toISOString(),
-                  tentativas: 0,
-                  qrCodeUrl: resCont.qrCodeUrl,
-                  tpEmis: 9,
-                };
-                Toast.info("SEFAZ em timeout. NFC-e emitida em CONTINGÊNCIA OFFLINE.");
-              }
-            } catch (err) {
-              console.warn("Fallback de contingência na Cloud não concluído:", err);
-            }
-          }
         }
 
         // Emite NF-e modelo 55 quando selecionado (após a venda ser registrada)
@@ -1588,58 +1579,54 @@ export default function SalesStartPage({
           Toast.error("Sem conexão. Pedidos só podem ser finalizados online.");
           return;
         }
-        saleNumber = await queueSaleToOutbox(registerPayload);
+        saleNumber = offlineReference;
         isOfflineSale = true;
 
-        // Emissão de NFC-e em contingência offline pelo Local Gateway na LAN
+        // Somente vendas que não tentaram cadastro na Cloud podem criar uma nova nota no Gateway.
+        let queuedForGateway = false;
         try {
+          if (!offlineBeforeRegister || fiscalModel === "nfe") throw new Error("Emissão aguardando a sincronização da venda original.");
           const gwUrl = localStorage.getItem("horus_gateway_url") || "http://localhost:5050";
-          const gwKey = localStorage.getItem("horus_gateway_key") || "";
           const gwPayload = {
-            vendaId: saleNumber,
+            vendaId: clientSaleId,
             terminalId: localStorage.getItem("horus_terminal_id") || "caixa-01",
             customerCpf: selectedCustomer ? selectedCustomer.document : (cpfNota || undefined),
             customerName: selectedCustomer ? selectedCustomer.customerName : undefined,
             justificativa: "EMISSAO EM CONTINGENCIA OFFLINE POR QUEDA DE REDE LOCAL",
-            itens: cart.map((item, idx) => ({
-              numero: idx + 1,
-              codigoProduto: item.code,
-              descricao: item.name,
-              quantidade: item.quantity,
-              valorUnitario: item.unitPrice,
-              valorTotal: item.itemTotal ?? Math.max(0, item.quantity * item.unitPrice - (item.discount ?? 0)),
-              desconto: item.discount ?? 0,
-            })),
+            emitente: company ? { cnpj: company.cnpj, razaoSocial: company.corporateName, nomeFantasia: company.fantasyName,
+              inscricaoEstadual: company.stateRegistration, logradouro: company.address, numero: company.number,
+              complemento: company.complement, bairro: company.neighborhood, municipio: company.city,
+              codigoMunicipioIbge: company.codigoMunicipioIbge, uf: company.uf, cep: company.cep, fone: company.phone } : undefined,
+            itens: cart.map((item, idx) => {
+              const fiscal = products.find(p => p.id === item.id || p.code === item.code)?.fiscal;
+              if (!fiscal) throw new Error(`Atualize o cadastro de ${item.name} antes da emissão offline.`);
+              const rawAliquota = String(fiscal.aliquotaIcms);
+              const aliquota = Number(rawAliquota.includes(",") ? rawAliquota.replace(/\./g, "").replace(",", ".") : rawAliquota);
+              return { numero: idx + 1, codigoProduto: item.code, descricao: item.name,
+                quantidade: item.quantity, valorUnitario: item.unitPrice,
+                valorTotal: round2(item.quantity * item.unitPrice), desconto: item.discount ?? 0,
+                ...fiscal, aliquotaIcms: Number.isFinite(aliquota) ? aliquota : undefined };
+            }),
             pagamentos: finalPayments.map((p) => ({
               tipo: toFiscalPaymentCode(p.paymentType),
-              valor: p.amount,
+              valor: p.paymentType === "dinheiro" ? (p.cashGiven ?? p.amount) : p.amount,
             })),
             valorTroco: totalChange,
           };
 
-          const resGw = await fiscalService.emitirContingenciaGatewayLocal(gwUrl, gwKey, gwPayload);
-          if (resGw?.success && resGw.chaveAcesso) {
-            fiscalDetail = {
-              id: resGw.documentoId || `gw-${saleNumber}`,
-              saleNumber: saleNumber,
-              serie: resGw.serie || 900,
-              numeroNf: resGw.numeroNf || 0,
-              status: FISCAL_STATUS.ContingenciaPendente,
-              chaveAcesso: resGw.chaveAcesso,
-              protocolo: null,
-              motivoStatus: "Emitida em Contingência Offline no Local Gateway",
-              dhAutorizacao: null,
-              dhContingencia: resGw.dhContingencia || new Date().toISOString(),
-              justContingencia: "EMISSAO EM CONTINGENCIA OFFLINE POR QUEDA DE REDE LOCAL",
-              criadoEm: new Date().toISOString(),
-              tentativas: 0,
-              qrCodeUrl: resGw.qrCodeUrl,
-              tpEmis: 9,
-            };
-            Toast.info("Venda offline! NFC-e assinada pelo Local Gateway em CONTINGÊNCIA.");
-          }
+          registerPayload.gatewayFiscalAttempt = { gatewayUrl: gwUrl, payload: gwPayload };
+          // Persiste a venda e a tentativa na mesma transação; FISCAL_PENDING nunca entra no sync.
+          saleNumber = await queueSaleToOutbox(registerPayload, true);
+          queuedForGateway = true;
+          const resolved = await resolveGatewayFiscalAttempts(eventId);
+          fiscalDetail = resolved.get(clientSaleId) ?? null;
         } catch (gwErr) {
+          if (registerPayload.gatewayFiscalAttempt && !queuedForGateway) throw gwErr;
           console.warn("Local Gateway não disponível para contingência offline:", gwErr);
+        }
+        if (!registerPayload.gatewayFiscalAttempt) {
+          registerPayload.payloadHash = await computeSalePayloadHash(registerPayload).catch(() => "");
+          saleNumber = await queueSaleToOutbox(registerPayload);
         }
       }
 
@@ -1658,6 +1645,9 @@ export default function SalesStartPage({
 
       const receipt: SaleReceipt = {
         saleNumber,
+        clientSaleId,
+        eventId,
+        needsFiscalPrint,
         issuedAt: new Date().toISOString(),
         company: company
           ? {
@@ -1720,10 +1710,13 @@ export default function SalesStartPage({
 
       // Falha de impressão não desfaz uma venda já salva nem mantém o carrinho para cobrar novamente.
       try {
-        const printHtml = fiscalDetail
-          ? buildDanfePrintHtml(receipt, fiscalDetail, formatMoneyBr)
-          : buildReceiptPrintHtml(receipt, formatMoneyBr, fiscalDetail);
-        await printSaleReceipt(printHtml);
+        if (needsFiscalPrint) {
+          enqueueDanfePrint(receipt);
+          if (fiscalDetail?.xmlDocumento) await flushPendingDanfePrints(formatMoneyBr);
+          else Toast.info("Venda salva. O comprovante será impresso automaticamente quando estiver pronto.");
+        } else {
+          await printSaleReceipt(buildReceiptPrintHtml(receipt, formatMoneyBr));
+        }
       } catch (printError) {
         console.warn("Venda salva, mas o cupom não foi enviado:", printError);
         Toast.error('Venda salva, mas não foi possível imprimir. Confira a impressora e use "Imprimir última venda".');
@@ -1737,7 +1730,7 @@ export default function SalesStartPage({
       } else if (fiscalModel === "nfe") {
         Toast.success(`Venda ${receipt.saleNumber} confirmada! NF-e modelo 55 enfileirada para emissão.`);
       } else if (fiscalDetail?.status === FISCAL_STATUS.Autorizado) {
-        Toast.success(`Venda ${receipt.saleNumber} confirmada e NFC-e autorizada!`);
+        Toast.success(`Venda ${receipt.saleNumber} confirmada!`);
       } else {
         Toast.success(`Pagamento confirmado. Venda ${receipt.saleNumber} registrada.`);
       }

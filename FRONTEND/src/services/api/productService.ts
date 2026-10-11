@@ -81,6 +81,7 @@ export type ProductDto = {
 };
 
 export type ProductPayload = Omit<ProductDto, "id">;
+export type ProductFiscalData = Pick<ProductDto, "ncm" | "cest" | "cfop" | "origemMercadoria" | "unidadeComercial" | "unidadeTributavel" | "gtin" | "csosnIcms" | "cstIcms" | "aliquotaIcms" | "cstPis" | "cstCofins" | "cstIbsCbs" | "cClassTrib">;
 
 export type VencimentoResumo = {
   vencidos: number;

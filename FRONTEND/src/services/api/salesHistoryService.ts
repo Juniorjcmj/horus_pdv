@@ -4,6 +4,7 @@
  * Entradas esperadas: recebe payloads já validados pelas telas e retorna respostas tipadas da API.
  */
 import { apiRequest, requireEnvUrl } from "./apiClient";
+import type { LocalNfceContingenciaPayload } from "./fiscalService";
 
 const HISTORICO_VENDAS_API_URL = requireEnvUrl("VITE_HISTORICO_VENDAS_API_URL");
 
@@ -129,6 +130,9 @@ export type RegisterSalePayload = {
   occurredAt?: string;
   offlineReference?: string;
   payloadHash?: string;
+  /** XML original assinado pelo Gateway antes da primeira sincronização desta venda. */
+  xmlNfceContingencia?: string;
+  gatewayFiscalAttempt?: { gatewayUrl: string; payload: LocalNfceContingenciaPayload };
   /** true só no reenvio de venda feita offline (SyncEngine). */
   reenvioOffline?: boolean;
   customerName: string;

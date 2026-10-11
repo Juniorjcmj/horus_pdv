@@ -45,6 +45,14 @@ public static class HorusPayloadHash
         };
 
         var json = JsonSerializer.Serialize(canonical);
+        if (!string.IsNullOrWhiteSpace(request.XmlNfceContingencia))
+        {
+            // Keep legacy hashes unchanged; bind the original fiscal XML when it is present.
+            var withFiscal = JsonSerializer.SerializeToNode(canonical)!.AsObject();
+            withFiscal["xmlNfceContingenciaSha256"] = Convert.ToHexString(
+                SHA256.HashData(Encoding.UTF8.GetBytes(request.XmlNfceContingencia))).ToLowerInvariant();
+            json = withFiscal.ToJsonString();
+        }
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
         return Convert.ToHexString(bytes).ToLowerInvariant();
     }

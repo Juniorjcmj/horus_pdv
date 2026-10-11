@@ -29,7 +29,7 @@ export type PendingBackup = {
 /** Monta o backup com todos os eventos ainda não sincronizados (PENDING, PROCESSING ou FAILED). */
 export async function buildPendingBackup(): Promise<PendingBackup> {
   // Inclui FORWARDED: já está no Gateway da loja, mas se aquela máquina falhar o backup ainda cobre.
-  const events = await db.outbox.where("status").anyOf(["PENDING", "PROCESSING", "FAILED", "FORWARDED"]).sortBy("sequence");
+  const events = await db.outbox.where("status").anyOf(["PENDING", "PROCESSING", "FAILED", "FORWARDED", "FISCAL_PENDING"]).sortBy("sequence");
   return {
     format: "quack-pdv-pending-backup",
     version: 1,
@@ -109,13 +109,15 @@ export async function importPendingBackup(backup: PendingBackup): Promise<Import
         continue;
       }
       sequence++;
+      const restoredPayload = typeof event.payload === "string" ? JSON.parse(event.payload) : event.payload;
+      const waitsForFiscal = event.status === "FISCAL_PENDING" || !!(restoredPayload as { gatewayFiscalAttempt?: unknown })?.gatewayFiscalAttempt;
       await db.outbox.put({
         ...event,
         // Backup antigo (sem empresa): fica com a empresa de quem está importando.
         tenantId: event.tenantId || currentTenantId(),
         payload: typeof event.payload === "string" ? event.payload : JSON.stringify(event.payload),
         sequence,
-        status: "PENDING",
+        status: waitsForFiscal ? "FISCAL_PENDING" : "PENDING",
         retryCount: 0,
         lastAttemptAt: null,
         lastError: null,

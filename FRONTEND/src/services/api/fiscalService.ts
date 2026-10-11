@@ -7,6 +7,10 @@ import { apiRequest, requireEnvUrl } from "./apiClient";
 
 const NFCE_API_URL = requireEnvUrl("VITE_NFCE_API_URL");
 const NFE_API_URL = requireEnvUrl("VITE_NFE_API_URL");
+export class GatewayFiscalHttpError extends Error {
+  readonly status: number;
+  constructor(status: number, message: string) { super(message); this.status = status; }
+}
 
 /** Espelha StatusDocumentoFiscal (API/NETCORE/Services/Fiscal/FiscalContracts.cs). */
 export const FISCAL_STATUS = {
@@ -63,6 +67,9 @@ export type FiscalDocumentItemDto = {
 
 export type FiscalDocumentDetailDto = FiscalDocumentDto & {
   qrCodeUrl: string | null;
+  xmlDocumento?: string | null;
+  codigoStatus?: number | null;
+  alertasAutorizacao?: { codigo?: string | null; mensagem: string }[];
   dhContingencia?: string | null;
   justContingencia?: string | null;
   tpEmis?: number;
@@ -106,6 +113,7 @@ export type LocalNfceContingenciaPayload = {
   customerCpf?: string | null;
   customerName?: string | null;
   justificativa?: string | null;
+  emitente?: { cnpj: string; razaoSocial: string; nomeFantasia?: string; inscricaoEstadual: string; logradouro: string; numero: string; complemento?: string; bairro: string; municipio: string; codigoMunicipioIbge: string; uf: string; cep: string; fone?: string };
   itens: Array<{
     numero: number;
     codigoProduto: string;
@@ -113,6 +121,17 @@ export type LocalNfceContingenciaPayload = {
     ncm?: string;
     cfop?: string;
     unidadeComercial?: string;
+    unidadeTributavel?: string;
+    cest?: string | null;
+    gtin?: string;
+    origemMercadoria?: number;
+    csosnIcms?: string | null;
+    cstIcms?: string | null;
+    aliquotaIcms?: number;
+    cstPis?: string;
+    cstCofins?: string;
+    cstIbsCbs?: string | null;
+    cClassTrib?: string | null;
     quantidade: number;
     valorUnitario: number;
     valorTotal: number;
@@ -389,8 +408,10 @@ export const fiscalService = {
       headers: {
         "Content-Type": "application/json",
         "X-Terminal-Key": terminalKey,
+        "X-Terminal-Id": payload.terminalId,
       },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(15000),
     });
     if (!res.ok) {
       let msg = "Falha ao emitir contingência no Local Gateway.";
@@ -398,9 +419,17 @@ export const fiscalService = {
         const json = await res.json();
         if (json.message) msg = json.message;
       } catch {}
-      throw new Error(msg);
+      throw new GatewayFiscalHttpError(res.status, msg);
     }
     return await res.json();
+  },
+  async consultarContingenciaGatewayLocal(gatewayBaseUrl: string, terminalKey: string, terminalId: string, vendaId: string) {
+    const response = await fetch(`${gatewayBaseUrl.replace(/\/+$/, "")}/api/gateway/fiscal/nfce/contingencia/${encodeURIComponent(vendaId)}`, {
+      headers: { "X-Terminal-Key": terminalKey, "X-Terminal-Id": terminalId }, signal: AbortSignal.timeout(15000),
+    });
+    if (response.status === 404) return null;
+    if (!response.ok) throw new GatewayFiscalHttpError(response.status, "Não foi possível conferir o comprovante no Gateway.");
+    return await response.json();
   },
 };
 

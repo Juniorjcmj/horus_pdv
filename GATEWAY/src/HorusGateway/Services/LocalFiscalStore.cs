@@ -5,6 +5,9 @@
  *           Event Bus local (IEventStore) para sincronização posterior com a Cloud.
  */
 using System.Text.Json;
+using System.Security.Cryptography;
+using System.Text;
+using System.Xml.Linq;
 using HorusGateway.Data;
 using HorusGateway.Models;
 using Microsoft.Data.Sqlite;
@@ -74,7 +77,7 @@ public sealed class LocalFiscalStore
 
     /// <summary>
     /// Persiste o documento assinado no SQLite local e despacha um evento de contingência
-    /// para a fila durável do Gateway (sincronizada via CloudSyncDispatcher quando a rede voltar).
+    /// para coordenação local. A transmissão fiscal ocorre pelo SALE_CREATED que inclui o XML assinado.
     /// </summary>
     public async Task PersistirEDespacharAsync(
         string companyId,
@@ -93,11 +96,11 @@ public sealed class LocalFiscalStore
                 INSERT INTO LocalNfceContingencias
                     (Id, CompanyId, VendaId, TerminalId, Serie, NumeroNf, ChaveAcesso,
                      DhContingencia, Justificativa, XmlAssinado, QrCodeUrl, DigestValue,
-                     TotalVenda, StatusSync, CreatedAt)
+                     TotalVenda, StatusSync, CreatedAt, RequestHash, ResponseJson)
                 VALUES
                     ($id, $companyId, $vendaId, $terminalId, $serie, $numeroNf, $chaveAcesso,
                      $dhContingencia, $justificativa, $xmlAssinado, $qrCodeUrl, $digestValue,
-                     $totalVenda, 'PENDING', $createdAt)
+                     $totalVenda, 'PENDING', $createdAt, $requestHash, $responseJson)
                 ON CONFLICT(Id) DO NOTHING;
                 """;
             insertCmd.Parameters.AddWithValue("$id", resp.DocumentoId);
@@ -114,6 +117,8 @@ public sealed class LocalFiscalStore
             insertCmd.Parameters.AddWithValue("$digestValue", resp.DigestValue);
             insertCmd.Parameters.AddWithValue("$totalVenda", (double)totalVenda);
             insertCmd.Parameters.AddWithValue("$createdAt", agora);
+            insertCmd.Parameters.AddWithValue("$requestHash", RequestHash(req));
+            insertCmd.Parameters.AddWithValue("$responseJson", JsonSerializer.Serialize(resp));
 
             insertCmd.ExecuteNonQuery();
         }
@@ -153,9 +158,38 @@ public sealed class LocalFiscalStore
 
         var resultadoIngest = await _eventStore.AppendAsync(ingestReq, ct);
         _logger.LogInformation(
-            "NFC-e contingência {Chave} ingerida no Event Bus local (Outcome: {Outcome}). Sincronização agendada para Cloud.",
+            "NFC-e contingência {Chave} registrada no Event Bus local (Outcome: {Outcome}). Transmissão fiscal depende do SALE_CREATED com XML.",
             resp.ChaveAcesso, resultadoIngest.Outcome);
     }
+
+    /// <summary>Durable replay survives a response timeout and a Gateway restart.</summary>
+    public (LocalNfceContingenciaResponse Response, string? Hash)? Find(string companyId, string terminalId, string vendaId)
+    {
+        using var connection = _database.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT Id, ChaveAcesso, Serie, NumeroNf, DhContingencia, XmlAssinado, QrCodeUrl, DigestValue, RequestHash, ResponseJson
+              FROM LocalNfceContingencias
+             WHERE CompanyId = $company AND TerminalId = $terminal AND VendaId = $venda
+             ORDER BY CreatedAt, Id LIMIT 1;
+            """;
+        cmd.Parameters.AddWithValue("$company", companyId); cmd.Parameters.AddWithValue("$terminal", terminalId); cmd.Parameters.AddWithValue("$venda", vendaId);
+        using var reader = cmd.ExecuteReader();
+        if (!reader.Read()) return null;
+        var hash = reader.IsDBNull(8) ? null : reader.GetString(8);
+        if (!reader.IsDBNull(9)) return (JsonSerializer.Deserialize<LocalNfceContingenciaResponse>(reader.GetString(9))!, hash);
+        // Older documents are returned unchanged, never re-issued. Their original fiscal layout may need review.
+        var xml = reader.GetString(5); var ns = XNamespace.Get("http://www.portalfiscal.inf.br/nfe");
+        var environment = byte.TryParse(XDocument.Parse(xml).Descendants(ns + "tpAmb").FirstOrDefault()?.Value, out var parsed) ? parsed : (byte)0;
+        return (new LocalNfceContingenciaResponse { Success = true, Message = "Documento de contingência já armazenado; autorização pendente.",
+            DocumentoId = reader.GetString(0), ChaveAcesso = reader.GetString(1), Serie = reader.GetInt32(2), NumeroNf = reader.GetInt32(3),
+            DhContingencia = DateTimeOffset.Parse(reader.GetString(4)), XmlAssinado = xml, QrCodeUrl = reader.GetString(6), DigestValue = reader.GetString(7), Ambiente = environment }, hash);
+    }
+
+    internal static string RequestHash(LocalNfceContingenciaRequest request) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+    {
+        request.VendaId, request.TerminalId, request.CustomerCpf, request.CustomerName, request.Itens, request.Pagamentos, request.ValorTroco
+    }))));
 
     /// <summary>Retorna estatísticas para o status fiscal do Gateway.</summary>
     public (int UltimoNumero, int TotalNotas) ObterEstatisticas(string companyId, int serie)

@@ -1,4 +1,5 @@
 using HORUSPDV_API.Repositories.DataAccess;
+using HORUSPDV_API.Services.Shared;
 
 namespace HORUSPDV_API.Services.Fiscal;
 
@@ -9,11 +10,12 @@ public sealed record ProductFiscalReport(string ProdutoId, string ProdutoNome, D
 
 public static class ProductFiscalReview
 {
-    public static ProductFiscalReport Check(ProdutoAD p, EmpresaAD e, FiscalTableData tables, DateTimeOffset now)
+    public static ProductFiscalReport Check(ProdutoAD p, EmpresaAD e, FiscalTableData tables, DateTimeOffset now,
+        IReadOnlyList<FiscalCest>? cests = null)
     {
         var items = new List<FiscalFinding>();
         void Add(string level, string field, string message) => items.Add(new(level, field, message));
-        var date = DateOnly.FromDateTime(now.DateTime);
+        var date = DateOnly.FromDateTime(HorusDateTime.ToBrasilia(now).DateTime);
         string? ncmDescription = null, classDescription = null;
         var ncmCode = FiscalReferenceTables.Digits(p.Ncm);
         if (ncmCode.Length != 8 || !tables.Ncms.TryGetValue(ncmCode, out var ncm))
@@ -34,6 +36,16 @@ public static class ProductFiscalReview
         if (string.IsNullOrWhiteSpace(p.UnidadeComercial) || p.UnidadeComercial.Length > 6) Add("erro", "Unidade", "Informe unidade comercial de até seis caracteres.");
         if (p.UnidadeComercial != p.UnidadeTributavel) Add("aviso", "Unidade tributável", "O emissor usa a mesma unidade e quantidade comercial e tributável. Este produto requer conferência da conversão fiscal.");
         if (!string.IsNullOrWhiteSpace(p.Cest) && (p.Cest.Length != 7 || !p.Cest.All(char.IsAsciiDigit))) Add("erro", "CEST", "CEST deve ter sete dígitos sem pontuação.");
+        if (cests is not null)
+        {
+            var candidates = cests.Where(c => c.Vigente(date) && c.CorrespondeNcm(ncmCode)).ToArray();
+            if (string.IsNullOrWhiteSpace(p.Cest) && candidates.Length > 0)
+                Add("aviso", "CEST", "Este NCM aparece nos anexos do CONFAZ. Confira a descrição, composição e embalagem: para mercadorias abrangidas, CEST é obrigatório mesmo sem ST e no Simples Nacional. O NCM sozinho não confirma o enquadramento.");
+            else if (!string.IsNullOrWhiteSpace(p.Cest) && !cests.Any(c => c.Codigo == p.Cest && c.Vigente(date) && c.CorrespondeNcm(ncmCode)))
+                Add("erro", "CEST", "CEST inexistente, fora da vigência ou incompatível com o NCM na data da conferência.");
+            else if (!string.IsNullOrWhiteSpace(p.Cest))
+                Add("informacao", "CEST", "Código compatível com o NCM na referência vigente. Confirme a descrição e a embalagem; isso não comprova incidência de ST ou benefício fiscal no RJ.");
+        }
         if (e.Crt is 1 or 4)
         {
             if (p.CsosnIcms is not ("102" or "103" or "300" or "400" or "500")) Add("erro", "CSOSN", "Informe CSOSN compatível com Simples/MEI. O emissor atual suporta 102, 103, 300, 400 e 500; outros códigos precisam de dados e implementação específicos.");

@@ -7,6 +7,7 @@
  */
 import Dexie, { type EntityTable } from "dexie";
 import type { OutboxEvent, SyncCheckpoint, SyncLog } from "@/shared/types/sync";
+import type { ProductFiscalData } from "@/services/api/productService";
 
 // ---------------------------------------------------------------------------
 // Tipos das tabelas
@@ -43,6 +44,7 @@ export type LocalProductRecord = {
   marca: string | null;
   ncm: string;
   cfop: string;
+  fiscal?: ProductFiscalData;
   active: boolean;
   controlaValidade: boolean;
   dataValidade: string | null;

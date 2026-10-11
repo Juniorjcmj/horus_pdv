@@ -10,7 +10,7 @@ export type ConnectionStatus = "ONLINE" | "OFFLINE" | "API_UNAVAILABLE" | "SYNCI
  * Conta como "ainda não está na nuvem" (fiado/estoque/fechamento offline); quando a internet volta,
  * o PDV reenvia direto à nuvem com o mesmo EventId (replay idempotente se o Gateway já entregou).
  */
-export type OutboxStatus = "PENDING" | "PROCESSING" | "PROCESSED" | "FAILED" | "FORWARDED";
+export type OutboxStatus = "PENDING" | "PROCESSING" | "PROCESSED" | "FAILED" | "FORWARDED" | "FISCAL_PENDING";
 
 export type OutboxEvent = {
   id: string;

@@ -29,6 +29,12 @@ function mapDtoToLocal(dto: ProductDto): LocalProductRecord {
     marca: dto.marca ?? null,
     ncm: dto.ncm || "",
     cfop: dto.cfop || "",
+    fiscal: {
+      ncm: dto.ncm, cest: dto.cest, cfop: dto.cfop, origemMercadoria: dto.origemMercadoria,
+      unidadeComercial: dto.unidadeComercial, unidadeTributavel: dto.unidadeTributavel, gtin: dto.gtin,
+      csosnIcms: dto.csosnIcms, cstIcms: dto.cstIcms, aliquotaIcms: dto.aliquotaIcms,
+      cstPis: dto.cstPis, cstCofins: dto.cstCofins, cstIbsCbs: dto.cstIbsCbs, cClassTrib: dto.cClassTrib,
+    },
     active: true,
     controlaValidade: dto.controlaValidade ?? false,
     dataValidade: dto.dataValidade ?? null,

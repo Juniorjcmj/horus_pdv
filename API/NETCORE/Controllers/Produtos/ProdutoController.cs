@@ -17,7 +17,7 @@ namespace HORUSPDV_API.Controllers.Produtos;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProdutoController(IProdutoService produtoService, ProdutoAB produtos, EmpresaAB empresas, FiscalReferenceTables tabelas) : ControllerBase
+public class ProdutoController(IProdutoService produtoService, ProdutoAB produtos, EmpresaAB empresas, FiscalReferenceTables tabelas, FiscalCestReference cests) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<ProdutoModel>>), StatusCodes.Status200OK)]
@@ -46,7 +46,7 @@ public class ProdutoController(IProdutoService produtoService, ProdutoAB produto
         if (company is null) return BadRequest(new ApiResponse<object> { Success = false, Message = "Cadastre os dados fiscais em Minha Empresa antes da conferência." });
         Response.Headers.CacheControl = "no-store";
         return Ok(new ApiResponse<ProductFiscalReport> { Success = true,
-            Data = ProductFiscalReview.Check(product, company, await tabelas.GetAsync(ct), HorusDateTime.Now) });
+            Data = ProductFiscalReview.Check(product, company, await tabelas.GetAsync(ct), HorusDateTime.Now, cests.Items) });
     }
 
     [HttpPost]

@@ -57,11 +57,21 @@ public sealed class NfceOutboxWorker(
         var emitentes = scope.ServiceProvider.GetRequiredService<EmitenteFiscalStore>();
         var provider = scope.ServiceProvider.GetRequiredService<IFiscalProvider>();
 
+        // Retoma também o intervalo entre decidir a emissão e gravar a fila, inclusive
+        // após reinício da API. Documentos rejeitados continuam para revisão manual.
+        foreach (var sale in await documentos.ObterVendasSemDocumentoFiscalAsync(LoteMaximo, ct))
+        {
+            try { await documentos.EnfileirarAsync(sale.CompanyId, sale.VendaId, ct); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+            catch (Exception ex) { logger.LogError(ex, "Falha ao retomar fila fiscal da venda {VendaId}.", sale.VendaId); }
+        }
+
         var pendentes = await documentos.ObterPendentesAsync(LoteMaximo, ct);
         if (pendentes.Count == 0) return;
 
-        foreach (var doc in pendentes)
+        foreach (var queued in pendentes)
         {
+            var doc = queued;
             ct.ThrowIfCancellationRequested();
 
             try
@@ -79,22 +89,32 @@ public sealed class NfceOutboxWorker(
                 }
 
                 ResultadoFiscal resultado;
-                if (doc.Status == StatusDocumentoFiscal.ContingenciaPendente && !string.IsNullOrWhiteSpace(doc.XmlAssinado))
+                if (!string.IsNullOrWhiteSpace(doc.XmlAssinado))
                 {
                     logger.LogInformation(
-                        "Transmitindo NFC-e em contingência offline (tpEmis=9). Documento {Id} Chave {Chave}",
+                        "Consultando a chave original antes de transmitir. Documento {Id} Chave {Chave}",
                         doc.Id, doc.ChaveAcesso);
-                    resultado = await provider.TransmitirContingenciaAsync(emitente, doc.XmlAssinado, ct);
-                }
-                else if (doc.Modelo == 55)
-                {
-                    var nfeRequest = await documentos.MontarRequisicaoNfeAsync(doc, emitente, ct);
-                    resultado = await provider.EmitirNfeAsync(nfeRequest, ct);
+                    resultado = await provider.TransmitirDocumentoAsync(emitente, doc.XmlAssinado, ct);
                 }
                 else
                 {
-                    var nfceRequest = await documentos.MontarRequisicaoAsync(doc, emitente, ct);
-                    resultado = await provider.EmitirNfceAsync(nfceRequest, ct);
+                    if (doc.Modelo == 55)
+                    {
+                        var nfeRequest = await documentos.MontarRequisicaoNfeAsync(doc, emitente, ct);
+                        resultado = await provider.PrepararNfeAsync(nfeRequest, ct);
+                    }
+                    else
+                    {
+                        var nfceRequest = await documentos.MontarRequisicaoAsync(doc, emitente, ct);
+                        resultado = await provider.PrepararNfceAsync(nfceRequest, ct);
+                    }
+                    if (!string.IsNullOrWhiteSpace(resultado.XmlAssinado))
+                    {
+                        // The original survives a timeout, restart, product edit or lost HTTP response.
+                        await documentos.GuardarAssinaturaAsync(doc.CompanyId, doc.Id, resultado, ct);
+                        doc = doc with { XmlAssinado = resultado.XmlAssinado, ChaveAcesso = resultado.ChaveAcesso };
+                        resultado = await provider.TransmitirDocumentoAsync(emitente, doc.XmlAssinado, ct);
+                    }
                 }
 
                 switch (resultado.Status)
@@ -111,38 +131,8 @@ public sealed class NfceOutboxWorker(
                         await documentos.MarcarDenegadoAsync(doc.Id, resultado, ct);
                         break;
 
-                    case StatusDocumentoFiscal.Rejeitado when resultado.CodigoStatus == 539:
-                        // Em contingência offline (tpEmis=9), a nota já foi impressa para o cliente.
-                        // NUNCA renumerar nem alterar a chave! Registra e aguarda sincronização de protocolo.
-                        if (doc.Status == StatusDocumentoFiscal.ContingenciaPendente || doc.TipoEmissao == TipoEmissaoFiscal.ContingenciaOffline)
-                        {
-                            logger.LogWarning(
-                                "NFC-e em contingência recebeu duplicidade (539). Preservando chave original {Chave} e agendando consulta.",
-                                doc.ChaveAcesso);
-                            await documentos.MarcarErroAsync(
-                                doc.Id,
-                                "SEFAZ retornou duplicidade (539) para nota em contingência. Aguardando sincronização de protocolo.",
-                                DateTimeOffset.UtcNow.AddMinutes(1),
-                                ct);
-                        }
-                        else
-                        {
-                            // Emissão normal: o número foi consumido. Renumera automaticamente e recoloca na fila.
-                            await documentos.MarcarRejeitadoAsync(doc.Id, resultado, ct);
-                            var renumerou = await documentos.ReemitirAsync(doc.CompanyId, doc.Id);
-                            if (renumerou)
-                            {
-                                logger.LogWarning(
-                                    "NFC-e rejeitada por duplicidade (539). Documento {Id} renumerado automaticamente e reenfileirado.",
-                                    doc.Id);
-                            }
-                            else
-                            {
-                                logger.LogError(
-                                    "NFC-e rejeitada por duplicidade (539). Documento {Id} não pôde ser renumerado — requer intervenção manual.",
-                                    doc.Id);
-                            }
-                        }
+                    case StatusDocumentoFiscal.Cancelado:
+                        await documentos.MarcarCancelamentoConsultadoAsync(doc.Id, resultado, ct);
                         break;
 
                     case StatusDocumentoFiscal.Rejeitado when !resultado.Retentavel:
@@ -187,7 +177,7 @@ public sealed class NfceOutboxWorker(
 
         // Após 3 falhas seguidas, confirma com o status do serviço antes de
         // assumir contingência. Um timeout isolado não justifica tpEmis=9.
-        if (tentativas >= 3 && doc.TipoEmissao == TipoEmissaoFiscal.Normal)
+        if (tentativas >= 3 && doc.TipoEmissao == TipoEmissaoFiscal.Normal && string.IsNullOrWhiteSpace(doc.XmlAssinado))
         {
             var disponivel = await provider.ServicoDisponivelAsync(emitente, ct);
             if (!disponivel)
@@ -209,11 +199,11 @@ public sealed class NfceOutboxWorker(
             await documentos.MarcarErroAsync(
                 doc.Id,
                 $"Excedidas {MaxTentativas} tentativas. Ultimo erro: {resultado.MotivoStatus}",
-                proximaTentativa: null,
+                proximaTentativa: DateTimeOffset.UtcNow.AddMinutes(5),
                 ct);
 
             logger.LogError(
-                "Documento {Id} esgotou as tentativas e saiu da fila. Requer intervencao manual.",
+                "Documento {Id} atingiu o limite de tentativas. XML original preservado; consultas a cada cinco minutos, com revisão manual recomendada.",
                 doc.Id);
             return;
         }

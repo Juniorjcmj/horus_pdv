@@ -15,7 +15,11 @@ public sealed record FiscalAiReport(Guid Id, string ProdutoId, string ProdutoNom
     IReadOnlyList<FiscalAiSuggestion> Sugestoes, string SituacaoJev, decimal? CustoUsd);
 public sealed record FiscalAiDraft(string Resumo, string[] Pendencias, FiscalAiDraftSuggestion[] Sugestoes);
 public sealed record FiscalAiDraftSuggestion(string Campo, string? Sugerido, string Justificativa, string[] Fontes);
-public sealed record FiscalCest(string Codigo, string[] Ncms, string Descricao);
+public sealed record FiscalCest(string Codigo, string[] Ncms, string Descricao, DateOnly Inicio, DateOnly? Fim, string? Norma = null)
+{
+    public bool Vigente(DateOnly data) => data >= Inicio && (Fim is null || data <= Fim);
+    public bool CorrespondeNcm(string? ncm) => Ncms.Any(n => !string.IsNullOrEmpty(n) && (ncm ?? "").StartsWith(n, StringComparison.Ordinal));
+}
 
 public static class FiscalAiRules
 {
@@ -51,7 +55,8 @@ public static class FiscalAiRules
         return field switch
         {
             "ncm" when !Code(8) || !tables.Ncms.TryGetValue(value!, out var ncm) || date < ncm.Inicio || date > ncm.Fim => "NCM ausente, inexistente ou fora da vigência consultada.",
-            "cest" when value is not null && (!Code(7) || !cests.Any(c => c.Codigo == value && c.Ncms.Any(n => p.Ncm.StartsWith(n, StringComparison.Ordinal)))) => "CEST não corresponde ao NCM na referência CONFAZ consultada.",
+            "cest" when value is null => "A IA não pode apagar o CEST: as referências não comprovam que a mercadoria esteja fora dos anexos obrigatórios. Confira descrição e embalagem com a contabilidade.",
+            "cest" when !Code(7) || !cests.Any(c => c.Codigo == value && c.Vigente(date) && c.CorrespondeNcm(p.Ncm)) => "CEST inexistente, fora da vigência ou incompatível com o NCM na data consultada.",
             "cfop" when !Code(4) || value![0] != '5' => "Esta ferramenta contempla vendas internas com CFOP iniciado em 5.",
             "origemMercadoria" when !byte.TryParse(value, out var origin) || origin > 8 => "Origem deve estar entre 0 e 8.",
             "csosnIcms" when value is not null && (company.Crt is not (1 or 4) || value is not ("102" or "103" or "300" or "400" or "500")) => "CSOSN incompatível com o regime ou não suportado pelo emissor.",
@@ -77,20 +82,23 @@ public static class FiscalAiRules
 
     public static ProdutoAD Copy(ProdutoAD p) => JsonSerializer.Deserialize<ProdutoAD>(JsonSerializer.Serialize(p, Json), Json)!;
 
-    public static IReadOnlyList<FiscalAiSource> Sources(ProdutoAD p, FiscalTableData tables, IReadOnlyList<FiscalCest> cests)
+    public static IReadOnlyList<FiscalAiSource> Sources(ProdutoAD p, FiscalTableData tables, IReadOnlyList<FiscalCest> cests, DateOnly date)
     {
         var terms = Regex.Split($"{p.ProductName} {p.ProductDescription}".ToLowerInvariant(), @"\W+").Where(t => t.Length >= 4).Distinct().ToArray();
         var prefix = FiscalReferenceTables.Digits(p.Ncm);
-        var sources = tables.Ncms.Values.Where(n => n.Codigo == p.Ncm || prefix.Length >= 4 && n.Codigo.StartsWith(prefix[..4]) || terms.Any(t => n.Descricao.Contains(t, StringComparison.OrdinalIgnoreCase)))
+        var sources = tables.Ncms.Values.Where(n => date >= n.Inicio && date <= n.Fim && (n.Codigo == p.Ncm || prefix.Length >= 4 && n.Codigo.StartsWith(prefix[..4]) || terms.Any(t => n.Descricao.Contains(t, StringComparison.OrdinalIgnoreCase))))
             .OrderByDescending(n => n.Codigo == p.Ncm).Take(40)
             .Select(n => new FiscalAiSource("ncm:" + n.Codigo, "NCM " + n.Codigo, FiscalReferenceTables.NcmUrl, $"{n.Descricao}; vigência {n.Inicio:yyyy-MM-dd} a {n.Fim:yyyy-MM-dd}; base {tables.DataBase}." )).ToList();
-        sources.AddRange(cests.Where(c => c.Ncms.Any(n => prefix.StartsWith(n)) || terms.Any(t => c.Descricao.Contains(t, StringComparison.OrdinalIgnoreCase)))
+        sources.AddRange(cests.Where(c => c.Vigente(date) && (c.CorrespondeNcm(prefix) || terms.Any(t => c.Descricao.Contains(t, StringComparison.OrdinalIgnoreCase))))
+            .OrderByDescending(c => c.CorrespondeNcm(prefix)).ThenBy(c => c.Codigo)
             .Take(35).Select(c => new FiscalAiSource("cest:" + c.Codigo, "CEST " + c.Codigo, CestUrl,
-                $"NCM {string.Join(", ", c.Ncms)}: {c.Descricao}; referência local consultada em 2026-10-10. CEST não comprova incidência de ST na operação.")));
-        sources.AddRange(tables.Classes.Values.Where(c => c.Nfce && !c.Especial && (c.Codigo == p.CClassTrib || c.Cst is "000" or "200" or "400" or "410"))
+                $"NCM {string.Join(", ", c.Ncms)}: {c.Descricao}; cobertura local de {c.Inicio:yyyy-MM-dd} a {(c.Fim is { } end ? end.ToString("yyyy-MM-dd") : "sem término informado")}; norma {c.Norma ?? "Convênio 142/18 consolidado"}. A consulta usa a data {date:yyyy-MM-dd}. CEST é obrigatório para mercadorias abrangidas mesmo sem ST na operação; confirme descrição e embalagem. CEST não comprova incidência de ST.")));
+        sources.AddRange(tables.Classes.Values.Where(c => c.Nfce && !c.Especial && date >= c.Inicio && (c.Fim is null || date <= c.Fim) && (c.Codigo == p.CClassTrib || c.Cst is "000" or "200" or "400" or "410"))
             .OrderByDescending(c => c.Codigo == p.CClassTrib).Take(35).Select(c => new FiscalAiSource("classe:" + c.Codigo, "cClassTrib " + c.Codigo, FiscalReferenceTables.ClassUrl, $"CST {c.Cst}; {c.Descricao}; vigência {c.Inicio:yyyy-MM-dd} a {c.Fim:yyyy-MM-dd}; redução IBS {c.RedIbs}% CBS {c.RedCbs}%.")));
         sources.Add(new("simples2026", "Simples Nacional em 2026", "https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214compilado.htm", "Art. 348: as alíquotas de IBS/CBS de 2026 não se aplicam às operações dos optantes pelo Simples Nacional. Não concluir obrigatoriedade de preenchimento para Simples/MEI em 2026. Reavaliar em 2027."));
         sources.Add(new("bebidas-varejo", "Bebidas frias no varejo", "https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2015/decreto/d8442.htm", "Art. 22 prevê alíquota zero de PIS/COFINS para venda por varejistas definidos no art. 17. Alíquota zero não equivale a isenção nem comprova tributação monofásica. Confirmar condições e tratamento do Simples com a contabilidade."));
+        sources.Add(new("cest-obrigacao", "CEST e mercadorias dos anexos", CestUrl,
+            "Cláusulas terceira e vigésima, I: alcançam Simples Nacional; documentos fiscais de mercadorias listadas identificam CEST mesmo sem ST na operação. NCM sozinho não confirma enquadramento; conferir descrição, composição, embalagem e destinação. Não apagar CEST sem comprovação de exclusão da mercadoria."));
         return sources;
     }
 }

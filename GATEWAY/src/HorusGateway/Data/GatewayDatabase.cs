@@ -155,6 +155,8 @@ public sealed class GatewayDatabase
         EnsureColumn(connection, "GatewayEvents", "LastAttemptAt", "TEXT NULL");
         EnsureColumn(connection, "GatewayEvents", "LastError", "TEXT NULL");
         EnsureColumn(connection, "GatewayEvents", "NextAttemptAt", "TEXT NULL");
+        EnsureColumn(connection, "LocalNfceContingencias", "RequestHash", "TEXT NULL");
+        EnsureColumn(connection, "LocalNfceContingencias", "ResponseJson", "TEXT NULL");
 
         // Pré-autorização de terminais pelo administrador (auto-identificação por IP/token na LAN).
         EnsureColumn(connection, "Terminals", "AllowedIp", "TEXT NULL");

@@ -19,7 +19,7 @@ import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
  * Enfileira uma venda no outbox e persiste atomicamente todas as tabelas locais do PDV.
  * Retorna a referência local da venda (usada como saleNumber offline provisório).
  */
-export async function queueSaleToOutbox(payload: RegisterSalePayload): Promise<string> {
+export async function queueSaleToOutbox(payload: RegisterSalePayload, waitForFiscal = false): Promise<string> {
   const clientSaleId =
     payload.clientSaleId ||
     (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `cs-${Date.now()}`);
@@ -32,10 +32,11 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload): Promise<s
   payload.clientSaleId = clientSaleId;
   payload.eventId = eventId;
   payload.eventType = "SALE_CREATED";
+  payload.reenvioOffline = true;
   payload.offlineReference = localRef;
   payload.occurredAt = occurredAt;
 
-  await persistSaleLocally(payload, { clientSaleId, saleNumber: localRef, occurredAt, origin: "OFFLINE", eventId });
+  await persistSaleLocally(payload, { clientSaleId, saleNumber: localRef, occurredAt, origin: "OFFLINE", eventId, waitForFiscal });
   return localRef;
 }
 
@@ -58,6 +59,7 @@ type PersistSaleOptions = {
   origin: "ONLINE" | "OFFLINE";
   /** Presente só para venda offline: enfileira o evento SALE_CREATED no outbox. */
   eventId?: string;
+  waitForFiscal?: boolean;
 };
 
 async function persistSaleLocally(payload: RegisterSalePayload, options: PersistSaleOptions): Promise<void> {
@@ -204,6 +206,7 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
           aggregateType: "Sale",
           aggregateId: clientSaleId,
           payload,
+          waitForFiscal: options.waitForFiscal,
         });
       }
     },

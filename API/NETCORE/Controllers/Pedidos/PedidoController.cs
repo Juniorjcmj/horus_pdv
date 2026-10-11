@@ -140,8 +140,9 @@ public class PedidoController(
                 listaFormas.Add(paymentType);
             }
 
-            var deveEmitirFiscal = await regrasEmissaoNfceAB.AvaliarEmissaoEIncrementarAsync(
+            var deveEmitirFiscal = await regrasEmissaoNfceAB.AvaliarEmissaoParaVendaAsync(
                 currentUser.CompanyId,
+                result.VendaId,
                 paymentType,
                 listaFormas,
                 pedido.CustomerCpf);

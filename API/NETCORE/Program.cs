@@ -133,6 +133,7 @@ builder.Services.AddScoped<NotaEntradaArquivoService>();
 builder.Services.AddScoped<SefazDFeDownloadService>();
 
 // Módulo fiscal (NFC-e modelo 65) — ver API/NETCORE/DataBase/README-FISCAL.md
+builder.Services.AddSingleton<FiscalCestReference>();
 builder.Services.AddSingleton<FiscalReferenceTables>(services => new FiscalReferenceTables(
     services.GetRequiredService<IWebHostEnvironment>(), services.GetRequiredService<ILogger<FiscalReferenceTables>>()));
 builder.Services.AddScoped<IFiscalProvider, ZeusFiscalProvider>();

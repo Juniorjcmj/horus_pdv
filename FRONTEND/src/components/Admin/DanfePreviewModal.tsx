@@ -12,7 +12,6 @@ import {
   fiscalStatusLabel,
   type FiscalDocumentDetailDto,
 } from "@/services/api/fiscalService";
-import { getSefazConsultaUrl } from "@/utils/danfePrint";
 
 function formatChave(chave: string | null) {
   if (!chave) return "—";
@@ -55,8 +54,7 @@ export default function DanfePreviewModal({
     detail.status === FISCAL_STATUS.ContingenciaPendente;
 
   const effectiveQrCodeUrl =
-    detail.qrCodeUrl?.trim() ||
-    (detail.chaveAcesso ? `${getSefazConsultaUrl()}?p=${detail.chaveAcesso}` : null);
+    detail.qrCodeUrl?.trim() || null;
 
   return (
     <div className="fixed inset-0 z-layer-dialog flex items-end bg-black/55 px-3 backdrop-blur-sm md:items-center md:justify-center">
@@ -90,6 +88,16 @@ export default function DanfePreviewModal({
             {fiscalStatusLabel(detail.status)}
           </span>
 
+          {detail.alertasAutorizacao?.length ? (
+            <section className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+              <h3 className="font-semibold">Nota autorizada com alertas</h3>
+              <p className="mt-1">A nota está autorizada. Revise estas orientações da SEFAZ nos próximos cadastros e emissões.</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                {detail.alertasAutorizacao.map((alerta, index) => <li key={index}>{alerta.mensagem}</li>)}
+              </ul>
+            </section>
+          ) : null}
+
           {!autorizado ? (
             <p className="text-sm text-text-secondary">
               {detail.motivoStatus ||
@@ -99,7 +107,7 @@ export default function DanfePreviewModal({
 
           {autorizado && effectiveQrCodeUrl ? (
             <div className="flex flex-col items-center gap-3 rounded-xl border border-border-secondary bg-white p-4">
-              <QRCodeSVG value={effectiveQrCodeUrl} size={176} includeMargin={true} />
+              <QRCodeSVG value={effectiveQrCodeUrl} size={176} level="M" boostLevel={false} includeMargin={true} />
               <a
                 href={effectiveQrCodeUrl}
                 target="_blank"

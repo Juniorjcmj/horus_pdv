@@ -87,6 +87,7 @@ public sealed class CloudEndpointSyncClientTests
         Assert.Equal("hash-9", body.RootElement.GetProperty("payloadHash").GetString());
         Assert.Equal("2026-10-06T12:00:00Z", body.RootElement.GetProperty("occurredAt").GetString());
         Assert.Equal("25,90", body.RootElement.GetProperty("totalAmount").GetString());
+        Assert.True(body.RootElement.GetProperty("reenvioOffline").GetBoolean());
     }
 
     [Fact]

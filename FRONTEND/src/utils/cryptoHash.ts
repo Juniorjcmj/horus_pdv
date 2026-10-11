@@ -43,7 +43,12 @@ export async function computeSalePayloadHash(payload: RegisterSalePayload): Prom
       })),
   };
 
-  const json = JSON.stringify(canonical);
+  const canonicalWithFiscal: typeof canonical & { xmlNfceContingenciaSha256?: string } = canonical;
+  if (payload.xmlNfceContingencia) {
+    const xmlHash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(payload.xmlNfceContingencia));
+    canonicalWithFiscal.xmlNfceContingenciaSha256 = Array.from(new Uint8Array(xmlHash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  const json = JSON.stringify(canonicalWithFiscal);
   const encoder = new TextEncoder();
   const data = encoder.encode(json);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);

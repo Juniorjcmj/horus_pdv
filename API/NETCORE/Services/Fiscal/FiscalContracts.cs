@@ -33,6 +33,19 @@ public enum TipoEmissaoFiscal
 
 public interface IFiscalProvider
 {
+    // Default implementations fail safely for providers that do not support durable preparation.
+    Task<ResultadoFiscal> PrepararNfceAsync(EmissaoNfceRequest request, CancellationToken ct = default)
+        => Task.FromResult(new ResultadoFiscal { Status = StatusDocumentoFiscal.Rejeitado,
+            MotivoStatus = "O provedor fiscal não permite preparação durável antes da transmissão." });
+    Task<ResultadoFiscal> PrepararNfeAsync(EmissaoNfeRequest request, CancellationToken ct = default)
+        => Task.FromResult(new ResultadoFiscal { Status = StatusDocumentoFiscal.Rejeitado,
+            MotivoStatus = "O provedor fiscal não permite preparação durável antes da transmissão." });
+    Task<ResultadoFiscal> ConsultarDocumentoAsync(ContextoEmitente emitente, string xmlAssinado, CancellationToken ct = default)
+        => Task.FromResult(new ResultadoFiscal { Status = StatusDocumentoFiscal.Assinado, Retentavel = true,
+            XmlAssinado = xmlAssinado, MotivoStatus = "Consulta fiscal não disponível no provedor; retransmissão suspensa." });
+    Task<ResultadoFiscal> TransmitirDocumentoAsync(ContextoEmitente emitente, string xmlAssinado, CancellationToken ct = default)
+        => Task.FromResult(new ResultadoFiscal { Status = StatusDocumentoFiscal.Assinado, Retentavel = true,
+            XmlAssinado = xmlAssinado, MotivoStatus = "Transmissão de XML preservado não disponível no provedor." });
     /// <summary>
     /// Monta, assina e transmite a NFC-e. Bloqueante por natureza — a biblioteca
     /// não expõe API assíncrona. Chame apenas a partir do NfceOutboxWorker,
@@ -79,6 +92,7 @@ public sealed record ResultadoFiscal
     public string? XmlProtocolado { get; init; }
     public string? QrCodeUrl { get; init; }
     public string? DigestValue { get; init; }
+    public IReadOnlyList<FiscalAuthorizationAlert> AlertasAutorizacao { get; init; } = [];
 
     /// <summary>
     /// True quando o erro é transitório (timeout, serviço fora, rejeição 108/109).

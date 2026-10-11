@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { syncProductsFromApi, loadProductsLocal } from "@/application/products/ProductSyncAdapter";
 import type { LocalProductRecord } from "@/infrastructure/database/dexie";
 import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
+import type { ProductFiscalData } from "@/services/api/productService";
 
 type Product = {
   id: string;
@@ -17,6 +18,7 @@ type Product = {
   salePrice: number;
   imageUrl?: string;
   unit: string;
+  fiscal?: ProductFiscalData;
   marca?: string | null;
   categoriaId?: string | null;
   dataValidade?: string | null;
@@ -45,6 +47,7 @@ function toProduct(r: LocalProductRecord): Product {
     salePrice: r.salePrice,
     imageUrl: r.imageUrl || undefined,
     unit: r.unit,
+    fiscal: r.fiscal,
     marca: r.marca,
     categoriaId: r.categoryId,
     dataValidade: r.dataValidade,

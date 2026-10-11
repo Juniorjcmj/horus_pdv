@@ -93,9 +93,14 @@ public class NfceController(
         var currentUser = GetCurrentUser();
         if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
 
-        var ok = await documentoFiscalAB.ReemitirAsync(currentUser.CompanyId, id);
+        bool ok;
+        try { ok = await documentoFiscalAB.ReemitirAsync(currentUser.CompanyId, id); }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
         return ok
-            ? Ok(new ApiResponse<object> { Success = true, Message = "Documento reenfileirado para nova tentativa de emissão." })
+            ? Ok(new ApiResponse<object> { Success = true, Message = "Documento reenfileirado. Quando houver chave original, sua situação será consultada antes de qualquer retransmissão." })
             : NotFound(new ApiResponse<object> { Success = false, Message = "Documento não encontrado ou não está com rejeição definitiva." });
     }
 
@@ -438,6 +443,10 @@ public class NfceController(
         {
             return BadRequest(new ApiResponse<object> { Success = false, Message = "Empresa sem certificado digital A1 (.pfx) ou CSC configurado." });
         }
+
+        if (await documentoFiscalAB.TemDocumentoAtivoParaVendaAsync(currentUser.CompanyId, request.VendaId, ct))
+            return Conflict(new ApiResponse<object> { Success = false,
+                Message = "Esta venda já possui documento fiscal. Aguarde a consulta da chave original e use a reimpressão; outra nota não foi criada." });
 
         var (numeroNf, serie, ambiente) = await documentoFiscalAB.AlocarNumeroNfceAsync(currentUser.CompanyId, ct);
         var docPendente = new DocumentoFiscalPendente

@@ -120,6 +120,109 @@ public class RegrasEmissaoNfceAB(Connection connection)
     }
 
     /// <summary>
+    /// Grava uma única decisão fiscal por venda. Repetições reaproveitam a decisão, inclusive quando
+    /// a criação do documento fiscal falhou após o commit da venda. O contador e a decisão são
+    /// confirmados juntos, e o contador da empresa serializa as vendas que seguem o intervalo.
+    /// </summary>
+    public async Task<bool> AvaliarEmissaoParaVendaAsync(
+        string companyId,
+        string vendaId,
+        string? primaryPaymentType,
+        IEnumerable<string>? paymentTypes,
+        string? customerCpf,
+        CancellationToken cancellationToken = default)
+    {
+        await using var conn = await connection.OpenConnectionAsync(cancellationToken);
+        await using var transaction = (SqlTransaction)await conn.BeginTransactionAsync(cancellationToken);
+
+        await using (var sale = new SqlCommand("""
+            SELECT EmitirNfce
+              FROM Vendas WITH (UPDLOCK, HOLDLOCK)
+             WHERE CompanyId = @CompanyId AND Id = @VendaId;
+            """, conn, transaction))
+        {
+            sale.Parameters.AddWithValue("@CompanyId", companyId);
+            sale.Parameters.AddWithValue("@VendaId", vendaId);
+            var persistedDecision = await sale.ExecuteScalarAsync(cancellationToken);
+            if (persistedDecision is null)
+                throw new InvalidOperationException("Venda não encontrada para a empresa.");
+            if (persistedDecision is bool emitirNfce)
+            {
+                await transaction.CommitAsync(cancellationToken);
+                return emitirNfce;
+            }
+        }
+
+        // Vendas anteriores à persistência da decisão podem já ter NFC-e, inclusive importada do
+        // Gateway. Reaproveitar esse fato evita consumir novamente o intervalo no replay.
+        bool emitir;
+        await using (var existing = new SqlCommand("""
+            SELECT TOP 1 Id
+              FROM DocumentosFiscais
+             WHERE CompanyId = @CompanyId AND VendaId = @VendaId AND Modelo = 65;
+            """, conn, transaction))
+        {
+            existing.Parameters.AddWithValue("@CompanyId", companyId);
+            existing.Parameters.AddWithValue("@VendaId", vendaId);
+            emitir = await existing.ExecuteScalarAsync(cancellationToken) is string;
+        }
+
+        if (!emitir)
+        {
+            var config = new RegrasEmissaoNfceDto { CompanyId = companyId };
+            await using (var rules = new SqlCommand("""
+                SELECT Habilitado, FormasPagamentoHabilitadas, IntervaloNotas,
+                       EmitirSempreComCpf, ContadorVendas
+                  FROM RegrasEmissaoNfce WITH (UPDLOCK, HOLDLOCK)
+                 WHERE CompanyId = @CompanyId;
+                """, conn, transaction))
+            {
+                rules.Parameters.AddWithValue("@CompanyId", companyId);
+                await using var reader = await rules.ExecuteReaderAsync(cancellationToken);
+                if (await reader.ReadAsync(cancellationToken))
+                {
+                    config.Habilitado = reader.GetBoolean(0);
+                    config.FormasPagamentoHabilitadas = reader.GetString(1);
+                    config.IntervaloNotas = reader.GetInt32(2);
+                    config.EmitirSempreComCpf = reader.GetBoolean(3);
+                    config.ContadorVendas = reader.GetInt32(4);
+                }
+            }
+
+            emitir = DeveEmitirSempre(config, primaryPaymentType, paymentTypes, customerCpf);
+            if (!emitir)
+            {
+                // A linha está bloqueada até o commit: atingir o intervalo e reiniciar o contador
+                // são uma única atualização, sem janela para perder incrementos de outra venda.
+                emitir = config.ContadorVendas >= config.IntervaloNotas - 1;
+                var contador = emitir ? 0 : config.ContadorVendas + 1;
+                await using var counter = new SqlCommand("""
+                    UPDATE RegrasEmissaoNfce
+                       SET ContadorVendas = @ContadorVendas, UpdatedAt = SYSUTCDATETIME()
+                     WHERE CompanyId = @CompanyId;
+                    """, conn, transaction);
+                counter.Parameters.AddWithValue("@CompanyId", companyId);
+                counter.Parameters.AddWithValue("@ContadorVendas", contador);
+                await counter.ExecuteNonQueryAsync(cancellationToken);
+            }
+        }
+
+        await using (var save = new SqlCommand("""
+            UPDATE Vendas SET EmitirNfce = @EmitirNfce
+             WHERE CompanyId = @CompanyId AND Id = @VendaId;
+            """, conn, transaction))
+        {
+            save.Parameters.AddWithValue("@CompanyId", companyId);
+            save.Parameters.AddWithValue("@VendaId", vendaId);
+            save.Parameters.AddWithValue("@EmitirNfce", emitir);
+            await save.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        return emitir;
+    }
+
+    /// <summary>
     /// Avalia atomicamente se a venda atual deve emitir NFC-e. Regras, em ordem:
     ///  1. controle desativado: emite todas;
     ///  2. cliente pediu CPF/CNPJ na nota (e a opção está ligada): emite;
@@ -137,6 +240,57 @@ public class RegrasEmissaoNfceAB(Connection connection)
         CancellationToken cancellationToken = default)
     {
         var config = await GetByCompanyAsync(companyId, cancellationToken);
+
+        if (DeveEmitirSempre(config, primaryPaymentType, paymentTypes, customerCpf))
+            return true;
+
+        // Com intervalo (ex.: a cada 30), incrementa atomicamente o contador único dessas vendas.
+        const string sqlIncrement = @"
+            -- Garante que a linha existe
+            IF NOT EXISTS (SELECT 1 FROM RegrasEmissaoNfce WHERE CompanyId = @CompanyId)
+            BEGIN
+                INSERT INTO RegrasEmissaoNfce (CompanyId, Habilitado, FormasPagamentoHabilitadas, IntervaloNotas, EmitirSempreComCpf, ContadorVendas)
+                VALUES (@CompanyId, 1, 'dinheiro,credito,debito,pix,fiado', @IntervaloNotas, 1, 0);
+            END
+
+            UPDATE RegrasEmissaoNfce
+            SET ContadorVendas = ContadorVendas + 1,
+                UpdatedAt = SYSUTCDATETIME()
+            OUTPUT INSERTED.ContadorVendas, INSERTED.IntervaloNotas
+            WHERE CompanyId = @CompanyId;";
+
+        await using var conn = await connection.OpenConnectionAsync(cancellationToken);
+        await using var cmd = new SqlCommand(sqlIncrement, conn);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        cmd.Parameters.AddWithValue("@IntervaloNotas", config.IntervaloNotas);
+
+        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            var contador = reader.GetInt32(0);
+            var intervalo = reader.GetInt32(1);
+
+            if (contador >= intervalo)
+            {
+                // Atingiu o intervalo (ex.: 30ª nota). Reseta o contador e autoriza a emissão!
+                await reader.CloseAsync();
+                await ResetContadorAsync(companyId, cancellationToken);
+                return true;
+            }
+
+            // Ainda está acumulando até o intervalo (ex.: 1ª até 29ª nota) -> não emite
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool DeveEmitirSempre(
+        RegrasEmissaoNfceDto config,
+        string? primaryPaymentType,
+        IEnumerable<string>? paymentTypes,
+        string? customerCpf)
+    {
 
         // 1. Se o controle de regras estiver desativado, emite todas normalmente
         if (!config.Habilitado)
@@ -183,51 +337,8 @@ public class RegrasEmissaoNfceAB(Connection connection)
             return true;
         }
 
-        // 4. Demais formas de pagamento: com intervalo 1 (padrão), emite todas
-        if (config.IntervaloNotas <= 1)
-        {
-            return true;
-        }
-
-        // 5. Com intervalo (ex.: a cada 30), incrementa atomicamente o contador único dessas vendas
-        const string sqlIncrement = @"
-            -- Garante que a linha existe
-            IF NOT EXISTS (SELECT 1 FROM RegrasEmissaoNfce WHERE CompanyId = @CompanyId)
-            BEGIN
-                INSERT INTO RegrasEmissaoNfce (CompanyId, Habilitado, FormasPagamentoHabilitadas, IntervaloNotas, EmitirSempreComCpf, ContadorVendas)
-                VALUES (@CompanyId, 1, 'dinheiro,credito,debito,pix,fiado', @IntervaloNotas, 1, 0);
-            END
-
-            UPDATE RegrasEmissaoNfce
-            SET ContadorVendas = ContadorVendas + 1,
-                UpdatedAt = SYSUTCDATETIME()
-            OUTPUT INSERTED.ContadorVendas, INSERTED.IntervaloNotas
-            WHERE CompanyId = @CompanyId;";
-
-        await using var conn = await connection.OpenConnectionAsync(cancellationToken);
-        await using var cmd = new SqlCommand(sqlIncrement, conn);
-        cmd.Parameters.AddWithValue("@CompanyId", companyId);
-        cmd.Parameters.AddWithValue("@IntervaloNotas", config.IntervaloNotas);
-
-        await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
-        if (await reader.ReadAsync(cancellationToken))
-        {
-            var contador = reader.GetInt32(0);
-            var intervalo = reader.GetInt32(1);
-
-            if (contador >= intervalo)
-            {
-                // Atingiu o intervalo (ex.: 30ª nota). Reseta o contador e autoriza a emissão!
-                await reader.CloseAsync();
-                await ResetContadorAsync(companyId, cancellationToken);
-                return true;
-            }
-
-            // Ainda está acumulando até o intervalo (ex.: 1ª até 29ª nota) -> não emite
-            return false;
-        }
-
-        return true;
+        // 4. Demais formas de pagamento: com intervalo 1 (padrão), emite todas.
+        return config.IntervaloNotas <= 1;
     }
 
     private static string NormalizarFormaPagamento(string paymentType)

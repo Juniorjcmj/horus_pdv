@@ -26,6 +26,9 @@ public class VendaRequest
     /// </summary>
     public bool ReenvioOffline { get; set; }
 
+    /// <summary>Original signed tpEmis=9 XML already produced by the LAN Gateway for this offline sale.</summary>
+    public string? XmlNfceContingencia { get; set; }
+
     public string CustomerName { get; set; } = string.Empty;
     public string CustomerCpf { get; set; } = string.Empty;
     public string PaymentType { get; set; } = string.Empty;

@@ -78,17 +78,18 @@ public sealed class FiscalAiAB(Connection connection, HorusSecretProtector prote
             if (!await reader.ReadAsync(ct)) throw new FiscalAiConflict("Empresa não encontrada.");
             crt = Convert.ToByte(reader[0]); uf = reader.GetString(1);
         }
-        if (crt != report.Crt || uf != report.Uf || report.AnalisadoEm.Year != DateTimeOffset.UtcNow.Year)
+        var now = HORUSPDV_API.Services.Shared.HorusDateTime.Now;
+        if (crt != report.Crt || uf != report.Uf || report.AnalisadoEm.Year != now.Year)
             throw new FiscalAiConflict("Regime, UF ou período fiscal mudou. Analise novamente.");
         var company = new EmpresaAD { Crt = crt, Uf = uf, AmbienteFiscal = 1 };
-        var before = ProductFiscalReview.Check(product, company, tables, DateTimeOffset.UtcNow).Apontamentos.Where(a => a.Nivel == "erro").Select(a => a.Campo + a.Mensagem).ToHashSet();
+        var before = ProductFiscalReview.Check(product, company, tables, now, cests).Apontamentos.Where(a => a.Nivel == "erro").Select(a => a.Campo + a.Mensagem).ToHashSet();
         var selected = fields.Select(f => report.Sugestoes.SingleOrDefault(s => s.Campo == f && s.PodeAplicar)
             ?? throw new InvalidOperationException("A sugestão selecionada não pode ser aplicada.")).ToArray();
         foreach (var suggestion in selected) FiscalAiRules.Set(product, suggestion.Campo, suggestion.Sugerido);
         foreach (var suggestion in selected)
-            if (FiscalAiRules.Validate(suggestion.Campo, suggestion.Sugerido, product, company, tables, cests, DateOnly.FromDateTime(DateTime.UtcNow)) is { } problem)
+            if (FiscalAiRules.Validate(suggestion.Campo, suggestion.Sugerido, product, company, tables, cests, DateOnly.FromDateTime(now.DateTime)) is { } problem)
                 throw new InvalidOperationException(problem);
-        if (ProductFiscalReview.Check(product, company, tables, DateTimeOffset.UtcNow).Apontamentos.Any(a => a.Nivel == "erro" && !before.Contains(a.Campo + a.Mensagem)))
+        if (ProductFiscalReview.Check(product, company, tables, now, cests).Apontamentos.Any(a => a.Nivel == "erro" && !before.Contains(a.Campo + a.Mensagem)))
             throw new InvalidOperationException("As alterações criam incompatibilidade fiscal. Confira os campos relacionados e analise novamente.");
         cmd.CommandText = "UPDATE Produtos SET " + string.Join(",", selected.Select((s, i) => FiscalAiRules.Columns[s.Campo] + "=@Value" + i)) + " WHERE Id=@ProductId AND CompanyId=@CompanyId";
         for (var i = 0; i < selected.Length; i++)

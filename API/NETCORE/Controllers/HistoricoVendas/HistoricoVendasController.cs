@@ -9,6 +9,7 @@ using HORUSPDV_API.Repositories.DatabaseAccess;
 using HORUSPDV_API.Services.Caixa;
 using HORUSPDV_API.Services.Security;
 using HORUSPDV_API.Services.Shared;
+using HORUSPDV_API.Services.Fiscal;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HORUSPDV_API.Controllers.HistoricoVendas;
@@ -19,6 +20,8 @@ public class HistoricoVendasController(
     HistoricoVendasAB historicoVendasAB,
     HorusCaixaService caixaService,
     DocumentoFiscalAB documentoFiscalAB,
+    EmitenteFiscalStore emitentes,
+    IWebHostEnvironment environment,
     RegrasEmissaoNfceAB regrasEmissaoNfceAB,
     HorusSecurityStore securityStore,
     AutorizacaoPrecoAB autorizacaoPrecoAB,
@@ -189,6 +192,13 @@ public class HistoricoVendasController(
 
         try
         {
+            GatewayInvoice? originalInvoice = null;
+            if (!string.IsNullOrWhiteSpace(request.XmlNfceContingencia))
+            {
+                var issuer = await emitentes.ObterAsync(currentUser.CompanyId)
+                    ?? throw new InvalidOperationException("Configure o emitente fiscal da empresa antes de sincronizar a nota original do Gateway.");
+                originalInvoice = FiscalGatewayImport.Validate(request.XmlNfceContingencia, request, issuer, environment.ContentRootPath);
+            }
             bool isOfflineSync = !string.IsNullOrWhiteSpace(request.EventId) || request.OccurredAt.HasValue;
             if (!isOfflineSync)
             {
@@ -217,23 +227,15 @@ public class HistoricoVendasController(
 
             var result = await historicoVendasAB.RegistrarAsync(currentUser.CompanyId, request, caixaSessaoId);
 
+            // Even a replay retries this step after a lost response/failure. Never enqueue a fresh invoice for it.
+            if (originalInvoice is not null)
+                await documentoFiscalAB.ImportarContingenciaGatewayAsync(currentUser.CompanyId, result.VendaId,
+                    originalInvoice.Serie, originalInvoice.Numero, originalInvoice.Ambiente, originalInvoice.Chave,
+                    originalInvoice.Xml, originalInvoice.Justificativa, originalInvoice.DhContingencia, originalInvoice.QrCodeUrl);
+
             if (result.IsReplay)
             {
                 logger.LogInformation("Venda retornada via replay idempotente. EventId: {EventId}, SaleNumber: {SaleNumber}", request.EventId, result.SaleNumber);
-                return Ok(new ApiResponse<object>
-                {
-                    Success = true,
-                    Message = "Venda já processada anteriormente (idempotente).",
-                    Data = new
-                    {
-                        saleNumber = result.SaleNumber,
-                        clientSaleId = result.ClientSaleId ?? request.ClientSaleId,
-                        vendaId = result.VendaId,
-                        rows = result.Rows,
-                        fiscalQueued = false,
-                        isReplay = true
-                    }
-                });
             }
 
             // Avalia se esta venda deve emitir NFC-e conforme as regras da empresa (formas de pagamento e intervalo de notas)
@@ -243,14 +245,15 @@ public class HistoricoVendasController(
                 listaFormas.Add(request.PaymentType);
             }
 
-            var deveEmitirFiscal = await regrasEmissaoNfceAB.AvaliarEmissaoEIncrementarAsync(
+            var deveEmitirFiscal = originalInvoice is not null || await regrasEmissaoNfceAB.AvaliarEmissaoParaVendaAsync(
                 currentUser.CompanyId,
+                result.VendaId,
                 request.PaymentType,
                 listaFormas,
                 request.CustomerCpf);
 
-            var fiscalQueued = false;
-            if (deveEmitirFiscal)
+            var fiscalQueued = originalInvoice is not null;
+            if (deveEmitirFiscal && originalInvoice is null)
             {
                 try
                 {
@@ -259,12 +262,19 @@ public class HistoricoVendasController(
                 }
                 catch (Exception ex)
                 {
-                    fiscalQueued = false;
                     logger.LogError(ex, "Falha ao enfileirar NFC-e da venda {VendaId}.", result.VendaId);
+                    // A venda já foi registrada. O cliente guarda o mesmo evento e repete;
+                    // a decisão fiscal e a fila são idempotentes, sem outra baixa de estoque.
+                    return StatusCode(StatusCodes.Status503ServiceUnavailable, new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Venda guardada; a preparação da nota fiscal será retomada automaticamente.",
+                        Data = new { saleNumber = result.SaleNumber, vendaId = result.VendaId }
+                    });
                 }
             }
 
-            return StatusCode(StatusCodes.Status201Created, new ApiResponse<object>
+            return StatusCode(result.IsReplay ? StatusCodes.Status200OK : StatusCodes.Status201Created, new ApiResponse<object>
             {
                 Success = true,
                 Message = "Venda registrada com sucesso.",
@@ -276,7 +286,7 @@ public class HistoricoVendasController(
                     rows = result.Rows,
                     fiscalQueued,
                     emitirFiscal = deveEmitirFiscal,
-                    isReplay = false,
+                    isReplay = result.IsReplay,
                     warnings = result.Warnings,
                     fiadoSaldoAtual = result.FiadoSaldoAtual,
                     fiadoClienteId = result.FiadoClienteId

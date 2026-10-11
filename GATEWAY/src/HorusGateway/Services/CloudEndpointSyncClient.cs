@@ -117,6 +117,7 @@ public sealed class CloudEndpointSyncClient : ICloudSyncClient
         }
         if (string.Equals(ev.EventType, "SALE_CREATED", StringComparison.OrdinalIgnoreCase))
         {
+            body["reenvioOffline"] = true;
             if (body["clientSaleId"] is null) body["clientSaleId"] = ev.EventId;
             if (body["occurredAt"] is null && !string.IsNullOrWhiteSpace(ev.OccurredAt)) body["occurredAt"] = ev.OccurredAt;
         }

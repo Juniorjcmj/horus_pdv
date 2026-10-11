@@ -125,7 +125,7 @@ public sealed class LocalFiscalContingencyTests : IDisposable
         {
             VendaId = "VENDA-1002",
             TerminalId = "caixa-01",
-            CustomerCpf = "12345678901",
+            CustomerCpf = "52998224725",
             Justificativa = "EMISSAO OFFLINE POR QUEDA DA REDE LOCAL",
             Itens =
             [
@@ -134,6 +134,8 @@ public sealed class LocalFiscalContingencyTests : IDisposable
                     Numero = 1,
                     CodigoProduto = "P01",
                     Descricao = "PRODUTO TESTE",
+                    Ncm = "21069090", Cfop = "5102", UnidadeComercial = "UN", Gtin = "SEM GTIN",
+                    OrigemMercadoria = 0, CsosnIcms = "102", CstPis = "49", CstCofins = "49",
                     Quantidade = 1,
                     ValorUnitario = 50.0m,
                     ValorTotal = 50.0m,
@@ -206,6 +208,8 @@ public sealed class LocalFiscalContingencyTests : IDisposable
             CertificadoSenha = "senha123",
             EmitenteCnpj = "12345678000195",
             EmitenteRazaoSocial = "EMPRESA TESTE LTDA",
+            EmitenteInscricaoEstadual = "12345678", EmitenteLogradouro = "RUA DO TESTE", EmitenteNumero = "42",
+            EmitenteBairro = "CENTRO", EmitenteMunicipio = "RIO DE JANEIRO", EmitenteCep = "20040002",
             EmitenteCodigoUf = 33,
             EmitenteCodigoMunicipioIbge = "3304557",
             Csc = "ABC123CSC456",
@@ -220,7 +224,7 @@ public sealed class LocalFiscalContingencyTests : IDisposable
         {
             VendaId = "V-100",
             TerminalId = "caixa-01",
-            CustomerCpf = "12345678901",
+            CustomerCpf = "52998224725",
             Justificativa = "EMISSAO EM CONTINGENCIA OFFLINE POR FALHA DE REDE",
             Itens =
             [
@@ -229,6 +233,8 @@ public sealed class LocalFiscalContingencyTests : IDisposable
                     Numero = 1,
                     CodigoProduto = "PROD01",
                     Descricao = "PRODUTO TESTE",
+                    Ncm = "21069090", Cfop = "5102", UnidadeComercial = "UN", Gtin = "SEM GTIN",
+                    OrigemMercadoria = 0, CsosnIcms = "102", CstPis = "49", CstCofins = "49",
                     Quantidade = 2,
                     ValorUnitario = 10.50m,
                     ValorTotal = 21.00m,
@@ -280,6 +286,8 @@ public sealed class LocalFiscalContingencyTests : IDisposable
             CertificadoSenha = "senha123",
             EmitenteCnpj = "12345678000195",
             EmitenteRazaoSocial = "EMPRESA TESTE LTDA",
+            EmitenteInscricaoEstadual = "12345678", EmitenteLogradouro = "RUA DO TESTE", EmitenteNumero = "42",
+            EmitenteBairro = "CENTRO", EmitenteMunicipio = "RIO DE JANEIRO", EmitenteCep = "20040002",
             EmitenteCodigoUf = 33,
             EmitenteCodigoMunicipioIbge = "3304557",
             Csc = "ABC123CSC456",
@@ -302,6 +310,8 @@ public sealed class LocalFiscalContingencyTests : IDisposable
                     Numero = 1,
                     CodigoProduto = "P1",
                     Descricao = "PRODUTO",
+                    Ncm = "21069090", Cfop = "5102", UnidadeComercial = "UN", Gtin = "SEM GTIN",
+                    OrigemMercadoria = 0, CsosnIcms = "102", CstPis = "49", CstCofins = "49",
                     Quantidade = 1,
                     ValorUnitario = 5m,
                     ValorTotal = 5m
@@ -337,6 +347,8 @@ public sealed class LocalFiscalContingencyTests : IDisposable
             CertificadoSenha = "pass123",
             EmitenteCnpj = "12345678000195",
             EmitenteRazaoSocial = "EMPRESA TESTE LTDA",
+            EmitenteInscricaoEstadual = "12345678", EmitenteLogradouro = "RUA DO TESTE", EmitenteNumero = "42",
+            EmitenteBairro = "CENTRO", EmitenteMunicipio = "RIO DE JANEIRO", EmitenteCep = "20040002",
             EmitenteCodigoUf = 33,
             EmitenteCodigoMunicipioIbge = "3304557",
             Csc = "CSC123",
@@ -363,7 +375,7 @@ public sealed class LocalFiscalContingencyTests : IDisposable
         {
             VendaId = "VENDA-API-99",
             TerminalId = "caixa-01",
-            CustomerCpf = "12345678901",
+            CustomerCpf = "52998224725",
             Justificativa = "QUEDA DE LINK DE INTERNET NO CAIXA LOCAL",
             Itens =
             [
@@ -372,6 +384,8 @@ public sealed class LocalFiscalContingencyTests : IDisposable
                     Numero = 1,
                     CodigoProduto = "PROD99",
                     Descricao = "PRODUTO TESTE API",
+                    Ncm = "21069090", Cfop = "5102", UnidadeComercial = "UN", Gtin = "SEM GTIN",
+                    OrigemMercadoria = 0, CsosnIcms = "102", CstPis = "49", CstCofins = "49",
                     Quantidade = 1,
                     ValorUnitario = 15m,
                     ValorTotal = 15m

@@ -51,6 +51,7 @@ export async function enqueueEvent(params: {
   occurredAt?: string;
   tenantId?: string;
   storeId?: string;
+  waitForFiscal?: boolean;
 }): Promise<string> {
   const id = params.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `evt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
   const now = new Date().toISOString();
@@ -74,7 +75,7 @@ export async function enqueueEvent(params: {
       sequence,
       occurredAt: eventOccurredAt,
       createdAt: now,
-      status: "PENDING" as OutboxStatus,
+      status: params.waitForFiscal ? "FISCAL_PENDING" : "PENDING",
       retryCount: 0,
       lastAttemptAt: null,
       lastError: null,
@@ -127,7 +128,7 @@ export async function markForwarded(id: string): Promise<void> {
 }
 
 /** Status que ainda NÃO chegaram à nuvem (fiado/estoque/fechamento offline precisam contá-los). */
-export const NOT_IN_CLOUD_STATUSES: OutboxStatus[] = ["PENDING", "PROCESSING", "FORWARDED"];
+export const NOT_IN_CLOUD_STATUSES: OutboxStatus[] = ["PENDING", "PROCESSING", "FORWARDED", "FISCAL_PENDING"];
 
 /** Marca um evento como sendo processado (em trânsito). */
 export async function markProcessing(id: string): Promise<void> {
@@ -164,7 +165,7 @@ export async function getPendingCount(): Promise<number> {
   const tenant = currentTenantId();
   return db.outbox
     .where("status")
-    .anyOf(["PENDING", "PROCESSING"])
+    .anyOf(["PENDING", "PROCESSING", "FISCAL_PENDING"])
     .filter((event) => isCurrentTenant(event, tenant))
     .count();
 }
@@ -174,7 +175,7 @@ export async function getOldestUnsyncedAt(): Promise<string | null> {
   const tenant = currentTenantId();
   const events = await db.outbox
     .where("status")
-    .anyOf(["PENDING", "PROCESSING", "FAILED"])
+    .anyOf(["PENDING", "PROCESSING", "FAILED", "FISCAL_PENDING"])
     .filter((event) => isCurrentTenant(event, tenant))
     .toArray();
   let oldest: string | null = null;
@@ -207,6 +208,8 @@ export async function getFailedEvents(): Promise<OutboxEvent[]> {
 
 /** Re-enfileira um evento com falha específica para nova tentativa de sincronização. */
 export async function retryFailedEvent(id: string): Promise<void> {
+  const event = await db.outbox.get(id);
+  if (!event || event.status !== "FAILED" || !isCurrentTenant(event)) return;
   await db.outbox.update(id, {
     status: "PENDING" as OutboxStatus,
     retryCount: 0,
@@ -242,7 +245,7 @@ export async function getContiguousProcessedSequence(): Promise<number> {
   const tenant = currentTenantId();
   const firstUnprocessed = await db.outbox
     .where("status")
-    .anyOf(["PENDING", "PROCESSING", "FAILED", "FORWARDED"])
+    .anyOf(["PENDING", "PROCESSING", "FAILED", "FORWARDED", "FISCAL_PENDING"])
     .filter((event) => isCurrentTenant(event, tenant))
     .sortBy("sequence");
 

@@ -10,13 +10,7 @@ namespace HORUSPDV_API.Services.Fiscal;
 public sealed class FiscalAiService(IWebHostEnvironment environment, HttpClient http) 
 {
     private readonly SemaphoreSlim gate = new(2, 2);
-    public IReadOnlyList<FiscalCest> Cests { get; } = LoadCests(environment.ContentRootPath);
-
-    private static IReadOnlyList<FiscalCest> LoadCests(string root)
-    {
-        using var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "DataBase", "FiscalTables", "cest.json")));
-        return doc.RootElement.GetProperty("itens").Deserialize<FiscalCest[]>(FiscalAiRules.Json)!;
-    }
+    public IReadOnlyList<FiscalCest> Cests { get; } = FiscalCestReference.Load(environment.ContentRootPath);
 
     public async Task<FiscalAiReport> AnalyzeAsync(ProdutoAD product, EmpresaAD company, FiscalTableData tables,
         string key, bool useJev, CancellationToken ct)
@@ -26,14 +20,14 @@ public sealed class FiscalAiService(IWebHostEnvironment environment, HttpClient 
         try
         {
             var now = HorusDateTime.Now;
-            var sources = FiscalAiRules.Sources(product, tables, Cests);
+            var sources = FiscalAiRules.Sources(product, tables, Cests, DateOnly.FromDateTime(now.DateTime));
             var promptSnapshot = FiscalAiRules.Snapshot(product);
             foreach (var field in new[] { "_nome", "_descricao", "_codigo" })
                 if (promptSnapshot[field] is { Length: > 500 } text) promptSnapshot[field] = text[..500];
             var state = new { produto = new { product.ProductName, descricao = product.ProductDescription[..Math.Min(product.ProductDescription.Length, 500)], product.Marca, product.Gtin,
                 cadastro = promptSnapshot }, regime = company.Crt, uf = company.Uf,
                 data = now.ToString("yyyy-MM-dd"), referencias = sources,
-                verificacao = ProductFiscalReview.Check(product, company, tables, now).Apontamentos };
+                verificacao = ProductFiscalReview.Check(product, company, tables, now, Cests).Apontamentos };
             const string instructions = """
                 Você auxilia a revisão fiscal de produtos para venda interna por NFC-e no RJ. Responda em português.
                 Use somente as referências fornecidas. Não navega na internet. Nunca invente leis, códigos ou alíquotas.
@@ -44,7 +38,10 @@ public sealed class FiscalAiService(IWebHostEnvironment environment, HttpClient 
                 Dúvidas e dados faltantes vão em pendencias. Se não puder determinar a correção, não sugira valor.
                 Não altere CFOP/ICMS/tributos sem referência que fundamente a operação e o regime.
                 Cada sugestão deve usar IDs das referências entregues em fontes, sem URLs inventadas.
-                Para CEST considere a embalagem e o NCM. NCM deve corresponder à mercadoria, não apenas existir.
+                Para CEST considere descrição, embalagem, NCM e a data. Não use referências fora da vigência.
+                CEST é obrigatório para mercadorias abrangidas pelos anexos, mesmo quando não há ST na operação.
+                Não sugira apagar CEST: as referências não comprovam exclusão. Registre dúvida como pendência.
+                NCM deve corresponder à mercadoria, não apenas existir.
                 Sugerido deve ser string de código sem pontuação, ou decimal com ponto para aliquotaIcms.
                 Para limpar campo opcional use string vazia. Não sugerir valores já cadastrados.
                 Não declare aprovação da SEFAZ, conformidade integral ou certeza baseada em autorização de nota.

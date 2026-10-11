@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fiscal/NfceController.cs": {
-    "mtime": 1791658989.5233655,
-    "seen": 1791659093.468507,
-    "ast_hash": "dfb43b6ceaf78b7a8b600e3df077eb81",
+    "mtime": 1791682633.3064263,
+    "seen": 1791684360.4513552,
+    "ast_hash": "bab00b4b4487b5b32987c929a7d52acb",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Fornecedores/FornecedorController.cs": {
@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/HistoricoVendas/HistoricoVendasController.cs": {
-    "mtime": 1791245850.13856,
-    "seen": 1791246146.6579175,
-    "ast_hash": "17d991413fdcac4dc5cc2e45ca35764b",
+    "mtime": 1791683587.4363897,
+    "seen": 1791684360.4524171,
+    "ast_hash": "d9a6be5c20f3853bb8df2020ddde4ed5",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Home/HomeController.cs": {
@@ -84,9 +84,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Pedidos/PedidoController.cs": {
-    "mtime": 1791245850.2548444,
-    "seen": 1791246146.658225,
-    "ast_hash": "0ddf4d9ad9009d57294185d012989b9a",
+    "mtime": 1791683768.6514251,
+    "seen": 1791684360.4529166,
+    "ast_hash": "9919fb31661d6f3215ed5c70d7724122",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/NfeImportController.cs": {
@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/ProdutoController.cs": {
-    "mtime": 1791658193.4517584,
-    "seen": 1791658847.3985324,
-    "ast_hash": "c003000798860323212c26f82c8ae5dd",
+    "mtime": 1791682227.0617313,
+    "seen": 1791684360.4537609,
+    "ast_hash": "1f26f83b4fd8f2f1d7748c4036c40dfb",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Relatorio/RelatorioController.cs": {
@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/VendaRequest.cs": {
-    "mtime": 1791055649.6724563,
-    "seen": 1791055811.0871067,
-    "ast_hash": "ccf902eb295ba353c2abe918b863b43b",
+    "mtime": 1791682546.1119888,
+    "seen": 1791684360.4680972,
+    "ast_hash": "383d4b299c846e98c73592fc766e296d",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Response/ApiResponse.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1791680353.490156,
-    "seen": 1791681147.3014438,
-    "ast_hash": "93dfac28769cec343cfee01b9c08b36d",
+    "mtime": 1791682227.063753,
+    "seen": 1791684360.468502,
+    "ast_hash": "6110b2d21738002265fa468154b3faef",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1791658989.5218375,
-    "seen": 1791659093.483205,
-    "ast_hash": "ab0bd88b62d4e902bc084dfa88136442",
+    "mtime": 1791683875.9450278,
+    "seen": 1791684360.4729555,
+    "ast_hash": "a83bad2e4a780992a36ce1390ba5ec6b",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791680203.3615873,
-    "seen": 1791681147.3307714,
-    "ast_hash": "333b4235121f99a16db3aa1bf478135b",
+    "mtime": 1791683429.9287913,
+    "seen": 1791684360.477849,
+    "ast_hash": "f010a4a2937591ff47b6044ffa38d967",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -510,21 +510,21 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalContracts.cs": {
-    "mtime": 1791658006.8382487,
-    "seen": 1791658847.4358149,
-    "ast_hash": "4882d37f2d7b4b50474896eb656a2937",
+    "mtime": 1791682192.410604,
+    "seen": 1791684360.4803534,
+    "ast_hash": "03a74dc06f3a100ef52abc6b4ebabafd",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/NfceOutboxWorker.cs": {
-    "mtime": 1790738108.020486,
-    "seen": 1790739586.7349927,
-    "ast_hash": "d75e744e9f4bcb38410ad92e92e9f772",
+    "mtime": 1791683768.6597502,
+    "seen": 1791684360.4812129,
+    "ast_hash": "0158fb53652e12e551f1f3707c8176f0",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ZeusFiscalProvider.cs": {
-    "mtime": 1791658901.8232756,
-    "seen": 1791659093.4887872,
-    "ast_hash": "cc695baea2538de7bde15b8bdbcc9b3d",
+    "mtime": 1791682304.2084181,
+    "seen": 1791684360.4814153,
+    "ast_hash": "b720eef192ffd791eb19582087381f7f",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fornecedores/FornecedorService.cs": {
@@ -666,9 +666,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/DanfePreviewModal.tsx": {
-    "mtime": 1789173701.7238555,
-    "seen": 1789173793.8160377,
-    "ast_hash": "a8967d90f62ce4b90edf2e59be61eb86",
+    "mtime": 1791683640.7786615,
+    "seen": 1791684360.4949815,
+    "ast_hash": "2d4955c815b529bd6c257866a4036569",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/FiscalErrorModal.tsx": {
@@ -708,9 +708,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReceiptPreviewModal.tsx": {
-    "mtime": 1791634146.489556,
-    "seen": 1791634496.485436,
-    "ast_hash": "2703d02193946377a30dd11e807de650",
+    "mtime": 1791682702.0684464,
+    "seen": 1791684360.502662,
+    "ast_hash": "c7cc24752375e3de705f6a73b78faa76",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/ReportCardsGrid.tsx": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791636696.7165728,
-    "seen": 1791636777.6107256,
-    "ast_hash": "acfd23e98225c75788f2d22df5f7c638",
+    "mtime": 1791683701.2612777,
+    "seen": 1791684360.5330117,
+    "ast_hash": "3e0398c09617cc59da953c1ce85b185e",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1170,9 +1170,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiscalService.ts": {
-    "mtime": 1790738667.0249782,
-    "seen": 1790739586.755643,
-    "ast_hash": "f08c001caed6d489683dc784f8dea676",
+    "mtime": 1791683429.887994,
+    "seen": 1791684360.5386372,
+    "ast_hash": "937434443ee0fc63b96460cea3b21c96",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/homeService.ts": {
@@ -1200,9 +1200,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/productService.ts": {
-    "mtime": 1791657916.0366304,
-    "seen": 1791658847.523306,
-    "ast_hash": "98c9e0a3ed6e6e82a6b53e15c13bf372",
+    "mtime": 1791682252.5995321,
+    "seen": 1791684360.5408921,
+    "ast_hash": "0fb726a6454a4f32accd459e049649fd",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/reportService.ts": {
@@ -1212,9 +1212,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/salesHistoryService.ts": {
-    "mtime": 1791279605.7567904,
-    "seen": 1791280032.4105737,
-    "ast_hash": "279a87ffac8044efef7fa6dc54cbe925",
+    "mtime": 1791682510.0227785,
+    "seen": 1791684360.5423586,
+    "ast_hash": "2d8937ce07243fd247c06437fd5f270f",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/sessionService.ts": {
@@ -1986,9 +1986,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/danfePrint.ts": {
-    "mtime": 1790738749.664514,
-    "seen": 1790739586.7582796,
-    "ast_hash": "b107105ff2233c650f48d565c0977f7f",
+    "mtime": 1791683574.5189803,
+    "seen": 1791684360.5462077,
+    "ast_hash": "b2ab147e6a0439341a0c1c50e3f1b480",
     "semantic_hash": ""
   },
   "openspec/changes/imprimir-danfe-nfce-qrcode/.openspec.yaml": {
@@ -2532,9 +2532,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Shared/HorusPayloadHash.cs": {
-    "mtime": 1790425337.6992993,
-    "seen": 1790426295.547925,
-    "ast_hash": "09c3a2e8f27d332235e3b8ca9d0e552d",
+    "mtime": 1791682546.1150582,
+    "seen": 1791684360.48588,
+    "ast_hash": "891e003660345a35bee3ebd83d40bf95",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Shared/IdempotencyConflictException.cs": {
@@ -2550,15 +2550,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/application/products/ProductSyncAdapter.ts": {
-    "mtime": 1791321688.4263558,
-    "seen": 1791322218.9659288,
-    "ast_hash": "fe74c45b1d4c620e9d996d8c9dbd1c22",
+    "mtime": 1791682252.6419337,
+    "seen": 1791684360.4940681,
+    "ast_hash": "15578645029452f46463fc60cf899dd7",
     "semantic_hash": ""
   },
   "FRONTEND/src/application/sales/SaleOutboxAdapter.ts": {
-    "mtime": 1791321704.051201,
-    "seen": 1791322218.9659305,
-    "ast_hash": "cb2923955bf9d060fe737cd58ed9a451",
+    "mtime": 1791683429.8940768,
+    "seen": 1791684360.494072,
+    "ast_hash": "60c78bc1ae210d44e3fecc5f7d45a23e",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SyncStatus.tsx": {
@@ -2592,9 +2592,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useProducts.ts": {
-    "mtime": 1791591466.6872754,
-    "seen": 1791592000.5514603,
-    "ast_hash": "2b40af66271e9f54f25db22344cc897b",
+    "mtime": 1791682252.6441405,
+    "seen": 1791684360.5181994,
+    "ast_hash": "4198dd3139d904f86a02f0552768099e",
     "semantic_hash": ""
   },
   "FRONTEND/src/hooks/useSyncStatus.ts": {
@@ -2610,9 +2610,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/dexie.ts": {
-    "mtime": 1791224105.009467,
-    "seen": 1791224248.168832,
-    "ast_hash": "75471357d09f37e4a413ce4594863a73",
+    "mtime": 1791682252.6366675,
+    "seen": 1791684360.5188751,
+    "ast_hash": "49aabdbcf4c914980f4b59c12d33f3dd",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CashSessionRepository.ts": {
@@ -2628,9 +2628,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/OutboxRepository.ts": {
-    "mtime": 1791321885.1809566,
-    "seen": 1791322218.9842799,
-    "ast_hash": "68e84c7382a4affe77fcb828f927c767",
+    "mtime": 1791682623.1475558,
+    "seen": 1791684360.5198436,
+    "ast_hash": "97a4fec4d23468b33eea6685ba31d7e4",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/ProductRepository.ts": {
@@ -2676,15 +2676,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/shared/types/sync.ts": {
-    "mtime": 1791279547.3765814,
-    "seen": 1791280032.4116411,
-    "ast_hash": "921137050c81381dd29c2d792ab24f95",
+    "mtime": 1791682510.0182447,
+    "seen": 1791684360.5448606,
+    "ast_hash": "67f98ca9127c8f6b368e3ca53968c9ce",
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/cryptoHash.ts": {
-    "mtime": 1790421566.5659933,
-    "seen": 1790421619.662158,
-    "ast_hash": "971032f7c46ee42ffc1b6ad2f85f12ef",
+    "mtime": 1791682510.023291,
+    "seen": 1791684360.5458624,
+    "ast_hash": "f12cf1510956edcf28f5b5bc5704056f",
     "semantic_hash": ""
   },
   "FRONTEND/public/sw.js": {
@@ -3054,9 +3054,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Configuration/GatewayOptions.cs": {
-    "mtime": 1791278444.4939454,
-    "seen": 1791278946.8052182,
-    "ast_hash": "6e07ece6b920533dcc0264708573df69",
+    "mtime": 1791682269.4637413,
+    "seen": 1791684360.5598924,
+    "ast_hash": "24654f8867b10512521b545af8bf4eae",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Controllers/DashboardController.cs": {
@@ -3090,15 +3090,15 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Data/GatewayDatabase.cs": {
-    "mtime": 1790899547.6311963,
-    "seen": 1790909645.8619466,
-    "ast_hash": "7127efc69557c0d3db1f468fc4078f09",
+    "mtime": 1791682556.1269023,
+    "seen": 1791684360.5609763,
+    "ast_hash": "4a3d5de7c926771883dcb05af4e5cb5d",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/HorusGateway.csproj": {
-    "mtime": 1790738297.771919,
-    "seen": 1790739586.763741,
-    "ast_hash": "256cb17c93a41f8ae545cc217c99cbc7",
+    "mtime": 1791682269.467306,
+    "seen": 1791684360.5609796,
+    "ast_hash": "883c7902ea2b8983f0c5c5954734c41d",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Hubs/EventsHub.cs": {
@@ -3396,15 +3396,15 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Controllers/GatewayFiscalController.cs": {
-    "mtime": 1790738474.4275892,
-    "seen": 1790739586.7635906,
-    "ast_hash": "e2cad58e1b49fc39afcdc5e04e2b697f",
+    "mtime": 1791682570.4816823,
+    "seen": 1791684360.5604508,
+    "ast_hash": "dbb36352d7f5172e80ffe294c59276a5",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Models/FiscalModels.cs": {
-    "mtime": 1790738332.5909374,
-    "seen": 1790739586.7639916,
-    "ast_hash": "8c5d8d64d8cd96eb0ae2e46ef3e4f33b",
+    "mtime": 1791682269.4617286,
+    "seen": 1791684360.5614712,
+    "ast_hash": "5c037f5518fa75d2ec8b24cadaca706a",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Services/GatewayCertificateService.cs": {
@@ -3414,21 +3414,21 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Services/LocalFiscalSigner.cs": {
-    "mtime": 1791220712.941651,
-    "seen": 1791220875.9470704,
-    "ast_hash": "515a0a0f56433ee4ac75c49844eaca29",
+    "mtime": 1791683429.885473,
+    "seen": 1791684360.5663981,
+    "ast_hash": "69b77695700fc490ef4bdc36c51ce93f",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Services/LocalFiscalStore.cs": {
-    "mtime": 1790739508.5976448,
-    "seen": 1790739586.7663348,
-    "ast_hash": "f81bfb2bb34a8a9c53b43ce762ac1282",
+    "mtime": 1791682556.1304212,
+    "seen": 1791684360.5664032,
+    "ast_hash": "e67e1e3e18d52d8c106e70288b271e91",
     "semantic_hash": ""
   },
   "GATEWAY/tests/HorusGateway.Tests/LocalFiscalContingencyTests.cs": {
-    "mtime": 1790739476.235879,
-    "seen": 1790739586.767602,
-    "ast_hash": "bf4614fc6d99a79201f11e177a3be9c5",
+    "mtime": 1791684221.018375,
+    "seen": 1791684360.5700765,
+    "ast_hash": "0b0701b61112bb25ab8ac2c9606a816b",
     "semantic_hash": ""
   },
   "GATEWAY/tests/HorusGateway.Tests/OpenRegistrationTests.cs": {
@@ -3642,9 +3642,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RegrasEmissaoNfceAB.cs": {
-    "mtime": 1791073577.1106799,
-    "seen": 1791073644.96048,
-    "ast_hash": "2ef3d7485055720b76ad2f9ca8534c3b",
+    "mtime": 1791683634.0697727,
+    "seen": 1791684360.4774332,
+    "ast_hash": "a1571c6c664a4b5f382f52b81c5fb9fb",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/FiscalEmissionRulesCard.tsx": {
@@ -3792,9 +3792,9 @@
     "semantic_hash": ""
   },
   "DESKTOP/package.json": {
-    "mtime": 1791658233.0197313,
-    "seen": 1791658847.4513628,
-    "ast_hash": "55fa0bc75836ac1e7e0e7059188b5bea",
+    "mtime": 1791683602.9695132,
+    "seen": 1791684360.4893885,
+    "ast_hash": "8b34eb95c2cd1441b171621e2eb9cfd8",
     "semantic_hash": ""
   },
   "DESKTOP/README.md": {
@@ -3840,9 +3840,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/desktop/pendingBackup.ts": {
-    "mtime": 1791321737.1562655,
-    "seen": 1791322218.9849932,
-    "ast_hash": "2c3f84d94e5ca699b3bf921a817bc794",
+    "mtime": 1791682663.2143967,
+    "seen": 1791684360.5210762,
+    "ast_hash": "f60e39d6e0b8b0d25fa40e8fe5ebbe8a",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ImportPendingBackupButton.tsx": {
@@ -3912,15 +3912,15 @@
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Services/CloudEndpointSyncClient.cs": {
-    "mtime": 1791278444.5786738,
-    "seen": 1791278946.8083932,
-    "ast_hash": "5a85d97b3f56261c1384f714ed289981",
+    "mtime": 1791683429.9174526,
+    "seen": 1791684360.563327,
+    "ast_hash": "cd9e8359a619fc2abfef09ae0a4b64af",
     "semantic_hash": ""
   },
   "GATEWAY/tests/HorusGateway.Tests/CloudEndpointSyncClientTests.cs": {
-    "mtime": 1791278585.742033,
-    "seen": 1791278946.8118436,
-    "ast_hash": "34d4a993463c84dbc58055426ded4b7d",
+    "mtime": 1791683851.7970808,
+    "seen": 1791684360.568945,
+    "ast_hash": "3145e7a176f8e29a6780d23e206b6e73",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/gateway/outboxGatewayForwarder.ts": {
@@ -4344,15 +4344,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalXmlArchive.cs": {
-    "mtime": 1791658466.980242,
-    "seen": 1791658847.43583,
-    "ast_hash": "f566b6a1d2da089fe28edf156edfc533",
+    "mtime": 1791682354.2238255,
+    "seen": 1791684360.4812095,
+    "ast_hash": "f77688b46e836d210f9014fb3a1681cd",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/ProductFiscalReview.cs": {
-    "mtime": 1791660950.7517402,
-    "seen": 1791661037.6851876,
-    "ast_hash": "9d5d8af8ccb6b4437b6abe45010d306b",
+    "mtime": 1791682227.0566828,
+    "seen": 1791684360.4812155,
+    "ast_hash": "984ffae5c4be4aa20988b14ca1bd3144",
     "semantic_hash": ""
   },
   "API/tests/FiscalReviewChecks/FiscalReviewChecks.csproj": {
@@ -4362,9 +4362,9 @@
     "semantic_hash": ""
   },
   "API/tests/FiscalReviewChecks/Program.cs": {
-    "mtime": 1791660950.7527535,
-    "seen": 1791661037.6899042,
-    "ast_hash": "2be63d2e5470211abb7c020ca91befaa",
+    "mtime": 1791682501.4857008,
+    "seen": 1791684360.4872386,
+    "ast_hash": "c3de7969ad81fc38f463c6cc2e33286b",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ProductFiscalPanel.tsx": {
@@ -4404,27 +4404,27 @@
     "semantic_hash": ""
   },
   "API/NETCORE/DataBase/FiscalTables/cest.json": {
-    "mtime": 1791680157.011742,
-    "seen": 1791681147.2871592,
-    "ast_hash": "a5170fdd4a3b2a2ef335048230049904",
+    "mtime": 1791682266.0713332,
+    "seen": 1791684360.4549522,
+    "ast_hash": "7967095bf9b8252b3a6851a925cb882d",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/FiscalAiAB.cs": {
-    "mtime": 1791680268.0298405,
-    "seen": 1791681147.3170836,
-    "ast_hash": "6b49108effabe23a7066c2525033c444",
+    "mtime": 1791682266.45006,
+    "seen": 1791684360.474992,
+    "ast_hash": "177deb7ad2e7bd043a7dbd77c2c6f66f",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalAiRules.cs": {
-    "mtime": 1791680994.2288206,
-    "seen": 1791681147.3344998,
-    "ast_hash": "2cd5cec715212d73bdb1d590374b792d",
+    "mtime": 1791682227.048693,
+    "seen": 1791684360.4803395,
+    "ast_hash": "5c18617e2dff64bf608fbb2ec6ce2647",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalAiService.cs": {
-    "mtime": 1791680770.4847825,
-    "seen": 1791681147.3345063,
-    "ast_hash": "ae5e257a8fc2b497f7779da3c80653f4",
+    "mtime": 1791682227.0522263,
+    "seen": 1791684360.4803448,
+    "ast_hash": "f7478b56c8130f2faef61081f5230ffa",
     "semantic_hash": ""
   },
   "API/tests/FiscalAiChecks/FiscalAiChecks.csproj": {
@@ -4461,6 +4461,174 @@
     "mtime": 1791681033.2633448,
     "seen": 1791681147.5448077,
     "ast_hash": "b581f0399b4bd1b01bbec0b2f2177f79",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Fiscal/FiscalCestReference.cs": {
+    "mtime": 1791682227.0497077,
+    "seen": 1791684360.4803486,
+    "ast_hash": "e55a572428944cab5775e090acc9781b",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Fiscal/FiscalGatewayImport.cs": {
+    "mtime": 1791684214.545923,
+    "seen": 1791684360.4803574,
+    "ast_hash": "9d886430ce342fba3279cf9d2bbb4876",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Fiscal/FiscalPaymentRules.cs": {
+    "mtime": 1791682192.399768,
+    "seen": 1791684360.4803615,
+    "ast_hash": "f6662cf9de9da4f073cc17858079c1fb",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Fiscal/FiscalRetryRules.cs": {
+    "mtime": 1791682192.4021678,
+    "seen": 1791684360.480986,
+    "ast_hash": "d78c2f6bc213d38cc0e586ab37c801aa",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalCestChecks/FiscalCestChecks.csproj": {
+    "mtime": 1791682329.1486282,
+    "seen": 1791684360.4870553,
+    "ast_hash": "89cc21ac3ca711ea6702c4c13acd75f9",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalCestChecks/Program.cs": {
+    "mtime": 1791683102.8048437,
+    "seen": 1791684360.487058,
+    "ast_hash": "eba9ce97137fbd3789e8eaea0af7cc82",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalGatewayChecks/FiscalGatewayChecks.csproj": {
+    "mtime": 1791682662.903696,
+    "seen": 1791684360.48706,
+    "ast_hash": "89cc21ac3ca711ea6702c4c13acd75f9",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalGatewayChecks/Program.cs": {
+    "mtime": 1791684168.747409,
+    "seen": 1791684360.4870625,
+    "ast_hash": "2675d7f6110ed06f99f4e844f8819f83",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalGatewayInteropChecks/FiscalGatewayInteropChecks.csproj": {
+    "mtime": 1791683688.1817212,
+    "seen": 1791684360.4870653,
+    "ast_hash": "f466c6de1d32e1a82240356f25652eb8",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalGatewayInteropChecks/Program.cs": {
+    "mtime": 1791683733.1252215,
+    "seen": 1791684360.4870675,
+    "ast_hash": "80af27db5766ae7b26be5c2cdceb3c51",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalPersistenceChecks/FiscalPersistenceChecks.csproj": {
+    "mtime": 1791682687.5312965,
+    "seen": 1791684360.487069,
+    "ast_hash": "34f5fb819b79605ec5e398fdbe28acad",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalPersistenceChecks/Program.cs": {
+    "mtime": 1791683941.8033404,
+    "seen": 1791684360.4870708,
+    "ast_hash": "0fa4f6d99e1c7729c915f642f1d5bb11",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.fiscal.config.ts": {
+    "mtime": 1791683805.9156146,
+    "seen": 1791684360.4923291,
+    "ast_hash": "4791bee51a11dbcba2b7dce731e4c6f5",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/danfeXml.ts": {
+    "mtime": 1791683725.4795296,
+    "seen": 1791684360.5462134,
+    "ast_hash": "593be4e7d8d9d613c72b04658aa808d8",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/gatewayFiscalAttempt.ts": {
+    "mtime": 1791683851.7687783,
+    "seen": 1791684360.546737,
+    "ast_hash": "d74d5c5f7a806607169e85fd95fa57d4",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/pendingDanfePrint.ts": {
+    "mtime": 1791683429.8996224,
+    "seen": 1791684360.5476017,
+    "ast_hash": "249f8301fc1f40deedfd55f93d231a1a",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/fiscal/browser.ts": {
+    "mtime": 1791683758.5827425,
+    "seen": 1791684360.55441,
+    "ast_hash": "42c38b37b77db320904f8bf8ef7c079c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/fiscal/danfe-xml.spec.ts": {
+    "mtime": 1791683758.584895,
+    "seen": 1791684360.554415,
+    "ast_hash": "7637e6614757c27bdc09d7edc440ab27",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/fiscal/fixtures.ts": {
+    "mtime": 1791683552.2733052,
+    "seen": 1791684360.5544238,
+    "ast_hash": "065a8ba41976f427eff6cf94e3cdd5d1",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/fiscal/gateway-fiscal-attempt.spec.ts": {
+    "mtime": 1791683658.0026512,
+    "seen": 1791684360.5544283,
+    "ast_hash": "fd356f85d245daff96605c83df8cce2b",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/fiscal/pending-danfe.spec.ts": {
+    "mtime": 1791683758.5874217,
+    "seen": 1791684360.5544343,
+    "ast_hash": "dabc0116ccf97c87cc7544647735d146",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/fiscal/vite.config.ts": {
+    "mtime": 1791683805.9172764,
+    "seen": 1791684360.5544379,
+    "ast_hash": "a0e833ae985061fb4d1d6c79216e47cb",
+    "semantic_hash": ""
+  },
+  "GATEWAY/src/HorusGateway/Services/LocalFiscalSchemaValidator.cs": {
+    "mtime": 1791682425.1589906,
+    "seen": 1791684360.5663915,
+    "ast_hash": "21b56d08728999171c25feffc73659d5",
+    "semantic_hash": ""
+  },
+  "GATEWAY/src/HorusGateway/Services/LocalFiscalTaxRules.cs": {
+    "mtime": 1791682425.1569889,
+    "seen": 1791684360.566408,
+    "ast_hash": "f0cf5d7bc33e57d9fcf0d5a9b35aa49b",
+    "semantic_hash": ""
+  },
+  "GATEWAY/tests/HorusGateway.Tests/LocalFiscalComplianceTests.cs": {
+    "mtime": 1791682692.4332798,
+    "seen": 1791684360.5700724,
+    "ast_hash": "3244378cd0b0340ee925f1fb6b69893e",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalGatewayInteropChecks/README.md": {
+    "mtime": 1791684295.6622157,
+    "seen": 1791684360.5930064,
+    "ast_hash": "9210a7eac11341b925b80020de4d0386",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalPersistenceChecks/README.md": {
+    "mtime": 1791682687.5338006,
+    "seen": 1791684360.5930107,
+    "ast_hash": "eff311b94b5f5c53e6cf957917c6c216",
+    "semantic_hash": ""
+  },
+  "docs/REVISAO_SEFAZ_DANFE_CONFAZ_2026-10-10.md": {
+    "mtime": 1791684295.6612113,
+    "seen": 1791684360.6048148,
+    "ast_hash": "94ff53862681287ecda52d9fbd6f101d",
     "semantic_hash": ""
   }
 }
