@@ -5,15 +5,15 @@ import { Toast } from "@/hooks/Dialog";
 import TableScrollArea from "@/components/Admin/TableScrollArea";
 
 const money = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const date = (value: string) => new Date(value).toLocaleString("pt-BR");
-const title = (nota: NotaEntradaResumo) => nota.modelo ? `${nota.modelo === 65 ? "NFC-e" : "NF-e"} ${nota.numeroNota} · Série ${nota.serie}` : "Entrada sem documento enviado";
+const date = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) ? value.split("-").reverse().join("/") : new Date(value).toLocaleString("pt-BR");
+const title = (nota: NotaEntradaResumo) => nota.origem === "manual" ? `Entrada manual${nota.numeroNota ? ` · ${nota.numeroNota}` : ""}` : nota.modelo ? `${nota.modelo === 65 ? "NFC-e" : "NF-e"} ${nota.numeroNota} · Série ${nota.serie}` : "Entrada sem documento enviado";
 
-export default function NotasEntradaPanel() {
+export default function NotasEntradaPanel({ initialId = null }: { initialId?: string | null }) {
   const [input, setInput] = useState("");
   const [busca, setBusca] = useState("");
   const [pagina, setPagina] = useState(1);
   const [refresh, setRefresh] = useState(0);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialId);
   const [resultado, setResultado] = useState<NotaEntradaPagina | null>(null);
   const [detalhe, setDetalhe] = useState<NotaEntradaDetalhe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export default function NotasEntradaPanel() {
 
   const download = async (nota: NotaEntradaResumo) => {
     setDownloading(true);
-    try { await nfeImportService.baixarXml(nota); }
+    try { if (nota.temComprovante) await nfeImportService.baixarComprovante(nota); else await nfeImportService.baixarXml(nota); }
     catch (err) { Toast.error(err instanceof Error ? err.message : "Não foi possível baixar o XML. Tente novamente."); }
     finally { setDownloading(false); }
   };
@@ -70,9 +70,9 @@ export default function NotasEntradaPanel() {
           <tbody className="divide-y divide-border-primary">{resultado.notas.map(nota => <tr key={nota.id} className="text-text-primary hover:bg-hover-light">
             <td className="whitespace-nowrap px-3 py-4 tabular-nums">{date(nota.criadaEm)}</td>
             <td className="px-3 py-4">{title(nota)}<span className="mt-1 block text-xs text-text-secondary">{nota.quantidadeItens} {nota.quantidadeItens === 1 ? "item" : "itens"}</span></td>
-            <td className="px-3 py-4"><span className="block max-w-64 break-words font-medium">{nota.fornecedorNome}</span><span className="mt-1 block text-xs text-text-secondary">{nota.fornecedorCnpj}</span></td>
+            <td className="px-3 py-4"><span className="block max-w-64 break-words font-medium">{nota.fornecedorNome || "Sem fornecedor"}</span><span className="mt-1 block text-xs text-text-secondary">{nota.fornecedorCnpj}</span></td>
             <td className="whitespace-nowrap px-3 py-4 tabular-nums">{nota.valorNota === null ? "Não informado" : money(nota.valorNota)}</td>
-            <td className="px-3 py-4 text-text-secondary">{nota.temXml ? "XML armazenado" : nota.origem === "digitada" ? "Cupom digitado · sem XML" : "Documento não enviado"}</td>
+            <td className="px-3 py-4 text-text-secondary">{nota.temComprovante ? "Comprovante armazenado" : nota.temXml ? "XML armazenado" : nota.origem === "manual" ? "Entrada manual · sem anexo" : nota.origem === "digitada" ? "Cupom digitado · sem XML" : "Documento não enviado"}</td>
             <td className="px-3 py-4"><button type="button" className="btn-outline-secondary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 whitespace-nowrap" onClick={() => setSelectedId(nota.id)} aria-label={`Ver ${title(nota)}`}>Ver entrada</button></td>
           </tr>)}</tbody>
         </table></TableScrollArea>}
@@ -84,17 +84,19 @@ export default function NotasEntradaPanel() {
 
     {!loading && !error && detalhe && <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4 border-y border-border-primary py-5">
-        <div><h3 className="font-semibold text-text-primary">{title(detalhe.nota)}</h3><p className="mt-1 text-sm text-text-secondary">{detalhe.nota.fornecedorNome} · CNPJ {detalhe.nota.fornecedorCnpj}</p></div>
-        {detalhe.nota.temXml && <button type="button" className="btn-primary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" disabled={downloading} onClick={() => void download(detalhe.nota)}><Download size={16} />{downloading ? "Baixando…" : "Baixar XML original"}</button>}
+        <div><h3 className="font-semibold text-text-primary">{title(detalhe.nota)}</h3><p className="mt-1 text-sm text-text-secondary">{detalhe.nota.fornecedorNome || "Sem fornecedor"}{detalhe.nota.fornecedorCnpj && ` · CNPJ ${detalhe.nota.fornecedorCnpj}`}</p></div>
+        {(detalhe.nota.temXml || detalhe.nota.temComprovante) && <button type="button" className="btn-primary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" disabled={downloading} onClick={() => void download(detalhe.nota)}><Download size={16} />{downloading ? "Baixando…" : detalhe.nota.temComprovante ? "Baixar comprovante" : "Baixar XML original"}</button>}
       </div>
       <dl className="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
         <div><dt className="text-text-secondary">Entrada no sistema</dt><dd className="mt-1 text-text-primary">{date(detalhe.nota.criadaEm)}{detalhe.nota.usuarioNome && ` · ${detalhe.nota.usuarioNome}`}</dd></div>
-        <div><dt className="text-text-secondary">Emissão da nota</dt><dd className="mt-1 text-text-primary">{detalhe.nota.dataEmissao ? date(detalhe.nota.dataEmissao) : "Não informada"}</dd></div>
+        <div><dt className="text-text-secondary">{detalhe.nota.origem === "manual" ? "Data da compra" : "Emissão da nota"}</dt><dd className="mt-1 text-text-primary">{detalhe.nota.dataEmissao ? date(detalhe.nota.dataEmissao) : "Não informada"}</dd></div>
         <div><dt className="text-text-secondary">Valor total da nota</dt><dd className="mt-1 text-text-primary tabular-nums">{detalhe.nota.valorNota === null ? "Não informado" : money(detalhe.nota.valorNota)}</dd></div>
         <div><dt className="text-text-secondary">Custo dos itens recebidos</dt><dd className="mt-1 text-text-primary tabular-nums">{money(detalhe.nota.valorEntrada)}</dd></div>
         {detalhe.nota.chaveAcesso && <div className="sm:col-span-2"><dt className="text-text-secondary">Chave de acesso</dt><dd className="mt-1 break-all text-text-primary tabular-nums">{detalhe.nota.chaveAcesso}</dd></div>}
       </dl>
-      {!detalhe.nota.temXml && <p className="text-sm text-text-secondary">{detalhe.nota.origem === "digitada" ? "Esta entrada foi digitada a partir do cupom. A chave e os itens foram armazenados; o XML não foi fornecido." : "Esta versão do aplicativo não enviou o documento fiscal. O registro conserva os dados da entrada, sem XML."}</p>}
+      {detalhe.nota.origem === "manual" ? <div className="space-y-2 text-sm text-text-secondary"><p>Recebimento manual · {detalhe.entrada.tipoDocumento === "recibo" ? "Recibo" : detalhe.entrada.tipoDocumento === "outro" ? "Outro comprovante" : "Cupom / NFC-e"}{detalhe.nota.comprovanteNome && ` · ${detalhe.nota.comprovanteNome}`}</p>{detalhe.entrada.observacao && <p className="whitespace-pre-wrap break-words">Observação: {detalhe.entrada.observacao}</p>}
+        {detalhe.entrada.itens.map((item, index) => <p key={index}>{item.productName}: compra de {item.quantidadeCompra} {item.unidadeCompra} × {item.fatorConversao} → {item.quantidade} {item.unidadeComercial}. Estoque: {item.estoqueAntes} → {item.estoqueDepois}. Venda: R$ {item.precoVenda}.</p>)}</div>
+        : !detalhe.nota.temXml && <p className="text-sm text-text-secondary">{detalhe.nota.origem === "digitada" ? "Esta entrada foi digitada a partir do cupom. A chave e os itens foram armazenados; o XML não foi fornecido." : "Esta versão do aplicativo não enviou o documento fiscal. O registro conserva os dados da entrada, sem XML."}</p>}
       <div><h3 className="mb-2 font-semibold text-text-primary">Itens recebidos</h3><p className="mb-3 text-sm text-text-secondary">Quantidades e custos confirmados na entrada, após os ajustes de embalagem e vínculo dos produtos.</p>
         <TableScrollArea label="Itens recebidos"><table className="min-w-[650px] w-full text-left text-sm"><thead className="border-b border-border-primary text-text-secondary"><tr>{["Código", "Produto", "Quantidade", "Custo unitário", "Lote / validade"].map(label => <th key={label} className="px-3 py-3 font-medium">{label}</th>)}</tr></thead><tbody className="divide-y divide-border-primary text-text-primary">{detalhe.entrada.itens.map((item, index) => <tr key={`${item.numeroItem}-${index}`}><td className="px-3 py-3">{item.productCode}</td><td className="px-3 py-3">{item.productName}</td><td className="px-3 py-3 tabular-nums">{item.quantidade} {item.unidadeComercial}</td><td className="px-3 py-3 tabular-nums">R$ {item.precoCusto}</td><td className="px-3 py-3">{item.numeroLote || "—"}{item.dataValidade && ` · ${item.dataValidade.split("-").reverse().join("/")}`}</td></tr>)}</tbody></table></TableScrollArea>
       </div>

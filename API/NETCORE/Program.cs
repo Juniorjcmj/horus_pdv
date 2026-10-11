@@ -131,6 +131,7 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<IFornecedorService, FornecedorService>();
 builder.Services.AddScoped<NfeImportService>();
 builder.Services.AddScoped<NotaEntradaArquivoService>();
+builder.Services.AddScoped<EntradaManualService>();
 builder.Services.AddScoped<SefazDFeDownloadService>();
 
 // Módulo fiscal (NFC-e modelo 65) — ver API/NETCORE/DataBase/README-FISCAL.md

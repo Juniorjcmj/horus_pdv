@@ -47,6 +47,7 @@ builder.Services.AddScoped<EmpresaAB>();
 builder.Services.AddScoped<SefazDFeDownloadService>();
 builder.Services.AddScoped<NfeImportService>();
 builder.Services.AddScoped<NotaEntradaArquivoService>();
+builder.Services.AddScoped<EntradaManualService>();
 builder.Services.AddControllers().AddApplicationPart(typeof(NfeImportController).Assembly);
 await using var app = builder.Build();
 await HorusDatabaseInitializer.InitializeAsync(app.Services);
@@ -55,6 +56,7 @@ await using (var db = await app.Services.GetRequiredService<Connection>().OpenCo
     await marker.ExecuteNonQueryAsync();
     await using var reset = new SqlCommand("""
         DROP TRIGGER IF EXISTS dbo.__InvoiceArchiveFail;
+        DROP TRIGGER IF EXISTS dbo.__ManualArchiveFail;
         DELETE FROM NotasEntradaArquivo WHERE CompanyId=N'invoice-regression';
         DELETE FROM ProdutoLotes WHERE CompanyId=N'invoice-regression';
         DELETE FROM MapeamentoProdutoFornecedor WHERE CompanyId=N'invoice-regression';
@@ -182,5 +184,80 @@ await using (var db = await app.Services.GetRequiredService<Connection>().OpenCo
     command.Parameters.AddWithValue("@CompanyId", companyId); await using var reader = await command.ExecuteReaderAsync(); await reader.ReadAsync();
     Check(reader.GetInt32(0) == 3 && reader.GetInt32(1) == 1 && reader.GetString(2) != "FALHA ARQUIVO", "rollback não deixa nota, lote ou fornecedor parcialmente modificados");
 }
+// Entrada manual compartilha o arquivo e a transação, sem exigir fornecedor ou XML.
+async Task<JsonElement> SendManual(EntradaManualRequest payload, HttpStatusCode expected = HttpStatusCode.OK) {
+    var response = await client.PostAsJsonAsync("/api/Produto/entrada-manual", payload);
+    var body = await response.Content.ReadAsStringAsync();
+    if (response.StatusCode != expected) throw new Exception($"Entrada manual: {response.StatusCode}: {body}");
+    return JsonDocument.Parse(body).RootElement.Clone();
+}
+EntradaManualRequest Manual() => new() { OperacaoId = Guid.NewGuid().ToString(), DataCompra = "2026-10-11", Itens = [new() {
+    NumeroItem = 1, ProdutoExistenteId = first.Id, UnidadeComercial = "UN", QuantidadeCompra = "1", UnidadeCompra = "CX", FatorConversao = "12", CustoCompra = "48,00", PrecoVenda = "999,99",
+    DataValidade = "2027-03-01", NumeroLote = "LOTE-MANUAL" }] };
+await using (var db = await app.Services.GetRequiredService<Connection>().OpenConnectionAsync()) {
+    await using var cmd = new SqlCommand("UPDATE Produtos SET MargemDesejadaPercentual=100 WHERE Id=@Id;", db); cmd.Parameters.AddWithValue("@Id", first.Id); await cmd.ExecuteNonQueryAsync();
+}
+var receipt = Manual();
+var attachment = Encoding.UTF8.GetBytes("%PDF-1.4\nCOMPROVANTE TESTE\n%%EOF");
+receipt.Comprovante = new() { Nome = "cupom.pdf", Base64 = Convert.ToBase64String(attachment) };
+receipt.Itens.Add(new() { NumeroItem = 2, ProductName = "Produto novo manual", QuantidadeCompra = "2", UnidadeCompra = "KG", UnidadeComercial = "KG", CustoCompra = "3,00", PrecoVenda = "5,99" });
+var beforeSuppliers = await Count("Fornecedores");
+var manualSaved = await SendManual(receipt);
+var receiptId = manualSaved.GetProperty("data").GetProperty("notaEntradaId").GetString()!;
+var stock = await repository.ObterAsync(companyId, first.Id);
+Check(stock!.ProductQnt == 20m && stock.ProductUnitPrice == 4m && stock.ProductSalePrice == 10m && stock.MargemDesejadaPercentual == 100m,
+    "manual converte caixa para 12 unidades, custo para 4 e preserva venda mesmo com margem desejada");
+var newProduct = (await repository.ListarAsync(companyId)).Single(p => p.ProductName == "Produto novo manual");
+Check(newProduct.ProductQnt == 2 && newProduct.ProductSalePrice == 5.99m && newProduct.UnidadeComercial == "KG" && !string.IsNullOrWhiteSpace(newProduct.ProductCode) && await Count("Fornecedores") == beforeSuppliers,
+    "manual cria produto com código interno e peso sem criar fornecedor fictício");
+var manualHistory = JsonDocument.Parse(await client.GetStringAsync("/api/NfeImport/notas-entrada/" + receiptId)).RootElement.GetProperty("data");
+Check(manualHistory.GetProperty("nota").GetProperty("origem").GetString() == "manual" && manualHistory.GetProperty("nota").GetProperty("valorEntrada").GetDecimal() == 54 && manualHistory.GetProperty("nota").GetProperty("temComprovante").GetBoolean(), "histórico manual conserva total, origem e comprovante");
+Check(manualHistory.GetProperty("entrada").GetProperty("itens")[0].GetProperty("estoqueAntes").GetString() == "8" && manualHistory.GetProperty("entrada").GetProperty("itens")[0].GetProperty("estoqueDepois").GetString() == "20", "histórico registra saldo real antes e depois");
+var downloaded = await client.GetAsync("/api/NfeImport/notas-entrada/" + receiptId + "/comprovante");
+Check((await downloaded.Content.ReadAsByteArrayAsync()).SequenceEqual(attachment) && downloaded.Content.Headers.ContentDisposition?.DispositionType == "attachment", "comprovante manual preservado byte a byte e baixado como anexo");
+var again = await SendManual(receipt);
+Check(again.GetProperty("data").GetProperty("notaEntradaId").GetString() == receiptId && (await repository.ObterAsync(companyId, first.Id))!.ProductQnt == 20 && await Count("Produtos") == 2,
+    "retry após perda de resposta devolve mesma entrada sem duplicar estoque ou produto novo");
+receipt.ChaveAcesso = key55;
+await SendManual(receipt, HttpStatusCode.BadRequest);
+Check((await repository.ObterAsync(companyId, first.Id))!.ProductQnt == 20, "mesma operação com chave modificada é recusada sem duplicação");
+var duplicateInvoice = Manual(); duplicateInvoice.ChaveAcesso = key55;
+await SendManual(duplicateInvoice, HttpStatusCode.BadRequest);
+Check((await repository.ObterAsync(companyId, first.Id))!.ProductQnt == 20, "manual reconhece nota já recebida pelo importador XML");
+var parallelPayload = Manual();
+var parallel = await Task.WhenAll(Enumerable.Range(0, 2).Select(_ => client.PostAsJsonAsync("/api/Produto/entrada-manual", parallelPayload)));
+Check(parallel.All(r => r.StatusCode == HttpStatusCode.OK) && (await repository.ObterAsync(companyId, first.Id))!.ProductQnt == 32, "confirmações manuais simultâneas retornam sucesso e somam estoque uma vez");
+var changePrice = Manual(); changePrice.Itens[0].AlterarPrecoVenda = true; changePrice.Itens[0].PrecoVenda = "6,00";
+await SendManual(changePrice);
+Check((await repository.ObterAsync(companyId, first.Id))!.ProductSalePrice == 6m, "preço de venda só muda quando explicitamente escolhido");
+var bad = Manual(); bad.Itens.Add(new() { ProductName = "Não deve ser criado", QuantidadeCompra = "1", CustoCompra = "0", PrecoVenda = "2" });
+await SendManual(bad, HttpStatusCode.BadRequest);
+Check(await Count("Produtos") == 2 && (await repository.ObterAsync(companyId, first.Id))!.ProductQnt == 44, "segundo item manual inválido reverte entrada inteira");
+bad = Manual(); bad.FornecedorId = "fornecedor-outra-empresa";
+await SendManual(bad, HttpStatusCode.BadRequest);
+bad = Manual(); bad.Itens[0].DataValidade = "2026-99-99";
+await SendManual(bad, HttpStatusCode.BadRequest);
+bad = Manual(); bad.Itens[0].UnidadeComercial = "KG";
+await SendManual(bad, HttpStatusCode.BadRequest);
+Check((await repository.ObterAsync(companyId, first.Id))!.ProductQnt == 44, "fornecedor, validade e unidade inválidos não alteram estoque");
+bad = Manual(); bad.Comprovante = new() { Nome = "malicioso.html", Base64 = Convert.ToBase64String(attachment) };
+await SendManual(bad, HttpStatusCode.BadRequest);
+bad = Manual(); bad.Comprovante = new() { Nome = "cupom.pdf", Base64 = "não-base64" };
+await SendManual(bad, HttpStatusCode.BadRequest);
+client.DefaultRequestHeaders.Add("X-Test-Other-Company", "1");
+Check((await client.GetAsync("/api/NfeImport/notas-entrada/" + receiptId + "/comprovante")).StatusCode == HttpStatusCode.NotFound, "comprovante isolado por empresa");
+await SendManual(Manual(), HttpStatusCode.BadRequest);
+client.DefaultRequestHeaders.Remove("X-Test-Other-Company");
+client.DefaultRequestHeaders.Add("X-Test-No-User", "1");
+Check((await client.PostAsJsonAsync("/api/Produto/entrada-manual", Manual())).StatusCode == HttpStatusCode.Unauthorized &&
+    (await client.GetAsync("/api/NfeImport/notas-entrada/" + receiptId + "/comprovante")).StatusCode == HttpStatusCode.Unauthorized, "recebimento e comprovante exigem sessão");
+client.DefaultRequestHeaders.Remove("X-Test-No-User");
+await using (var db = await app.Services.GetRequiredService<Connection>().OpenConnectionAsync()) {
+    await using var cmd = new SqlCommand("CREATE TRIGGER dbo.__ManualArchiveFail ON dbo.NotasEntradaArquivo AFTER INSERT AS BEGIN IF EXISTS (SELECT 1 FROM inserted WHERE NumeroNota=N'FALHA-MANUAL') THROW 51001, 'Falha simulada manual', 1; END;", db); await cmd.ExecuteNonQueryAsync();
+}
+var failingManual = Manual(); failingManual.NumeroDocumento = "FALHA-MANUAL";
+failingManual.Itens.Add(new() { ProductName = "Novo rollback manual", QuantidadeCompra = "1", CustoCompra = "2,00", PrecoVenda = "3,00", DataValidade = "2027-04-01" });
+var failedManual = await client.PostAsJsonAsync("/api/Produto/entrada-manual", failingManual);
+Check(failedManual.StatusCode == HttpStatusCode.InternalServerError && await Count("Produtos") == 2 && (await repository.ObterAsync(companyId, first.Id))!.ProductQnt == 44, "falha do arquivo reverte novo cadastro, custo, estoque e lote do recebimento manual");
 await app.StopAsync();
 Console.WriteLine($"{passed} verificações HTTP/SQL passaram no container isolado.");

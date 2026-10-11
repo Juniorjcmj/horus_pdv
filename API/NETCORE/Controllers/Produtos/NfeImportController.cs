@@ -132,4 +132,16 @@ public class NfeImportController(NfeImportService nfeImportService, NotaEntradaA
 
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
+
+    [HttpGet("notas-entrada/{id}/comprovante")]
+    public async Task<IActionResult> DownloadComprovante(string id)
+    {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        var arquivo = await arquivoService.ObterComprovanteAsync(user.CompanyId, id);
+        if (arquivo is null) return NotFound(new { message = "Comprovante não disponível para esta entrada." });
+        Response.Headers.CacheControl = "no-store";
+        Response.Headers["X-Content-Type-Options"] = "nosniff";
+        return File(arquivo.Value.Bytes, arquivo.Value.Tipo, arquivo.Value.Nome);
+    }
 }

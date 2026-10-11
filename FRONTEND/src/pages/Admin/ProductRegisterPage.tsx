@@ -36,6 +36,7 @@ import GondolaLabelModal from "@/components/Admin/GondolaLabelModal";
 import ProductFiscalPanel from "@/components/Admin/ProductFiscalPanel";
 import ProductProfitSummary from "@/components/Admin/ProductProfitSummary";
 import NotasEntradaPanel from "@/components/Admin/NotasEntradaPanel";
+import ManualStockEntryPanel from "@/components/Admin/ManualStockEntryPanel";
 import NfeImportModal from "@/components/Admin/NfeImportModal";
 import PageHeader from "@/components/Admin/PageHeader";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
@@ -1541,6 +1542,8 @@ export default function ProductRegisterPage() {
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(() => new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [notasEntradaOpen, setNotasEntradaOpen] = useState(false);
+  const [manualEntryOpen, setManualEntryOpen] = useState(false);
+  const [entryHistoryId, setEntryHistoryId] = useState<string | null>(null);
   const [fiscalProduct, setFiscalProduct] = useState<Product | null>(null);
   const [profitProductId, setProfitProductId] = useState<string | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -2202,10 +2205,17 @@ export default function ProductRegisterPage() {
     </PageLayout>
   );
 
+  if (manualEntryOpen) return (
+    <PageLayout className="space-y-4 py-4 md:py-6 lg:py-8">
+      <ManualStockEntryPanel onBack={() => setManualEntryOpen(false)} onSaved={() => { void loadProducts(); }}
+        onHistory={id => { setEntryHistoryId(id); setManualEntryOpen(false); setNotasEntradaOpen(true); }} />
+    </PageLayout>
+  );
+
   if (notasEntradaOpen) return (
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       <button className="btn-outline-secondary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50" type="button" onClick={() => setNotasEntradaOpen(false)}>Voltar ao cadastro de produtos</button>
-      <NotasEntradaPanel />
+      <NotasEntradaPanel initialId={entryHistoryId} />
     </PageLayout>
   );
 
@@ -2243,11 +2253,16 @@ export default function ProductRegisterPage() {
                   </div>
 
                   <button type="button" className="flex w-full items-start gap-3 rounded-lg p-2.5 text-left transition hover:bg-accent/10"
-                    onClick={() => { setImportMenuOpen(false); setNotasEntradaOpen(true); }}>
+                    onClick={() => { setImportMenuOpen(false); setEntryHistoryId(null); setNotasEntradaOpen(true); }}>
                     <FileUp size={18} className="mt-1 shrink-0 text-accent" />
                     <div><div className="text-sm font-semibold text-text-primary">Notas de entrada</div><div className="text-xs text-text-secondary">Histórico, itens recebidos e XMLs armazenados</div></div>
                   </button>
                   {/* Entrada de NF-e */}
+                  <button type="button" className="flex min-h-11 w-full items-start gap-3 rounded-lg p-2.5 text-left text-text-primary hover:bg-hover-light"
+                    onClick={() => { setImportMenuOpen(false); setManualEntryOpen(true); }}>
+                    <Plus size={18} className="mt-1 shrink-0" aria-hidden="true" />
+                    <div><div className="text-sm font-semibold">Entrada manual</div><div className="text-xs text-text-secondary">Receba produtos com cupom ou comprovante, sem XML</div></div>
+                  </button>
                   <button
                     type="button"
                     onClick={() => {

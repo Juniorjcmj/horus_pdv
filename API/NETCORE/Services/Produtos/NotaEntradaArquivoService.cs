@@ -10,7 +10,8 @@ namespace HORUSPDV_API.Services.Produtos;
 
 public sealed record NotaEntradaResumo(string Id, string? ChaveAcesso, int Modelo, string NumeroNota,
     string Serie, string FornecedorNome, string FornecedorCnpj, string? DataEmissao, decimal? ValorNota,
-    decimal ValorEntrada, int QuantidadeItens, string Origem, bool TemXml, DateTime CriadaEm, string UsuarioNome);
+    decimal ValorEntrada, int QuantidadeItens, string Origem, bool TemXml, DateTime CriadaEm, string UsuarioNome,
+    bool TemComprovante = false, string? ComprovanteNome = null);
 public sealed record NotaEntradaPagina(List<NotaEntradaResumo> Notas, int Total, int Pagina, int TamanhoPagina);
 public sealed record NotaEntradaDetalhe(NotaEntradaResumo Nota, JsonElement Entrada);
 public sealed record NotaEntradaDocumento(string Identidade, string? Chave, int Modelo, string Numero,
@@ -74,16 +75,19 @@ public class NotaEntradaArquivoService(Connection connection)
     }
 
     public async Task<string> SalvarAsync(string companyId, NfeImportConfirmRequest request,
-        NotaEntradaDocumento documento, string usuarioId, string usuarioNome)
+        NotaEntradaDocumento documento, string usuarioId, string usuarioNome, object? entrada = null,
+        byte[]? comprovante = null, string? comprovanteNome = null, string? comprovanteTipo = null, decimal? valorEntrada = null,
+        string? operacaoManualId = null)
     {
         var id = "ne-" + Guid.NewGuid().ToString("N");
         await using var db = await connection.OpenLeaseAsync();
         await using var command = connection.CreateCommand("""
             INSERT INTO dbo.NotasEntradaArquivo
             (Id,CompanyId,Identidade,ChaveAcesso,Modelo,NumeroNota,Serie,FornecedorNome,FornecedorCnpj,
-             DataEmissao,ValorNota,ValorEntrada,QuantidadeItens,Origem,XmlOriginal,EntradaJson,UsuarioId,UsuarioNome)
+             DataEmissao,ValorNota,ValorEntrada,QuantidadeItens,Origem,XmlOriginal,EntradaJson,UsuarioId,UsuarioNome,
+             ComprovanteOriginal,ComprovanteNome,ComprovanteTipo,OperacaoManualId)
             VALUES (@Id,@CompanyId,@Identidade,@Chave,@Modelo,@Numero,@Serie,@Fornecedor,@Cnpj,
-             @Emissao,@Total,@Entrada,@Itens,@Origem,@Xml,@Json,@UsuarioId,@UsuarioNome);
+             @Emissao,@Total,@Entrada,@Itens,@Origem,@Xml,@Json,@UsuarioId,@UsuarioNome,@Arquivo,@ArquivoNome,@ArquivoTipo,@OperacaoManualId);
             """, db);
         command.Parameters.AddWithValue("@Id", id);
         command.Parameters.AddWithValue("@CompanyId", companyId);
@@ -96,18 +100,22 @@ public class NotaEntradaArquivoService(Connection connection)
         command.Parameters.AddWithValue("@Cnpj", Digitos(request.Fornecedor.Cnpj));
         command.Parameters.AddWithValue("@Emissao", (object?)documento.Emissao ?? DBNull.Value);
         command.Parameters.AddWithValue("@Total", (object?)documento.Total ?? DBNull.Value);
-        command.Parameters.AddWithValue("@Entrada", request.Itens.Sum(item => HorusMoneyFormat.ParseDecimal(item.Quantidade) * HorusMoneyFormat.ParseDecimal(item.PrecoCusto)));
+        command.Parameters.AddWithValue("@Entrada", valorEntrada ?? request.Itens.Sum(item => HorusMoneyFormat.ParseDecimal(item.Quantidade) * HorusMoneyFormat.ParseDecimal(item.PrecoCusto)));
         command.Parameters.AddWithValue("@Itens", request.Itens.Count);
         command.Parameters.AddWithValue("@Origem", documento.Origem);
         command.Parameters.Add("@Xml", System.Data.SqlDbType.VarBinary, -1).Value = (object?)documento.Xml ?? DBNull.Value;
-        command.Parameters.AddWithValue("@Json", JsonSerializer.Serialize(new { request.Fornecedor, request.Itens }, JsonOptions));
+        command.Parameters.AddWithValue("@Json", JsonSerializer.Serialize(entrada ?? new { request.Fornecedor, request.Itens }, JsonOptions));
+        command.Parameters.Add("@Arquivo", System.Data.SqlDbType.VarBinary, -1).Value = (object?)comprovante ?? DBNull.Value;
+        command.Parameters.AddWithValue("@ArquivoNome", (object?)comprovanteNome ?? DBNull.Value);
+        command.Parameters.AddWithValue("@ArquivoTipo", (object?)comprovanteTipo ?? DBNull.Value);
+        command.Parameters.AddWithValue("@OperacaoManualId", (object?)operacaoManualId ?? DBNull.Value);
         command.Parameters.AddWithValue("@UsuarioId", usuarioId);
         command.Parameters.AddWithValue("@UsuarioNome", usuarioNome);
         await command.ExecuteNonQueryAsync();
         return id;
     }
 
-    private const string Columns = "Id,ChaveAcesso,Modelo,NumeroNota,Serie,FornecedorNome,FornecedorCnpj,DataEmissao,ValorNota,ValorEntrada,QuantidadeItens,Origem,CASE WHEN XmlOriginal IS NULL THEN CAST(0 AS BIT) ELSE CAST(1 AS BIT) END AS TemXml,CriadaEm,UsuarioNome";
+    private const string Columns = "Id,ChaveAcesso,Modelo,NumeroNota,Serie,FornecedorNome,FornecedorCnpj,DataEmissao,ValorNota,ValorEntrada,QuantidadeItens,Origem,CASE WHEN XmlOriginal IS NULL THEN CAST(0 AS BIT) ELSE CAST(1 AS BIT) END AS TemXml,CriadaEm,UsuarioNome,CASE WHEN ComprovanteOriginal IS NULL THEN CAST(0 AS BIT) ELSE CAST(1 AS BIT) END AS TemComprovante,ComprovanteNome";
     public async Task<NotaEntradaPagina> ListarAsync(string companyId, string? busca, int pagina, int tamanhoPagina)
     {
         pagina = Math.Max(1, Math.Min(1_000_000, pagina));
@@ -136,7 +144,7 @@ public class NotaEntradaArquivoService(Connection connection)
         await using var cmd = new SqlCommand($"SELECT {Columns},EntradaJson FROM dbo.NotasEntradaArquivo WHERE CompanyId=@CompanyId AND Id=@Id;", db);
         cmd.Parameters.AddWithValue("@CompanyId", companyId); cmd.Parameters.AddWithValue("@Id", id);
         await using var reader = await cmd.ExecuteReaderAsync();
-        return await reader.ReadAsync() ? new(Map(reader), JsonSerializer.Deserialize<JsonElement>(reader.GetString(15))) : null;
+        return await reader.ReadAsync() ? new(Map(reader), JsonSerializer.Deserialize<JsonElement>(reader.GetString(17))) : null;
     }
 
     public async Task<byte[]?> ObterXmlAsync(string companyId, string id)
@@ -147,9 +155,36 @@ public class NotaEntradaArquivoService(Connection connection)
         return await cmd.ExecuteScalarAsync() as byte[];
     }
 
+    public async Task<(byte[] Bytes, string Nome, string Tipo)?> ObterComprovanteAsync(string companyId, string id)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        await using var cmd = new SqlCommand("SELECT ComprovanteOriginal,ComprovanteNome,ComprovanteTipo FROM dbo.NotasEntradaArquivo WHERE CompanyId=@CompanyId AND Id=@Id", db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId); cmd.Parameters.AddWithValue("@Id", id);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        return await reader.ReadAsync() && !reader.IsDBNull(0)
+            ? ((byte[])reader[0], reader.GetString(1), reader.GetString(2)) : null;
+    }
+
+    public async Task<(string Id, JsonElement Entrada)?> ObterPorIdentidadeAsync(string companyId, string identidade)
+    {
+        await using var db = await connection.OpenLeaseAsync();
+        await using var cmd = connection.CreateCommand("SELECT Id,EntradaJson FROM dbo.NotasEntradaArquivo WHERE CompanyId=@CompanyId AND Identidade=@Identidade", db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId); cmd.Parameters.AddWithValue("@Identidade", identidade);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? (reader.GetString(0), JsonSerializer.Deserialize<JsonElement>(reader.GetString(1))) : null;
+    }
+
     private static string Digitos(string value) => new(value.Where(char.IsDigit).ToArray());
+    public async Task<(string Id, JsonElement Entrada)?> ObterPorOperacaoManualAsync(string companyId, string operacao)
+    {
+        await using var db = await connection.OpenLeaseAsync();
+        await using var cmd = connection.CreateCommand("SELECT Id,EntradaJson FROM dbo.NotasEntradaArquivo WHERE CompanyId=@CompanyId AND OperacaoManualId=@Operacao", db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId); cmd.Parameters.AddWithValue("@Operacao", operacao);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? (reader.GetString(0), JsonSerializer.Deserialize<JsonElement>(reader.GetString(1))) : null;
+    }
     private static NotaEntradaResumo Map(SqlDataReader r) => new(r.GetString(0), r.IsDBNull(1) ? null : r.GetString(1), r.GetInt32(2),
         r.GetString(3), r.GetString(4), r.GetString(5), r.GetString(6), r.IsDBNull(7) ? null : r.GetString(7),
         r.IsDBNull(8) ? null : r.GetDecimal(8), r.GetDecimal(9), r.GetInt32(10), r.GetString(11), r.GetBoolean(12),
-        DateTime.SpecifyKind(r.GetDateTime(13), DateTimeKind.Utc), r.GetString(14));
+        DateTime.SpecifyKind(r.GetDateTime(13), DateTimeKind.Utc), r.GetString(14), r.GetBoolean(15), r.IsDBNull(16) ? null : r.GetString(16));
 }

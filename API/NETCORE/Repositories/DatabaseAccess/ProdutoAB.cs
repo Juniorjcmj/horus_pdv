@@ -140,7 +140,8 @@ public class ProdutoAB(Connection connection)
     /// já existente e atualiza o preço de custo com o valor da nota (preço de venda não é mexido
     /// aqui — permanece o que já estava cadastrado, a menos que o operador o edite à parte).
     /// </summary>
-    public async Task<ProdutoAD> EntradaEstoqueAsync(string companyId, string productId, decimal quantidadeRecebida, decimal custoUnitario)
+    public async Task<ProdutoAD> EntradaEstoqueAsync(string companyId, string productId, decimal quantidadeRecebida, decimal custoUnitario,
+        bool preservarPrecoVenda = false, decimal? precoVendaExplicito = null)
     {
         await using var db = await connection.OpenLeaseAsync();
         await using var ownedTransaction = connection.CurrentImportTransaction is null ? (SqlTransaction)await db.BeginTransactionAsync() : null;
@@ -178,9 +179,9 @@ public class ProdutoAB(Connection connection)
             // Margem nula OU zero = "sem margem cadastrada": o preço de venda atual é preservado.
             // (Margem 0 recalcularia o preço para igualar o custo, o que apagaria o lucro do produto.)
             var margemCadastrada = current.MargemDesejadaPercentual is > 0m ? current.MargemDesejadaPercentual : null;
-            var nextSalePrice = margemCadastrada is { } margem
+            var nextSalePrice = precoVendaExplicito ?? (preservarPrecoVenda ? current.ProductSalePrice : margemCadastrada is { } margem
                 ? custoUnitario * (1 + margem / 100m)
-                : current.ProductSalePrice;
+                : current.ProductSalePrice);
 
             await using var update = connection.CreateCommand(
                 """

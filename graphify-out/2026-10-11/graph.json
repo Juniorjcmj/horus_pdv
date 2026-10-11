@@ -41315,7 +41315,7 @@
       "file_type": "code",
       "norm_label": "formatproductmarkup()",
       "source_file": "FRONTEND/src/utils/productProfitability.ts",
-      "source_location": "L34"
+      "source_location": "L35"
     },
     {
       "id": "frontend_src_utils_productprofitability_formatproductmoney",
@@ -41327,7 +41327,7 @@
       "file_type": "code",
       "norm_label": "formatproductmoney()",
       "source_file": "FRONTEND/src/utils/productProfitability.ts",
-      "source_location": "L30"
+      "source_location": "L31"
     },
     {
       "id": "frontend_src_utils_productprofitability_priceincents",
@@ -41375,7 +41375,7 @@
       "file_type": "code",
       "norm_label": "setup()",
       "source_file": "FRONTEND/tests/architecture/current-product-profit.spec.ts",
-      "source_location": "L33"
+      "source_location": "L35"
     },
     {
       "id": "frontend_tests_architecture_current_product_profit_spec_summary",
@@ -41387,7 +41387,7 @@
       "file_type": "code",
       "norm_label": "summary()",
       "source_file": "FRONTEND/tests/architecture/current-product-profit.spec.ts",
-      "source_location": "L57"
+      "source_location": "L59"
     },
     {
       "id": "api_netcore_services_clientes_iclienteservice_horuspdv_api_services_clientes_iclienteservice_atualizarasync",
@@ -260492,7 +260492,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/utils/productProfitability.ts",
-      "source_location": "L30",
+      "source_location": "L31",
       "weight": 1.0
     },
     {
@@ -260503,7 +260503,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/utils/productProfitability.ts",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -261350,7 +261350,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/tests/architecture/current-product-profit.spec.ts",
-      "source_location": "L33",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -261361,7 +261361,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/tests/architecture/current-product-profit.spec.ts",
-      "source_location": "L57",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -303804,5 +303804,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "403c6e02c0b6caafa1849e8844373f8d23a75da8"
+  "built_at_commit": "5da24f517cda395f0b9574f52c4e91d2a2833aae"
 }

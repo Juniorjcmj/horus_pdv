@@ -161,6 +161,18 @@ export const nfeImportService = {
       window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } finally { window.clearTimeout(timer); }
   },
+  async baixarComprovante(nota: NotaEntradaResumo) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 30_000);
+    try {
+      const response = await fetch(`${NFE_IMPORT_API_URL}/notas-entrada/${encodeURIComponent(nota.id)}/comprovante`, { credentials: "include", signal: controller.signal });
+      if (!response.ok) throw new Error("Não foi possível baixar o comprovante. Confira a conexão e sua sessão.");
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a"); link.href = url; link.download = nota.comprovanteNome || "comprovante";
+      document.body.appendChild(link); link.click(); link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } finally { window.clearTimeout(timer); }
+  },
 };
 
 
@@ -168,7 +180,8 @@ export type NotaEntradaResumo = {
   id: string; chaveAcesso: string | null; modelo: number; numeroNota: string; serie: string;
   fornecedorNome: string; fornecedorCnpj: string; dataEmissao: string | null;
   valorNota: number | null; valorEntrada: number; quantidadeItens: number; origem: string;
-  temXml: boolean; criadaEm: string; usuarioNome: string;
+  temXml: boolean; criadaEm: string; usuarioNome: string; temComprovante?: boolean; comprovanteNome?: string | null;
 };
 export type NotaEntradaPagina = { notas: NotaEntradaResumo[]; total: number; pagina: number; tamanhoPagina: number };
-export type NotaEntradaDetalhe = { nota: NotaEntradaResumo; entrada: { fornecedor: NfeImportFornecedorPreview; itens: NfeImportItemInput[] } };
+export type NotaEntradaDetalhe = { nota: NotaEntradaResumo; entrada: { fornecedor: NfeImportFornecedorPreview; tipoDocumento?: string; observacao?: string;
+  itens: Array<NfeImportItemInput & { quantidadeCompra?: string; unidadeCompra?: string; fatorConversao?: string; custoCompra?: string; estoqueAntes?: string; estoqueDepois?: string }> } };
