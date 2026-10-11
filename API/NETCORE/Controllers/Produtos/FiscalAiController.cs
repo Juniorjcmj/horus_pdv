@@ -40,6 +40,36 @@ public sealed class FiscalAiController(FiscalAiAB store, ProdutoAB products, Emp
         catch (InvalidOperationException ex) { return ProblemResponse(400, ex.Message); }
     }
 
+    [HttpPost("{id}/analises")]
+    public async Task<IActionResult> StartAnalysis(string id, FiscalAiStartRequest request, CancellationToken ct)
+    {
+        if (UserSession is not { } user) return Unauthorized();
+        Response.Headers.CacheControl = "no-store";
+        try
+        {
+            if (await products.ObterAsync(user.CompanyId, id) is null) return ProblemResponse(404, "Produto não encontrado nesta empresa.");
+            var jobId = await store.EnqueueAsync(user.CompanyId, id, user.Id, request.SolicitacaoId, ct);
+            return Accepted(new ApiResponse<object> { Success = true, Data = new { Id = jobId } });
+        }
+        catch (FiscalAiConflict ex) { return ProblemResponse(409, ex.Message); }
+        catch (InvalidOperationException ex) { return ProblemResponse(400, ex.Message); }
+        catch (SqlException ex)
+        {
+            logger.LogError(ex, "Falha ao iniciar análise fiscal {RequestId}", HttpContext.TraceIdentifier);
+            return ProblemResponse(503, $"A fila de análises está indisponível. Informe ao suporte a referência {HttpContext.TraceIdentifier}.");
+        }
+    }
+
+    [HttpGet("analises/{jobId:guid}")]
+    public async Task<IActionResult> AnalysisStatus(Guid jobId, CancellationToken ct)
+    {
+        if (UserSession is not { } user) return Unauthorized();
+        Response.Headers.CacheControl = "no-store";
+        var job = await store.GetJobAsync(user.CompanyId, jobId, ct);
+        return job is null ? ProblemResponse(404, "Análise não encontrada nesta empresa.")
+            : Ok(new ApiResponse<FiscalAiJobStatus> { Success = true, Data = job });
+    }
+
     [HttpPost("{id}/analisar")]
     public async Task<IActionResult> Analyze(string id, CancellationToken ct)
     {
@@ -102,4 +132,5 @@ public sealed class FiscalAiController(FiscalAiAB store, ProdutoAB products, Emp
 }
 
 public sealed record FiscalAiConfigRequest(string? Chave, bool UsarJev = true, bool RemoverChave = false);
+public sealed record FiscalAiStartRequest(Guid SolicitacaoId);
 public sealed record FiscalAiApplyRequest(Guid AnaliseId, string[] Campos, bool Revisado);

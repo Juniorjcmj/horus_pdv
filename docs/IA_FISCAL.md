@@ -25,7 +25,9 @@ Referências: [CONFAZ — Convênio 142/18](https://www.confaz.fazenda.gov.br/le
 
 ## Publicação e segurança
 
-Publicar juntos a API e o frontend. O inicializador da API executa a migração idempotente `43_fiscal_ia.sql`, criando as tabelas de configuração e análise. Manter estável a chave de criptografia `Security:EncryptionKey` já usada pelo sistema e incluí-la no procedimento de recuperação: sem ela não é possível recuperar as credenciais protegidas após restauração.
+Publicar juntos a API e o frontend. O inicializador da API executa as migrações idempotentes `43_fiscal_ia.sql` e `45_fiscal_ia_fila.sql`, criando as tabelas de configuração, análise e fila de solicitações. Manter estável a chave de criptografia `Security:EncryptionKey` já usada pelo sistema e incluí-la no procedimento de recuperação: sem ela não é possível recuperar as credenciais protegidas após restauração.
+
+A análise usa `POST /api/Produto/fiscal-ia/{id}/analises` com `solicitacaoId` (UUID), recebe HTTP 202 e acompanha `GET /api/Produto/fiscal-ia/analises/{solicitacaoId}`. A IA trabalha fora da conexão HTTP, evitando que a demora do provedor resulte em 504 do proxy sem CORS. A fila é persistida no SQL e dois workers assumem cada solicitação atomicamente. Repetir a mesma identificação recupera a solicitação; cliques concorrentes no mesmo produto recuperam a análise ativa. O aplicativo guarda a identificação até receber resultado ou falha terminal. Consultar a situação não chama a IA nem aplica correções. Uma análise interrompida por reinício não é reenviada automaticamente ao provedor; após dez minutos, uma execução sem resultado é marcada como interrompida. O endpoint síncrono anterior permanece para clientes antigos; eles devem ser atualizados para usar a fila.
 
 A credencial OpenRouter é criptografada no servidor, segregada por empresa e nunca retornada pelo endpoint de configuração. O formulário usa campo de senha e limpa o valor após salvar. Não colocar a chave em variáveis `VITE_*`, repositório, logs ou no instalador. Uma chave vazia mantém a existente; **Remover chave** a exclui explicitamente da configuração.
 

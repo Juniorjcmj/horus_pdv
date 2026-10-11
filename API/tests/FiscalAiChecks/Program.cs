@@ -28,6 +28,7 @@ await HorusDatabaseInitializer.InitializeAsync(app.Services);
 var connection = app.Services.GetRequiredService<Connection>();
 async Task Sql(string query) { await using var db = await connection.OpenConnectionAsync(); await using var cmd = new SqlCommand(query, db); await cmd.ExecuteNonQueryAsync(); }
 await Sql("IF OBJECT_ID('__FiscalAiOnly') IS NULL CREATE TABLE __FiscalAiOnly(Id INT); IF NOT EXISTS(SELECT 1 FROM Empresas WHERE Id='fiscal-ai-test') INSERT Empresas(Id,Uf,Crt) VALUES('fiscal-ai-test','RJ',1);");
+await Sql("DELETE FROM FiscalIaSolicitacoes;");
 var store = new FiscalAiAB(connection, app.Services.GetRequiredService<HorusSecretProtector>());
 var products = new ProdutoAB(connection);
 var product = new ProdutoAD { Id = "ai-product", ProductName = "Cerveja Brahma lata 473ml", ProductCode = "1234567890123", Ncm = "22030000", Cest = "0302100", Cfop = "5405", CsosnIcms = "500", CstPis = "06", CstCofins = "06", Gtin = "SEM GTIN", ProductQnt = 45, ProductUnitPrice = 5, ProductSalePrice = 6 };
@@ -81,6 +82,55 @@ fake.ChatStatus = HttpStatusCode.PaymentRequired;
 await Reject(() => service.AnalyzeAsync(product, company, tables, key, true, default), "Saldo insuficiente não grava alterações");
 await store.SaveConfigAsync("fiscal-ai-test", "", true, true, default);
 Check((await store.GetConfigAsync("fiscal-ai-test", default)).Key == "", "Remoção explícita da chave");
+var jobId = Guid.NewGuid();
+Check(await store.EnqueueAsync("fiscal-ai-test", product.Id, "u", jobId, default) == jobId, "Fila aceita solicitação sem chamar a IA");
+Check(await store.EnqueueAsync("fiscal-ai-test", product.Id, "u", Guid.NewGuid(), default) == jobId, "Cliques repetidos recuperam a análise ativa sem duplicar");
+await Reject(() => store.EnqueueAsync("another-company", product.Id, "u", jobId, default), "Identificação de outra empresa não pode ser reutilizada");
+Check(await store.GetJobAsync("another-company", jobId, default) is null, "Situação e resultado da fila são isolados por empresa");
+var claims = await Task.WhenAll(store.ClaimJobAsync(default), store.ClaimJobAsync(default));
+Check(claims.Count(c => c is not null) == 1 && claims.Single(c => c is not null)!.Id == jobId, "Dois workers assumem a solicitação uma única vez");
+var queuedReport = report with { Id = Guid.NewGuid() };
+await store.CompleteJobAsync(claims.Single(c => c is not null)!, queuedReport, default);
+Check((await store.GetJobAsync("fiscal-ai-test", jobId, default)) is { Status: "concluida", Relatorio: not null }, "Resultado concluído é recuperável no banco após perda da conexão");
+Check(await store.EnqueueAsync("fiscal-ai-test", product.Id, "u", jobId, default) == jobId, "Repetir solicitação concluída recupera o resultado, sem nova cobrança");
+var interruptedId = await store.EnqueueAsync("fiscal-ai-test", product.Id, "u", Guid.NewGuid(), default);
+await store.ClaimJobAsync(default);
+await Sql("UPDATE FiscalIaSolicitacoes SET IniciadaEm=DATEADD(minute,-11,SYSUTCDATETIME()) WHERE Status='analisando';");
+Check(await store.ClaimJobAsync(default) is null && (await store.GetJobAsync("fiscal-ai-test", interruptedId, default))!.Status == "falha", "Análise interrompida em reinício não é reenviada ao provedor");
+await Sql("ALTER DATABASE HorusPdv SET READ_COMMITTED_SNAPSHOT ON WITH ROLLBACK IMMEDIATE;");
+SqlConnection.ClearAllPools();
+var snapshotJob = await store.EnqueueAsync("fiscal-ai-test", product.Id, "u", Guid.NewGuid(), default);
+var snapshotClaim = await store.ClaimJobAsync(default);
+Check(snapshotClaim?.Id == snapshotJob, "Fila também funciona com READ_COMMITTED_SNAPSHOT ativado");
+await store.FailJobAsync(snapshotClaim!, "Falha simulada", default);
+await store.SaveConfigAsync("fiscal-ai-test", key, false, false, default);
+fake.ChatStatus = HttpStatusCode.OK;
+var requestContext = new DefaultHttpContext();
+requestContext.Items["CurrentUser"] = new AuthenticatedUser { CompanyId = "fiscal-ai-test", Id = "u", Role = "administrador" };
+var controller = new HORUSPDV_API.Controllers.Produtos.FiscalAiController(store, products, new EmpresaAB(connection, app.Services.GetRequiredService<HorusSecretProtector>()),
+    null!, service, Microsoft.Extensions.Logging.Abstractions.NullLogger<HORUSPDV_API.Controllers.Produtos.FiscalAiController>.Instance)
+    { ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext { HttpContext = requestContext } };
+using var disconnected = new CancellationTokenSource();
+var detachedId = Guid.NewGuid();
+var before = fake.Requests;
+Check(await controller.StartAnalysis(product.Id, new(detachedId), disconnected.Token) is Microsoft.AspNetCore.Mvc.AcceptedResult { StatusCode: 202 }
+    && fake.Requests == before, "HTTP 202 retorna antes de consultar o provedor");
+disconnected.Cancel();
+var workerBuilder = WebApplication.CreateBuilder(); workerBuilder.Logging.ClearProviders();
+workerBuilder.Configuration["ConnectionStrings:HorusPdv"] = cs.ConnectionString;
+workerBuilder.Configuration["Security:EncryptionKey"] = builder.Configuration["Security:EncryptionKey"];
+workerBuilder.Services.AddSingleton<Connection>(); workerBuilder.Services.AddSingleton<HorusSecurityOptions>(); workerBuilder.Services.AddSingleton<HorusSecretProtector>();
+workerBuilder.Services.AddScoped<FiscalAiAB>(); workerBuilder.Services.AddScoped<ProdutoAB>(); workerBuilder.Services.AddScoped<EmpresaAB>();
+workerBuilder.Services.AddSingleton(service);
+workerBuilder.Services.AddSingleton(new FiscalReferenceTables(app.Environment, Microsoft.Extensions.Logging.Abstractions.NullLogger<FiscalReferenceTables>.Instance, new HttpClient(offline)));
+await using var workerApp = workerBuilder.Build();
+using var worker = new FiscalAiWorker(workerApp.Services.GetRequiredService<IServiceScopeFactory>(), Microsoft.Extensions.Logging.Abstractions.NullLogger<FiscalAiWorker>.Instance);
+await worker.StartAsync(default);
+var until = DateTime.UtcNow.AddSeconds(15);
+while (DateTime.UtcNow < until && (await store.GetJobAsync("fiscal-ai-test", detachedId, default))!.Status is "aguardando" or "analisando") await Task.Delay(50);
+Check((await store.GetJobAsync("fiscal-ai-test", detachedId, default)) is { Status: "concluida", Relatorio: not null }
+    && fake.Requests == before + 1, "Worker conclui uma vez mesmo após cancelamento da conexão original");
+await worker.StopAsync(default);
 Console.WriteLine($"{passed} verificações passaram. Sem emissão, sem OpenRouter real, sem banco da loja.");
 
 sealed class Fake : HttpMessageHandler
@@ -88,8 +138,10 @@ sealed class Fake : HttpMessageHandler
     public bool Offline, JevUnavailable; public double Probability = .97; public HttpStatusCode ChatStatus = HttpStatusCode.OK;
     public string Field = "cest", Value = "0302103", Source = "cest:0302103", LastChat = "";
     public string? RawDraft;
+    public int Requests;
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
     {
+        Interlocked.Increment(ref Requests);
         if (Offline) throw new HttpRequestException("Offline fixture");
         var decision = request.RequestUri!.AbsolutePath.EndsWith("decisions");
         if (!decision) LastChat = await request.Content!.ReadAsStringAsync(ct);

@@ -89,6 +89,7 @@ builder.Services.AddSingleton<DatabaseBackupService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<DatabaseBackupService>());
 builder.Services.AddScoped<ProdutoAB>();
 builder.Services.AddScoped<FiscalAiAB>();
+builder.Services.AddHostedService<FiscalAiWorker>();
 builder.Services.AddSingleton<FiscalAiService>(services => new FiscalAiService(
     services.GetRequiredService<IWebHostEnvironment>(),
     new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(40), MaxResponseContentBufferSize = 512 * 1024 }));

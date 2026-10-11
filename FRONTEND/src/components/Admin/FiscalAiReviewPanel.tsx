@@ -6,8 +6,8 @@ import { fiscalAiService, type FiscalAiReport } from "@/services/api/fiscalAiSer
 
 const labels: Record<string, string> = { ncm: "NCM", cest: "CEST", cfop: "CFOP", origemMercadoria: "Origem", csosnIcms: "CSOSN ICMS", cstIcms: "CST ICMS", aliquotaIcms: "ICMS (%)", cstPis: "CST PIS", cstCofins: "CST COFINS", cstIbsCbs: "CST IBS/CBS", cClassTrib: "cClassTrib" };
 const display = (value: string | null) => value || "Não informado";
-type Props = { name: string; report: FiscalAiReport | null; loading: boolean; error: string; onBack: () => void; onRetry: () => void; onApplied: () => Promise<void> };
-export default function FiscalAiReviewPanel({ name, report, loading, error, onBack, onRetry, onApplied }: Props) {
+type Props = { name: string; report: FiscalAiReport | null; loading: boolean; progress?: string; error: string; onBack: () => void; onRetry: () => void; onApplied: () => Promise<void> };
+export default function FiscalAiReviewPanel({ name, report, loading, progress, error, onBack, onRetry, onApplied }: Props) {
   const [selected, setSelected] = useState<string[]>([]);
   const [reviewed, setReviewed] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -26,7 +26,7 @@ export default function FiscalAiReviewPanel({ name, report, loading, error, onBa
   return <section className="space-y-5 pb-16" aria-label="Análise fiscal com IA">
     <button type="button" className="btn-outline-secondary inline-flex min-h-11 items-center gap-2" disabled={loading || saving} onClick={onBack}><ArrowLeft size={16} />Voltar à tabela</button>
     <PageHeader title="Análise fiscal com IA" description={name} />
-    {loading && <p role="status" className="flex items-center gap-2 text-text-secondary"><Loader2 size={20} className="animate-spin" />Analisando cadastro e referências fiscais…</p>}
+    {loading && <p role="status" className="flex items-center gap-2 text-text-secondary"><Loader2 size={20} className="animate-spin" />{progress || "Analisando cadastro e referências fiscais…"}</p>}
     {error && <div role="alert" className="space-y-3"><p className="text-danger">{error}</p><button type="button" className="btn-outline-secondary min-h-11" onClick={onRetry}>Tentar análise novamente</button></div>}
     {report && <>
       <div className="space-y-2"><h2 className="text-lg font-semibold text-text-primary">Resultado da análise</h2><p className="max-w-prose text-text-primary">{report.resumo}</p>

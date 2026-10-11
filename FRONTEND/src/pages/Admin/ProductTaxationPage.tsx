@@ -34,6 +34,7 @@ export default function ProductTaxationPage() {
   const [aiProduct, setAiProduct] = useState<ProductDto | null>(null);
   const [aiReport, setAiReport] = useState<FiscalAiReport | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiProgress, setAiProgress] = useState("");
   const [aiError, setAiError] = useState("");
   useEffect(() => {
     if (!canAnalyze) return;
@@ -44,8 +45,8 @@ export default function ProductTaxationPage() {
     return () => { active = false; };
   }, [canAnalyze]);
   const analyze = async (product: ProductDto) => {
-    setAiProduct(product); setAiLoading(true); setAiError(""); setAiReport(null);
-    try { setAiReport(await fiscalAiService.analyze(product.id)); }
+    setAiProduct(product); setAiLoading(true); setAiError(""); setAiReport(null); setAiProgress("Iniciando análise…");
+    try { setAiReport(await fiscalAiService.analyze(product.id, setAiProgress)); }
     catch (reason) { setAiError(reason instanceof Error ? reason.message : "Não foi possível analisar o produto."); }
     finally { setAiLoading(false); }
   };
@@ -62,7 +63,7 @@ export default function ProductTaxationPage() {
   const hasFilters = Boolean(search || ncm);
   const clear = () => { setSearch(""); setNcm(""); setPage(1); };
 
-  if (aiProduct) return <FiscalAiReviewPanel key={`${aiProduct.id}:${aiReport?.id ?? "loading"}`} name={`${aiProduct.productCode} · ${aiProduct.productName}`} report={aiReport} loading={aiLoading} error={aiError}
+  if (aiProduct) return <FiscalAiReviewPanel key={`${aiProduct.id}:${aiReport?.id ?? "loading"}`} name={`${aiProduct.productCode} · ${aiProduct.productName}`} report={aiReport} loading={aiLoading} progress={aiProgress} error={aiError}
     onBack={() => { setAiProduct(null); setAiReport(null); }} onRetry={() => void analyze(aiProduct)} onApplied={reload} />;
 
   return <section className="space-y-5 pb-16" aria-label="Tributação dos produtos">
