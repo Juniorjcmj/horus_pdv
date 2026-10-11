@@ -1,10 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import PageHeader from "@/components/Admin/PageHeader";
 import ListState from "@/components/Admin/ListState";
 import TableScrollArea from "@/components/Admin/TableScrollArea";
 import useRemoteList from "@/hooks/useRemoteList";
 import { productService, type ProductDto } from "@/services/api/productService";
+import { fiscalAiService, type FiscalAiConfig, type FiscalAiReport } from "@/services/api/fiscalAiService";
+import FiscalAiSettings from "@/components/Admin/FiscalAiSettings";
+import FiscalAiReviewPanel from "@/components/Admin/FiscalAiReviewPanel";
+import { getStoredAuthUser } from "@/utils/authStorage";
 
 const columns = [
   ["ncm", "NCM"], ["cest", "CEST"], ["cfop", "CFOP"],
@@ -22,6 +26,29 @@ export default function ProductTaxationPage() {
   const [search, setSearch] = useState("");
   const [ncm, setNcm] = useState("");
   const [page, setPage] = useState(1);
+  const role = getStoredAuthUser()?.role.toLowerCase();
+  const canAnalyze = role === "administrador" || role === "gerente";
+  const [config, setConfig] = useState<FiscalAiConfig | null>(null);
+  const [configError, setConfigError] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aiProduct, setAiProduct] = useState<ProductDto | null>(null);
+  const [aiReport, setAiReport] = useState<FiscalAiReport | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  useEffect(() => {
+    if (!canAnalyze) return;
+    let active = true;
+    fiscalAiService.config().then(result => {
+      if (active) setConfig(result ?? null);
+    }).catch(() => { if (active) setConfigError("Não foi possível consultar a configuração de IA. A tabela continua disponível."); });
+    return () => { active = false; };
+  }, [canAnalyze]);
+  const analyze = async (product: ProductDto) => {
+    setAiProduct(product); setAiLoading(true); setAiError(""); setAiReport(null);
+    try { setAiReport(await fiscalAiService.analyze(product.id)); }
+    catch (reason) { setAiError(reason instanceof Error ? reason.message : "Não foi possível analisar o produto."); }
+    finally { setAiLoading(false); }
+  };
   const filtered = useMemo(() => {
     const term = search.trim().toLocaleLowerCase("pt-BR");
     return items.filter(product =>
@@ -35,10 +62,16 @@ export default function ProductTaxationPage() {
   const hasFilters = Boolean(search || ncm);
   const clear = () => { setSearch(""); setNcm(""); setPage(1); };
 
+  if (aiProduct) return <FiscalAiReviewPanel key={`${aiProduct.id}:${aiReport?.id ?? "loading"}`} name={`${aiProduct.productCode} · ${aiProduct.productName}`} report={aiReport} loading={aiLoading} error={aiError}
+    onBack={() => { setAiProduct(null); setAiReport(null); }} onRetry={() => void analyze(aiProduct)} onApplied={reload} />;
+
   return <section className="space-y-5 pb-16" aria-label="Tributação dos produtos">
     <PageHeader title="Tributação dos produtos" description="Compare os dados fiscais cadastrados dos produtos em uma única tabela." action={
-      <button type="button" className="btn-outline-secondary inline-flex min-h-11 items-center gap-2" disabled={isLoading} onClick={() => void reload()}><RefreshCw size={16} />Atualizar</button>
+      <div className="flex flex-wrap gap-2"><button type="button" className="btn-outline-secondary inline-flex min-h-11 items-center gap-2" disabled={isLoading} onClick={() => void reload()}><RefreshCw size={16} />Atualizar</button>
+        {role === "administrador" && <button type="button" className="btn-outline-secondary min-h-11" onClick={() => setSettingsOpen(value => !value)}>Configurar IA</button>}</div>
     } />
+    {settingsOpen && <FiscalAiSettings config={config} onSaved={value => { setConfig(value); setConfigError(""); setSettingsOpen(false); }} onClose={() => setSettingsOpen(false)} />}
+    {canAnalyze && <p className="max-w-prose text-sm text-text-secondary">{configError || (config?.configurada ? `IA configurada: Gemini 2.5 Flash-Lite${config.usarJev ? " com conferência Jev" : ""}. Use Analisar com IA na linha do produto.` : config ? "Cadastre a chave em Configurar IA para analisar os produtos. Somente o administrador pode configurar a chave." : "Consultando configuração de IA…")}</p>}
     <div className="flex flex-wrap items-end gap-4">
       <label className="min-w-0 flex-1 basis-72 text-sm text-text-secondary">Código ou descrição
         <input type="search" className="input-field mt-1 w-full" value={search} onChange={event => { setSearch(event.target.value); setPage(1); }} placeholder="Busque um produto" />
@@ -57,9 +90,10 @@ export default function ProductTaxationPage() {
           <th scope="col" className="sticky left-0 z-20 w-40 min-w-40 bg-bg-secondary px-4 py-3">Código</th>
           <th scope="col" className="w-64 min-w-64 bg-bg-secondary px-4 py-3 sm:sticky sm:left-40 sm:z-20">Descrição</th>
           {columns.map(([key, title]) => <th scope="col" key={key} className="whitespace-nowrap px-4 py-3">{title}</th>)}
+          {canAnalyze && <th scope="col" className="w-44 px-4 py-3">Análise fiscal</th>}
         </tr></thead>
         <tbody className="divide-y divide-border-primary text-text-primary">
-          {isLoading || error || !rows.length ? <tr><td colSpan={columns.length + 2}>
+          {isLoading || error || !rows.length ? <tr><td colSpan={columns.length + 2 + (canAnalyze ? 1 : 0)}>
             <ListState loading={isLoading} error={Boolean(error)} title={isLoading ? "Carregando produtos…" : error ?? (hasFilters ? "Nenhum produto encontrado" : "Nenhum produto cadastrado")}
               description={error ? "Verifique a conexão e tente novamente." : hasFilters ? "Tente outro NCM ou outra descrição." : undefined}
               actionLabel={error ? "Tentar novamente" : hasFilters ? "Limpar filtros" : undefined}
@@ -68,6 +102,7 @@ export default function ProductTaxationPage() {
             <td className="sticky left-0 z-10 bg-bg-surface px-4 py-3 tabular-nums">{display(product.productCode)}</td>
             <th scope="row" className="bg-bg-surface px-4 py-3 font-medium sm:sticky sm:left-40 sm:z-10"><span className="block max-w-64 break-words">{display(product.productName)}</span></th>
             {columns.map(([key]) => <td key={key} className="whitespace-nowrap bg-bg-surface px-4 py-3 tabular-nums">{display(product[key])}</td>)}
+            {canAnalyze && <td className="bg-bg-surface px-4 py-3"><button type="button" className="btn-outline-secondary min-h-11 text-sm" disabled={!config?.configurada || aiLoading} aria-label={`Analisar com IA ${product.productName}`} onClick={() => void analyze(product)}>Analisar com IA</button></td>}
           </tr>)}
         </tbody>
       </table>

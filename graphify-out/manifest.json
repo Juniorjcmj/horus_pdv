@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1791658901.82115,
-    "seen": 1791659093.47999,
-    "ast_hash": "c12818563baa0951ee1dcd828f29c951",
+    "mtime": 1791680353.490156,
+    "seen": 1791681147.3014438,
+    "ast_hash": "93dfac28769cec343cfee01b9c08b36d",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791647653.147953,
-    "seen": 1791648349.3650067,
-    "ast_hash": "3188800d6a620f90e11bf7890aa189c8",
+    "mtime": 1791680203.3615873,
+    "seen": 1791681147.3307714,
+    "ast_hash": "333b4235121f99a16db3aa1bf478135b",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -4392,9 +4392,75 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductTaxationPage.tsx": {
-    "mtime": 1791679202.0851831,
-    "seen": 1791679261.5238838,
-    "ast_hash": "35925f4a763934b3ed960f3a05481753",
+    "mtime": 1791680454.4189444,
+    "seen": 1791681147.4373348,
+    "ast_hash": "c4be898aab3d808dbe2919d8603586c5",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Produtos/FiscalAiController.cs": {
+    "mtime": 1791680353.4889839,
+    "seen": 1791681147.28518,
+    "ast_hash": "96bb7174af924789f230dff6c0e633f7",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/FiscalTables/cest.json": {
+    "mtime": 1791680157.011742,
+    "seen": 1791681147.2871592,
+    "ast_hash": "a5170fdd4a3b2a2ef335048230049904",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/FiscalAiAB.cs": {
+    "mtime": 1791680268.0298405,
+    "seen": 1791681147.3170836,
+    "ast_hash": "6b49108effabe23a7066c2525033c444",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Fiscal/FiscalAiRules.cs": {
+    "mtime": 1791680994.2288206,
+    "seen": 1791681147.3344998,
+    "ast_hash": "2cd5cec715212d73bdb1d590374b792d",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Fiscal/FiscalAiService.cs": {
+    "mtime": 1791680770.4847825,
+    "seen": 1791681147.3345063,
+    "ast_hash": "ae5e257a8fc2b497f7779da3c80653f4",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalAiChecks/FiscalAiChecks.csproj": {
+    "mtime": 1791680587.324837,
+    "seen": 1791681147.3505526,
+    "ast_hash": "34f5fb819b79605ec5e398fdbe28acad",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalAiChecks/Program.cs": {
+    "mtime": 1791680994.2345846,
+    "seen": 1791681147.350559,
+    "ast_hash": "e2de43810dc034f8a2ff51834b811f95",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/FiscalAiReviewPanel.tsx": {
+    "mtime": 1791680424.3262594,
+    "seen": 1791681147.3787682,
+    "ast_hash": "0d431d9106c8d5dceabf23cebdb323c6",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/FiscalAiSettings.tsx": {
+    "mtime": 1791680424.3252451,
+    "seen": 1791681147.3787735,
+    "ast_hash": "60255594efb365b53fc39a30baa765a6",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/services/api/fiscalAiService.ts": {
+    "mtime": 1791680424.3232565,
+    "seen": 1791681147.4462602,
+    "ast_hash": "7d5c5a5a6ad0f0807445afd34151be4b",
+    "semantic_hash": ""
+  },
+  "docs/IA_FISCAL.md": {
+    "mtime": 1791681033.2633448,
+    "seen": 1791681147.5448077,
+    "ast_hash": "b581f0399b4bd1b01bbec0b2f2177f79",
     "semantic_hash": ""
   }
 }

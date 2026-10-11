@@ -648,9 +648,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/App.tsx": {
-    "mtime": 1791577118.551795,
-    "seen": 1791578390.3404794,
-    "ast_hash": "ebce576fbc3e11f03fb3b5d7d7352278",
+    "mtime": 1791678899.8621874,
+    "seen": 1791679030.7969787,
+    "ast_hash": "dd33b15b5bbb6c1f36dd7215fbdee77a",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/CashClosingSummaryModal.tsx": {
@@ -804,9 +804,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/AppSidebar.tsx": {
-    "mtime": 1791577604.2150674,
-    "seen": 1791578390.3492165,
-    "ast_hash": "3d038d22169460a043d3d87f6f72c2bc",
+    "mtime": 1791678899.8596196,
+    "seen": 1791679030.8183877,
+    "ast_hash": "1b7882d6c5ff3fb54906b1d4e41a342e",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/AppSidebar/UserMenu.tsx": {
@@ -4389,6 +4389,12 @@
     "mtime": 1791659150.3449104,
     "seen": 1791659857.201805,
     "ast_hash": "54ec36f58b4dd1d5af5a70284af5b54c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/pages/Admin/ProductTaxationPage.tsx": {
+    "mtime": 1791679202.0851831,
+    "seen": 1791679261.5238838,
+    "ast_hash": "35925f4a763934b3ed960f3a05481753",
     "semantic_hash": ""
   }
 }
