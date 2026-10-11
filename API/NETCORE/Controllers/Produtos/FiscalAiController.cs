@@ -3,6 +3,8 @@ using HORUSPDV_API.Repositories.DatabaseAccess;
 using HORUSPDV_API.Services.Fiscal;
 using HORUSPDV_API.Services.Security;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace HORUSPDV_API.Controllers.Produtos;
@@ -11,7 +13,7 @@ namespace HORUSPDV_API.Controllers.Produtos;
 [Route("api/Produto/fiscal-ia")]
 [HorusAuthorizeRoles("administrador", "gerente")]
 public sealed class FiscalAiController(FiscalAiAB store, ProdutoAB products, EmpresaAB companies,
-    FiscalReferenceTables tables, FiscalAiService service) : ControllerBase
+    FiscalReferenceTables tables, FiscalAiService service, ILogger<FiscalAiController> logger) : ControllerBase
 {
     private AuthenticatedUser? UserSession => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
 
@@ -43,12 +45,12 @@ public sealed class FiscalAiController(FiscalAiAB store, ProdutoAB products, Emp
     {
         if (UserSession is not { } user) return Unauthorized();
         Response.Headers.CacheControl = "no-store";
-        var product = await products.ObterAsync(user.CompanyId, id);
-        if (product is null) return ProblemResponse(404, "Produto não encontrado nesta empresa.");
-        var company = await companies.ObterExataAsync(user.CompanyId);
-        if (company is null || company.Uf != "RJ" || company.Crt is not (1 or 2 or 3 or 4)) return ProblemResponse(400, "Confira UF RJ e regime tributário em Minha Empresa.");
         try
         {
+            var product = await products.ObterAsync(user.CompanyId, id);
+            if (product is null) return ProblemResponse(404, "Produto não encontrado nesta empresa.");
+            var company = await companies.ObterExataAsync(user.CompanyId);
+            if (company is null || company.Uf != "RJ" || company.Crt is not (1 or 2 or 3 or 4)) return ProblemResponse(400, "Confira UF RJ e regime tributário em Minha Empresa.");
             var config = await store.GetConfigAsync(user.CompanyId, ct);
             var report = await service.AnalyzeAsync(product, company, await tables.GetAsync(ct), config.Key, config.Jev, ct);
             await store.SaveReportAsync(user.CompanyId, report, ct);
@@ -63,6 +65,21 @@ public sealed class FiscalAiController(FiscalAiAB store, ProdutoAB products, Emp
         }
         catch (Exception ex) when (ex is JsonException or KeyNotFoundException or ArgumentException)
         { return ProblemResponse(502, "O modelo retornou dados incompletos ou inválidos. Nenhum cadastro foi alterado."); }
+        catch (CryptographicException ex)
+        {
+            logger.LogError(ex, "Não foi possível recuperar a chave da IA. Referência {RequestId}", HttpContext.TraceIdentifier);
+            return ProblemResponse(400, "Não foi possível ler a chave OpenRouter salva. Peça ao administrador para salvá-la novamente em Configurar IA.");
+        }
+        catch (SqlException ex)
+        {
+            logger.LogError(ex, "Falha de banco na análise fiscal. Referência {RequestId}", HttpContext.TraceIdentifier);
+            return ProblemResponse(503, $"Não foi possível consultar ou salvar os dados da análise. Informe ao suporte a referência {HttpContext.TraceIdentifier}.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Falha inesperada na análise fiscal. Referência {RequestId}", HttpContext.TraceIdentifier);
+            return ProblemResponse(500, $"Não foi possível concluir a análise fiscal. Informe ao suporte a referência {HttpContext.TraceIdentifier}.");
+        }
     }
 
     [HttpPost("{id}/aplicar")]

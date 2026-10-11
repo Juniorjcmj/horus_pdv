@@ -75,7 +75,7 @@ export async function apiRequest<T>(
       }
       // Falhas do fetch não têm resposta HTTP. O status 0 permite tratar conectividade sem
       // depender da mensagem (que varia entre Chromium, Electron e outros navegadores).
-      throw new ApiError(err instanceof Error ? err.message : "Não foi possível conectar à API.", 0);
+      throw new ApiError("Não foi possível conectar ao servidor. Verifique a conexão e tente novamente.", 0, err);
     }
 
     // Resposta real da API (não 5xx: 502/503 do proxy = API fora) prova conectividade para o

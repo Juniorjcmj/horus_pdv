@@ -1,4 +1,4 @@
-import { apiRequest, requireEnvUrl } from "./apiClient";
+import { ApiError, apiRequest, requireEnvUrl } from "./apiClient";
 
 const base = `${requireEnvUrl("VITE_PRODUTO_API_URL")}/fiscal-ia`;
 export type FiscalAiConfig = { configurada: boolean; modelo: string; usarJev: boolean };
@@ -15,7 +15,16 @@ export const fiscalAiService = {
     return (await apiRequest<FiscalAiConfig>(`${base}/config`, { method: "PUT", body: JSON.stringify({ chave, usarJev, removerChave }) })).data;
   },
   async analyze(id: string) {
-    const response = await apiRequest<FiscalAiReport>(`${base}/${encodeURIComponent(id)}/analisar`, { method: "POST", timeoutMs: 110000 });
+    let response;
+    try {
+      response = await apiRequest<FiscalAiReport>(`${base}/${encodeURIComponent(id)}/analisar`, { method: "POST", timeoutMs: 110000 });
+    } catch (error) {
+      // Não reenviar automaticamente: a primeira chamada pode ter sido processada e cobrada.
+      if (error instanceof ApiError && error.status === 0 && error.data instanceof TypeError) {
+        throw new ApiError("A conexão com o servidor da análise fiscal falhou. Verifique a internet e tente novamente. Se continuar, informe ao suporte em qual momento o erro aparece.", 0, error.data);
+      }
+      throw error;
+    }
     if (!response.data) throw new Error("A análise não retornou dados. Tente novamente.");
     return response.data;
   },

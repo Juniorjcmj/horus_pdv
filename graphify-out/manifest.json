@@ -1140,9 +1140,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/apiClient.ts": {
-    "mtime": 1791556791.1788938,
-    "seen": 1791556968.96578,
-    "ast_hash": "6310cc46a31cbe29b1c012e3fe91b73d",
+    "mtime": 1791684984.4300792,
+    "seen": 1791685138.3533404,
+    "ast_hash": "d4eaa065702f16c732f6ef69f41be441",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/authService.ts": {
@@ -4398,9 +4398,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/FiscalAiController.cs": {
-    "mtime": 1791680353.4889839,
-    "seen": 1791681147.28518,
-    "ast_hash": "96bb7174af924789f230dff6c0e633f7",
+    "mtime": 1791684984.4334848,
+    "seen": 1791685138.1940873,
+    "ast_hash": "0d082cbac2a65ddafb408d42d059bc4f",
     "semantic_hash": ""
   },
   "API/NETCORE/DataBase/FiscalTables/cest.json": {
@@ -4452,9 +4452,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiscalAiService.ts": {
-    "mtime": 1791680424.3232565,
-    "seen": 1791681147.4462602,
-    "ast_hash": "7d5c5a5a6ad0f0807445afd34151be4b",
+    "mtime": 1791685200.1847289,
+    "seen": 1791685274.4463637,
+    "ast_hash": "319163215144486b409fd4308288b8c3",
     "semantic_hash": ""
   },
   "docs/IA_FISCAL.md": {
@@ -4590,9 +4590,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/tests/fiscal/vite.config.ts": {
-    "mtime": 1791683805.9172764,
-    "seen": 1791684360.5544379,
-    "ast_hash": "a0e833ae985061fb4d1d6c79216e47cb",
+    "mtime": 1791684984.435977,
+    "seen": 1791685138.3972356,
+    "ast_hash": "587b7492d96d0a1428f24ecf7cf0602a",
     "semantic_hash": ""
   },
   "GATEWAY/src/HorusGateway/Services/LocalFiscalSchemaValidator.cs": {
@@ -4629,6 +4629,12 @@
     "mtime": 1791684295.6612113,
     "seen": 1791684360.6048148,
     "ast_hash": "94ff53862681287ecda52d9fbd6f101d",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/fiscal/fiscal-ai-connection.spec.ts": {
+    "mtime": 1791685019.366097,
+    "seen": 1791685138.3962455,
+    "ast_hash": "0269e8dc0c2c1bc900ab76b63a969ea1",
     "semantic_hash": ""
   }
 }

@@ -14,6 +14,7 @@ export default defineConfig({
   cacheDir: join(artifacts, "vite-cache"),
   resolve: { alias: { "@": fileURLToPath(new URL("../../src", import.meta.url)) } },
   define: {
+    "import.meta.env.VITE_PRODUTO_API_URL": JSON.stringify("http://127.0.0.1:5189/mock/produto"),
     "import.meta.env.VITE_NFCE_API_URL": JSON.stringify("http://127.0.0.1:5189/mock/nfce"),
     "import.meta.env.VITE_NFE_API_URL": JSON.stringify("http://127.0.0.1:5189/mock/nfe"),
   },
