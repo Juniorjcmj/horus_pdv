@@ -4422,9 +4422,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalAiService.cs": {
-    "mtime": 1791682227.0522263,
-    "seen": 1791684360.4803448,
-    "ast_hash": "f7478b56c8130f2faef61081f5230ffa",
+    "mtime": 1791687849.7460887,
+    "seen": 1791687955.2132578,
+    "ast_hash": "8844beeebd0402dab654092400aafcda",
     "semantic_hash": ""
   },
   "API/tests/FiscalAiChecks/FiscalAiChecks.csproj": {
@@ -4458,9 +4458,9 @@
     "semantic_hash": ""
   },
   "docs/IA_FISCAL.md": {
-    "mtime": 1791686586.284747,
-    "seen": 1791686851.7880447,
-    "ast_hash": "66e72e5103164ce3360d71f43d8a66e2",
+    "mtime": 1791687849.7487783,
+    "seen": 1791687955.3075063,
+    "ast_hash": "6e0450e3b0e31fbab42348dbe6fcd967",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalCestReference.cs": {
@@ -4641,6 +4641,18 @@
     "mtime": 1791686431.878434,
     "seen": 1791686851.6675856,
     "ast_hash": "191b6f7ad2c05e7802c8f9c39ec9e37e",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalAiTransportChecks/FiscalAiTransportChecks.csproj": {
+    "mtime": 1791687819.2792492,
+    "seen": 1791687955.2219713,
+    "ast_hash": "6e0b28cde00f68ae8edeeb306ad2ee4d",
+    "semantic_hash": ""
+  },
+  "API/tests/FiscalAiTransportChecks/Program.cs": {
+    "mtime": 1791687819.2802362,
+    "seen": 1791687955.2219746,
+    "ast_hash": "6c08476ed74b72ae255ea92292c9d661",
     "semantic_hash": ""
   }
 }

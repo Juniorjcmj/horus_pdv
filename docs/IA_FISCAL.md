@@ -37,6 +37,13 @@ As alterações usam transação única com auditoria; não são aceitos valores
 
 ## Verificação local
 
+`API/tests/FiscalAiTransportChecks` executa a análise e a conferência Jev contra um servidor HTTP local, usando o transporte real do .NET. Verifica cabeçalhos, autenticação e preservação dos acentos no JSON. Esse teste cobre a falha em que um `X-Title` com acentos era recusado antes de enviar a chamada ao OpenRouter; o identificador HTTP deve conter apenas ASCII. Não exige SQL nem faz chamadas pagas.
+
+```powershell
+dotnet build API/NETCORE
+dotnet run --project API/tests/FiscalAiTransportChecks -- "E:/PROJETOPDV/horus_pdv/API/NETCORE/bin/Debug/net8.0"
+```
+
 `API/tests/FiscalAiChecks` testa criptografia, isolamento por empresa, resposta estruturada, rejeição de campos comerciais, transação e rollback da auditoria, aplicação restrita, repetição, cadastro alterado, sugestões inválidas, falha Jev e falta de saldo. O provedor é simulado: não há chamadas OpenRouter pagas nem emissão de documentos fiscais.
 
 O teste SQL aceita exclusivamente um servidor descartável em `127.0.0.1,51460`. Recusa banco existente sem a marca `__FiscalAiOnly`. Execute depois de compilar a API, passando o diretório de saída, um arquivo de senha local e esse endereço. Não use banco da loja.

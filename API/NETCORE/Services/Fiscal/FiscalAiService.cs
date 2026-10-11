@@ -125,7 +125,8 @@ public sealed class FiscalAiService(IWebHostEnvironment environment, HttpClient 
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, endpoint) { Content = JsonContent.Create(body) };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", key);
-        request.Headers.Add("X-Title", "Quack PDV - revisão fiscal");
+        // Cabeçalhos usam ASCII no transporte padrão do .NET; acentos ficam no corpo JSON.
+        request.Headers.Add("X-Title", "Quack PDV - revisao fiscal");
         using var response = await http.SendAsync(request, ct);
         if (!response.IsSuccessStatusCode) throw new FiscalAiProviderError(response.StatusCode switch
         {
