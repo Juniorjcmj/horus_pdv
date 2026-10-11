@@ -41432,7 +41432,7 @@
       "file_type": "code",
       "norm_label": "producttaxationpage()",
       "source_file": "FRONTEND/src/pages/Admin/ProductTaxationPage.tsx",
-      "source_location": "L24"
+      "source_location": "L28"
     },
     {
       "id": "frontend_src_pages_admin_homepage_homepage",
@@ -145852,7 +145852,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/ProductTaxationPage.tsx",
-      "source_location": "L103",
+      "source_location": "L117",
       "weight": 1.0
     },
     {
@@ -145864,7 +145864,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/ProductTaxationPage.tsx",
-      "source_location": "L57",
+      "source_location": "L61",
       "weight": 1.0
     },
     {
@@ -253057,7 +253057,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductTaxationPage.tsx",
-      "source_location": "L24",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -300316,5 +300316,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ef20842dfe61829b06964609285dbd4df5c78113"
+  "built_at_commit": "cd0e396746481ef925fdd7acc755205df54808df"
 }
