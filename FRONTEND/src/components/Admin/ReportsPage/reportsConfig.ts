@@ -26,7 +26,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export type ReportFilterType = "date" | "time" | "select" | "multiselect" | "checkbox";
+export type ReportFilterType = "date" | "time" | "text" | "select" | "multiselect" | "checkbox";
 
 export type ReportFilterOption = {
   label: string;
@@ -134,6 +134,17 @@ const faixaInadimplenciaOptions: ReportFilterOption[] = [
 ];
 
 export const reportCatalog: ReportDefinition[] = [
+  {
+    id: "lucro-markup-produtos",
+    title: "Lucro e markup por produto",
+    description: "Compare compra, venda e lucro dos produtos vendidos, com os totais e o markup do período.",
+    icon: PiggyBank,
+    filters: [
+      ...periodFilters,
+      { id: "productSearch", label: "Código ou descrição do produto", type: "text" },
+      categoriaFilter,
+    ],
+  },
   {
     id: "vendas-periodo",
     title: "Vendas por Período",

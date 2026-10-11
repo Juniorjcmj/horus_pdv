@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs": {
-    "mtime": 1791165065.7996564,
-    "seen": 1791165117.6412487,
-    "ast_hash": "a5be3ece23425426d35797605c1a92fd",
+    "mtime": 1791715730.9136462,
+    "seen": 1791716324.260329,
+    "ast_hash": "727836106e5456eb9eb5971be14d5d5c",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HomeAB.cs": {
@@ -462,15 +462,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
-    "mtime": 1791028024.9636295,
-    "seen": 1791028438.5320668,
-    "ast_hash": "fed44c091f42c48886525d73ad86264c",
+    "mtime": 1791715730.90612,
+    "seen": 1791716324.2657523,
+    "ast_hash": "1b443047993a793b711ed79af12149f8",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791686471.2333229,
-    "seen": 1791686851.6644602,
-    "ast_hash": "93503074b6347d07f4d4d5d10cd0889c",
+    "mtime": 1791715730.9116476,
+    "seen": 1791716324.26606,
+    "ast_hash": "ec93e15517cce810dfb3ca57787bfbf1",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -720,9 +720,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/ReportFiltersView.tsx": {
-    "mtime": 1791578342.4013534,
-    "seen": 1791578390.3473544,
-    "ast_hash": "e73fc635d5a56f66e31456008122b640",
+    "mtime": 1791716040.6309183,
+    "seen": 1791716324.3200843,
+    "ast_hash": "dfe4039b0387e768ac4c7d51d5553781",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/index.ts": {
@@ -732,15 +732,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/reportResultTypes.ts": {
-    "mtime": 1788665266.5715885,
-    "seen": 1788888974.3520157,
-    "ast_hash": "55465556b46f6d42674367ad906a947c",
+    "mtime": 1791715784.432877,
+    "seen": 1791716324.3204608,
+    "ast_hash": "d565b25d464a6b1090753ac8823c0cd5",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/reportsConfig.ts": {
-    "mtime": 1790972664.0627632,
-    "seen": 1790973295.109593,
-    "ast_hash": "13561282643921a39e70b29a9e8c29bc",
+    "mtime": 1791715784.4318593,
+    "seen": 1791716324.3204653,
+    "ast_hash": "a896a2374219bf0b844a3afb30413b4a",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/RowActionsMenu.tsx": {
@@ -1206,9 +1206,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/reportService.ts": {
-    "mtime": 1790421566.558993,
-    "seen": 1790421619.6613097,
-    "ast_hash": "fa90b0c8dc537e0dfd38b15e75cd7c12",
+    "mtime": 1791715784.433894,
+    "seen": 1791716324.3847492,
+    "ast_hash": "5f9a60af85bada7180aee26ec655e5ef",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/salesHistoryService.ts": {
@@ -4683,6 +4683,36 @@
     "mtime": 1791690041.2288153,
     "seen": 1791690204.5771103,
     "ast_hash": "7dfe0757443b4fc1635b2cdcb9ca9754",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/RelatorioLucroMarkup.cs": {
+    "mtime": 1791716201.974074,
+    "seen": 1791716324.2657578,
+    "ast_hash": "2f8083b49aef68429b2f0561476598d6",
+    "semantic_hash": ""
+  },
+  "API/tests/SalesProfitChecks/Program.cs": {
+    "mtime": 1791716081.6836085,
+    "seen": 1791716324.296902,
+    "ast_hash": "e0aea12437a0e299ea99e94b43920982",
+    "semantic_hash": ""
+  },
+  "API/tests/SalesProfitChecks/SalesProfitChecks.csproj": {
+    "mtime": 1791715944.408449,
+    "seen": 1791716324.2969065,
+    "ast_hash": "e0aa76a883a2eb98a41367e958129980",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.profit-report.config.ts": {
+    "mtime": 1791716040.6344688,
+    "seen": 1791716324.304829,
+    "ast_hash": "0cb6c1a38caef2be04f0c3c4a9f13b13",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/profit-report.spec.ts": {
+    "mtime": 1791716201.975591,
+    "seen": 1791716324.4055927,
+    "ast_hash": "d0ab26a2d4cc1d360bcf7c0315843b7c",
     "semantic_hash": ""
   }
 }

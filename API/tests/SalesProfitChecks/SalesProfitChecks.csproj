@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+    <ApiOutput>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../NETCORE/bin/$(Configuration)/net8.0'))</ApiOutput>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="HORUSPDV-API"><HintPath>$(ApiOutput)/HORUSPDV-API.dll</HintPath></Reference>
+    <Reference Include="Microsoft.Data.SqlClient"><HintPath>$(ApiOutput)/runtimes/win/lib/net8.0/Microsoft.Data.SqlClient.dll</HintPath></Reference>
+    <Content Include="$(ApiOutput)/runtimes/win-x64/native/*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

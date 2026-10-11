@@ -15,6 +15,7 @@ import type {
   ReportFilterValues,
   ReportResultColumn,
   ReportResultRow,
+  ReportResult,
 } from "./reportResultTypes";
 import { reportService } from "@/services/api/reportService";
 import ReportChartView from "./ReportChartView";
@@ -140,6 +141,7 @@ function exportToExcel(
   title: string,
   columns: ReportResultColumn[],
   rows: ReportResultRow[],
+  notes: string[] = [],
 ) {
   const header = columns
     .map((column) => `<th>${escapeHtml(column.label)}</th>`)
@@ -158,6 +160,7 @@ function exportToExcel(
       <head><meta charset="UTF-8" /></head>
       <body>
         <h3>${escapeHtml(title)}</h3>
+        ${notes.map(note => `<p>${escapeHtml(note)}</p>`).join("")}
         <table border="1" cellspacing="0" cellpadding="6">
           <thead><tr>${header}</tr></thead>
           <tbody>${body}</tbody>
@@ -181,9 +184,11 @@ function exportToPdf(
   title: string,
   columns: ReportResultColumn[],
   rows: ReportResultRow[],
+  notes: string[] = [],
 ) {
-  const popup = window.open("", "_blank", "noopener,noreferrer,width=1200,height=800");
+  const popup = window.open("", "_blank", "width=1200,height=800");
   if (!popup) return;
+  popup.opener = null;
 
   const header = columns
     .map((column) => `<th>${escapeHtml(column.label)}</th>`)
@@ -215,6 +220,7 @@ function exportToPdf(
       <body>
         <h2>${escapeHtml(title)}</h2>
         <p>Gerado em ${new Date().toLocaleString("pt-BR")}</p>
+        ${notes.map(note => `<p>${escapeHtml(note)}</p>`).join("")}
         <table>
           <thead><tr>${header}</tr></thead>
           <tbody>${body}</tbody>
@@ -235,6 +241,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
   const [submittedValues, setSubmittedValues] = useState<ReportFilterValues>(initialValues);
   const [resultColumns, setResultColumns] = useState<ReportResultColumn[]>([]);
   const [resultRows, setResultRows] = useState<ReportResultRow[]>([]);
+  const [resultDetails, setResultDetails] = useState<Pick<ReportResult, "totalRow" | "summary" | "notes">>({});
   const [isLoading, setIsLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [hasGenerated, setHasGenerated] = useState(false);
@@ -247,6 +254,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
     setSubmittedValues(initialValues);
     setResultColumns([]);
     setResultRows([]);
+    setResultDetails({});
     setHasGenerated(false);
     setCurrentPage(1);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -274,6 +282,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
     setSubmittedValues(initialValues);
     setResultColumns([]);
     setResultRows([]);
+    setResultDetails({});
     setHasGenerated(false);
     setCurrentPage(1);
   };
@@ -282,15 +291,18 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
     event.preventDefault();
     setIsLoading(true);
     setReportError(null);
+    setHasGenerated(false);
+    setResultDetails({});
     try {
       const result = await reportService.generate(report.id, values);
       setSubmittedValues({ ...values });
       setResultColumns(result.columns);
       setResultRows(result.rows);
+      setResultDetails({ totalRow: result.totalRow, summary: result.summary, notes: result.notes });
       setHasGenerated(true);
       setCurrentPage(1);
-    } catch {
-      setReportError("Não foi possível gerar o relatório. Verifique a conexão e tente novamente.");
+    } catch (error) {
+      setReportError(error instanceof Error ? error.message : "Não foi possível gerar o relatório. Verifique a conexão e tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -342,6 +354,8 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
   }, [hasGenerated, report.filters, submittedValues]);
 
   const canExport = hasGenerated && resultRows.length > 0;
+  const exportRows = resultDetails.totalRow ? [...resultRows, resultDetails.totalRow] : resultRows;
+  const exportNotes = [...appliedFilters, ...(resultDetails.notes ?? [])];
 
   return (
     <div className="space-y-4">
@@ -369,6 +383,14 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
       <form className="card p-6" onSubmit={handleGenerateReport}>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {report.filters.map((filter) => {
+            if (filter.type === "text") {
+              return <label key={filter.id} className="flex min-w-0 flex-col gap-2">
+                <span className="text-sm font-semibold text-text-primary">{filter.label}</span>
+                <input type="search" className="input-field min-h-11 w-full" maxLength={180}
+                  placeholder="Todos os produtos" value={String(values[filter.id] ?? "")}
+                  onChange={event => handleChange(filter.id, event.target.value)} />
+              </label>;
+            }
             if (filter.type === "checkbox") {
               const checked = Boolean(values[filter.id]);
               return (
@@ -470,11 +492,11 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
           <LoadingButton type="submit" className="btn-success" isLoading={isLoading} loadingLabel="Gerando...">
             Gerar relatório
           </LoadingButton>
-          <button type="button" className="btn-outline-secondary" onClick={handleReset}>
+          <button type="button" className="btn-outline-secondary" disabled={isLoading} onClick={handleReset}>
             Limpar filtros
           </button>
         </div>
-        {reportError && <p role="alert" className="mt-3 text-sm text-primary">{reportError}</p>}
+        {reportError && <p role="alert" className="mt-3 text-sm text-danger">{reportError}</p>}
       </form>
 
       {hasGenerated && (
@@ -485,7 +507,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => exportToExcel(`Relatorio - ${report.title}`, resultColumns, resultRows)}
+                onClick={() => exportToExcel(`Relatorio - ${report.title}`, resultColumns, exportRows, exportNotes)}
                 disabled={!canExport}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-border-primary bg-bg-light px-3 py-2 text-xs font-semibold text-text-primary transition hover:border-accent/40 hover:text-accent"
               >
@@ -494,7 +516,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
               </button>
               <button
                 type="button"
-                onClick={() => exportToPdf(`Relatorio - ${report.title}`, resultColumns, resultRows)}
+                onClick={() => exportToPdf(`Relatorio - ${report.title}`, resultColumns, exportRows, exportNotes)}
                 disabled={!canExport}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-border-primary bg-bg-light px-3 py-2 text-xs font-semibold text-text-primary transition hover:border-accent/40 hover:text-accent"
               >
@@ -517,6 +539,18 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
             </div>
           )}
 
+          {!!resultDetails.summary?.length && <section aria-label="Totais do período filtrado" className="space-y-3 border-y border-border-primary py-4">
+            <h4 className="text-base font-semibold text-text-primary">Totais do período filtrado</h4>
+            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {resultDetails.summary.map(metric => <div key={metric.label} className="min-w-0 space-y-1">
+                <dt className="text-sm text-text-secondary">{metric.label}</dt>
+                <dd className="break-words text-xl font-semibold tabular-nums text-text-primary">{metric.value}</dd>
+              </div>)}
+            </dl>
+          </section>}
+          {!!resultDetails.notes?.length && <div className="max-w-5xl space-y-2 text-sm leading-relaxed text-text-secondary">
+            {resultDetails.notes.map(note => <p key={note}>{note}</p>)}
+          </div>}
           {resultRows.length === 0 ? (
             <div className="rounded-xl border border-border-primary bg-bg-primary px-4 py-10 text-center text-sm text-text-secondary">
               Nenhum dado encontrado para os filtros aplicados.
@@ -532,7 +566,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
                       {resultColumns.map((column) => (
                         <th
                           key={column.key}
-                          className="border-b border-border-primary px-3 py-2 text-left font-semibold text-text-primary"
+                          className="whitespace-nowrap border-b border-border-primary px-3 py-3 text-left font-semibold text-text-primary"
                         >
                           {column.label}
                         </th>
@@ -549,7 +583,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
                         {resultColumns.map((column) => (
                           <td
                             key={`${column.key}-${safeCurrentPage}-${index}`}
-                            className="border-b border-border-primary px-3 py-2 text-text-secondary"
+                            className="border-b border-border-primary px-3 py-3 tabular-nums text-text-secondary"
                           >
                             {formatTableCellValue(row[column.key])}
                           </td>
@@ -557,6 +591,11 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
                       </tr>
                     ))}
                   </tbody>
+                  {resultDetails.totalRow && <tfoot className="bg-bg-gray-theme font-semibold text-text-primary">
+                    <tr>{resultColumns.map((column, index) => index === 0
+                      ? <th scope="row" key={column.key} className="whitespace-nowrap px-3 py-3">{formatTableCellValue(resultDetails.totalRow?.[column.key])}</th>
+                      : <td key={column.key} className="whitespace-nowrap px-3 py-3 tabular-nums">{formatTableCellValue(resultDetails.totalRow?.[column.key])}</td>)}</tr>
+                  </tfoot>}
                 </table>
               </TableScrollArea>
 

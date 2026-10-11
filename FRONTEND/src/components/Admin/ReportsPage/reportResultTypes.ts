@@ -12,3 +12,11 @@ export type ReportResultColumn = {
 };
 
 export type ReportResultRow = Record<string, string | number>;
+
+export type ReportResult = {
+  columns: ReportResultColumn[];
+  rows: ReportResultRow[];
+  totalRow?: ReportResultRow;
+  summary?: { label: string; value: string }[];
+  notes?: string[];
+};

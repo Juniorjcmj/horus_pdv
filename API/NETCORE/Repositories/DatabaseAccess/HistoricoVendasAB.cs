@@ -611,9 +611,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             await using var itemCommand = new SqlCommand(
                 """
                 INSERT INTO VendaItens
-                    (Id, VendaId, ProductCode, ProductName, Quantity, UnitPrice, Desconto, ItemTotal, PromocaoId)
+                    (Id, VendaId, ProductCode, ProductName, Quantity, UnitPrice, Desconto, ItemTotal, PromocaoId, CostPrice)
                 VALUES
-                    (@Id, @VendaId, @ProductCode, @ProductName, @Quantity, @UnitPrice, @Desconto, @ItemTotal, @PromocaoId);
+                    (@Id, @VendaId, @ProductCode, @ProductName, @Quantity, @UnitPrice, @Desconto, @ItemTotal, @PromocaoId, @CostPrice);
                 """,
                 db,
                 transaction);
@@ -623,6 +623,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             itemCommand.Parameters.AddWithValue("@ProductName", item.ProductName);
             itemCommand.Parameters.AddWithValue("@Quantity", item.Quantity);
             itemCommand.Parameters.AddWithValue("@UnitPrice", item.UnitPrice);
+            itemCommand.Parameters.AddWithValue("@CostPrice", item.CostPrice);
             itemCommand.Parameters.AddWithValue("@Desconto", item.Desconto);
             itemCommand.Parameters.AddWithValue("@ItemTotal", itemTotal);
             itemCommand.Parameters.AddWithValue("@PromocaoId", string.IsNullOrWhiteSpace(item.PromocaoId) ? DBNull.Value : item.PromocaoId);
@@ -776,6 +777,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 ProductCode = code,
                 ProductName = string.IsNullOrWhiteSpace(req.ProductName) ? info.ProductName : req.ProductName.Trim(),
                 UnitPrice = unitPrice,
+                CostPrice = info.CostPrice,
                 Quantity = req.Quantity,
                 Desconto = req.Desconto,
                 PromocaoId = req.PromocaoId
@@ -834,6 +836,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             item.ProductName = ReadString(reader, "ProductName");
             var currentStock = reader.GetDecimal(reader.GetOrdinal("ProductQnt"));
             var costUnitPrice = reader.GetDecimal(reader.GetOrdinal("ProductUnitPrice"));
+            item.CostPrice = costUnitPrice;
             await reader.CloseAsync();
 
             if (currentStock < item.Quantity)
@@ -1346,6 +1349,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         public string ProductCode { get; set; } = string.Empty;
         public string ProductName { get; set; } = string.Empty;
         public decimal UnitPrice { get; set; }
+        public decimal CostPrice { get; set; }
         public decimal Quantity { get; set; }
         public decimal Desconto { get; set; }
         public string? PromocaoId { get; set; }

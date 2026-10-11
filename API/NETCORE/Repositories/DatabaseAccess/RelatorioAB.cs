@@ -10,7 +10,7 @@ using System.Text.Json;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
-public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB fiadoAB, HistoricoVendasAB historicoVendasAB)
+public partial class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB fiadoAB, HistoricoVendasAB historicoVendasAB)
 {
     private static readonly CultureInfo PtBr = new("pt-BR");
 
@@ -28,6 +28,7 @@ public class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB f
             "produtos-por-valor" => await GerarProdutosPorValorAsync(companyId, filters),
             "produtos-por-quantidade" => await GerarProdutosPorQuantidadeAsync(companyId, filters),
             "produtos-por-lucro" => await GerarProdutosPorLucroAsync(companyId, filters),
+            "lucro-markup-produtos" => await GerarLucroMarkupAsync(companyId, filters),
             "produtos-por-margem" => await GerarProdutosPorMargemAsync(companyId, filters),
             "vendas-por-horario" => await GerarVendasPorHorarioAsync(companyId, filters),
             "vendas-por-pagamento" => await GerarVendasPorPagamentoAsync(companyId, filters),

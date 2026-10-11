@@ -4392,15 +4392,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductTaxationPage.tsx": {
-    "mtime": 1791688721.409001,
-    "seen": 1791688787.4938393,
-    "ast_hash": "2fc58b72557c063289835891696898b5",
+    "mtime": 1791690204.125205,
+    "seen": 1791690204.5620575,
+    "ast_hash": "793a29d54e2625c8f57f3890cc008269",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/FiscalAiController.cs": {
-    "mtime": 1791686431.88106,
-    "seen": 1791686851.6424477,
-    "ast_hash": "3fde4eb1a4ddeb2639919657900aaec8",
+    "mtime": 1791690017.6895692,
+    "seen": 1791690204.509146,
+    "ast_hash": "55fcab530299c7f1eac89a030307cfbe",
     "semantic_hash": ""
   },
   "API/NETCORE/DataBase/FiscalTables/cest.json": {
@@ -4410,21 +4410,21 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/FiscalAiAB.cs": {
-    "mtime": 1791686856.5910652,
-    "seen": 1791687012.2915795,
-    "ast_hash": "e78d0621ccbcb10aeacd4697546a49e1",
+    "mtime": 1791690017.6884203,
+    "seen": 1791690204.522796,
+    "ast_hash": "eb6773056e5d0f5ee9c0ced93aaa0b49",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalAiRules.cs": {
-    "mtime": 1791682227.048693,
-    "seen": 1791684360.4803395,
-    "ast_hash": "5c18617e2dff64bf608fbb2ec6ce2647",
+    "mtime": 1791689786.7757492,
+    "seen": 1791690204.5266516,
+    "ast_hash": "d039ff99c92c9623d2ce0e4383e615aa",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalAiService.cs": {
-    "mtime": 1791687849.7460887,
-    "seen": 1791687955.2132578,
-    "ast_hash": "8844beeebd0402dab654092400aafcda",
+    "mtime": 1791689431.2123137,
+    "seen": 1791690204.5266538,
+    "ast_hash": "0cea7349b75a60d8c4108aae3286c632",
     "semantic_hash": ""
   },
   "API/tests/FiscalAiChecks/FiscalAiChecks.csproj": {
@@ -4434,15 +4434,15 @@
     "semantic_hash": ""
   },
   "API/tests/FiscalAiChecks/Program.cs": {
-    "mtime": 1791686912.851801,
-    "seen": 1791687012.3089583,
-    "ast_hash": "e140d994f8be9d02d6edc091816366f7",
+    "mtime": 1791690075.740416,
+    "seen": 1791690204.5318954,
+    "ast_hash": "38653624b3e4c130be285426d4ec4689",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/FiscalAiReviewPanel.tsx": {
-    "mtime": 1791686471.2398744,
-    "seen": 1791686851.6903458,
-    "ast_hash": "ede6518ed5d706aa4e4d1064795ba05c",
+    "mtime": 1791690204.1262069,
+    "seen": 1791690204.5410926,
+    "ast_hash": "30809db6bc25c39cca73d5017077981d",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/FiscalAiSettings.tsx": {
@@ -4452,9 +4452,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiscalAiService.ts": {
-    "mtime": 1791686471.233829,
-    "seen": 1791686851.7248983,
-    "ast_hash": "2da2f413f23991737f3e4baa82f5e266",
+    "mtime": 1791690017.6905816,
+    "seen": 1791690204.5662408,
+    "ast_hash": "bcbb44d6f140a858ef3e5f5d71f77e11",
     "semantic_hash": ""
   },
   "docs/IA_FISCAL.md": {
@@ -4653,6 +4653,36 @@
     "mtime": 1791687819.2802362,
     "seen": 1791687955.2219746,
     "ast_hash": "6c08476ed74b72ae255ea92292c9d661",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Fiscal/FiscalAiOverview.cs": {
+    "mtime": 1791689431.213463,
+    "seen": 1791690204.5266483,
+    "ast_hash": "51feb68b8192cbce37c504391e3f3461",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.fiscal-ui.config.ts": {
+    "mtime": 1791689886.9946866,
+    "seen": 1791690204.538072,
+    "ast_hash": "4f32265a8037e7155b6fdb52aba4d04d",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/FiscalAiRowStatus.tsx": {
+    "mtime": 1791690017.6930928,
+    "seen": 1791690204.5410957,
+    "ast_hash": "2c2f127e7c2cae0f0211bf2d38d72e3c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/hooks/useFiscalAiOverview.ts": {
+    "mtime": 1791690098.1030006,
+    "seen": 1791690204.5548465,
+    "ast_hash": "b688c5fc342fa7512d4036d35fd7ba21",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/fiscal-ai-overview.spec.ts": {
+    "mtime": 1791690041.2288153,
+    "seen": 1791690204.5771103,
+    "ast_hash": "7dfe0757443b4fc1635b2cdcb9ca9754",
     "semantic_hash": ""
   }
 }
