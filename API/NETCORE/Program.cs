@@ -38,8 +38,7 @@ explicitOrigins.Add("https://pdv.wootchat.com.br");
 explicitOrigins.Add("http://pdv.wootchat.com.br");
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddHorusApiDocumentation();
 builder.Services.Configure<HorusEmailOptions>(builder.Configuration.GetSection("Email"));
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>

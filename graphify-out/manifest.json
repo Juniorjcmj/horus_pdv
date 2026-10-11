@@ -120,9 +120,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/HORUSPDV-API.csproj": {
-    "mtime": 1791657734.4503982,
-    "seen": 1791658847.4004207,
-    "ast_hash": "77425582ce710228f15da4153ec31389",
+    "mtime": 1791727054.6480238,
+    "seen": 1791727335.3999975,
+    "ast_hash": "456152d2570ee250b568bc7ad3d6d43a",
     "semantic_hash": ""
   },
   "API/NETCORE/HORUSPDV-API.sln": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1791720028.2353795,
-    "seen": 1791721266.678178,
-    "ast_hash": "c804e61f8a6723d781d39078eac930e8",
+    "mtime": 1791726896.4684463,
+    "seen": 1791727335.407638,
+    "ast_hash": "d951f3f0f01e2012a5da72b0a14d77b4",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -552,9 +552,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeXmlParser.cs": {
-    "mtime": 1791647653.0368981,
-    "seen": 1791648349.374739,
-    "ast_hash": "18971f6d6ea70979c914761bbd427167",
+    "mtime": 1791727054.6505768,
+    "seen": 1791727335.4216585,
+    "ast_hash": "c66369e34eb6c7853643a4bbb4c1589f",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
@@ -630,9 +630,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/package.json": {
-    "mtime": 1791637789.7035296,
-    "seen": 1791637953.3437145,
-    "ast_hash": "3be9144708bbd7ba0321c4d72694e644",
+    "mtime": 1791727261.1701815,
+    "seen": 1791727335.431627,
+    "ast_hash": "afc3ab57166b46828a7e79d6338e9a11",
     "semantic_hash": ""
   },
   "FRONTEND/playwright.config.ts": {
@@ -2460,15 +2460,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/GerenciamentoGeralPage.tsx": {
-    "mtime": 1791645494.7796378,
-    "seen": 1791646615.0351903,
-    "ast_hash": "8ae3f0c8df575953e16a112dfef26824",
+    "mtime": 1791726896.4772844,
+    "seen": 1791727335.4587543,
+    "ast_hash": "654b8147cdfb6009b63ab6ee994ab6d0",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/superAdminService.ts": {
-    "mtime": 1791645494.7667446,
-    "seen": 1791646615.07595,
-    "ast_hash": "c5dd31ddb7db3d732ab4d82b13a325f2",
+    "mtime": 1791727261.1691713,
+    "seen": 1791727335.4673011,
+    "ast_hash": "838fb1c521e6262db3f80affae8091ae",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/AjusteEstoqueRequest.cs": {
@@ -4845,6 +4845,54 @@
     "mtime": 1791723416.2623065,
     "seen": 1791726531.2421558,
     "ast_hash": "d1bc40a5a98fd833ff30bd948b652419",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Admin/ApiDocumentationController.cs": {
+    "mtime": 1791727210.2606845,
+    "seen": 1791727335.3947597,
+    "ast_hash": "ced70ffe442b1c524221f2d9e6c71fae",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Admin/ApiDocumentation.cs": {
+    "mtime": 1791726896.4669802,
+    "seen": 1791727335.4150968,
+    "ast_hash": "8a1201f64d74b6a1ef78ad14bf57c9f5",
+    "semantic_hash": ""
+  },
+  "API/tests/ApiDocumentationChecks/ApiDocumentationChecks.csproj": {
+    "mtime": 1791727054.6520472,
+    "seen": 1791727335.4245787,
+    "ast_hash": "f339e21143fd4329635139050d28e270",
+    "semantic_hash": ""
+  },
+  "API/tests/ApiDocumentationChecks/Program.cs": {
+    "mtime": 1791727210.262078,
+    "seen": 1791727335.4245813,
+    "ast_hash": "1c2dae616a99eae52cb49df3115ec283",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.api-documentation.config.ts": {
+    "mtime": 1791727054.6543102,
+    "seen": 1791727335.4317877,
+    "ast_hash": "9b1ce42ca05e6f057cc5cc049f24f7a4",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/ApiDocumentationPanel.tsx": {
+    "mtime": 1791726896.4742837,
+    "seen": 1791727335.435763,
+    "ast_hash": "1744d47a2abd00bdcc6771249b92b08c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/api-documentation.spec.ts": {
+    "mtime": 1791727054.6552916,
+    "seen": 1791727335.4724348,
+    "ast_hash": "959110b02dab687037cc6b4566a8ab48",
+    "semantic_hash": ""
+  },
+  "API/tests/ApiDocumentationChecks/README.md": {
+    "mtime": 1791727210.2625897,
+    "seen": 1791727335.5175848,
+    "ast_hash": "b6b43c3757d7eef1e5fa499ff8552aff",
     "semantic_hash": ""
   }
 }

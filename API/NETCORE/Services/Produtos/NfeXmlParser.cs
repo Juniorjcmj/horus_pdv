@@ -3,7 +3,7 @@
  * Objetivo: extrai emitente e itens de XML de NF-e (55) ou NFC-e (65) do fornecedor
  *           para alimentar a importação de cadastro de produtos.
  * Entradas esperadas: recebe o XML bruto (bytes) de uma NF-e autorizada — aceita tanto o
- *           envelope completo <nfeProc> (com protocolo) quanto o <NFe> isolado.
+ *           envelope completo &lt;nfeProc&gt; (com protocolo) quanto o &lt;NFe&gt; isolado.
  *
  * Não usa a lib Hercules.NET.NFe.NFCe aqui: aquela é voltada para MONTAR/assinar/transmitir a
  * NFC-e que a própria loja emite na venda (modelo 65), não para ler qualquer NF-e de compra de

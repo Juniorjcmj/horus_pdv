@@ -6,6 +6,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>HORUSPDV_API</RootNamespace>
         <UserSecretsId>horus-pdv-api-dev</UserSecretsId>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <!-- O código legado tem cabeçalhos e comentários sem tags de parâmetros. -->
+        <NoWarn>$(NoWarn);1591;1573;1587</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

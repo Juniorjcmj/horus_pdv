@@ -24,6 +24,7 @@
     "test:scanner": "playwright test --config playwright.scanner.config.ts",
     "test:invoice-import": "playwright test --config playwright.invoice-import.config.ts",
     "test:admin-ui": "playwright test --config playwright.admin-ui.config.ts",
+    "test:api-documentation": "playwright test --config playwright.api-documentation.config.ts",
     "test:homolog": "playwright test --config playwright.homolog.config.ts",
     "test:homolog:headed": "playwright test --config playwright.homolog.config.ts --headed"
   },

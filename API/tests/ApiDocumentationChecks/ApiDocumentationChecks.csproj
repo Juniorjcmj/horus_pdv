@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApiOutput>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../NETCORE/bin/$(Configuration)/net8.0'))</ApiOutput>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="HORUSPDV-API"><HintPath>$(ApiOutput)/HORUSPDV-API.dll</HintPath></Reference>
+    <Reference Include="Microsoft.OpenApi"><HintPath>$(ApiOutput)/Microsoft.OpenApi.dll</HintPath></Reference>
+    <Reference Include="Swashbuckle.AspNetCore.Swagger"><HintPath>$(ApiOutput)/Swashbuckle.AspNetCore.Swagger.dll</HintPath></Reference>
+    <Reference Include="Swashbuckle.AspNetCore.SwaggerGen"><HintPath>$(ApiOutput)/Swashbuckle.AspNetCore.SwaggerGen.dll</HintPath></Reference>
+    <Content Include="$(ApiOutput)/HORUSPDV-API.xml" Link="HORUSPDV-API.xml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

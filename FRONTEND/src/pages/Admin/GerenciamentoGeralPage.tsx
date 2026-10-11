@@ -5,6 +5,7 @@
  */
 import TableScrollArea from "@/components/Admin/TableScrollArea";
 import DatabaseBackupPanel from "@/components/Admin/DatabaseBackupPanel";
+import ApiDocumentationPanel from "@/components/Admin/ApiDocumentationPanel";
 import { useEffect, useState, useCallback } from "react";
 import {
   AlertTriangle,
@@ -441,6 +442,7 @@ export default function GerenciamentoGeralPage() {
       />
 
       <DatabaseBackupPanel />
+      <ApiDocumentationPanel />
 
       {/* Feedback Alert */}
       {feedback && (

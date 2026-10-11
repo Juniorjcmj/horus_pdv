@@ -3,7 +3,7 @@
  * Objetivo: encapsula requisições para os endpoints de SuperAdmin de Gerenciamento Geral de Empresas.
  * Acesso restrito a administradores da empresa-principal.
  */
-import { apiRequest, requireEnvUrl, type ApiResponse } from "./apiClient";
+import { ApiError, apiRequest, requireEnvUrl, type ApiResponse } from "./apiClient";
 
 const SUPER_ADMIN_API_URL = requireEnvUrl("VITE_SUPER_ADMIN_API_URL");
 
@@ -66,6 +66,39 @@ export type ListEmpresasParams = {
 };
 
 export const superAdminService = {
+  async downloadApiDocumentation(): Promise<void> {
+    if (!navigator.onLine) throw new ApiError("Sem conexão com a internet.", 0);
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 30_000);
+    try {
+      const response = await fetch(`${SUPER_ADMIN_API_URL}/documentacao-api`, {
+        credentials: "include", cache: "no-store", signal: controller.signal,
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => null) as { message?: string } | null;
+        throw new ApiError(error?.message || "Não foi possível baixar a documentação da API.", response.status);
+      }
+      const document = await response.json() as { openapi?: unknown; paths?: unknown };
+      if (typeof document?.openapi !== "string" || !document.paths || typeof document.paths !== "object" || Array.isArray(document.paths))
+        throw new Error("O servidor não retornou uma documentação OpenAPI válida.");
+      const url = URL.createObjectURL(new Blob([JSON.stringify(document, null, 2)], { type: "application/json" }));
+      const link = window.document.createElement("a");
+      link.href = url;
+      link.download = "quack-pdv-api-openapi.json";
+      window.document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError")
+        throw new ApiError("O download demorou demais. Tente novamente.", 0);
+      if (error instanceof SyntaxError) throw new Error("O servidor não retornou uma documentação OpenAPI válida.");
+      if (error instanceof TypeError) throw new ApiError("Não foi possível conectar à API. Verifique a internet e tente novamente.", 0);
+      throw error;
+    } finally { window.clearTimeout(timer); }
+  },
+
   async startDatabaseBackup(): Promise<DatabaseBackupStatus> {
     const response = await apiRequest<DatabaseBackupStatus>(`${SUPER_ADMIN_API_URL}/backup`, { method: "POST" });
     if (!response.data) throw new Error("O servidor não retornou o backup solicitado.");
