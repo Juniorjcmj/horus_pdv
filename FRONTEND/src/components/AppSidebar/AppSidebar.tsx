@@ -37,6 +37,7 @@ export type PageKey =
   | "cadastro-cliente"
   | "cadastro-fornecedor"
   | "cadastro-produto"
+  | "tributacao-produtos"
   | "promocoes"
   | "validade"
   | "fiado"
@@ -358,6 +359,13 @@ export default function AppSidebar({
                   active={activePage === "cadastro-produto"}
                   collapsed={collapsed}
                   onClick={() => handleChangePage("cadastro-produto")}
+                />
+                <SidebarItem
+                  icon={<FileText size={20} />}
+                  label="Tributação dos produtos"
+                  active={activePage === "tributacao-produtos"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("tributacao-produtos")}
                 />
                 <SidebarItem
                   icon={<UserCog size={20} />}

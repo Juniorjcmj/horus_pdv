@@ -53,6 +53,7 @@ const ProductRegisterPage = lazy(
   () => import("@/pages/Admin/ProductRegisterPage"),
 );
 const SalesHistoryPage = lazy(() => import("@/pages/Admin/SalesHistoryPage"));
+const ProductTaxationPage = lazy(() => import("@/pages/Admin/ProductTaxationPage"));
 const PromocoesPage = lazy(() => import("@/pages/Admin/PromocoesPage"));
 const ValidadePage = lazy(() => import("@/pages/Admin/ValidadePage"));
 const AprendizadoPage = lazy(() => import("@/pages/Admin/AprendizadoPage"));
@@ -152,6 +153,7 @@ export default function App() {
       "cadastro-cliente",
       "cadastro-fornecedor",
       "cadastro-produto",
+      "tributacao-produtos",
       "promocoes",
       "validade",
       "fiado",
@@ -246,6 +248,7 @@ export default function App() {
     "cadastro-cliente": "Cadastro de Cliente",
     "cadastro-fornecedor": "Cadastro de Fornecedor",
     "cadastro-produto": "Cadastro de Produto",
+    "tributacao-produtos": "Tributação dos produtos",
     promocoes: "Promoções e Preços Dinâmicos",
     validade: "Controle de Validade",
     fiado: "Fiado / Conta Corrente",
@@ -308,6 +311,8 @@ export default function App() {
         return SupplierRegisterPage;
       case "cadastro-produto":
         return ProductRegisterPage;
+      case "tributacao-produtos":
+        return ProductTaxationPage;
       case "promocoes":
         return PromocoesPage;
       case "validade":
