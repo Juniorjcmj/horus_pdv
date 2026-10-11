@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
-    "mtime": 1791722656.2089837,
-    "seen": 1791723377.4090703,
-    "ast_hash": "87cc6f999f83c1acc2c7576d97f64626",
+    "mtime": 1791726177.4312682,
+    "seen": 1791726530.8455217,
+    "ast_hash": "2507d13592b787daf45ff5a9998c3a88",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusAuthorizeRolesAttribute.cs": {
@@ -822,9 +822,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Form/SearchableSelectField.tsx": {
-    "mtime": 1791577203.248669,
-    "seen": 1791578390.3493693,
-    "ast_hash": "7fa57af0f51b6b745bfb84074324615d",
+    "mtime": 1791726319.1212142,
+    "seen": 1791726530.928328,
+    "ast_hash": "23082424ac5462208a62b47d8b59f7cb",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Form/TimePickerField.tsx": {
@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1791722656.2205904,
-    "seen": 1791723377.4918168,
-    "ast_hash": "4aeb7ae202ae4168e9d9a1970960c4ea",
+    "mtime": 1791726177.4375546,
+    "seen": 1791726530.9972827,
+    "ast_hash": "9d5681554413b7efd613723e1712eff0",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
@@ -4062,9 +4062,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/tests/architecture/product-registration.spec.ts": {
-    "mtime": 1791577604.2171905,
-    "seen": 1791578390.379009,
-    "ast_hash": "488d8c86d437dfa87b3a5ccd3c8fbffa",
+    "mtime": 1791726430.3909488,
+    "seen": 1791726531.064216,
+    "ast_hash": "83d702be70c6d7d6b96ac4096a2c2010",
     "semantic_hash": ""
   },
   "FRONTEND/playwright.admin-ui.config.ts": {
@@ -4128,21 +4128,21 @@
     "semantic_hash": ""
   },
   "API/tests/ProductRegistrationChecks/ProductRegistrationChecks.csproj": {
-    "mtime": 1791583132.816516,
-    "seen": 1791583249.4098299,
-    "ast_hash": "e04c8afd5817112dd06c13d0e099adf6",
+    "mtime": 1791726512.2935114,
+    "seen": 1791726530.8656259,
+    "ast_hash": "7bb350cb4300b6d9b3976001ab5754c3",
     "semantic_hash": ""
   },
   "API/tests/ProductRegistrationChecks/Program.cs": {
-    "mtime": 1791659031.4550023,
-    "seen": 1791659093.4943354,
-    "ast_hash": "a2a393bfbd0ce5389728762d69819823",
+    "mtime": 1791726211.4044125,
+    "seen": 1791726530.8656328,
+    "ast_hash": "d58368df3d0afb9e604c617bca55824b",
     "semantic_hash": ""
   },
   "API/tests/ProductRegistrationChecks/README.md": {
-    "mtime": 1791658817.6941006,
-    "seen": 1791658847.6084623,
-    "ast_hash": "f91efd92834cfed3623fa570061ca632",
+    "mtime": 1791726211.4079,
+    "seen": 1791726531.2147512,
+    "ast_hash": "162ca828d36ff6042c8f229bc79b1cf8",
     "semantic_hash": ""
   },
   "FRONTEND/playwright.scanner.config.ts": {
@@ -4842,9 +4842,9 @@
     "semantic_hash": ""
   },
   "openspec/changes/ajuste-preco-rentabilidade/tasks.md": {
-    "mtime": 1791723355.9483507,
-    "seen": 1791723377.6138124,
-    "ast_hash": "f706b3cf33f9f834b3c734e2c373fb10",
+    "mtime": 1791723416.2623065,
+    "seen": 1791726531.2421558,
+    "ast_hash": "d1bc40a5a98fd833ff30bd948b652419",
     "semantic_hash": ""
   }
 }

@@ -25,6 +25,8 @@ type SearchableSelectFieldProps<TOption> = {
   dropdownClassName?: string;
   createActionLabel?: string;
   onCreateOption?: (search: string) => void;
+  showUnmatchedValue?: boolean;
+  clearActionLabel?: string;
 };
 
 function normalizeSearchValue(value: string) {
@@ -53,6 +55,8 @@ export default function SearchableSelectField<TOption>({
   dropdownClassName = "",
   createActionLabel,
   onCreateOption,
+  showUnmatchedValue = false,
+  clearActionLabel,
 }: SearchableSelectFieldProps<TOption>) {
   const inputId = useId();
   const listId = `${inputId}-options`;
@@ -69,7 +73,7 @@ export default function SearchableSelectField<TOption>({
     [getOptionValue, options, value],
   );
 
-  const selectedLabel = selectedOption ? getOptionLabel(selectedOption) : "";
+  const selectedLabel = selectedOption ? getOptionLabel(selectedOption) : showUnmatchedValue ? value : "";
 
   useEffect(() => {
     if (isOpen) return;
@@ -168,6 +172,7 @@ export default function SearchableSelectField<TOption>({
           value={search}
           role="combobox"
           aria-label={label ? undefined : placeholder}
+          aria-labelledby={label ? `${inputId}-label` : undefined}
           aria-autocomplete="list"
           aria-expanded={isOpen && !disabled}
           aria-controls={isOpen ? listId : undefined}
@@ -212,6 +217,24 @@ export default function SearchableSelectField<TOption>({
           required={required}
         />
       </div>
+
+      {clearActionLabel && value ? (
+        <button
+          type="button"
+          disabled={disabled}
+          className="mt-2 min-h-11 text-sm font-medium text-secondary underline underline-offset-4 disabled:opacity-50"
+          onClick={(event) => {
+            event.preventDefault();
+            if (blurTimeoutRef.current) window.clearTimeout(blurTimeoutRef.current);
+            onChange("", null);
+            setSearch("");
+            setActiveIndex(-1);
+            setIsOpen(false);
+          }}
+        >
+          {clearActionLabel}
+        </button>
+      ) : null}
 
       {isOpen && !disabled && placement ? createPortal(
         <div
@@ -288,7 +311,7 @@ export default function SearchableSelectField<TOption>({
 
   return (
     <label className={`relative block ${className}`}>
-      <span className="mb-1 block text-sm text-text-secondary">{label}</span>
+      <span id={`${inputId}-label`} className="mb-1 block text-sm text-text-secondary">{label}</span>
       {field}
     </label>
   );

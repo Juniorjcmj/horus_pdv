@@ -3,6 +3,8 @@
 Verifica o controller, a validação automática do ASP.NET, o serviço e a persistência em
 SQL Server. Cobre fornecedor omitido, vazio, nulo e espaços; edição/remover fornecedor;
 fornecedor cadastrado/inexistente; descrição, custo e venda obrigatórios.
+Na edição, cobre também um fornecedor legado sem vínculo: mantém o nome ao alterar
+o preço, permite removê-lo e recusa a troca por outro fornecedor não cadastrado.
 
 Use um **container SQL Server novo e descartável**, com porta vinculada a `127.0.0.1`.
 Nunca use o banco da loja. O programa recusa um banco `HorusPdv` existente sem seu marcador

@@ -9,10 +9,11 @@ async function fillRequiredFields(page: Page) {
 
 test.describe("Cadastro com descrição, custo e venda obrigatórios", () => {
   let writes: ProductPayload[];
+  let products: ProductDto[];
 
   test.beforeEach(async ({ page, baseURL }) => {
     writes = [];
-    const products: ProductDto[] = [];
+    products = [];
     const user = { id: "gerente-teste", companyId: "loja-teste", name: "Gerente", email: "teste@teste.invalid",
       role: "gerente", status: "ativo", createdAt: "2026-10-09T00:00:00Z", lastLoginAt: "2026-10-09T00:00:00Z", mustChangePassword: false };
     await page.route("**/*", (route) => {
@@ -78,5 +79,37 @@ test.describe("Cadastro com descrição, custo e venda obrigatórios", () => {
     await page.getByRole("button", { name: "Salvar produto", exact: true }).click();
     await expect(page.getByText("Produto atualizado com sucesso.", { exact: true })).toBeVisible();
     expect(writes[1]).toMatchObject({ productSupplier: "", productCode: "P-CODIGO-GERADO", productSalePrice: "18,00" });
+  });
+
+  test("mostra fornecedor legado e permite removê-lo antes de salvar", async ({ page }, testInfo) => {
+    await fillRequiredFields(page);
+    await page.getByRole("button", { name: "Criar produto", exact: true }).click();
+    await expect(page.getByText("Produto cadastrado com sucesso.", { exact: true })).toBeVisible();
+    products[0].productSupplier = "Fornecedor legado não cadastrado";
+    await page.reload();
+    const openEdit = async () => {
+      const row = page.getByRole("row").filter({ hasText: "P-CODIGO-GERADO" });
+      await row.getByRole("button", { name: /ações/i }).click();
+      await page.getByRole("menuitem", { name: "Editar", exact: true }).click();
+    };
+    await openEdit();
+    const supplier = page.getByRole("combobox", { name: "Fornecedor (opcional)", exact: true });
+    await expect(supplier).toHaveValue("Fornecedor legado não cadastrado");
+    await page.getByRole("textbox", { name: "Valor de Venda *", exact: true }).fill("1800");
+    await page.getByRole("button", { name: "Salvar produto", exact: true }).click();
+    await expect(page.getByText("Produto atualizado com sucesso.", { exact: true })).toBeVisible();
+    expect(writes[1]).toMatchObject({ productSupplier: "Fornecedor legado não cadastrado", productSalePrice: "18,00" });
+    await openEdit();
+    await supplier.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath("fornecedor-desktop.png") });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await supplier.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath("fornecedor-mobile.png") });
+    await page.getByRole("button", { name: "Remover fornecedor", exact: true }).click();
+    await expect(supplier).toHaveValue("");
+    await page.getByRole("button", { name: "Salvar produto", exact: true }).click();
+    await expect.poll(() => writes.length).toBe(3);
+    await expect(page.getByText("Produto atualizado com sucesso.", { exact: true }).last()).toBeVisible();
+    expect(writes[2]).toMatchObject({ productSupplier: "", productSalePrice: "18,00", productCode: "P-CODIGO-GERADO" });
   });
 });

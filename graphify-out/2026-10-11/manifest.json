@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/ProdutoController.cs": {
-    "mtime": 1791682227.0617313,
-    "seen": 1791684360.4537609,
-    "ast_hash": "1f26f83b4fd8f2f1d7748c4036c40dfb",
+    "mtime": 1791722656.2134836,
+    "seen": 1791723377.3644316,
+    "ast_hash": "b3475931141e6ca1a7e2b11ce41f30be",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Relatorio/RelatorioController.cs": {
@@ -192,9 +192,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Produtos/ProdutoModel.cs": {
-    "mtime": 1790381444.7014103,
-    "seen": 1790389445.5050538,
-    "ast_hash": "a8f6ab6d3a494b4cb30096b8a687b35d",
+    "mtime": 1791722656.2068107,
+    "seen": 1791723377.371283,
+    "ast_hash": "5caa8dca83fe18d78ba42631b1bb0780",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/AuthRegisterRequest.cs": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs": {
-    "mtime": 1791719929.5773478,
-    "seen": 1791721266.691955,
-    "ast_hash": "7a24c9de034d2208ae8502bf900b8eb9",
+    "mtime": 1791722656.2109654,
+    "seen": 1791723377.3970566,
+    "ast_hash": "1441549b09e6dd21a872fc0dfa1db247",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
@@ -540,9 +540,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/IProdutoService.cs": {
-    "mtime": 1791045713.611188,
-    "seen": 1791045837.706791,
-    "ast_hash": "e869e42f40fd2f6f88fac7eec351cf27",
+    "mtime": 1791722656.2058134,
+    "seen": 1791723377.4074714,
+    "ast_hash": "14c384e572df6d155b894b71cdbfc03d",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeImportService.cs": {
@@ -558,9 +558,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
-    "mtime": 1791583030.5921667,
-    "seen": 1791583249.4046428,
-    "ast_hash": "ae80533429c5b017d95256ecacc7f324",
+    "mtime": 1791722656.2089837,
+    "seen": 1791723377.4090703,
+    "ast_hash": "87cc6f999f83c1acc2c7576d97f64626",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusAuthorizeRolesAttribute.cs": {
@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1791720307.5235758,
-    "seen": 1791721266.7742395,
-    "ast_hash": "0ef587f09a56ef39c2dff9940259bad6",
+    "mtime": 1791722656.2205904,
+    "seen": 1791723377.4918168,
+    "ast_hash": "4aeb7ae202ae4168e9d9a1970960c4ea",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
@@ -1200,9 +1200,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/productService.ts": {
-    "mtime": 1791682252.5995321,
-    "seen": 1791684360.5408921,
-    "ast_hash": "0fb726a6454a4f32accd459e049649fd",
+    "mtime": 1791722656.2148328,
+    "seen": 1791723377.5067344,
+    "ast_hash": "0a4af0d13d1382914c5b56d4f1385cff",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/reportService.ts": {
@@ -4236,9 +4236,9 @@
     "semantic_hash": ""
   },
   "API/tests/InvoiceImportHttpChecks/Program.cs": {
-    "mtime": 1791721018.8605778,
-    "seen": 1791721266.7177668,
-    "ast_hash": "fa52aa9b23afaff3bb0a5095c96be435",
+    "mtime": 1791723209.1569116,
+    "seen": 1791723377.4233315,
+    "ast_hash": "74148883bed30d12ac3f19949522d8b4",
     "semantic_hash": ""
   },
   "FRONTEND/playwright.invoice-import.config.ts": {
@@ -4716,27 +4716,27 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ProductProfitSummary.tsx": {
-    "mtime": 1791719169.1934452,
-    "seen": 1791719236.442774,
-    "ast_hash": "d1b6220e379dc087cd80e0ea0c719b3b",
+    "mtime": 1791722895.9345329,
+    "seen": 1791723377.4478385,
+    "ast_hash": "800f5ff38428cdf170823ae4a84dbd98",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/ProductProfitabilityView.tsx": {
-    "mtime": 1791719169.1944687,
-    "seen": 1791719236.4434447,
-    "ast_hash": "5bbf4cef2c42eedaff1bdd1f80904df1",
+    "mtime": 1791722656.2236547,
+    "seen": 1791723377.4505758,
+    "ast_hash": "53da23371cbdc1cc3e10780f29dbb421",
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/productProfitability.ts": {
-    "mtime": 1791719169.190779,
-    "seen": 1791719236.4740505,
-    "ast_hash": "296852449ee31b00ed89e97370d26480",
+    "mtime": 1791722823.438601,
+    "seen": 1791723377.51989,
+    "ast_hash": "e62decddbf18219775e63e5754ff2ee2",
     "semantic_hash": ""
   },
   "FRONTEND/tests/architecture/current-product-profit.spec.ts": {
-    "mtime": 1791719169.1954808,
-    "seen": 1791719236.4775965,
-    "ast_hash": "29a5d9b798ae7858d76c8643bb4698a0",
+    "mtime": 1791723289.1171646,
+    "seen": 1791723377.528225,
+    "ast_hash": "66bc49e1b75bd906030760abc772500e",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/EntradaManualController.cs": {
@@ -4806,9 +4806,45 @@
     "semantic_hash": ""
   },
   "openspec/changes/entrada-manual-produtos/tasks.md": {
-    "mtime": 1791721182.1268523,
-    "seen": 1791721266.891562,
-    "ast_hash": "bcd1cb31f8d654fc369fe3e17380b975",
+    "mtime": 1791721306.4420083,
+    "seen": 1791723377.63225,
+    "ast_hash": "05de61dd090af9f35c86faaffd1ae7d7",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Models/Requests/ProdutoPrecoRequest.cs": {
+    "mtime": 1791722656.2047157,
+    "seen": 1791723377.3785894,
+    "ast_hash": "d7c8b423f28185833069a51c8b2465bc",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ajuste-preco-rentabilidade/.openspec.yaml": {
+    "mtime": 1791722411.995568,
+    "seen": 1791723377.6136904,
+    "ast_hash": "e75798be34fdfae33aa2735597ff5737",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ajuste-preco-rentabilidade/design.md": {
+    "mtime": 1791722505.333099,
+    "seen": 1791723377.6138003,
+    "ast_hash": "e5fc550a27811c3f4dcda18413712838",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ajuste-preco-rentabilidade/proposal.md": {
+    "mtime": 1791722505.3309517,
+    "seen": 1791723377.6138055,
+    "ast_hash": "9885687086f9ba748a3a6a52a260488e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ajuste-preco-rentabilidade/specs/ajuste-preco-rentabilidade/spec.md": {
+    "mtime": 1791722505.3351545,
+    "seen": 1791723377.613809,
+    "ast_hash": "4e470de1d74e50828dc68c47970d87fe",
+    "semantic_hash": ""
+  },
+  "openspec/changes/ajuste-preco-rentabilidade/tasks.md": {
+    "mtime": 1791723355.9483507,
+    "seen": 1791723377.6138124,
+    "ast_hash": "f706b3cf33f9f834b3c734e2c373fb10",
     "semantic_hash": ""
   }
 }

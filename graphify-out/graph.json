@@ -13373,7 +13373,7 @@
       },
       "norm_label": "produtoprecoconflitoexception",
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L316"
+      "source_location": "L321"
     },
     {
       "id": "api_netcore_services_produtos_produtoservice_horuspdv_api_services_produtos_produtoservice",
@@ -14822,7 +14822,7 @@
       "file_type": "code",
       "norm_label": "productregisterpage()",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L1535"
+      "source_location": "L1537"
     },
     {
       "id": "frontend_src_pages_admin_productregisterpage_productregisterpage_traverse",
@@ -14834,7 +14834,7 @@
       "file_type": "code",
       "norm_label": "traverse()",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L1644"
+      "source_location": "L1646"
     },
     {
       "id": "frontend_src_pages_admin_useraccountspage_defaultform",
@@ -35842,7 +35842,7 @@
       "file_type": "code",
       "norm_label": "normalizesearchvalue()",
       "source_file": "FRONTEND/src/components/Form/SearchableSelectField.tsx",
-      "source_location": "L30"
+      "source_location": "L32"
     },
     {
       "id": "frontend_src_components_form_searchableselectfield_searchableselectfield",
@@ -35854,7 +35854,7 @@
       "file_type": "code",
       "norm_label": "searchableselectfield()",
       "source_file": "FRONTEND/src/components/Form/SearchableSelectField.tsx",
-      "source_location": "L38"
+      "source_location": "L40"
     },
     {
       "id": "frontend_src_components_form_yesnosegmentedcontrol_yesnosegmentedcontrol",
@@ -53804,19 +53804,19 @@
             "callee": "TryParse",
             "receiver_type": "DateTime",
             "lang": "csharp",
-            "line": "L216"
+            "line": "L221"
           },
           {
             "callee": "Max",
             "receiver_type": "Math",
             "lang": "csharp",
-            "line": "L220"
+            "line": "L225"
           }
         ]
       },
       "norm_label": ".maprequest()",
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L188"
+      "source_location": "L193"
     },
     {
       "id": "api_netcore_services_produtos_produtoservice_horuspdv_api_services_produtos_produtoservice_normalizerequest",
@@ -53862,13 +53862,13 @@
             "callee": "Floor",
             "receiver_type": "Math",
             "lang": "csharp",
-            "line": "L278"
+            "line": "L283"
           }
         ]
       },
       "norm_label": ".tomodel()",
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L256"
+      "source_location": "L261"
     },
     {
       "id": "api_netcore_services_produtos_produtoservice_horuspdv_api_services_produtos_produtoservice_validate",
@@ -145561,7 +145561,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L190",
+      "source_location": "L195",
       "weight": 1.0
     },
     {
@@ -145573,7 +145573,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L258",
+      "source_location": "L263",
       "weight": 1.0
     },
     {
@@ -145585,7 +145585,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L266",
+      "source_location": "L271",
       "weight": 1.0
     },
     {
@@ -145597,7 +145597,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L268",
+      "source_location": "L273",
       "weight": 1.0
     },
     {
@@ -147793,7 +147793,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/components/Form/SearchableSelectField.tsx",
-      "source_location": "L96",
+      "source_location": "L100",
       "weight": 1.0
     },
     {
@@ -149617,7 +149617,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L1782",
+      "source_location": "L1784",
       "weight": 1.0
     },
     {
@@ -155785,7 +155785,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L1644",
+      "source_location": "L1646",
       "weight": 1.0
     },
     {
@@ -224345,7 +224345,7 @@
         "ref_token": "ProdutoAD"
       },
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L256",
+      "source_location": "L261",
       "weight": 1.0
     },
     {
@@ -224510,7 +224510,7 @@
         "ref_token": "ProdutoRequest"
       },
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L188",
+      "source_location": "L193",
       "weight": 1.0
     },
     {
@@ -230642,7 +230642,7 @@
         "ref_token": "ProdutoAD"
       },
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L188",
+      "source_location": "L193",
       "weight": 1.0
     },
     {
@@ -230657,7 +230657,7 @@
         "ref_token": "ProdutoModel"
       },
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L256",
+      "source_location": "L261",
       "weight": 1.0
     },
     {
@@ -242938,7 +242938,7 @@
         "ref_token": "InvalidOperationException"
       },
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L316",
+      "source_location": "L321",
       "weight": 1.0
     },
     {
@@ -249308,7 +249308,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L316",
+      "source_location": "L321",
       "weight": 1.0
     },
     {
@@ -256403,7 +256403,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Form/SearchableSelectField.tsx",
-      "source_location": "L30",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -256414,7 +256414,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/components/Form/SearchableSelectField.tsx",
-      "source_location": "L38",
+      "source_location": "L40",
       "weight": 1.0
     },
     {
@@ -259901,7 +259901,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx",
-      "source_location": "L1535",
+      "source_location": "L1537",
       "weight": 1.0
     },
     {
@@ -288800,7 +288800,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L188",
+      "source_location": "L193",
       "weight": 1.0
     },
     {
@@ -288822,7 +288822,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L256",
+      "source_location": "L261",
       "weight": 1.0
     },
     {
@@ -301225,7 +301225,7 @@
       "confidence_score": 0.8,
       "context": "call",
       "source_file": "API/NETCORE/Services/Produtos/ProdutoService.cs",
-      "source_location": "L179",
+      "source_location": "L184",
       "weight": 1.0
     },
     {
@@ -309042,5 +309042,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "15b8477552a6cc338b464173b6db359919826f9f"
+  "built_at_commit": "c82b07c892a6c9275e3afada4f909d6f4154058b"
 }

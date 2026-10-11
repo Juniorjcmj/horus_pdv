@@ -663,6 +663,8 @@ function ProductFormDrawer({
               </label>
               <SearchableSelectField
                 label="Fornecedor (opcional)"
+                showUnmatchedValue
+                clearActionLabel="Remover fornecedor"
                 value={value.productSupplier}
                 options={supplierOptions}
                 onChange={(nextValue) => setField("productSupplier", nextValue)}

@@ -13,4 +13,9 @@
     <Reference Include="Microsoft.Data.SqlClient"><HintPath>$(ApiOutput)/runtimes/$(SqlClientRuntime)/lib/net8.0/Microsoft.Data.SqlClient.dll</HintPath></Reference>
     <Content Include="$(ApiOutput)/runtimes/win-x64/native/*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Condition="'$(OS)' == 'Windows_NT'" />
   </ItemGroup>
+  <!-- A dependência transitiva da API pode copiar a DLL neutra por último.
+       O host do teste precisa da implementação SQL específica da plataforma. -->
+  <Target Name="CopySqlClientPlatformRuntime" AfterTargets="Build">
+    <Copy SourceFiles="$(ApiOutput)/runtimes/$(SqlClientRuntime)/lib/net8.0/Microsoft.Data.SqlClient.dll" DestinationFolder="$(OutDir)" />
+  </Target>
 </Project>

@@ -47,6 +47,7 @@ builder.Services.AddSingleton<Connection>();
 builder.Services.AddSingleton<HorusSecurityOptions>();
 builder.Services.AddSingleton<HorusSecretProtector>();
 builder.Services.AddSingleton<FiscalReferenceTables>();
+builder.Services.AddSingleton<FiscalCestReference>();
 builder.Services.AddScoped<EmpresaAB>();
 builder.Services.AddScoped<ProdutoAB>();
 builder.Services.AddScoped<FornecedorAB>();
@@ -73,7 +74,7 @@ var address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAdd
 using var client = new HttpClient { BaseAddress = new Uri(address) };
 var passed = 0;
 Dictionary<string, object?> Minimum() => new() { ["productName"] = "Arroz teste", ["productUnitPrice"] = "10,00", ["productSalePrice"] = "15,00" };
-async Task<JsonElement> Send(string label, Dictionary<string, object?> payload, HttpStatusCode expected, string? id = null) {
+async Task<JsonElement> Send(string label, Dictionary<string, object?> payload, HttpStatusCode expected, string? id = null, bool expectSupplierLink = true) {
     using var response = id is null ? await client.PostAsJsonAsync("/api/Produto", payload) : await client.PutAsJsonAsync("/api/Produto/" + id, payload);
     var body = await response.Content.ReadAsStringAsync();
     if (response.StatusCode != expected) throw new Exception($"{label}: HTTP {(int)response.StatusCode}, esperado {(int)expected}. {body}");
@@ -86,7 +87,7 @@ async Task<JsonElement> Send(string label, Dictionary<string, object?> payload, 
         check.Parameters.AddWithValue("@Id", savedId);
         check.Parameters.AddWithValue("@CompanyId", companyId);
         await using var reader = await check.ExecuteReaderAsync();
-        if (!await reader.ReadAsync() || reader.GetString(0) != supplier || reader.IsDBNull(1) != (supplier.Length == 0) || string.IsNullOrWhiteSpace(reader.GetString(2)))
+        if (!await reader.ReadAsync() || reader.GetString(0) != supplier || reader.IsDBNull(1) != (supplier.Length == 0 || !expectSupplierLink) || string.IsNullOrWhiteSpace(reader.GetString(2)))
             throw new Exception(label + ": gravação de fornecedor/código incorreta no banco.");
     }
     Console.WriteLine("OK: " + label);
@@ -120,6 +121,19 @@ await Send("edição sem o campo fornecedor", Minimum(), HttpStatusCode.OK, prod
 var invalid = Minimum();
 invalid["productSupplier"] = "Fornecedor inexistente";
 await Send("fornecedor informado continua precisando existir", invalid, HttpStatusCode.BadRequest);
+await Send("edição não aceita trocar por fornecedor inexistente", invalid, HttpStatusCode.BadRequest, productId);
+await using (var db = await app.Services.GetRequiredService<Connection>().OpenConnectionAsync()) {
+    await using var seed = new SqlCommand("UPDATE Produtos SET ProductSupplier=N'Fornecedor legado não cadastrado', SupplierId=NULL WHERE Id=@Id AND CompanyId=@Company", db);
+    seed.Parameters.AddWithValue("@Id", productId); seed.Parameters.AddWithValue("@Company", companyId);
+    await seed.ExecuteNonQueryAsync();
+}
+// O nome histórico não exige um vínculo SQL; mantém-se ao editar outros dados.
+var legacy = Minimum();
+legacy["productSupplier"] = "Fornecedor legado não cadastrado";
+legacy["productSalePrice"] = "18,00";
+var legacyEdited = await Send("edição preserva nome de fornecedor legado sem bloquear preço", legacy, HttpStatusCode.OK, productId, false);
+if (legacyEdited.GetProperty("data").GetProperty("productSalePrice").GetString() != "18,00") throw new Exception("Preço não atualizado no produto legado.");
+await Send("edição remove fornecedor legado", Minimum(), HttpStatusCode.OK, productId);
 foreach (var field in new[] { "productName", "productUnitPrice", "productSalePrice" }) {
     var payload = Minimum();
     payload.Remove(field);

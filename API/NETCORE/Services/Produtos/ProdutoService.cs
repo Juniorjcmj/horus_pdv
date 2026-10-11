@@ -50,7 +50,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
 
         NormalizeRequest(request, current.ProductCode);
         Validate(request);
-        await ValidateBusinessRulesAsync(companyId, request, id);
+        await ValidateBusinessRulesAsync(companyId, request, id, current.ProductSupplier);
         return ToModel(await produtosAB.SalvarAsync(companyId, MapRequest(id, request)));
     }
 
@@ -162,7 +162,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
         }
     }
 
-    private async Task ValidateBusinessRulesAsync(string companyId, ProdutoRequest request, string? currentId)
+    private async Task ValidateBusinessRulesAsync(string companyId, ProdutoRequest request, string? currentId, string? existingSupplier = null)
     {
         var products = await produtosAB.ListarAsync(companyId);
         var productCode = request.ProductCode.Trim();
@@ -175,6 +175,11 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
 
         var supplierName = request.ProductSupplier?.Trim() ?? string.Empty;
         if (string.IsNullOrEmpty(supplierName)) return;
+
+        // Produtos importados podem guardar apenas o nome histórico do fornecedor, sem
+        // vínculo no cadastro. Editar preço/descrição não exige recriar esse fornecedor.
+        // Um fornecedor novo ou alterado continua precisando existir nesta empresa.
+        if (currentId is not null && supplierName.Equals(existingSupplier?.Trim(), StringComparison.OrdinalIgnoreCase)) return;
 
         var suppliers = await fornecedoresAB.ListarAsync(companyId);
         if (!suppliers.Any(item =>
