@@ -6,13 +6,13 @@ import { fiscalAiService, type FiscalAiReport } from "@/services/api/fiscalAiSer
 
 const labels: Record<string, string> = { ncm: "NCM", cest: "CEST", cfop: "CFOP", origemMercadoria: "Origem", csosnIcms: "CSOSN ICMS", cstIcms: "CST ICMS", aliquotaIcms: "ICMS (%)", cstPis: "CST PIS", cstCofins: "CST COFINS", cstIbsCbs: "CST IBS/CBS", cClassTrib: "cClassTrib" };
 const display = (value: string | null) => value || "Não informado";
-type Props = { name: string; report: FiscalAiReport | null; loading: boolean; progress?: string; error: string; onBack: () => void; onRetry: () => void; onApplied: () => Promise<void> };
-export default function FiscalAiReviewPanel({ name, report, loading, progress, error, onBack, onRetry, onApplied }: Props) {
+type Props = { name: string; report: FiscalAiReport | null; loading: boolean; progress?: string; error: string; onBack: () => void; onRetry: () => void; onApplied: () => Promise<void>; embedded?: boolean; alreadyApplied?: boolean };
+export default function FiscalAiReviewPanel({ name, report, loading, progress, error, onBack, onRetry, onApplied, embedded = false, alreadyApplied = false }: Props) {
   const [selected, setSelected] = useState<string[]>([]);
   const [reviewed, setReviewed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [applyError, setApplyError] = useState("");
-  const [applied, setApplied] = useState(false);
+  const [applied, setApplied] = useState(alreadyApplied);
   const apply = async () => {
     if (!report || !reviewed || !selected.length) return;
     setSaving(true); setApplyError("");
@@ -23,11 +23,11 @@ export default function FiscalAiReviewPanel({ name, report, loading, progress, e
     finally { setSaving(false); }
   };
   const cited = new Set(report?.sugestoes.flatMap(s => s.fontes) ?? []);
-  return <section className="space-y-5 pb-16" aria-label="Análise fiscal com IA">
-    <button type="button" className="btn-outline-secondary inline-flex min-h-11 items-center gap-2" disabled={loading || saving} onClick={onBack}><ArrowLeft size={16} />Voltar à tabela</button>
-    <PageHeader title="Análise fiscal com IA" description={name} />
+  return <section className={embedded ? "space-y-5 rounded-xl border border-border-primary bg-bg-light p-4 sm:p-6" : "space-y-5 pb-16"} aria-label="Análise fiscal com IA">
+    <button type="button" className="btn-outline-secondary inline-flex min-h-11 items-center gap-2" disabled={saving} onClick={onBack}><ArrowLeft size={16} />{embedded ? "Fechar análise" : "Voltar à tabela"}</button>
+    {embedded ? <div className="space-y-1"><h2 className="text-xl font-semibold text-text-primary">Análise fiscal com IA</h2><p className="text-text-secondary">{name}</p></div> : <PageHeader title="Análise fiscal com IA" description={name} />}
     {loading && <p role="status" className="flex items-center gap-2 text-text-secondary"><Loader2 size={20} className="animate-spin" />{progress || "Analisando cadastro e referências fiscais…"}</p>}
-    {error && <div role="alert" className="space-y-3"><p className="text-danger">{error}</p><button type="button" className="btn-outline-secondary min-h-11" onClick={onRetry}>Tentar análise novamente</button></div>}
+    {error && <div role="alert" className="space-y-3"><p className="text-danger">{error}</p><button type="button" className="btn-outline-secondary min-h-11" onClick={onRetry}>{embedded ? "Consultar relatório novamente" : "Tentar análise novamente"}</button></div>}
     {report && <>
       <div className="space-y-2"><h2 className="text-lg font-semibold text-text-primary">Resultado da análise</h2><p className="max-w-prose text-text-primary">{report.resumo}</p>
         <p className="text-sm text-text-secondary">{report.modelo} · {new Date(report.analisadoEm).toLocaleString("pt-BR")} · UF {report.uf} · CRT {report.crt}</p>
@@ -35,6 +35,7 @@ export default function FiscalAiReviewPanel({ name, report, loading, progress, e
         <p className="text-sm text-text-secondary">{report.custoUsd === null ? "Custo total não informado pelo provedor." : `Custo informado: US$ ${report.custoUsd.toFixed(6)}`}</p>
       </div>
       {report.pendencias.length > 0 && <div><h2 className="font-semibold text-text-primary">Informações que precisam de conferência</h2><ul className="mt-2 list-disc space-y-2 pl-5 text-text-secondary">{report.pendencias.map((item, i) => <li key={i} className="max-w-prose">{item}</li>)}</ul></div>}
+      {!!report.errosCadastro?.length && <div><h2 className="font-semibold text-text-primary">Erros encontrados no cadastro</h2><ul className="mt-2 list-disc space-y-2 pl-5 text-text-secondary">{report.errosCadastro.map((item, i) => <li key={i} className="max-w-prose">{labels[item.campo] ?? item.campo}: {item.mensagem}</li>)}</ul></div>}
       <p className="max-w-prose text-sm text-text-secondary">Sugestões da IA precisam de revisão. A conferência Jev mede a sustentação nas referências fornecidas; não comprova que a tributação está correta. A consulta não altera notas já emitidas.</p>
       {report.sugestoes.length ? <TableScrollArea label="Sugestões de correção fiscal" className="overflow-x-auto rounded-xl border border-border-primary">
         <table className="w-full min-w-[900px] text-left text-sm"><thead className="bg-bg-secondary text-text-secondary"><tr>{["Selecionar", "Campo", "Atual", "Sugerido", "Justificativa e conferência"].map(title => <th key={title} scope="col" className="px-4 py-3">{title}</th>)}</tr></thead>

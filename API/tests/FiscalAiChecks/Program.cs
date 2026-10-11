@@ -52,6 +52,36 @@ Check(report.Sugestoes.Single().PodeAplicar && report.Sugestoes.Single().Probabi
 Check(fake.LastChat.Contains("json_schema") && fake.LastChat.Contains("require_parameters") && !fake.LastChat.Contains(key), "Resposta estruturada, fornecedor compatível e segredo fora do prompt");
 Check(!fake.LastChat.Contains("Cnpj") && !fake.LastChat.Contains("ProductSalePrice"), "Prompt não envia CNPJ, certificado ou preços");
 await store.SaveReportAsync("fiscal-ai-test", report, default);
+var clean = report with { Id = Guid.NewGuid(), Sugestoes = [], Pendencias = [], ErrosCadastro = [] };
+var cleanSaved = new FiscalAiSavedReport(clean, DateTime.UtcNow, false);
+var now = clean.AnalisadoEm;
+Check(FiscalAiOverview.Classify(cleanSaved, product, company, now).Situacao == "ok", "OK exige relatório concluído, cadastro atual e ausência de apontamentos");
+Check(FiscalAiOverview.Classify(cleanSaved with { Relatorio = clean with { Pendencias = ["Confirmar ST"] } }, product, company, now).Situacao == "revisao", "Pendências reais recebem R de revisão contábil");
+Check(FiscalAiOverview.Classify(cleanSaved with { Relatorio = clean with { ErrosCadastro = [new("erro", "NCM", "Inválido")] } }, product, company, now).Situacao == "revisao", "Erro determinístico não vira OK mesmo quando IA não sugere correções");
+Check(FiscalAiOverview.Classify(cleanSaved with { Relatorio = clean with { Sugestoes = report.Sugestoes } }, product, company, now).Situacao == "corrigir", "Sugestões aplicáveis são ajustes para conferir");
+Check(FiscalAiOverview.Classify(cleanSaved with { Relatorio = clean with { Sugestoes = report.Sugestoes.Select(s => s with { PodeAplicar = false }).ToArray() } }, product, company, now).Situacao == "revisao", "Sugestões bloqueadas exigem revisão contábil");
+Check(FiscalAiOverview.Classify(cleanSaved with { Relatorio = clean with { ErrosCadastro = null } }, product, company, now).Situacao == "desatualizada", "Relatório antigo sem classificação não recebe OK presumido");
+Check(FiscalAiOverview.Classify(cleanSaved with { Aplicada = true }, product, company, now).Situacao == "desatualizada", "Aplicar correções exige nova análise antes de receber OK");
+Check(FiscalAiOverview.Classify(cleanSaved, product, new EmpresaAD { Uf = "RJ", Crt = 3 }, now).Situacao == "desatualizada", "Troca do regime invalida conclusão antiga");
+Check(FiscalAiOverview.Classify(cleanSaved, product, company, now.AddYears(1)).Situacao == "desatualizada", "Novo período fiscal exige reanálise");
+var originalUnit = product.UnidadeComercial; product.UnidadeComercial = "CX";
+Check(FiscalAiOverview.Classify(cleanSaved, product, company, now).Situacao == "desatualizada", "Alterar unidade fiscal invalida o resultado antigo");
+product.UnidadeComercial = originalUnit;
+await store.SaveReportAsync("fiscal-ai-test", clean, default);
+var overviewSaved = await store.ListLatestAsync("fiscal-ai-test", default);
+Check(overviewSaved.Analises.Single(a => a.Relatorio.ProdutoId == product.Id).Relatorio.Id == clean.Id, "Consulta traz somente último relatório do produto, salvo no banco");
+Check((await store.ListLatestAsync("another-company", default)).Analises.Count == 0 && await store.GetReportAsync("another-company", clean.Id, default) is null, "Resumo e leitura de relatório isolados por empresa");
+Check((await store.ListLatestAsync("fiscal-ai-test", default, product.Id)).Analises.Single().Relatorio.Id == clean.Id
+    && (await store.ListLatestAsync("fiscal-ai-test", default, "produto-sem-analise")).Analises.Count == 0, "Atualização individual consulta só último resultado do produto escolhido");
+Check((await store.GetReportAsync("fiscal-ai-test", report.Id, default))!.Relatorio.Id == report.Id, "Abrir relatório histórico usa banco sem consultar provedor");
+var summaryBeforeJob = FiscalAiOverview.Build(overviewSaved, [product], company, now).Single();
+Check(summaryBeforeJob.Situacao == "ok" && summaryBeforeJob.AnaliseId == clean.Id, "OK persistido é recuperável numa nova consulta");
+var laterJob = new FiscalAiLatestJob(Guid.NewGuid(), product.Id, "analisando", null, cleanSaved.CriadaEm.AddMinutes(1));
+var during = FiscalAiOverview.Build(new([cleanSaved], [laterJob]), [product], company, now).Single();
+Check(during.Situacao == "analisando" && during.AnaliseId == clean.Id && during.SolicitacaoId == laterJob.Id, "Fila ativa preserva relatório anterior e identificação para retomar por GET");
+Check(FiscalAiOverview.Build(new([cleanSaved], [laterJob with { Status = "falha" }]), [product], company, now).Single().Situacao == "falha", "Falha no provedor não é rotulada R fiscal");
+Check(FiscalAiOverview.Build(new([cleanSaved], [laterJob with { Status = "falha", CriadaEm = cleanSaved.CriadaEm.AddMinutes(-1) }]), [product], company, now).Single().Situacao == "ok", "Falha antiga não sobrescreve relatório mais recente");
+Check(FiscalAiOverview.Build(new([cleanSaved], [laterJob]), [], company, now).Count == 0, "Produtos removidos não aparecem no resumo");
 await Reject(() => store.ApplyAsync("another-company", product.Id, report.Id, ["cest"], "u", "Teste", tables, service.Cests, default), "Análise de outra empresa não pode ser aplicada");
 await Reject(() => store.ApplyAsync("fiscal-ai-test", product.Id, report.Id, ["productSalePrice"], "u", "Teste", tables, service.Cests, default), "Correção de preço não autorizada pelo fluxo fiscal");
 await Sql("CREATE OR ALTER TRIGGER trgFiscalAiRollback ON AuditLog AFTER INSERT AS THROW 51000,'Falha simulada de auditoria',1;");
@@ -60,6 +90,7 @@ Check((await products.ObterAsync("fiscal-ai-test", product.Id))!.Cest == "030210
 await Sql("DROP TRIGGER trgFiscalAiRollback;");
 await store.ApplyAsync("fiscal-ai-test", product.Id, report.Id, ["cest"], "u", "Teste", tables, service.Cests, default);
 var saved = (await products.ObterAsync("fiscal-ai-test", product.Id))!;
+Check((await store.GetReportAsync("fiscal-ai-test", report.Id, default))!.Aplicada, "Leitura do relatório informa aplicação anterior para impedir nova seleção");
 Check(saved.Cest == "0302103" && saved.ProductSalePrice == 6 && saved.ProductQnt == 45 && saved.Ncm == product.Ncm, "Aplica apenas CEST escolhido e preserva preço, estoque e demais campos");
 await Reject(() => store.ApplyAsync("fiscal-ai-test", product.Id, report.Id, ["cest"], "u", "Teste", tables, service.Cests, default), "Análise aplicada não pode ser repetida");
 await store.SaveReportAsync("fiscal-ai-test", report with { Id = Guid.NewGuid() }, default);
@@ -131,6 +162,13 @@ while (DateTime.UtcNow < until && (await store.GetJobAsync("fiscal-ai-test", det
 Check((await store.GetJobAsync("fiscal-ai-test", detachedId, default)) is { Status: "concluida", Relatorio: not null }
     && fake.Requests == before + 1, "Worker conclui uma vez mesmo após cancelamento da conexão original");
 await worker.StopAsync(default);
+var providerCalls = fake.Requests;
+var summaryResponse = (Microsoft.AspNetCore.Mvc.OkObjectResult)await controller.Overview(default);
+var summaryPayload = (HORUSPDV_API.Models.Response.ApiResponse<IReadOnlyList<FiscalAiProductStatus>>)summaryResponse.Value!;
+var singleResponse = (Microsoft.AspNetCore.Mvc.OkObjectResult)await controller.ProductOverview(product.Id, default);
+var singlePayload = (HORUSPDV_API.Models.Response.ApiResponse<FiscalAiProductStatus>)singleResponse.Value!;
+Check(summaryPayload.Data!.Any(s => s.ProdutoId == product.Id) && singlePayload.Data!.ProdutoId == product.Id && fake.Requests == providerCalls, "Rotas de resumo geral e individual recuperam cadastro sem chamar OpenRouter");
+Check(!JsonSerializer.Serialize(summaryPayload, FiscalAiRules.Json).Contains(key), "Resumo público não expõe chave, prompt ou relatório completo");
 Console.WriteLine($"{passed} verificações passaram. Sem emissão, sem OpenRouter real, sem banco da loja.");
 
 sealed class Fake : HttpMessageHandler

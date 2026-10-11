@@ -4392,9 +4392,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductTaxationPage.tsx": {
-    "mtime": 1791686471.2348454,
-    "seen": 1791686851.7184744,
-    "ast_hash": "70b223987b411f570e9a82fa9cc57f66",
+    "mtime": 1791688721.409001,
+    "seen": 1791688787.4938393,
+    "ast_hash": "2fc58b72557c063289835891696898b5",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/FiscalAiController.cs": {

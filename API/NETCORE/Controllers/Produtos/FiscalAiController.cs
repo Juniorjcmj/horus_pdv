@@ -17,6 +17,41 @@ public sealed class FiscalAiController(FiscalAiAB store, ProdutoAB products, Emp
 {
     private AuthenticatedUser? UserSession => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
 
+    [HttpGet("resumos")]
+    public async Task<IActionResult> Overview(CancellationToken ct)
+    {
+        if (UserSession is not { } user) return Unauthorized();
+        Response.Headers.CacheControl = "no-store";
+        var data = await store.ListLatestAsync(user.CompanyId, ct);
+        var current = await products.ListarAsync(user.CompanyId);
+        var company = await companies.ObterExataAsync(user.CompanyId);
+        return Ok(new ApiResponse<IReadOnlyList<FiscalAiProductStatus>> { Success = true,
+            Data = FiscalAiOverview.Build(data, current, company, HORUSPDV_API.Services.Shared.HorusDateTime.Now) });
+    }
+
+    [HttpGet("relatorios/{analysisId:guid}")]
+    public async Task<IActionResult> Report(Guid analysisId, CancellationToken ct)
+    {
+        if (UserSession is not { } user) return Unauthorized();
+        Response.Headers.CacheControl = "no-store";
+        var report = await store.GetReportAsync(user.CompanyId, analysisId, ct);
+        return report is null ? ProblemResponse(404, "Análise não encontrada nesta empresa.")
+            : Ok(new ApiResponse<FiscalAiSavedReport> { Success = true, Data = report });
+    }
+
+    [HttpGet("resumos/{id}")]
+    public async Task<IActionResult> ProductOverview(string id, CancellationToken ct)
+    {
+        if (UserSession is not { } user) return Unauthorized();
+        Response.Headers.CacheControl = "no-store";
+        var product = await products.ObterAsync(user.CompanyId, id);
+        if (product is null) return ProblemResponse(404, "Produto não encontrado nesta empresa.");
+        var data = await store.ListLatestAsync(user.CompanyId, ct, id);
+        var company = await companies.ObterExataAsync(user.CompanyId);
+        return Ok(new ApiResponse<FiscalAiProductStatus> { Success = true,
+            Data = FiscalAiOverview.Build(data, [product], company, HORUSPDV_API.Services.Shared.HorusDateTime.Now).SingleOrDefault() });
+    }
+
     [HttpGet("config")]
     public async Task<IActionResult> Config(CancellationToken ct)
     {

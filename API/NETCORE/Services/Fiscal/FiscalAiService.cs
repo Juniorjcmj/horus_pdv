@@ -24,10 +24,11 @@ public sealed class FiscalAiService(IWebHostEnvironment environment, HttpClient 
             var promptSnapshot = FiscalAiRules.Snapshot(product);
             foreach (var field in new[] { "_nome", "_descricao", "_codigo" })
                 if (promptSnapshot[field] is { Length: > 500 } text) promptSnapshot[field] = text[..500];
+            var verification = ProductFiscalReview.Check(product, company, tables, now, Cests);
             var state = new { produto = new { product.ProductName, descricao = product.ProductDescription[..Math.Min(product.ProductDescription.Length, 500)], product.Marca, product.Gtin,
                 cadastro = promptSnapshot }, regime = company.Crt, uf = company.Uf,
                 data = now.ToString("yyyy-MM-dd"), referencias = sources,
-                verificacao = ProductFiscalReview.Check(product, company, tables, now, Cests).Apontamentos };
+                verificacao = verification.Apontamentos };
             const string instructions = """
                 Você auxilia a revisão fiscal de produtos para venda interna por NFC-e no RJ. Responda em português.
                 Use somente as referências fornecidas. Não navega na internet. Nunca invente leis, códigos ou alíquotas.
@@ -116,7 +117,8 @@ public sealed class FiscalAiService(IWebHostEnvironment environment, HttpClient 
                 }
             }
             return new(Guid.NewGuid(), product.Id, product.ProductName, now, company.Crt, company.Uf, FiscalAiRules.Model,
-                draft.Resumo, draft.Pendencias, snapshot, sources, suggestions, jevStatus, cost);
+                draft.Resumo, draft.Pendencias, snapshot, sources, suggestions, jevStatus, cost,
+                verification.Apontamentos.Where(f => f.Nivel == "erro").ToArray());
         }
         finally { gate.Release(); }
     }

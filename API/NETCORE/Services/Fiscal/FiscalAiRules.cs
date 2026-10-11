@@ -12,7 +12,8 @@ public sealed record FiscalAiSuggestion(string Campo, string? Atual, string? Sug
 public sealed record FiscalAiReport(Guid Id, string ProdutoId, string ProdutoNome, DateTimeOffset AnalisadoEm,
     byte Crt, string Uf, string Modelo, string Resumo, string[] Pendencias,
     IReadOnlyDictionary<string, string?> CadastroOriginal, IReadOnlyList<FiscalAiSource> Fontes,
-    IReadOnlyList<FiscalAiSuggestion> Sugestoes, string SituacaoJev, decimal? CustoUsd);
+    IReadOnlyList<FiscalAiSuggestion> Sugestoes, string SituacaoJev, decimal? CustoUsd,
+    IReadOnlyList<FiscalFinding>? ErrosCadastro = null);
 public sealed record FiscalAiDraft(string Resumo, string[] Pendencias, FiscalAiDraftSuggestion[] Sugestoes);
 public sealed record FiscalAiDraftSuggestion(string Campo, string? Sugerido, string Justificativa, string[] Fontes);
 public sealed record FiscalCest(string Codigo, string[] Ncms, string Descricao, DateOnly Inicio, DateOnly? Fim, string? Norma = null)
@@ -43,6 +44,7 @@ public static class FiscalAiRules
         });
         result["_nome"] = p.ProductName; result["_descricao"] = p.ProductDescription; result["_codigo"] = p.ProductCode;
         result["_marca"] = p.Marca; result["_gtin"] = p.Gtin;
+        result["_unidadeComercial"] = p.UnidadeComercial; result["_unidadeTributavel"] = p.UnidadeTributavel;
         return result;
     }
 

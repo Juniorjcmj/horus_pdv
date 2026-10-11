@@ -8,6 +8,46 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public sealed class FiscalAiAB(Connection connection, HorusSecretProtector protector)
 {
+    public async Task<FiscalAiOverviewData> ListLatestAsync(string companyId, CancellationToken ct, string? productId = null)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var cmd = new SqlCommand("""
+            WITH latest AS (
+                SELECT RelatorioJson,CriadaEm,AplicadaEm,
+                    ROW_NUMBER() OVER(PARTITION BY ProdutoId ORDER BY CriadaEm DESC,Id DESC) AS Position
+                FROM FiscalIaAnalises WHERE CompanyId=@CompanyId AND (@ProdutoId IS NULL OR ProdutoId=@ProdutoId)
+            ) SELECT RelatorioJson,CriadaEm,AplicadaEm FROM latest WHERE Position=1;
+            WITH latest AS (
+                SELECT Id,ProdutoId,Status,Mensagem,CriadaEm,
+                    ROW_NUMBER() OVER(PARTITION BY ProdutoId ORDER BY CriadaEm DESC,Id DESC) AS Position
+                FROM FiscalIaSolicitacoes WHERE CompanyId=@CompanyId AND (@ProdutoId IS NULL OR ProdutoId=@ProdutoId)
+            ) SELECT Id,ProdutoId,Status,Mensagem,CriadaEm FROM latest WHERE Position=1;
+            """, db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        cmd.Parameters.Add("@ProdutoId", System.Data.SqlDbType.NVarChar, 100).Value = (object?)productId ?? DBNull.Value;
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        var analyses = new List<FiscalAiSavedReport>();
+        while (await reader.ReadAsync(ct))
+            if (JsonSerializer.Deserialize<FiscalAiReport>(reader.GetString(0), FiscalAiRules.Json) is { } report)
+                analyses.Add(new(report, reader.GetDateTime(1), !reader.IsDBNull(2)));
+        var jobs = new List<FiscalAiLatestJob>();
+        await reader.NextResultAsync(ct);
+        while (await reader.ReadAsync(ct))
+            jobs.Add(new(reader.GetGuid(0), reader.GetString(1), reader.GetString(2), reader.IsDBNull(3) ? null : reader.GetString(3), reader.GetDateTime(4)));
+        return new(analyses, jobs);
+    }
+
+    public async Task<FiscalAiSavedReport?> GetReportAsync(string companyId, Guid id, CancellationToken ct)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var cmd = new SqlCommand("SELECT RelatorioJson,CriadaEm,AplicadaEm FROM FiscalIaAnalises WHERE CompanyId=@CompanyId AND Id=@Id", db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId); cmd.Parameters.AddWithValue("@Id", id);
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct)) return null;
+        var report = JsonSerializer.Deserialize<FiscalAiReport>(reader.GetString(0), FiscalAiRules.Json);
+        return report is null ? null : new(report, reader.GetDateTime(1), !reader.IsDBNull(2));
+    }
+
     public async Task<Guid> EnqueueAsync(string companyId, string productId, string userId, Guid id, CancellationToken ct)
     {
         if (id == Guid.Empty) throw new InvalidOperationException("Identificação da solicitação inválida.");
