@@ -10,7 +10,7 @@ import { productService } from "@/services/api/productService";
 import { formatProductMarkup, formatProductMoney, productProfitability } from "@/utils/productProfitability";
 
 export default function ProductProfitabilityView({ onBack }: { onBack: () => void }) {
-  const { items: products, isLoading, error, reload } = useRemoteList(productService.list, "Não foi possível carregar os preços dos produtos.");
+  const { items: products, setItems: setProducts, isLoading, error, reload } = useRemoteList(productService.list, "Não foi possível carregar os preços dos produtos.");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -23,7 +23,7 @@ export default function ProductProfitabilityView({ onBack }: { onBack: () => voi
   const safePage = Math.min(page, Math.max(1, Math.ceil(filtered.length / pageSize)));
   const visible = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
-  if (selected) return <ProductProfitSummary product={selected} onBack={() => setSelectedId(null)} />;
+  if (selected) return <ProductProfitSummary product={selected} onBack={() => setSelectedId(null)} onSaved={saved => setProducts(list => list.map(p => p.id === saved.id ? saved : p))} />;
 
   return <div className="space-y-5">
     <PageHeader title="Lucro e markup sem período" description="Consulte cada produto pelos preços atuais de compra e venda, mesmo que ele ainda não tenha sido vendido."

@@ -9,6 +9,7 @@ const PRODUTO_API_URL = requireEnvUrl("VITE_PRODUTO_API_URL");
 
 export type ProductDto = {
   id: string;
+  versaoPreco?: string;
   productImageUrl: string;
   productImageName: string;
   productName: string;
@@ -99,6 +100,13 @@ export type ProductFiscalReport = {
 };
 
 export const productService = {
+  async updateSalePrice(id: string, payload: { precoVenda: string; versaoConsultada: string }) {
+    const response = await apiRequest<ProductDto>(`${PRODUTO_API_URL}/${encodeURIComponent(id)}/preco-venda`, {
+      method: "PATCH", body: JSON.stringify(payload),
+    });
+    if (!response.data?.id) throw new Error("Não foi possível confirmar o preço salvo. Atualize a consulta para conferir.");
+    return response.data;
+  },
   async verifyFiscal(id: string) {
     const response = await apiRequest<ProductFiscalReport>(`${PRODUTO_API_URL}/${encodeURIComponent(id)}/verificacao-fiscal`, { timeoutMs: 35000 });
     return response.data;

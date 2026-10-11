@@ -54,6 +54,19 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
         return ToModel(await produtosAB.SalvarAsync(companyId, MapRequest(id, request)));
     }
 
+    public async Task<ProdutoModel?> AtualizarPrecoAsync(string companyId, string id, ProdutoPrecoRequest request)
+    {
+        if (!HorusMoneyFormat.TryParseDecimal(request.PrecoVenda, out var sale) || sale <= 0 || sale > 1_000_000_000m || decimal.Round(sale, 2) != sale)
+            throw new InvalidOperationException("Informe um preço de venda maior que zero, com até duas casas decimais e até R$ 1 bilhão.");
+        var version = (request.VersaoConsultada ?? "").Split('|');
+        if (version.Length != 2 || !decimal.TryParse(version[0], System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out var cost)
+            || !decimal.TryParse(version[1], System.Globalization.NumberStyles.AllowDecimalPoint, System.Globalization.CultureInfo.InvariantCulture, out var previousSale))
+            throw new InvalidOperationException("Atualize a consulta do produto antes de salvar o preço.");
+        var (product, conflict) = await produtosAB.AtualizarPrecoAsync(companyId, id, sale, cost, previousSale);
+        if (conflict) throw new ProdutoPrecoConflitoException("O custo ou preço de venda mudou desde esta consulta. Atualize os preços e confira o ajuste antes de salvar novamente.");
+        return product is null ? null : ToModel(product);
+    }
+
     public Task<bool> ExcluirAsync(string companyId, string id)
         => produtosAB.ExcluirAsync(companyId, id);
 
@@ -242,6 +255,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
 
     private static ProdutoModel ToModel(ProdutoAD source) => new()
     {
+        VersaoPreco = ProdutoAB.VersaoPreco(source),
         Id = source.Id,
         ProductImageUrl = source.ProductImageUrl,
         ProductImageName = source.ProductImageName,
@@ -298,3 +312,5 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
         CClassTrib = source.CClassTrib
     };
 }
+
+public sealed class ProdutoPrecoConflitoException(string message) : InvalidOperationException(message);

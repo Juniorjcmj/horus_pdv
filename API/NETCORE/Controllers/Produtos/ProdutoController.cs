@@ -102,6 +102,22 @@ public class ProdutoController(IProdutoService produtoService, ProdutoAB produto
         }
     }
 
+    [HttpPatch("{id}/preco-venda")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+    public async Task<IActionResult> AtualizarPreco(string id, [FromBody] ProdutoPrecoRequest request)
+    {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized(new ApiResponse<ProdutoModel> { Success = false, Message = "Sessão não encontrada." });
+        try
+        {
+            var updated = await produtoService.AtualizarPrecoAsync(user.CompanyId, id, request);
+            if (updated is null) return NotFound(new ApiResponse<ProdutoModel> { Success = false, Message = "Produto não encontrado." });
+            return Ok(new ApiResponse<ProdutoModel> { Success = true, Message = "Preço de venda atualizado.", Data = updated });
+        }
+        catch (ProdutoPrecoConflitoException ex) { return Conflict(new ApiResponse<ProdutoModel> { Success = false, Message = ex.Message }); }
+        catch (InvalidOperationException ex) { return BadRequest(new ApiResponse<ProdutoModel> { Success = false, Message = ex.Message }); }
+    }
+
     [HttpDelete("{id}")]
     [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]

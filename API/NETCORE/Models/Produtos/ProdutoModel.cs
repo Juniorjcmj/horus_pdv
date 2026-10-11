@@ -8,6 +8,7 @@ namespace HORUSPDV_API.Models.Produtos;
 
 public class ProdutoModel
 {
+    public string VersaoPreco { get; set; } = "";
     public string Id { get; set; } = string.Empty;
     public string ProductImageUrl { get; set; } = string.Empty;
     public string ProductImageName { get; set; } = string.Empty;

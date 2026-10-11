@@ -12,6 +12,44 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public class ProdutoAB(Connection connection)
 {
+    public static string VersaoPreco(ProdutoAD product) => string.Join('|',
+        product.ProductUnitPrice.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture),
+        product.ProductSalePrice.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture));
+
+    public async Task<(ProdutoAD? Product, bool Conflict)> AtualizarPrecoAsync(string companyId, string id, decimal sale, decimal expectedCost, decimal expectedSale)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        await using var tx = (SqlTransaction)await db.BeginTransactionAsync();
+        using var scope = connection.UseImportTransaction(tx);
+        var sql = $"""
+            SELECT {Columns} FROM Produtos p WITH (UPDLOCK, ROWLOCK)
+            LEFT JOIN Categorias c ON c.Id=p.CategoriaId AND c.CompanyId=p.CompanyId
+            WHERE p.Id=@Id AND p.CompanyId=@CompanyId;
+            """;
+        ProdutoAD? product;
+        await using (var cmd = connection.CreateCommand(sql, db))
+        {
+            cmd.Parameters.AddWithValue("@Id", id); cmd.Parameters.AddWithValue("@CompanyId", companyId);
+            await using var reader = await cmd.ExecuteReaderAsync();
+            product = await reader.ReadAsync() ? Map(reader) : null;
+        }
+        if (product is null) return (null, false);
+        if (product.ProductUnitPrice != expectedCost || (product.ProductSalePrice != expectedSale && product.ProductSalePrice != sale))
+            return (product, true);
+        var profit = sale - product.ProductUnitPrice;
+        var markup = product.ProductUnitPrice > 0 ? decimal.Round(profit / product.ProductUnitPrice * 100, 4, MidpointRounding.AwayFromZero) : 0;
+        if (markup > 99_999.9999m) throw new InvalidOperationException("O markup calculado excede o limite de 99.999,9999%. Confira o custo e o preço de venda.");
+        await using (var cmd = connection.CreateCommand("UPDATE Produtos SET ProductSalePrice=@Sale, Lucro=@Profit, MarkupPraticado=@Markup WHERE Id=@Id AND CompanyId=@CompanyId", db))
+        {
+            cmd.Parameters.AddWithValue("@Sale", sale); cmd.Parameters.AddWithValue("@Profit", profit); cmd.Parameters.AddWithValue("@Markup", markup);
+            cmd.Parameters.AddWithValue("@Id", id); cmd.Parameters.AddWithValue("@CompanyId", companyId);
+            await cmd.ExecuteNonQueryAsync();
+        }
+        product.ProductSalePrice = sale; product.Lucro = profit; product.MarkupPraticado = markup;
+        await tx.CommitAsync();
+        return (product, false);
+    }
+
     private const string Columns = """
         p.Id, p.ProductImageUrl, p.ProductImageName, p.ProductName, p.ProductCode, p.ProductSupplier,
         p.ProductDescription, p.ProductQnt, p.EstoqueMinimo, p.ProductUnitPrice, p.ProductSalePrice, p.TotalPriceOnProduct,

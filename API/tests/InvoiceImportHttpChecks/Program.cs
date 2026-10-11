@@ -48,6 +48,9 @@ builder.Services.AddScoped<SefazDFeDownloadService>();
 builder.Services.AddScoped<NfeImportService>();
 builder.Services.AddScoped<NotaEntradaArquivoService>();
 builder.Services.AddScoped<EntradaManualService>();
+builder.Services.AddScoped<IProdutoService, ProdutoService>();
+builder.Services.AddSingleton<FiscalReferenceTables>();
+builder.Services.AddSingleton<FiscalCestReference>();
 builder.Services.AddControllers().AddApplicationPart(typeof(NfeImportController).Assembly);
 await using var app = builder.Build();
 await HorusDatabaseInitializer.InitializeAsync(app.Services);
@@ -259,5 +262,46 @@ var failingManual = Manual(); failingManual.NumeroDocumento = "FALHA-MANUAL";
 failingManual.Itens.Add(new() { ProductName = "Novo rollback manual", QuantidadeCompra = "1", CustoCompra = "2,00", PrecoVenda = "3,00", DataValidade = "2027-04-01" });
 var failedManual = await client.PostAsJsonAsync("/api/Produto/entrada-manual", failingManual);
 Check(failedManual.StatusCode == HttpStatusCode.InternalServerError && await Count("Produtos") == 2 && (await repository.ObterAsync(companyId, first.Id))!.ProductQnt == 44, "falha do arquivo reverte novo cadastro, custo, estoque e lote do recebimento manual");
+// Decisão de preço altera somente venda e indicadores; estoque e arquivo são preservados.
+await using (var db = await app.Services.GetRequiredService<Connection>().OpenConnectionAsync()) {
+    await using var seedPrice = new SqlCommand("UPDATE Produtos SET ProductUnitPrice=10,ProductSalePrice=15,Lucro=999,MarkupPraticado=999 WHERE Id=@Id AND CompanyId=@Company", db);
+    seedPrice.Parameters.AddWithValue("@Id", first.Id); seedPrice.Parameters.AddWithValue("@Company", companyId); await seedPrice.ExecuteNonQueryAsync();
+}
+async Task<JsonElement> SavePrice(string price, string version, HttpStatusCode expected = HttpStatusCode.OK) {
+    using var response = await client.PatchAsJsonAsync($"/api/Produto/{first.Id}/preco-venda", new { precoVenda = price, versaoConsultada = version });
+    var body = await response.Content.ReadAsStringAsync();
+    if (response.StatusCode != expected) throw new Exception($"Preço: {response.StatusCode}: {body}");
+    return JsonDocument.Parse(body).RootElement.Clone();
+}
+var beforePrice = (await repository.ObterAsync(companyId, first.Id))!;
+var initialList = JsonDocument.Parse(await client.GetStringAsync("/api/Produto")).RootElement.GetProperty("data");
+Check(initialList.EnumerateArray().Single(p => p.GetProperty("id").GetString() == first.Id).GetProperty("versaoPreco").GetString() == "10|15", "consulta oferece base exata do custo e venda para a decisão");
+var updatedPrice = await SavePrice("18,00", "10|15");
+Check(updatedPrice.GetProperty("data").GetProperty("productSalePrice").GetString() == "18,00" && updatedPrice.GetProperty("data").GetProperty("lucro").GetString() == "8,00" && updatedPrice.GetProperty("data").GetProperty("markupPraticado").GetString() == "80", "preço salva venda, lucro e markup recalculados no servidor");
+var afterPrice = (await repository.ObterAsync(companyId, first.Id))!;
+beforePrice.ProductSalePrice = afterPrice.ProductSalePrice; beforePrice.Lucro = afterPrice.Lucro; beforePrice.MarkupPraticado = afterPrice.MarkupPraticado;
+Check(JsonSerializer.Serialize(beforePrice) == JsonSerializer.Serialize(afterPrice), "decisão preserva todos os demais campos de estoque, custo, tributação e margem desejada");
+await SavePrice("20", "10|15", HttpStatusCode.Conflict);
+Check((await repository.ObterAsync(companyId, first.Id))!.ProductSalePrice == 18, "preço desatualizado é recusado sem sobrescrever venda mais recente");
+await SavePrice("18", "10|15");
+Check((await repository.ObterAsync(companyId, first.Id))!.ProductQnt == 44, "repetição após perda de resposta é idempotente");
+var concurrentPrices = await Task.WhenAll(client.PatchAsJsonAsync($"/api/Produto/{first.Id}/preco-venda", new { precoVenda = "20", versaoConsultada = "10|18" }), client.PatchAsJsonAsync($"/api/Produto/{first.Id}/preco-venda", new { precoVenda = "25", versaoConsultada = "10|18" }));
+Check(concurrentPrices.Count(r => r.StatusCode == HttpStatusCode.OK) == 1 && concurrentPrices.Count(r => r.StatusCode == HttpStatusCode.Conflict) == 1, "duas decisões concorrentes sobre a mesma consulta não se sobrescrevem");
+var saleNow = (await repository.ObterAsync(companyId, first.Id))!.ProductSalePrice;
+await using (var db = await app.Services.GetRequiredService<Connection>().OpenConnectionAsync()) {
+    await using var costChange = new SqlCommand("UPDATE Produtos SET ProductUnitPrice=10.004 WHERE Id=@Id", db); costChange.Parameters.AddWithValue("@Id", first.Id); await costChange.ExecuteNonQueryAsync();
+}
+await SavePrice("30", "10|" + saleNow.ToString(System.Globalization.CultureInfo.InvariantCulture), HttpStatusCode.Conflict);
+Check((await repository.ObterAsync(companyId, first.Id))!.ProductSalePrice == saleNow, "alteração de custo com quatro casas decimais exige nova consulta");
+await SavePrice("8", ProdutoAB.VersaoPreco((await repository.ObterAsync(companyId, first.Id))!));
+Check((await repository.ObterAsync(companyId, first.Id))!.Lucro == -2m, "decisão abaixo do custo é permitida e grava lucro negativo em centavos");
+foreach (var invalidPrice in new[] { "0", "-1", "1,234", "1000000001", "inválido" }) await SavePrice(invalidPrice, "10.004|8", HttpStatusCode.BadRequest);
+await SavePrice("20", "", HttpStatusCode.BadRequest);
+Check((await repository.ObterAsync(companyId, first.Id))!.ProductSalePrice == 8, "preços inválidos e consulta sem base não alteram o cadastro");
+client.DefaultRequestHeaders.Add("X-Test-Other-Company", "1"); await SavePrice("20", "10.004|8", HttpStatusCode.NotFound); client.DefaultRequestHeaders.Remove("X-Test-Other-Company");
+client.DefaultRequestHeaders.Add("X-Test-No-User", "1"); await SavePrice("20", "10.004|8", HttpStatusCode.Unauthorized); client.DefaultRequestHeaders.Remove("X-Test-No-User");
+Check((await repository.ObterAsync(companyId, first.Id))!.ProductSalePrice == 8, "preço exige sessão e isolamento da empresa");
+var pricingRoles = typeof(ProdutoController).GetMethod("AtualizarPreco")!.GetCustomAttributes(typeof(HorusAuthorizeRolesAttribute), true).Cast<HorusAuthorizeRolesAttribute>().Single().Roles;
+Check(pricingRoles.Contains("administrador") && pricingRoles.Contains("gerente") && pricingRoles.Contains("atendente") && !pricingRoles.Contains("caixa"), "decisão usa as permissões de edição de produto e exclui caixa");
 await app.StopAsync();
 Console.WriteLine($"{passed} verificações HTTP/SQL passaram no container isolado.");

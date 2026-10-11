@@ -58,6 +58,7 @@ import { isValidCnpj, isValidEmail } from "@/utils/validators";
 
 type Product = {
   id: string;
+  versaoPreco?: string;
   productImageUrl: string;
   productImageName: string;
   productName: string;
@@ -2194,7 +2195,7 @@ export default function ProductRegisterPage() {
   const profitProduct = products.find(product => product.id === profitProductId);
   if (profitProduct) return (
     <PageLayout className="space-y-4 py-4 md:py-6 lg:py-8">
-      <ProductProfitSummary product={profitProduct} onBack={() => setProfitProductId(null)} />
+      <ProductProfitSummary product={profitProduct} onBack={() => setProfitProductId(null)} onSaved={saved => setProducts(list => list.map(p => p.id === saved.id ? saved : p))} />
     </PageLayout>
   );
 

@@ -90,9 +90,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/NfeImportController.cs": {
-    "mtime": 1791647282.6515002,
-    "seen": 1791648349.2878911,
-    "ast_hash": "8d5d03a1ea319f993522f062f8a71716",
+    "mtime": 1791719929.5798702,
+    "seen": 1791721266.6636193,
+    "ast_hash": "1f8d066b0d37412deea9940f4dd9be48",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/ProdutoController.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1791686431.878434,
-    "seen": 1791686851.6556232,
-    "ast_hash": "8224f18d49f8e335173399caee6dfc69",
+    "mtime": 1791720028.2353795,
+    "seen": 1791721266.678178,
+    "ast_hash": "c804e61f8a6723d781d39078eac930e8",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs": {
-    "mtime": 1791647653.0302138,
-    "seen": 1791648349.358526,
-    "ast_hash": "1dc3240f4bb217f19f8dc2c402122bfb",
+    "mtime": 1791719929.5773478,
+    "seen": 1791721266.691955,
+    "ast_hash": "7a24c9de034d2208ae8502bf900b8eb9",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791715730.9116476,
-    "seen": 1791716324.26606,
-    "ast_hash": "ec93e15517cce810dfb3ca57787bfbf1",
+    "mtime": 1791719929.575171,
+    "seen": 1791721266.6932528,
+    "ast_hash": "a2dc362952998887e4ca93f6ad12b6f2",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1791718262.3974621,
-    "seen": 1791718454.8600338,
-    "ast_hash": "71e645c8ca0c5336c70f679a21792eda",
+    "mtime": 1791720307.5235758,
+    "seen": 1791721266.7742395,
+    "ast_hash": "0ef587f09a56ef39c2dff9940259bad6",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/nfeImportService.ts": {
-    "mtime": 1791647382.1211662,
-    "seen": 1791648349.6337955,
-    "ast_hash": "3efaa9a72465b2ebd42cff074b0a7df7",
+    "mtime": 1791720375.9341896,
+    "seen": 1791721266.7913046,
+    "ast_hash": "b159d9f686d017c393483769fc985df8",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/pedidoService.ts": {
@@ -4236,9 +4236,9 @@
     "semantic_hash": ""
   },
   "API/tests/InvoiceImportHttpChecks/Program.cs": {
-    "mtime": 1791647991.2914584,
-    "seen": 1791648349.3857114,
-    "ast_hash": "e275294b41660560e669e2fb88d56be3",
+    "mtime": 1791721018.8605778,
+    "seen": 1791721266.7177668,
+    "ast_hash": "fa52aa9b23afaff3bb0a5095c96be435",
     "semantic_hash": ""
   },
   "FRONTEND/playwright.invoice-import.config.ts": {
@@ -4308,15 +4308,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NotaEntradaArquivoService.cs": {
-    "mtime": 1791647905.5984452,
-    "seen": 1791648349.3747432,
-    "ast_hash": "605eab0a56dbd515659eabf14f588e03",
+    "mtime": 1791720113.3933964,
+    "seen": 1791721266.705238,
+    "ast_hash": "49e8e57464eb8097cb30ea41a1918507",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/NotasEntradaPanel.tsx": {
-    "mtime": 1791647841.2445996,
-    "seen": 1791648349.435743,
-    "ast_hash": "5a7714c8f1fa2c5504ed65c3add4e70d",
+    "mtime": 1791720375.9362025,
+    "seen": 1791721266.737667,
+    "ast_hash": "4bc393b7fbcdbdc7c5c09111b7bbff2c",
     "semantic_hash": ""
   },
   "FRONTEND/tests/architecture/invoice-history.spec.ts": {
@@ -4737,6 +4737,78 @@
     "mtime": 1791719169.1954808,
     "seen": 1791719236.4775965,
     "ast_hash": "29a5d9b798ae7858d76c8643bb4698a0",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Produtos/EntradaManualController.cs": {
+    "mtime": 1791720028.2326555,
+    "seen": 1791721266.66283,
+    "ast_hash": "8af5f419b65b7d6aa3dc25c443d3a756",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Models/Requests/EntradaManualRequest.cs": {
+    "mtime": 1791719929.5731597,
+    "seen": 1791721266.6734993,
+    "ast_hash": "ffdb9fd4f943124a6229d7ca92b61a85",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Produtos/EntradaManualService.cs": {
+    "mtime": 1791720747.7429252,
+    "seen": 1791721266.704132,
+    "ast_hash": "4f8785e6fc77e9ff525e53473f908f0f",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.manual-entry.config.ts": {
+    "mtime": 1791720648.9005814,
+    "seen": 1791721266.7282665,
+    "ast_hash": "8c1c454b008182967ad0068ef945703c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/ManualStockEntryPanel.tsx": {
+    "mtime": 1791721018.8581553,
+    "seen": 1791721266.7367864,
+    "ast_hash": "dbaddbd9ae604f18ba67686a70ecc95a",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/services/api/manualEntryService.ts": {
+    "mtime": 1791720307.519545,
+    "seen": 1791721266.7911067,
+    "ast_hash": "aa9c0520980253f298ddcb501f612e76",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/manual-entry.spec.ts": {
+    "mtime": 1791721018.8591516,
+    "seen": 1791721266.8088458,
+    "ast_hash": "548111852061afd0477690b6a4180ea9",
+    "semantic_hash": ""
+  },
+  "openspec/changes/entrada-manual-produtos/.openspec.yaml": {
+    "mtime": 1791719689.2135465,
+    "seen": 1791721266.8915431,
+    "ast_hash": "e75798be34fdfae33aa2735597ff5737",
+    "semantic_hash": ""
+  },
+  "openspec/changes/entrada-manual-produtos/design.md": {
+    "mtime": 1791719823.081014,
+    "seen": 1791721266.8915484,
+    "ast_hash": "e07c295d0fe5e92d174dcbb159984630",
+    "semantic_hash": ""
+  },
+  "openspec/changes/entrada-manual-produtos/proposal.md": {
+    "mtime": 1791719761.6955514,
+    "seen": 1791721266.8915532,
+    "ast_hash": "51336d7eb8dc8fa07217c6220011e8bc",
+    "semantic_hash": ""
+  },
+  "openspec/changes/entrada-manual-produtos/specs/entrada-manual-produtos/spec.md": {
+    "mtime": 1791719823.0840738,
+    "seen": 1791721266.8915582,
+    "ast_hash": "9c45a7cdab153018bdabf9faf2cb7545",
+    "semantic_hash": ""
+  },
+  "openspec/changes/entrada-manual-produtos/tasks.md": {
+    "mtime": 1791721182.1268523,
+    "seen": 1791721266.891562,
+    "ast_hash": "bcd1cb31f8d654fc369fe3e17380b975",
     "semantic_hash": ""
   }
 }
