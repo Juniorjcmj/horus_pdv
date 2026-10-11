@@ -34,6 +34,7 @@ import { type ClipboardEvent, type FormEvent, type KeyboardEvent as ReactKeyboar
 import BalancaImportModal from "@/components/Admin/BalancaImportModal";
 import GondolaLabelModal from "@/components/Admin/GondolaLabelModal";
 import ProductFiscalPanel from "@/components/Admin/ProductFiscalPanel";
+import ProductProfitSummary from "@/components/Admin/ProductProfitSummary";
 import NotasEntradaPanel from "@/components/Admin/NotasEntradaPanel";
 import NfeImportModal from "@/components/Admin/NfeImportModal";
 import PageHeader from "@/components/Admin/PageHeader";
@@ -1541,6 +1542,7 @@ export default function ProductRegisterPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [notasEntradaOpen, setNotasEntradaOpen] = useState(false);
   const [fiscalProduct, setFiscalProduct] = useState<Product | null>(null);
+  const [profitProductId, setProfitProductId] = useState<string | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [balancaModalOpen, setBalancaModalOpen] = useState(false);
   const [isImportingMercado, setIsImportingMercado] = useState(false);
@@ -2185,6 +2187,13 @@ export default function ProductRegisterPage() {
       setIsImportingMercado(false);
     }
   };
+
+  const profitProduct = products.find(product => product.id === profitProductId);
+  if (profitProduct) return (
+    <PageLayout className="space-y-4 py-4 md:py-6 lg:py-8">
+      <ProductProfitSummary product={profitProduct} onBack={() => setProfitProductId(null)} />
+    </PageLayout>
+  );
 
   if (fiscalProduct) return (
     <PageLayout className="space-y-4 py-4 md:py-6 lg:py-8">
@@ -3021,6 +3030,12 @@ export default function ProductRegisterPage() {
                           label: "Imprimir Etiqueta",
                           icon: <Tag size={13} />,
                           onClick: () => handlePrintSingleGondolaLabel(product),
+                        },
+                        {
+                          key: "profit",
+                          label: "Ver lucro e markup",
+                          icon: <DollarSign size={13} />,
+                          onClick: () => setProfitProductId(product.id),
                         },
                         {
                           key: "fiscal",

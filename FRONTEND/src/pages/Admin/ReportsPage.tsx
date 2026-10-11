@@ -13,6 +13,7 @@ import {
   type ReportDefinition,
 } from "@/components/Admin/ReportsPage";
 import PageLayout from "@/layout/PageLayout";
+import ProductProfitabilityView from "@/components/Admin/ReportsPage/ProductProfitabilityView";
 
 export default function ReportsPage() {
   // Guarda relatório selecionado para alternar entre catálogo e tela de filtros.
@@ -36,7 +37,9 @@ export default function ReportsPage() {
   return (
     <PageLayout className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
       {activeReport ? (
-        <ReportFiltersView report={activeReport} onBack={() => setActiveReport(null)} />
+        activeReport.id === "lucro-markup-cadastro"
+          ? <ProductProfitabilityView onBack={() => setActiveReport(null)} />
+          : <ReportFiltersView report={activeReport} onBack={() => setActiveReport(null)} />
       ) : (
         <>
           <PageHeader

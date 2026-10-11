@@ -135,6 +135,13 @@ const faixaInadimplenciaOptions: ReportFilterOption[] = [
 
 export const reportCatalog: ReportDefinition[] = [
   {
+    id: "lucro-markup-cadastro",
+    title: "Lucro e markup sem período",
+    description: "Consulte o lucro e o markup de cada produto pelos preços atuais de compra e venda do cadastro.",
+    icon: Percent,
+    filters: [],
+  },
+  {
     id: "lucro-markup-produtos",
     title: "Lucro e markup por produto",
     description: "Compare compra, venda e lucro dos produtos vendidos, com os totais e o markup do período.",

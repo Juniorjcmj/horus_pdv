@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import adminConfig from "./playwright.admin-ui.config";
 
 export default defineConfig(adminConfig, {
-  testMatch: "profit-report.spec.ts",
+  testMatch: ["profit-report.spec.ts", "current-product-profit.spec.ts"],
   outputDir: join(tmpdir(), "pdv-profit-report", "ui-results"),
   use: { trace: "off", screenshot: "off", video: "off" },
 });
