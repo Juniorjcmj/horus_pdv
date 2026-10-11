@@ -23,6 +23,7 @@ export function productProfitability(product: ProductPrices) {
     cost: cost === null ? null : cost / 100,
     sale: sale === null ? null : sale / 100,
     profit: profit === null ? null : profit / 100,
+    margin: profit !== null && sale !== null && sale > 0 ? profit / sale * 100 : null,
     markup: profit !== null && cost !== null && cost > 0 ? profit / cost * 100 : null,
   };
 }

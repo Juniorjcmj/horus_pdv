@@ -738,9 +738,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/reportsConfig.ts": {
-    "mtime": 1791715784.4318593,
-    "seen": 1791716324.3204653,
-    "ast_hash": "a896a2374219bf0b844a3afb30413b4a",
+    "mtime": 1791718262.3913743,
+    "seen": 1791718454.8321092,
+    "ast_hash": "879991fd9b7bc480c07eda794b700a0f",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/RowActionsMenu.tsx": {
@@ -1038,9 +1038,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ProductRegisterPage.tsx": {
-    "mtime": 1791657916.0421996,
-    "seen": 1791658847.5135195,
-    "ast_hash": "f1d770843f58d53eb3effbcc9b6319c4",
+    "mtime": 1791718262.3974621,
+    "seen": 1791718454.8600338,
+    "ast_hash": "71e645c8ca0c5336c70f679a21792eda",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/PurchasesPage.tsx": {
@@ -1050,9 +1050,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ReportsPage.tsx": {
-    "mtime": 1788665266.5957625,
-    "seen": 1788888974.3521645,
-    "ast_hash": "5b43f535b4860b99f0f7dfbbc05e37b6",
+    "mtime": 1791718262.3883164,
+    "seen": 1791718454.8605957,
+    "ast_hash": "409d0081b516fa3439ea5ac49d211f5f",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/ReturnsPage.tsx": {
@@ -4704,15 +4704,39 @@
     "semantic_hash": ""
   },
   "FRONTEND/playwright.profit-report.config.ts": {
-    "mtime": 1791716040.6344688,
-    "seen": 1791716324.304829,
-    "ast_hash": "0cb6c1a38caef2be04f0c3c4a9f13b13",
+    "mtime": 1791718352.7965274,
+    "seen": 1791718454.8206418,
+    "ast_hash": "8cee8d8351c40233be9ca17073f106f0",
     "semantic_hash": ""
   },
   "FRONTEND/tests/architecture/profit-report.spec.ts": {
     "mtime": 1791716201.975591,
     "seen": 1791716324.4055927,
     "ast_hash": "d0ab26a2d4cc1d360bcf7c0315843b7c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/ProductProfitSummary.tsx": {
+    "mtime": 1791718470.4899833,
+    "seen": 1791718541.664295,
+    "ast_hash": "784762e6009a7e559714e8b0dbe0b61c",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/Admin/ReportsPage/ProductProfitabilityView.tsx": {
+    "mtime": 1791718470.4899833,
+    "seen": 1791718541.6647422,
+    "ast_hash": "db8e279554d39a95679dbf6fd289d01a",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/productProfitability.ts": {
+    "mtime": 1791718262.3841443,
+    "seen": 1791718454.8753142,
+    "ast_hash": "bfada007777fc0de66d0228ea3335c02",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/architecture/current-product-profit.spec.ts": {
+    "mtime": 1791718470.4919887,
+    "seen": 1791718541.7003882,
+    "ast_hash": "f396c9ba106248e141ec3c4ae1b1c5e1",
     "semantic_hash": ""
   }
 }

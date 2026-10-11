@@ -21,10 +21,12 @@ const products = [product("101", "Cerveja lata", "10,00", "15,00"),
   product("104", "Sem custo", "", "5,00"), ...Array.from({ length: 10 }, (_, i) => product(`20${i}`, `Produto ${i}`, "2,00", "3,00"))];
 
 test("calcula pelos preços atuais, preserva centavos e trata custo indisponível", () => {
-  expect(productProfitability(products[0])).toEqual({ cost: 10, sale: 15, profit: 5, markup: 50 });
-  expect(productProfitability(products[1])).toEqual({ cost: 10, sale: 8, profit: -2, markup: -20 });
-  expect(productProfitability(products[2])).toEqual({ cost: 0, sale: 5, profit: 5, markup: null });
-  expect(productProfitability(products[3])).toEqual({ cost: null, sale: 5, profit: null, markup: null });
+  expect(productProfitability(products[0])).toMatchObject({ cost: 10, sale: 15, profit: 5, markup: 50 });
+  expect(productProfitability(products[0]).margin).toBeCloseTo(33.333333);
+  expect(productProfitability(products[1])).toEqual({ cost: 10, sale: 8, profit: -2, margin: -25, markup: -20 });
+  expect(productProfitability(products[2])).toEqual({ cost: 0, sale: 5, profit: 5, margin: 100, markup: null });
+  expect(productProfitability(products[3])).toEqual({ cost: null, sale: 5, profit: null, margin: null, markup: null });
+  expect(productProfitability(product("x", "x", "10,00", "0,00"))).toEqual({ cost: 10, sale: 0, profit: -10, margin: null, markup: -100 });
   expect(productProfitability(product("x", "x", "R$ 1.234,56", "1.334,56"))).toMatchObject({ cost: 1234.56, sale: 1334.56, profit: 100 });
   expect(productProfitability(product("x", "x", "0,10", "0,30"))).toMatchObject({ profit: 0.2, markup: 200 });
   expect(productProfitability(product("x", "x", "inválido", "5,00"))).toMatchObject({ cost: null, profit: null, markup: null });
@@ -60,6 +62,8 @@ test("consulta sem datas, filtra, abre produto e preserva filtro ao voltar; atua
   const state = await setup(page, baseURL!);
   await expect(page.locator("input[type=date]")).toHaveCount(0);
   await expect(page.locator("tbody tr")).toHaveCount(10);
+  await expect(page.getByRole("columnheader", { name: "Lucro bruto (%)", exact: true })).toBeVisible();
+  await expect(page.locator("tbody tr").first()).toContainText("33,33%");
   const folder = join(tmpdir(), "pdv-current-profit"); mkdirSync(folder, { recursive: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.screenshot({ path: join(folder, "desktop-list.png"), fullPage: true });
@@ -74,6 +78,7 @@ test("consulta sem datas, filtra, abre produto e preserva filtro ao voltar; atua
   await page.getByRole("button", { name: "Cerveja lata", exact: true }).click();
   await expect(summary(page)).toContainText("R$ 5,00");
   await expect(summary(page)).toContainText("50,00%");
+  await expect(summary(page)).toContainText("33,33%");
   await expect(summary(page)).not.toContainText("999");
   await page.getByRole("button", { name: "Voltar", exact: true }).click();
   await expect(search).toHaveValue("101");
@@ -82,6 +87,7 @@ test("consulta sem datas, filtra, abre produto e preserva filtro ao voltar; atua
   await expect(page.locator("tbody tr")).toContainText("25,00%");
   await page.getByRole("button", { name: "Cerveja lata", exact: true }).click();
   await expect(summary(page)).toContainText("R$ 3,00");
+  await expect(summary(page)).toContainText("20,00%");
   expect(state.reportRequests).toBe(0);
 });
 
@@ -93,15 +99,18 @@ test("erro permite recuperar e identifica prejuízo por kg, custo zero e custo a
   await page.getByRole("button", { name: "Batata KG", exact: true }).click();
   await expect(summary(page)).toContainText("Valores para 1 kg");
   await expect(summary(page)).toContainText("-20,00%");
+  await expect(summary(page)).toContainText("-25,00%");
   await expect(summary(page)).toContainText("prejuízo de R$ 2,00 por 1 kg");
   await page.getByRole("button", { name: "Voltar", exact: true }).click();
   await page.getByRole("button", { name: "Custo zerado", exact: true }).click();
   await expect(summary(page)).toContainText("O custo está zerado");
+  await expect(summary(page)).toContainText("100,00%");
   await expect(summary(page).locator("dd").last()).toHaveText("—");
   await page.getByRole("button", { name: "Voltar", exact: true }).click();
   await page.getByRole("button", { name: "Sem custo", exact: true }).click();
   await expect(summary(page)).toContainText("Complete os preços");
   await expect(summary(page).locator("dd").nth(2)).toHaveText("—");
+  await expect(summary(page).locator("dd").nth(3)).toHaveText("—");
 });
 
 test("ação no cadastro abre a mesma consulta e layout funciona no celular e tema escuro", async ({ page, baseURL }) => {

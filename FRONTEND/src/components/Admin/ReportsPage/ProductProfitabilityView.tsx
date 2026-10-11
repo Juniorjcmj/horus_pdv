@@ -42,9 +42,9 @@ export default function ProductProfitabilityView({ onBack }: { onBack: () => voi
       : filtered.length === 0 ? <ListState title="Nenhum produto encontrado" description={search ? "Confira o código ou a descrição informada." : "Cadastre um produto para consultar seus preços."} />
       : <>
         <TableScrollArea label="Preços, lucro e markup dos produtos" className="rounded-xl border border-border-primary bg-bg-light">
-          <table className="w-full min-w-[850px] text-left text-sm">
+          <table className="w-full min-w-[1000px] text-left text-sm">
             <thead className="bg-bg-gray-theme text-text-secondary"><tr>
-              {["Código", "Descrição do produto", "Unidade", "Preço de compra", "Preço de venda", "Lucro bruto", "Markup (%)"].map((label, index) =>
+              {["Código", "Descrição do produto", "Unidade", "Preço de compra", "Preço de venda", "Lucro bruto (R$)", "Lucro bruto (%)", "Markup (%)"].map((label, index) =>
                 <th key={label} scope="col" className={`px-4 py-3 whitespace-nowrap font-semibold ${index >= 3 ? "text-right" : ""}`}>{label}</th>)}
             </tr></thead>
             <tbody>{visible.map(product => {
@@ -54,7 +54,7 @@ export default function ProductProfitabilityView({ onBack }: { onBack: () => voi
                 <td className="px-4 py-2"><button type="button" onClick={() => setSelectedId(product.id)}
                   className="min-h-11 text-left font-semibold text-text-primary underline decoration-border-primary underline-offset-4 hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2">{product.productName}</button></td>
                 <td className="px-4 py-2">{product.unidadeComercial || "UN"}</td>
-                {[formatProductMoney(values.cost), formatProductMoney(values.sale), formatProductMoney(values.profit), formatProductMarkup(values.markup)].map((value, index) =>
+                {[formatProductMoney(values.cost), formatProductMoney(values.sale), formatProductMoney(values.profit), formatProductMarkup(values.margin), formatProductMarkup(values.markup)].map((value, index) =>
                   <td key={index} className="px-4 py-2 text-right whitespace-nowrap tabular-nums">{value}</td>)}
               </tr>;
             })}</tbody>
@@ -63,6 +63,6 @@ export default function ProductProfitabilityView({ onBack }: { onBack: () => voi
         <TablePagination totalItems={filtered.length} currentPage={safePage} itemsPerPage={pageSize} onPageChange={setPage}
           onItemsPerPageChange={value => { setPageSize(value); setPage(1); }} />
       </>}
-    <p className="text-sm text-text-secondary">Lucro bruto = venda − compra. Markup = lucro bruto ÷ compra × 100. “—” indica preço não informado ou markup sem custo maior que zero. Impostos, taxas e outras despesas não são descontados.</p>
+    <p className="text-sm text-text-secondary">Lucro bruto = venda − compra. Lucro bruto (%) = lucro bruto ÷ venda × 100. Markup = lucro bruto ÷ compra × 100. “—” indica preço não informado ou cálculo sem base maior que zero. Impostos, taxas e outras despesas não são descontados.</p>
   </div>;
 }
