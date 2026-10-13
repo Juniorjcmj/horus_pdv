@@ -33,9 +33,6 @@ public static class ApiDocumentation
             });
             var xml = Path.Combine(AppContext.BaseDirectory, "HORUSPDV-API.xml");
             if (File.Exists(xml)) options.IncludeXmlComments(xml, includeControllerXmlComments: true);
-            options.SchemaFilter<ApiContractSchemaFilter>();
-            options.OperationFilter<ApiContractOperationFilter>();
-            options.DocumentFilter<ApiContractSecurityFilter>();
         });
         return services;
     }
