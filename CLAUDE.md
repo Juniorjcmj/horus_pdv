@@ -20,3 +20,9 @@ O sistema oferece, em Configurações → Local Gateway, o download do instalado
 `GATEWAY/build-installer.sh` e **commite** o `quack-gateway-completo.zip` atualizado — senão o
 download fica desatualizado em relação ao código do Gateway. (No ambiente de nuvem sem `dotnet`
 nativo, rode o script dentro do container SDK 8.0 — ver cabeçalho do próprio script.)
+
+## Divisão de modelos
+- Propostas do OpenSpec (/opsx:propose) rodam em Opus. Não escreva código durante o propose.
+- Implementação (/opsx:apply) roda em subagente Sonnet. Todo o contexto necessário deve estar em proposal.md, design.md e tasks.md, então capriche neles durante o propose.
+- Delegue ao subagente `rapido` (Haiku) tarefas simples e mecânicas, como formatação, renomeações, imports, boilerplate e docs.
+- Decisões de arquitetura, revisão e integração ficam com o modelo principal.

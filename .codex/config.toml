@@ -1,0 +1,6 @@
+# Project defaults; independent of OpenSpec-generated skills.
+model = "gpt-6-astra"
+model_reasoning_effort = "low"
+
+[agents]
+enabled = true

@@ -14,6 +14,7 @@ using HORUSPDV_API.Services.Email;
 using HORUSPDV_API.Services.Fiado;
 using HORUSPDV_API.Services.Fiscal;
 using HORUSPDV_API.Services.Fornecedores;
+using HORUSPDV_API.Services.Mcp;
 using HORUSPDV_API.Services.Produtos;
 using HORUSPDV_API.Services.Promocoes;
 using HORUSPDV_API.Services.Security;
@@ -108,6 +109,7 @@ builder.Services.AddScoped<HomeAB>();
 builder.Services.AddScoped<RelatorioAB>();
 builder.Services.AddScoped<LojaGatewayConfigAB>();
 builder.Services.AddScoped<GatewayTokenAB>();
+builder.Services.AddScoped<IntegracaoTokenAB>();
 builder.Services.AddScoped<EmpresaTemaAB>();
 builder.Services.AddScoped<RegrasEmissaoNfceAB>();
 builder.Services.AddScoped<TreinamentoAB>();
@@ -141,6 +143,18 @@ builder.Services.AddScoped<IFiscalProvider, ZeusFiscalProvider>();
 builder.Services.AddScoped<DocumentoFiscalAB>();
 builder.Services.AddScoped<EmitenteFiscalStore>();
 builder.Services.AddHostedService<NfceOutboxWorker>();
+
+// Servidor MCP para agentes de IA (somente leitura) — ver docs/MCP.md.
+// Stateless: cada chamada é uma requisição HTTP independente, autenticada pelo HorusAuthMiddleware.
+builder.Services.AddHttpContextAccessor();
+builder.Services
+    .AddMcpServer(options =>
+    {
+        options.ServerInfo = new() { Name = "quack-pdv", Title = "Quack PDV", Version = "1.0.0" };
+        options.ServerInstructions = PdvMcpTools.ServerInstructions;
+    })
+    .WithHttpTransport(options => options.Stateless = true)
+    .WithTools<PdvMcpTools>();
 
 var app = builder.Build();
 
@@ -188,5 +202,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
+app.MapMcp(HorusAuthMiddleware.McpPath).ExcludeFromDescription();
 
 app.Run();

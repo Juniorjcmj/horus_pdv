@@ -1,0 +1,9 @@
+name = "openspec-propose"
+description = "Planejamento OpenSpec com Astra quando o principal usa outro modelo."
+model = "gpt-6-astra"
+model_reasoning_effort = "low"
+developer_instructions = """
+Execute a skill openspec-propose instalada no projeto. Produza somente artefatos de planejamento, sem implementar codigo.
+Registre contexto, requisitos, decisoes, criterios de aceite e validacao em proposal.md, design.md e tasks.md (conforme o schema), para permitir implementacao em contexto separado.
+Nao delegue novamente o propose. Retorne os artefatos criados e eventuais pendencias ao principal.
+"""

@@ -4,6 +4,9 @@ description: "Implement tasks from an OpenSpec change (Experimental)"
 allowed-tools: Bash(openspec:*)
 category: "Workflow"
 tags: ["workflow", "artifacts", "experimental"]
+model: sonnet
+context: fork
+background: false
 ---
 
 Implement tasks from an OpenSpec change.

@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_api_netcore_database_migrations_40_usuario_perfis_adicionais_sql", "label": "40_usuario_perfis_adicionais.sql", "file_type": "code", "source_file": "API/NETCORE/DataBase/Migrations/40_usuario_perfis_adicionais.sql", "source_location": null}], "edges": []}

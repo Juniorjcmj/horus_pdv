@@ -13,6 +13,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.5" />
         <!-- Emissão NFC-e (fork ativo, LGPL, mantém compatibilidade com o extinto DFe.NET/Zeus).
              Fixe a versão exata em produção — atualizar é o que traz Nota Técnica nova, deve ser

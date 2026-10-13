@@ -8,6 +8,9 @@ metadata:
   author: openspec
   version: "1.0"
   generatedBy: "1.8.0"
+model: sonnet
+context: fork
+background: false
 ---
 
 Implement tasks from an OpenSpec change.

@@ -26,6 +26,12 @@ public static class HorusRoles
     /// </summary>
     public const string Financeiro = "financeiro";
 
+    /// <summary>
+    /// Identidade técnica de um token de integração (agente de IA no servidor MCP). Não é perfil de usuário:
+    /// nenhum endpoint REST o aceita, e o token só é válido em /mcp, que expõe apenas consultas.
+    /// </summary>
+    public const string Integracao = "integracao";
+
     /// <summary>Perfis que podem ser dados como adicionais (lista fechada).</summary>
     public static readonly IReadOnlySet<string> PerfisAdicionaisValidos =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase) { Financeiro };

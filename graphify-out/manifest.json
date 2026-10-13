@@ -1,8 +1,8 @@
 {
   ".claude/settings.json": {
-    "mtime": 1788715891.7271643,
-    "seen": 1788888974.3517458,
-    "ast_hash": "dddf74e4faf8098f5fee2e4a87f3e4ee",
+    "mtime": 1791743895.154802,
+    "seen": 1791863729.5390518,
+    "ast_hash": "6f53307b759945cefb652a223105d10a",
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
@@ -120,9 +120,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/HORUSPDV-API.csproj": {
-    "mtime": 1791727054.6480238,
-    "seen": 1791727335.3999975,
-    "ast_hash": "456152d2570ee250b568bc7ad3d6d43a",
+    "mtime": 1791862959.4654672,
+    "seen": 1791863729.5455902,
+    "ast_hash": "e2d1f23142ab5509bc7be602cba7d5e8",
     "semantic_hash": ""
   },
   "API/NETCORE/HORUSPDV-API.sln": {
@@ -132,9 +132,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Middlewares/HorusAuthMiddleware.cs": {
-    "mtime": 1791392561.385669,
-    "seen": 1791393730.1771362,
-    "ast_hash": "3e0dabcd761fb29921b051f18d9d8241",
+    "mtime": 1791863027.813527,
+    "seen": 1791863729.5457597,
+    "ast_hash": "b728efa0b08dc47fd351eea6a77d1528",
     "semantic_hash": ""
   },
   "API/NETCORE/Middlewares/HorusRateLimitMiddleware.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1791726896.4684463,
-    "seen": 1791727335.407638,
-    "ast_hash": "d951f3f0f01e2012a5da72b0a14d77b4",
+    "mtime": 1791863147.9848864,
+    "seen": 1791863729.5528054,
+    "ast_hash": "84d06cf741ff4ac63289c474ba6ab8e4",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791719929.575171,
-    "seen": 1791721266.6932528,
-    "ast_hash": "a2dc362952998887e4ca93f6ad12b6f2",
+    "mtime": 1791863004.7073505,
+    "seen": 1791863729.5610368,
+    "ast_hash": "f78ac9485382c77007ab3fa1f8e68ea1",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -588,9 +588,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusRoles.cs": {
-    "mtime": 1791392930.943174,
-    "seen": 1791393730.2121453,
-    "ast_hash": "3585b08133c95abfa2d7ea1f42d5b458",
+    "mtime": 1791863027.9325662,
+    "seen": 1791863729.567817,
+    "ast_hash": "6b686acba9299be39d95e5c4e9d001d1",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Security/HorusSecretProtector.cs": {
@@ -894,9 +894,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/index.ts": {
-    "mtime": 1791280698.4070938,
-    "seen": 1791281508.9226243,
-    "ast_hash": "8d492890968502be13ff07ae83501732",
+    "mtime": 1791863420.0186903,
+    "seen": 1791863729.5902336,
+    "ast_hash": "e4b99cf25a583158cc4f035c666f7b37",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Tour/GuidedTour.tsx": {
@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
-    "mtime": 1791577407.01342,
-    "seen": 1791578390.3618758,
-    "ast_hash": "f2200123f9b592d2526b3a33e71ed2bb",
+    "mtime": 1791863420.1739652,
+    "seen": 1791863729.600246,
+    "ast_hash": "0a41a291336c3638e80842739a78f48d",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/StockPage.tsx": {
@@ -1452,9 +1452,9 @@
     "semantic_hash": ""
   },
   ".claude/commands/opsx/apply.md": {
-    "mtime": 1788719460.9930785,
-    "seen": 1788888974.352353,
-    "ast_hash": "db2420043fda57349149d41343f523c3",
+    "mtime": 1791743602.0618675,
+    "seen": 1791863729.6339667,
+    "ast_hash": "d6941963c4566d4bbf4dd765802bc6bd",
     "semantic_hash": ""
   },
   ".claude/commands/opsx/archive.md": {
@@ -1470,9 +1470,9 @@
     "semantic_hash": ""
   },
   ".claude/commands/opsx/propose.md": {
-    "mtime": 1788719460.9985564,
-    "seen": 1788888974.3523595,
-    "ast_hash": "c59c405741ce74b62a291587d408f83c",
+    "mtime": 1791743602.0553606,
+    "seen": 1791863729.634218,
+    "ast_hash": "e51aefa3690e6b5937f67673004b834d",
     "semantic_hash": ""
   },
   ".claude/commands/opsx/sync.md": {
@@ -1542,9 +1542,9 @@
     "semantic_hash": ""
   },
   ".claude/skills/openspec-apply-change/SKILL.md": {
-    "mtime": 1788719460.97693,
-    "seen": 1788888974.352382,
-    "ast_hash": "409d1b8c238577649775557e42b7475b",
+    "mtime": 1791743602.06321,
+    "seen": 1791863729.635694,
+    "ast_hash": "dae859fed8dd0b2ca95e0a56ec1d3028",
     "semantic_hash": ""
   },
   ".claude/skills/openspec-archive-change/SKILL.md": {
@@ -1560,9 +1560,9 @@
     "semantic_hash": ""
   },
   ".claude/skills/openspec-propose/SKILL.md": {
-    "mtime": 1788719460.988664,
-    "seen": 1788888974.3523877,
-    "ast_hash": "845bb70ff819d0546148ae5e9962c0ad",
+    "mtime": 1791743602.0595624,
+    "seen": 1791863729.635954,
+    "ast_hash": "91bb75a71daaaef670f62c14a2cd70bc",
     "semantic_hash": ""
   },
   ".claude/skills/openspec-sync-specs/SKILL.md": {
@@ -1734,9 +1734,9 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1788715948.3651452,
-    "seen": 1788888974.352447,
-    "ast_hash": "21ceb6533048be51308e69e7b74a35cf",
+    "mtime": 1791743779.4748104,
+    "seen": 1791863729.6408596,
+    "ast_hash": "b51c1c96e36d16c4063eb0784ef702e5",
     "semantic_hash": ""
   },
   "API/NETCORE/DataBase/Schemas/README.md": {
@@ -1752,9 +1752,9 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1790901563.5733626,
-    "seen": 1790909645.882064,
-    "ast_hash": "3f07197971f9dbbc34215545b573711b",
+    "mtime": 1791743615.3993368,
+    "seen": 1791863729.6424198,
+    "ast_hash": "3e33a0adcdd98bc1551613719f91b3e1",
     "semantic_hash": ""
   },
   "DEPLOY.md": {
@@ -4854,9 +4854,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Admin/ApiDocumentation.cs": {
-    "mtime": 1791726896.4669802,
-    "seen": 1791727335.4150968,
-    "ast_hash": "8a1201f64d74b6a1ef78ad14bf57c9f5",
+    "mtime": 1791748416.525121,
+    "seen": 1791863729.5610397,
+    "ast_hash": "3dec49e1a4c0221de4c4d7cacc2d3e42",
     "semantic_hash": ""
   },
   "API/tests/ApiDocumentationChecks/ApiDocumentationChecks.csproj": {
@@ -4893,6 +4893,432 @@
     "mtime": 1791727210.2625897,
     "seen": 1791727335.5175848,
     "ast_hash": "b6b43c3757d7eef1e5fa499ff8552aff",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Controllers/Integracao/IntegracaoTokenController.cs": {
+    "mtime": 1791863004.8551188,
+    "seen": 1791863729.543217,
+    "ast_hash": "2f71d4f0b8b38e2ff7eff0e772360849",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/01_migracao_valores.sql": {
+    "mtime": 1788701945.3290389,
+    "seen": 1791863729.5455017,
+    "ast_hash": "c2a38a10e12add6cdb39d57a9e48f695",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/02_estrutura_fiscal.sql": {
+    "mtime": 1788666954.516894,
+    "seen": 1791863729.5455043,
+    "ast_hash": "9ea7d946c56d3bb87737896a8ba80cdc",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/03_multiplas_formas_pagamento.sql": {
+    "mtime": 1788720481.6778424,
+    "seen": 1791863729.5455062,
+    "ast_hash": "bdb7d2d8e7966858ab438f749ccd0255",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/04_serie_fiscal.sql": {
+    "mtime": 1788894100.2084303,
+    "seen": 1791863729.5455081,
+    "ast_hash": "7550cc55f5954bbee4b5100bf06da5f0",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/05_produtos_balanca.sql": {
+    "mtime": 1789312210.8759732,
+    "seen": 1791863729.5455098,
+    "ast_hash": "bac2bcb5153eab3110b1cbb9e33f79ee",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/06_produtos_mercado_completo.sql": {
+    "mtime": 1789312224.2015877,
+    "seen": 1791863729.5455117,
+    "ast_hash": "9446b3960fdb9dfbb3bd1992b6933f2f",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/07_estoque_minimo.sql": {
+    "mtime": 1789248066.3816879,
+    "seen": 1791863729.5455132,
+    "ast_hash": "625a59486ca2ded063ff9dc45e3996ab",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/08_multitenant_seguranca.sql": {
+    "mtime": 1789312117.195407,
+    "seen": 1791863729.5455148,
+    "ast_hash": "8c7110acdd94a2dbad827c2fac3218b0",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/09_categorias_produto.sql": {
+    "mtime": 1789326905.466808,
+    "seen": 1791863729.5455167,
+    "ast_hash": "6e92a4bd423d4ac1286eaacde49a58da",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/10_controle_validade.sql": {
+    "mtime": 1789334485.050414,
+    "seen": 1791863729.5455184,
+    "ast_hash": "3d78d44fc6ed26ede5ef2131adba0e6d",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/11_promocoes.sql": {
+    "mtime": 1789328554.0113218,
+    "seen": 1791863729.5455198,
+    "ast_hash": "27b31d20bedabce223d7df93620c882c",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/12_fiado_conta_corrente.sql": {
+    "mtime": 1789329318.455765,
+    "seen": 1791863729.5455217,
+    "ast_hash": "1e2007c2ec08e3550745405da7b69f63",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/13_modelo_produto_expandido.sql": {
+    "mtime": 1789588173.2766817,
+    "seen": 1791863729.5455236,
+    "ast_hash": "e9c87e05dbc46adcadf7b4ca96ec9855",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/14_aprovacao_empresas.sql": {
+    "mtime": 1789753922.3801637,
+    "seen": 1791863729.5455253,
+    "ast_hash": "32852e09ba483fff54736411c5168259",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/15_nfe_modelo55.sql": {
+    "mtime": 1790195115.0529153,
+    "seen": 1791863729.5455267,
+    "ast_hash": "3d27282e537d2b3a3ba35ce853e5c2cc",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/16_ordens_compra.sql": {
+    "mtime": 1790197766.9884398,
+    "seen": 1791863729.5455287,
+    "ast_hash": "a3f26be7f96492424683cf4d511e69f3",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/17_ordens_compra_detalhes.sql": {
+    "mtime": 1790199656.7491858,
+    "seen": 1791863729.5455303,
+    "ast_hash": "619e9706370584774686ed6cf15fcd81",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/18_coluna_lucro_produto.sql": {
+    "mtime": 1790381439.801447,
+    "seen": 1791863729.545532,
+    "ast_hash": "8ad4ebe7dfe3c623c5549e70548df584",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/19_idempotencia_eventos.sql": {
+    "mtime": 1790421566.4887216,
+    "seen": 1791863729.5455337,
+    "ast_hash": "55b4ad3f5ceb4467be66845fbdc05ea5",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/20_indice_caixasessoes.sql": {
+    "mtime": 1790421566.4887216,
+    "seen": 1791863729.5455356,
+    "ast_hash": "4c79adf3f75601df5138407be2a6c8cf",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/21_lockout_persistente.sql": {
+    "mtime": 1790421566.4887216,
+    "seen": 1791863729.5455372,
+    "ast_hash": "99fa22afe638cf6a5807bebb002ac980",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/22_cancelamento_nfce_caixa.sql": {
+    "mtime": 1790452638.0840514,
+    "seen": 1791863729.545539,
+    "ast_hash": "647441c7e2250789b73820643062317b",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/23_devolucao_nfe_entrada.sql": {
+    "mtime": 1790455027.3021116,
+    "seen": 1791863729.5455408,
+    "ast_hash": "c46e89de805444f2b2b581d1afbf2eb8",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/24_serie_nfe.sql": {
+    "mtime": 1790458166.179746,
+    "seen": 1791863729.5455425,
+    "ast_hash": "dcaba3a7d8d3951c152d228bb9d2cb7d",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/25_loja_gateway_config.sql": {
+    "mtime": 1790783587.486281,
+    "seen": 1791863729.5455437,
+    "ast_hash": "9d61189a94ec6c7c933c1daeb6da9248",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/26_multi_caixa_operador.sql": {
+    "mtime": 1790870945.6814272,
+    "seen": 1791863729.5455456,
+    "ast_hash": "98fe7226392f93afab68f76f2b8e5286",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/27_empresa_tema.sql": {
+    "mtime": 1790899547.5922859,
+    "seen": 1791863729.5455472,
+    "ast_hash": "501bfa7d20ae25ebc1ebc20ace05133a",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/28_atualizacao_produtos_mercado.sql": {
+    "mtime": 1790990536.823279,
+    "seen": 1791863729.545549,
+    "ast_hash": "033f75cabb5406ebe34d67255e5a47da",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/29_fornecedores_cnpj_flexivel.sql": {
+    "mtime": 1790949279.9141612,
+    "seen": 1791863729.5455506,
+    "ast_hash": "e50a950652d0d159cb3c97918ef5fc14",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/30_regras_emissao_nfce.sql": {
+    "mtime": 1790965180.751336,
+    "seen": 1791863729.5455525,
+    "ast_hash": "6def385402cbf96b6e39594a4057dcfd",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/31_mapeamento_produto_fornecedor.sql": {
+    "mtime": 1790969022.0316508,
+    "seen": 1791863729.5455542,
+    "ast_hash": "e5fa1f0e2679fdef7bf5c5596722ef08",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/32_cancelamento_venda_auditoria.sql": {
+    "mtime": 1790972152.1842403,
+    "seen": 1791863729.5455563,
+    "ast_hash": "3ed085fd5ae061e53a4e9d26e7f6bf0c",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/33_atualizacao_precos_bebidas.sql": {
+    "mtime": 1790990590.3846672,
+    "seen": 1791863729.5455577,
+    "ast_hash": "c36e8e1c8ecda7a4e3b9a10c29194fde",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/34_lotes_validade.sql": {
+    "mtime": 1791043601.2159255,
+    "seen": 1791863729.5455596,
+    "ast_hash": "58c65581bdb69b87cf8a98d3e3b74d31",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/35_lotes_baixa_fefo.sql": {
+    "mtime": 1791050933.1538658,
+    "seen": 1791863729.545561,
+    "ast_hash": "36a1d1a912c662e7ce0ce714b44910f4",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/36_autorizacao_preco.sql": {
+    "mtime": 1791055557.4986227,
+    "seen": 1791863729.5455625,
+    "ast_hash": "c848b6ee18916e066c7e3646b549e942",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/37_regras_emissao_sempre.sql": {
+    "mtime": 1791073577.2730432,
+    "seen": 1791863729.5455642,
+    "ast_hash": "5df93045056f7aaad472eb077d097165",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/38_treinamento.sql": {
+    "mtime": 1791168585.5675228,
+    "seen": 1791863729.5455656,
+    "ast_hash": "be3f758db4afec21df9c9aed93ba4df4",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/39_gateway_tokens.sql": {
+    "mtime": 1791256674.7801645,
+    "seen": 1791863729.545567,
+    "ast_hash": "26b94f7e0921306fc12b34ee6503d3ac",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/40_usuario_perfis_adicionais.sql": {
+    "mtime": 1791392480.644571,
+    "seen": 1791863729.5455692,
+    "ast_hash": "88b00c05655dcd344d1f3ad21938b9a8",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/41_clientes_documento_opcional.sql": {
+    "mtime": 1791579192.280301,
+    "seen": 1791863729.5455713,
+    "ast_hash": "abed92f3274237019cb176b35b329459",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/42_notas_entrada_arquivo.sql": {
+    "mtime": 1791647177.7935534,
+    "seen": 1791863729.5455725,
+    "ast_hash": "433eefeb2e971cb5de4c307b5e8dcb1e",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/43_fiscal_ia.sql": {
+    "mtime": 1791680203.360245,
+    "seen": 1791863729.5455742,
+    "ast_hash": "f82bbb1d69e015e03da177844590b7d9",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/44_fiscal_qrcode.sql": {
+    "mtime": 1791683574.5141888,
+    "seen": 1791863729.5455759,
+    "ast_hash": "74b561c438cddbc493d9b95ee83e0497",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/45_fiscal_ia_fila.sql": {
+    "mtime": 1791686387.1904151,
+    "seen": 1791863729.5455775,
+    "ast_hash": "6efeed93448a07fbfe7fe97bd5c2d459",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/46_custo_venda.sql": {
+    "mtime": 1791715730.9096308,
+    "seen": 1791863729.545579,
+    "ast_hash": "fb379fc1f59327366b0718e94bf203f4",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/47_entrada_manual.sql": {
+    "mtime": 1791720113.392396,
+    "seen": 1791863729.5455806,
+    "ast_hash": "f4b6aa56e31e38956b7940df66d7e50e",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/48_integracao_tokens.sql": {
+    "mtime": 1791863004.5628927,
+    "seen": 1791863729.545582,
+    "ast_hash": "f2bd3611889a49e30856f372a465c4a3",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Resumo.sql": {
+    "mtime": 1790870931.9663606,
+    "seen": 1791863729.5455842,
+    "ast_hash": "43bb712ea3efa499ef082dedff347177",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Seed_Produtos_Balanca.sql": {
+    "mtime": 1789233869.5203013,
+    "seen": 1791863729.545586,
+    "ast_hash": "74316079e6aaae4928061cf7e3a86888",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Seed_Produtos_Mercado_Completo.sql": {
+    "mtime": 1789237522.506062,
+    "seen": 1791863729.5455878,
+    "ast_hash": "760b1f3626842f41e94b1c941d353155",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Repositories/DatabaseAccess/IntegracaoTokenAB.cs": {
+    "mtime": 1791863004.7856703,
+    "seen": 1791863729.5590134,
+    "ast_hash": "53cefd492afa557c3620563d0d9b3685",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Mcp/McpReportCatalog.cs": {
+    "mtime": 1791863136.7552094,
+    "seen": 1791863729.5656085,
+    "ast_hash": "23c66127c073ccd0262701408ad8e017",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Mcp/PdvMcpTools.cs": {
+    "mtime": 1791863376.5783806,
+    "seen": 1791863729.5656114,
+    "ast_hash": "8c516e52051a87a02ea6442a90631018",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/components/SettingsPage/IntegracaoTokensCard.tsx": {
+    "mtime": 1791863419.9294946,
+    "seen": 1791863729.5894332,
+    "ast_hash": "357caaeb4010e2cfeb02c7f917fd939e",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/services/api/integracaoTokenService.ts": {
+    "mtime": 1791863419.8141105,
+    "seen": 1791863729.604241,
+    "ast_hash": "e9f0b17eaa21aaf06f881c0c2f7ab222",
+    "semantic_hash": ""
+  },
+  "doc fiscal pdv/01_migracao_valores.sql": {
+    "mtime": 1788665353.7285285,
+    "seen": 1791863729.6306932,
+    "ast_hash": "25afa5be953cdbdde7916c22ece80997",
+    "semantic_hash": ""
+  },
+  "doc fiscal pdv/02_estrutura_fiscal.sql": {
+    "mtime": 1788665353.7480023,
+    "seen": 1791863729.630695,
+    "ast_hash": "2c0c3b6440e0ed66bd924ce04dee8b34",
+    "semantic_hash": ""
+  },
+  "docs/diagnostico-falta-caixa.sql": {
+    "mtime": 1791305080.3202126,
+    "seen": 1791863729.6311355,
+    "ast_hash": "d53cedb7e070834c762975b418b5f340",
+    "semantic_hash": ""
+  },
+  "horus-reels/eslint.config.mjs": {
+    "mtime": 1790687701.0,
+    "seen": 1791863729.6311374,
+    "ast_hash": "e20d59bb6b64567da14d80c3da2c6b15",
+    "semantic_hash": ""
+  },
+  "horus-reels/package.json": {
+    "mtime": 1791747073.1283348,
+    "seen": 1791863729.6311386,
+    "ast_hash": "f373033d0a87f491b3b6af7743a98a90",
+    "semantic_hash": ""
+  },
+  "horus-reels/remotion.config.ts": {
+    "mtime": 1790687701.0,
+    "seen": 1791863729.6311398,
+    "ast_hash": "e352801611e0e6b50b8081d5e1d087be",
+    "semantic_hash": ""
+  },
+  "horus-reels/src/Composition.tsx": {
+    "mtime": 1790687701.0,
+    "seen": 1791863729.6311412,
+    "ast_hash": "cc05c1cf455cf7ddc59eb6070e942f82",
+    "semantic_hash": ""
+  },
+  "horus-reels/src/Root.tsx": {
+    "mtime": 1790687701.0,
+    "seen": 1791863729.6311424,
+    "ast_hash": "90294b125d6aed86422bf66a4857e066",
+    "semantic_hash": ""
+  },
+  "horus-reels/src/index.ts": {
+    "mtime": 1790687701.0,
+    "seen": 1791863729.6311436,
+    "ast_hash": "d92d9dee1ab16aa44a75ae7fbfb843ca",
+    "semantic_hash": ""
+  },
+  "horus-reels/tsconfig.json": {
+    "mtime": 1790687701.0,
+    "seen": 1791863729.6311448,
+    "ast_hash": "3f9d94814358aa5e8a039f53ae3eee99",
+    "semantic_hash": ""
+  },
+  "scripts/openspec-models.mjs": {
+    "mtime": 1791743598.3909018,
+    "seen": 1791863729.631146,
+    "ast_hash": "bf670f200cf0663e0308e3b1c6ef95a1",
+    "semantic_hash": ""
+  },
+  ".claude/agents/rapido.md": {
+    "mtime": 1791743598.4540875,
+    "seen": 1791863729.6339643,
+    "ast_hash": "bd96f424f074b990499c6ae213dd9b8b",
+    "semantic_hash": ""
+  },
+  "docs/MCP.md": {
+    "mtime": 1791863689.7210605,
+    "seen": 1791863729.64499,
+    "ast_hash": "bd35176515f5f590d71bd38b2e60e631",
+    "semantic_hash": ""
+  },
+  "horus-reels/README.md": {
+    "mtime": 1791747073.119883,
+    "seen": 1791863729.6453788,
+    "ast_hash": "fcdfe1e0c3220831519fdbf617e6d7ae",
     "semantic_hash": ""
   }
 }

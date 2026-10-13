@@ -14,6 +14,9 @@ public class HorusAuthMiddleware(RequestDelegate next)
     /// <summary>Header com o id do operador que fez a operação no caixa (obrigatório nas rotas de negócio do Gateway).</summary>
     public const string GatewayOperatorHeader = "X-Operator-Id";
 
+    /// <summary>Servidor MCP para agentes de IA (ver Services/Mcp): só aceita token de integração.</summary>
+    public const string McpPath = "/mcp";
+
     /// <summary>
     /// Rotas que um token de Gateway pode chamar (método + caminho exato). Tudo fora daqui continua exigindo
     /// login de usuário. RequiresOperator=false só para o teste de conexão.
@@ -34,7 +37,8 @@ public class HorusAuthMiddleware(RequestDelegate next)
         HttpContext context,
         HorusJwtService jwtService,
         HorusSecurityStore securityStore,
-        GatewayTokenAB gatewayTokenAB)
+        GatewayTokenAB gatewayTokenAB,
+        IntegracaoTokenAB integracaoTokenAB)
     {
         if (ShouldSkipAuth(context))
         {
@@ -42,12 +46,21 @@ public class HorusAuthMiddleware(RequestDelegate next)
             return;
         }
 
-        var token = ResolveToken(context);
+        var isMcp = context.Request.Path.StartsWithSegments(McpPath, StringComparison.OrdinalIgnoreCase);
+        // No /mcp só vale o cabeçalho Authorization: cookie de sessão do navegador nunca autentica o agente.
+        var token = isMcp ? ResolveBearerToken(context) : ResolveToken(context);
 
         AuthenticatedUser? authenticatedUser;
         string companyStatus;
 
-        if (token.StartsWith(GatewayTokenAB.TokenPrefixMarker, StringComparison.Ordinal))
+        if (isMcp || token.StartsWith(IntegracaoTokenAB.TokenPrefixMarker, StringComparison.Ordinal))
+        {
+            // Agente de IA (token de integração, somente leitura): só entra no servidor MCP.
+            var integracaoAuth = await AuthenticateIntegracaoAsync(context, token, isMcp, integracaoTokenAB);
+            if (integracaoAuth is null) return; // resposta de erro já escrita
+            (authenticatedUser, companyStatus) = integracaoAuth.Value;
+        }
+        else if (token.StartsWith(GatewayTokenAB.TokenPrefixMarker, StringComparison.Ordinal))
         {
             // Local Gateway da loja (token por loja): age em nome do operador informado no header.
             var gatewayAuth = await AuthenticateGatewayAsync(context, token, gatewayTokenAB);
@@ -170,6 +183,49 @@ public class HorusAuthMiddleware(RequestDelegate next)
         return (user, validation.CompanyStatus);
     }
 
+    /// <summary>
+    /// Valida token de integração: só no /mcp, e o /mcp só aceita esse tipo de token. Escreve a resposta de
+    /// erro e devolve null quando recusa.
+    /// </summary>
+    private static async Task<(AuthenticatedUser User, string CompanyStatus)?> AuthenticateIntegracaoAsync(
+        HttpContext context,
+        string token,
+        bool isMcp,
+        IntegracaoTokenAB integracaoTokenAB)
+    {
+        if (!isMcp)
+        {
+            await WriteErrorAsync(context, StatusCodes.Status403Forbidden, "O token de integração só é aceito no servidor MCP (/mcp).");
+            return null;
+        }
+
+        if (!token.StartsWith(IntegracaoTokenAB.TokenPrefixMarker, StringComparison.Ordinal))
+        {
+            await WriteErrorAsync(
+                context,
+                StatusCodes.Status401Unauthorized,
+                $"Use um token de integração (Authorization: Bearer {IntegracaoTokenAB.TokenPrefixMarker}...), gerado em Configurações.");
+            return null;
+        }
+
+        var validation = await integracaoTokenAB.ValidateAsync(token, context.RequestAborted);
+        if (validation is null)
+        {
+            await WriteErrorAsync(context, StatusCodes.Status401Unauthorized, "Token de integração inválido ou revogado.");
+            return null;
+        }
+
+        var user = new AuthenticatedUser
+        {
+            Id = $"integracao:{validation.TokenId}",
+            CompanyId = validation.CompanyId,
+            SessionId = $"integracao:{validation.TokenId}",
+            Name = validation.Nome,
+            Role = HorusRoles.Integracao
+        };
+        return (user, validation.CompanyStatus);
+    }
+
     private static Task WriteErrorAsync(HttpContext context, int statusCode, string message)
     {
         context.Response.StatusCode = statusCode;
@@ -197,6 +253,11 @@ public class HorusAuthMiddleware(RequestDelegate next)
             return cookieToken;
         }
 
+        return ResolveBearerToken(context);
+    }
+
+    private static string ResolveBearerToken(HttpContext context)
+    {
         var authHeader = context.Request.Headers.Authorization.ToString();
         var parts = authHeader.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return parts.Length == 2 && parts[0].Equals("Bearer", StringComparison.Ordinal)

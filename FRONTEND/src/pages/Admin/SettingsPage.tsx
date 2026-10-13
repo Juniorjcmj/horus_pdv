@@ -10,6 +10,7 @@ import {
   GatewayMonitorCard,
   GatewaySettingsCard,
   GatewayTokensCard,
+  IntegracaoTokensCard,
   PendingBackupCard,
   PrintSettingsCard,
   SecuritySessionsCard,
@@ -102,6 +103,7 @@ export default function SettingsPage({
             {isAdminOrManager && <GatewaySettingsCard />}
             {isAdminOrManager && <GatewayTokensCard />}
             <GatewayMonitorCard />
+            {isAdminOrManager && <IntegracaoTokensCard />}
             <PendingBackupCard />
             <SecuritySessionsCard
               sessions={sessions}
