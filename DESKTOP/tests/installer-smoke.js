@@ -156,7 +156,7 @@ async function finishSale(page, success = true, offline = false, preview = false
   assert.ok(decodeURIComponent(job.url).includes("<svg"));
   await expect.poll(async () => (await application.windows()).length).toBe(totalWindows);
   if (preview) {
-    await expect(page.getByRole("heading", { name: "Prévia de impressão", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /^Comprovante da venda/ })).toBeVisible();
     await page.getByRole("button", { name: "Fechar", exact: true }).click();
     assert.equal(await application.evaluate(() => globalThis.installerSmokePrints.length), printsBefore + 1);
   }
@@ -165,7 +165,7 @@ async function finishSale(page, success = true, offline = false, preview = false
     assert.equal((await getWrites()).filter(write => write.path.endsWith("/HistoricoVendas")).length, writesBefore + 1);
     await application.evaluate(() => { globalThis.installerSmokePrintSuccess = true; });
     await page.getByRole("button", { name: "Imprimir última venda", exact: true }).click();
-    await page.getByRole("button", { name: "Imprimir Cupom Não Fiscal", exact: true }).click();
+    await page.getByRole("button", { name: "Imprimir", exact: true }).click();
     await expect.poll(() => application.evaluate(() => globalThis.installerSmokePrints.length)).toBe(printsBefore + 2);
     assert.equal((await getWrites()).filter(write => write.path.endsWith("/HistoricoVendas")).length, writesBefore + 1);
     await page.getByRole("button", { name: "Fechar", exact: true }).click();

@@ -3792,15 +3792,15 @@
     "semantic_hash": ""
   },
   "DESKTOP/package.json": {
-    "mtime": 1791686586.282174,
-    "seen": 1791686851.6806335,
-    "ast_hash": "f111390c587975eb072f6864916dc1a1",
+    "mtime": 1791989787.2782884,
+    "seen": 1791990317.0856464,
+    "ast_hash": "eebbace1799851c3fcbc8bb4d9c23b21",
     "semantic_hash": ""
   },
   "DESKTOP/README.md": {
-    "mtime": 1791658989.5271814,
-    "seen": 1791659093.5770102,
-    "ast_hash": "d3f49a77c84943da763ed4c7844b9340",
+    "mtime": 1791989787.2962747,
+    "seen": 1791990317.1955392,
+    "ast_hash": "9b3efa1e010551ec145a074b1a88ed3e",
     "semantic_hash": ""
   },
   "DESKTOP/offline.html": {
@@ -4182,9 +4182,9 @@
     "semantic_hash": ""
   },
   "DESKTOP/tests/installer-smoke.js": {
-    "mtime": 1791658989.5258775,
-    "seen": 1791659093.4961858,
-    "ast_hash": "ac11c0f006967b48d1f3e43dccfcd203",
+    "mtime": 1791990223.5758278,
+    "seen": 1791990317.086659,
+    "ast_hash": "249b4c2738f01755f1dfda2f2381c931",
     "semantic_hash": ""
   },
   "DESKTOP/tests/printer.test.js": {
@@ -5454,15 +5454,15 @@
     "semantic_hash": ""
   },
   "openspec/changes/corrigir-integridade-recebimento-pdv/tasks.md": {
-    "mtime": 1791976890.622769,
-    "seen": 1791976965.406584,
-    "ast_hash": "3cec5d2b92a294ebbfd51093be3490a1",
+    "mtime": 1791977022.448455,
+    "seen": 1791990317.2086546,
+    "ast_hash": "5a64a7dc559d8435337c96e3dad91d05",
     "semantic_hash": ""
   },
   "openspec/changes/corrigir-integridade-recebimento-pdv/validation.md": {
-    "mtime": 1791976890.6241815,
-    "seen": 1791976965.4065864,
-    "ast_hash": "6e1fb6d163897cc796247f17bc38c1f8",
+    "mtime": 1791977022.448455,
+    "seen": 1791990317.2086577,
+    "ast_hash": "d39f1efbde28262650f8a6e8e582dbd1",
     "semantic_hash": ""
   }
 }
