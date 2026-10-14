@@ -125,10 +125,34 @@ async function mockPrinting() {
   });
 }
 
+async function readLocalSaleState(page) {
+  return page.evaluate(async () => {
+    if (!(await indexedDB.databases()).some(database => database.name === "HorusPdvLocal"))
+      throw new Error("Banco local do PDV não foi preparado.");
+    const db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open("HorusPdvLocal");
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+    try {
+      const stores = ["outbox", "sales", "saleItems", "payments"];
+      const transaction = db.transaction(stores, "readonly");
+      const rows = await Promise.all(stores.map(store => new Promise((resolve, reject) => {
+        const request = transaction.objectStore(store).getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      })));
+      return { ...Object.fromEntries(stores.map((store, index) => [store, rows[index]])),
+        pendingPrints: JSON.parse(localStorage.getItem("horus-pdv-pending-danfe-prints") || "[]") };
+    } finally { db.close(); }
+  });
+}
+
 async function finishSale(page, success = true, offline = false, preview = false) {
   await application.evaluate((_electron, success) => { globalThis.installerSmokePrintSuccess = success; }, success);
   const writesBefore = (await getWrites()).filter(write => write.path.endsWith("/HistoricoVendas")).length;
   const printsBefore = await application.evaluate(() => globalThis.installerSmokePrints.length);
+  const eventsBefore = offline ? new Set((await readLocalSaleState(page)).outbox.map(event => event.id)) : null;
   const totalWindows = (await application.windows()).length;
   await page.evaluate(preview => {
     localStorage.setItem("horus-pdv-print-preview-enabled", String(preview));
@@ -143,24 +167,62 @@ async function finishSale(page, success = true, offline = false, preview = false
     await application.evaluate(() => { globalThis.installerSmokeOffline = true; });
   }
   await page.getByRole("button", { name: "Confirmar Venda", exact: true }).click();
-  await expect.poll(() => application.evaluate(() => globalThis.installerSmokePrints.length)).toBe(printsBefore + 1);
+  if (offline) {
+    // No XML/Gateway is available in this test. The sale must persist while fiscal printing waits.
+    await expect.poll(async () => (await readLocalSaleState(page)).outbox
+      .filter(event => !eventsBefore.has(event.id) && event.eventType === "SALE_CREATED").length,
+    { timeout: 20_000 }).toBe(1);
+  } else {
+    await expect.poll(() => application.evaluate(() => globalThis.installerSmokePrints.length)).toBe(printsBefore + 1);
+  }
   await expect(page.getByRole("heading", { name: "Pagamento", exact: true })).toHaveCount(0);
   await expect(page.getByRole("row").filter({ hasText: "Leite instalador" })).toHaveCount(0);
-  const job = (await application.evaluate(() => globalThis.installerSmokePrints)).at(-1);
-  assert.equal(job.options.silent, true);
-  assert.ok(!job.options.deviceName, "O cupom deve usar a impressora padrão.");
-  assert.equal(job.options.usePrinterDefaultPageSize, true);
-  assert.equal(job.visible, false);
-  assert.equal(job.preferences.javascript, false);
-  assert.ok(decodeURIComponent(job.url).includes("Leite instalador"));
-  assert.ok(decodeURIComponent(job.url).includes("<svg"));
+  if (offline) {
+    const state = await readLocalSaleState(page);
+    const event = state.outbox.find(event => !eventsBefore.has(event.id) && event.eventType === "SALE_CREATED");
+    assert.ok(["PENDING", "FISCAL_PENDING", "FORWARDED"].includes(event.status));
+    const payload = JSON.parse(event.payload);
+    const sale = state.sales.find(sale => sale.id === payload.clientSaleId);
+    assert.ok(sale, "A venda offline deve existir no histórico local.");
+    assert.equal(sale.origin, "OFFLINE");
+    assert.equal(sale.status, "COMPLETED");
+    assert.equal(sale.totalAmount, 10);
+    assert.equal(payload.eventId, event.id);
+    assert.equal(state.saleItems.filter(item => item.saleId === sale.id).reduce((sum, item) => sum + item.total, 0), 10);
+    const payments = state.payments.filter(payment => payment.saleId === sale.id);
+    assert.equal(payments.length, 1);
+    assert.equal(payments[0].amount, 10);
+    assert.equal(payments[0].cashGiven, 100);
+    assert.equal(payments[0].changeAmount, 90);
+    assert.ok(!payload.xmlNfceContingencia, "O smoke não fornece um XML fiscal para esta venda.");
+    const pending = state.pendingPrints.find(entry => entry.receipt.clientSaleId === sale.id);
+    assert.ok(pending, "O comprovante deve permanecer na fila até obter o documento fiscal.");
+    assert.equal(pending.receipt.eventId, event.id);
+    assert.equal(pending.receipt.needsFiscalPrint, true);
+    // Exercise the automatic flush once: absence of a fiscal document must not print a fallback receipt.
+    await expect.poll(async () => (await readLocalSaleState(page)).pendingPrints
+      .find(entry => entry.receipt.clientSaleId === sale.id)?.attempts || 0,
+    { timeout: 15_000 }).toBeGreaterThan(0);
+    assert.equal(await application.evaluate(() => globalThis.installerSmokePrints.length), printsBefore);
+    assert.equal((await getWrites()).filter(write => write.path.endsWith("/HistoricoVendas")).length, writesBefore);
+    console.log("OK: venda offline persistida com recebido/troco corretos; comprovante fiscal aguarda XML sem impressão indevida.");
+  } else {
+    const job = (await application.evaluate(() => globalThis.installerSmokePrints)).at(-1);
+    assert.equal(job.options.silent, true);
+    assert.ok(!job.options.deviceName, "O cupom deve usar a impressora padrão.");
+    assert.equal(job.options.usePrinterDefaultPageSize, true);
+    assert.equal(job.visible, false);
+    assert.equal(job.preferences.javascript, false);
+    assert.ok(decodeURIComponent(job.url).includes("Leite instalador"));
+    assert.ok(decodeURIComponent(job.url).includes("<svg"));
+  }
   await expect.poll(async () => (await application.windows()).length).toBe(totalWindows);
   if (preview) {
     await expect(page.getByRole("heading", { name: /^Comprovante da venda/ })).toBeVisible();
     await page.getByRole("button", { name: "Fechar", exact: true }).click();
-    assert.equal(await application.evaluate(() => globalThis.installerSmokePrints.length), printsBefore + 1);
+    assert.equal(await application.evaluate(() => globalThis.installerSmokePrints.length), printsBefore + (offline ? 0 : 1));
   }
-  if (!success) {
+  if (!success && !offline) {
     await expect(page.getByText('Venda salva, mas não foi possível imprimir. Confira a impressora e use "Imprimir última venda".', { exact: true })).toBeVisible();
     assert.equal((await getWrites()).filter(write => write.path.endsWith("/HistoricoVendas")).length, writesBefore + 1);
     await application.evaluate(() => { globalThis.installerSmokePrintSuccess = true; });
