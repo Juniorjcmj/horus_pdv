@@ -56,6 +56,18 @@ public class AuditLogAB(Connection connection)
         await command.ExecuteNonQueryAsync();
     }
 
+    public async Task RegistrarNaTransacaoAsync(SqlConnection db, SqlTransaction transaction, string companyId, string userName, string eventType, string description, string entityType, string entityId)
+    {
+        await using var command = new SqlCommand("INSERT INTO AuditLog (CompanyId, UserId, UserName, EventType, EntityType, EntityId, Description, Ip) VALUES (@CompanyId, '', @UserName, @EventType, @EntityType, @EntityId, @Description, NULL)", db, transaction);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@UserName", userName);
+        command.Parameters.AddWithValue("@EventType", eventType);
+        command.Parameters.AddWithValue("@EntityType", entityType);
+        command.Parameters.AddWithValue("@EntityId", entityId);
+        command.Parameters.AddWithValue("@Description", description);
+        await command.ExecuteNonQueryAsync();
+    }
+
     /// <summary>Últimos registros da empresa — o filtro por período/tipo é feito no relatório (RelatorioAB), igual ao resto dos relatórios do sistema.</summary>
     public async Task<List<AuditLogAD>> ListarAsync(string companyId, int limite = 2000)
     {

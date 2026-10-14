@@ -1,3 +1,4 @@
+import { receiptFacts } from "@/utils/saleReceiptFacts";
 /**
  * Arquivo: src/pages/Admin/FiscalPage.tsx
  * Objetivo: central avançada de controle, cancelamento homologado, reemissão, DANFE e XMLs
@@ -397,20 +398,8 @@ export default function FiscalPage() {
       const rows = printData?.rows ?? [];
       const storedUser = getStoredAuthUser();
       const first = rows[0];
-      const items = rows.map((row, index) => {
-        const unitPrice = parseMoneyBr(row.unitPrice || "0,00");
-        const itemTotal = parseMoneyBr(row.itemTotal || "0,00") || unitPrice * row.quantity;
-        return {
-          id: `${row.saleNumber}-${row.productCode}-${index}`,
-          code: row.productCode,
-          name: row.productName,
-          quantity: row.quantity,
-          unitPrice,
-          total: itemTotal,
-        };
-      });
-      const itemsSubtotal = items.reduce((sum, item) => sum + item.total, 0);
-      const receiptTotal = parseMoneyBr(first?.totalAmount || "0,00") || itemsSubtotal;
+      if (!rows.length) throw new Error("Venda sem fatos disponíveis para impressão.");
+      const facts = receiptFacts(rows, printData?.payments);
       const paymentType = first?.paymentType || "dinheiro";
 
       const receipt: SaleReceipt = {
@@ -437,10 +426,7 @@ export default function FiscalPage() {
         paymentType,
         paymentLabel: paymentType,
         operatorName: first?.operatorName || storedUser?.name || "Operador",
-        subtotal: receiptTotal,
-        cashGiven: paymentType === "dinheiro" ? receiptTotal : 0,
-        change: 0,
-        items,
+        ...facts,
         fiscalDetail: detail,
       };
 

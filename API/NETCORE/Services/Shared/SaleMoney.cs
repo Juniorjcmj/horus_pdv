@@ -9,7 +9,7 @@ public static class SaleMoney
     public static decimal ItemNet(decimal quantity, decimal price, decimal discount)
     {
         if (quantity <= 0 || price < 0 || discount < 0)
-            throw new InvalidOperationException("Quantidade, preÃ§o ou desconto invÃ¡lido na venda.");
+            throw new InvalidOperationException("Quantidade, preço ou desconto inválido na venda.");
         var gross = Money(quantity * price);
         var roundedDiscount = Money(discount);
         if (roundedDiscount > gross) throw new InvalidOperationException("Desconto superior ao bruto do item.");
@@ -24,7 +24,7 @@ public static class SaleMoney
         foreach (var payment in payments)
         {
             if (payment.Amount <= 0 || payment.CashGiven < 0 || payment.ChangeAmount < 0)
-                throw new InvalidOperationException("Pagamento, recebido ou troco invÃ¡lido.");
+                throw new InvalidOperationException("Pagamento, recebido ou troco inválido.");
             var amount = Money(payment.Amount);
             var change = payment.ChangeAmount.HasValue ? Money(payment.ChangeAmount.Value) : (decimal?)null;
             var received = payment.CashGiven.HasValue ? Money(payment.CashGiven.Value) : (decimal?)null;
@@ -35,7 +35,7 @@ public static class SaleMoney
             if (!cash && change.GetValueOrDefault() != 0)
                 throw new InvalidOperationException("Troco permitido somente em dinheiro.");
             if (cash && (received.HasValue || change.HasValue) && (received ?? amount) != amount + change.GetValueOrDefault())
-                throw new InvalidOperationException("Recebido em dinheiro deve ser igual Ã  parcela mais troco.");
+                throw new InvalidOperationException("Recebido em dinheiro deve ser igual à parcela mais troco.");
             result.Add(new VendaPagamentoRequest { PaymentType = type, Amount = amount, CashGiven = received, ChangeAmount = change });
         }
         if (result.Sum(p => p.Amount) != total)
@@ -45,9 +45,9 @@ public static class SaleMoney
     public static decimal Fiado(IEnumerable<VendaPagamentoRequest> payments) => payments.Where(p => string.Equals(p.PaymentType, "fiado", StringComparison.OrdinalIgnoreCase)).Sum(p => p.Amount);
     public static void Credit(decimal limit, decimal debt, decimal requested)
     {
-        if (limit < 0 || debt < 0) throw new InvalidOperationException("Dados de crÃ©dito invÃ¡lidos.");
+        if (limit < 0 || debt < 0) throw new InvalidOperationException("Dados de crédito inválidos.");
         var available = Math.Max(0, Money(limit) - Money(debt));
         if (limit <= 0 || requested > available)
-            throw new InvalidOperationException($"CrÃ©dito insuficiente. DisponÃ­vel: R$ {available:N2}, solicitado em fiado: R$ {requested:N2}, insuficiÃªncia: R$ {Math.Max(0, requested - available):N2}. Cliente sem limite nÃ£o pode comprar fiado.");
+            throw new InvalidOperationException($"Crédito insuficiente. Disponível: R$ {available:N2}, solicitado em fiado: R$ {requested:N2}, insuficiência: R$ {Math.Max(0, requested - available):N2}. Cliente sem limite não pode comprar fiado.");
     }
 }

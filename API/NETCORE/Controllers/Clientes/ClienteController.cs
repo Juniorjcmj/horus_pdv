@@ -15,7 +15,7 @@ namespace HORUSPDV_API.Controllers.Clientes;
 [ApiController]
 [Route("api/[controller]")]
 [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
-public class ClienteController(IClienteService clienteService) : ControllerBase
+public class ClienteController(IClienteService clienteService, HORUSPDV_API.Repositories.DatabaseAccess.ClienteAB clienteAB) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<ClienteModel>>), StatusCodes.Status200OK)]
@@ -30,6 +30,16 @@ public class ClienteController(IClienteService clienteService) : ControllerBase
             Message = "Clientes obtidos com sucesso.",
             Data = data
         });
+    }
+
+    [HttpPost("credito-snapshot")]
+    public async Task<IActionResult> CreditSnapshot([FromBody] List<string> clientSaleIds)
+    {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        if (clientSaleIds.Count > 5000) return BadRequest(new ApiResponse<object> { Success = false, Message = "Muitas identidades para conferir crédito." });
+        var snapshot = await clienteAB.CreditSnapshotAsync(user.CompanyId, clientSaleIds);
+        return Ok(new ApiResponse<object> { Success = true, Data = new { customers = snapshot.Customers, acceptedClientSaleIds = snapshot.AcceptedClientSaleIds } });
     }
 
     [HttpPost]

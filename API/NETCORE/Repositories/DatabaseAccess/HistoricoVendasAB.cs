@@ -159,6 +159,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         try
         {
             var eventId = request.EventId?.Trim();
+            // Capture canonical identity before normalization mutates settlement fields.
+            var identityHash = !string.IsNullOrWhiteSpace(request.PayloadHash) ? request.PayloadHash.Trim().ToLowerInvariant() : HorusPayloadHash.ComputeHash(request);
             if (!string.IsNullOrWhiteSpace(eventId))
             {
                 const string checkEventSql = """
@@ -178,9 +180,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                     var responsePayloadJson = checkReader.GetString(1);
                     await checkReader.CloseAsync();
 
-                    var currentHash = !string.IsNullOrWhiteSpace(request.PayloadHash)
-                        ? request.PayloadHash.Trim().ToLowerInvariant()
-                        : HorusPayloadHash.ComputeHash(request);
+                    var currentHash = identityHash;
 
                     if (!string.Equals(storedHash, currentHash, StringComparison.OrdinalIgnoreCase))
                     {
@@ -218,7 +218,6 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 var net = SaleMoney.ItemNet(item.Quantity, item.UnitPrice, item.Desconto);
                 if (item.ItemTotal.HasValue && SaleMoney.Money(item.ItemTotal.Value) != net)
                     throw new InvalidOperationException("Líquido informado difere do cálculo do item.");
-                item.Desconto = SaleMoney.Money(item.Desconto);
             }
             if (netTotal != totalAmount) throw new InvalidOperationException("Soma dos itens líquidos difere do total da venda.");
             var payments = SaleMoney.Payments(totalAmount, paymentType, request.Payments);
@@ -293,9 +292,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 
             if (!string.IsNullOrWhiteSpace(eventId))
             {
-                var payloadHash = !string.IsNullOrWhiteSpace(request.PayloadHash)
-                    ? request.PayloadHash.Trim().ToLowerInvariant()
-                    : HorusPayloadHash.ComputeHash(request);
+                var payloadHash = identityHash;
 
                 var responseJson = JsonSerializer.Serialize(result, JsonOptions);
                 const string insertEventSql = """
@@ -317,6 +314,10 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 await eventCmd.ExecuteNonQueryAsync();
             }
 
+            if (fiadoMov is not null)
+                await auditLogAb.RegistrarNaTransacaoAsync(db, transaction, companyId, operatorName, AuditEventTypes.FiadoDebito,
+                    $"Venda fiado {HorusMoneyFormat.Format(fiadoMov.Valor)} para {fiadoMov.ClienteNome}. Saldo devedor: {HorusMoneyFormat.Format(fiadoMov.SaldoAtual)}.", "Cliente", fiadoMov.ClienteId);
+
             await transaction.CommitAsync();
 
             // Baixa FEFO por lote (Fase 2): depois do commit e sem nunca derrubar a venda já gravada.
@@ -336,15 +337,6 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 }
             }
 
-            if (fiadoMov is not null)
-            {
-                _ = auditLogAb.RegistrarAsync(
-                    companyId, "", operatorName,
-                    AuditEventTypes.FiadoDebito,
-                    $"Venda fiado {HorusMoneyFormat.Format(fiadoMov.Valor)} para {fiadoMov.ClienteNome}. Saldo devedor: {HorusMoneyFormat.Format(fiadoMov.SaldoAtual)}.",
-                    entityType: "Cliente",
-                    entityId: fiadoMov.ClienteId);
-            }
 
             return result;
         }
@@ -459,21 +451,16 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 if (await finish.ExecuteNonQueryAsync() != 1) throw new InvalidOperationException("Pedido alterado durante finalização.");
             }
 
+            if (fiadoMovFixo is not null)
+                await auditLogAb.RegistrarNaTransacaoAsync(db, transaction, companyId, operatorName, AuditEventTypes.FiadoDebito,
+                    $"Venda fiado {HorusMoneyFormat.Format(fiadoMovFixo.Valor)} para {fiadoMovFixo.ClienteNome}. Saldo devedor: {HorusMoneyFormat.Format(fiadoMovFixo.SaldoAtual)}.", "Cliente", fiadoMovFixo.ClienteId);
+
             await transaction.CommitAsync();
 
             // Baixa FEFO por lote (Fase 2): depois do commit e sem nunca derrubar a venda já gravada.
             await loteAb.ConsumirVendaSeguroAsync(
                 companyId, result.VendaId, saleItems.Select(item => (item.ProductCode, item.Quantity)));
 
-            if (fiadoMovFixo is not null)
-            {
-                _ = auditLogAb.RegistrarAsync(
-                    companyId, "", operatorName,
-                    AuditEventTypes.FiadoDebito,
-                    $"Venda fiado {HorusMoneyFormat.Format(fiadoMovFixo.Valor)} para {fiadoMovFixo.ClienteNome}. Saldo devedor: {HorusMoneyFormat.Format(fiadoMovFixo.SaldoAtual)}.",
-                    entityType: "Cliente",
-                    entityId: fiadoMovFixo.ClienteId);
-            }
 
             return result;
         }
@@ -646,7 +633,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 ProductCode = item.ProductCode,
                 ProductName = item.ProductName,
                 Quantity = item.Quantity,
-                UnitPrice = HorusMoneyFormat.Format(item.UnitPrice),
+                UnitPrice = HorusMoneyFormat.FormatUnitPrice(item.UnitPrice),
                 Desconto = item.Desconto,
                 PromocaoId = item.PromocaoId,
                 ItemTotal = HorusMoneyFormat.Format(itemTotal),
@@ -785,7 +772,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 UnitPrice = unitPrice,
                 CostPrice = info.CostPrice,
                 Quantity = req.Quantity,
-                Desconto = req.Desconto,
+                Desconto = SaleMoney.Money(req.Desconto),
                 PromocaoId = req.PromocaoId
             });
         }
@@ -882,7 +869,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         ProductCode = ReadString(reader, "ProductCode"),
         ProductName = ReadString(reader, "ProductName"),
         Quantity = ReadDecimal(reader, "Quantity"),
-        UnitPrice = HorusMoneyFormat.Format(ReadDecimal(reader, "UnitPrice")),
+        UnitPrice = HorusMoneyFormat.FormatUnitPrice(ReadDecimal(reader, "UnitPrice")),
         Desconto = ReadDecimal(reader, "Desconto"),
         PromocaoId = ReadNullableString(reader, "PromocaoId"),
         ItemTotal = HorusMoneyFormat.Format(ReadDecimal(reader, "ItemTotal")),
@@ -1332,7 +1319,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                     ProductCode = productCode,
                     ProductName = ReadString(reader, "ProductName"),
                     Quantity = qty,
-                    UnitPrice = HorusMoneyFormat.Format(ReadDecimal(reader, "UnitPrice")),
+                    UnitPrice = HorusMoneyFormat.FormatUnitPrice(ReadDecimal(reader, "UnitPrice")),
                     ItemTotal = HorusMoneyFormat.Format(ReadDecimal(reader, "ItemTotal")),
                 };
                 resumo.Items.Add(item);

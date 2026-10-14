@@ -60,6 +60,9 @@ public static class HorusMoneyFormat
     /// <summary>Formata um valor monetário como pt-BR com 2 casas ("1.234,56").</summary>
     public static string Format(decimal value) => value.ToString("N2", PtBr);
 
+    /// <summary>Unit prices retain the four decimal places supported by the sales database.</summary>
+    public static string FormatUnitPrice(decimal value) => value.ToString("0.00##", PtBr);
+
     /// <summary>
     /// Formata quantidade pt-BR com até 4 casas, sem zeros à direita (10 -> "10", 0,4520 kg -> "0,452").
     /// Usada onde a quantidade pode ser fracionada (produto vendido por peso/volume).

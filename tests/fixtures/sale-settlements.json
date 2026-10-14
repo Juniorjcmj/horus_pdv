@@ -1,0 +1,203 @@
+[
+  {
+    "name": "troco-880",
+    "sale": {
+      "customerName": "Cliente teste",
+      "customerCpf": "52998224725",
+      "operatorName": "Caixa teste",
+      "paymentType": "dinheiro",
+      "totalAmount": "8,80",
+      "items": [
+        {
+          "productCode": "SKU",
+          "productName": "Produto teste",
+          "quantity": 1,
+          "unitPrice": 8.8,
+          "desconto": 0,
+          "itemTotal": 8.8
+        }
+      ],
+      "payments": [
+        {
+          "paymentType": "dinheiro",
+          "amount": 8.8,
+          "cashGiven": 10,
+          "changeAmount": 1.2
+        }
+      ]
+    }
+  },
+  {
+    "name": "misto-pix-dinheiro",
+    "sale": {
+      "customerName": "Cliente teste",
+      "customerCpf": "52998224725",
+      "operatorName": "Caixa teste",
+      "paymentType": "Múltiplo",
+      "totalAmount": "100,00",
+      "items": [
+        {
+          "productCode": "SKU",
+          "productName": "Produto teste",
+          "quantity": 1,
+          "unitPrice": 100,
+          "desconto": 0
+        }
+      ],
+      "payments": [
+        {
+          "paymentType": "pix",
+          "amount": 50
+        },
+        {
+          "paymentType": "dinheiro",
+          "amount": 50,
+          "cashGiven": 100,
+          "changeAmount": 50
+        }
+      ]
+    }
+  },
+  {
+    "name": "dinheiro-duas-parcelas",
+    "sale": {
+      "customerName": "Cliente teste",
+      "customerCpf": "52998224725",
+      "operatorName": "Caixa teste",
+      "paymentType": "Múltiplo",
+      "totalAmount": "100,00",
+      "items": [
+        {
+          "productCode": "SKU",
+          "productName": "Produto teste",
+          "quantity": 1,
+          "unitPrice": 100,
+          "desconto": 0
+        }
+      ],
+      "payments": [
+        {
+          "paymentType": "dinheiro",
+          "amount": 30,
+          "cashGiven": 50,
+          "changeAmount": 20
+        },
+        {
+          "paymentType": "dinheiro",
+          "amount": 70,
+          "cashGiven": 100,
+          "changeAmount": 30
+        }
+      ]
+    }
+  },
+  {
+    "name": "gratuito514",
+    "sale": {
+      "customerName": "Cliente teste",
+      "customerCpf": "52998224725",
+      "operatorName": "Caixa teste",
+      "paymentType": "Múltiplo",
+      "totalAmount": "82,48",
+      "items": [
+        {
+          "productCode": "FREE",
+          "productName": "Produto teste",
+          "quantity": 1,
+          "unitPrice": 5.14,
+          "desconto": 5.14,
+          "itemTotal": 0
+        },
+        {
+          "productCode": "SKU",
+          "productName": "Produto teste",
+          "quantity": 1,
+          "unitPrice": 82.48,
+          "desconto": 0,
+          "itemTotal": 82.48
+        }
+      ],
+      "payments": [
+        {
+          "paymentType": "fiado",
+          "amount": 30
+        },
+        {
+          "paymentType": "fiado",
+          "amount": 52.48
+        }
+      ]
+    }
+  },
+  {
+    "name": "fracionado",
+    "sale": {
+      "customerName": "Cliente teste",
+      "customerCpf": "52998224725",
+      "operatorName": "Caixa teste",
+      "paymentType": "pix",
+      "totalAmount": "1,25",
+      "items": [
+        {
+          "productCode": "SKU",
+          "productName": "Produto teste",
+          "quantity": 0.125,
+          "unitPrice": 10,
+          "desconto": 0,
+          "itemTotal": 1.25
+        }
+      ],
+      "payments": [
+        {
+          "paymentType": "pix",
+          "amount": 1.25
+        }
+      ]
+    }
+  },
+  {
+    "name": "midpoint",
+    "sale": {
+      "customerName": "Cliente teste",
+      "customerCpf": "52998224725",
+      "operatorName": "Caixa teste",
+      "paymentType": "pix",
+      "totalAmount": "1,01",
+      "items": [
+        {
+          "productCode": "SKU",
+          "productName": "Produto teste",
+          "quantity": 1,
+          "unitPrice": 1.005,
+          "desconto": 0,
+          "itemTotal": 1.01
+        }
+      ],
+      "payments": [
+        {
+          "paymentType": "pix",
+          "amount": 1.01
+        }
+      ]
+    }
+  },
+  {
+    "name": "legado",
+    "sale": {
+      "customerName": "Cliente teste",
+      "customerCpf": "52998224725",
+      "operatorName": "Caixa teste",
+      "paymentType": "dinheiro",
+      "totalAmount": "8,80",
+      "items": [
+        {
+          "productCode": "SKU",
+          "productName": "Produto teste",
+          "quantity": 1,
+          "unitPrice": 8.8,
+          "desconto": 0
+        }
+      ]
+    }
+  }
+]

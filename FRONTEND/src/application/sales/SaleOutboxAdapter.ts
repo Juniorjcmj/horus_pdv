@@ -22,6 +22,7 @@ import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
  * Retorna a referência local da venda (usada como saleNumber offline provisório).
  */
 export async function queueSaleToOutbox(payload: RegisterSalePayload, waitForFiscal = false): Promise<string> {
+  const original = payload;
   payload = validateSale(payload);
   const clientSaleId =
     payload.clientSaleId ||
@@ -38,8 +39,11 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload, waitForFis
   payload.reenvioOffline = true;
   payload.offlineReference = localRef;
   payload.occurredAt = occurredAt;
+  // Preserve generated identity in the caller before any await, including a concurrent retry.
+  Object.assign(original, payload);
 
   payload.payloadHash = await computeSalePayloadHash(payload);
+  original.payloadHash = payload.payloadHash;
   await persistSaleLocally(payload, { clientSaleId, saleNumber: localRef, occurredAt, origin: "OFFLINE", eventId, waitForFiscal });
   return localRef;
 }
@@ -49,9 +53,8 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload, waitForFis
  * NÃO entra no outbox: a venda já está sincronizada e não pode ser reenviada.
  */
 export async function saveSyncedSaleLocally(payload: RegisterSalePayload, saleNumber: string): Promise<void> {
-  const clientSaleId =
-    payload.clientSaleId ||
-    (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `cs-${Date.now()}`);
+  const clientSaleId = payload.clientSaleId || `cloud-${currentTenantId()}-${saleNumber}`;
+  payload.clientSaleId = clientSaleId;
   const occurredAt = payload.occurredAt || new Date().toISOString();
   await persistSaleLocally(payload, { clientSaleId, saleNumber, occurredAt, origin: "ONLINE" });
 }
@@ -79,6 +82,7 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
       // A repeated identity must never repeat stock or debt effects.
       const existing = await db.sales.get(clientSaleId);
       if (existing) {
+        if (existing.origin === "ONLINE" && eventId || existing.eventId && eventId && existing.eventId !== eventId) throw new Error("Conflito de identidade: retry deve manter o mesmo evento da venda.");
         const storedEvent = eventId ? await db.outbox.get(eventId) : undefined;
         const storedKey = existing.settlementKey ?? (storedEvent ? settlementKey(JSON.parse(storedEvent.payload)) : null);
         if (existing.tenantId !== currentTenantId() || existing.customerId !== (payload.customerCpf || null) || !storedKey || storedKey !== settlementKey(payload)) throw new Error("Conflito de identidade: venda já registrada com valores diferentes ou sem snapshot verificável.");
@@ -92,6 +96,7 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
         if (!digits) throw new Error("Selecione cliente cadastrado para comprar fiado.");
         fiadoCustomer = await db.customers.filter(c => c.tenantId === currentTenantId() && c.cpfCnpj.replace(/\D/g, "") === digits).first();
         if (!fiadoCustomer) throw new Error("Dados do cliente indisponíveis para comprar fiado offline.");
+        if (fiadoCustomer.creditUnavailable) throw new Error("Crédito indisponível. Atualize o cliente para conferir as pendências.");
         validateCredit(fiadoCustomer.limiteCredito, fiadoCustomer.saldoDevedor, totalFiado);
       }
 
@@ -103,6 +108,7 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
       const saleRecord: SaleRecord = {
         id: clientSaleId,
         settlementKey: settlementKey(payload),
+        eventId,
         deviceId,
         tenantId: currentTenantId(),
         sessionId,

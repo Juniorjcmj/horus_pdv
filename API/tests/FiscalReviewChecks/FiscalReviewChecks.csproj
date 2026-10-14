@@ -3,7 +3,7 @@
     <ApiOutput>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../NETCORE/bin/$(Configuration)/net8.0'))</ApiOutput>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HORUSPDV-API"><HintPath>$(ApiOutput)/HORUSPDV-API.dll</HintPath></Reference>
+    <ProjectReference Include="../../NETCORE/HORUSPDV-API.csproj" />
     <Reference Include="NFe.Classes"><HintPath>$(ApiOutput)/NFe.Classes.dll</HintPath></Reference>
     <Reference Include="NFe.Utils"><HintPath>$(ApiOutput)/NFe.Utils.dll</HintPath></Reference>
     <Reference Include="DFe.Classes"><HintPath>$(ApiOutput)/DFe.Classes.dll</HintPath></Reference>

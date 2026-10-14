@@ -89,3 +89,14 @@ Checklist operacional separado, não bloqueante do apply: obter versão instalad
 
 - Qual era a versão efetivamente instalada nas datas dos incidentes e quais são os valores originais no banco/XML? Pendência diagnóstica operacional; não altera o contrato nem impede finalizar código/testes.
 - O endpoint de impressão atual já expõe todos os detalhes necessários? O apply deverá verificar e estender opcionalmente o DTO apenas se necessário, conforme decisão 5.
+
+
+## Discoveries during apply
+
+- `VendaPagamentos.CashGiven/ChangeAmount` eram NOT NULL. A migração idempotente `49_pagamento_dados_ausentes.sql` permite NULL, sem atualizar valores existentes; DTOs e leitores distinguem ausência de zero. Registros já retropreenchidos pela migração antiga continuam com os fatos gravados, pois sua origem não pode ser recuperada automaticamente.
+- `Resumo.sql`, executado a cada boot, tratava líquido zero como ausente. O fallback agora atua somente na ausência, preservando itens gratuitos sem regravar históricos.
+- A finalização de pedido antes vinculava seu status após a transação da venda. O apply moveu lock, replay e vínculo para a mesma transação do registro, estoque e fiado. Pedido offline continua recusado pela política existente de depender do estado no servidor.
+- O snapshot de crédito une saldo e identidades aceitas sob locks na API. O cache adiciona somente dívidas pendentes não refletidas, refaz a leitura se um novo evento local surge durante a consulta e marca crédito indisponível quando uma alteração online conhecida não pode ser conciliada, a fila é malformada ou o snapshot permanece em conflito. Falha comum de rede no refresh preserva o cache validado para operação offline. Respostas de quitação ou nova dívida online passam pela mesma reconciliação.
+- Preço de item omitido é distinguível de zero explícito na API e rejeitado com mensagem acionável; o fallback de pagamento único legado permanece. Isso impede que a omissão vire item gratuitamente vendido por acidente. O hash de idempotência é capturado antes da normalização e preserva a compatibilidade de identidades já emitidas.
+- A auditoria do débito fiado usa a mesma transação. A validação em SQL descartável injeta falha na auditoria e verifica rollback de venda, estoque, eventos e saldo.
+- O modo offline confere o crédito conhecido neste aparelho. Caixas desconectados entre si dependem da reconferência atômica no servidor ao sincronizar; não há promessa de saldo global atualizado enquanto separados.

@@ -619,10 +619,7 @@ export default function SalesStartPage({
     const currentFiadoValue = currentPaymentType === "fiado" ? currentPaymentAmountValue : 0;
     const totalPotentialFiado = totalFiadoCommitted + currentFiadoValue;
     if (totalPotentialFiado <= 0) return false;
-    const limite = Number(selectedCustomer.limiteCredito ?? 0);
-    const saldo = Number(selectedCustomer.saldoDevedor ?? 0);
-    const disponivel = Math.max(0, limite - saldo);
-    return totalPotentialFiado > disponivel + 0.009;
+    try { validateCredit(selectedCustomer.limiteCredito, selectedCustomer.saldoDevedor, totalPotentialFiado); return false; } catch { return true; }
   }, [selectedCustomer, currentPaymentType, currentPaymentAmountValue, totalFiadoCommitted]);
 
   const canConfirmPayment = useMemo(() => {
@@ -673,7 +670,7 @@ export default function SalesStartPage({
   }, [subtotal, effectiveTotalPaid]);
 
   const totalChangeValue = useMemo(() => {
-    const fromList = payments.reduce((sum, item) => sum + (item.changeAmount ?? 0), 0);
+    const fromList = sumMoney(payments.map(item => item.changeAmount ?? 0));
     if (currentPaymentType === "dinheiro") {
       if (payments.length === 0) {
         return Math.max(0, subtractMoney(currentCashGivenValue, subtotal));
@@ -1175,7 +1172,7 @@ export default function SalesStartPage({
       return;
     }
 
-    if (payments.length) setPaymentReference(payments);
+    if (checkoutRevisionRef.current !== null) setPaymentReference([...payments, ...(currentPaymentAmountValue > 0 ? [{ id: "reference-current", paymentType: currentPaymentType, amount: currentPaymentAmountValue, cashGiven: currentCashGivenValue, changeAmount: currentChangeValue }] : [])]);
     setPayments([]);
     if (revision !== latestRevisionRef.current) { Toast.info("Carrinho atualizado. Abra o pagamento novamente para conferir."); return; }
     checkoutRevisionRef.current = revision;
@@ -1185,7 +1182,7 @@ export default function SalesStartPage({
     setCurrentCashGiven(formatMoneyBr(subtotal));
     setNotaOptionsOpen(false);
     setCheckoutOpen(true);
-  }, [cart.length, formatMoneyBr, loadCashStatus, subtotal, payments, revision]);
+  }, [cart.length, formatMoneyBr, loadCashStatus, subtotal, payments, revision, currentPaymentAmountValue, currentPaymentType, currentCashGivenValue, currentChangeValue]);
 
   const handleAddPayment = () => {
     const amountVal = parseMoneyBr(currentPaymentAmount || "0");
@@ -1244,7 +1241,7 @@ export default function SalesStartPage({
 
     const nextRemaining = Math.max(
       0,
-      subtotal - nextPayments.reduce((sum, p) => sum + p.amount, 0),
+      subtotal - sumMoney(nextPayments.map(p => p.amount)),
     );
     setCurrentPaymentAmount(formatMoneyBr(nextRemaining));
     setCurrentCashGiven(formatMoneyBr(nextRemaining));
@@ -1255,7 +1252,7 @@ export default function SalesStartPage({
     setPayments(nextPayments);
     const nextRemaining = Math.max(
       0,
-      subtotal - nextPayments.reduce((sum, p) => sum + p.amount, 0),
+      subtotal - sumMoney(nextPayments.map(p => p.amount)),
     );
     setCurrentPaymentAmount(formatMoneyBr(nextRemaining));
     setCurrentCashGiven(formatMoneyBr(nextRemaining));
@@ -1325,6 +1322,7 @@ export default function SalesStartPage({
       setCheckoutNeedsReview(true); Toast.error("Carrinho atualizado. Confira novamente os valores e pagamentos antes de confirmar."); return;
     }
     submittingRef.current = true;
+    setIsConfirmingSale(true);
     const confirmedRevision = latestRevisionRef.current;
     try {
     let finalPayments: SplitPayment[] = [...payments];
@@ -1371,7 +1369,7 @@ export default function SalesStartPage({
         });
       }
 
-      const totalPaidVal = finalPayments.reduce((sum, p) => sum + p.amount, 0);
+      const totalPaidVal = sumMoney(finalPayments.map(p => p.amount));
       if (moneyCents(totalPaidVal) !== moneyCents(subtotal)) {
         Toast.error(
           `Faltam R$ ${formatMoneyBr(Math.max(0, subtotal - totalPaidVal))} para liquidar a venda.`,
@@ -1411,8 +1409,6 @@ export default function SalesStartPage({
       }
     }
 
-    if (isConfirmingSale) return;
-    setIsConfirmingSale(true);
     try {
       const latestCashStatus = await loadCashStatus();
       if (!latestCashStatus?.canSell) {
@@ -1705,7 +1701,7 @@ export default function SalesStartPage({
         setSelectedCustomer((prev) => (prev ? { ...prev, saldoDevedor: novoSaldoFiado } : null));
         // Venda offline: queueSaleToOutbox já somou o fiado no IndexedDB. Online: grava o saldo do servidor.
         if (!isOfflineSale) {
-          void updateCustomerDebtLocal(selectedCustomer.document || selectedCustomer.id, novoSaldoFiado);
+          await updateCustomerDebtLocal(selectedCustomer.document || selectedCustomer.id, novoSaldoFiado);
         }
       }
 
@@ -1769,7 +1765,7 @@ export default function SalesStartPage({
     window.setTimeout(() => productInputRef.current?.focus(), 0);
     } catch (error) {
       Toast.error(error instanceof Error ? error.message : "Erro ao conferir venda.");
-    } finally { submittingRef.current = false; }
+    } finally { submittingRef.current = false; setIsConfirmingSale(false); }
   };
 
   const scannerBlocked = checkoutOpen || isConfirmingSale || !!receiptPreview || customerModalOpen

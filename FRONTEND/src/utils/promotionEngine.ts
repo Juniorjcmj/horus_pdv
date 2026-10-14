@@ -66,19 +66,19 @@ export function calcularDescontoPromo(promo: Promocao, item: CartItemPromo): num
   const { quantity, unitPrice } = item;
   if (quantity <= 0 || unitPrice <= 0) return 0;
 
-  const grossTotal = quantity * unitPrice;
+  const grossTotal = productMoney(quantity, unitPrice);
 
   switch (promo.tipo as TipoPromocao) {
     case "desconto_percentual": {
       const pct = promo.valorDesconto ?? 0;
       if (pct <= 0) return 0;
-      return round2(grossTotal * (Math.min(pct, 100) / 100));
+      return productMoney(grossTotal, Math.min(pct, 100) / 100);
     }
 
     case "desconto_valor": {
       const val = promo.valorDesconto ?? 0;
       if (val <= 0) return 0;
-      return round2(Math.min(grossTotal, quantity * val));
+      return Math.min(grossTotal, productMoney(quantity, val));
     }
 
     case "preco_fixo": {

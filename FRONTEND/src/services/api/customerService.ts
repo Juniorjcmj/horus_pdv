@@ -35,6 +35,11 @@ export type CustomerDto = {
 export type CustomerPayload = Omit<CustomerDto, "id">;
 
 export const customerService = {
+  async creditSnapshot(clientSaleIds: string[]) {
+    const response = await apiRequest<{ customers: CustomerDto[]; acceptedClientSaleIds: string[] }>(`${CLIENTE_API_URL}/credito-snapshot`, { method: "POST", body: JSON.stringify(clientSaleIds) });
+    if (!response.data) throw new Error("Snapshot de crédito indisponível.");
+    return response.data;
+  },
   async list() {
     const response = await apiRequest<CustomerDto[]>(CLIENTE_API_URL);
     return response.data ?? [];

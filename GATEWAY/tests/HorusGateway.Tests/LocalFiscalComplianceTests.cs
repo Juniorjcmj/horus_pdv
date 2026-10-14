@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
+using System.Text.Json;
 using HorusGateway.Configuration;
 using HorusGateway.Controllers;
 using HorusGateway.Data;
@@ -19,6 +20,51 @@ namespace HorusGateway.Tests;
 
 public sealed class LocalFiscalComplianceTests
 {
+    [Theory]
+    [InlineData("8.80", "10.00", "1.20")]
+    [InlineData("100.00", "150.00", "50.00")]
+    public void SettlementJson_PreservesDeclaredGrossAndExactChange(string totalText, string declaredText, string changeText)
+    {
+        var request = Sale();
+        var total = decimal.Parse(totalText, System.Globalization.CultureInfo.InvariantCulture);
+        var declared = decimal.Parse(declaredText, System.Globalization.CultureInfo.InvariantCulture);
+        var change = decimal.Parse(changeText, System.Globalization.CultureInfo.InvariantCulture);
+        request.Itens[0].Quantidade = 1; request.Itens[0].ValorUnitario = total; request.Itens[0].ValorTotal = total;
+        request.Pagamentos = total == 100m
+            ? [new() { Tipo = "17", Valor = 50m }, new() { Tipo = "01", Valor = 100m }]
+            : [new() { Tipo = "01", Valor = declared }];
+        request.ValorTroco = change;
+        var wireRequest = JsonSerializer.Deserialize<LocalNfceContingenciaRequest>(JsonSerializer.Serialize(request))!;
+        var result = Emit(Configuration(), wireRequest);
+        Assert.True(result.Success, result.Message);
+        var xml = XDocument.Parse(result.XmlDocumento);
+        Assert.Equal(declared, xml.Descendants(Ns + "vPag").Sum(p => decimal.Parse(p.Value, System.Globalization.CultureInfo.InvariantCulture)));
+        Assert.Equal(changeText, xml.Descendants(Ns + "vTroco").Single().Value);
+        Assert.Equal(totalText, xml.Descendants(Ns + "vNF").Single().Value);
+    }
+
+    [Fact]
+    public void SettlementJson_MultipleCashParcelsDeductChangeOnce()
+    {
+        var request = Sale(); request.Itens[0].Quantidade = 1; request.Itens[0].ValorUnitario = 100; request.Itens[0].ValorTotal = 100;
+        request.Pagamentos = [new() { Tipo = "01", Valor = 50 }, new() { Tipo = "01", Valor = 100 }]; request.ValorTroco = 50;
+        var wire = JsonSerializer.Deserialize<LocalNfceContingenciaRequest>(JsonSerializer.Serialize(request))!;
+        var result = Emit(Configuration(), wire); Assert.True(result.Success, result.Message);
+        var xml = XDocument.Parse(result.XmlDocumento);
+        Assert.Equal("100.00", xml.Descendants(Ns + "vNF").Single().Value);
+        Assert.Equal("50.00", xml.Descendants(Ns + "vTroco").Single().Value);
+    }
+
+    [Fact]
+    public void SettlementJson_RealOneCentMismatchStillRejects()
+    {
+        var request = Sale(); request.Itens[0].Quantidade = 1; request.Itens[0].ValorUnitario = 8.8m; request.Itens[0].ValorTotal = 8.8m;
+        request.Pagamentos = [new() { Tipo = "01", Valor = 10 }]; request.ValorTroco = 1.19m;
+        var wire = JsonSerializer.Deserialize<LocalNfceContingenciaRequest>(JsonSerializer.Serialize(request))!;
+        var result = Emit(Configuration(), wire);
+        Assert.False(result.Success); Assert.Contains("Pagamentos menos troco", result.Message); Assert.True(string.IsNullOrEmpty(result.XmlDocumento));
+    }
+
     private static readonly XNamespace Ns = "http://www.portalfiscal.inf.br/nfe";
     private static GatewayOptions Configuration()
     {

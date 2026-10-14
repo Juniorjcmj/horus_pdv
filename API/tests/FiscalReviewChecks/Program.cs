@@ -125,8 +125,10 @@ Check(invoice.infNFe.total.ICMSTot.vICMS == 18 && invoice.infNFe.total.IBSCBSTot
 
 var cash = new VendaPagamentoAD { PaymentType = "dinheiro", Amount = 7.45m, CashGiven = 10m, ChangeAmount = 2.55m };
 Check(FiscalPaymentRules.DeclaredAmount(cash) == 10m, "vPag em dinheiro inclui o valor recebido antes do troco");
-cash.CashGiven = 0;
+cash.CashGiven = null;
 Check(FiscalPaymentRules.DeclaredAmount(cash) == 10m, "Pagamento legado recupera recebido pela parcela mais troco");
+cash.CashGiven = 0;
+Reject(() => FiscalPaymentRules.DeclaredAmount(cash), "Recebido zero explícito não representa ausência");
 cash.CashGiven = 11;
 Reject(() => FiscalPaymentRules.DeclaredAmount(cash), "Recebido inconsistente exige revisão em vez de gerar troco inválido");
 Reject(() => FiscalPaymentRules.DeclaredAmount(new VendaPagamentoAD { PaymentType = "pix", Amount = 7.45m, ChangeAmount = 1m }), "Troco em PIX não é enviado como se fosse dinheiro");

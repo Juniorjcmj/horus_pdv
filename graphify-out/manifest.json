@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   ".claude/settings.local.json": {
-    "mtime": 1790445602.2331922,
-    "seen": 1790453042.4251974,
-    "ast_hash": "cb54aa1a4903a97c99723a335d446c6b",
+    "mtime": 1791944900.532946,
+    "seen": 1791976965.2464778,
+    "ast_hash": "8340694ccec5a9304f64221b62998413",
     "semantic_hash": ""
   },
   ".codex/hooks.json": {
@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Clientes/ClienteController.cs": {
-    "mtime": 1791054712.183861,
-    "seen": 1791054783.9419901,
-    "ast_hash": "ef92237c727c19bf7bfccb00d9b15a01",
+    "mtime": 1791970655.5726948,
+    "seen": 1791976965.2484128,
+    "ast_hash": "f563a8c62a6bd9de881befc101d68b1b",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Empresa/EmpresaController.cs": {
@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/HistoricoVendas/HistoricoVendasController.cs": {
-    "mtime": 1791683587.4363897,
-    "seen": 1791684360.4524171,
-    "ast_hash": "d9a6be5c20f3853bb8df2020ddde4ed5",
+    "mtime": 1791936313.6393704,
+    "seen": 1791976965.2502568,
+    "ast_hash": "89bcca0b75f14d70e9d36b9fb32bc131",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Home/HomeController.cs": {
@@ -84,9 +84,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Pedidos/PedidoController.cs": {
-    "mtime": 1791683768.6514251,
-    "seen": 1791684360.4529166,
-    "ast_hash": "9919fb31661d6f3215ed5c70d7724122",
+    "mtime": 1791936602.873229,
+    "seen": 1791976965.2510512,
+    "ast_hash": "687d43e78908cd5b82ba6da80e0063a2",
     "semantic_hash": ""
   },
   "API/NETCORE/Controllers/Produtos/NfeImportController.cs": {
@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Requests/VendaRequest.cs": {
-    "mtime": 1791682546.1119888,
-    "seen": 1791684360.4680972,
-    "ast_hash": "383d4b299c846e98c73592fc766e296d",
+    "mtime": 1791936602.8742242,
+    "seen": 1791976965.2722476,
+    "ast_hash": "b64e5a10152200fa31831ed7a6f7c363",
     "semantic_hash": ""
   },
   "API/NETCORE/Models/Response/ApiResponse.cs": {
@@ -300,9 +300,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Program.cs": {
-    "mtime": 1791863147.9848864,
-    "seen": 1791863729.5528054,
-    "ast_hash": "84d06cf741ff4ac63289c474ba6ab8e4",
+    "mtime": 1791943882.563322,
+    "seen": 1791976965.2724113,
+    "ast_hash": "6d8cd3e9319f5e65bc75f503921c8908",
     "semantic_hash": ""
   },
   "API/NETCORE/Properties/launchSettings.json": {
@@ -378,15 +378,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DataAccess/VendaPagamentoAD.cs": {
-    "mtime": 1788720547.6533072,
-    "seen": 1788888974.3518999,
-    "ast_hash": "339ee00019ffe0fac0a500db68c6186c",
+    "mtime": 1791936248.76471,
+    "seen": 1791976965.2753253,
+    "ast_hash": "9e1789d7e5384f6573a1fc65422de2da",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/AuditLogAB.cs": {
-    "mtime": 1791055612.3391113,
-    "seen": 1791055811.0910115,
-    "ast_hash": "86c67288995deb59399ff58882d3a3fe",
+    "mtime": 1791970804.3425488,
+    "seen": 1791976965.2753277,
+    "ast_hash": "aefbd2ccf977a40ab3fa4d04ddf3f474",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/CaixaAB.cs": {
@@ -396,15 +396,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ClienteAB.cs": {
-    "mtime": 1789329384.642688,
-    "seen": 1789330645.110132,
-    "ast_hash": "2d061061d055b6b6d10b90c5c4f660af",
+    "mtime": 1791970584.2183375,
+    "seen": 1791976965.2758431,
+    "ast_hash": "4c54aa8406eb21019661619030f398cc",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/DocumentoFiscalAB.cs": {
-    "mtime": 1791683875.9450278,
-    "seen": 1791684360.4729555,
-    "ast_hash": "a83bad2e4a780992a36ce1390ba5ec6b",
+    "mtime": 1791936248.7725472,
+    "seen": 1791976965.275846,
+    "ast_hash": "d6f351dd6a1778d4ff029a3879efe930",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/EmitenteFiscalStore.cs": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HistoricoVendasAB.cs": {
-    "mtime": 1791715730.9136462,
-    "seen": 1791716324.260329,
-    "ast_hash": "727836106e5456eb9eb5971be14d5d5c",
+    "mtime": 1791976683.3951707,
+    "seen": 1791976965.2768986,
+    "ast_hash": "a7d36616bb59d7acd07e0872f6d4d148",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/HomeAB.cs": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/ProdutoAB.cs": {
-    "mtime": 1791722656.2109654,
-    "seen": 1791723377.3970566,
-    "ast_hash": "1441549b09e6dd21a872fc0dfa1db247",
+    "mtime": 1791943702.632961,
+    "seen": 1791976965.2784648,
+    "ast_hash": "645653f7ff1bbda945ddad65a2ba5397",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/RelatorioAB.cs": {
@@ -468,9 +468,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/HorusDatabaseInitializer.cs": {
-    "mtime": 1791863004.7073505,
-    "seen": 1791863729.5610368,
-    "ast_hash": "f78ac9485382c77007ab3fa1f8e68ea1",
+    "mtime": 1791936313.638371,
+    "seen": 1791976965.2793233,
+    "ast_hash": "ebe7bc2ecd510161f4cfb16d395b03cb",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Caixa/HorusCaixaService.cs": {
@@ -552,9 +552,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/NfeXmlParser.cs": {
-    "mtime": 1791727054.6505768,
-    "seen": 1791727335.4216585,
-    "ast_hash": "c66369e34eb6c7853643a4bbb4c1589f",
+    "mtime": 1791943756.0306888,
+    "seen": 1791976965.2863724,
+    "ast_hash": "d805c6112ebbc9093e80aa91b8b05ea9",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Produtos/ProdutoService.cs": {
@@ -606,9 +606,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Shared/HorusMoneyFormat.cs": {
-    "mtime": 1790424866.047001,
-    "seen": 1790426295.5479224,
-    "ast_hash": "1f708c6b10f17e104dba61ee32fb00e5",
+    "mtime": 1791976683.3885443,
+    "seen": 1791976965.28905,
+    "ast_hash": "02b0a2d0deb5568ab51e3282e7a3bdeb",
     "semantic_hash": ""
   },
   "API/NETCORE/appsettings.json": {
@@ -708,9 +708,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReceiptPreviewModal.tsx": {
-    "mtime": 1791682702.0684464,
-    "seen": 1791684360.502662,
-    "ast_hash": "c7cc24752375e3de705f6a73b78faa76",
+    "mtime": 1791936554.1355205,
+    "seen": 1791976965.3119519,
+    "ast_hash": "0439d335c73807f057fcce7b4fee6fd6",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ReportsPage/ReportCardsGrid.tsx": {
@@ -996,9 +996,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/FiscalPage.tsx": {
-    "mtime": 1791647495.1018622,
-    "seen": 1791648349.573254,
-    "ast_hash": "9008f2dd608808e8842d135c881c5f7b",
+    "mtime": 1791975352.9590394,
+    "seen": 1791976965.3344905,
+    "ast_hash": "d3a7482898d489890ab828884f6ee796",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/HomePage.tsx": {
@@ -1062,15 +1062,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesHistoryPage.tsx": {
-    "mtime": 1791577549.3132813,
-    "seen": 1791578390.3615334,
-    "ast_hash": "452fb091561be30f8c28bbb9853191b4",
+    "mtime": 1791975352.9616694,
+    "seen": 1791976965.336981,
+    "ast_hash": "fe8ccff57f87bf7b399883d0f8653d39",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SalesStartPage.tsx": {
-    "mtime": 1791683701.2612777,
-    "seen": 1791684360.5330117,
-    "ast_hash": "3e0398c09617cc59da953c1ce85b185e",
+    "mtime": 1791976281.9873338,
+    "seen": 1791976965.336984,
+    "ast_hash": "cfdaaf302f899a8484e11a44d8a2a26b",
     "semantic_hash": ""
   },
   "FRONTEND/src/pages/Admin/SettingsPage.tsx": {
@@ -1164,15 +1164,15 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/customerService.ts": {
-    "mtime": 1790421566.5498295,
-    "seen": 1790421619.6612918,
-    "ast_hash": "af7c25b3eba05092ac839387f8d1d609",
+    "mtime": 1791970655.5740476,
+    "seen": 1791976965.3411243,
+    "ast_hash": "ae806712b75614d140a24e25ddbe7278",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/fiscalService.ts": {
-    "mtime": 1791683429.887994,
-    "seen": 1791684360.5386372,
-    "ast_hash": "937434443ee0fc63b96460cea3b21c96",
+    "mtime": 1791936492.6147547,
+    "seen": 1791976965.3415194,
+    "ast_hash": "e72c08244858934a8bc0b0a3cbc7e134",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/homeService.ts": {
@@ -1212,9 +1212,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/salesHistoryService.ts": {
-    "mtime": 1791682510.0227785,
-    "seen": 1791684360.5423586,
-    "ast_hash": "2d8937ce07243fd247c06437fd5f270f",
+    "mtime": 1791936313.6403725,
+    "seen": 1791976965.3441453,
+    "ast_hash": "6ca9c7ed785f31a8ce82d911d74a12f6",
     "semantic_hash": ""
   },
   "FRONTEND/src/services/api/sessionService.ts": {
@@ -2220,9 +2220,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/FiadoAB.cs": {
-    "mtime": 1791027986.0844831,
-    "seen": 1791028438.5306606,
-    "ast_hash": "7af7f1b48e1df74b6dd0132efb7c0489",
+    "mtime": 1791936492.6163044,
+    "seen": 1791976965.2763724,
+    "ast_hash": "0238e6c23599752301685819f5968c47",
     "semantic_hash": ""
   },
   "API/NETCORE/Repositories/DatabaseAccess/PromocaoAB.cs": {
@@ -2280,9 +2280,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/utils/promotionEngine.ts": {
-    "mtime": 1790421566.5659933,
-    "seen": 1790421619.6643314,
-    "ast_hash": "44c6c2be4a6b1d2f837863defa48e83e",
+    "mtime": 1791976281.982265,
+    "seen": 1791976965.349059,
+    "ast_hash": "7aafe8e2e7bbf0123674e507b43b0ccb",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-09-13-gestao-mercadinho-completa/.openspec.yaml": {
@@ -2532,9 +2532,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Shared/HorusPayloadHash.cs": {
-    "mtime": 1791682546.1150582,
-    "seen": 1791684360.48588,
-    "ast_hash": "891e003660345a35bee3ebd83d40bf95",
+    "mtime": 1791936248.7657115,
+    "seen": 1791976965.2890542,
+    "ast_hash": "8948c01ce03daac70f0ccb6b59088dc0",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Shared/IdempotencyConflictException.cs": {
@@ -2544,9 +2544,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/application/customers/CustomerSyncAdapter.ts": {
-    "mtime": 1791321688.3282368,
-    "seen": 1791322218.965927,
-    "ast_hash": "2642bc4a09b497c35d1cb249d8f3676a",
+    "mtime": 1791976551.5065422,
+    "seen": 1791976965.3055859,
+    "ast_hash": "2608206f4b3f4900da1c1fa04592479c",
     "semantic_hash": ""
   },
   "FRONTEND/src/application/products/ProductSyncAdapter.ts": {
@@ -2556,9 +2556,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/application/sales/SaleOutboxAdapter.ts": {
-    "mtime": 1791683429.8940768,
-    "seen": 1791684360.494072,
-    "ast_hash": "60c78bc1ae210d44e3fecc5f7d45a23e",
+    "mtime": 1791976438.7369795,
+    "seen": 1791976965.3057656,
+    "ast_hash": "054226e626bf40d58a73330e7a57a2be",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SyncStatus.tsx": {
@@ -2610,9 +2610,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/dexie.ts": {
-    "mtime": 1791682252.6366675,
-    "seen": 1791684360.5188751,
-    "ast_hash": "49aabdbcf4c914980f4b59c12d33f3dd",
+    "mtime": 1791975538.4966261,
+    "seen": 1791976965.3277993,
+    "ast_hash": "f50ef248f65300498254c4719752c86b",
     "semantic_hash": ""
   },
   "FRONTEND/src/infrastructure/database/repositories/CashSessionRepository.ts": {
@@ -2994,9 +2994,9 @@
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/PdvSaleDetailModal.tsx": {
-    "mtime": 1790973028.3843207,
-    "seen": 1790973295.107837,
-    "ast_hash": "28b6831fe4e3778eaa29d191b25d42a8",
+    "mtime": 1791936492.6152625,
+    "seen": 1791976965.3107932,
+    "ast_hash": "ae3a1873e953aa128781e9d059a02866",
     "semantic_hash": ""
   },
   "FRONTEND/public/logo.jpg": {
@@ -4014,44 +4014,44 @@
     "semantic_hash": ""
   },
   "FRONTEND/test-results/.last-run.json": {
-    "mtime": 1791557028.4642756,
-    "seen": 1791557078.1665025,
+    "mtime": 1791975353.0623646,
+    "seen": 1791976965.3496802,
     "ast_hash": "5645f78ad777de5be9a546563ece0f4c",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco13-resilience-concurr-78a98--e-1-replay-sem-duplicidade-chromium/error-context.md": {
-    "mtime": 1791557028.4689085,
-    "seen": 1791557078.2044258,
+    "mtime": 1791975353.0636132,
+    "seen": 1791976965.3959627,
     "ast_hash": "224bad386e70ce696ae92cb0396ceceb",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco2-3-idempotency-BLOCO-f04bc-adHash-processa-com-sucesso-chromium/error-context.md": {
-    "mtime": 1791557028.4719276,
-    "seen": 1791557078.2044294,
+    "mtime": 1791975353.065272,
+    "seen": 1791976965.3959653,
     "ast_hash": "c24ea5fe7f8c136047ff5127180e8dae",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/error-context.md": {
-    "mtime": 1791557028.4769506,
-    "seen": 1791557078.2044325,
+    "mtime": 1791975353.067118,
+    "seen": 1791976965.3959699,
     "ast_hash": "5cba1c90a8ecdabc6798c69a1000df68",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/error-context.md": {
-    "mtime": 1791557028.4846542,
-    "seen": 1791557078.2044344,
+    "mtime": 1791975353.0698414,
+    "seen": 1791976965.3959718,
     "ast_hash": "aface98cb37189fcbf085aa5f32da9e1",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco5-6-sale-stock-BLOCOS-7d409-\u00e7\u00e3o-impede-grava\u00e7\u00e3o-parcial-chromium/test-failed-1.png": {
-    "mtime": 1791557028.4805768,
-    "seen": 1791557078.2199378,
+    "mtime": 1791975353.067118,
+    "seen": 1791976965.4149928,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
   "FRONTEND/test-results/bloco9-integrated-flow-BLO-f1607---Outbox---API---SQL-Server-chromium/test-failed-1.png": {
-    "mtime": 1791557028.485656,
-    "seen": 1791557078.2199407,
+    "mtime": 1791975353.0698414,
+    "seen": 1791976965.415001,
     "ast_hash": "fb104b5fd49f2bc00c5499566cb87451",
     "semantic_hash": ""
   },
@@ -4356,15 +4356,15 @@
     "semantic_hash": ""
   },
   "API/tests/FiscalReviewChecks/FiscalReviewChecks.csproj": {
-    "mtime": 1791658122.157471,
-    "seen": 1791658847.4477189,
-    "ast_hash": "0ad1e193621f32885df22011517c786c",
+    "mtime": 1791971087.3480084,
+    "seen": 1791976965.2939837,
+    "ast_hash": "5bfd0c676d059280318ca7fb0b718bda",
     "semantic_hash": ""
   },
   "API/tests/FiscalReviewChecks/Program.cs": {
-    "mtime": 1791682501.4857008,
-    "seen": 1791684360.4872386,
-    "ast_hash": "c3de7969ad81fc38f463c6cc2e33286b",
+    "mtime": 1791975252.9396644,
+    "seen": 1791976965.2939894,
+    "ast_hash": "40c8beca42d60dbd3f21cf8d53e3064f",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/Admin/ProductFiscalPanel.tsx": {
@@ -4470,15 +4470,15 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalGatewayImport.cs": {
-    "mtime": 1791684214.545923,
-    "seen": 1791684360.4803574,
-    "ast_hash": "9d886430ce342fba3279cf9d2bbb4876",
+    "mtime": 1791936248.7715135,
+    "seen": 1791976965.2830236,
+    "ast_hash": "3d0272895644b1e83fd45acc92fc0ff8",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalPaymentRules.cs": {
-    "mtime": 1791682192.399768,
-    "seen": 1791684360.4803615,
-    "ast_hash": "f6662cf9de9da4f073cc17858079c1fb",
+    "mtime": 1791936248.7704499,
+    "seen": 1791976965.2830267,
+    "ast_hash": "9c01fe864b37fca22cddd91b98f5c4c3",
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Fiscal/FiscalRetryRules.cs": {
@@ -4608,9 +4608,9 @@
     "semantic_hash": ""
   },
   "GATEWAY/tests/HorusGateway.Tests/LocalFiscalComplianceTests.cs": {
-    "mtime": 1791682692.4332798,
-    "seen": 1791684360.5700724,
-    "ast_hash": "3244378cd0b0340ee925f1fb6b69893e",
+    "mtime": 1791975252.936074,
+    "seen": 1791976965.3745298,
+    "ast_hash": "0f94472a98bda5ac654003380aa95e28",
     "semantic_hash": ""
   },
   "API/tests/FiscalGatewayInteropChecks/README.md": {
@@ -4854,9 +4854,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Admin/ApiDocumentation.cs": {
-    "mtime": 1791748416.525121,
-    "seen": 1791863729.5610397,
-    "ast_hash": "3dec49e1a4c0221de4c4d7cacc2d3e42",
+    "mtime": 1791864418.6331208,
+    "seen": 1791976965.2793272,
+    "ast_hash": "8a1201f64d74b6a1ef78ad14bf57c9f5",
     "semantic_hash": ""
   },
   "API/tests/ApiDocumentationChecks/ApiDocumentationChecks.csproj": {
@@ -5190,9 +5190,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/DataBase/Resumo.sql": {
-    "mtime": 1790870931.9663606,
-    "seen": 1791863729.5455842,
-    "ast_hash": "43bb712ea3efa499ef082dedff347177",
+    "mtime": 1791970762.805558,
+    "seen": 1791976965.2638316,
+    "ast_hash": "d97f428a91a4c095309997db31721896",
     "semantic_hash": ""
   },
   "API/NETCORE/DataBase/Seed_Produtos_Balanca.sql": {
@@ -5220,9 +5220,9 @@
     "semantic_hash": ""
   },
   "API/NETCORE/Services/Mcp/PdvMcpTools.cs": {
-    "mtime": 1791863376.5783806,
-    "seen": 1791863729.5656114,
-    "ast_hash": "8c516e52051a87a02ea6442a90631018",
+    "mtime": 1791943899.3742537,
+    "seen": 1791976965.2853522,
+    "ast_hash": "5183ef8aa9debe5f0e5f7a173cd694d2",
     "semantic_hash": ""
   },
   "FRONTEND/src/components/SettingsPage/IntegracaoTokensCard.tsx": {
@@ -5310,15 +5310,159 @@
     "semantic_hash": ""
   },
   "docs/MCP.md": {
-    "mtime": 1791863689.7210605,
-    "seen": 1791863729.64499,
-    "ast_hash": "bd35176515f5f590d71bd38b2e60e631",
+    "mtime": 1791944708.368474,
+    "seen": 1791976965.3976371,
+    "ast_hash": "f893f8fd070d150f32bf0f8ae0c24bb0",
     "semantic_hash": ""
   },
   "horus-reels/README.md": {
     "mtime": 1791747073.119883,
     "seen": 1791863729.6453788,
     "ast_hash": "fcdfe1e0c3220831519fdbf617e6d7ae",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/DataBase/Migrations/49_pagamento_dados_ausentes.sql": {
+    "mtime": 1791936248.7745626,
+    "seen": 1791976965.2638276,
+    "ast_hash": "5f4f1f6aded997efb8d13f99834f4fd9",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Mcp/FiscalAuditMcpTools.cs": {
+    "mtime": 1791944509.5837538,
+    "seen": 1791976965.2851658,
+    "ast_hash": "78266480bde463035bd1ebf9cc1de9b5",
+    "semantic_hash": ""
+  },
+  "API/NETCORE/Services/Shared/SaleMoney.cs": {
+    "mtime": 1791970655.571266,
+    "seen": 1791976965.2892702,
+    "ast_hash": "a8892c24965034b63f77fac8579058c0",
+    "semantic_hash": ""
+  },
+  "API/tests/SaleIntegrityChecks/Program.cs": {
+    "mtime": 1791976683.3951707,
+    "seen": 1791976965.2957463,
+    "ast_hash": "7bb0d7ebe1a116db60395c5955f66a42",
+    "semantic_hash": ""
+  },
+  "API/tests/SaleIntegrityChecks/SaleIntegrityChecks.csproj": {
+    "mtime": 1791970875.141915,
+    "seen": 1791976965.2957506,
+    "ast_hash": "53bcef8064e1569434df1516e22362b0",
+    "semantic_hash": ""
+  },
+  "API/tests/SaleIntegrityChecks/schema.sql": {
+    "mtime": 1791970875.141915,
+    "seen": 1791976965.2957547,
+    "ast_hash": "55303ce340f402707a6903b4f3ae91c1",
+    "semantic_hash": ""
+  },
+  "FRONTEND/playwright.integrity.config.ts": {
+    "mtime": 1791975352.949663,
+    "seen": 1791976965.3040507,
+    "ast_hash": "d85fdf36e7ae5f86cd8ea177a75cb633",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/saleMoney.ts": {
+    "mtime": 1791970762.7818396,
+    "seen": 1791976965.3490622,
+    "ast_hash": "a01a029d240c49c6dbe2893c98fc3643",
+    "semantic_hash": ""
+  },
+  "FRONTEND/src/utils/saleReceiptFacts.ts": {
+    "mtime": 1791970762.78415,
+    "seen": 1791976965.3492215,
+    "ast_hash": "1089454a555a767001d3ac0488a4fc46",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/integrity/mount.tsx": {
+    "mtime": 1791975252.9411783,
+    "seen": 1791976965.3623042,
+    "ast_hash": "210ec6d625b6f6e849bd6461ae691616",
+    "semantic_hash": ""
+  },
+  "FRONTEND/tests/integrity/settlement.spec.ts": {
+    "mtime": 1791976551.656959,
+    "seen": 1791976965.362309,
+    "ast_hash": "3257ff2bfb8df18982ffe2f56d17aee7",
+    "semantic_hash": ""
+  },
+  "tests/fixtures/sale-settlements.json": {
+    "mtime": 1791970875.141915,
+    "seen": 1791976965.378515,
+    "ast_hash": "317c322514e74a8996c0c62db3dbdd9e",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20261013_234722_8019d957_auditoria_pdv_recebimento_troco_remocao_de_itens_c.md": {
+    "mtime": 1791935242.882599,
+    "seen": 1791976965.398133,
+    "ast_hash": "e5d6aa1f08f693dd91edabba661237d5",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/.openspec.yaml": {
+    "mtime": 1791935468.1833303,
+    "seen": 1791976965.406565,
+    "ast_hash": "202fb1355de5f30170fb3c66b806bc1f",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/design.md": {
+    "mtime": 1791976551.5176017,
+    "seen": 1791976965.4065676,
+    "ast_hash": "96533fa97b97ac35d0ff59d273322f98",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/proposal.md": {
+    "mtime": 1791935966.7705765,
+    "seen": 1791976965.40657,
+    "ast_hash": "552d425f7828977c3d5fc5fca7908449",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/specs/fiscal/contingencia-offline-nfce/spec.md": {
+    "mtime": 1791935577.5208054,
+    "seen": 1791976965.4065723,
+    "ast_hash": "4928ea41c541d2c15b7d19164f2bafbf",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/specs/pdv/multiplas-formas-pagamento/spec.md": {
+    "mtime": 1791935577.5148282,
+    "seen": 1791976965.4065745,
+    "ast_hash": "90354c05d1b2cd2375e8480dce77a991",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/specs/vendas/fiado-conta-corrente/spec.md": {
+    "mtime": 1791935966.7695725,
+    "seen": 1791976965.4065764,
+    "ast_hash": "8089b4e129fc4089814f1cf5c97138be",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/specs/vendas/integridade-monetaria/spec.md": {
+    "mtime": 1791935577.5092587,
+    "seen": 1791976965.4065788,
+    "ast_hash": "05d21e163a214781e646d8c1ae8d7516",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/specs/vendas/promocoes/spec.md": {
+    "mtime": 1791935738.8011498,
+    "seen": 1791976965.4065807,
+    "ast_hash": "fff66e663be96cceccdc1e8f8fd7fcd2",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/specs/vendas/reimpressao-fiel/spec.md": {
+    "mtime": 1791935577.511259,
+    "seen": 1791976965.4065826,
+    "ast_hash": "c6a0cda961c5ca8a43b57244b57a82b5",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/tasks.md": {
+    "mtime": 1791976890.622769,
+    "seen": 1791976965.406584,
+    "ast_hash": "3cec5d2b92a294ebbfd51093be3490a1",
+    "semantic_hash": ""
+  },
+  "openspec/changes/corrigir-integridade-recebimento-pdv/validation.md": {
+    "mtime": 1791976890.6241815,
+    "seen": 1791976965.4065864,
+    "ast_hash": "6e1fb6d163897cc796247f17bc38c1f8",
     "semantic_hash": ""
   }
 }

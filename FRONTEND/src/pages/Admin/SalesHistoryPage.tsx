@@ -202,7 +202,7 @@ export default function SalesHistoryPage() {
     const map = new Map<string, { total: number; payments: SalePayment[]; cancelled: boolean }>();
     for (const row of salesHistory) {
       if (map.has(row.saleNumber)) continue;
-      const total = parseMoneyBr(row.totalAmount || "0,00") || itemsTotals.get(row.saleNumber) || 0;
+      const total = row.totalAmount?.trim() ? parseMoneyBr(row.totalAmount) : itemsTotals.get(row.saleNumber) ?? 0;
       map.set(row.saleNumber, {
         total,
         payments: buildPayments(row.paymentBreakdown, row.paymentType || "", total),
@@ -433,7 +433,7 @@ export default function SalesHistoryPage() {
   }, [filteredSales, itemsPerPage, safeCurrentPage]);
 
   const getUnitPrice = (sale: SaleHistoryRow) => parseMoneyBr(sale.unitPrice || "0,00");
-  const getItemTotal = (sale: SaleHistoryRow) => registeredItemTotal(sale);
+  const getItemTotal = (sale: SaleHistoryRow) => { try { return registeredItemTotal(sale); } catch { return Number.NaN; } };
   const toReceipt = (saleNumber: string, rows: SaleHistoryRow[], printedAt?: string, payments?: Parameters<typeof receiptFacts>[1]): SaleReceipt | null => {
     if (!rows.length) return null;
     const first = rows[0];
@@ -973,7 +973,7 @@ export default function SalesHistoryPage() {
                   </td>
                   <td className="px-3 py-3 text-right font-semibold text-text-primary">
                     <span className={isCancelled ? "line-through text-text-tertiary" : ""}>
-                      R$ {formatMoneyBr(getItemTotal(sale))}
+                      {Number.isFinite(getItemTotal(sale)) ? `R$ ${formatMoneyBr(getItemTotal(sale))}` : "Valor não informado"}
                     </span>
                   </td>
                   <td className="px-3 py-3">

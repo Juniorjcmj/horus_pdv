@@ -38,6 +38,30 @@ public class ClienteAB(Connection connection)
         return rows;
     }
 
+    /// <summary>Credit balances and acknowledged identities from one locked snapshot.</summary>
+    public async Task<(List<ClienteAD> Customers, List<string> AcceptedClientSaleIds)> CreditSnapshotAsync(string companyId, List<string> clientSaleIds)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+        var customers = new List<ClienteAD>();
+        await using (var command = new SqlCommand($"SELECT {Columns} FROM Clientes WITH (UPDLOCK, HOLDLOCK) WHERE CompanyId = @CompanyId ORDER BY Id", db, transaction))
+        {
+            command.Parameters.AddWithValue("@CompanyId", companyId);
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync()) customers.Add(Map(reader));
+        }
+        var accepted = new List<string>();
+        await using (var command = new SqlCommand("SELECT DISTINCT ClientSaleId FROM Vendas WHERE CompanyId = @CompanyId AND ClientSaleId IN (SELECT value FROM OPENJSON(@Ids))", db, transaction))
+        {
+            command.Parameters.AddWithValue("@CompanyId", companyId);
+            command.Parameters.AddWithValue("@Ids", System.Text.Json.JsonSerializer.Serialize(clientSaleIds));
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync()) accepted.Add(reader.GetString(0));
+        }
+        await transaction.CommitAsync();
+        return (customers, accepted);
+    }
+
     /// <summary>Usada pelo módulo fiscal (DocumentoFiscalAB) para resolver o destinatário por CPF/CNPJ.</summary>
     public async Task<ClienteAD?> ObterPorDocumentoAsync(string companyId, string document)
     {

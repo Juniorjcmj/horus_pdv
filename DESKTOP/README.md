@@ -173,3 +173,10 @@ No cadastro de produtos, abra as ações e escolha **Verificar situação fiscal
 Requer publicar a API atualizada: o instalador sozinho não muda a emissão do servidor. A API também corrige exportações antigas que ofereciam apenas o protocolo de autorização. Depois da publicação, exporte novamente o mês para obter nota e protocolo juntos. A recuperação exige o XML assinado original salvo no banco.
 
 A análise e seus limites estão em `docs/AUDITORIA_FISCAL_2026-10-10.md`. A conferência não equivale a homologação pela SEFAZ e não confirma enquadramento legal só pelo nome ou pelo NCM.
+
+## Versão 1.3.10 — recebimento e fiado
+
+Inclui o frontend atual com correções de recebimento, troco e reimpressão, além da validação do saldo
+fiado: saldo zero bloqueia a venda fiada, e o valor fiado não pode exceder o saldo disponível. A API
+central não está incluída; publique a API correspondente e aplique `49_pagamento_dados_ausentes.sql`
+pelo inicializador normal.

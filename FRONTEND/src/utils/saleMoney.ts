@@ -67,3 +67,10 @@ export function settlementKey(sale: Settlement): string {
   const snapshot = validateSale(sale);
   return JSON.stringify({ total: moneyCents(snapshot.totalAmount), items: snapshot.items.map(i => [i.quantity, i.unitPrice, i.desconto, i.itemTotal, (i as { productCode?: string }).productCode]), payments: snapshot.payments?.map(p => [p.paymentType.toLowerCase(), p.amount, p.cashGiven ?? null, p.changeAmount ?? null]) });
 }
+
+/** Preserve unit price precision when reading historic records. */
+export function decimalNumber(value: string | number): number {
+  decimal(value);
+  const text = String(value).trim();
+  return Number(text.includes(",") ? text.replace(/\./g, "").replace(",", ".") : text);
+}

@@ -404,8 +404,7 @@ UPDATE i
    SET UnitPrice = COALESCE(NULLIF(LTRIM(RTRIM(p.ProductSalePrice)), ''), NULLIF(LTRIM(RTRIM(p.ProductUnitPrice)), ''), N'0,00')
   FROM VendaItens i
   INNER JOIN Produtos p ON p.ProductCode = i.ProductCode
- WHERE NULLIF(LTRIM(RTRIM(i.UnitPrice)), '') IS NULL
-    OR REPLACE(REPLACE(REPLACE(LTRIM(RTRIM(i.UnitPrice)), N'R$', N''), N'.', N''), N',', N'.') IN (N'0', N'0.00');
+ WHERE NULLIF(LTRIM(RTRIM(i.UnitPrice)), '') IS NULL;
 
 UPDATE i
    SET ItemTotal = FORMAT(
@@ -417,8 +416,7 @@ UPDATE i
         N'pt-BR'
    )
   FROM VendaItens i
- WHERE (NULLIF(LTRIM(RTRIM(i.ItemTotal)), '') IS NULL
-    OR REPLACE(REPLACE(REPLACE(LTRIM(RTRIM(i.ItemTotal)), N'R$', N''), N'.', N''), N',', N'.') IN (N'0', N'0.00'))
+ WHERE NULLIF(LTRIM(RTRIM(i.ItemTotal)), '') IS NULL
    AND TRY_CONVERT(
         DECIMAL(18, 2),
         REPLACE(REPLACE(REPLACE(LTRIM(RTRIM(i.UnitPrice)), N'R$', N''), N'.', N''), N',', N'.')

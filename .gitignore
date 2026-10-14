@@ -30,3 +30,6 @@ DESKTOP/release/
 DESKTOP/gateway-bin/
 # Frontend compilado incluído no instalador; gerado por prepare-frontend.js
 DESKTOP/frontend-bin/
+
+# Isolated integrity regression artifacts
+/FRONTEND/test-results-integrity/

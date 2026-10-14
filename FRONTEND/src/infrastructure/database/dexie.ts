@@ -54,6 +54,7 @@ export type LocalProductRecord = {
 };
 
 export type LocalCustomerRecord = {
+  creditUnavailable?: boolean;
   id: string;
   tenantId: string;
   name: string;
@@ -104,6 +105,7 @@ export type CashSessionRecord = {
 
 export type SaleRecord = {
   settlementKey?: string;
+  eventId?: string;
   id: string;
   deviceId: string;
   tenantId: string;
