@@ -4182,9 +4182,9 @@
     "semantic_hash": ""
   },
   "DESKTOP/tests/installer-smoke.js": {
-    "mtime": 1791990223.5758278,
-    "seen": 1791990317.086659,
-    "ast_hash": "249b4c2738f01755f1dfda2f2381c931",
+    "mtime": 1791990536.078996,
+    "seen": 1791990652.185862,
+    "ast_hash": "bf55f782738df28f647a6b3deee59839",
     "semantic_hash": ""
   },
   "DESKTOP/tests/printer.test.js": {
