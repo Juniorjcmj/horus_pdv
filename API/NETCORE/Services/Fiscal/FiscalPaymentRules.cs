@@ -11,12 +11,12 @@ public static class FiscalPaymentRules
             throw new FiscalConfigurationException("Pagamento ou troco negativo no documento fiscal.");
         if (!string.Equals(payment.PaymentType, "dinheiro", StringComparison.OrdinalIgnoreCase))
         {
-            if (payment.ChangeAmount != 0)
+            if (payment.ChangeAmount.GetValueOrDefault() != 0)
                 throw new FiscalConfigurationException("Troco informado em pagamento que não é dinheiro.");
             return FiscalTaxRules.Money(payment.Amount);
         }
-        var received = payment.CashGiven > 0 ? payment.CashGiven : payment.Amount + payment.ChangeAmount;
-        if (Math.Abs(received - payment.Amount - payment.ChangeAmount) > .01m)
+        var received = payment.CashGiven ?? payment.Amount + payment.ChangeAmount.GetValueOrDefault();
+        if (FiscalTaxRules.Money(received) != FiscalTaxRules.Money(payment.Amount) + FiscalTaxRules.Money(payment.ChangeAmount.GetValueOrDefault()))
             throw new FiscalConfigurationException("Valor recebido em dinheiro não confere com a parcela e o troco da venda.");
         return FiscalTaxRules.Money(received);
     }
@@ -26,7 +26,7 @@ public static class FiscalPaymentRules
         if (payments.Count == 0 || total < 0 || change < 0 || payments.Any(p => p.Valor < 0))
             throw new FiscalConfigurationException("Pagamentos, total ou troco inválidos no documento fiscal.");
         if (allowNoPayment && payments.All(p => p.Tipo == "90" && p.Valor == 0) && change == 0) return;
-        if (Math.Abs(payments.Sum(p => p.Valor) - change - total) > .01m)
+        if (payments.Sum(p => FiscalTaxRules.Money(p.Valor)) - FiscalTaxRules.Money(change) != FiscalTaxRules.Money(total))
             throw new FiscalConfigurationException("A soma dos pagamentos, descontado o troco, não confere com o total da nota.");
         if (change > payments.Where(p => p.Tipo == "01").Sum(p => p.Valor))
             throw new FiscalConfigurationException("O troco supera o valor recebido em dinheiro.");

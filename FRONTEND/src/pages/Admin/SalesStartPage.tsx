@@ -53,6 +53,7 @@ import ReceiptPreviewModal, {
 } from "@/components/Admin/ReceiptPreviewModal";
 import PriceOverrideModal, { type PriceOverrideApproval } from "@/components/Admin/PriceOverrideModal";
 import { promocaoService, type Promocao } from "@/services/api/promocaoService";
+import { moneyCents, sumMoney, subtractMoney, productMoney, validateSale, validateCredit, financialRevision } from "@/utils/saleMoney";
 import { applyPromotions, round2 } from "@/utils/promotionEngine";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
 import { customerService, type CustomerDto } from "@/services/api/customerService";
@@ -271,6 +272,10 @@ export default function SalesStartPage({
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [payments, setPayments] = useState<SplitPayment[]>([]);
+  const submittingRef = useRef(false);
+  const checkoutRevisionRef = useRef<string | null>(null);
+  const [checkoutNeedsReview, setCheckoutNeedsReview] = useState(false);
+  const [paymentReference, setPaymentReference] = useState<SplitPayment[]>([]);
   const [currentPaymentType, setCurrentPaymentType] = useState<PaymentType>("dinheiro");
   const [currentPaymentAmount, setCurrentPaymentAmount] = useState("");
   const [currentCashGiven, setCurrentCashGiven] = useState("");
@@ -509,7 +514,7 @@ export default function SalesStartPage({
         ? {
             ...item,
             discount: 0,
-            itemTotal: round2(item.quantity * item.unitPrice),
+            itemTotal: productMoney(item.quantity, item.unitPrice),
             promocaoId: null,
             promocaoNome: null,
           }
@@ -517,36 +522,41 @@ export default function SalesStartPage({
     );
   }, [rawCart, promocoes, produtoCategoriaMap]);
 
-  const grossSubtotal = useMemo(
-    () => round2(cart.reduce((sum, item) => sum + round2(item.unitPrice * item.quantity), 0)),
-    [cart],
-  );
   const totalDiscount = useMemo(
     () => round2(cart.reduce((sum, item) => sum + (item.discount ?? 0), 0)),
     [cart],
   );
   const subtotal = useMemo(
-    () => round2(Math.max(0, grossSubtotal - totalDiscount)),
-    [grossSubtotal, totalDiscount],
+    () => sumMoney(cart.map(item => item.itemTotal ?? subtractMoney(productMoney(item.quantity, item.unitPrice), item.discount ?? 0))),
+    [cart],
   );
+  const revision = financialRevision(cart);
+  const latestRevisionRef = useRef(revision);
+  latestRevisionRef.current = revision;
+  useEffect(() => {
+    if (checkoutOpen && !submittingRef.current && checkoutRevisionRef.current !== revision) {
+      setCheckoutNeedsReview(true);
+    }
+  }, [revision, checkoutOpen]);
+
   const totalVolumes = useMemo(
     () => cart.reduce((sum, item) => sum + item.quantity, 0),
     [cart],
   );
 
   const totalPaid = useMemo(
-    () => payments.reduce((sum, item) => sum + item.amount, 0),
+    () => sumMoney(payments.map(item => item.amount)),
     [payments],
   );
   const remainingToPay = useMemo(
-    () => Math.max(0, subtotal - totalPaid),
+    () => Math.max(0, subtractMoney(subtotal, totalPaid)),
     [subtotal, totalPaid],
   );
   const currentPaymentAmountValue = parseMoneyBr(currentPaymentAmount || "0");
   const currentCashGivenValue = parseMoneyBr(currentCashGiven || "0");
   const currentChangeValue =
     currentPaymentType === "dinheiro"
-      ? Math.max(0, currentCashGivenValue - currentPaymentAmountValue)
+      ? Math.max(0, subtractMoney(currentCashGivenValue, currentPaymentAmountValue))
       : 0;
 
   // Cédulas sugeridas: as maiores que o valor da parcela (devolvem troco). "Valor exato" sempre existe.
@@ -580,7 +590,7 @@ export default function SalesStartPage({
     if (remainingToPay <= 0.001) return false;
     return (
       currentPaymentAmountValue > 0 &&
-      Math.abs(currentPaymentAmountValue - remainingToPay) <= 0.01 &&
+      moneyCents(currentPaymentAmountValue) === moneyCents(remainingToPay) &&
       (currentPaymentType !== "dinheiro" || currentCashGivenValue >= currentPaymentAmountValue - 0.009)
     );
   }, [
@@ -616,7 +626,7 @@ export default function SalesStartPage({
   }, [selectedCustomer, currentPaymentType, currentPaymentAmountValue, totalFiadoCommitted]);
 
   const canConfirmPayment = useMemo(() => {
-    if (cart.length === 0) return false;
+    if (cart.length === 0 || checkoutNeedsReview) return false;
     const hasFiado =
       payments.some((p) => p.paymentType === "fiado") ||
       (payments.length === 0 && currentPaymentType === "fiado");
@@ -633,6 +643,7 @@ export default function SalesStartPage({
     return currentCoversRemaining;
   }, [
     cart.length,
+    checkoutNeedsReview,
     payments,
     currentPaymentType,
     selectedCustomer,
@@ -665,10 +676,10 @@ export default function SalesStartPage({
     const fromList = payments.reduce((sum, item) => sum + (item.changeAmount ?? 0), 0);
     if (currentPaymentType === "dinheiro") {
       if (payments.length === 0) {
-        return Math.max(0, currentCashGivenValue - subtotal);
+        return Math.max(0, subtractMoney(currentCashGivenValue, subtotal));
       }
       if (remainingToPay > 0.001) {
-        return fromList + Math.max(0, currentCashGivenValue - currentPaymentAmountValue);
+        return fromList + Math.max(0, subtractMoney(currentCashGivenValue, currentPaymentAmountValue));
       }
     }
     return fromList;
@@ -1164,13 +1175,17 @@ export default function SalesStartPage({
       return;
     }
 
+    if (payments.length) setPaymentReference(payments);
     setPayments([]);
+    if (revision !== latestRevisionRef.current) { Toast.info("Carrinho atualizado. Abra o pagamento novamente para conferir."); return; }
+    checkoutRevisionRef.current = revision;
+    setCheckoutNeedsReview(false);
     setCurrentPaymentType("dinheiro");
     setCurrentPaymentAmount(formatMoneyBr(subtotal));
     setCurrentCashGiven(formatMoneyBr(subtotal));
     setNotaOptionsOpen(false);
     setCheckoutOpen(true);
-  }, [cart.length, formatMoneyBr, loadCashStatus, subtotal]);
+  }, [cart.length, formatMoneyBr, loadCashStatus, subtotal, payments, revision]);
 
   const handleAddPayment = () => {
     const amountVal = parseMoneyBr(currentPaymentAmount || "0");
@@ -1214,7 +1229,7 @@ export default function SalesStartPage({
       return;
     }
 
-    const changeVal = currentPaymentType === "dinheiro" ? Math.max(0, cashGivenVal - amountVal) : 0;
+    const changeVal = currentPaymentType === "dinheiro" ? Math.max(0, subtractMoney(cashGivenVal, amountVal)) : 0;
 
     const newPayment: SplitPayment = {
       id: `pay-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -1305,6 +1320,13 @@ export default function SalesStartPage({
   };
 
   const confirmPayment = async () => {
+    if (submittingRef.current) return;
+    if (checkoutNeedsReview || checkoutRevisionRef.current !== latestRevisionRef.current) {
+      setCheckoutNeedsReview(true); Toast.error("Carrinho atualizado. Confira novamente os valores e pagamentos antes de confirmar."); return;
+    }
+    submittingRef.current = true;
+    const confirmedRevision = latestRevisionRef.current;
+    try {
     let finalPayments: SplitPayment[] = [...payments];
 
     // Se nenhuma parcela foi adicionada manualmente à lista, usamos a forma corrente (1 clique ágil)
@@ -1320,7 +1342,7 @@ export default function SalesStartPage({
         Toast.error("Valor recebido em dinheiro menor que o total da venda.");
         return;
       }
-      const changeVal = currentPaymentType === "dinheiro" ? Math.max(0, cashGivenVal - subtotal) : 0;
+      const changeVal = currentPaymentType === "dinheiro" ? Math.max(0, subtractMoney(cashGivenVal, subtotal)) : 0;
       finalPayments = [
         {
           id: `pay-${Date.now()}`,
@@ -1332,14 +1354,14 @@ export default function SalesStartPage({
       ];
     } else {
       const currentAmountVal = parseMoneyBr(currentPaymentAmount || "0");
-      if (remainingToPay > 0.001 && Math.abs(currentAmountVal - remainingToPay) <= 0.01) {
+      if (remainingToPay > 0.001 && moneyCents(currentAmountVal) === moneyCents(remainingToPay)) {
         const cashGivenVal =
           currentPaymentType === "dinheiro" ? parseMoneyBr(currentCashGiven || "0") : currentAmountVal;
         if (currentPaymentType === "dinheiro" && cashGivenVal < currentAmountVal - 0.009) {
           Toast.error("Valor recebido em dinheiro é menor que o valor desta parcela.");
           return;
         }
-        const changeVal = currentPaymentType === "dinheiro" ? Math.max(0, cashGivenVal - currentAmountVal) : 0;
+        const changeVal = currentPaymentType === "dinheiro" ? Math.max(0, subtractMoney(cashGivenVal, currentAmountVal)) : 0;
         finalPayments.push({
           id: `pay-${Date.now()}`,
           paymentType: currentPaymentType,
@@ -1350,7 +1372,7 @@ export default function SalesStartPage({
       }
 
       const totalPaidVal = finalPayments.reduce((sum, p) => sum + p.amount, 0);
-      if (Math.abs(totalPaidVal - subtotal) > 0.01) {
+      if (moneyCents(totalPaidVal) !== moneyCents(subtotal)) {
         Toast.error(
           `Faltam R$ ${formatMoneyBr(Math.max(0, subtotal - totalPaidVal))} para liquidar a venda.`,
         );
@@ -1365,27 +1387,11 @@ export default function SalesStartPage({
 
     let saldoAntesFiado = 0;
     if (hasFiado) {
-      if (!selectedCustomer) {
-        Toast.error("Para pagamento fiado, selecione um cliente cadastrado.");
-        void openCustomerModal();
-        return;
-      }
-      const limite = Number(selectedCustomer.limiteCredito ?? 0);
-      // Saldo mais atual do IndexedDB (inclui fiado offline ainda não sincronizado); usa o maior dos dois.
-      const saldoLocal = await getLocalCustomerDebt(selectedCustomer.document || selectedCustomer.id).catch(() => null);
-      const saldo = Math.max(Number(selectedCustomer.saldoDevedor ?? 0), saldoLocal ?? 0);
-      saldoAntesFiado = saldo;
-      const disponivel = Math.max(0, limite - saldo);
-      if (totalFiado > disponivel + 0.009) {
-        Toast.error(
-          `Limite de crédito insuficiente para ${selectedCustomer.customerName}! Limite total: R$ ${formatMoneyBr(
-            limite,
-          )} | Saldo devedor: R$ ${formatMoneyBr(saldo)} | Disponível: R$ ${formatMoneyBr(
-            disponivel,
-          )} | Valor a prazo: R$ ${formatMoneyBr(totalFiado)}.`,
-        );
-        return;
-      }
+      if (!selectedCustomer) { Toast.error("Para pagamento fiado, selecione um cliente cadastrado."); return; }
+      const saldoLocal = await getLocalCustomerDebt(selectedCustomer.document || selectedCustomer.id);
+      const knownDebt = selectedCustomer.saldoDevedor;
+      saldoAntesFiado = saldoLocal == null ? Number(knownDebt) : Math.max(Number(knownDebt), saldoLocal);
+      validateCredit(selectedCustomer.limiteCredito, knownDebt == null ? undefined : saldoAntesFiado, totalFiado);
     }
 
     // Validação extra quando NF-e modelo 55 é selecionada
@@ -1418,8 +1424,8 @@ export default function SalesStartPage({
 
       const primaryPaymentType =
         finalPayments.length === 1 ? finalPayments[0].paymentType : "Múltiplo";
-      const totalCashGiven = finalPayments.reduce((sum, p) => sum + (p.cashGiven ?? p.amount), 0);
-      const totalChange = finalPayments.reduce((sum, p) => sum + (p.changeAmount ?? 0), 0);
+      const totalCashGiven = sumMoney(finalPayments.map(p => p.cashGiven ?? p.amount));
+      const totalChange = sumMoney(finalPayments.map(p => p.changeAmount ?? 0));
 
       const payloadPayments = finalPayments.map((p) => ({
         paymentType: p.paymentType,
@@ -1436,7 +1442,7 @@ export default function SalesStartPage({
       const localDevice = getCachedDeviceId() || "CX01";
       const offlineReference = `OFF-${localDevice.slice(0, 4).toUpperCase()}-${Date.now().toString().slice(-6)}`;
 
-      const registerPayload = {
+      const registerPayload = validateSale({
         clientSaleId,
         eventId,
         eventType: "SALE_CREATED",
@@ -1463,7 +1469,8 @@ export default function SalesStartPage({
         payloadHash: "",
         xmlNfceContingencia: undefined as string | undefined,
         gatewayFiscalAttempt: undefined as import("@/services/api/salesHistoryService").RegisterSalePayload["gatewayFiscalAttempt"],
-      };
+      });
+      if (confirmedRevision !== latestRevisionRef.current) { setCheckoutNeedsReview(true); throw new Error("Carrinho atualizado durante conferência. Confira novamente os pagamentos."); }
 
       try {
         registerPayload.payloadHash = await computeSalePayloadHash(registerPayload);
@@ -1471,6 +1478,7 @@ export default function SalesStartPage({
         // Fallback caso crypto.subtle não esteja disponível
       }
 
+      if (confirmedRevision !== latestRevisionRef.current) { setCheckoutNeedsReview(true); throw new Error("Carrinho atualizado. Confira novamente os pagamentos."); }
       let saleNumber: string;
       let isOfflineSale = false;
       let fiscalDetail: FiscalDocumentDetailDto | null = null;
@@ -1604,7 +1612,7 @@ export default function SalesStartPage({
               const aliquota = Number(rawAliquota.includes(",") ? rawAliquota.replace(/\./g, "").replace(",", ".") : rawAliquota);
               return { numero: idx + 1, codigoProduto: item.code, descricao: item.name,
                 quantidade: item.quantity, valorUnitario: item.unitPrice,
-                valorTotal: round2(item.quantity * item.unitPrice), desconto: item.discount ?? 0,
+                valorTotal: productMoney(item.quantity, item.unitPrice), desconto: item.discount ?? 0,
                 ...fiscal, aliquotaIcms: Number.isFinite(aliquota) ? aliquota : undefined };
             }),
             pagamentos: finalPayments.map((p) => ({
@@ -1749,6 +1757,8 @@ export default function SalesStartPage({
     setShowProductOptions(false);
     setQuantityInput("1");
     setPayments([]);
+    setPaymentReference([]);
+    checkoutRevisionRef.current = null;
     setCurrentPaymentType("dinheiro");
     setCurrentPaymentAmount("");
     setCurrentCashGiven("");
@@ -1757,6 +1767,9 @@ export default function SalesStartPage({
     setNfeDest({ ...EMPTY_NFE_DEST });
     setNfeMatchedCustomer(null);
     window.setTimeout(() => productInputRef.current?.focus(), 0);
+    } catch (error) {
+      Toast.error(error instanceof Error ? error.message : "Erro ao conferir venda.");
+    } finally { submittingRef.current = false; }
   };
 
   const scannerBlocked = checkoutOpen || isConfirmingSale || !!receiptPreview || customerModalOpen
@@ -2664,6 +2677,15 @@ export default function SalesStartPage({
             </div>
 
             <div className="space-y-3">
+              {checkoutNeedsReview && <div role="alert" className="rounded border border-amber-500 p-3">
+                Carrinho ou promoção atualizado. Confira o novo total e os pagamentos. Valores anteriores permanecem como referência; nenhum recebimento foi estornado.
+                <button type="button" className="btn-secondary" onClick={() => {
+                  setPaymentReference([...payments, ...(currentPaymentAmountValue > 0 ? [{ id: "reference-current", paymentType: currentPaymentType, amount: currentPaymentAmountValue, cashGiven: currentCashGivenValue, changeAmount: currentChangeValue }] : [])]); setPayments([]);
+                  checkoutRevisionRef.current = latestRevisionRef.current; setCheckoutNeedsReview(false);
+                  setCurrentPaymentAmount(formatMoneyBr(subtotal)); setCurrentCashGiven(formatMoneyBr(subtotal));
+                }}>Conferir pagamentos novamente</button>
+              </div>}
+              {paymentReference.length > 0 && <p className="text-sm text-text-secondary">Referência de valores anteriores: {paymentReference.map(p => `${getPaymentLabel(p.paymentType)} R$ ${formatMoneyBr(p.amount)}${p.paymentType === "dinheiro" ? ` (recebido R$ ${formatMoneyBr(p.cashGiven ?? p.amount)}, troco R$ ${formatMoneyBr(p.changeAmount ?? 0)})` : ""}`).join("; ")}. Confira recebimentos já efetuados.</p>}
               {/* CPF na nota / NF-e: escondidos por padrão (fiado mostra a identificação sozinho) */}
               {!showCustomerSection || !showFiscalModelSection ? (
                 <button

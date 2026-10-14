@@ -42,8 +42,8 @@ public class VendaPagamentoRequest
 {
     public string PaymentType { get; set; } = string.Empty;
     public decimal Amount { get; set; }
-    public decimal CashGiven { get; set; }
-    public decimal ChangeAmount { get; set; }
+    public decimal? CashGiven { get; set; }
+    public decimal? ChangeAmount { get; set; }
 }
 
 public class VendaItemRequest
@@ -51,8 +51,12 @@ public class VendaItemRequest
     public string ProductCode { get; set; } = string.Empty;
     public string ProductName { get; set; } = string.Empty;
     public decimal Quantity { get; set; }
-    public decimal UnitPrice { get; set; }
+    private decimal unitPrice;
+    public decimal UnitPrice { get => unitPrice; set { unitPrice = value; UnitPriceSpecified = true; } }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool UnitPriceSpecified { get; private set; }
     public decimal Desconto { get; set; }
+    public decimal? ItemTotal { get; set; }
     public string? PromocaoId { get; set; }
 
     /// <summary>

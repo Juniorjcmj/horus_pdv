@@ -2,6 +2,7 @@
  * Arquivo: src/utils/promotionEngine.ts
  * Objetivo: motor puro de cálculo de promoções e preços dinâmicos para o PDV.
  */
+import { money, productMoney } from "./saleMoney";
 import type { Promocao, TipoPromocao } from "@/services/api/promocaoService";
 
 export type CartItemPromo = {
@@ -19,7 +20,7 @@ export type CartItemPromo = {
 };
 
 export function round2(val: number): number {
-  return Math.round((val + Number.EPSILON) * 100) / 100;
+  return money(val);
 }
 
 /**
@@ -164,7 +165,7 @@ export function applyPromotions<T extends CartItemPromo>(
       }
     }
 
-    const gross = round2(item.quantity * item.unitPrice);
+    const gross = productMoney(item.quantity, item.unitPrice);
     const effectiveDiscount = Math.min(gross, bestDiscount);
     const itemTotal = round2(Math.max(0, gross - effectiveDiscount));
 

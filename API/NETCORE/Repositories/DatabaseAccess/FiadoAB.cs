@@ -75,12 +75,7 @@ public class FiadoAB(Connection connection)
             saldoAnterior = reader.GetDecimal(reader.GetOrdinal("SaldoDevedor"));
         }
 
-        var limiteDisponivel = Math.Max(0, limiteCredito - saldoAnterior);
-        if ((saldoAnterior + valor) > limiteCredito)
-        {
-            throw new InvalidOperationException(
-                $"Limite de crédito insuficiente para {customerName}. Limite total: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoAnterior:N2}, Disponível: R$ {limiteDisponivel:N2}, Compra fiado: R$ {valor:N2}.");
-        }
+        SaleMoney.Credit(limiteCredito, saldoAnterior, valor);
 
         var saldoAtual = saldoAnterior + valor;
         var now = HorusDateTime.Now;

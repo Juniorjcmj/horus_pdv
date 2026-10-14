@@ -36,11 +36,13 @@ public class PdvMcpTools(
     IPromocaoService promocaoService)
 {
     public const string ServerInstructions =
-        "Servidor MCP do Quack PDV (somente leitura). Consulta relatórios, produtos, controle de validade por lote " +
-        "e promoções da loja dona do token. Datas sempre em AAAA-MM-DD. Valores em reais já formatados (R$) nos " +
-        "relatórios. Comece por listar_relatorios para conhecer os relatórios e filtros, e por listar_categorias " +
-        "quando precisar de um categoriaId. Listas grandes são paginadas: use pagina/tamanhoPagina e confira " +
-        "totalLinhas/total antes de concluir que viu tudo.";
+        "Servidor MCP do Quack PDV (somente leitura). Consulta relatórios, produtos, controle de validade por lote, " +
+        "promoções, auditoria fiscal e notas de entrada da loja dona do token. Datas sempre em AAAA-MM-DD. " +
+        "Valores em reais já formatados (R$) nos relatórios. Comece por listar_relatorios para conhecer os " +
+        "relatórios e filtros, e por listar_categorias quando precisar de um categoriaId. Para auditoria fiscal, " +
+        "comece por resumo_auditoria_fiscal e use listar_produtos_fiscais/obter_fiscal_produto para conferir os " +
+        "dados. Listas grandes são paginadas: use pagina/tamanhoPagina e confira totalLinhas/total antes de " +
+        "concluir que viu tudo.";
 
     private const int MaxPageSize = 200;
 

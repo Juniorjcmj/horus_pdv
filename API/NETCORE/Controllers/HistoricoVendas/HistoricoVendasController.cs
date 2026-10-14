@@ -332,7 +332,8 @@ public class HistoricoVendasController(
                 saleNumber,
                 printedAt = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"),
                 items = saleRows.Count,
-                rows = saleRows
+                rows = saleRows,
+                payments = (await historicoVendasAB.ObterDetalheCompletoAsync(currentUser.CompanyId, saleNumber))?.Payments
             }
         });
     }

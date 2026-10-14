@@ -90,8 +90,8 @@ export type SalePaymentItemDto = {
   vendaId: string;
   paymentType: string;
   amount: number;
-  cashGiven: number;
-  changeAmount: number;
+  cashGiven: number | null;
+  changeAmount: number | null;
   createdAt: string;
 };
 
@@ -195,6 +195,7 @@ export const salesHistoryService = {
       printedAt: string;
       items: number;
       rows: SaleHistoryDto[];
+      payments?: SalePaymentItemDto[];
     }>(`${HISTORICO_VENDAS_API_URL}/${saleNumber}/imprimir`, {
       method: "POST",
     });

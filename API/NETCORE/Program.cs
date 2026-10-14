@@ -154,7 +154,8 @@ builder.Services
         options.ServerInstructions = PdvMcpTools.ServerInstructions;
     })
     .WithHttpTransport(options => options.Stateless = true)
-    .WithTools<PdvMcpTools>();
+    .WithTools<PdvMcpTools>()
+    .WithTools<FiscalAuditMcpTools>();
 
 var app = builder.Build();
 

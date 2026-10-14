@@ -109,13 +109,7 @@ public class PedidoController(
                 return NotFound(new ApiResponse<object> { Success = false, Message = "Pedido não encontrado." });
             }
 
-            if (pedido.Status != PedidoStatus.Aberto)
-            {
-                var motivo = pedido.Status == PedidoStatus.Finalizado
-                    ? "Este pedido já foi pago."
-                    : "Este pedido foi cancelado.";
-                return BadRequest(new ApiResponse<object> { Success = false, Message = motivo });
-            }
+            if (pedido.Status == PedidoStatus.Cancelado) return BadRequest(new ApiResponse<object> { Success = false, Message = "Este pedido foi cancelado." });
 
             var paymentType = string.IsNullOrWhiteSpace(request.PaymentType) ? "-" : request.PaymentType.Trim();
 
@@ -129,9 +123,9 @@ public class PedidoController(
             catch { }
 
             var result = await historicoVendasAB.RegistrarComPrecosFixosAsync(
-                currentUser.CompanyId, pedido.CustomerName, pedido.CustomerCpf, paymentType, currentUser.Name, pedido.Itens, request.Payments, caixaSessaoId);
+                currentUser.CompanyId, pedido.CustomerName, pedido.CustomerCpf, paymentType, currentUser.Name, pedido.Itens, request.Payments, caixaSessaoId, pedido.Id);
 
-            await pedidoAB.MarcarFinalizadoAsync(currentUser.CompanyId, pedido.Id, result.VendaId);
+
 
             // Avalia se esta finalização de pedido deve emitir NFC-e conforme as regras da empresa
             var listaFormas = request.Payments.Select(p => p.PaymentType).Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
@@ -148,7 +142,7 @@ public class PedidoController(
                 pedido.CustomerCpf);
 
             var fiscalQueued = false;
-            if (deveEmitirFiscal)
+            if (deveEmitirFiscal && !result.IsReplay)
             {
                 try
                 {

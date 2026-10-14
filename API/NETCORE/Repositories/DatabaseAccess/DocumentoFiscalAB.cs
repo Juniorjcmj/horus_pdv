@@ -244,7 +244,7 @@ public class DocumentoFiscalAB(
                 Tipo = MapearFormaPagamento(p.PaymentType),
                 Valor = FiscalPaymentRules.DeclaredAmount(p)
             }).ToList();
-            valorTrocoTotal = pagamentosCadastrados.Sum(p => p.ChangeAmount);
+            valorTrocoTotal = pagamentosCadastrados.Sum(p => p.ChangeAmount ?? 0);
         }
         else
         {
@@ -393,7 +393,7 @@ public class DocumentoFiscalAB(
                 Tipo = MapearFormaPagamento(p.PaymentType),
                 Valor = FiscalPaymentRules.DeclaredAmount(p)
             }).ToList();
-            valorTrocoTotal = pagamentosCadastrados.Sum(p => p.ChangeAmount);
+            valorTrocoTotal = pagamentosCadastrados.Sum(p => p.ChangeAmount ?? 0);
         }
         else
         {

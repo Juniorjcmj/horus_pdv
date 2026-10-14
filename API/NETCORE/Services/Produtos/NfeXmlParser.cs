@@ -48,6 +48,16 @@ public sealed record NfeParsedDocument(
     string? DataEmissao = null,
     decimal? ValorNota = null);
 
+public sealed record NfeItemFiscalDetail(
+    int NumeroItem, string CodigoFornecedor, string? Gtin, string Descricao,
+    string Ncm, string? Cest, string? Cfop, string UnidadeComercial,
+    decimal Quantidade, decimal ValorUnitario, decimal ValorTotal, decimal Desconto,
+    string? Origem, string? CstIcms, string? Csosn,
+    decimal? BaseCalculoIcms, decimal? AliquotaIcms, decimal? ValorIcms, decimal? PercentualReducaoBc,
+    decimal? BaseCalculoIcmsSt, decimal? AliquotaIcmsSt, decimal? ValorIcmsSt,
+    string? CstPis, decimal? BaseCalculoPis, decimal? AliquotaPis, decimal? ValorPis,
+    string? CstCofins, decimal? BaseCalculoCofins, decimal? AliquotaCofins, decimal? ValorCofins);
+
 public static class NfeXmlParser
 {
     private static readonly XNamespace Ns = "http://www.portalfiscal.inf.br/nfe";
@@ -132,6 +142,65 @@ public static class NfeXmlParser
             decimal.TryParse(total, NumberStyles.Number, CultureInfo.InvariantCulture, out var valor) ? valor : null);
     }
 
+    /// <summary>Extrai dados tributários (ICMS, PIS, COFINS) de cada &lt;det&gt; do XML.</summary>
+    public static List<NfeItemFiscalDetail> ParseFiscalDetails(byte[] xmlBytes)
+    {
+        XDocument doc;
+        using (var stream = new MemoryStream(xmlBytes))
+            doc = XDocument.Load(stream, LoadOptions.None);
+
+        var infNFe = doc.Descendants(Ns + "infNFe").FirstOrDefault();
+        if (infNFe is null) return [];
+
+        var result = new List<NfeItemFiscalDetail>();
+        foreach (var det in infNFe.Elements(Ns + "det"))
+        {
+            _ = int.TryParse(det.Attribute("nItem")?.Value, out var nItem);
+            var prod = det.Element(Ns + "prod");
+            var imposto = det.Element(Ns + "imposto");
+
+            // ICMS: pode estar em qualquer sub-elemento (ICMS00, ICMS10, ICMS20, ICMS60, ICMSSN102, etc.)
+            var icmsGroup = imposto?.Element(Ns + "ICMS")?.Elements().FirstOrDefault();
+            // PIS: PISAliq, PISQtde, PISNT, PISOutr
+            var pisGroup = imposto?.Element(Ns + "PIS")?.Elements().FirstOrDefault();
+            // COFINS: COFINSAliq, COFINSQtde, COFINSNT, COFINSOutr
+            var cofinsGroup = imposto?.Element(Ns + "COFINS")?.Elements().FirstOrDefault();
+
+            result.Add(new NfeItemFiscalDetail(
+                NumeroItem: nItem,
+                CodigoFornecedor: Value(prod, "cProd"),
+                Gtin: IsGtinValido(Value(prod, "cEAN")) ? Value(prod, "cEAN") : null,
+                Descricao: Value(prod, "xProd"),
+                Ncm: EmptyToDefault(Value(prod, "NCM"), "00000000"),
+                Cest: EmptyToNull(Value(prod, "CEST")),
+                Cfop: EmptyToNull(Value(prod, "CFOP")),
+                UnidadeComercial: EmptyToDefault(Value(prod, "uCom"), "UN").ToUpperInvariant(),
+                Quantidade: ParseXmlDecimal(Value(prod, "qCom")),
+                ValorUnitario: ParseXmlDecimal(Value(prod, "vUnCom")),
+                ValorTotal: ParseXmlDecimal(Value(prod, "vProd")),
+                Desconto: ParseXmlDecimal(Value(prod, "vDesc")),
+                Origem: EmptyToNull(Value(icmsGroup, "orig")),
+                CstIcms: EmptyToNull(Value(icmsGroup, "CST")),
+                Csosn: EmptyToNull(Value(icmsGroup, "CSOSN")),
+                BaseCalculoIcms: ParseNullableDecimal(Value(icmsGroup, "vBC")),
+                AliquotaIcms: ParseNullableDecimal(Value(icmsGroup, "pICMS")),
+                ValorIcms: ParseNullableDecimal(Value(icmsGroup, "vICMS")),
+                PercentualReducaoBc: ParseNullableDecimal(Value(icmsGroup, "pRedBC")),
+                BaseCalculoIcmsSt: ParseNullableDecimal(Value(icmsGroup, "vBCST")),
+                AliquotaIcmsSt: ParseNullableDecimal(Value(icmsGroup, "pICMSST")),
+                ValorIcmsSt: ParseNullableDecimal(Value(icmsGroup, "vICMSST")),
+                CstPis: EmptyToNull(Value(pisGroup, "CST")),
+                BaseCalculoPis: ParseNullableDecimal(Value(pisGroup, "vBC")),
+                AliquotaPis: ParseNullableDecimal(Value(pisGroup, "pPIS")),
+                ValorPis: ParseNullableDecimal(Value(pisGroup, "vPIS")),
+                CstCofins: EmptyToNull(Value(cofinsGroup, "CST")),
+                BaseCalculoCofins: ParseNullableDecimal(Value(cofinsGroup, "vBC")),
+                AliquotaCofins: ParseNullableDecimal(Value(cofinsGroup, "pCOFINS")),
+                ValorCofins: ParseNullableDecimal(Value(cofinsGroup, "vCOFINS"))));
+        }
+        return result;
+    }
+
     private static bool IsGtinValido(string value) =>
         !string.IsNullOrWhiteSpace(value) && !string.Equals(value, "SEM GTIN", StringComparison.OrdinalIgnoreCase);
 
@@ -147,4 +216,8 @@ public static class NfeXmlParser
     // pt-BR — diferente do HorusMoneyFormat usado no restante do contrato HTTP da aplicação.
     private static decimal ParseXmlDecimal(string value) =>
         decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed) ? parsed : 0m;
+
+    private static decimal? ParseNullableDecimal(string value) =>
+        string.IsNullOrWhiteSpace(value) ? null
+        : decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed) ? parsed : null;
 }

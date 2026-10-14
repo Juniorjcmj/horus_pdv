@@ -38,8 +38,8 @@ public static class HorusPayloadHash
                 {
                     paymentType = p.PaymentType?.Trim() ?? string.Empty,
                     amount = Math.Round(p.Amount, 2),
-                    cashGiven = Math.Round(p.CashGiven, 2),
-                    changeAmount = Math.Round(p.ChangeAmount, 2)
+                    cashGiven = Math.Round(p.CashGiven ?? 0, 2),
+                    changeAmount = Math.Round(p.ChangeAmount ?? 0, 2)
                 })
                 .ToList()
         };

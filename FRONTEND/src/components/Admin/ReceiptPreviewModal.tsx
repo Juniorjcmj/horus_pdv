@@ -60,8 +60,9 @@ export type SaleReceipt = {
   paymentLabel: string;
   operatorName: string;
   subtotal: number;
-  cashGiven: number;
-  change: number;
+  cashGiven?: number;
+  change?: number;
+  inconsistency?: string;
   items: SaleReceiptItem[];
   payments?: ReceiptPaymentItem[];
   fiscalDetail?: FiscalDocumentDetailDto | null;
@@ -193,24 +194,9 @@ export function buildReceiptPrintHtml(
       <div class="divider"></div>
       <section>
         <div class="line bold"><span>TOTAL</span><span>R$ ${formatMoney(receipt.subtotal)}</span></div>
-        ${
-          receipt.payments && receipt.payments.length > 1
-            ? receipt.payments
-                .map(
-                  (p) => `<div class="line"><span>${escapeHtml(p.paymentLabel)}</span><span>R$ ${formatMoney(p.amount)}</span></div>`
-                )
-                .join("") +
-              (receipt.change > 0
-                ? `<div class="line bold"><span>Troco</span><span>R$ ${formatMoney(receipt.change)}</span></div>`
-                : "")
-            : `<div class="line"><span>Pagamento</span><span>${escapeHtml(receipt.paymentLabel || "-")}</span></div>
-               ${
-                 receipt.paymentType === "dinheiro"
-                   ? `<div class="line"><span>Valor recebido</span><span>R$ ${formatMoney(receipt.cashGiven)}</span></div>
-                      <div class="line"><span>Troco</span><span>R$ ${formatMoney(receipt.change)}</span></div>`
-                   : ""
-               }`
-        }
+        ${receipt.inconsistency ? `<div class="bold">${escapeHtml(receipt.inconsistency)}</div>` : ""}
+        ${receipt.payments?.length ? receipt.payments.map(p => `<div class="line"><span>${escapeHtml(p.paymentLabel)}</span><span>R$ ${formatMoney(p.amount)}</span></div>${p.paymentType.trim().toLowerCase() === "dinheiro" ? `${p.cashGiven !== undefined ? `<div class="line"><span>Valor recebido</span><span>R$ ${formatMoney(p.cashGiven)}</span></div>` : ""}${p.changeAmount !== undefined ? `<div class="line"><span>Troco</span><span>R$ ${formatMoney(p.changeAmount)}</span></div>` : ""}` : ""}`).join("") : `<div class="line"><span>Pagamento</span><span>${escapeHtml(receipt.paymentLabel || "-")}</span></div>${receipt.cashGiven !== undefined ? `<div class="line"><span>Valor recebido</span><span>R$ ${formatMoney(receipt.cashGiven)}</span></div>` : ""}${receipt.change !== undefined ? `<div class="line"><span>Troco</span><span>R$ ${formatMoney(receipt.change)}</span></div>` : ""}`}
+
       </section>
 
       ${

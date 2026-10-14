@@ -103,6 +103,7 @@ export type CashSessionRecord = {
 };
 
 export type SaleRecord = {
+  settlementKey?: string;
   id: string;
   deviceId: string;
   tenantId: string;

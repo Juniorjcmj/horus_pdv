@@ -1,3 +1,4 @@
+import { money, moneyCents } from "@/utils/saleMoney";
 /**
  * Arquivo: src/services/api/fiscalService.ts
  * Objetivo: encapsula chamadas HTTP de consulta, reemissão, cancelamento e inutilização de NFC-e.
@@ -402,6 +403,7 @@ export const fiscalService = {
     return response.data;
   },
   async emitirContingenciaGatewayLocal(gatewayBaseUrl: string, terminalKey: string, payload: LocalNfceContingenciaPayload) {
+    payload = normalizeLocalFiscalPayload(payload);
     const cleanUrl = gatewayBaseUrl.replace(/\/+$/, "");
     const res = await fetch(`${cleanUrl}/api/gateway/fiscal/nfce/contingencia`, {
       method: "POST",
@@ -510,3 +512,12 @@ export const nfeService = {
     window.URL.revokeObjectURL(downloadUrl);
   },
 };
+
+export function normalizeLocalFiscalPayload(payload: LocalNfceContingenciaPayload): LocalNfceContingenciaPayload {
+  const normalized = { ...payload, itens: payload.itens.map(item => ({ ...item, valorTotal: money(item.valorTotal), desconto: money(item.desconto) })), pagamentos: payload.pagamentos.map(payment => ({ ...payment, valor: money(payment.valor) })), valorTroco: money(payload.valorTroco) };
+  if (normalized.itens.some(i => !Number.isFinite(i.quantidade) || i.quantidade <= 0 || !Number.isFinite(i.valorUnitario) || i.valorUnitario < 0 || i.valorTotal < 0 || i.desconto < 0 || i.desconto > i.valorTotal) || normalized.pagamentos.some(p => p.valor <= 0) || normalized.valorTroco < 0) throw new Error("Valores inválidos na contingência.");
+  const net = normalized.itens.reduce((sum, item) => sum + moneyCents(item.valorTotal) - moneyCents(item.desconto), 0);
+  if (normalized.pagamentos.reduce((sum, payment) => sum + moneyCents(payment.valor), 0) - moneyCents(normalized.valorTroco) !== net) throw new Error("Pagamentos e troco diferem dos itens na contingência.");
+  if (moneyCents(normalized.valorTroco) > normalized.pagamentos.filter(p => p.tipo === "01").reduce((sum, p) => sum + moneyCents(p.valor), 0)) throw new Error("Troco supera recebido em dinheiro.");
+  return normalized;
+}

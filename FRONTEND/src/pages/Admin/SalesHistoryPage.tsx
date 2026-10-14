@@ -1,3 +1,4 @@
+import { registeredItemTotal, receiptFacts } from "@/utils/saleReceiptFacts";
 /**
  * Arquivo: src/pages/Admin/SalesHistoryPage.tsx
  * Objetivo: exibe histórico de vendas com busca local e ação de impressão por registro.
@@ -40,7 +41,7 @@ import {
 } from "@/services/api/fiscalService";
 import { salesHistoryService, type SaleHistoryDto } from "@/services/api/salesHistoryService";
 import { cashRegisterService, type CashMovementDto } from "@/services/api/cashRegisterService";
-import { getLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
+import { getLocalSalePayments, getLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
 import { getStoredAuthUser, hasFinanceiroAccess } from "@/utils/authStorage";
 import {
   PAYMENT_GROUP_LABEL,
@@ -432,64 +433,28 @@ export default function SalesHistoryPage() {
   }, [filteredSales, itemsPerPage, safeCurrentPage]);
 
   const getUnitPrice = (sale: SaleHistoryRow) => parseMoneyBr(sale.unitPrice || "0,00");
-  const getItemTotal = (sale: SaleHistoryRow) => {
-    const unitPrice = getUnitPrice(sale);
-    return parseMoneyBr(sale.itemTotal || "0,00") || unitPrice * sale.quantity;
-  };
-
-  const toReceipt = (
-    saleNumber: string,
-    rows: SaleHistoryRow[],
-    printedAt?: string,
-  ): SaleReceipt | null => {
-    if (rows.length === 0) return null;
-
-    const [first] = rows;
-    const items = rows.map((row, index) => {
-      const unitPrice = parseMoneyBr(row.unitPrice || "0,00");
-      const itemTotal = parseMoneyBr(row.itemTotal || "0,00") || unitPrice * row.quantity;
-      return {
-        id: `${row.saleNumber}-${row.productCode}-${index}`,
-        code: row.productCode,
-        name: row.productName,
-        quantity: row.quantity,
-        unitPrice,
-        total: itemTotal,
-      };
-    });
-    const itemsSubtotal = items.reduce((sum, item) => sum + item.total, 0);
-    const receiptTotal = parseMoneyBr(first.totalAmount || "0,00") || itemsSubtotal;
+  const getItemTotal = (sale: SaleHistoryRow) => registeredItemTotal(sale);
+  const toReceipt = (saleNumber: string, rows: SaleHistoryRow[], printedAt?: string, payments?: Parameters<typeof receiptFacts>[1]): SaleReceipt | null => {
+    if (!rows.length) return null;
+    const first = rows[0];
+    const facts = receiptFacts(rows, payments);
     const paymentType = first.paymentType || "-";
-    const storedUser = getStoredAuthUser();
-
-    return {
-      saleNumber,
-      issuedAt: first.saleDate,
-      printedAt,
-      company: toCompanyReceipt(company),
-      customerCpf: first.customerCpf || "-",
-      paymentType,
-      paymentLabel: PAYMENT_LABEL[paymentType] || paymentType || "-",
-      operatorName: first.operatorName || storedUser?.name || "Operador",
-      subtotal: receiptTotal,
-      cashGiven: paymentType === "dinheiro" ? receiptTotal : 0,
-      change: 0,
-      items,
-    };
+    return { saleNumber, issuedAt: first.saleDate, printedAt, company: toCompanyReceipt(company), customerCpf: first.customerCpf || "-", paymentType, paymentLabel: PAYMENT_LABEL[paymentType] || paymentType, operatorName: first.operatorName || getStoredAuthUser()?.name || "Operador", ...facts };
   };
 
   const openPrintPreview = async (sale: SaleHistoryRow) => {
     setPrintingSaleNumbers((current) => new Set(current).add(sale.saleNumber));
     try {
       const [result, fiscalDetail] = await Promise.all([
-        salesHistoryService.print(sale.saleNumber),
+        salesHistoryService.print(sale.saleNumber).catch(() => null),
         fiscalService.getBySaleNumber(sale.saleNumber).catch(() => null),
       ]);
       const rows =
         result?.rows && result.rows.length > 0
           ? result.rows
           : salesHistory.filter((item) => item.saleNumber === sale.saleNumber);
-      const receipt = toReceipt(sale.saleNumber, rows, result?.printedAt);
+      const recordedPayments = result?.payments ?? await getLocalSalePayments(sale.saleNumber);
+      const receipt = toReceipt(sale.saleNumber, rows, result?.printedAt, recordedPayments);
       if (!receipt) {
         Toast.error("Venda não encontrada para impressão.");
         return;

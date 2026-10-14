@@ -114,7 +114,7 @@ public static class FiscalGatewayImport
         if (sale.Payments.Count > 0)
         {
             Require(FiscalTaxRules.Money(sale.Payments.Sum(p => p.Amount)) == amount
-                && FiscalTaxRules.Money(sale.Payments.Sum(p => p.ChangeAmount)) == change, "pagamentos diferentes da venda.");
+                && FiscalTaxRules.Money(sale.Payments.Sum(p => p.ChangeAmount ?? 0)) == change, "pagamentos diferentes da venda.");
         }
         string PaymentCode(string value)
         {

@@ -11,7 +11,7 @@ public class VendaPagamentoAD
     public string VendaId { get; set; } = string.Empty;
     public string PaymentType { get; set; } = string.Empty;
     public decimal Amount { get; set; }
-    public decimal CashGiven { get; set; }
-    public decimal ChangeAmount { get; set; }
+    public decimal? CashGiven { get; set; }
+    public decimal? ChangeAmount { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 }

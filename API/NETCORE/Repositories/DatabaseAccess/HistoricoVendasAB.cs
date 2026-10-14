@@ -163,7 +163,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             {
                 const string checkEventSql = """
                     SELECT PayloadHash, ResponsePayload
-                    FROM ProcessedEvents WITH (UPDLOCK, ROWLOCK)
+                    FROM ProcessedEvents WITH (UPDLOCK, HOLDLOCK)
                     WHERE CompanyId = @CompanyId AND EventId = @EventId;
                     """;
 
@@ -209,23 +209,24 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             }
             var operatorName = string.IsNullOrWhiteSpace(request.OperatorName) ? "Operador" : request.OperatorName.Trim();
 
-            var payments = request.Payments ?? [];
-            if (payments.Count > 0)
+            totalAmount = SaleMoney.Money(totalAmount);
+            if (request.Items.Count == 0) throw new InvalidOperationException("Venda sem itens.");
+            if (request.Items.Any(i => !i.UnitPriceSpecified)) throw new InvalidOperationException("Preço do item ausente. Atualize o cliente para enviar o preço de fechamento.");
+            var netTotal = request.Items.Sum(i => SaleMoney.ItemNet(i.Quantity, i.UnitPrice, i.Desconto));
+            foreach (var item in request.Items)
             {
-                var sumPayments = payments.Sum(p => Math.Round(p.Amount, 2, MidpointRounding.AwayFromZero));
-                if (Math.Abs(sumPayments - totalAmount) > 0.01m)
-                {
-                    throw new InvalidOperationException(
-                        $"A soma dos pagamentos (R$ {sumPayments:N2}) não confere com o total da venda (R$ {totalAmount:N2}).");
-                }
-                paymentType = payments.Count == 1 ? payments[0].PaymentType : "Múltiplo";
+                var net = SaleMoney.ItemNet(item.Quantity, item.UnitPrice, item.Desconto);
+                if (item.ItemTotal.HasValue && SaleMoney.Money(item.ItemTotal.Value) != net)
+                    throw new InvalidOperationException("Líquido informado difere do cálculo do item.");
+                item.Desconto = SaleMoney.Money(item.Desconto);
             }
-
-            var fiadoPayment = payments.FirstOrDefault(p => string.Equals(p.PaymentType?.Trim(), "fiado", StringComparison.OrdinalIgnoreCase))
-                ?? (string.Equals(paymentType, "fiado", StringComparison.OrdinalIgnoreCase) ? new VendaPagamentoRequest { PaymentType = "fiado", Amount = totalAmount } : null);
+            if (netTotal != totalAmount) throw new InvalidOperationException("Soma dos itens líquidos difere do total da venda.");
+            var payments = SaleMoney.Payments(totalAmount, paymentType, request.Payments);
+            paymentType = payments.Count == 1 ? payments[0].PaymentType : "Múltiplo";
+            var fiadoAmount = SaleMoney.Fiado(payments);
 
             string? fiadoClienteId = null;
-            if (fiadoPayment is not null && fiadoPayment.Amount > 0)
+            if (fiadoAmount > 0)
             {
                 if (string.IsNullOrWhiteSpace(customerCpf) || customerCpf == "-")
                 {
@@ -259,12 +260,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                     customerName = r.GetString(r.GetOrdinal("CustomerName"));
                 }
 
-                var disponivel = Math.Max(0, limiteCredito - saldoDevedor);
-                if ((saldoDevedor + fiadoPayment.Amount) > limiteCredito)
-                {
-                    throw new InvalidOperationException(
-                        $"Limite de crédito insuficiente para {customerName}. Limite total: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoDevedor:N2}, Disponível: R$ {disponivel:N2}, Tentativa fiado: R$ {fiadoPayment.Amount:N2}.");
-                }
+                SaleMoney.Credit(limiteCredito, saldoDevedor, fiadoAmount);
             }
 
             var isOfflineSync = !string.IsNullOrWhiteSpace(request.EventId) 
@@ -288,9 +284,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             result.Warnings = rupturas;
 
             FiadoMovimentoAD? fiadoMov = null;
-            if (fiadoPayment is not null && fiadoPayment.Amount > 0 && fiadoClienteId is not null)
+            if (fiadoAmount > 0 && fiadoClienteId is not null)
             {
-                fiadoMov = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteId, fiadoPayment.Amount, result.VendaId, operatorName);
+                fiadoMov = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteId, fiadoAmount, result.VendaId, operatorName);
                 result.FiadoSaldoAtual = fiadoMov.SaldoAtual;
                 result.FiadoClienteId = fiadoClienteId;
             }
@@ -372,33 +368,41 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         string operatorName,
         List<PedidoItemAD> pedidoItens,
         List<VendaPagamentoRequest>? payments = null,
-        string? caixaSessaoId = null)
+        string? caixaSessaoId = null,
+        string? pedidoId = null)
     {
         await using var db = await connection.OpenConnectionAsync();
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
 
         try
         {
-            var saleItems = await BaixarEstoqueComPrecoFixoAsync(db, transaction, companyId, pedidoItens);
-            var totalAmount = saleItems.Sum(item => Math.Round(item.UnitPrice * item.Quantity, 2, MidpointRounding.AwayFromZero));
-
-            var pagamentos = payments ?? [];
-            if (pagamentos.Count > 0)
+            if (pedidoId is not null)
             {
-                var sumPayments = pagamentos.Sum(p => Math.Round(p.Amount, 2, MidpointRounding.AwayFromZero));
-                if (Math.Abs(sumPayments - totalAmount) > 0.01m)
+                await using var order = new SqlCommand("SELECT Status, VendaId FROM Pedidos WITH (UPDLOCK, HOLDLOCK) WHERE CompanyId = @CompanyId AND Id = @Id", db, transaction);
+                order.Parameters.AddWithValue("@CompanyId", companyId); order.Parameters.AddWithValue("@Id", pedidoId);
+                await using var reader = await order.ExecuteReaderAsync();
+                if (!await reader.ReadAsync()) throw new InvalidOperationException("Pedido não encontrado.");
+                var status = reader.GetInt32(0);
+                var previousSaleId = reader.IsDBNull(1) ? null : reader.GetString(1);
+                await reader.CloseAsync();
+                if (status == 2) throw new InvalidOperationException("Pedido cancelado.");
+                if (status == 1)
                 {
-                    throw new InvalidOperationException(
-                        $"A soma dos pagamentos (R$ {sumPayments:N2}) não confere com o total da venda (R$ {totalAmount:N2}).");
+                    if (previousSaleId is null) throw new InvalidOperationException("Pedido pago sem venda vinculada.");
+                    await transaction.CommitAsync();
+                    var rows = await ObterPorIdAsync(companyId, previousSaleId);
+                    return new VendaRegistroResultadoAD { VendaId = previousSaleId, SaleNumber = rows.First().SaleNumber, Rows = rows, Payments = await ObterPagamentosVendaAsync(companyId, previousSaleId), IsReplay = true };
                 }
-                paymentType = pagamentos.Count == 1 ? pagamentos[0].PaymentType : "Múltiplo";
             }
 
-            var fiadoPaymentFixo = pagamentos.FirstOrDefault(p => string.Equals(p.PaymentType?.Trim(), "fiado", StringComparison.OrdinalIgnoreCase))
-                ?? (string.Equals(paymentType, "fiado", StringComparison.OrdinalIgnoreCase) ? new VendaPagamentoRequest { PaymentType = "fiado", Amount = totalAmount } : null);
+            // Validate frozen order lines and payments before stock or financial effects.
+            var totalAmount = pedidoItens.Sum(i => SaleMoney.ItemNet(i.Quantity, i.UnitPrice, 0));
+            var pagamentos = SaleMoney.Payments(totalAmount, paymentType, payments);
+            paymentType = pagamentos.Count == 1 ? pagamentos[0].PaymentType : "Múltiplo";
+            var fiadoAmountFixo = SaleMoney.Fiado(pagamentos);
 
             string? fiadoClienteIdFixo = null;
-            if (fiadoPaymentFixo is not null && fiadoPaymentFixo.Amount > 0)
+            if (fiadoAmountFixo > 0)
             {
                 if (string.IsNullOrWhiteSpace(customerCpf) || customerCpf == "-")
                 {
@@ -432,24 +436,27 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                     customerName = r.GetString(r.GetOrdinal("CustomerName"));
                 }
 
-                var disponivel = Math.Max(0, limiteCredito - saldoDevedor);
-                if ((saldoDevedor + fiadoPaymentFixo.Amount) > limiteCredito)
-                {
-                    throw new InvalidOperationException(
-                        $"Limite de crédito insuficiente para {customerName}. Limite total: R$ {limiteCredito:N2}, Saldo devedor: R$ {saldoDevedor:N2}, Disponível: R$ {disponivel:N2}, Tentativa fiado: R$ {fiadoPaymentFixo.Amount:N2}.");
-                }
+                SaleMoney.Credit(limiteCredito, saldoDevedor, fiadoAmountFixo);
             }
 
+            var saleItems = await BaixarEstoqueComPrecoFixoAsync(db, transaction, companyId, pedidoItens);
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, pagamentos,
                 caixaSessaoId: caixaSessaoId);
 
             FiadoMovimentoAD? fiadoMovFixo = null;
-            if (fiadoPaymentFixo is not null && fiadoPaymentFixo.Amount > 0 && fiadoClienteIdFixo is not null)
+            if (fiadoAmountFixo > 0 && fiadoClienteIdFixo is not null)
             {
-                fiadoMovFixo = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteIdFixo, fiadoPaymentFixo.Amount, result.VendaId, operatorName);
+                fiadoMovFixo = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteIdFixo, fiadoAmountFixo, result.VendaId, operatorName);
                 result.FiadoSaldoAtual = fiadoMovFixo.SaldoAtual;
                 result.FiadoClienteId = fiadoClienteIdFixo;
+            }
+
+            if (pedidoId is not null)
+            {
+                await using var finish = new SqlCommand("UPDATE Pedidos SET Status = 1, VendaId = @VendaId, FinalizedAt = SYSDATETIMEOFFSET() WHERE CompanyId = @CompanyId AND Id = @Id AND Status = 0", db, transaction);
+                finish.Parameters.AddWithValue("@CompanyId", companyId); finish.Parameters.AddWithValue("@Id", pedidoId); finish.Parameters.AddWithValue("@VendaId", result.VendaId);
+                if (await finish.ExecuteNonQueryAsync() != 1) throw new InvalidOperationException("Pedido alterado durante finalização.");
             }
 
             await transaction.CommitAsync();
@@ -532,7 +539,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 var p = payments[pIndex];
                 var pagId = $"{saleId}-pag-{pIndex + 1:000}";
                 var tipo = string.IsNullOrWhiteSpace(p.PaymentType) ? "dinheiro" : p.PaymentType.Trim();
-                var cashGiven = p.CashGiven > 0 ? p.CashGiven : p.Amount;
+                var cashGiven = p.CashGiven;
                 await using var pagCommand = new SqlCommand(
                     """
                     INSERT INTO VendaPagamentos
@@ -547,8 +554,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 pagCommand.Parameters.AddWithValue("@VendaId", saleId);
                 pagCommand.Parameters.AddWithValue("@PaymentType", tipo);
                 pagCommand.Parameters.AddWithValue("@Amount", p.Amount);
-                pagCommand.Parameters.AddWithValue("@CashGiven", cashGiven);
-                pagCommand.Parameters.AddWithValue("@ChangeAmount", p.ChangeAmount);
+                pagCommand.Parameters.AddWithValue("@CashGiven", (object?)cashGiven ?? DBNull.Value);
+                pagCommand.Parameters.AddWithValue("@ChangeAmount", (object?)p.ChangeAmount ?? DBNull.Value);
                 pagCommand.Parameters.AddWithValue("@CreatedAt", now);
                 await pagCommand.ExecuteNonQueryAsync();
 
@@ -606,8 +613,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         {
             var item = saleItems[index];
             var itemId = $"{saleId}-item-{index + 1:000}";
-            var itemTotal = Math.Round(item.UnitPrice * item.Quantity - item.Desconto, 2, MidpointRounding.AwayFromZero);
-            if (itemTotal < 0) itemTotal = 0m;
+            var itemTotal = SaleMoney.ItemNet(item.Quantity, item.UnitPrice, item.Desconto);
             await using var itemCommand = new SqlCommand(
                 """
                 INSERT INTO VendaItens
@@ -771,7 +777,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         {
             var code = req.ProductCode.Trim();
             var info = pricesByCode[code];
-            var unitPrice = req.UnitPrice > 0 ? req.UnitPrice : info.SalePrice;
+            var unitPrice = req.UnitPrice;
             saleItems.Add(new VendaItemRecord
             {
                 ProductCode = code,
@@ -799,13 +805,12 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         IEnumerable<PedidoItemAD> pedidoItens)
     {
         var groupedItems = pedidoItens
-            .GroupBy(item => item.ProductCode.Trim(), StringComparer.OrdinalIgnoreCase)
-            .Select(group => new VendaItemRecord
+            .Select(item => new VendaItemRecord
             {
-                ProductCode = group.Key,
-                ProductName = group.First().ProductName.Trim(),
-                UnitPrice = group.First().UnitPrice,
-                Quantity = group.Sum(item => item.Quantity)
+                ProductCode = item.ProductCode.Trim(),
+                ProductName = item.ProductName.Trim(),
+                UnitPrice = item.UnitPrice,
+                Quantity = item.Quantity
             })
             .ToList();
 
@@ -1039,8 +1044,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 VendaId = ReadString(reader, "VendaId"),
                 PaymentType = ReadString(reader, "PaymentType"),
                 Amount = reader.GetDecimal(reader.GetOrdinal("Amount")),
-                CashGiven = reader.GetDecimal(reader.GetOrdinal("CashGiven")),
-                ChangeAmount = reader.GetDecimal(reader.GetOrdinal("ChangeAmount")),
+                CashGiven = reader.IsDBNull(reader.GetOrdinal("CashGiven")) ? null : reader.GetDecimal(reader.GetOrdinal("CashGiven")),
+                ChangeAmount = reader.IsDBNull(reader.GetOrdinal("ChangeAmount")) ? null : reader.GetDecimal(reader.GetOrdinal("ChangeAmount")),
                 CreatedAt = reader.GetDateTimeOffset(reader.GetOrdinal("CreatedAt"))
             });
         }

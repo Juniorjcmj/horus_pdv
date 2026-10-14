@@ -12,7 +12,7 @@ em linguagem natural.
 | **Autenticação** | `Authorization: Bearer qmcp_...` (token de integração) |
 | **Acesso** | **Somente leitura** — nenhuma ferramenta altera dados |
 | **Escopo** | Uma empresa por token (a empresa de quem gerou o token) |
-| **Ferramentas** | 13 (lista completa [abaixo](#4-ferramentas)) |
+| **Ferramentas** | 19 (lista completa [abaixo](#4-ferramentas)) |
 
 ## Sumário
 
@@ -191,6 +191,12 @@ Todas são **somente leitura** (`readOnlyHint: true`). Parâmetros sem "obrigat�
 | Validade | [`prazos_validade_por_categoria`](#prazos_validade_por_categoria) | Prazo padrão e alerta por categoria |
 | Promoções | [`listar_promocoes`](#listar_promocoes) | Promoções (todas ou só as em vigor) |
 | Promoções | [`obter_promocao`](#obter_promocao) | Detalhe, produtos e resultado de uma promoção |
+| Auditoria fiscal | [`listar_produtos_fiscais`](#listar_produtos_fiscais) | Lista produtos com dados fiscais (NCM, CEST, CFOP, CST/CSOSN, alíquotas) |
+| Auditoria fiscal | [`obter_fiscal_produto`](#obter_fiscal_produto) | Conferência fiscal detalhada de um produto |
+| Auditoria fiscal | [`resumo_auditoria_fiscal`](#resumo_auditoria_fiscal) | Indicadores de qualidade do cadastro fiscal |
+| Auditoria fiscal | [`listar_pendencias_fiscais`](#listar_pendencias_fiscais) | Produtos com problemas fiscais estruturais |
+| Notas de entrada | [`listar_notas_entrada`](#listar_notas_entrada) | Notas fiscais de entrada (compras) |
+| Notas de entrada | [`obter_itens_nota_entrada`](#obter_itens_nota_entrada) | Itens e dados fiscais de uma nota de entrada |
 
 ### Relatórios
 
@@ -426,6 +432,173 @@ Devolve as regras da promoção e mais:
 - `produtos`: lista com `id`, `codigo`, `nome` e `precoVenda` de cada produto participante.
 - `resultado`: `quantidadeVendas`, `receitaBruta`, `receitaLiquida`, `descontoTotal` e `margemLiquida`.
 
+### Auditoria fiscal
+
+Ferramentas de consulta ao cadastro fiscal dos produtos. Todas somente leitura — nenhuma altera dados.
+As validações são determinísticas (formato de NCM, dígito verificador do GTIN, CFOP, CST). Para regras
+tributárias que dependam de interpretação (CEST obrigatório, alíquota correta), use `obter_fiscal_produto`
+e confira com a contabilidade.
+
+#### `listar_produtos_fiscais`
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `busca` | texto | Trecho do nome, código ou GTIN. |
+| `categoriaId` | texto | Departamento ou subcategoria. |
+| `somenteSemNcm` | booleano | Só produtos com NCM ausente ou padrão (00000000). |
+| `somenteSemCest` | booleano | Só produtos sem CEST informado. |
+| `pagina` | inteiro | A partir de 1. |
+| `tamanhoPagina` | inteiro | 1 a 200. Padrão 100. |
+
+Devolve `total`, `pagina`, `tamanhoPagina`, `temMais` e `itens`. Cada item:
+
+| Campo | Descrição |
+|---|---|
+| `id`, `codigo`, `nome` | Identificação do produto. |
+| `gtin` | Código de barras (ou `SEM GTIN`). |
+| `marca`, `categoriaId`, `categoria` | Classificação comercial. |
+| `unidadeComercial`, `unidadeTributavel` | Unidades de medida. |
+| `ncm` | Nomenclatura Comum do Mercosul (8 dígitos). |
+| `cest` | Código Especificador da Substituição Tributária (7 dígitos, pode ser nulo). |
+| `cfop` | Código Fiscal de Operações e Prestações (4 dígitos). |
+| `origemMercadoria` | Origem da mercadoria (0 a 8). |
+| `csosnIcms` | CSOSN de ICMS (Simples Nacional/MEI). |
+| `cstIcms` | CST de ICMS (regime normal). |
+| `aliquotaIcms` | Alíquota de ICMS (decimal). |
+| `cstPis`, `cstCofins` | CST de PIS e COFINS. |
+| `cstIbsCbs`, `cClassTrib` | CST IBS/CBS e classificação tributária (reforma 2026). |
+
+#### `obter_fiscal_produto`
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `idOuCodigo` | texto, **obrigatório** | Id do produto, código interno ou GTIN **exato**. |
+
+Devolve os dados fiscais do produto, o contexto da empresa (CRT, UF, ambiente) e os **apontamentos** de
+validação determinística contra as tabelas oficiais de NCM, CEST e cClassTrib. Cada apontamento tem:
+
+| Campo | Descrição |
+|---|---|
+| `nivel` | `erro` (emissão rejeitada), `aviso` (conferir com contabilidade) ou `informacao`. |
+| `campo` | Campo avaliado (NCM, CFOP, CEST, GTIN, etc.). |
+| `mensagem` | Explicação objetiva. |
+
+Inclui também `descricaoNcm` (descrição oficial do NCM), `descricaoClassificacao` (IBS/CBS), `fontesOnline`
+(se as tabelas vieram da consulta oficial) e `dataBaseTabelas` (data de referência).
+
+#### `resumo_auditoria_fiscal`
+
+Sem parâmetros. Resposta:
+
+```json
+{
+  "totalProdutos": 1500,
+  "errosEstruturais": {
+    "ncmAusente": 12,
+    "ncmFormatoInvalido": 0,
+    "cfopAusente": 0,
+    "cfopFormatoInvalido": 1,
+    "icmsAusente": 5,
+    "pisAusente": 0,
+    "cofinsAusente": 0,
+    "cestFormatoInvalido": 0,
+    "origemInvalida": 0,
+    "ibsCbsIncompleto": 2,
+    "gtinChecksumInvalido": 3
+  },
+  "camposAusentes": {
+    "gtinNaoInformado": 200,
+    "gtinFormatoInvalido": 1
+  },
+  "avisos": {
+    "unidadeDivergente": 4
+  },
+  "observacao": "Ausência de CEST ou de GTIN não é automaticamente um erro tributário..."
+}
+```
+
+Diferencia **erros estruturais confirmados** (impedem emissão), **campos ausentes** (podem ser válidos) e
+**avisos** (exigem análise). Use `listar_pendencias_fiscais` para a lista detalhada e `obter_fiscal_produto`
+para validar individualmente contra as tabelas oficiais.
+
+#### `listar_pendencias_fiscais`
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `tipoPendencia` | texto | Filtro por tipo (vazio = todas). Valores: `ncm_ausente`, `ncm_formato`, `gtin_ausente`, `gtin_formato`, `cfop_ausente`, `cfop_formato`, `icms_ausente`, `pis_ausente`, `cofins_ausente`, `cest_formato`, `origem_invalida`, `unidade_divergente`, `ibs_incompleto`. |
+| `categoriaId` | texto | Departamento ou subcategoria. |
+| `pagina` | inteiro | A partir de 1. |
+| `tamanhoPagina` | inteiro | 1 a 200. Padrão 50. |
+
+Devolve `totalProdutos`, `pagina`, `tamanhoPagina`, `temMais` e `pendencias`. Cada pendência:
+
+| Campo | Descrição |
+|---|---|
+| `produtoId`, `codigo`, `nome` | Produto. |
+| `campo` | Campo com problema. |
+| `valorAtual` | Valor atual (pode ser nulo). |
+| `tipoProblema` | `erro_estrutural` ou `aviso`. |
+| `regra` | Id da regra de validação. |
+| `explicacao` | Explicação objetiva. |
+
+### Notas de entrada
+
+Ferramentas para consultar notas fiscais de entrada (compras de fornecedores). Os dados fiscais extraídos
+das notas são **do fornecedor** e refletem a tributação da operação de **entrada**. Nunca devem ser copiados
+automaticamente para o cadastro de saída do varejista (CFOP, CST/CSOSN de saída são diferentes).
+
+#### `listar_notas_entrada`
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `busca` | texto | Trecho do nome do fornecedor, CNPJ, número da nota ou chave de acesso. |
+| `pagina` | inteiro | A partir de 1. |
+| `tamanhoPagina` | inteiro | 1 a 100. Padrão 20. |
+
+Devolve `total`, `pagina`, `tamanhoPagina`, `temMais` e `itens`. Cada nota:
+
+| Campo | Descrição |
+|---|---|
+| `id` | Identificador interno da nota de entrada. |
+| `chaveAcesso` | Chave de acesso da NF-e (44 dígitos, pode ser nula). |
+| `modelo` | Modelo fiscal (55 = NF-e, 65 = NFC-e). |
+| `numeroNota`, `serie` | Número e série da nota. |
+| `fornecedorNome`, `fornecedorCnpj` | Fornecedor. |
+| `dataEmissao` | Data de emissão (pode ser nula). |
+| `valorNota` | Valor total da NF-e (pode ser nulo). |
+| `valorEntrada` | Valor de custo da entrada. |
+| `quantidadeItens` | Quantidade de itens. |
+| `origem` | `xml`, `digitada` ou `sem-documento`. |
+| `temXml` | Se o XML original está armazenado (necessário para dados fiscais completos). |
+| `criadaEm` | Data de registro no sistema. |
+
+#### `obter_itens_nota_entrada`
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `notaId` | texto, **obrigatório** | Campo `id` devolvido por `listar_notas_entrada`. |
+
+Quando há XML armazenado (`temXml: true`), extrai dados fiscais completos de cada item:
+
+| Campo | Descrição |
+|---|---|
+| `numeroItem` | Número do item na nota. |
+| `codigoFornecedor` | Código do produto no fornecedor. |
+| `gtin` | Código de barras. |
+| `descricao` | Descrição do item. |
+| `ncm`, `cest`, `cfop` | Códigos fiscais. |
+| `unidadeComercial`, `quantidade`, `valorUnitario`, `valorTotal`, `desconto` | Dados comerciais. |
+| `icms.origem`, `icms.cst`, `icms.csosn`, `icms.baseCalculo`, `icms.aliquota`, `icms.valor`, `icms.percentualReducaoBc` | ICMS do fornecedor. |
+| `icmsSt.baseCalculo`, `icmsSt.aliquota`, `icmsSt.valor` | ICMS-ST do fornecedor. |
+| `pis.cst`, `pis.baseCalculo`, `pis.aliquota`, `pis.valor` | PIS do fornecedor. |
+| `cofins.cst`, `cofins.baseCalculo`, `cofins.aliquota`, `cofins.valor` | COFINS do fornecedor. |
+
+`fonteDosItens` indica se os dados vieram do `xml` original ou do `registro` (JSON da importação, sem
+detalhes tributários completos).
+
+> **Atenção**: CFOP, CST, CSOSN e alíquotas são da nota de **entrada** (operação do fornecedor). A
+> tributação de **saída** (venda pelo varejista) é diferente e deve ser configurada no cadastro do produto.
+
 ---
 
 ## 5. Relatórios disponíveis
@@ -511,6 +684,11 @@ entram nos relatórios de vendas.
 | "A promoção do iogurte deu resultado?" | `listar_promocoes` → `obter_promocao` |
 | "Quem está devendo há mais de 60 dias?" | `gerar_relatorio` (`inadimplencia`, `faixa: atraso_60`) |
 | "Teve cancelamento de venda ontem? Por quê?" | `gerar_relatorio` (`cancelamentos`) |
+| "Quais produtos estão com problema fiscal?" | `listar_produtos_fiscais` → `resumo_auditoria_fiscal` |
+| "O que falta revisar na auditoria de NCM?" | `resumo_auditoria_fiscal` (`campo: ncm`) |
+| "Quais fornecedores têm notas sem XML?" | `listar_notas_entrada` → `obter_itens_nota_entrada` |
+| "Qual a origem (NCM, CEST, CFOP) deste item?" | `buscar_produtos` → `obter_fiscal_produto` |
+| "Tem alguma pendência fiscal para corrigir?" | `listar_pendencias_fiscais` |
 
 Dica de *prompt* para o agente: *"Use as ferramentas do Quack PDV. Antes de afirmar que não há dados, confira
 `temMais` e o período consultado."*
@@ -566,7 +744,8 @@ Dica de *prompt* para o agente: *"Use as ferramentas do Quack PDV. Antes de afir
 
 | Arquivo | Papel |
 |---|---|
-| `API/NETCORE/Services/Mcp/PdvMcpTools.cs` | As 13 ferramentas. |
+| `API/NETCORE/Services/Mcp/PdvMcpTools.cs` | As 19 ferramentas (vendas, promoções, estoque, relatórios). |
+| `API/NETCORE/Services/Mcp/FiscalAuditMcpTools.cs` | As 6 ferramentas de auditoria fiscal e notas de entrada. |
 | `API/NETCORE/Services/Mcp/McpReportCatalog.cs` | Catálogo dos relatórios (ids, descrições, filtros). |
 | `API/NETCORE/Program.cs` | Registro do servidor (`AddMcpServer`) e da rota (`MapMcp("/mcp")`). |
 | `API/NETCORE/Middlewares/HorusAuthMiddleware.cs` | Autenticação do `/mcp` pelo token de integração. |
@@ -578,6 +757,17 @@ Dica de *prompt* para o agente: *"Use as ferramentas do Quack PDV. Antes de afir
 
 Pacote usado: [`ModelContextProtocol.AspNetCore`](https://www.nuget.org/packages/ModelContextProtocol.AspNetCore)
 (SDK oficial C#).
+
+### Limitações conhecidas
+
+- **`resumo_auditoria_fiscal`**: leva alguns minutos se o catálogo tiver milhares de produtos. Se precisar de
+  resultados em tempo real, combine com `listar_produtos_fiscais` para filtrar por categoria ou criação recente.
+- **`obter_itens_nota_entrada`**: retorna dados tributários completos apenas se `temXml: true`; notas digitadas
+  manualmente trazem apenas informações comerciais (quantidade, valor, GTIN). Para análise tributária completa,
+  garanta que o XML foi importado ou carregado (`origem: xml`).
+- **Validações fiscais**: NCM, CEST, CFOP e CST/CSOSN são da nota de **entrada**. A tributação de **saída** (venda)
+  obedece o cadastro do produto e as regras de substituição tributária do estado, e não é espelhada da entrada
+  automaticamente. Alterações manuais no cadastro fiscal do produto não sincronizam para trás nas notas já recebidas.
 
 ### Decisões de projeto
 

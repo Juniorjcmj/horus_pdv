@@ -691,6 +691,196 @@ public class ProdutoAB(Connection connection)
         return !reader.IsDBNull(ordinal) && reader.GetBoolean(ordinal);
     }
 
+    // ---------------------------------------------------------------- Auditoria fiscal (MCP)
+
+    private const string FiscalColumns = """
+        p.Id, p.ProductCode, p.ProductName, p.Gtin, p.Marca, p.CategoriaId, c.Nome AS CategoriaNome,
+        p.UnidadeComercial, p.UnidadeTributavel, p.Ncm, p.Cest, p.Cfop, p.OrigemMercadoria,
+        p.CsosnIcms, p.CstIcms, p.AliquotaIcms, p.CstPis, p.CstCofins, p.CstIbsCbs, p.CClassTrib
+        """;
+
+    public sealed record ProdutoFiscalRow(string Id, string ProductCode, string ProductName, string Gtin,
+        string? Marca, string? CategoriaId, string? CategoriaNome, string UnidadeComercial, string UnidadeTributavel,
+        string Ncm, string? Cest, string Cfop, byte OrigemMercadoria,
+        string? CsosnIcms, string? CstIcms, decimal AliquotaIcms,
+        string CstPis, string CstCofins, string? CstIbsCbs, string? CClassTrib);
+
+    public sealed record ProdutoFiscalPagina(List<ProdutoFiscalRow> Itens, int Total);
+
+    public async Task<ProdutoFiscalPagina> ListarFiscalAsync(string companyId, string? busca, string? categoriaId,
+        bool somenteSemNcm, bool somenteSemCest, int pagina, int tamanhoPagina)
+    {
+        var where = new System.Text.StringBuilder("p.CompanyId = @CompanyId");
+        if (!string.IsNullOrWhiteSpace(busca))
+            where.Append(" AND (p.ProductName LIKE @Busca ESCAPE '~' OR p.ProductCode LIKE @Busca ESCAPE '~' OR p.Gtin LIKE @Busca ESCAPE '~')");
+        if (!string.IsNullOrWhiteSpace(categoriaId))
+            where.Append(" AND p.CategoriaId = @CategoriaId");
+        if (somenteSemNcm)
+            where.Append(" AND (p.Ncm IS NULL OR p.Ncm = '' OR p.Ncm = '00000000')");
+        if (somenteSemCest)
+            where.Append(" AND (p.Cest IS NULL OR p.Cest = '')");
+
+        var sql = $"""
+            SELECT COUNT(*) FROM Produtos p WHERE {where};
+            SELECT {FiscalColumns}
+            FROM Produtos p
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            WHERE {where}
+            ORDER BY p.ProductName
+            OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY;
+            """;
+
+        await using var db = await connection.OpenLeaseAsync();
+        await using var cmd = connection.CreateCommand(sql, db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        cmd.Parameters.AddWithValue("@Offset", (pagina - 1) * tamanhoPagina);
+        cmd.Parameters.AddWithValue("@Limit", tamanhoPagina);
+        if (!string.IsNullOrWhiteSpace(busca))
+        {
+            var term = busca.Trim();
+            if (term.Length > 100) term = term[..100];
+            term = term.Replace("~", "~~").Replace("%", "~%").Replace("_", "~_").Replace("[", "~[");
+            cmd.Parameters.AddWithValue("@Busca", "%" + term + "%");
+        }
+        if (!string.IsNullOrWhiteSpace(categoriaId))
+            cmd.Parameters.AddWithValue("@CategoriaId", categoriaId.Trim());
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        await reader.ReadAsync();
+        var total = reader.GetInt32(0);
+        await reader.NextResultAsync();
+
+        var rows = new List<ProdutoFiscalRow>();
+        while (await reader.ReadAsync()) rows.Add(MapFiscal(reader));
+        return new(rows, total);
+    }
+
+    public sealed record AuditoriaFiscalContadores(int Total, int SemNcm, int NcmFormatoInvalido,
+        int SemGtin, int GtinFormatoInvalido, int SemCfop, int CfopFormatoInvalido,
+        int SemIcms, int SemPis, int SemCofins, int CestFormatoInvalido,
+        int OrigemInvalida, int UnidadeDivergente, int IbsIncompleto);
+
+    public async Task<AuditoriaFiscalContadores> ContarPendenciasFiscaisAsync(string companyId)
+    {
+        const string sql = """
+            SELECT
+                COUNT(*) AS Total,
+                COUNT(CASE WHEN Ncm IS NULL OR Ncm = '' OR Ncm = '00000000' THEN 1 END) AS SemNcm,
+                COUNT(CASE WHEN Ncm IS NOT NULL AND Ncm != '' AND Ncm != '00000000'
+                    AND (LEN(Ncm) != 8 OR Ncm LIKE '%[^0-9]%') THEN 1 END) AS NcmFormatoInvalido,
+                COUNT(CASE WHEN Gtin IS NULL OR Gtin = '' OR Gtin = 'SEM GTIN' THEN 1 END) AS SemGtin,
+                COUNT(CASE WHEN Gtin IS NOT NULL AND Gtin != '' AND Gtin != 'SEM GTIN'
+                    AND (LEN(Gtin) NOT IN (8,12,13,14) OR Gtin LIKE '%[^0-9]%') THEN 1 END) AS GtinFormatoInvalido,
+                COUNT(CASE WHEN Cfop IS NULL OR Cfop = '' THEN 1 END) AS SemCfop,
+                COUNT(CASE WHEN Cfop IS NOT NULL AND Cfop != ''
+                    AND (LEN(Cfop) != 4 OR Cfop LIKE '%[^0-9]%' OR LEFT(Cfop,1) != '5') THEN 1 END) AS CfopFormatoInvalido,
+                COUNT(CASE WHEN (CsosnIcms IS NULL OR CsosnIcms = '') AND (CstIcms IS NULL OR CstIcms = '') THEN 1 END) AS SemIcms,
+                COUNT(CASE WHEN CstPis IS NULL OR CstPis = '' THEN 1 END) AS SemPis,
+                COUNT(CASE WHEN CstCofins IS NULL OR CstCofins = '' THEN 1 END) AS SemCofins,
+                COUNT(CASE WHEN Cest IS NOT NULL AND Cest != ''
+                    AND (LEN(Cest) != 7 OR Cest LIKE '%[^0-9]%') THEN 1 END) AS CestFormatoInvalido,
+                COUNT(CASE WHEN OrigemMercadoria > 8 THEN 1 END) AS OrigemInvalida,
+                COUNT(CASE WHEN UnidadeComercial != UnidadeTributavel THEN 1 END) AS UnidadeDivergente,
+                COUNT(CASE WHEN (CstIbsCbs IS NOT NULL AND CstIbsCbs != '' AND (CClassTrib IS NULL OR CClassTrib = ''))
+                    OR (CClassTrib IS NOT NULL AND CClassTrib != '' AND (CstIbsCbs IS NULL OR CstIbsCbs = '')) THEN 1 END) AS IbsIncompleto
+            FROM Produtos
+            WHERE CompanyId = @CompanyId;
+            """;
+
+        await using var db = await connection.OpenLeaseAsync();
+        await using var cmd = connection.CreateCommand(sql, db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        await reader.ReadAsync();
+        return new(
+            ReadInt(reader, "Total"), ReadInt(reader, "SemNcm"), ReadInt(reader, "NcmFormatoInvalido"),
+            ReadInt(reader, "SemGtin"), ReadInt(reader, "GtinFormatoInvalido"),
+            ReadInt(reader, "SemCfop"), ReadInt(reader, "CfopFormatoInvalido"),
+            ReadInt(reader, "SemIcms"), ReadInt(reader, "SemPis"), ReadInt(reader, "SemCofins"),
+            ReadInt(reader, "CestFormatoInvalido"), ReadInt(reader, "OrigemInvalida"),
+            ReadInt(reader, "UnidadeDivergente"), ReadInt(reader, "IbsIncompleto"));
+    }
+
+    public async Task<ProdutoFiscalPagina> ListarPendenciasAsync(string companyId, string? tipoPendencia,
+        string? categoriaId, int pagina, int tamanhoPagina)
+    {
+        var where = new System.Text.StringBuilder("p.CompanyId = @CompanyId");
+        if (!string.IsNullOrWhiteSpace(categoriaId))
+            where.Append(" AND p.CategoriaId = @CategoriaId");
+
+        var pendenciaFilter = (tipoPendencia ?? "").Trim().ToLowerInvariant() switch
+        {
+            "ncm_ausente" => " AND (p.Ncm IS NULL OR p.Ncm = '' OR p.Ncm = '00000000')",
+            "ncm_formato" => " AND p.Ncm IS NOT NULL AND p.Ncm != '' AND p.Ncm != '00000000' AND (LEN(p.Ncm) != 8 OR p.Ncm LIKE '%[^0-9]%')",
+            "gtin_ausente" => " AND (p.Gtin IS NULL OR p.Gtin = '' OR p.Gtin = 'SEM GTIN')",
+            "gtin_formato" => " AND p.Gtin IS NOT NULL AND p.Gtin != '' AND p.Gtin != 'SEM GTIN' AND (LEN(p.Gtin) NOT IN (8,12,13,14) OR p.Gtin LIKE '%[^0-9]%')",
+            "cfop_ausente" => " AND (p.Cfop IS NULL OR p.Cfop = '')",
+            "cfop_formato" => " AND p.Cfop IS NOT NULL AND p.Cfop != '' AND (LEN(p.Cfop) != 4 OR p.Cfop LIKE '%[^0-9]%' OR LEFT(p.Cfop,1) != '5')",
+            "icms_ausente" => " AND (p.CsosnIcms IS NULL OR p.CsosnIcms = '') AND (p.CstIcms IS NULL OR p.CstIcms = '')",
+            "pis_ausente" => " AND (p.CstPis IS NULL OR p.CstPis = '')",
+            "cofins_ausente" => " AND (p.CstCofins IS NULL OR p.CstCofins = '')",
+            "cest_formato" => " AND p.Cest IS NOT NULL AND p.Cest != '' AND (LEN(p.Cest) != 7 OR p.Cest LIKE '%[^0-9]%')",
+            "origem_invalida" => " AND p.OrigemMercadoria > 8",
+            "unidade_divergente" => " AND p.UnidadeComercial != p.UnidadeTributavel",
+            "ibs_incompleto" => " AND ((p.CstIbsCbs IS NOT NULL AND p.CstIbsCbs != '' AND (p.CClassTrib IS NULL OR p.CClassTrib = '')) OR (p.CClassTrib IS NOT NULL AND p.CClassTrib != '' AND (p.CstIbsCbs IS NULL OR p.CstIbsCbs = '')))",
+            "" or "todas" => @" AND (
+                (p.Ncm IS NULL OR p.Ncm = '' OR p.Ncm = '00000000')
+                OR (p.Ncm IS NOT NULL AND p.Ncm != '' AND p.Ncm != '00000000' AND (LEN(p.Ncm) != 8 OR p.Ncm LIKE '%[^0-9]%'))
+                OR (p.Cfop IS NULL OR p.Cfop = '')
+                OR (p.Cfop IS NOT NULL AND p.Cfop != '' AND (LEN(p.Cfop) != 4 OR p.Cfop LIKE '%[^0-9]%' OR LEFT(p.Cfop,1) != '5'))
+                OR ((p.CsosnIcms IS NULL OR p.CsosnIcms = '') AND (p.CstIcms IS NULL OR p.CstIcms = ''))
+                OR (p.CstPis IS NULL OR p.CstPis = '')
+                OR (p.CstCofins IS NULL OR p.CstCofins = '')
+                OR (p.Cest IS NOT NULL AND p.Cest != '' AND (LEN(p.Cest) != 7 OR p.Cest LIKE '%[^0-9]%'))
+                OR p.OrigemMercadoria > 8
+                OR ((p.CstIbsCbs IS NOT NULL AND p.CstIbsCbs != '' AND (p.CClassTrib IS NULL OR p.CClassTrib = ''))
+                    OR (p.CClassTrib IS NOT NULL AND p.CClassTrib != '' AND (p.CstIbsCbs IS NULL OR p.CstIbsCbs = '')))
+            )",
+            _ => null
+        };
+
+        if (pendenciaFilter is null) return new([], 0);
+        where.Append(pendenciaFilter);
+
+        var sql = $"""
+            SELECT COUNT(*) FROM Produtos p WHERE {where};
+            SELECT {FiscalColumns}
+            FROM Produtos p
+            LEFT JOIN Categorias c ON c.Id = p.CategoriaId AND c.CompanyId = p.CompanyId
+            WHERE {where}
+            ORDER BY p.ProductName
+            OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY;
+            """;
+
+        await using var db = await connection.OpenLeaseAsync();
+        await using var cmd = connection.CreateCommand(sql, db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        cmd.Parameters.AddWithValue("@Offset", (pagina - 1) * tamanhoPagina);
+        cmd.Parameters.AddWithValue("@Limit", tamanhoPagina);
+        if (!string.IsNullOrWhiteSpace(categoriaId))
+            cmd.Parameters.AddWithValue("@CategoriaId", categoriaId.Trim());
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        await reader.ReadAsync();
+        var total = reader.GetInt32(0);
+        await reader.NextResultAsync();
+
+        var rows = new List<ProdutoFiscalRow>();
+        while (await reader.ReadAsync()) rows.Add(MapFiscal(reader));
+        return new(rows, total);
+    }
+
+    private static ProdutoFiscalRow MapFiscal(SqlDataReader r) => new(
+        ReadString(r, "Id"), ReadString(r, "ProductCode"), ReadString(r, "ProductName"),
+        ReadString(r, "Gtin"), ReadNullableString(r, "Marca"),
+        ReadNullableString(r, "CategoriaId"), ReadNullableString(r, "CategoriaNome"),
+        ReadString(r, "UnidadeComercial"), ReadString(r, "UnidadeTributavel"),
+        ReadString(r, "Ncm"), ReadNullableString(r, "Cest"), ReadString(r, "Cfop"),
+        (byte)ReadInt(r, "OrigemMercadoria"),
+        ReadNullableString(r, "CsosnIcms"), ReadNullableString(r, "CstIcms"), ReadDecimal(r, "AliquotaIcms"),
+        ReadString(r, "CstPis"), ReadString(r, "CstCofins"),
+        ReadNullableString(r, "CstIbsCbs"), ReadNullableString(r, "CClassTrib"));
+
     /// <summary>
     /// Ajuste manual de estoque (entrada ou saída). Atualiza ProductQnt e TotalPriceOnProduct.
     /// </summary>

@@ -13,6 +13,8 @@ import {
   type PaymentRecord,
   type StockMovementRecord,
 } from "@/infrastructure/database/dexie";
+import { validateSale, validateCredit, money, sumMoney, settlementKey } from "@/utils/saleMoney";
+import { computeSalePayloadHash } from "@/utils/cryptoHash";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 
 /**
@@ -20,6 +22,7 @@ import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
  * Retorna a referência local da venda (usada como saleNumber offline provisório).
  */
 export async function queueSaleToOutbox(payload: RegisterSalePayload, waitForFiscal = false): Promise<string> {
+  payload = validateSale(payload);
   const clientSaleId =
     payload.clientSaleId ||
     (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `cs-${Date.now()}`);
@@ -36,6 +39,7 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload, waitForFis
   payload.offlineReference = localRef;
   payload.occurredAt = occurredAt;
 
+  payload.payloadHash = await computeSalePayloadHash(payload);
   await persistSaleLocally(payload, { clientSaleId, saleNumber: localRef, occurredAt, origin: "OFFLINE", eventId, waitForFiscal });
   return localRef;
 }
@@ -65,15 +69,32 @@ type PersistSaleOptions = {
 async function persistSaleLocally(payload: RegisterSalePayload, options: PersistSaleOptions): Promise<void> {
   const { clientSaleId, saleNumber, occurredAt, origin, eventId } = options;
   const deviceId = getCachedDeviceId() || "unknown-device";
-  const totalAmountNum =
-    typeof payload.totalAmount === "number"
-      ? payload.totalAmount
-      : parseFloat(String(payload.totalAmount || "0").replace(/\./g, "").replace(",", ".")) || 0;
+  payload = validateSale(payload);
+  const totalAmountNum = money(payload.totalAmount);
 
   await db.transaction(
     "rw",
     [db.sales, db.saleItems, db.payments, db.stockMovements, db.outbox, db.products, db.cashSessions, db.customers],
     async () => {
+      // A repeated identity must never repeat stock or debt effects.
+      const existing = await db.sales.get(clientSaleId);
+      if (existing) {
+        const storedEvent = eventId ? await db.outbox.get(eventId) : undefined;
+        const storedKey = existing.settlementKey ?? (storedEvent ? settlementKey(JSON.parse(storedEvent.payload)) : null);
+        if (existing.tenantId !== currentTenantId() || existing.customerId !== (payload.customerCpf || null) || !storedKey || storedKey !== settlementKey(payload)) throw new Error("Conflito de identidade: venda já registrada com valores diferentes ou sem snapshot verificável.");
+        if (eventId && !storedEvent) await enqueueEvent({ id: eventId, clientSaleId, payloadHash: payload.payloadHash, occurredAt, eventType: "SALE_CREATED", aggregateType: "Sale", aggregateId: clientSaleId, payload, waitForFiscal: options.waitForFiscal });
+        return;
+      }
+      const totalFiado = sumMoney((payload.payments ?? []).filter(p => p.paymentType.trim().toLowerCase() === "fiado").map(p => p.amount));
+      let fiadoCustomer;
+      if (origin === "OFFLINE" && totalFiado > 0) {
+        const digits = payload.customerCpf.replace(/\D/g, "");
+        if (!digits) throw new Error("Selecione cliente cadastrado para comprar fiado.");
+        fiadoCustomer = await db.customers.filter(c => c.tenantId === currentTenantId() && c.cpfCnpj.replace(/\D/g, "") === digits).first();
+        if (!fiadoCustomer) throw new Error("Dados do cliente indisponíveis para comprar fiado offline.");
+        validateCredit(fiadoCustomer.limiteCredito, fiadoCustomer.saldoDevedor, totalFiado);
+      }
+
       // 1. Obter sessão atual de caixa (se houver)
       const cachedCash = await db.cashSessions.get("cash-status-cache");
       const sessionId = cachedCash?.id || "cx-offline";
@@ -81,6 +102,7 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
       // 2. Gravar cabeçalho da venda
       const saleRecord: SaleRecord = {
         id: clientSaleId,
+        settlementKey: settlementKey(payload),
         deviceId,
         tenantId: currentTenantId(),
         sessionId,
@@ -171,28 +193,10 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
 
       // 4.1 Venda offline com fiado: atualizar saldo devedor do cliente no IndexedDB
       //     (na online o PDV já grava o saldo devolvido pelo servidor via updateCustomerDebtLocal).
-      const fiadoPayments = Array.isArray(payload.payments)
-        ? payload.payments.filter((p) => String(p.paymentType).trim().toLowerCase() === "fiado")
-        : (String(payload.paymentType).trim().toLowerCase() === "fiado" ? [{ amount: totalAmountNum }] : []);
-      const totalFiado = fiadoPayments.reduce((s, p) => s + (p.amount || 0), 0);
-
-      if (origin === "OFFLINE" && totalFiado > 0 && payload.customerCpf) {
-        const digits = payload.customerCpf.replace(/\D/g, "");
-        const cust = await db.customers
-          .filter((c) => c.cpfCnpj.replace(/\D/g, "") === digits)
-          .first();
-        if (cust) {
-          cust.saldoDevedor = (cust.saldoDevedor || 0) + totalFiado;
-          cust.updatedAt = new Date().toISOString();
-          await db.customers.put(cust);
-          if (typeof window !== "undefined") {
-            window.dispatchEvent(
-              new CustomEvent("customer-balance-updated", {
-                detail: { customerId: cust.id, document: cust.cpfCnpj, saldoDevedor: cust.saldoDevedor },
-              }),
-            );
-          }
-        }
+      if (fiadoCustomer) {
+        fiadoCustomer.saldoDevedor = sumMoney([fiadoCustomer.saldoDevedor, totalFiado]);
+        fiadoCustomer.updatedAt = new Date().toISOString();
+        await db.customers.put(fiadoCustomer);
       }
 
       // 5. Venda offline: enfileirar no Outbox para sincronização posterior
@@ -268,6 +272,7 @@ export async function getLocalSalesHistory(): Promise<SaleHistoryDto[]> {
           quantity: item.quantity,
           unitPrice: item.unitPrice.toFixed(2).replace(".", ","),
           itemTotal: item.total.toFixed(2).replace(".", ","),
+          desconto: item.discount,
           saleDate: formattedDate,
           clientSaleId: sale.id,
           offlineReference: sale.saleNumber,
@@ -305,4 +310,11 @@ export async function getPendingLocalSalesHistory(sinceIso?: string | null): Pro
 
   const local = await getLocalSalesHistory();
   return local.filter((row) => row.clientSaleId && allowedIds.has(row.clientSaleId));
+}
+
+/** Registered local facts for receipt printing; unknown cash values stay absent. */
+export async function getLocalSalePayments(saleNumber: string) {
+  const sale = await db.sales.where("saleNumber").equals(saleNumber).filter(s => s.tenantId === currentTenantId()).first();
+  if (!sale) return [];
+  return db.payments.where("saleId").equals(sale.id).toArray();
 }

@@ -130,8 +130,8 @@ export default function PdvSaleDetailModal({
               vendaId: localSale.id,
               paymentType: p.paymentType,
               amount: p.amount,
-              cashGiven: p.cashGiven || p.amount,
-              changeAmount: p.changeAmount || 0,
+              cashGiven: p.cashGiven ?? null,
+              changeAmount: p.changeAmount ?? null,
               createdAt: localSale.createdAt,
             }));
             setData({
@@ -400,7 +400,7 @@ export default function PdvSaleDetailModal({
                             <p className="font-semibold capitalize text-text-primary">
                               {p.paymentType}
                             </p>
-                            {p.cashGiven > p.amount && (
+                            {p.cashGiven != null && p.cashGiven > p.amount && (
                               <p className="text-[11px] text-text-secondary">
                                 Recebido: {formatCurrency(p.cashGiven)} • Troco: {formatCurrency(p.changeAmount)}
                               </p>
