@@ -6,9 +6,8 @@
 # por isso o hostname da API entra aqui como build-arg e é aplicado em cima do .env.prod já
 # versionado (que traz o padrão de nome de cada variável; só o host muda).
 
-# Imagens oficiais no ECR Public evitam o limite de downloads do Docker Hub no CI.
-# Usa o frontend Dockerfile integrado ao BuildKit, sem baixar docker/dockerfile do Hub.
-FROM public.ecr.aws/docker/library/node:20-alpine AS build
+# Imagens oficiais do Docker Hub (ECR Public atingiu rate-limit 429).
+FROM node:20-alpine AS build
 WORKDIR /app
 
 ARG VITE_API_ORIGIN=https://api-pdv.quacksistemas.com.br
@@ -30,7 +29,7 @@ RUN if [ ! -f .env.prod ] && [ -f .env.production ]; then cp .env.production .en
 
 RUN npm run build:prod
 
-FROM public.ecr.aws/docker/library/nginx:1.27-alpine AS final
+FROM nginx:1.27-alpine AS final
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
