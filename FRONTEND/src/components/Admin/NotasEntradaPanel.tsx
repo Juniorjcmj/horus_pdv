@@ -1,7 +1,8 @@
-import { ArrowLeft, ChevronLeft, ChevronRight, Download, FileText, RefreshCw, Search } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Download, FileText, RefreshCw, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { nfeImportService, type NotaEntradaDetalhe, type NotaEntradaPagina, type NotaEntradaResumo } from "@/services/api/nfeImportService";
 import { Toast } from "@/hooks/Dialog";
+import { usePromptDialog } from "@/hooks/Dialog/usePromptDialog";
 import TableScrollArea from "@/components/Admin/TableScrollArea";
 
 const money = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -19,6 +20,22 @@ export default function NotasEntradaPanel({ initialId = null }: { initialId?: st
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const [estornando, setEstornando] = useState(false);
+  const { prompt, PromptDialog } = usePromptDialog();
+
+  const estornar = async (nota: NotaEntradaResumo) => {
+    const justificativa = await prompt("Justificativa do estorno", "Ex: nota lançada com valores errados");
+    if (!justificativa) return;
+    if (justificativa.trim().length < 5) { Toast.error("A justificativa deve ter pelo menos 5 caracteres."); return; }
+    setEstornando(true);
+    try {
+      const res = await nfeImportService.estornarNota(nota.id, justificativa);
+      Toast.success(res.message || "Nota estornada com sucesso.");
+      setSelectedId(null);
+      setRefresh(v => v + 1);
+    } catch (err) { Toast.error(err instanceof Error ? err.message : "Não foi possível estornar a nota."); }
+    finally { setEstornando(false); }
+  };
 
   useEffect(() => {
     let active = true;
@@ -67,9 +84,9 @@ export default function NotasEntradaPanel({ initialId = null }: { initialId?: st
       {resultado.notas.length === 0 ? <div className="py-10 text-center"><FileText className="mx-auto mb-3 text-text-secondary" size={28} /><p className="font-medium text-text-primary">{busca ? "Nenhuma nota encontrada" : "Ainda não há notas de entrada armazenadas"}</p><p className="mt-2 text-sm text-text-secondary">{busca ? "Confira o número, a chave ou o nome do fornecedor." : "As próximas entradas por nota serão registradas automaticamente. Notas de entradas antigas precisam ser recuperadas separadamente."}</p></div>
         : <TableScrollArea label="Notas de entrada"><table className="min-w-[800px] w-full text-left text-sm">
           <thead className="border-b border-border-primary text-text-secondary"><tr>{["Entrada", "Nota", "Fornecedor", "Valor da nota", "Documento", ""].map(label => <th key={label} className="px-3 py-3 font-medium">{label}</th>)}</tr></thead>
-          <tbody className="divide-y divide-border-primary">{resultado.notas.map(nota => <tr key={nota.id} className="text-text-primary hover:bg-hover-light">
+          <tbody className="divide-y divide-border-primary">{resultado.notas.map(nota => <tr key={nota.id} className={`hover:bg-hover-light ${nota.estornada ? "opacity-50" : "text-text-primary"}`}>
             <td className="whitespace-nowrap px-3 py-4 tabular-nums">{date(nota.criadaEm)}</td>
-            <td className="px-3 py-4">{title(nota)}<span className="mt-1 block text-xs text-text-secondary">{nota.quantidadeItens} {nota.quantidadeItens === 1 ? "item" : "itens"}</span></td>
+            <td className="px-3 py-4">{title(nota)}{nota.estornada && <span className="ml-2 inline-block rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">Estornada</span>}<span className="mt-1 block text-xs text-text-secondary">{nota.quantidadeItens} {nota.quantidadeItens === 1 ? "item" : "itens"}</span></td>
             <td className="px-3 py-4"><span className="block max-w-64 break-words font-medium">{nota.fornecedorNome || "Sem fornecedor"}</span><span className="mt-1 block text-xs text-text-secondary">{nota.fornecedorCnpj}</span></td>
             <td className="whitespace-nowrap px-3 py-4 tabular-nums">{nota.valorNota === null ? "Não informado" : money(nota.valorNota)}</td>
             <td className="px-3 py-4 text-text-secondary">{nota.temComprovante ? "Comprovante armazenado" : nota.temXml ? "XML armazenado" : nota.origem === "manual" ? "Entrada manual · sem anexo" : nota.origem === "digitada" ? "Cupom digitado · sem XML" : "Documento não enviado"}</td>
@@ -84,9 +101,17 @@ export default function NotasEntradaPanel({ initialId = null }: { initialId?: st
 
     {!loading && !error && detalhe && <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4 border-y border-border-primary py-5">
-        <div><h3 className="font-semibold text-text-primary">{title(detalhe.nota)}</h3><p className="mt-1 text-sm text-text-secondary">{detalhe.nota.fornecedorNome || "Sem fornecedor"}{detalhe.nota.fornecedorCnpj && ` · CNPJ ${detalhe.nota.fornecedorCnpj}`}</p></div>
-        {(detalhe.nota.temXml || detalhe.nota.temComprovante) && <button type="button" className="btn-primary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" disabled={downloading} onClick={() => void download(detalhe.nota)}><Download size={16} />{downloading ? "Baixando…" : detalhe.nota.temComprovante ? "Baixar comprovante" : "Baixar XML original"}</button>}
+        <div><h3 className="font-semibold text-text-primary">{title(detalhe.nota)}{detalhe.nota.estornada && <span className="ml-2 inline-block rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">Estornada</span>}</h3><p className="mt-1 text-sm text-text-secondary">{detalhe.nota.fornecedorNome || "Sem fornecedor"}{detalhe.nota.fornecedorCnpj && ` · CNPJ ${detalhe.nota.fornecedorCnpj}`}</p></div>
+        <div className="flex flex-wrap gap-2">
+          {(detalhe.nota.temXml || detalhe.nota.temComprovante) && <button type="button" className="btn-primary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" disabled={downloading} onClick={() => void download(detalhe.nota)}><Download size={16} />{downloading ? "Baixando…" : detalhe.nota.temComprovante ? "Baixar comprovante" : "Baixar XML original"}</button>}
+          {!detalhe.nota.estornada && <button type="button" className="btn-outline-secondary inline-flex min-h-10 items-center justify-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50" disabled={estornando} onClick={() => void estornar(detalhe.nota)}><Trash2 size={16} />{estornando ? "Estornando…" : "Estornar entrada"}</button>}
+        </div>
       </div>
+      {detalhe.nota.estornada && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm dark:border-red-800 dark:bg-red-900/20">
+        <p className="font-medium text-red-700 dark:text-red-300">Esta entrada foi estornada — o estoque dos produtos foi subtraído.</p>
+        {detalhe.nota.estornadaEm && <p className="mt-1 text-red-600 dark:text-red-400">Estornada em {date(detalhe.nota.estornadaEm)}{detalhe.nota.estornadaPorUsuarioNome && ` por ${detalhe.nota.estornadaPorUsuarioNome}`}</p>}
+        {detalhe.nota.estornoJustificativa && <p className="mt-1 text-red-600 dark:text-red-400">Justificativa: {detalhe.nota.estornoJustificativa}</p>}
+      </div>}
       <dl className="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
         <div><dt className="text-text-secondary">Entrada no sistema</dt><dd className="mt-1 text-text-primary">{date(detalhe.nota.criadaEm)}{detalhe.nota.usuarioNome && ` · ${detalhe.nota.usuarioNome}`}</dd></div>
         <div><dt className="text-text-secondary">{detalhe.nota.origem === "manual" ? "Data da compra" : "Emissão da nota"}</dt><dd className="mt-1 text-text-primary">{detalhe.nota.dataEmissao ? date(detalhe.nota.dataEmissao) : "Não informada"}</dd></div>
@@ -101,5 +126,6 @@ export default function NotasEntradaPanel({ initialId = null }: { initialId?: st
         <TableScrollArea label="Itens recebidos"><table className="min-w-[650px] w-full text-left text-sm"><thead className="border-b border-border-primary text-text-secondary"><tr>{["Código", "Produto", "Quantidade", "Custo unitário", "Lote / validade"].map(label => <th key={label} className="px-3 py-3 font-medium">{label}</th>)}</tr></thead><tbody className="divide-y divide-border-primary text-text-primary">{detalhe.entrada.itens.map((item, index) => <tr key={`${item.numeroItem}-${index}`}><td className="px-3 py-3">{item.productCode}</td><td className="px-3 py-3">{item.productName}</td><td className="px-3 py-3 tabular-nums">{item.quantidade} {item.unidadeComercial}</td><td className="px-3 py-3 tabular-nums">R$ {item.precoCusto}</td><td className="px-3 py-3">{item.numeroLote || "—"}{item.dataValidade && ` · ${item.dataValidade.split("-").reverse().join("/")}`}</td></tr>)}</tbody></table></TableScrollArea>
       </div>
     </div>}
+    {PromptDialog}
   </section>;
 }

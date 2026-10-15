@@ -130,6 +130,25 @@ public class NfeImportController(NfeImportService nfeImportService, NotaEntradaA
         return File(xml, "application/xml", $"nota-entrada-{id}.xml");
     }
 
+    [HttpDelete("notas-entrada/{id}")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> EstornarNota(string id, [FromQuery] string justificativa)
+    {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        try
+        {
+            await nfeImportService.EstornarNotaEntradaAsync(user.CompanyId, id, user.Id, user.Name, justificativa);
+            return Ok(new ApiResponse<object> { Success = true, Message = "Nota de entrada estornada com sucesso. O estoque foi ajustado." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
+    }
+
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
 

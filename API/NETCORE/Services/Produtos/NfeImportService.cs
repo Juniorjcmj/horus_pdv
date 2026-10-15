@@ -389,4 +389,42 @@ public class NfeImportService(
         await transaction.CommitAsync();
         return resultado;
     }
+
+    /// <summary>
+    /// Estorna uma nota de entrada: subtrai do estoque a quantidade que foi adicionada por cada item
+    /// e marca a nota como estornada. Produtos que não existem mais são ignorados silenciosamente.
+    /// </summary>
+    public async Task EstornarNotaEntradaAsync(string companyId, string notaId, string usuarioId, string usuarioNome, string justificativa)
+    {
+        if (string.IsNullOrWhiteSpace(justificativa) || justificativa.Trim().Length < 5)
+            throw new InvalidOperationException("Informe uma justificativa com pelo menos 5 caracteres para estornar a nota.");
+
+        var dados = await arquivoService.ObterParaEstornoAsync(companyId, notaId);
+        if (dados is null)
+            throw new InvalidOperationException("Nota de entrada não encontrada ou já foi estornada.");
+
+        var (nota, entrada) = dados.Value;
+
+        // Extrai os itens do JSON armazenado e subtrai o estoque de cada produto
+        if (entrada.TryGetProperty("itens", out var itensJson) || entrada.TryGetProperty("Itens", out itensJson))
+        {
+            foreach (var item in itensJson.EnumerateArray())
+            {
+                var produtoId = item.TryGetProperty("produtoExistenteId", out var pid) ? pid.GetString()
+                    : item.TryGetProperty("ProdutoExistenteId", out pid) ? pid.GetString() : null;
+                if (string.IsNullOrWhiteSpace(produtoId)) continue;
+
+                var qtdStr = item.TryGetProperty("quantidade", out var q) ? q.GetString()
+                    : item.TryGetProperty("Quantidade", out q) ? q.GetString() : null;
+                if (qtdStr is null || !HorusMoneyFormat.TryParseDecimal(qtdStr, out var quantidade) || quantidade <= 0)
+                    continue;
+
+                try { await produtosAB.EstornarEstoqueAsync(companyId, produtoId, quantidade); }
+                catch { /* produto pode ter sido excluído — segue */ }
+            }
+        }
+
+        if (!await arquivoService.EstornarAsync(companyId, notaId, usuarioId, usuarioNome, justificativa.Trim()))
+            throw new InvalidOperationException("Não foi possível estornar esta nota. Ela pode já ter sido estornada.");
+    }
 }

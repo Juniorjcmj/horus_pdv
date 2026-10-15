@@ -357,6 +357,25 @@ public class ProdutoAB(Connection connection)
         return product;
     }
 
+    /// <summary>
+    /// Estorna (subtrai) uma quantidade do estoque do produto. Permite estoque negativo para manter
+    /// a integridade do estorno mesmo que parte do estoque já tenha sido vendida.
+    /// </summary>
+    public async Task EstornarEstoqueAsync(string companyId, string productId, decimal quantidade)
+    {
+        await using var db = await connection.OpenLeaseAsync();
+        await using var cmd = connection.CreateCommand("""
+            UPDATE Produtos
+               SET ProductQnt = ProductQnt - @Quantidade,
+                   TotalPriceOnProduct = ProductUnitPrice * (ProductQnt - @Quantidade)
+             WHERE Id = @Id AND CompanyId = @CompanyId;
+            """, db);
+        cmd.Parameters.AddWithValue("@Quantidade", quantidade);
+        cmd.Parameters.AddWithValue("@Id", productId);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
     public async Task<bool> ExcluirAsync(string companyId, string id)
     {
         await using var db = await connection.OpenLeaseAsync();

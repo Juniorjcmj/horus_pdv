@@ -11,7 +11,8 @@ namespace HORUSPDV_API.Services.Produtos;
 public sealed record NotaEntradaResumo(string Id, string? ChaveAcesso, int Modelo, string NumeroNota,
     string Serie, string FornecedorNome, string FornecedorCnpj, string? DataEmissao, decimal? ValorNota,
     decimal ValorEntrada, int QuantidadeItens, string Origem, bool TemXml, DateTime CriadaEm, string UsuarioNome,
-    bool TemComprovante = false, string? ComprovanteNome = null);
+    bool TemComprovante = false, string? ComprovanteNome = null,
+    bool Estornada = false, DateTime? EstornadaEm = null, string? EstornadaPorUsuarioNome = null, string? EstornoJustificativa = null);
 public sealed record NotaEntradaPagina(List<NotaEntradaResumo> Notas, int Total, int Pagina, int TamanhoPagina);
 public sealed record NotaEntradaDetalhe(NotaEntradaResumo Nota, JsonElement Entrada);
 public sealed record NotaEntradaDocumento(string Identidade, string? Chave, int Modelo, string Numero,
@@ -115,7 +116,7 @@ public class NotaEntradaArquivoService(Connection connection)
         return id;
     }
 
-    private const string Columns = "Id,ChaveAcesso,Modelo,NumeroNota,Serie,FornecedorNome,FornecedorCnpj,DataEmissao,ValorNota,ValorEntrada,QuantidadeItens,Origem,CASE WHEN XmlOriginal IS NULL THEN CAST(0 AS BIT) ELSE CAST(1 AS BIT) END AS TemXml,CriadaEm,UsuarioNome,CASE WHEN ComprovanteOriginal IS NULL THEN CAST(0 AS BIT) ELSE CAST(1 AS BIT) END AS TemComprovante,ComprovanteNome";
+    private const string Columns = "Id,ChaveAcesso,Modelo,NumeroNota,Serie,FornecedorNome,FornecedorCnpj,DataEmissao,ValorNota,ValorEntrada,QuantidadeItens,Origem,CASE WHEN XmlOriginal IS NULL THEN CAST(0 AS BIT) ELSE CAST(1 AS BIT) END AS TemXml,CriadaEm,UsuarioNome,CASE WHEN ComprovanteOriginal IS NULL THEN CAST(0 AS BIT) ELSE CAST(1 AS BIT) END AS TemComprovante,ComprovanteNome,ISNULL(Estornada,0) AS Estornada,EstornadaEm,EstornadaPorUsuarioNome,EstornoJustificativa";
     public async Task<NotaEntradaPagina> ListarAsync(string companyId, string? busca, int pagina, int tamanhoPagina)
     {
         pagina = Math.Max(1, Math.Min(1_000_000, pagina));
@@ -144,7 +145,7 @@ public class NotaEntradaArquivoService(Connection connection)
         await using var cmd = new SqlCommand($"SELECT {Columns},EntradaJson FROM dbo.NotasEntradaArquivo WHERE CompanyId=@CompanyId AND Id=@Id;", db);
         cmd.Parameters.AddWithValue("@CompanyId", companyId); cmd.Parameters.AddWithValue("@Id", id);
         await using var reader = await cmd.ExecuteReaderAsync();
-        return await reader.ReadAsync() ? new(Map(reader), JsonSerializer.Deserialize<JsonElement>(reader.GetString(17))) : null;
+        return await reader.ReadAsync() ? new(Map(reader), JsonSerializer.Deserialize<JsonElement>(reader.GetString(21))) : null;
     }
 
     public async Task<byte[]?> ObterXmlAsync(string companyId, string id)
@@ -174,6 +175,39 @@ public class NotaEntradaArquivoService(Connection connection)
         return await reader.ReadAsync() ? (reader.GetString(0), JsonSerializer.Deserialize<JsonElement>(reader.GetString(1))) : null;
     }
 
+    /// <summary>
+    /// Marca a nota de entrada como estornada. NÃO reverte estoque — isso é feito pelo serviço de orquestração.
+    /// </summary>
+    public async Task<bool> EstornarAsync(string companyId, string id, string usuarioId, string usuarioNome, string justificativa)
+    {
+        await using var db = await connection.OpenLeaseAsync();
+        await using var cmd = connection.CreateCommand("""
+            UPDATE dbo.NotasEntradaArquivo
+               SET Estornada = 1, EstornadaEm = SYSUTCDATETIME(),
+                   EstornadaPorUsuarioId = @UsuarioId, EstornadaPorUsuarioNome = @UsuarioNome,
+                   EstornoJustificativa = @Justificativa
+             WHERE CompanyId = @CompanyId AND Id = @Id AND ISNULL(Estornada, 0) = 0;
+            """, db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        cmd.Parameters.AddWithValue("@Id", id);
+        cmd.Parameters.AddWithValue("@UsuarioId", usuarioId);
+        cmd.Parameters.AddWithValue("@UsuarioNome", usuarioNome);
+        cmd.Parameters.AddWithValue("@Justificativa", justificativa);
+        return await cmd.ExecuteNonQueryAsync() > 0;
+    }
+
+    /// <summary>
+    /// Retorna os dados JSON da entrada para permitir o estorno de estoque item a item.
+    /// </summary>
+    public async Task<(NotaEntradaResumo Nota, JsonElement Entrada)?> ObterParaEstornoAsync(string companyId, string id)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        await using var cmd = new SqlCommand($"SELECT {Columns},EntradaJson FROM dbo.NotasEntradaArquivo WHERE CompanyId=@CompanyId AND Id=@Id AND ISNULL(Estornada,0)=0;", db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId); cmd.Parameters.AddWithValue("@Id", id);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? (Map(reader), JsonSerializer.Deserialize<JsonElement>(reader.GetString(21))) : null;
+    }
+
     private static string Digitos(string value) => new(value.Where(char.IsDigit).ToArray());
     public async Task<(string Id, JsonElement Entrada)?> ObterPorOperacaoManualAsync(string companyId, string operacao)
     {
@@ -186,5 +220,7 @@ public class NotaEntradaArquivoService(Connection connection)
     private static NotaEntradaResumo Map(SqlDataReader r) => new(r.GetString(0), r.IsDBNull(1) ? null : r.GetString(1), r.GetInt32(2),
         r.GetString(3), r.GetString(4), r.GetString(5), r.GetString(6), r.IsDBNull(7) ? null : r.GetString(7),
         r.IsDBNull(8) ? null : r.GetDecimal(8), r.GetDecimal(9), r.GetInt32(10), r.GetString(11), r.GetBoolean(12),
-        DateTime.SpecifyKind(r.GetDateTime(13), DateTimeKind.Utc), r.GetString(14), r.GetBoolean(15), r.IsDBNull(16) ? null : r.GetString(16));
+        DateTime.SpecifyKind(r.GetDateTime(13), DateTimeKind.Utc), r.GetString(14), r.GetBoolean(15), r.IsDBNull(16) ? null : r.GetString(16),
+        r.GetBoolean(17), r.IsDBNull(18) ? null : DateTime.SpecifyKind(r.GetDateTime(18), DateTimeKind.Utc),
+        r.IsDBNull(19) ? null : r.GetString(19), r.IsDBNull(20) ? null : r.GetString(20));
 }

@@ -161,6 +161,14 @@ export const nfeImportService = {
       window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } finally { window.clearTimeout(timer); }
   },
+  async estornarNota(id: string, justificativa: string) {
+    const query = new URLSearchParams({ justificativa });
+    const response = await apiRequest<object>(`${NFE_IMPORT_API_URL}/notas-entrada/${encodeURIComponent(id)}?${query}`, {
+      method: "DELETE",
+      timeoutMs: 30_000,
+    });
+    return response;
+  },
   async baixarComprovante(nota: NotaEntradaResumo) {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 30_000);
@@ -181,6 +189,7 @@ export type NotaEntradaResumo = {
   fornecedorNome: string; fornecedorCnpj: string; dataEmissao: string | null;
   valorNota: number | null; valorEntrada: number; quantidadeItens: number; origem: string;
   temXml: boolean; criadaEm: string; usuarioNome: string; temComprovante?: boolean; comprovanteNome?: string | null;
+  estornada?: boolean; estornadaEm?: string | null; estornadaPorUsuarioNome?: string | null; estornoJustificativa?: string | null;
 };
 export type NotaEntradaPagina = { notas: NotaEntradaResumo[]; total: number; pagina: number; tamanhoPagina: number };
 export type NotaEntradaDetalhe = { nota: NotaEntradaResumo; entrada: { fornecedor: NfeImportFornecedorPreview; tipoDocumento?: string; observacao?: string;
