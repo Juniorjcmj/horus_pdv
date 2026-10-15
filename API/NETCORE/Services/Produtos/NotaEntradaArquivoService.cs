@@ -66,6 +66,7 @@ public class NotaEntradaArquivoService(Connection connection)
             DECLARE @result INT;
             EXEC @result = sys.sp_getapplock @Resource=@Resource, @LockMode='Exclusive', @LockOwner='Transaction', @LockTimeout=15000;
             IF @result < 0 THROW 51000, 'Outra entrada desta nota está em processamento. Tente novamente.', 1;
+            DELETE FROM dbo.NotasEntradaArquivo WHERE CompanyId=@CompanyId AND Identidade=@Identidade AND Estornada=1;
             SELECT Id FROM dbo.NotasEntradaArquivo WHERE CompanyId=@CompanyId AND Identidade=@Identidade;
             """, db);
         command.Parameters.AddWithValue("@Resource", "nota-entrada:" + companyId + ":" + documento.Identidade);
