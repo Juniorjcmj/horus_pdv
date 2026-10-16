@@ -4786,7 +4786,7 @@ WHEN MATCHED THEN
         target.UnidadeComercial = source.Unidade,
         target.UnidadeTributavel = source.Unidade,
         target.ProductUnitPrice = CASE WHEN source.ProductUnitPrice > 0 THEN source.ProductUnitPrice ELSE target.ProductUnitPrice END,
-        target.ProductSalePrice = source.ProductSalePrice,
+        target.ProductSalePrice = CASE WHEN target.ProductSalePrice = 0 THEN source.ProductSalePrice ELSE target.ProductSalePrice END,
         target.Ncm = source.Ncm,
         target.Cest = source.Cest,
         target.Cfop = source.Cfop,

@@ -71,13 +71,15 @@ VALUES
     (N'10343', N'7891991306430', N'7891991306430', N'CERV STELLA ARTOIS PURE G',7.9900),
     (N'12925', N'7891991304870', N'7891991304870', N'CERV STELLA ARTOIS PURE G',8.5000);
 
--- Atualiza ProductSalePrice na tabela Produtos onde houver correspondência por ProductCode, Gtin ou CodigoInterno
+-- Atualiza ProductSalePrice SOMENTE quando o produto ainda está com preço zerado,
+-- preservando preços que o usuário já tenha definido manualmente.
 UPDATE p
 SET p.ProductSalePrice = t.PrecoVenda
 FROM Produtos p
 INNER JOIN #PrecosAtualizacaoTemp t
     ON p.ProductCode = t.ProductCode
     OR (t.Gtin <> N'' AND t.Gtin <> N'SEM GTIN' AND p.Gtin = t.Gtin)
-    OR (t.CodigoInterno IS NOT NULL AND p.ProductCode = t.CodigoInterno);
+    OR (t.CodigoInterno IS NOT NULL AND p.ProductCode = t.CodigoInterno)
+WHERE p.ProductSalePrice = 0;
 
 DROP TABLE #PrecosAtualizacaoTemp;

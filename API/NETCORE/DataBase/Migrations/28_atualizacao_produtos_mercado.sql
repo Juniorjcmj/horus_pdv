@@ -4851,7 +4851,7 @@ WHEN MATCHED THEN
         target.Gtin = CASE WHEN source.Gtin <> N'SEM GTIN' AND source.Gtin IS NOT NULL THEN source.Gtin ELSE target.Gtin END,
         target.UnidadeComercial = source.Unidade,
         target.UnidadeTributavel = source.Unidade,
-        target.ProductSalePrice = source.ProductSalePrice,
+        target.ProductSalePrice = CASE WHEN target.ProductSalePrice = 0 THEN source.ProductSalePrice ELSE target.ProductSalePrice END,
         target.ProductUnitPrice = CASE WHEN source.ProductUnitPrice > 0 THEN source.ProductUnitPrice ELSE target.ProductUnitPrice END,
         target.CategoriaId = COALESCE(target.CategoriaId, source.CategoriaId),
         target.Ncm = CASE WHEN source.Ncm <> '00000000' THEN source.Ncm ELSE target.Ncm END,
