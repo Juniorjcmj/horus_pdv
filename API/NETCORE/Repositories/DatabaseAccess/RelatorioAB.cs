@@ -42,6 +42,7 @@ public partial class RelatorioAB(Connection connection, AuditLogAB auditLogAB, F
             "desempenho-caixa" => await GerarDesempenhoCaixaAsync(companyId, filters),
             "log-atividades" => await GerarLogAtividadesAsync(companyId, filters, restrictToUserId),
             "cancelamentos" => await GerarCancelamentosAsync(companyId, filters),
+            "ficha-fiscal-produtos" => await GerarFichaFiscalAsync(companyId, filters, restrictToUserId),
             _ => throw new InvalidOperationException("Relatório não encontrado.")
         };
 

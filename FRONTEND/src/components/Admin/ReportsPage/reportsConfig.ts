@@ -13,6 +13,7 @@ import {
   Coins,
   CreditCard,
   FileChartColumnIncreasing,
+  FileSpreadsheet,
   HandCoins,
   Hash,
   History,
@@ -370,6 +371,17 @@ export const reportCatalog: ReportDefinition[] = [
     icon: Ban,
     filters: [
       ...periodFilters,
+    ],
+  },
+  {
+    id: "ficha-fiscal-produtos",
+    title: "Ficha Fiscal e Contábil",
+    description: "Consolida dados fiscais (NCM, CEST, CFOP, tributação) e contábeis (custos, markups, margens) com a movimentação real de cada produto no período. Disponível apenas para administradores e gerentes.",
+    icon: FileSpreadsheet,
+    filters: [
+      ...periodFilters,
+      categoriaFilter,
+      { id: "productSearch", label: "Código ou descrição do produto", type: "text" },
     ],
   },
 ];
