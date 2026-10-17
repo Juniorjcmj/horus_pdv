@@ -683,10 +683,10 @@ function GondolaLabelCard({
         <h4
           className={`line-clamp-2 uppercase leading-tight tracking-tight text-gray-950 ${
             isPrintMode
-              ? "text-[13px] font-[900]"
+              ? "text-[15px] font-[900]"
               : "text-[11px] font-black"
           }`}
-          style={isPrintMode ? { WebkitTextStroke: "0.4px black" } : undefined}
+          style={isPrintMode ? { WebkitTextStroke: "1px black" } : undefined}
         >
           {product.productName}
         </h4>
@@ -698,9 +698,9 @@ function GondolaLabelCard({
         <div className="flex flex-col justify-center min-w-0 max-w-[55%]">
           <BarcodeSvg
             value={barcodeToRender}
-            height={isPrintMode ? 38 : 24}
-            width={isPrintMode ? 2.2 : 1.2}
-            fontSize={isPrintMode ? 12 : 9}
+            height={isPrintMode ? 46 : 24}
+            width={isPrintMode ? 3 : 1.2}
+            fontSize={isPrintMode ? 14 : 9}
             margin={0}
             className={isPrintMode ? "" : "w-full"}
           />
@@ -712,15 +712,15 @@ function GondolaLabelCard({
             className={`flex items-baseline font-[900] ${
               isPrintMode ? "text-black" : "text-red-700 font-black"
             }`}
-            style={isPrintMode ? { WebkitTextStroke: "0.6px black" } : undefined}
+            style={isPrintMode ? { WebkitTextStroke: "1.2px black" } : undefined}
           >
-            <span className={`font-[900] mr-0.5 ${isPrintMode ? "text-[12px] text-black" : "text-[10px] text-gray-700"}`}>R$</span>
-            <span className={`leading-none tracking-tight ${isPrintMode ? "text-2xl" : "text-xl"}`}>{priceParts.inteiro}</span>
-            <span className={`leading-none font-[900] ${isPrintMode ? "text-sm" : "text-xs"}`}>,{priceParts.centavos}</span>
+            <span className={`font-[900] mr-0.5 ${isPrintMode ? "text-[14px] text-black" : "text-[10px] text-gray-700"}`}>R$</span>
+            <span className={`leading-none tracking-tight ${isPrintMode ? "text-3xl" : "text-xl"}`}>{priceParts.inteiro}</span>
+            <span className={`leading-none font-[900] ${isPrintMode ? "text-base" : "text-xs"}`}>,{priceParts.centavos}</span>
           </div>
           <span
-            className={`font-[900] uppercase ${isPrintMode ? "text-[10px] text-black" : "text-[9px] text-gray-700"}`}
-            style={isPrintMode ? { WebkitTextStroke: "0.3px black" } : undefined}
+            className={`font-[900] uppercase ${isPrintMode ? "text-[12px] text-black" : "text-[9px] text-gray-700"}`}
+            style={isPrintMode ? { WebkitTextStroke: "0.6px black" } : undefined}
           >
             {product.unidadeComercial || "UN"}
           </span>
@@ -730,9 +730,9 @@ function GondolaLabelCard({
       {/* RODAPÉ: CÓDIGO INTERNO & DATA */}
       <div
         className={`flex items-center justify-between border-t border-gray-200 pt-0.5 ${
-          isPrintMode ? "text-[9px] font-bold text-black" : "text-[8px] font-medium text-gray-500"
+          isPrintMode ? "text-[10px] font-[900] text-black" : "text-[8px] font-medium text-gray-500"
         }`}
-        style={isPrintMode ? { WebkitTextStroke: "0.2px black" } : undefined}
+        style={isPrintMode ? { WebkitTextStroke: "0.5px black" } : undefined}
       >
         {showInternalCode ? (
           <span>Cód: {product.productCode}</span>
