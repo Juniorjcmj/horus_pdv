@@ -597,6 +597,16 @@ export default function GondolaLabelModal({
                 page-break-inside: avoid !important;
                 border: 1px dashed #cccccc !important;
               }
+              /* Barcode nítido: sem suavização, tamanho fixo para leitura por scanner */
+              .print-label-box svg {
+                image-rendering: pixelated !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                shape-rendering: crispEdges !important;
+                width: auto !important;
+                max-width: 100% !important;
+                overflow: visible !important;
+              }
             }
           `}
         </style>
@@ -681,11 +691,11 @@ function GondolaLabelCard({
         <div className="flex flex-col justify-center min-w-0 max-w-[55%]">
           <BarcodeSvg
             value={barcodeToRender}
-            height={24}
-            width={1.2}
-            fontSize={9}
+            height={isPrintMode ? 34 : 24}
+            width={isPrintMode ? 1.8 : 1.2}
+            fontSize={isPrintMode ? 11 : 9}
             margin={0}
-            className="w-full"
+            className={isPrintMode ? "" : "w-full"}
           />
         </div>
 
