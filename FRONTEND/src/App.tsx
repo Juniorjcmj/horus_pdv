@@ -103,7 +103,11 @@ type CurrentUser = {
 // cadastros, relatórios, fiscal, pedidos ou configurações da empresa. A restrição de verdade é
 // sempre aplicada no backend (HorusAuthorizeRoles); isso aqui é só para não deixar a tela mostrar
 // menus/páginas que dariam 403 na hora de carregar os dados.
-const CAIXA_ROLE_ALLOWED_PAGES: PageKey[] = ["vendas", "caixa", "aprendizado", "editar-perfil", "configuracoes"];
+const CAIXA_ROLE_ALLOWED_PAGES: PageKey[] = ["vendas", "caixa", "aprendizado", "editar-perfil"];
+
+// Perfil "estoquista": acesso exclusivo a estoque/inventário, contagem de produtos e validade.
+// Sem vendas, fiscal, cadastros completos ou configurações da empresa.
+const ESTOQUISTA_ROLE_ALLOWED_PAGES: PageKey[] = ["estoque", "validade", "aprendizado", "editar-perfil"];
 
 type ThemeMode = "light" | "dark";
 type PublicAuthPage =
@@ -189,8 +193,9 @@ export default function App() {
     if (new URLSearchParams(window.location.search).get("pdv") === "1") {
       return "vendas";
     }
-    const isCaixaRoleUser = getStoredAuthUser()?.role.toLowerCase() === "caixa";
-    if (isCaixaRoleUser) return "caixa";
+    const storedRole = getStoredAuthUser()?.role.toLowerCase();
+    if (storedRole === "caixa") return "caixa";
+    if (storedRole === "estoquista") return "estoque";
 
     const savedPage = window.localStorage.getItem(ACTIVE_PAGE_STORAGE_KEY);
     return savedPage && isPageKey(savedPage) ? savedPage : "home";
@@ -545,8 +550,10 @@ export default function App() {
       if (result.offlineAccessReady === false) {
         Toast.info("Você entrou, mas não foi possível preparar seu acesso sem internet neste computador. Faça login novamente com internet antes de operar offline.", 10_000);
       }
-      const isCaixaRoleUser = result.user.role.toLowerCase() === "caixa";
-      setActivePage(isStandalonePos ? "vendas" : isCaixaRoleUser ? "caixa" : "home");
+      const loginRole = result.user.role.toLowerCase();
+      const isCaixaRoleUser = loginRole === "caixa";
+      const isEstoquistaRoleUser = loginRole === "estoquista";
+      setActivePage(isStandalonePos ? "vendas" : isCaixaRoleUser ? "caixa" : isEstoquistaRoleUser ? "estoque" : "home");
       return { success: true, message: "Login realizado com sucesso." };
     } catch (error) {
       return {
@@ -814,14 +821,18 @@ export default function App() {
   }, [activePage, isStandalonePos]);
 
   useEffect(() => {
-    // Rede de segurança: se o perfil for "caixa" e a página ativa não for uma das permitidas,
-    // volta pra "caixa" — a restrição de verdade é sempre no backend (HorusAuthorizeRoles), isso
-    // aqui só evita a tela tentar mostrar uma página que daria 403 ao carregar os dados.
+    // Rede de segurança: perfis restritos (caixa / estoquista) só acessam páginas da whitelist.
+    // A restrição de verdade é sempre no backend (HorusAuthorizeRoles); isso aqui só evita a tela
+    // tentar mostrar uma página que daria 403 ao carregar os dados.
     if (!isAuthenticated || isStandalonePos) return;
-    const isCaixaRoleUser = currentUser.role.toLowerCase() === "caixa";
-    if (isCaixaRoleUser && !CAIXA_ROLE_ALLOWED_PAGES.includes(activePage)) {
+    const normalizedRole = currentUser.role.toLowerCase();
+    if (normalizedRole === "caixa" && !CAIXA_ROLE_ALLOWED_PAGES.includes(activePage)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setActivePage("caixa");
+    }
+    if (normalizedRole === "estoquista" && !ESTOQUISTA_ROLE_ALLOWED_PAGES.includes(activePage)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActivePage("estoque");
     }
   }, [isAuthenticated, isStandalonePos, currentUser.role, activePage]);
 

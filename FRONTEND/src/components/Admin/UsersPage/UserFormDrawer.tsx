@@ -16,6 +16,7 @@ const ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
   { value: "gerente", label: "Gerente" },
   { value: "atendente", label: "Atendente" },
   { value: "caixa", label: "Caixa (só frente de caixa e abertura/fechamento)" },
+  { value: "estoquista", label: "Estoquista (contagem, estoque e inventário)" },
   // Antigo: hoje o Financeiro se dá como perfil ADICIONAL (abaixo). Mantido para cadastros existentes.
   { value: "financeiro", label: "Financeiro (somente notas fiscais)" },
 ];

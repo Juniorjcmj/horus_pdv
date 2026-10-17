@@ -13,6 +13,7 @@ const ROLE_FILTER_OPTIONS: Array<{ value: UserRoleFilter; label: string }> = [
   { value: "gerente", label: "Gerente" },
   { value: "atendente", label: "Atendente" },
   { value: "caixa", label: "Caixa" },
+  { value: "estoquista", label: "Estoquista" },
   { value: "financeiro", label: "Financeiro" },
 ];
 

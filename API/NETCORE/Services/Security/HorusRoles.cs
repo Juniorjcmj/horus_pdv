@@ -19,6 +19,12 @@ public static class HorusRoles
     public const string Caixa = "caixa";
 
     /// <summary>
+    /// Perfil de estoquista: acesso restrito a consulta de produtos, contagem/ajuste de estoque,
+    /// inventário e lotes. Não acessa vendas, fiscal, financeiro, cadastros ou configurações.
+    /// </summary>
+    public const string Estoquista = "estoquista";
+
+    /// <summary>
     /// Perfil ADICIONAL (somado ao principal, ver Usuarios.PerfisAdicionais): acesso a tudo de notas fiscais —
     /// consulta (inclusive canceladas), XML, cancelamento, inutilização, contingência e configuração fiscal.
     /// O administrador já tem esse acesso; gerente/atendente só com este perfil marcado.

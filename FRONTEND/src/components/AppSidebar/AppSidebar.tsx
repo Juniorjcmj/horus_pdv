@@ -165,7 +165,9 @@ export default function AppSidebar({
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
   const asideRef = useRef<HTMLElement | null>(null);
   const collapsed = desktopCollapsed && isDesktop;
-  const isCaixaRole = currentUserRole.toLowerCase() === "caixa";
+  const normalizedRole = currentUserRole.toLowerCase();
+  const isCaixaRole = normalizedRole === "caixa";
+  const isEstoquistaRole = normalizedRole === "estoquista";
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 1024px)");
@@ -294,6 +296,31 @@ export default function AppSidebar({
                 active={activePage === "caixa"}
                 collapsed={collapsed}
                 onClick={() => handleChangePage("caixa")}
+              />
+              <SidebarItem
+                icon={<GraduationCap size={20} />}
+                label="Aprendizado"
+                active={activePage === "aprendizado"}
+                collapsed={collapsed}
+                onClick={() => handleChangePage("aprendizado")}
+              />
+            </div>
+          ) : isEstoquistaRole ? (
+            <div className="space-y-2">
+              <SidebarSectionTitle label="Estoquista" collapsed={collapsed} />
+              <SidebarItem
+                icon={<PackageCheck size={20} />}
+                label="Estoque e Inventário"
+                active={activePage === "estoque"}
+                collapsed={collapsed}
+                onClick={() => handleChangePage("estoque")}
+              />
+              <SidebarItem
+                icon={<CalendarClock size={20} />}
+                label="Controle de Validade"
+                active={activePage === "validade"}
+                collapsed={collapsed}
+                onClick={() => handleChangePage("validade")}
               />
               <SidebarItem
                 icon={<GraduationCap size={20} />}
@@ -529,7 +556,7 @@ export default function AppSidebar({
           currentUserPermission={currentUserPermission}
           companyName={companyName}
           companyCnpj={companyCnpj}
-          hideCompanyLinks={isCaixaRole}
+          hideCompanyLinks={isCaixaRole || isEstoquistaRole}
           avatarUrl={currentUserAvatarUrl}
           onOpenProfile={() => {
             onOpenProfile();

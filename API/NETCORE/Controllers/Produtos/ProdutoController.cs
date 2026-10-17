@@ -166,7 +166,7 @@ public class ProdutoController(IProdutoService produtoService, ProdutoAB produto
     }
 
     [HttpPut("{id}/validade")]
-    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "estoquista")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> AtualizarValidade(string id, [FromBody] AtualizarValidadeRequest request)
@@ -183,7 +183,7 @@ public class ProdutoController(IProdutoService produtoService, ProdutoAB produto
     }
 
     [HttpPost("{id}/ajuste-estoque")]
-    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "estoquista")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AjustarEstoque(string id, [FromBody] AjusteEstoqueRequest request)

@@ -10,7 +10,7 @@ namespace HORUSPDV_API.Controllers.Produtos;
 
 [ApiController]
 [Route("api/Produto/entrada-manual")]
-[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente", "estoquista")]
 public sealed class EntradaManualController(EntradaManualService service) : ControllerBase
 {
     [HttpPost]

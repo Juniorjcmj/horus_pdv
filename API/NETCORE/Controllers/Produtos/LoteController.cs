@@ -76,7 +76,7 @@ public class LoteController(LoteService loteService) : ControllerBase
     }
 
     [HttpPost("registrar")]
-    [HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "estoquista")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Registrar([FromBody] RegistrarLoteRequest request, CancellationToken cancellationToken)
