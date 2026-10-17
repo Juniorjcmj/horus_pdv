@@ -33,11 +33,22 @@ Se seu container estiver publicado em outra porta, ajuste o host da connection s
 
 Não use essa senha em produção. Para ambientes publicados, configure a conexão fora do repositório, por exemplo com `HORUSPDV_CONNECTION_STRING` ou o secret manager da hospedagem. O `appsettings.json` versionado não deve conter connection string, segredo JWT ou chave de criptografia reais.
 
-Ao iniciar, a API executa `DataBase/Resumo.sql` para criar o banco `HorusPdv`, criar tabelas/relacionamentos e inserir os dados iniciais quando ainda não existirem.
+Ao iniciar, o `HorusDatabaseInitializer` verifica o estado do banco:
+
+- **Banco novo**: executa `DataBase/Resumo.sql` (schema completo) e registra todas as migrações como aplicadas na tabela `__MigrationHistory`.
+- **Banco existente sem histórico**: faz baseline — cria `__MigrationHistory` e marca todas as migrações sem executá-las.
+- **Banco com histórico**: aplica apenas migrações pendentes, em ordem sequencial.
+
+Nenhum script roda mais de uma vez. Dados editados manualmente (ex.: preços de venda) são preservados por cláusulas `WHERE` nos scripts de seed.
 
 Script principal:
 
 <pre><code class="language-text">DataBase/Resumo.sql
+</code></pre>
+
+Migrações incrementais:
+
+<pre><code class="language-text">DataBase/Migrations/01_*.sql ... 51_*.sql
 </code></pre>
 
 ## E-mail
@@ -124,6 +135,7 @@ O middleware ainda aceita `Authorization: Bearer` para compatibilidade, mas o fl
 - `VendaItens`
 - `ModulosMercado`
 - `ModuloMercadoRegistros`
+- `__MigrationHistory` (controle de migrações versionadas)
 
 ## Organização dos Repositórios
 
@@ -132,6 +144,17 @@ O middleware ainda aceita `Authorization: Bearer` para compatibilidade, mas o fl
 - `Services`: regras de negócio e orquestração, sem `SqlCommand`.
 - `Controllers`: HTTP/API, sem SQL direto.
 
-## Próximo Passo Técnico
+## Perfis de Acesso
 
-Criar scripts SQL incrementais para cada evolução de schema antes de produção.
+A autorização é aplicada por `HorusAuthorizeRolesAttribute` em cada controller/action:
+
+| Perfil          | Descrição                                                                       |
+| --------------- | ------------------------------------------------------------------------------- |
+| `administrador` | Acesso total ao sistema                                                         |
+| `gerente`       | Cadastros, operação e relatórios                                                |
+| `atendente`     | Cadastros e operação básica                                                     |
+| `caixa`         | Apenas frente de caixa e abertura/fechamento                                    |
+| `estoquista`    | Apenas estoque, inventário, lotes, validade e entrada manual                    |
+| `financeiro`    | Perfil adicional — libera módulo fiscal (NFC-e/NF-e) para gerente e atendente   |
+
+Perfis adicionais (coluna `PerfisAdicionais` em `Usuarios`) são validados a cada requisição via `HorusSecurityStore`, sem cache no JWT.

@@ -79,8 +79,9 @@ Este repositório está em fase de desenvolvimento. O frontend já conversa com 
 - Histórico de vendas com valores, reimpressão e prévia de cupom não fiscal.
 - Relatórios.
 - Minha empresa, licença, perfil e configurações.
-- Gestão de usuários.
+- Gestão de usuários com perfis de acesso (Administrador, Gerente, Atendente, Caixa, Estoquista, Financeiro).
 - Gestão avançada: estoque, abertura/fechamento, compras, trocas/devoluções, CRM/fidelidade e omnichannel.
+- Impressão de etiquetas de gôndola com código de barras (EAN-13, EAN-8, CODE128) e personalização de fonte/espessura.
 - Configuração SMTP por empresa.
 - Tour guiado por tela.
 - Temas light/dark.
@@ -412,6 +413,21 @@ O projeto já possui uma base de segurança para desenvolvimento:
 
 > Importante: antes de produção, defina `Auth:JwtSecret`, `Security:EncryptionKey`, connection string, CORS e reCAPTCHA por variável de ambiente ou secret manager. Não versionar segredos reais.
 
+### Perfis de Acesso
+
+O sistema possui controle de acesso por perfil com enforcement em múltiplas camadas (backend via `HorusAuthorizeRoles` + frontend via whitelist de rotas):
+
+| Perfil          | Acesso                                                                                          |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| Administrador   | Acesso total, incluindo configurações, gerenciamento geral e módulo fiscal                      |
+| Gerente         | Cadastros, operação, relatórios, compras. Fiscal somente com perfil adicional "financeiro"      |
+| Atendente       | Cadastros, operação básica. Fiscal somente com perfil adicional "financeiro"                    |
+| Caixa           | Apenas frente de caixa (vendas), abertura/fechamento e aprendizado                              |
+| Estoquista      | Apenas estoque/inventário, contagem de produtos, ajuste de lotes e controle de validade         |
+| Financeiro      | Perfil adicional que libera acesso ao módulo fiscal (NFC-e / NF-e) para Gerente e Atendente     |
+
+A página de **Configurações** é restrita ao Administrador. Perfis adicionais (como "financeiro") são somados ao perfil principal e validados a cada requisição no backend, sem cache no JWT.
+
 ## Padrões de Interface
 
 Para escolhas booleanas voltadas ao usuário final, use sempre o controle segmentado `Sim/Não`, no padrão visual da página de Configurações.
@@ -445,9 +461,13 @@ Essas páginas mostram estado visual de "Em desenvolvimento" até as integraçõ
 
 ## Dados e Persistência
 
-A API usa SQL Server com scripts manuais, seguindo o padrão de `DataBase/Resumo.sql`. No start, a aplicação executa esse script para criar o banco, tabelas, relacionamentos e dados iniciais quando ainda não existirem.
+A API usa SQL Server com migrações versionadas no estilo Flyway. O `HorusDatabaseInitializer` mantém uma tabela `__MigrationHistory` que registra cada script já aplicado, garantindo que nenhuma migração rode mais de uma vez.
 
-O script também aplica ajustes seguros de schema já existentes e faz backfill de valores de vendas antigas quando `VendaItens.UnitPrice` ou `VendaItens.ItemTotal` ainda estiverem vazios/zerados.
+- **Banco novo**: executa `DataBase/Resumo.sql` (schema completo) e marca todas as migrações como aplicadas.
+- **Banco existente sem histórico (baseline)**: detecta que as tabelas já existem, cria `__MigrationHistory` e marca todas as migrações como aplicadas sem executar nada.
+- **Banco com histórico**: aplica apenas migrações ainda não registradas, em ordem.
+
+Os scripts de migração ficam em `API/NETCORE/DataBase/Migrations/` numerados sequencialmente (01, 02, ..., 51+). Scripts de seed/dados usam `WHERE NOT EXISTS` ou `MERGE` com proteção para não sobrescrever dados editados manualmente (ex.: preços de venda).
 
 Banco padrão:
 
@@ -462,6 +482,7 @@ Tabelas principais:
 - `CaixaSessoes`
 - `Vendas`, `VendaItens`
 - `ModulosMercado`, `ModuloMercadoRegistros`
+- `__MigrationHistory` (controle de migrações)
 
 Script principal:
 
@@ -470,8 +491,7 @@ Script principal:
 
 ## Roadmap
 
-- Versionar evoluções de banco em scripts SQL incrementais.
-- Expandir seeds e rotinas de migração manual.
+- ~~Versionar evoluções de banco em scripts SQL incrementais.~~ (Concluído — migrações versionadas com `__MigrationHistory`)
 - Expandir testes automatizados.
 - Consolidar regras fiscais.
 - Integrar TEF/provedores de pagamento.
