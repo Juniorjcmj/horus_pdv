@@ -99,6 +99,21 @@ export type ProductFiscalReport = {
   apontamentos: { nivel: "erro" | "aviso" | "informacao"; campo: string; mensagem: string }[];
 };
 
+export type EstoqueMovimentacao = {
+  id: string;
+  produtoId: string;
+  produtoNome: string;
+  produtoCodigo: string;
+  tipo: string;
+  quantidade: number;
+  estoqueAnterior: number;
+  estoqueNovo: number;
+  motivo: string;
+  usuarioId: string;
+  usuarioNome: string;
+  criadoEm: string;
+};
+
 export const productService = {
   async updateSalePrice(id: string, payload: { precoVenda: string; versaoConsultada: string }) {
     const response = await apiRequest<ProductDto>(`${PRODUTO_API_URL}/${encodeURIComponent(id)}/preco-venda`, {
@@ -157,7 +172,7 @@ export const productService = {
   async adjustStock(
     id: string,
     payload: {
-      tipo: "entrada" | "saida";
+      tipo: "entrada" | "saida" | "uso_interno" | "perda";
       quantidade: number;
       motivo: string;
       /** Só para entrada (AAAA-MM-DD): validade do lote recebido. */
@@ -171,5 +186,19 @@ export const productService = {
       body: JSON.stringify(payload),
     });
     return response;
+  },
+
+  async getMovimentacoes(id: string) {
+    const response = await apiRequest<EstoqueMovimentacao[]>(`${PRODUTO_API_URL}/${encodeURIComponent(id)}/movimentacoes`);
+    return response.data ?? [];
+  },
+
+  async getAllMovimentacoes(tipo?: string, limit = 200) {
+    const params = new URLSearchParams();
+    if (tipo) params.set("tipo", tipo);
+    if (limit !== 200) params.set("limit", String(limit));
+    const qs = params.toString();
+    const response = await apiRequest<EstoqueMovimentacao[]>(`${PRODUTO_API_URL}/movimentacoes${qs ? `?${qs}` : ""}`);
+    return response.data ?? [];
   },
 };

@@ -9,15 +9,19 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   Box,
+  ClipboardList,
   DollarSign,
   Filter,
+  History,
   Loader2,
   MapPin,
   Package,
   PackageX,
   RefreshCw,
   Search,
+  Trash2,
   TrendingDown,
+  Wrench,
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -25,7 +29,7 @@ import PageHeader from "@/components/Admin/PageHeader";
 import TablePagination from "@/components/Pagination/TablePagination";
 import { Toast } from "@/hooks/Dialog";
 import PageLayout from "@/layout/PageLayout";
-import { productService, type ProductDto } from "@/services/api/productService";
+import { productService, type ProductDto, type EstoqueMovimentacao } from "@/services/api/productService";
 import { formatMoneyBr } from "@/utils/inputMasks";
 
 // ---------------------------------------------------------------------------
@@ -94,12 +98,17 @@ export default function StockPage() {
 
   // Adjustment modal state
   const [adjustProduct, setAdjustProduct] = useState<ProductDto | null>(null);
-  const [adjustType, setAdjustType] = useState<"entrada" | "saida">("entrada");
+  const [adjustType, setAdjustType] = useState<"entrada" | "saida" | "uso_interno" | "perda">("entrada");
   const [adjustQty, setAdjustQty] = useState("");
   const [adjustReason, setAdjustReason] = useState("");
   const [adjustValidade, setAdjustValidade] = useState("");
   const [adjustLote, setAdjustLote] = useState("");
   const [adjusting, setAdjusting] = useState(false);
+
+  // History panel state
+  const [historyProduct, setHistoryProduct] = useState<ProductDto | null>(null);
+  const [movimentacoes, setMovimentacoes] = useState<EstoqueMovimentacao[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   // ---------------------------------------------------------------------------
   // Data fetching
@@ -182,13 +191,26 @@ export default function StockPage() {
   // Stock adjustment
   // ---------------------------------------------------------------------------
 
-  function openAdjust(product: ProductDto, type: "entrada" | "saida") {
+  function openAdjust(product: ProductDto, type: "entrada" | "saida" | "uso_interno" | "perda") {
     setAdjustProduct(product);
     setAdjustType(type);
     setAdjustQty("");
     setAdjustReason("");
     setAdjustValidade("");
     setAdjustLote("");
+  }
+
+  async function openHistory(product: ProductDto) {
+    setHistoryProduct(product);
+    setLoadingHistory(true);
+    try {
+      const data = await productService.getMovimentacoes(product.id);
+      setMovimentacoes(data);
+    } catch {
+      Toast.error("Erro ao carregar histórico de movimentações.");
+    } finally {
+      setLoadingHistory(false);
+    }
   }
 
   async function handleAdjust() {
@@ -216,11 +238,13 @@ export default function StockPage() {
             }
           : {}),
       });
-      Toast.success(
-        adjustType === "entrada"
-          ? `Entrada de ${qty} unidade(s) registrada com sucesso.`
-          : `Saída de ${qty} unidade(s) registrada com sucesso.`,
-      );
+      const labels: Record<string, string> = {
+        entrada: "Entrada",
+        saida: "Saída",
+        uso_interno: "Uso interno",
+        perda: "Perda",
+      };
+      Toast.success(`${labels[adjustType]} de ${qty} unidade(s) registrada com sucesso.`);
       setAdjustProduct(null);
       await fetchProducts();
     } catch {
@@ -451,6 +475,30 @@ export default function StockPage() {
                             >
                               <ArrowDownCircle size={18} />
                             </button>
+                            <button
+                              type="button"
+                              title="Uso interno"
+                              onClick={() => openAdjust(p, "uso_interno")}
+                              className="rounded-lg p-1.5 text-blue-600 transition hover:bg-blue-50"
+                            >
+                              <Wrench size={18} />
+                            </button>
+                            <button
+                              type="button"
+                              title="Perda / avaria"
+                              onClick={() => openAdjust(p, "perda")}
+                              className="rounded-lg p-1.5 text-orange-600 transition hover:bg-orange-50"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                            <button
+                              type="button"
+                              title="Histórico de movimentações"
+                              onClick={() => openHistory(p)}
+                              className="rounded-lg p-1.5 text-text-secondary transition hover:bg-bg-light"
+                            >
+                              <History size={18} />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -487,7 +535,7 @@ export default function StockPage() {
           <div className="dept-modal-panel w-full max-w-md">
             <div className="flex items-center justify-between border-b border-border-primary px-5 py-4">
               <h2 className="text-lg font-bold text-text-primary">
-                {adjustType === "entrada" ? "Entrada de Estoque" : "Saída de Estoque"}
+                {{ entrada: "Entrada de Estoque", saida: "Saída de Estoque", uso_interno: "Uso Interno", perda: "Registro de Perda" }[adjustType]}
               </h2>
               <button
                 type="button"
@@ -511,31 +559,27 @@ export default function StockPage() {
               </div>
 
               {/* Type toggle */}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setAdjustType("entrada")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition ${
-                    adjustType === "entrada"
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                      : "border-border-primary bg-white text-text-secondary hover:border-emerald-200"
-                  }`}
-                >
-                  <ArrowUpCircle size={16} />
-                  Entrada
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAdjustType("saida")}
-                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition ${
-                    adjustType === "saida"
-                      ? "border-red-300 bg-red-50 text-red-700"
-                      : "border-border-primary bg-white text-text-secondary hover:border-red-200"
-                  }`}
-                >
-                  <ArrowDownCircle size={16} />
-                  Saída
-                </button>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { key: "entrada" as const, label: "Entrada", icon: <ArrowUpCircle size={16} />, active: "border-emerald-300 bg-emerald-50 text-emerald-700", hover: "hover:border-emerald-200" },
+                  { key: "saida" as const, label: "Saída", icon: <ArrowDownCircle size={16} />, active: "border-red-300 bg-red-50 text-red-700", hover: "hover:border-red-200" },
+                  { key: "uso_interno" as const, label: "Uso Interno", icon: <Wrench size={16} />, active: "border-blue-300 bg-blue-50 text-blue-700", hover: "hover:border-blue-200" },
+                  { key: "perda" as const, label: "Perda", icon: <Trash2 size={16} />, active: "border-orange-300 bg-orange-50 text-orange-700", hover: "hover:border-orange-200" },
+                ]).map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setAdjustType(opt.key)}
+                    className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition ${
+                      adjustType === opt.key
+                        ? opt.active
+                        : `border-border-primary bg-white text-text-secondary ${opt.hover}`
+                    }`}
+                  >
+                    {opt.icon}
+                    {opt.label}
+                  </button>
+                ))}
               </div>
 
               {/* Quantity */}
@@ -615,6 +659,14 @@ export default function StockPage() {
                   </span>
                 </div>
               )}
+
+              {(adjustType === "uso_interno" || adjustType === "perda") && (
+                <p className="text-xs text-amber-600">
+                  {adjustType === "uso_interno"
+                    ? "Uso interno: produto consumido internamente (limpeza, refeição, etc.)"
+                    : "Perda: produto danificado, vencido ou extraviado"}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-3 border-t border-border-primary px-5 py-4">
@@ -631,13 +683,76 @@ export default function StockPage() {
                 onClick={handleAdjust}
                 disabled={adjusting}
                 className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white transition ${
-                  adjustType === "entrada"
-                    ? "bg-emerald-600 hover:bg-emerald-700"
-                    : "bg-red-600 hover:bg-red-700"
+                  ({ entrada: "bg-emerald-600 hover:bg-emerald-700", saida: "bg-red-600 hover:bg-red-700", uso_interno: "bg-blue-600 hover:bg-blue-700", perda: "bg-orange-600 hover:bg-orange-700" })[adjustType]
                 } disabled:opacity-60`}
               >
                 {adjusting && <Loader2 size={14} className="animate-spin" />}
-                {adjustType === "entrada" ? "Registrar Entrada" : "Registrar Saída"}
+                {{ entrada: "Registrar Entrada", saida: "Registrar Saída", uso_interno: "Registrar Uso Interno", perda: "Registrar Perda" }[adjustType]}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* History Modal */}
+      {historyProduct && (
+        <div
+          className="dept-modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setHistoryProduct(null); }}
+        >
+          <div className="dept-modal-panel w-full max-w-2xl">
+            <div className="flex items-center justify-between border-b border-border-primary px-5 py-4">
+              <h2 className="text-lg font-bold text-text-primary">
+                <ClipboardList size={18} className="mr-2 inline-block -mt-0.5" />
+                Movimentações — {historyProduct.productName}
+              </h2>
+              <button type="button" onClick={() => setHistoryProduct(null)} className="rounded-lg p-1 text-text-tertiary hover:text-text-primary">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="max-h-[60vh] overflow-y-auto px-5 py-4">
+              {loadingHistory ? (
+                <div className="flex items-center justify-center gap-2 py-12 text-text-secondary">
+                  <Loader2 size={20} className="animate-spin" />
+                  <span>Carregando histórico...</span>
+                </div>
+              ) : movimentacoes.length === 0 ? (
+                <p className="py-12 text-center text-sm text-text-secondary">Nenhuma movimentação registrada.</p>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border-primary text-left text-xs font-semibold uppercase tracking-wider text-text-secondary">
+                      <th className="px-3 py-2">Data</th>
+                      <th className="px-3 py-2">Tipo</th>
+                      <th className="px-3 py-2 text-right">Qtd</th>
+                      <th className="px-3 py-2 text-right">Anterior</th>
+                      <th className="px-3 py-2 text-right">Novo</th>
+                      <th className="px-3 py-2">Motivo</th>
+                      <th className="px-3 py-2">Usuário</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-primary">
+                    {movimentacoes.map((m) => (
+                      <tr key={m.id} className="hover:bg-bg-light/60">
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-text-secondary">{m.criadoEm}</td>
+                        <td className="whitespace-nowrap px-3 py-2">
+                          <MovTipoBadge tipo={m.tipo} />
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums font-semibold">{m.quantidade}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-text-secondary">{m.estoqueAnterior}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-text-primary font-semibold">{m.estoqueNovo}</td>
+                        <td className="max-w-[180px] truncate px-3 py-2 text-xs text-text-secondary" title={m.motivo}>{m.motivo}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-xs text-text-secondary">{m.usuarioNome}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end border-t border-border-primary px-5 py-3">
+              <button type="button" onClick={() => setHistoryProduct(null)} className="btn-cancel px-4 py-2 text-sm">
+                Fechar
               </button>
             </div>
           </div>
@@ -650,6 +765,22 @@ export default function StockPage() {
 // ---------------------------------------------------------------------------
 // KPI Card sub-component
 // ---------------------------------------------------------------------------
+
+const TIPO_BADGE: Record<string, { label: string; cls: string }> = {
+  entrada:     { label: "Entrada",      cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  saida:       { label: "Saída",        cls: "bg-red-50 text-red-700 border-red-200" },
+  uso_interno: { label: "Uso interno",  cls: "bg-blue-50 text-blue-700 border-blue-200" },
+  perda:       { label: "Perda",        cls: "bg-orange-50 text-orange-700 border-orange-200" },
+};
+
+function MovTipoBadge({ tipo }: { tipo: string }) {
+  const cfg = TIPO_BADGE[tipo] ?? { label: tipo, cls: "bg-gray-50 text-gray-700 border-gray-200" };
+  return (
+    <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold ${cfg.cls}`}>
+      {cfg.label}
+    </span>
+  );
+}
 
 function KpiCard({
   icon,

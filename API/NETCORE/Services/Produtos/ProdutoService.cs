@@ -12,7 +12,7 @@ using HORUSPDV_API.Services.Shared;
 
 namespace HORUSPDV_API.Services.Produtos;
 
-public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, LoteAB loteAB) : IProdutoService
+public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, LoteAB loteAB, EstoqueMovimentacaoAB movimentacoesAB) : IProdutoService
 {
     public async Task<List<ProdutoModel>> ListarAsync(string companyId)
         => (await produtosAB.ListarAsync(companyId)).Select(ToModel).ToList();
@@ -85,21 +85,34 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
         return await produtosAB.AtualizarValidadeAsync(companyId, id, parsed);
     }
 
+    private static readonly HashSet<string> TiposValidos = new(StringComparer.OrdinalIgnoreCase)
+        { "entrada", "saida", "uso_interno", "perda" };
+
+    private static bool EhEntrada(string tipo) =>
+        string.Equals(tipo, "entrada", StringComparison.OrdinalIgnoreCase);
+
     public async Task<bool> AjustarEstoqueAsync(
         string companyId,
         string id,
         string tipo,
         decimal quantidade,
+        string? motivo = null,
+        string? usuarioId = null,
+        string? usuarioNome = null,
         string? dataValidade = null,
-        string? numeroLote = null,
-        string? operador = null)
+        string? numeroLote = null)
     {
         if (quantidade <= 0)
             throw new InvalidOperationException("Quantidade deve ser maior que zero.");
 
-        var entrada = string.Equals(tipo, "entrada", StringComparison.OrdinalIgnoreCase);
-        if (!entrada && !string.Equals(tipo, "saida", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Tipo deve ser 'entrada' ou 'saida'.");
+        var tipoNorm = (tipo ?? "").Trim().ToLowerInvariant();
+        if (!TiposValidos.Contains(tipoNorm))
+            throw new InvalidOperationException("Tipo deve ser 'entrada', 'saida', 'uso_interno' ou 'perda'.");
+
+        if (string.IsNullOrWhiteSpace(motivo))
+            throw new InvalidOperationException("O motivo é obrigatório para toda movimentação de estoque.");
+
+        var entrada = EhEntrada(tipoNorm);
 
         // Valida a data antes de mexer no estoque.
         DateTime? validade = null;
@@ -110,18 +123,29 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
             validade = parsed;
         }
 
-        var ok = await produtosAB.AjustarEstoqueAsync(companyId, id, tipo, quantidade);
-        if (ok && entrada)
+        // uso_interno e perda são saídas de estoque no banco
+        var tipoEstoque = entrada ? "entrada" : "saida";
+        var result = await produtosAB.AjustarEstoqueAsync(companyId, id, tipoEstoque, quantidade);
+        if (result is null) return false;
+
+        var (anterior, novo) = result.Value;
+
+        if (entrada)
         {
-            await loteAB.RegistrarEntradaAsync(companyId, id, validade, quantidade, numeroLote, "ajuste", operador);
+            await loteAB.RegistrarEntradaAsync(companyId, id, validade, quantidade, numeroLote, "ajuste", usuarioNome);
         }
-        else if (ok)
+        else
         {
-            // Saída manual (perda, avaria): baixa FEFO nos lotes, começando pelos que vencem primeiro.
+            // Saída / uso interno / perda: baixa FEFO nos lotes.
             await loteAB.ConsumirAjusteSeguroAsync(companyId, id, quantidade);
         }
 
-        return ok;
+        // Registra log de auditoria com todos os dados da operação.
+        await movimentacoesAB.RegistrarAsync(
+            companyId, id, tipoNorm, quantidade, anterior, novo,
+            motivo.Trim(), usuarioId ?? "", usuarioNome ?? "");
+
+        return true;
     }
 
     private static void NormalizeRequest(ProdutoRequest request, string? existingCode = null)

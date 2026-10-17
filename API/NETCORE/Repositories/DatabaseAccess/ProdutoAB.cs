@@ -902,8 +902,9 @@ public class ProdutoAB(Connection connection)
 
     /// <summary>
     /// Ajuste manual de estoque (entrada ou saída). Atualiza ProductQnt e TotalPriceOnProduct.
+    /// Retorna (estoqueAnterior, estoqueNovo) ou null se o produto não existe.
     /// </summary>
-    public async Task<bool> AjustarEstoqueAsync(string companyId, string productId, string tipo, decimal quantidade)
+    public async Task<(decimal anterior, decimal novo)?> AjustarEstoqueAsync(string companyId, string productId, string tipo, decimal quantidade)
     {
         await using var db = await connection.OpenLeaseAsync();
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
@@ -925,7 +926,7 @@ public class ProdutoAB(Connection connection)
             await using (var reader = await select.ExecuteReaderAsync())
             {
                 if (!await reader.ReadAsync())
-                    return false;
+                    return null;
 
                 currentQty = reader.GetDecimal(reader.GetOrdinal("ProductQnt"));
                 unitPrice = reader.GetDecimal(reader.GetOrdinal("ProductUnitPrice"));
@@ -955,7 +956,7 @@ public class ProdutoAB(Connection connection)
             await update.ExecuteNonQueryAsync();
 
             await transaction.CommitAsync();
-            return true;
+            return (currentQty, nextQty);
         }
         catch
         {

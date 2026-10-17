@@ -94,6 +94,7 @@ builder.Services.AddSingleton<FiscalAiService>(services => new FiscalAiService(
     services.GetRequiredService<IWebHostEnvironment>(),
     new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(40), MaxResponseContentBufferSize = 512 * 1024 }));
 builder.Services.AddScoped<LoteAB>();
+builder.Services.AddScoped<EstoqueMovimentacaoAB>();
 builder.Services.AddScoped<AutorizacaoPrecoAB>();
 builder.Services.AddScoped<LoteService>();
 builder.Services.AddScoped<ClienteAB>();

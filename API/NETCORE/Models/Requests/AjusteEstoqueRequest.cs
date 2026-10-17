@@ -2,7 +2,7 @@ namespace HORUSPDV_API.Models.Requests;
 
 public class AjusteEstoqueRequest
 {
-    public string Tipo { get; set; } = "entrada"; // "entrada" ou "saida"
+    public string Tipo { get; set; } = "entrada"; // "entrada", "saida", "uso_interno" ou "perda"
     public decimal Quantidade { get; set; }
     public string Motivo { get; set; } = string.Empty;
 

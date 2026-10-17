@@ -17,7 +17,7 @@ namespace HORUSPDV_API.Controllers.Produtos;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProdutoController(IProdutoService produtoService, ProdutoAB produtos, EmpresaAB empresas, FiscalReferenceTables tabelas, FiscalCestReference cests) : ControllerBase
+public class ProdutoController(IProdutoService produtoService, ProdutoAB produtos, EmpresaAB empresas, EstoqueMovimentacaoAB movimentacoes, FiscalReferenceTables tabelas, FiscalCestReference cests) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(ApiResponse<List<ProdutoModel>>), StatusCodes.Status200OK)]
@@ -197,24 +197,54 @@ public class ProdutoController(IProdutoService produtoService, ProdutoAB produto
                 id,
                 request.Tipo,
                 request.Quantidade,
+                request.Motivo,
+                currentUser.Id,
+                currentUser.Name,
                 request.DataValidade,
-                request.NumeroLote,
-                currentUser.Name);
+                request.NumeroLote);
             if (!ok)
                 return NotFound(new ApiResponse<object> { Success = false, Message = "Produto não encontrado." });
 
+            var tipoNorm = (request.Tipo ?? "").Trim().ToLowerInvariant();
+            var label = tipoNorm switch
+            {
+                "entrada" => "Entrada",
+                "uso_interno" => "Uso interno",
+                "perda" => "Perda",
+                _ => "Saída"
+            };
             return Ok(new ApiResponse<object>
             {
                 Success = true,
-                Message = string.Equals(request.Tipo, "entrada", StringComparison.OrdinalIgnoreCase)
-                    ? $"Entrada de {request.Quantidade} registrada com sucesso."
-                    : $"Saída de {request.Quantidade} registrada com sucesso."
+                Message = $"{label} de {request.Quantidade} registrada com sucesso."
             });
         }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
         }
+    }
+
+    [HttpGet("{id}/movimentacoes")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "estoquista")]
+    [ProducesResponseType(typeof(ApiResponse<List<EstoqueMovimentacaoModel>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListarMovimentacoes(string id)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<List<EstoqueMovimentacaoModel>> { Success = false, Message = "Sessão não encontrada." });
+        var data = await movimentacoes.ListarPorProdutoAsync(currentUser.CompanyId, id);
+        return Ok(new ApiResponse<List<EstoqueMovimentacaoModel>> { Success = true, Message = "Movimentações obtidas com sucesso.", Data = data });
+    }
+
+    [HttpGet("movimentacoes")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "estoquista")]
+    [ProducesResponseType(typeof(ApiResponse<List<EstoqueMovimentacaoModel>>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListarTodasMovimentacoes([FromQuery] string? tipo = null, [FromQuery] int limit = 200)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<List<EstoqueMovimentacaoModel>> { Success = false, Message = "Sessão não encontrada." });
+        var data = await movimentacoes.ListarAsync(currentUser.CompanyId, tipo, limit);
+        return Ok(new ApiResponse<List<EstoqueMovimentacaoModel>> { Success = true, Message = "Movimentações obtidas com sucesso.", Data = data });
     }
 
     [HttpPost("importar-legado")]

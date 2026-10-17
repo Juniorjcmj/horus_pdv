@@ -24,7 +24,9 @@ public interface IProdutoService
         string id,
         string tipo,
         decimal quantidade,
+        string? motivo = null,
+        string? usuarioId = null,
+        string? usuarioNome = null,
         string? dataValidade = null,
-        string? numeroLote = null,
-        string? operador = null);
+        string? numeroLote = null);
 }
