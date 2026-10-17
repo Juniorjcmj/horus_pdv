@@ -4,9 +4,9 @@
 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'EstoqueMovimentacoes')
 BEGIN
     CREATE TABLE EstoqueMovimentacoes (
-        Id              NVARCHAR(36)  NOT NULL PRIMARY KEY,
+        Id              NVARCHAR(40)  NOT NULL PRIMARY KEY,
         CompanyId       NVARCHAR(100) NOT NULL,
-        ProdutoId       NVARCHAR(36)  NOT NULL,
+        ProdutoId       NVARCHAR(40)  NOT NULL,
         Tipo            NVARCHAR(20)  NOT NULL,   -- 'entrada', 'saida', 'uso_interno', 'perda'
         Quantidade      DECIMAL(18,3) NOT NULL,
         EstoqueAnterior DECIMAL(18,3) NOT NULL,
