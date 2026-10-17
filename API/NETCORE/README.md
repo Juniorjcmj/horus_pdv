@@ -48,7 +48,7 @@ Script principal:
 
 Migrações incrementais:
 
-<pre><code class="language-text">DataBase/Migrations/01_*.sql ... 51_*.sql
+<pre><code class="language-text">DataBase/Migrations/01_*.sql ... 52_*.sql
 </code></pre>
 
 ## E-mail
@@ -135,7 +135,22 @@ O middleware ainda aceita `Authorization: Bearer` para compatibilidade, mas o fl
 - `VendaItens`
 - `ModulosMercado`
 - `ModuloMercadoRegistros`
+- `EstoqueMovimentacoes` (log de auditoria de movimentações de estoque)
 - `__MigrationHistory` (controle de migrações versionadas)
+
+## Movimentações de Estoque (Auditoria)
+
+Toda operação de estoque gera um registro na tabela `EstoqueMovimentacoes` (migration 52). Tipos aceitos: `entrada`, `saida`, `uso_interno`, `perda`. O motivo é obrigatório para toda operação.
+
+Endpoints:
+
+- `POST /api/Produto/{id}/ajuste-estoque` — registra movimentação (entrada, saída, uso interno ou perda)
+- `GET /api/Produto/{id}/movimentacoes` — histórico de movimentações de um produto
+- `GET /api/Produto/movimentacoes?tipo=uso_interno&limit=200` — listagem geral com filtro por tipo
+
+Autorização: administrador, gerente, atendente, estoquista.
+
+Campos registrados: tipo, quantidade, estoque anterior/novo, motivo (obrigatório), usuário (id + nome), data/hora UTC.
 
 ## Organização dos Repositórios
 

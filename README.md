@@ -81,6 +81,8 @@ Este repositório está em fase de desenvolvimento. O frontend já conversa com 
 - Minha empresa, licença, perfil e configurações.
 - Gestão de usuários com perfis de acesso (Administrador, Gerente, Atendente, Caixa, Estoquista, Financeiro).
 - Gestão avançada: estoque, abertura/fechamento, compras, trocas/devoluções, CRM/fidelidade e omnichannel.
+- Baixa de estoque por uso interno e perda com log de auditoria completo (quem fez, quando, motivo obrigatório).
+- Histórico de movimentações de estoque por produto com rastreabilidade total.
 - Impressão de etiquetas de gôndola com código de barras (EAN-13, EAN-8, CODE128) e personalização de fonte/espessura.
 - Configuração SMTP por empresa.
 - Tour guiado por tela.
@@ -428,6 +430,26 @@ O sistema possui controle de acesso por perfil com enforcement em múltiplas cam
 
 A página de **Configurações** é restrita ao Administrador. Perfis adicionais (como "financeiro") são somados ao perfil principal e validados a cada requisição no backend, sem cache no JWT.
 
+### Movimentações de Estoque e Auditoria
+
+Toda operação de estoque (entrada, saída, uso interno, perda) é registrada na tabela `EstoqueMovimentacoes` com rastreabilidade completa:
+
+| Campo           | Descrição                                                     |
+| --------------- | ------------------------------------------------------------- |
+| Tipo            | `entrada`, `saida`, `uso_interno` ou `perda`                  |
+| Quantidade      | Volume movimentado                                            |
+| EstoqueAnterior | Quantidade antes da operação                                  |
+| EstoqueNovo     | Quantidade após a operação                                    |
+| Motivo          | Obrigatório — justificativa da movimentação                   |
+| UsuarioId/Nome  | Quem executou a operação                                      |
+| CriadoEm        | Data/hora UTC da operação                                     |
+
+- **Uso interno**: produtos consumidos internamente (limpeza, refeição, manutenção).
+- **Perda**: produtos danificados, vencidos ou extraviados.
+- Ambos decrementam o estoque e seguem a baixa FEFO nos lotes.
+- O motivo é obrigatório para qualquer tipo de movimentação; a API rejeita operações sem motivo.
+- O histórico completo pode ser consultado por produto ou de forma geral, com filtro por tipo.
+
 ## Padrões de Interface
 
 Para escolhas booleanas voltadas ao usuário final, use sempre o controle segmentado `Sim/Não`, no padrão visual da página de Configurações.
@@ -467,7 +489,7 @@ A API usa SQL Server com migrações versionadas no estilo Flyway. O `HorusDatab
 - **Banco existente sem histórico (baseline)**: detecta que as tabelas já existem, cria `__MigrationHistory` e marca todas as migrações como aplicadas sem executar nada.
 - **Banco com histórico**: aplica apenas migrações ainda não registradas, em ordem.
 
-Os scripts de migração ficam em `API/NETCORE/DataBase/Migrations/` numerados sequencialmente (01, 02, ..., 51+). Scripts de seed/dados usam `WHERE NOT EXISTS` ou `MERGE` com proteção para não sobrescrever dados editados manualmente (ex.: preços de venda).
+Os scripts de migração ficam em `API/NETCORE/DataBase/Migrations/` numerados sequencialmente (01, 02, ..., 52+). Scripts de seed/dados usam `WHERE NOT EXISTS` ou `MERGE` com proteção para não sobrescrever dados editados manualmente (ex.: preços de venda).
 
 Banco padrão:
 
@@ -482,6 +504,7 @@ Tabelas principais:
 - `CaixaSessoes`
 - `Vendas`, `VendaItens`
 - `ModulosMercado`, `ModuloMercadoRegistros`
+- `EstoqueMovimentacoes` (log de auditoria de movimentações de estoque)
 - `__MigrationHistory` (controle de migrações)
 
 Script principal:
