@@ -53,6 +53,13 @@ export default function GondolaLabelModal({
   const [showInternalCode, setShowInternalCode] = useState<boolean>(true);
   const [isPrinting, setIsPrinting] = useState<boolean>(false);
 
+  // Personalização de fonte e barcode para impressão
+  const [printFontSize, setPrintFontSize] = useState<number>(15);
+  const [printStroke, setPrintStroke] = useState<number>(1.0);
+  const [printPriceSize, setPrintPriceSize] = useState<number>(30);
+  const [printBarcodeWidth, setPrintBarcodeWidth] = useState<number>(3);
+  const [printBarcodeHeight, setPrintBarcodeHeight] = useState<number>(46);
+
   // Busca para adicionar novos produtos à fila
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [showSearchDropdown, setShowSearchDropdown] = useState<boolean>(false);
@@ -369,6 +376,61 @@ export default function GondolaLabelModal({
                   <span>Exibir código interno / PLU</span>
                 </label>
               </div>
+
+              {/* PERSONALIZAÇÃO DA FONTE E BARCODE */}
+              <div className="space-y-2.5 pt-2 border-t border-border-primary/60">
+                <span className="text-[11px] font-bold uppercase tracking-wide text-text-secondary">Personalizar Impressão</span>
+
+                <label className="block">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-[11px] font-medium text-text-secondary">Fonte da descrição</span>
+                    <span className="text-[10px] font-bold text-text-primary tabular-nums">{printFontSize}px</span>
+                  </div>
+                  <input type="range" min={10} max={24} step={1} value={printFontSize}
+                    onChange={(e) => setPrintFontSize(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5" />
+                </label>
+
+                <label className="block">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-[11px] font-medium text-text-secondary">Espessura da fonte</span>
+                    <span className="text-[10px] font-bold text-text-primary tabular-nums">{printStroke.toFixed(1)}px</span>
+                  </div>
+                  <input type="range" min={0} max={2.5} step={0.1} value={printStroke}
+                    onChange={(e) => setPrintStroke(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5" />
+                </label>
+
+                <label className="block">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-[11px] font-medium text-text-secondary">Tamanho do preço</span>
+                    <span className="text-[10px] font-bold text-text-primary tabular-nums">{printPriceSize}px</span>
+                  </div>
+                  <input type="range" min={18} max={48} step={1} value={printPriceSize}
+                    onChange={(e) => setPrintPriceSize(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5" />
+                </label>
+
+                <label className="block">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-[11px] font-medium text-text-secondary">Largura do código de barras</span>
+                    <span className="text-[10px] font-bold text-text-primary tabular-nums">{printBarcodeWidth.toFixed(1)}</span>
+                  </div>
+                  <input type="range" min={1} max={5} step={0.2} value={printBarcodeWidth}
+                    onChange={(e) => setPrintBarcodeWidth(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5" />
+                </label>
+
+                <label className="block">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-[11px] font-medium text-text-secondary">Altura do código de barras</span>
+                    <span className="text-[10px] font-bold text-text-primary tabular-nums">{printBarcodeHeight}px</span>
+                  </div>
+                  <input type="range" min={20} max={80} step={2} value={printBarcodeHeight}
+                    onChange={(e) => setPrintBarcodeHeight(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5" />
+                </label>
+              </div>
             </div>
 
             {/* LISTA DA FILA */}
@@ -527,6 +589,7 @@ export default function GondolaLabelModal({
                         showDate={showDate}
                         showInternalCode={showInternalCode}
                         todayFormatted={todayFormatted}
+                        printStyle={{ fontSize: printFontSize, stroke: printStroke, priceSize: printPriceSize, barcodeWidth: printBarcodeWidth, barcodeHeight: printBarcodeHeight }}
                       />
                     ))}
                   </div>
@@ -628,6 +691,7 @@ export default function GondolaLabelModal({
                 showInternalCode={showInternalCode}
                 todayFormatted={todayFormatted}
                 isPrintMode
+                printStyle={{ fontSize: printFontSize, stroke: printStroke, priceSize: printPriceSize, barcodeWidth: printBarcodeWidth, barcodeHeight: printBarcodeHeight }}
               />
             </div>
           ))}
@@ -635,6 +699,15 @@ export default function GondolaLabelModal({
       </div>
     </div>
   );
+}
+
+/** Configurações de personalização que o usuário ajusta nos sliders. */
+interface LabelPrintStyle {
+  fontSize: number;
+  stroke: number;
+  priceSize: number;
+  barcodeWidth: number;
+  barcodeHeight: number;
 }
 
 /**
@@ -646,12 +719,14 @@ function GondolaLabelCard({
   showInternalCode,
   todayFormatted,
   isPrintMode = false,
+  printStyle,
 }: {
   product: ProductDto;
   showDate: boolean;
   showInternalCode: boolean;
   todayFormatted: string;
   isPrintMode?: boolean;
+  printStyle?: LabelPrintStyle;
 }) {
   // Código de barras a ser renderizado: prioriza EAN-13/GTIN válido, senão productCode
   const barcodeToRender = useMemo(() => {
@@ -672,6 +747,8 @@ function GondolaLabelCard({
     };
   }, [product.productSalePrice]);
 
+  const p = isPrintMode && printStyle ? printStyle : null;
+
   return (
     <div
       className={`flex flex-col justify-between rounded-sm border border-gray-300 bg-white p-2 text-black transition-all ${
@@ -682,11 +759,9 @@ function GondolaLabelCard({
       <div className="border-b border-gray-200 pb-1">
         <h4
           className={`line-clamp-2 uppercase leading-tight tracking-tight text-gray-950 ${
-            isPrintMode
-              ? "text-[15px] font-[900]"
-              : "text-[11px] font-black"
+            p ? "font-[900]" : "text-[11px] font-black"
           }`}
-          style={isPrintMode ? { WebkitTextStroke: "1px black" } : undefined}
+          style={p ? { fontSize: `${p.fontSize}px`, WebkitTextStroke: `${p.stroke}px black` } : undefined}
         >
           {product.productName}
         </h4>
@@ -698,11 +773,11 @@ function GondolaLabelCard({
         <div className="flex flex-col justify-center min-w-0 max-w-[55%]">
           <BarcodeSvg
             value={barcodeToRender}
-            height={isPrintMode ? 46 : 24}
-            width={isPrintMode ? 3 : 1.2}
-            fontSize={isPrintMode ? 14 : 9}
+            height={p ? p.barcodeHeight : 24}
+            width={p ? p.barcodeWidth : 1.2}
+            fontSize={p ? Math.round(p.fontSize * 0.8) : 9}
             margin={0}
-            className={isPrintMode ? "" : "w-full"}
+            className={p ? "" : "w-full"}
           />
         </div>
 
@@ -710,17 +785,26 @@ function GondolaLabelCard({
         <div className="flex flex-col items-end shrink-0 pl-1">
           <div
             className={`flex items-baseline font-[900] ${
-              isPrintMode ? "text-black" : "text-red-700 font-black"
+              p ? "text-black" : "text-red-700 font-black"
             }`}
-            style={isPrintMode ? { WebkitTextStroke: "1.2px black" } : undefined}
+            style={p ? { WebkitTextStroke: `${p.stroke * 1.2}px black` } : undefined}
           >
-            <span className={`font-[900] mr-0.5 ${isPrintMode ? "text-[14px] text-black" : "text-[10px] text-gray-700"}`}>R$</span>
-            <span className={`leading-none tracking-tight ${isPrintMode ? "text-3xl" : "text-xl"}`}>{priceParts.inteiro}</span>
-            <span className={`leading-none font-[900] ${isPrintMode ? "text-base" : "text-xs"}`}>,{priceParts.centavos}</span>
+            <span
+              className="font-[900] mr-0.5"
+              style={p ? { fontSize: `${p.priceSize * 0.45}px`, color: "black" } : { fontSize: "10px", color: "#374151" }}
+            >R$</span>
+            <span
+              className="leading-none tracking-tight"
+              style={p ? { fontSize: `${p.priceSize}px` } : { fontSize: "1.25rem" }}
+            >{priceParts.inteiro}</span>
+            <span
+              className="leading-none font-[900]"
+              style={p ? { fontSize: `${p.priceSize * 0.5}px` } : { fontSize: "0.75rem" }}
+            >,{priceParts.centavos}</span>
           </div>
           <span
-            className={`font-[900] uppercase ${isPrintMode ? "text-[12px] text-black" : "text-[9px] text-gray-700"}`}
-            style={isPrintMode ? { WebkitTextStroke: "0.6px black" } : undefined}
+            className="font-[900] uppercase"
+            style={p ? { fontSize: `${p.priceSize * 0.38}px`, color: "black", WebkitTextStroke: `${p.stroke * 0.6}px black` } : { fontSize: "9px", color: "#374151" }}
           >
             {product.unidadeComercial || "UN"}
           </span>
@@ -730,9 +814,9 @@ function GondolaLabelCard({
       {/* RODAPÉ: CÓDIGO INTERNO & DATA */}
       <div
         className={`flex items-center justify-between border-t border-gray-200 pt-0.5 ${
-          isPrintMode ? "text-[10px] font-[900] text-black" : "text-[8px] font-medium text-gray-500"
+          p ? "font-[900] text-black" : "text-[8px] font-medium text-gray-500"
         }`}
-        style={isPrintMode ? { WebkitTextStroke: "0.5px black" } : undefined}
+        style={p ? { fontSize: `${p.fontSize * 0.65}px`, WebkitTextStroke: `${p.stroke * 0.4}px black` } : undefined}
       >
         {showInternalCode ? (
           <span>Cód: {product.productCode}</span>
