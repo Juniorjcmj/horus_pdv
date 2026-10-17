@@ -73,6 +73,7 @@ export default function BarcodeSvg({
           displayValue,
           fontSize,
           font: "monospace",
+          fontOptions: "bold",
           textMargin: 1,
           margin,
           background: "transparent",

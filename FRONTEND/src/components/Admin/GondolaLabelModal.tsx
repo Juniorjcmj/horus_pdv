@@ -680,7 +680,14 @@ function GondolaLabelCard({
     >
       {/* NOME DO PRODUTO (EM DESTAQUE, 2 LINHAS) */}
       <div className="border-b border-gray-200 pb-1">
-        <h4 className="line-clamp-2 text-[11px] font-black uppercase leading-tight tracking-tight text-gray-950">
+        <h4
+          className={`line-clamp-2 uppercase leading-tight tracking-tight text-gray-950 ${
+            isPrintMode
+              ? "text-[13px] font-[900]"
+              : "text-[11px] font-black"
+          }`}
+          style={isPrintMode ? { WebkitTextStroke: "0.4px black" } : undefined}
+        >
           {product.productName}
         </h4>
       </div>
@@ -691,9 +698,9 @@ function GondolaLabelCard({
         <div className="flex flex-col justify-center min-w-0 max-w-[55%]">
           <BarcodeSvg
             value={barcodeToRender}
-            height={isPrintMode ? 34 : 24}
-            width={isPrintMode ? 1.8 : 1.2}
-            fontSize={isPrintMode ? 11 : 9}
+            height={isPrintMode ? 38 : 24}
+            width={isPrintMode ? 2.2 : 1.2}
+            fontSize={isPrintMode ? 12 : 9}
             margin={0}
             className={isPrintMode ? "" : "w-full"}
           />
@@ -701,19 +708,32 @@ function GondolaLabelCard({
 
         {/* Lado Direito: Preço Chamativo de Gôndola */}
         <div className="flex flex-col items-end shrink-0 pl-1">
-          <div className="flex items-baseline text-red-700 font-black">
-            <span className="text-[10px] font-bold mr-0.5 text-gray-700">R$</span>
-            <span className="text-xl leading-none tracking-tight">{priceParts.inteiro}</span>
-            <span className="text-xs leading-none font-bold">,{priceParts.centavos}</span>
+          <div
+            className={`flex items-baseline font-[900] ${
+              isPrintMode ? "text-black" : "text-red-700 font-black"
+            }`}
+            style={isPrintMode ? { WebkitTextStroke: "0.6px black" } : undefined}
+          >
+            <span className={`font-[900] mr-0.5 ${isPrintMode ? "text-[12px] text-black" : "text-[10px] text-gray-700"}`}>R$</span>
+            <span className={`leading-none tracking-tight ${isPrintMode ? "text-2xl" : "text-xl"}`}>{priceParts.inteiro}</span>
+            <span className={`leading-none font-[900] ${isPrintMode ? "text-sm" : "text-xs"}`}>,{priceParts.centavos}</span>
           </div>
-          <span className="text-[9px] font-extrabold uppercase text-gray-700">
+          <span
+            className={`font-[900] uppercase ${isPrintMode ? "text-[10px] text-black" : "text-[9px] text-gray-700"}`}
+            style={isPrintMode ? { WebkitTextStroke: "0.3px black" } : undefined}
+          >
             {product.unidadeComercial || "UN"}
           </span>
         </div>
       </div>
 
       {/* RODAPÉ: CÓDIGO INTERNO & DATA */}
-      <div className="flex items-center justify-between border-t border-gray-200 pt-0.5 text-[8px] font-medium text-gray-500">
+      <div
+        className={`flex items-center justify-between border-t border-gray-200 pt-0.5 ${
+          isPrintMode ? "text-[9px] font-bold text-black" : "text-[8px] font-medium text-gray-500"
+        }`}
+        style={isPrintMode ? { WebkitTextStroke: "0.2px black" } : undefined}
+      >
         {showInternalCode ? (
           <span>Cód: {product.productCode}</span>
         ) : (
