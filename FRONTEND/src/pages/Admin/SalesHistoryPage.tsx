@@ -12,6 +12,7 @@ import {
   Ban,
   ChevronDown,
   ChevronRight,
+  Edit3,
   FileText,
   Printer,
   QrCode,
@@ -26,6 +27,7 @@ import PageHeader from "@/components/Admin/PageHeader";
 import ReceiptPreviewModal, { type SaleReceipt } from "@/components/Admin/ReceiptPreviewModal";
 import RowActionsMenu from "@/components/Admin/RowActionsMenu";
 import SaleCancelModal from "@/components/Admin/SaleCancelModal";
+import SaleCorrectionModal from "@/components/Admin/SaleCorrectionModal";
 import TablePagination from "@/components/Pagination/TablePagination";
 import { Toast } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
@@ -135,6 +137,7 @@ export default function SalesHistoryPage() {
   const [loadingDanfeSaleNumber, setLoadingDanfeSaleNumber] = useState<string | null>(null);
   const [reemitindoIds, setReemitindoIds] = useState<Set<string>>(() => new Set());
   const [saleToCancel, setSaleToCancel] = useState<SaleHistoryRow | null>(null);
+  const [saleToCorrect, setSaleToCorrect] = useState<SaleHistoryRow | null>(null);
   const [statusFilter, setStatusFilter] = useState<"todas" | "finalizadas" | "canceladas">("todas");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -561,7 +564,7 @@ export default function SalesHistoryPage() {
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              Concluídas ({salesHistory.filter((s) => s.status?.toLowerCase() !== "cancelada").length})
+              Concluídas ({salesHistory.filter((s) => !isCancelledStatus(s.status)).length})
             </button>
             <button
               type="button"
@@ -575,7 +578,7 @@ export default function SalesHistoryPage() {
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              Canceladas ({salesHistory.filter((s) => s.status?.toLowerCase() === "cancelada").length})
+              Canceladas ({salesHistory.filter((s) => isCancelledStatus(s.status)).length})
             </button>
           </div>
         </div>
@@ -924,16 +927,18 @@ export default function SalesHistoryPage() {
               {paginatedSales.map((sale) => {
                 const fiscal = fiscalBySale.get(sale.saleNumber);
                 const isCancelled = sale.status?.toLowerCase() === "cancelada";
+                const isCorrected = sale.status?.toLowerCase() === "corrigida";
+                const isInactive = isCancelled || isCorrected;
                 return (
                 <tr
                   key={`${sale.saleNumber}-${sale.productCode}`}
                   className={`border-t border-border-primary transition-colors ${
                     isCancelled ? "bg-rose-500/[0.04] dark:bg-rose-500/[0.07]" : ""
-                  }`}
+                  }${isCorrected ? "bg-amber-500/[0.04] dark:bg-amber-500/[0.07]" : ""}`}
                 >
                   <td className="px-3 py-3 font-semibold text-text-primary">
                     <div className="flex flex-col gap-1">
-                      <span className={isCancelled ? "line-through text-text-tertiary" : ""}>
+                      <span className={isInactive ? "line-through text-text-tertiary" : ""}>
                         {sale.saleNumber}
                       </span>
                       {isCancelled && (
@@ -946,11 +951,21 @@ export default function SalesHistoryPage() {
                           <Ban size={10} /> Cancelada
                         </span>
                       )}
+                      {isCorrected && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400 border border-amber-500/20 w-fit"
+                          title={`Corrigida por ${sale.canceladoPorSupervisorNome || "Financeiro"}${
+                            sale.canceladoJustificativa ? `: ${sale.canceladoJustificativa}` : ""
+                          }`}
+                        >
+                          <Edit3 size={10} /> Corrigida
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-3 py-3">
                     <span
-                      className={`block break-words leading-snug ${isCancelled ? "line-through text-text-tertiary" : ""}`}
+                      className={`block break-words leading-snug ${isInactive ? "line-through text-text-tertiary" : ""}`}
                       title={sale.customerName}
                     >
                       {sale.customerName}
@@ -972,7 +987,7 @@ export default function SalesHistoryPage() {
                     R$ {formatMoneyBr(getUnitPrice(sale))}
                   </td>
                   <td className="px-3 py-3 text-right font-semibold text-text-primary">
-                    <span className={isCancelled ? "line-through text-text-tertiary" : ""}>
+                    <span className={isInactive ? "line-through text-text-tertiary" : ""}>
                       {Number.isFinite(getItemTotal(sale)) ? `R$ ${formatMoneyBr(getItemTotal(sale))}` : "Valor não informado"}
                     </span>
                   </td>
@@ -1027,11 +1042,21 @@ export default function SalesHistoryPage() {
                         },
                         {
                           key: "cancelSale",
-                          label: isCancelled ? "Venda Cancelada" : "Cancelar Venda (Supervisor)",
-                          icon: <Ban size={13} className={isCancelled ? "text-text-tertiary" : "text-rose-500"} />,
-                          disabled: isCancelled,
+                          label: isInactive ? (isCorrected ? "Venda Corrigida" : "Venda Cancelada") : "Cancelar Venda (Supervisor)",
+                          icon: <Ban size={13} className={isInactive ? "text-text-tertiary" : "text-rose-500"} />,
+                          disabled: isInactive,
                           onClick: () => setSaleToCancel(sale),
                         },
+                        ...(canManageFiscal && !isCancelled && sale.status?.toLowerCase() !== "corrigida"
+                          ? [
+                              {
+                                key: "correctSale",
+                                label: "Corrigir Venda (Financeiro)",
+                                icon: <Edit3 size={13} className="text-amber-500" />,
+                                onClick: () => setSaleToCorrect(sale),
+                              },
+                            ]
+                          : []),
                         ...(fiscal && (fiscal.status === FISCAL_STATUS.Rejeitado || fiscal.motivoStatus)
                           ? [
                               {
@@ -1127,6 +1152,19 @@ export default function SalesHistoryPage() {
           onClose={() => setSaleToCancel(null)}
           onSuccess={() => {
             setSaleToCancel(null);
+            void loadSalesHistory();
+            loadFiscalStatus();
+          }}
+        />
+      ) : null}
+
+      {saleToCorrect ? (
+        <SaleCorrectionModal
+          isOpen={Boolean(saleToCorrect)}
+          saleNumber={saleToCorrect.saleNumber}
+          onClose={() => setSaleToCorrect(null)}
+          onSuccess={() => {
+            setSaleToCorrect(null);
             void loadSalesHistory();
             loadFiscalStatus();
           }}

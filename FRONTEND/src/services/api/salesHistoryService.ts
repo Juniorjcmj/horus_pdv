@@ -165,6 +165,21 @@ export type RegisterSaleResponse = {
   isReplay?: boolean;
 };
 
+export type CorrectSalePayload = {
+  produtosParaRemover: string[];
+  justificativa: string;
+};
+
+export type CorrectSaleResult = {
+  vendaOriginalNumber: string;
+  novaVendaNumber: string;
+  corrigidaEm: string;
+  financeiroNome: string;
+  itensRemovidos: number;
+  novoTotal: string;
+  fiscalQueued: boolean;
+};
+
 export const salesHistoryService = {
   /** `caixaSessaoId` limita a lista às vendas daquele turno de caixa (tela "Vendas do Caixa Atual"). */
   async list(desde?: string, caixaSessaoId?: string) {
@@ -219,6 +234,13 @@ export const salesHistoryService = {
       method: "POST",
       body: JSON.stringify(payload),
     });
+    return response;
+  },
+  async correct(saleNumber: string, payload: CorrectSalePayload) {
+    const response = await apiRequest<CorrectSaleResult>(
+      `${HISTORICO_VENDAS_API_URL}/${encodeURIComponent(saleNumber)}/corrigir`,
+      { method: "POST", body: JSON.stringify(payload) },
+    );
     return response;
   },
   async listCancellations(params?: { de?: string; ate?: string }) {

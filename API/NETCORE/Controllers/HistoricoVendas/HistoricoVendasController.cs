@@ -414,6 +414,77 @@ public class HistoricoVendasController(
         });
     }
 
+    [HttpPost("{saleNumber}/corrigir")]
+    [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa", "financeiro")]
+    public async Task<IActionResult> CorrigirVenda(string saleNumber, [FromBody] CorrecaoVendaRequest request)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        if (!currentUser.TemAcessoFinanceiro)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
+            {
+                Success = false,
+                Message = "Apenas usuários com perfil financeiro podem corrigir vendas."
+            });
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Justificativa) || request.Justificativa.Trim().Length < 5)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Informe uma justificativa de no mínimo 5 caracteres." });
+        }
+
+        if (request.ProdutosParaRemover.Count == 0)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = "Selecione ao menos um produto para remover." });
+        }
+
+        try
+        {
+            var resultado = await historicoVendasAB.CorrigirVendaAsync(
+                currentUser.CompanyId,
+                saleNumber,
+                request.ProdutosParaRemover,
+                currentUser.Id,
+                currentUser.Name,
+                request.Justificativa.Trim());
+
+            // Enfileira NFC-e para a nova venda se houver emitente fiscal configurado
+            try
+            {
+                var issuer = await emitentes.ObterAsync(currentUser.CompanyId);
+                if (issuer is not null)
+                {
+                    var novaVendaId = $"sale-{currentUser.CompanyId}-{resultado.NovaVendaNumber}";
+                    var listaFormas = new List<string>();
+                    var deveEmitir = await regrasEmissaoNfceAB.AvaliarEmissaoParaVendaAsync(
+                        currentUser.CompanyId, novaVendaId, "", listaFormas, "");
+                    if (deveEmitir)
+                    {
+                        await documentoFiscalAB.EnfileirarAsync(currentUser.CompanyId, novaVendaId);
+                        resultado.FiscalQueued = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Falha ao enfileirar NFC-e para venda corrigida {NovaVendaNumber}.", resultado.NovaVendaNumber);
+            }
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = $"Venda #{saleNumber} corrigida com sucesso. Nova venda: #{resultado.NovaVendaNumber}.",
+                Data = resultado
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
+    }
+
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
 }

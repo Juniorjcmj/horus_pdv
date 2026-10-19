@@ -24,6 +24,7 @@ public static class AuditEventTypes
     public const string EstoqueRuptura = "EstoqueRuptura";
     public const string VendaCancelada = "VendaCancelada";
     public const string AlteracaoPreco = "AlteracaoPreco";
+    public const string VendaCorrigida = "VendaCorrigida";
 }
 
 public class AuditLogAB(Connection connection)

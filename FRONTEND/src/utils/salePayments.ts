@@ -51,5 +51,5 @@ export function buildPayments(
 
 export function isCancelledStatus(status?: string | null): boolean {
   const s = (status ?? "").toLowerCase();
-  return s.startsWith("cancel") || s.startsWith("estorn");
+  return s.startsWith("cancel") || s.startsWith("estorn") || s === "corrigida";
 }

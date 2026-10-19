@@ -13,13 +13,17 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   Banknote,
+  Calendar,
   Clock3,
   Eye,
+  Filter,
   LockKeyhole,
   RefreshCw,
   ShieldCheck,
   UnlockKeyhole,
+  User,
   Wallet,
+  X,
 } from "lucide-react";
 import { type ClipboardEvent, useCallback, useEffect, useMemo, useState } from "react";
 import CashClosingSummaryModal, { printCashClosingReceipt } from "@/components/Admin/CashClosingSummaryModal";
@@ -64,6 +68,19 @@ function formatDateTime(value?: string | null) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/** Extrai "AAAA-MM-DD" de um datetime vindo da API (ISO ou dd/MM/yyyy HH:mm). */
+function parseSessionDate(value?: string | null): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  // dd/MM/yyyy ...
+  const brMatch = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+  // ISO
+  const date = new Date(trimmed);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
 }
 
 function SessionRow({
@@ -139,6 +156,9 @@ export default function CashRegisterPage() {
   const [viewingSession, setViewingSession] = useState<CashRegisterSessionDto | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [filterDateFrom, setFilterDateFrom] = useState("");
+  const [filterDateTo, setFilterDateTo] = useState("");
+  const [filterOperator, setFilterOperator] = useState("");
 
   const currentSession = cashStatus?.currentSession ?? null;
   const canSell = cashStatus?.canSell === true;
@@ -154,13 +174,44 @@ export default function CashRegisterPage() {
     if (cashStatus?.state === "expirado") return "border-primary/30 bg-primary/10 text-primary";
     return "border-accent/30 bg-accent/10 text-accent";
   }, [canSell, cashStatus?.state]);
-  const historyRows = useMemo(() => cashStatus?.history ?? [], [cashStatus?.history]);
+  const allHistoryRows = useMemo(() => cashStatus?.history ?? [], [cashStatus?.history]);
+
+  const operatorOptions = useMemo(() => {
+    const names = new Set<string>();
+    for (const s of allHistoryRows) if (s.operatorName) names.add(s.operatorName);
+    return Array.from(names).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [allHistoryRows]);
+
+  const historyRows = useMemo(() => {
+    let list = allHistoryRows;
+    if (filterDateFrom) {
+      list = list.filter((s) => {
+        const d = parseSessionDate(s.openedAt);
+        return d ? d >= filterDateFrom : true;
+      });
+    }
+    if (filterDateTo) {
+      list = list.filter((s) => {
+        const d = parseSessionDate(s.openedAt);
+        return d ? d <= filterDateTo : true;
+      });
+    }
+    if (filterOperator) {
+      list = list.filter((s) => s.operatorName === filterOperator);
+    }
+    return list;
+  }, [allHistoryRows, filterDateFrom, filterDateTo, filterOperator]);
+
+  const hasActiveFilters = !!(filterDateFrom || filterDateTo || filterOperator);
+
   const totalPages = Math.max(1, Math.ceil(historyRows.length / itemsPerPage));
   const safeCurrentPage = Math.min(currentPage, totalPages);
   const paginatedHistoryRows = useMemo(() => {
     const start = (safeCurrentPage - 1) * itemsPerPage;
     return historyRows.slice(start, start + itemsPerPage);
   }, [historyRows, itemsPerPage, safeCurrentPage]);
+
+  useEffect(() => { setCurrentPage(1); }, [filterDateFrom, filterDateTo, filterOperator]);
 
   const expectedCash = currentSession?.expectedCashAmount || "0,00";
   const difference = useMemo(
@@ -584,6 +635,64 @@ export default function CashRegisterPage() {
           <h2 className="text-lg font-semibold text-text-primary">Histórico de caixa</h2>
           <p className="text-sm text-text-secondary">Últimas aberturas e fechamentos, com diferença de conferência.</p>
         </div>
+
+        {/* Filtros de data e operador */}
+        <div className="flex flex-col gap-3 border-b border-border-primary px-4 py-3 md:flex-row md:items-end">
+          <div className="flex items-center gap-2">
+            <Calendar size={16} className="shrink-0 text-text-tertiary" />
+            <label className="text-xs text-text-secondary">
+              De
+              <input
+                type="date"
+                value={filterDateFrom}
+                onChange={(e) => setFilterDateFrom(e.target.value)}
+                className="input-field ml-1 py-1.5 text-sm"
+              />
+            </label>
+            <label className="text-xs text-text-secondary">
+              Até
+              <input
+                type="date"
+                value={filterDateTo}
+                onChange={(e) => setFilterDateTo(e.target.value)}
+                className="input-field ml-1 py-1.5 text-sm"
+              />
+            </label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <User size={16} className="shrink-0 text-text-tertiary" />
+            <select
+              aria-label="Filtrar por operador"
+              value={filterOperator}
+              onChange={(e) => setFilterOperator(e.target.value)}
+              className="select-field py-1.5 text-sm"
+            >
+              <option value="">Todos os operadores</option>
+              {operatorOptions.map((name) => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </select>
+          </div>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={() => { setFilterDateFrom(""); setFilterDateTo(""); setFilterOperator(""); }}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-text-secondary hover:text-text-primary"
+            >
+              <X size={14} />
+              Limpar filtros
+            </button>
+          )}
+
+          {hasActiveFilters && (
+            <span className="text-xs text-text-secondary">
+              {historyRows.length} de {allHistoryRows.length} registro(s)
+            </span>
+          )}
+        </div>
+
         <TableScrollArea label="Movimentações de caixa" className="overflow-x-auto">
           <table className="min-w-[960px] w-full text-sm">
             <thead className="bg-bg-gray-theme text-xs uppercase text-text-secondary">

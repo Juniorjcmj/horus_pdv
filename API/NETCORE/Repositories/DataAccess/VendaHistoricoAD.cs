@@ -98,6 +98,17 @@ public class VendaRegistroResultadoAD
     public string? FiadoClienteId { get; set; }
 }
 
+public class CorrecaoVendaResultadoAD
+{
+    public string VendaOriginalNumber { get; set; } = string.Empty;
+    public string NovaVendaNumber { get; set; } = string.Empty;
+    public string CorrigidaEm { get; set; } = string.Empty;
+    public string FinanceiroNome { get; set; } = string.Empty;
+    public int ItensRemovidos { get; set; }
+    public string NovoTotal { get; set; } = string.Empty;
+    public bool FiscalQueued { get; set; }
+}
+
 public class EstoqueRupturaAvisoAD
 {
     public string ProductCode { get; set; } = string.Empty;

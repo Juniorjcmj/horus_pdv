@@ -1336,6 +1336,360 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         return dict.Values.ToList();
     }
 
+    public async Task<CorrecaoVendaResultadoAD> CorrigirVendaAsync(
+        string companyId,
+        string saleNumber,
+        List<string> produtosParaRemover,
+        string financeiroId,
+        string financeiroNome,
+        string justificativa)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+
+        string vendaId;
+        string customerName, customerCpf, paymentType, operatorName;
+        decimal totalVenda;
+        string? caixaSessaoId = null;
+        var itensParaEstornar = new List<(string ProductCode, decimal Quantity)>();
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+
+        try
+        {
+            // 1. Localiza a venda com bloqueio exclusivo
+            const string sqlVenda = """
+                SELECT Id, ISNULL(Status, 'finalizada') AS Status, TotalAmount, PaymentType,
+                       CustomerName, CustomerCpf, OperatorName, CaixaSessaoId
+                FROM Vendas WITH (UPDLOCK, ROWLOCK)
+                WHERE CompanyId = @CompanyId AND SaleNumber = @SaleNumber;
+                """;
+            await using var cmdVenda = new SqlCommand(sqlVenda, db, transaction);
+            cmdVenda.Parameters.AddWithValue("@CompanyId", companyId);
+            cmdVenda.Parameters.AddWithValue("@SaleNumber", saleNumber);
+            await using var readerVenda = await cmdVenda.ExecuteReaderAsync();
+            if (!await readerVenda.ReadAsync())
+            {
+                await readerVenda.CloseAsync();
+                throw new InvalidOperationException("Venda não encontrada.");
+            }
+
+            vendaId = readerVenda.GetString(readerVenda.GetOrdinal("Id"));
+            var statusAtual = readerVenda.GetString(readerVenda.GetOrdinal("Status"));
+            totalVenda = readerVenda.GetDecimal(readerVenda.GetOrdinal("TotalAmount"));
+            customerName = ReadString(readerVenda, "CustomerName");
+            customerCpf = ReadString(readerVenda, "CustomerCpf");
+            paymentType = ReadString(readerVenda, "PaymentType");
+            operatorName = ReadString(readerVenda, "OperatorName");
+            caixaSessaoId = ReadNullableString(readerVenda, "CaixaSessaoId");
+            await readerVenda.CloseAsync();
+
+            if (!statusAtual.Equals("finalizada", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Apenas vendas finalizadas podem ser corrigidas. Status atual: {statusAtual}.");
+            }
+
+            // 2. Carrega todos os itens da venda
+            const string sqlItens = """
+                SELECT vi.Id, vi.ProductCode, vi.ProductName, vi.Quantity, vi.UnitPrice, vi.Desconto, vi.PromocaoId, vi.CostPrice, vi.ItemTotal
+                FROM VendaItens vi
+                INNER JOIN Vendas v ON v.Id = vi.VendaId
+                WHERE vi.VendaId = @VendaId AND v.CompanyId = @CompanyId
+                ORDER BY vi.Id;
+                """;
+            var todosItens = new List<(string Id, string ProductCode, string ProductName, decimal Quantity, decimal UnitPrice, decimal Desconto, string? PromocaoId, decimal CostPrice, decimal ItemTotal)>();
+            await using (var cmdItens = new SqlCommand(sqlItens, db, transaction))
+            {
+                cmdItens.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdItens.Parameters.AddWithValue("@CompanyId", companyId);
+                await using var readerItens = await cmdItens.ExecuteReaderAsync();
+                while (await readerItens.ReadAsync())
+                {
+                    todosItens.Add((
+                        ReadString(readerItens, "Id"),
+                        ReadString(readerItens, "ProductCode"),
+                        ReadString(readerItens, "ProductName"),
+                        readerItens.GetDecimal(readerItens.GetOrdinal("Quantity")),
+                        readerItens.GetDecimal(readerItens.GetOrdinal("UnitPrice")),
+                        readerItens.IsDBNull(readerItens.GetOrdinal("Desconto")) ? 0m : readerItens.GetDecimal(readerItens.GetOrdinal("Desconto")),
+                        ReadNullableString(readerItens, "PromocaoId"),
+                        readerItens.IsDBNull(readerItens.GetOrdinal("CostPrice")) ? 0m : readerItens.GetDecimal(readerItens.GetOrdinal("CostPrice")),
+                        readerItens.GetDecimal(readerItens.GetOrdinal("ItemTotal"))
+                    ));
+                }
+            }
+
+            if (todosItens.Count == 0)
+                throw new InvalidOperationException("Venda sem itens.");
+
+            var removerSet = new HashSet<string>(produtosParaRemover.Select(c => c.Trim()), StringComparer.OrdinalIgnoreCase);
+            var itensRestantes = todosItens.Where(i => !removerSet.Contains(i.ProductCode)).ToList();
+            var itensRemovidos = todosItens.Where(i => removerSet.Contains(i.ProductCode)).ToList();
+
+            if (itensRemovidos.Count == 0)
+                throw new InvalidOperationException("Nenhum item válido selecionado para remoção.");
+
+            if (itensRestantes.Count == 0)
+                throw new InvalidOperationException("Não é possível remover todos os itens. Para isso, utilize o cancelamento da venda.");
+
+            // 3. Carrega pagamentos da venda original
+            var pagamentos = await ObterPagamentosVendaInternalAsync(db, transaction, companyId, vendaId);
+
+            // 4. Cancela a venda original (status = 'corrigida')
+            const string sqlUpdateVenda = """
+                UPDATE Vendas
+                SET Status = 'corrigida',
+                    CanceladoEm = @CanceladoEm,
+                    CanceladoPorOperadorId = @FinanceiroId,
+                    CanceladoPorOperadorNome = @FinanceiroNome,
+                    CanceladoPorSupervisorId = @FinanceiroId,
+                    CanceladoPorSupervisorNome = @FinanceiroNome,
+                    CanceladoJustificativa = @Justificativa
+                WHERE Id = @VendaId AND CompanyId = @CompanyId;
+                """;
+            await using (var cmdUpdate = new SqlCommand(sqlUpdateVenda, db, transaction))
+            {
+                cmdUpdate.Parameters.AddWithValue("@CanceladoEm", now);
+                cmdUpdate.Parameters.AddWithValue("@FinanceiroId", financeiroId);
+                cmdUpdate.Parameters.AddWithValue("@FinanceiroNome", financeiroNome);
+                cmdUpdate.Parameters.AddWithValue("@Justificativa", justificativa.Trim());
+                cmdUpdate.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdUpdate.Parameters.AddWithValue("@CompanyId", companyId);
+                await cmdUpdate.ExecuteNonQueryAsync();
+            }
+
+            // 5. Estorna o estoque de TODOS os itens da venda original
+            foreach (var item in todosItens)
+            {
+                if (item.Quantity > 0 && !string.IsNullOrWhiteSpace(item.ProductCode))
+                {
+                    const string sqlEstorno = """
+                        UPDATE Produtos
+                        SET ProductQnt = ProductQnt + @Quantity,
+                            TotalPriceOnProduct = ProductUnitPrice * (ProductQnt + @Quantity)
+                        WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;
+                        """;
+                    await using var cmdEstorno = new SqlCommand(sqlEstorno, db, transaction);
+                    cmdEstorno.Parameters.AddWithValue("@Quantity", item.Quantity);
+                    cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
+                    cmdEstorno.Parameters.AddWithValue("@ProductCode", item.ProductCode);
+                    await cmdEstorno.ExecuteNonQueryAsync();
+
+                    itensParaEstornar.Add((item.ProductCode, item.Quantity));
+                }
+            }
+
+            // 6. Cancela documentos fiscais da venda original
+            const string sqlDocFiscal = """
+                UPDATE DocumentosFiscais
+                SET Status = 3,
+                    CanceladoPorSupervisorId = @FinanceiroId,
+                    CanceladoPorSupervisorNome = @FinanceiroNome,
+                    CanceladoPorOperador = @FinanceiroNome,
+                    CanceladoJustificativa = @Justificativa,
+                    AtualizadoEm = @Now
+                WHERE VendaId = @VendaId AND CompanyId = @CompanyId AND Status <> 3;
+                """;
+            await using (var cmdDocFiscal = new SqlCommand(sqlDocFiscal, db, transaction))
+            {
+                cmdDocFiscal.Parameters.AddWithValue("@FinanceiroId", financeiroId);
+                cmdDocFiscal.Parameters.AddWithValue("@FinanceiroNome", financeiroNome);
+                cmdDocFiscal.Parameters.AddWithValue("@Justificativa", justificativa.Trim());
+                cmdDocFiscal.Parameters.AddWithValue("@Now", now);
+                cmdDocFiscal.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdDocFiscal.Parameters.AddWithValue("@CompanyId", companyId);
+                await cmdDocFiscal.ExecuteNonQueryAsync();
+            }
+
+            // 7. Verifica e estorna fiado da venda original
+            string? clienteIdFiado = null;
+            decimal valorFiado = 0m;
+            const string sqlCheckFiado = """
+                SELECT TOP 1 ClienteId, Valor
+                FROM FiadoMovimentos
+                WHERE VendaId = @VendaId AND CompanyId = @CompanyId AND Tipo = 1;
+                """;
+            await using (var cmdFiado = new SqlCommand(sqlCheckFiado, db, transaction))
+            {
+                cmdFiado.Parameters.AddWithValue("@VendaId", vendaId);
+                cmdFiado.Parameters.AddWithValue("@CompanyId", companyId);
+                await using var readerFiado = await cmdFiado.ExecuteReaderAsync();
+                if (await readerFiado.ReadAsync())
+                {
+                    clienteIdFiado = readerFiado.GetString(readerFiado.GetOrdinal("ClienteId"));
+                    valorFiado = readerFiado.GetDecimal(readerFiado.GetOrdinal("Valor"));
+                }
+            }
+
+            // 8. Criar nova venda com itens restantes
+            var novoTotal = itensRestantes.Sum(i => i.ItemTotal);
+
+            // Pagamentos proporcionais ao novo total
+            var proporcao = totalVenda > 0 ? novoTotal / totalVenda : 0m;
+            var novosPagamentos = pagamentos.Select(p => new VendaPagamentoRequest
+            {
+                PaymentType = p.PaymentType,
+                Amount = SaleMoney.Money(p.Amount * proporcao),
+                CashGiven = p.CashGiven.HasValue ? SaleMoney.Money(p.CashGiven.Value * proporcao) : null,
+                ChangeAmount = 0m
+            }).ToList();
+
+            // Ajusta o último pagamento para bater o total exatamente
+            var somaPagamentos = novosPagamentos.Sum(p => p.Amount);
+            if (novosPagamentos.Count > 0 && somaPagamentos != novoTotal)
+            {
+                novosPagamentos[^1].Amount += (novoTotal - somaPagamentos);
+            }
+
+            var novoPaymentType = novosPagamentos.Count == 1 ? novosPagamentos[0].PaymentType : "Múltiplo";
+
+            // Baixa estoque dos itens restantes (re-consome)
+            var saleItems = new List<VendaItemRecord>();
+            foreach (var item in itensRestantes)
+            {
+                await using var select = new SqlCommand(
+                    """
+                    SELECT Id, ProductName, ProductQnt, ProductUnitPrice
+                    FROM Produtos WITH (UPDLOCK, ROWLOCK)
+                    WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;
+                    """,
+                    db, transaction);
+                select.Parameters.AddWithValue("@ProductCode", item.ProductCode);
+                select.Parameters.AddWithValue("@CompanyId", companyId);
+                await using var readerProd = await select.ExecuteReaderAsync();
+                if (!await readerProd.ReadAsync())
+                {
+                    await readerProd.CloseAsync();
+                    throw new InvalidOperationException($"Produto {item.ProductCode} não encontrado ao re-baixar estoque.");
+                }
+                var productId = ReadString(readerProd, "Id");
+                var currentStock = readerProd.GetDecimal(readerProd.GetOrdinal("ProductQnt"));
+                var costPrice = readerProd.GetDecimal(readerProd.GetOrdinal("ProductUnitPrice"));
+                await readerProd.CloseAsync();
+
+                var nextStock = currentStock - item.Quantity;
+                await using var update = new SqlCommand(
+                    """
+                    UPDATE Produtos
+                    SET ProductQnt = @ProductQnt,
+                        TotalPriceOnProduct = @TotalPriceOnProduct
+                    WHERE Id = @Id AND CompanyId = @CompanyId;
+                    """,
+                    db, transaction);
+                update.Parameters.AddWithValue("@ProductQnt", nextStock);
+                update.Parameters.AddWithValue("@TotalPriceOnProduct", costPrice * nextStock);
+                update.Parameters.AddWithValue("@Id", productId);
+                update.Parameters.AddWithValue("@CompanyId", companyId);
+                await update.ExecuteNonQueryAsync();
+
+                saleItems.Add(new VendaItemRecord
+                {
+                    ProductCode = item.ProductCode,
+                    ProductName = item.ProductName,
+                    UnitPrice = item.UnitPrice,
+                    CostPrice = item.CostPrice,
+                    Quantity = item.Quantity,
+                    Desconto = item.Desconto,
+                    PromocaoId = item.PromocaoId
+                });
+            }
+
+            var result = await InserirVendaAsync(
+                db, transaction, companyId, customerName, customerCpf, novoPaymentType, novoTotal, operatorName,
+                saleItems, novosPagamentos, caixaSessaoId: caixaSessaoId);
+
+            // 9. Vincular vendas: original → nova e nova → original
+            const string sqlVinculo = """
+                UPDATE Vendas SET CorrigidaParaVendaId = @NovaVendaId WHERE Id = @OriginalVendaId AND CompanyId = @CompanyId;
+                UPDATE Vendas SET CorrigidaDeVendaId = @OriginalVendaId WHERE Id = @NovaVendaId AND CompanyId = @CompanyId;
+                """;
+            await using (var cmdVinculo = new SqlCommand(sqlVinculo, db, transaction))
+            {
+                cmdVinculo.Parameters.AddWithValue("@NovaVendaId", result.VendaId);
+                cmdVinculo.Parameters.AddWithValue("@OriginalVendaId", vendaId);
+                cmdVinculo.Parameters.AddWithValue("@CompanyId", companyId);
+                await cmdVinculo.ExecuteNonQueryAsync();
+            }
+
+            // 10. Auditoria
+            await auditLogAb.RegistrarNaTransacaoAsync(db, transaction, companyId, financeiroNome,
+                AuditEventTypes.VendaCorrigida,
+                $"Venda #{saleNumber} corrigida → nova venda #{result.SaleNumber}. " +
+                $"Itens removidos: {itensRemovidos.Count}. Total original: R$ {HorusMoneyFormat.Format(totalVenda)}, " +
+                $"novo total: R$ {HorusMoneyFormat.Format(novoTotal)}. Motivo: {justificativa.Trim()}",
+                "Vendas", vendaId);
+
+            await transaction.CommitAsync();
+
+            // Pós-commit: estorno e reconsumo de lotes FEFO (seguro, nunca lança)
+            await loteAb.EstornarVendaSeguroAsync(companyId, vendaId);
+            await loteAb.ConsumirVendaSeguroAsync(
+                companyId, result.VendaId, saleItems.Select(item => (item.ProductCode, item.Quantity)));
+
+            // Pós-commit: fiado — estorna original e re-debita proporcionalmente (mesmo padrão do cancelamento)
+            if (!string.IsNullOrEmpty(clienteIdFiado) && valorFiado > 0)
+            {
+                try
+                {
+                    await fiadoAb.RegistrarCreditoAsync(companyId, clienteIdFiado, valorFiado,
+                        "Estorno", $"Correção da Venda #{saleNumber}. Motivo: {justificativa.Trim()} (Financeiro: {financeiroNome})", financeiroNome);
+
+                    var novoFiado = SaleMoney.Money(valorFiado * proporcao);
+                    if (novoFiado > 0)
+                    {
+                        await fiadoAb.RegistrarDebitoAsync(companyId, clienteIdFiado, novoFiado, result.VendaId, operatorName);
+                    }
+                }
+                catch { /* Não impede a conclusão da correção */ }
+            }
+
+            return new CorrecaoVendaResultadoAD
+            {
+                VendaOriginalNumber = saleNumber,
+                NovaVendaNumber = result.SaleNumber,
+                CorrigidaEm = HorusDateTime.Format(now),
+                FinanceiroNome = financeiroNome,
+                ItensRemovidos = itensRemovidos.Count,
+                NovoTotal = HorusMoneyFormat.Format(novoTotal),
+                FiscalQueued = false
+            };
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    private async Task<List<VendaPagamentoAD>> ObterPagamentosVendaInternalAsync(SqlConnection db, SqlTransaction transaction, string companyId, string vendaId)
+    {
+        const string sql = """
+            SELECT Id, CompanyId, VendaId, PaymentType, Amount, CashGiven, ChangeAmount, CreatedAt
+            FROM VendaPagamentos
+            WHERE CompanyId = @CompanyId AND VendaId = @VendaId
+            ORDER BY CreatedAt ASC, Id ASC;
+            """;
+        await using var command = new SqlCommand(sql, db, transaction);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@VendaId", vendaId);
+        await using var reader = await command.ExecuteReaderAsync();
+        var list = new List<VendaPagamentoAD>();
+        while (await reader.ReadAsync())
+        {
+            list.Add(new VendaPagamentoAD
+            {
+                Id = ReadString(reader, "Id"),
+                CompanyId = ReadString(reader, "CompanyId"),
+                VendaId = ReadString(reader, "VendaId"),
+                PaymentType = ReadString(reader, "PaymentType"),
+                Amount = reader.GetDecimal(reader.GetOrdinal("Amount")),
+                CashGiven = reader.IsDBNull(reader.GetOrdinal("CashGiven")) ? null : reader.GetDecimal(reader.GetOrdinal("CashGiven")),
+                ChangeAmount = reader.IsDBNull(reader.GetOrdinal("ChangeAmount")) ? null : reader.GetDecimal(reader.GetOrdinal("ChangeAmount")),
+                CreatedAt = reader.GetDateTimeOffset(reader.GetOrdinal("CreatedAt"))
+            });
+        }
+        return list;
+    }
+
     private sealed class VendaItemRecord
     {
         public string ProductCode { get; set; } = string.Empty;
