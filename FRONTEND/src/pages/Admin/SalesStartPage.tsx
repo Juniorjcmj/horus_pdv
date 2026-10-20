@@ -90,6 +90,7 @@ import { getStoredAuthUser } from "@/utils/authStorage";
 import { MANAGER_ROLES } from "@/utils/cashRegisterFormat";
 import { enqueueDanfePrint, flushPendingDanfePrints } from "@/utils/pendingDanfePrint";
 import { resolveGatewayFiscalAttempts } from "@/utils/gatewayFiscalAttempt";
+import { getGatewayConfig, isGatewayConfigured } from "@/infrastructure/gateway/gatewayConfig";
 import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
 import type { ProductFiscalData } from "@/services/api/productService";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
@@ -1590,10 +1591,12 @@ export default function SalesStartPage({
         let queuedForGateway = false;
         try {
           if (!offlineBeforeRegister || fiscalModel === "nfe") throw new Error("Emissão aguardando a sincronização da venda original.");
-          const gwUrl = localStorage.getItem("horus_gateway_url") || "http://localhost:5050";
+          const gwConfig = getGatewayConfig();
+          if (!isGatewayConfigured(gwConfig)) throw new Error("Local Gateway não configurado neste terminal.");
+          const gwUrl = gwConfig.url;
           const gwPayload = {
             vendaId: clientSaleId,
-            terminalId: localStorage.getItem("horus_terminal_id") || "caixa-01",
+            terminalId: gwConfig.terminalId,
             customerCpf: selectedCustomer ? selectedCustomer.document : (cpfNota || undefined),
             customerName: selectedCustomer ? selectedCustomer.customerName : undefined,
             justificativa: "EMISSAO EM CONTINGENCIA OFFLINE POR QUEDA DE REDE LOCAL",

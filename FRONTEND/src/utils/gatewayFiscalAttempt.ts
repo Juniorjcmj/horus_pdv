@@ -4,6 +4,7 @@ import { fiscalService, GatewayFiscalHttpError, type FiscalDocumentDetailDto } f
 import type { RegisterSalePayload } from "@/services/api/salesHistoryService";
 import { computeSalePayloadHash } from "./cryptoHash";
 import { parseDanfeXml } from "./danfeXml";
+import { getGatewayConfig } from "@/infrastructure/gateway/gatewayConfig";
 
 export function gatewayDetailFromXml(xml: string, saleNumber: string): FiscalDocumentDetailDto {
   const d = parseDanfeXml(xml);
@@ -12,6 +13,30 @@ export function gatewayDetailFromXml(xml: string, saleNumber: string): FiscalDoc
     status: d.autorizado ? 3 : 8, chaveAcesso: d.chave, protocolo: d.protocolo, dhAutorizacao: d.autorizadoEm,
     motivoStatus: null, criadoEm: d.emitidoEm, tentativas: 0, qrCodeUrl: d.qrCode, xmlDocumento: xml, tpEmis: 9 };
 }
+/**
+ * Liberação manual: envia à nuvem as vendas presas aguardando contingência, sem XML local.
+ * A API aplica as regras de emissão da empresa e decide se cada venda gera NFC-e.
+ */
+export async function releaseFiscalPendingSales(): Promise<number> {
+  const tenant = currentTenantId();
+  const entries = await db.outbox.where("status").equals("FISCAL_PENDING").filter(e => e.tenantId === tenant).toArray();
+  let released = 0;
+  for (const entry of entries) {
+    const payload = JSON.parse(entry.payload) as RegisterSalePayload;
+    if (payload.xmlNfceContingencia) continue;
+    delete payload.gatewayFiscalAttempt;
+    payload.payloadHash = await computeSalePayloadHash(payload);
+    await db.transaction("rw", db.outbox, async () => {
+      const latest = await db.outbox.get(entry.id);
+      if (latest?.status !== "FISCAL_PENDING" || latest.tenantId !== tenant) return;
+      await db.outbox.update(entry.id, { payload: JSON.stringify(payload), payloadHash: payload.payloadHash, status: "PENDING", retryCount: 0, lastError: null });
+      released++;
+    });
+  }
+  if (released) window.dispatchEvent(new CustomEvent(OUTBOX_CHANGED_EVENT));
+  return released;
+}
+
 let resolving = false;
 /** Uma tentativa desconhecida permanece fora da sincronização até recuperar o mesmo XML original. */
 export async function resolveGatewayFiscalAttempts(forceId?: string): Promise<Map<string, FiscalDocumentDetailDto>> {
@@ -29,9 +54,11 @@ export async function resolveGatewayFiscalAttempts(forceId?: string): Promise<Ma
           const payload = JSON.parse(entry.payload) as RegisterSalePayload, attempt = payload.gatewayFiscalAttempt;
           if (!attempt || !payload.clientSaleId || attempt.payload.vendaId !== payload.clientSaleId || tenant !== currentTenantId()) continue;
           await db.outbox.update(entry.id, { lastAttemptAt: new Date().toISOString() });
-          const key = localStorage.getItem("horus_gateway_key") || "";
-          let response = await fiscalService.consultarContingenciaGatewayLocal(attempt.gatewayUrl, key, attempt.payload.terminalId, payload.clientSaleId);
-          if (!response) { posting = true; response = await fiscalService.emitirContingenciaGatewayLocal(attempt.gatewayUrl, key, attempt.payload); }
+          // Usa a configuração atual: tentativas antigas gravaram uma URL padrão errada (localhost:5050).
+          const gw = getGatewayConfig();
+          const gwUrl = gw.url || attempt.gatewayUrl, key = gw.apiKey;
+          let response = await fiscalService.consultarContingenciaGatewayLocal(gwUrl, key, attempt.payload.terminalId, payload.clientSaleId);
+          if (!response) { posting = true; response = await fiscalService.emitirContingenciaGatewayLocal(gwUrl, key, attempt.payload); }
           const xml = response?.xmlDocumento || response?.xmlAssinado;
           if (!response?.success || !xml) throw new Error("O Gateway ainda não confirmou o documento original.");
           const detail = gatewayDetailFromXml(xml, payload.offlineReference || entry.aggregateId);

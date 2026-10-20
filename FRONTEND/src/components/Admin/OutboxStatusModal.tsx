@@ -9,6 +9,9 @@ import type { OutboxEvent } from "@/shared/types/sync";
 import { useOutboxStatus } from "@/hooks/useOutboxStatus";
 import { Toast } from "@/hooks/Dialog";
 import ImportPendingBackupButton from "@/components/Admin/ImportPendingBackupButton";
+import { db } from "@/infrastructure/database/dexie";
+import { currentTenantId } from "@/infrastructure/database/repositories/OutboxRepository";
+import { releaseFiscalPendingSales } from "@/utils/gatewayFiscalAttempt";
 
 type OutboxStatusModalProps = {
   isOpen: boolean;
@@ -20,7 +23,15 @@ export default function OutboxStatusModal({ isOpen, onClose }: OutboxStatusModal
   const [failedList, setFailedList] = useState<OutboxEvent[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const [fiscalPendingCount, setFiscalPendingCount] = useState(0);
+
   const loadFailedEvents = async () => {
+    try {
+      const tenant = currentTenantId();
+      setFiscalPendingCount(await db.outbox.where("status").equals("FISCAL_PENDING").filter(e => e.tenantId === tenant).count());
+    } catch {
+      setFiscalPendingCount(0);
+    }
     try {
       const items = await listFailed();
       setFailedList(items);
@@ -58,6 +69,20 @@ export default function OutboxStatusModal({ isOpen, onClose }: OutboxStatusModal
       await loadFailedEvents();
     } catch {
       Toast.error("Erro ao reenfileirar eventos.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReleaseFiscalPending = async () => {
+    setLoading(true);
+    try {
+      const count = await releaseFiscalPendingSales();
+      Toast.success(`${count} venda(s) liberada(s) para envio. A nuvem decide a emissão da nota.`);
+      await syncNow();
+      await loadFailedEvents();
+    } catch {
+      Toast.error("Erro ao liberar vendas aguardando nota fiscal.");
     } finally {
       setLoading(false);
     }
@@ -130,6 +155,24 @@ export default function OutboxStatusModal({ isOpen, onClose }: OutboxStatusModal
               </p>
             </div>
           </div>
+
+          {fiscalPendingCount > 0 && (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3.5 text-xs">
+              <p className="text-text-primary">
+                <strong>{fiscalPendingCount}</strong> venda(s) aguardando a nota de contingência do Gateway.
+                Liberar envia à nuvem, que aplica as regras de emissão da empresa.
+              </p>
+              <button
+                type="button"
+                onClick={handleReleaseFiscalPending}
+                disabled={loading}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-accent px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-accent/90 disabled:opacity-50"
+              >
+                <RotateCcw size={13} />
+                Liberar envio
+              </button>
+            </div>
+          )}
 
           {/* Failed events list */}
           {failedList.length > 0 ? (
