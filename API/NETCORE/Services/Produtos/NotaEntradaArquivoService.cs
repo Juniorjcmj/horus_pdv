@@ -48,9 +48,11 @@ public class NotaEntradaArquivoService(Connection connection)
             if (!string.IsNullOrWhiteSpace(documento?.ChaveAcesso) && Digitos(documento.ChaveAcesso) != chave)
                 throw new InvalidOperationException("A chave informada não corresponde ao XML.");
         }
-        if (documento is not null && xml is null && string.IsNullOrWhiteSpace(chave))
+        // Versões antigas do aplicativo (cache) não enviavam o documento e a entrada ficava sem número de nota.
+        if (documento is null)
+            throw new InvalidOperationException("Seu aplicativo está desatualizado e não enviou os dados da nota. Recarregue a página (Ctrl+F5) ou reinicie o Quack PDV e confirme a entrada de novo.");
+        if (xml is null && string.IsNullOrWhiteSpace(chave))
             throw new InvalidOperationException("Informe o XML ou a chave do cupom antes de confirmar a entrada.");
-        // Clientes antigos não enviavam o documento. Guardamos o movimento sem atribuir a ele um XML fiscal inexistente.
         var identidade = chave ?? (xml is not null ? Convert.ToHexString(SHA256.HashData(xml)) : Guid.NewGuid().ToString("N"));
         return new NotaEntradaDocumento(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identidade))),
             chave, parsed?.Modelo ?? (chave is not null ? int.Parse(chave.Substring(20, 2)) : 0),
