@@ -61,6 +61,64 @@ public class NotaEntradaArquivoService(Connection connection)
             parsed?.DataEmissao, parsed?.ValorNota, xml is not null ? "xml" : chave is not null ? "digitada" : "sem-documento", xml);
     }
 
+    /// <summary>
+    /// Vincula o XML a uma entrada gravada sem documento (versões antigas do aplicativo).
+    /// Só altera os dados fiscais do registro; o estoque e os itens da entrada não mudam.
+    /// </summary>
+    public async Task AnexarXmlAsync(string companyId, string id, string? xmlBase64)
+    {
+        if (string.IsNullOrWhiteSpace(xmlBase64)) throw new InvalidOperationException("Selecione o arquivo XML da nota.");
+        if (xmlBase64.Length > 14_000_000) throw new InvalidOperationException("O XML deve ter no máximo 10 MB.");
+        byte[] xml;
+        try { xml = Convert.FromBase64String(xmlBase64); }
+        catch (FormatException) { throw new InvalidOperationException("Conteúdo do XML inválido. Selecione o arquivo novamente."); }
+        var parsed = NfeXmlParser.Parse(xml);
+        var chave = NfeAccessKey.ValidateInvoiceKey(parsed.ChaveAcesso);
+        var identidade = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(chave)));
+
+        await using var db = await connection.OpenLeaseAsync();
+        await using var command = connection.CreateCommand("""
+            DECLARE @result INT;
+            EXEC @result = sys.sp_getapplock @Resource=@Resource, @LockMode='Exclusive', @LockOwner='Session', @LockTimeout=15000;
+            IF @result < 0 THROW 51000, 'Outra operação com esta nota está em andamento. Tente novamente.', 1;
+            BEGIN TRY
+              DECLARE @origem NVARCHAR(40), @cnpj NVARCHAR(20), @estornada BIT;
+              SELECT @origem=Origem, @cnpj=FornecedorCnpj, @estornada=ISNULL(Estornada,0)
+                FROM dbo.NotasEntradaArquivo WHERE CompanyId=@CompanyId AND Id=@Id;
+              IF @origem IS NULL THROW 51001, 'Entrada não encontrada.', 1;
+              IF @estornada = 1 THROW 51002, 'Esta entrada foi estornada; não é possível anexar o XML.', 1;
+              IF @origem <> 'sem-documento' THROW 51003, 'Esta entrada já possui documento fiscal vinculado.', 1;
+              IF @cnpj <> @Cnpj THROW 51004, 'O emitente do XML não é o fornecedor desta entrada.', 1;
+              IF EXISTS (SELECT 1 FROM dbo.NotasEntradaArquivo WHERE CompanyId=@CompanyId AND Identidade=@Identidade AND Id<>@Id AND ISNULL(Estornada,0)=0)
+                THROW 51005, 'Esta nota já está vinculada a outra entrada.', 1;
+              UPDATE dbo.NotasEntradaArquivo
+                 SET Identidade=@Identidade, ChaveAcesso=@Chave, Modelo=@Modelo, NumeroNota=@Numero, Serie=@Serie,
+                     DataEmissao=@Emissao, ValorNota=@Total, Origem='xml', XmlOriginal=@Xml
+               WHERE CompanyId=@CompanyId AND Id=@Id;
+              EXEC sys.sp_releaseapplock @Resource=@Resource, @LockOwner='Session';
+            END TRY
+            BEGIN CATCH
+              EXEC sys.sp_releaseapplock @Resource=@Resource, @LockOwner='Session';
+              THROW;
+            END CATCH
+            """, db);
+        command.Parameters.AddWithValue("@Resource", "nota-entrada:" + companyId + ":" + identidade);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@Id", id);
+        command.Parameters.AddWithValue("@Cnpj", parsed.Emitente.Cnpj);
+        command.Parameters.AddWithValue("@Identidade", identidade);
+        command.Parameters.AddWithValue("@Chave", chave);
+        command.Parameters.AddWithValue("@Modelo", parsed.Modelo);
+        command.Parameters.AddWithValue("@Numero", parsed.NumeroNota);
+        command.Parameters.AddWithValue("@Serie", parsed.Serie);
+        command.Parameters.AddWithValue("@Emissao", (object?)parsed.DataEmissao ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Total", (object?)parsed.ValorNota ?? DBNull.Value);
+        command.Parameters.Add("@Xml", System.Data.SqlDbType.VarBinary, -1).Value = xml;
+        try { await command.ExecuteNonQueryAsync(); }
+        catch (SqlException ex) when (ex.Number is >= 51001 and <= 51005 or 51000) { throw new InvalidOperationException(ex.Message); }
+        catch (SqlException ex) when (ex.Number is 2601 or 2627) { throw new InvalidOperationException("Esta nota já está vinculada a outra entrada."); }
+    }
+
     public async Task ReservarAsync(string companyId, NotaEntradaDocumento documento)
     {
         await using var db = await connection.OpenLeaseAsync();

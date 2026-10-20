@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronLeft, ChevronRight, Download, FileText, RefreshCw, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Download, FileText, RefreshCw, Search, Trash2, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { nfeImportService, type NotaEntradaDetalhe, type NotaEntradaPagina, type NotaEntradaResumo } from "@/services/api/nfeImportService";
 import { Toast } from "@/hooks/Dialog";
@@ -52,6 +52,18 @@ export default function NotasEntradaPanel({ initialId = null }: { initialId?: st
     return () => { active = false; };
   }, [busca, pagina, refresh, selectedId]);
 
+  const [anexando, setAnexando] = useState(false);
+  const anexarXml = async (nota: NotaEntradaResumo, file: File | undefined) => {
+    if (!file) return;
+    setAnexando(true);
+    try {
+      const res = await nfeImportService.anexarXml(nota.id, file);
+      Toast.success(res.message || "XML vinculado à entrada.");
+      setRefresh(v => v + 1);
+    } catch (err) { Toast.error(err instanceof Error ? err.message : "Não foi possível anexar o XML."); }
+    finally { setAnexando(false); }
+  };
+
   const download = async (nota: NotaEntradaResumo) => {
     setDownloading(true);
     try { if (nota.temComprovante) await nfeImportService.baixarComprovante(nota); else await nfeImportService.baixarXml(nota); }
@@ -104,6 +116,10 @@ export default function NotasEntradaPanel({ initialId = null }: { initialId?: st
         <div><h3 className="font-semibold text-text-primary">{title(detalhe.nota)}{detalhe.nota.estornada && <span className="ml-2 inline-block rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">Estornada</span>}</h3><p className="mt-1 text-sm text-text-secondary">{detalhe.nota.fornecedorNome || "Sem fornecedor"}{detalhe.nota.fornecedorCnpj && ` · CNPJ ${detalhe.nota.fornecedorCnpj}`}</p></div>
         <div className="flex flex-wrap gap-2">
           {(detalhe.nota.temXml || detalhe.nota.temComprovante) && <button type="button" className="btn-primary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" disabled={downloading} onClick={() => void download(detalhe.nota)}><Download size={16} />{downloading ? "Baixando…" : detalhe.nota.temComprovante ? "Baixar comprovante" : "Baixar XML original"}</button>}
+          {detalhe.nota.origem === "sem-documento" && !detalhe.nota.estornada && <label className={`btn-primary inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent ${anexando ? "pointer-events-none opacity-50" : ""}`}>
+            <Upload size={16} />{anexando ? "Anexando…" : "Anexar XML da nota"}
+            <input type="file" accept=".xml,text/xml,application/xml" className="sr-only" disabled={anexando} onChange={event => { const f = event.target.files?.[0]; event.target.value = ""; void anexarXml(detalhe.nota, f); }} />
+          </label>}
           {!detalhe.nota.estornada && <button type="button" className="btn-outline-secondary inline-flex min-h-10 items-center justify-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50" disabled={estornando} onClick={() => void estornar(detalhe.nota)}><Trash2 size={16} />{estornando ? "Estornando…" : "Estornar entrada"}</button>}
         </div>
       </div>
@@ -121,7 +137,7 @@ export default function NotasEntradaPanel({ initialId = null }: { initialId?: st
       </dl>
       {detalhe.nota.origem === "manual" ? <div className="space-y-2 text-sm text-text-secondary"><p>Recebimento manual · {detalhe.entrada.tipoDocumento === "recibo" ? "Recibo" : detalhe.entrada.tipoDocumento === "outro" ? "Outro comprovante" : "Cupom / NFC-e"}{detalhe.nota.comprovanteNome && ` · ${detalhe.nota.comprovanteNome}`}</p>{detalhe.entrada.observacao && <p className="whitespace-pre-wrap break-words">Observação: {detalhe.entrada.observacao}</p>}
         {detalhe.entrada.itens.map((item, index) => <p key={index}>{item.productName}: compra de {item.quantidadeCompra} {item.unidadeCompra} × {item.fatorConversao} → {item.quantidade} {item.unidadeComercial}. Estoque: {item.estoqueAntes} → {item.estoqueDepois}. Venda: R$ {item.precoVenda}.</p>)}</div>
-        : !detalhe.nota.temXml && <p className="text-sm text-text-secondary">{detalhe.nota.origem === "digitada" ? "Esta entrada foi digitada a partir do cupom. A chave e os itens foram armazenados; o XML não foi fornecido." : "Esta versão do aplicativo não enviou o documento fiscal. O registro conserva os dados da entrada, sem XML."}</p>}
+        : !detalhe.nota.temXml && <p className="text-sm text-text-secondary">{detalhe.nota.origem === "digitada" ? "Esta entrada foi digitada a partir do cupom. A chave e os itens foram armazenados; o XML não foi fornecido." : "Uma versão antiga do aplicativo não enviou o documento fiscal. Use “Anexar XML da nota” para vincular o número da nota; o estoque não é alterado."}</p>}
       <div><h3 className="mb-2 font-semibold text-text-primary">Itens recebidos</h3><p className="mb-3 text-sm text-text-secondary">Quantidades e custos confirmados na entrada, após os ajustes de embalagem e vínculo dos produtos.</p>
         <TableScrollArea label="Itens recebidos"><table className="min-w-[650px] w-full text-left text-sm"><thead className="border-b border-border-primary text-text-secondary"><tr>{["Código", "Produto", "Quantidade", "Custo unitário", "Lote / validade"].map(label => <th key={label} className="px-3 py-3 font-medium">{label}</th>)}</tr></thead><tbody className="divide-y divide-border-primary text-text-primary">{detalhe.entrada.itens.map((item, index) => <tr key={`${item.numeroItem}-${index}`}><td className="px-3 py-3">{item.productCode}</td><td className="px-3 py-3">{item.productName}</td><td className="px-3 py-3 tabular-nums">{item.quantidade} {item.unidadeComercial}</td><td className="px-3 py-3 tabular-nums">R$ {item.precoCusto}</td><td className="px-3 py-3">{item.numeroLote || "—"}{item.dataValidade && ` · ${item.dataValidade.split("-").reverse().join("/")}`}</td></tr>)}</tbody></table></TableScrollArea>
       </div>

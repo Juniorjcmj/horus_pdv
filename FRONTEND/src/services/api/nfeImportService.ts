@@ -136,6 +136,15 @@ export const nfeImportService = {
     });
     return response.data ?? null;
   },
+  /** Vincula o XML a uma entrada antiga gravada sem documento. Não altera o estoque. */
+  async anexarXml(id: string, file: File) {
+    const xmlBase64 = await readFileAsBase64(file);
+    return apiRequest<null>(`${NFE_IMPORT_API_URL}/notas-entrada/${encodeURIComponent(id)}/xml`, {
+      method: "POST",
+      body: JSON.stringify({ xmlBase64 }),
+      timeoutMs: 30_000,
+    });
+  },
   async listarNotas(busca = "", pagina = 1) {
     const query = new URLSearchParams({ busca, pagina: String(pagina), tamanhoPagina: "20" });
     const response = await apiRequest<NotaEntradaPagina>(`${NFE_IMPORT_API_URL}/notas-entrada?${query}`);

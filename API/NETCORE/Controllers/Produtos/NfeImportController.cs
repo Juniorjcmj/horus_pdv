@@ -149,6 +149,25 @@ public class NfeImportController(NfeImportService nfeImportService, NotaEntradaA
         }
     }
 
+    [HttpPost("notas-entrada/{id}/xml")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AnexarXml(string id, [FromBody] NfeImportPreviewRequest request)
+    {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        try
+        {
+            await arquivoService.AnexarXmlAsync(user.CompanyId, id, request.XmlBase64);
+            return Ok(new ApiResponse<object> { Success = true, Message = "XML vinculado à entrada. O estoque não foi alterado." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
+    }
+
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
 
