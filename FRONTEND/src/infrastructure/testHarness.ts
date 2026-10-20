@@ -18,6 +18,8 @@ import { syncEngine } from "./synchronization/SyncEngine";
 import { syncCoordinator } from "./synchronization/SyncCoordinator";
 import { cashRegisterService } from "@/services/api/cashRegisterService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
+import * as mergePendingSales from "@/utils/mergePendingSales";
+import * as cashCloseConfirm from "@/utils/cashCloseConfirm";
 
 export function setupTestHarness(): void {
   if (typeof window === "undefined") return;
@@ -38,6 +40,8 @@ export function setupTestHarness(): void {
     syncCoordinator,
     cashRegisterService,
     salesHistoryService,
+    mergePendingSales,
+    cashCloseConfirm,
     resetDatabase: async () => {
       await db.transaction(
         "rw",

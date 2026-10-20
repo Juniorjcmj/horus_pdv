@@ -11,7 +11,10 @@ import {
   getPendingEvents,
   markProcessing,
   markProcessed,
-  markFailed,
+  markRetryLater,
+  markRejected,
+  requeueExhaustedTransientEvents,
+  getFailedEvents,
   getPendingCount,
   getFailedCount,
   purgeProcessed,
@@ -23,9 +26,9 @@ import { db } from "@/infrastructure/database/dexie";
 import type { OutboxStatus } from "@/shared/types/sync";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 import { forwardPendingToGateway } from "@/infrastructure/gateway/outboxGatewayForwarder";
+import { errorStatus, isBusinessRejection, isCashEventType } from "./failureClassification";
 
 const SYNC_INTERVAL_MS = 30_000;
-const MAX_RETRIES = 10;
 const BASE_BACKOFF_MS = 5_000;
 const LS_OFFLINE_SALES_KEY = "horus-pdv-offline-sales";
 
@@ -99,6 +102,9 @@ class SyncEngine {
 
     // Recupera eventos órfãos em PROCESSING (crash anterior)
     void recoverStaleProcessing();
+
+    // Eventos que versões anteriores abandonaram (FAILED) por falha de rede voltam à fila
+    void requeueExhaustedTransientEvents().catch(() => undefined);
 
     // Tenta sincronizar imediatamente
     void this.runCycle();
@@ -226,9 +232,22 @@ class SyncEngine {
 
       const now = Date.now();
 
+      // Cadeia do caixa por terminal: enquanto houver evento de caixa recusado (FAILED), os eventos de caixa
+      // seguintes do MESMO terminal ficam retidos. Vendas não são afetadas.
+      const cashBlockedFrom = new Map<string, number>();
+      const blockCash = (deviceId: string, sequence: number) => {
+        const current = cashBlockedFrom.get(deviceId);
+        if (current === undefined || sequence < current) cashBlockedFrom.set(deviceId, sequence);
+      };
+      for (const failed of await getFailedEvents()) {
+        if (isCashEventType(failed.eventType)) blockCash(failed.deviceId, failed.sequence);
+      }
+
       for (const event of pending) {
-        // Pula eventos que excederam max retries
-        if (event.retryCount >= MAX_RETRIES) continue;
+        if (isCashEventType(event.eventType)) {
+          const blockedFrom = cashBlockedFrom.get(event.deviceId);
+          if (blockedFrom !== undefined && blockedFrom < event.sequence) continue;
+        }
 
         // Backoff exponencial: pula se ainda não é hora de tentar novamente
         if (event.retryCount > 0 && event.lastAttemptAt) {
@@ -275,13 +294,13 @@ class SyncEngine {
           );
         } catch (err) {
           const msg = err instanceof Error ? err.message : "Erro desconhecido";
-          const status = (err && typeof err === "object" && "status" in err) ? Number((err as { status?: unknown }).status) : 0;
-          const isClientPermanentError = status >= 400 && status < 500 && status !== 408 && status !== 429;
+          const status = errorStatus(err);
 
-          if (isClientPermanentError) {
-            // Erro 4xx permanente (validação de domínio, dados inválidos, etc.)
-            // Marca imediatamente como FAILED para não travar a fila
-            await markFailed(event.id, msg, 1);
+          if (isBusinessRejection(err)) {
+            // Recusa de regra de negócio (4xx definitivo: validação, diferença de caixa sem justificativa…).
+            // Marca imediatamente como FAILED, com o motivo visível, para não travar a fila.
+            if (isCashEventType(event.eventType)) blockCash(event.deviceId, event.sequence);
+            await markRejected(event.id, status ? `HTTP ${status}: ${msg}` : msg);
             window.dispatchEvent(
               new CustomEvent("offline-sync-error", {
                 detail: {
@@ -297,9 +316,9 @@ class SyncEngine {
             continue;
           }
 
-          // Erro transitório (5xx, timeout, falha de rede)
+          // Erro transitório (5xx, timeout, falha de rede, 401/403/408/429): nunca abandona o evento.
           pushError = msg;
-          await markFailed(event.id, msg);
+          await markRetryLater(event.id, msg);
           // Para de processar — aguarda restabelecimento da API
           break;
         }
@@ -335,13 +354,21 @@ class SyncEngine {
         return res;
       }
       case "CASH_OPEN": {
-        const payload = JSON.parse(payloadJson) as { openingAmount: string };
+        const payload = JSON.parse(payloadJson) as {
+          openingAmount: string;
+          clientSessionId?: string;
+          openedAt?: string;
+        };
         try {
-          await cashRegisterService.open(payload.openingAmount, eventId, payloadHash);
+          await cashRegisterService.open(payload.openingAmount, eventId, payloadHash, {
+            clientSessionId: payload.clientSessionId,
+            openedAt: payload.openedAt,
+          });
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
-          // Se já existe caixa aberto no servidor, considera resolvido de forma idempotente
-          if (msg.includes("Já existe um caixa aberto")) {
+          // Evento SEM id de sessão (formato antigo): "já existe caixa aberto" = resolvido de forma idempotente.
+          // Com clientSessionId a API resolve a idempotência sozinha, e essa mensagem não pode ser engolida.
+          if (!payload.clientSessionId && msg.includes("Já existe um caixa aberto")) {
             return;
           }
           throw err;
@@ -353,6 +380,8 @@ class SyncEngine {
           closingAmount: string;
           note?: string;
           differenceReason?: string;
+          clientSessionId?: string;
+          closedAt?: string;
         };
         try {
           await cashRegisterService.close(
@@ -361,11 +390,12 @@ class SyncEngine {
             payload.differenceReason,
             eventId,
             payloadHash,
+            { clientSessionId: payload.clientSessionId, closedAt: payload.closedAt },
           );
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
-          // Se já não existe caixa aberto no servidor, considera resolvido de forma idempotente
-          if (msg.includes("Não existe caixa aberto")) {
+          // Evento SEM id de sessão (formato antigo): "não existe caixa aberto" = resolvido de forma idempotente.
+          if (!payload.clientSessionId && msg.includes("Não existe caixa aberto")) {
             return;
           }
           throw err;

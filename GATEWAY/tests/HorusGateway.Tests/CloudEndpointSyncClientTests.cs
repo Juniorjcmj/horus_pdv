@@ -101,6 +101,25 @@ public sealed class CloudEndpointSyncClientTests
         Assert.Equal("cs-do-pdv", body.RootElement.GetProperty("clientSaleId").GetString());
     }
 
+    [Fact]
+    public async Task Fechamento_leva_clientSessionId_e_closedAt_do_payload_ou_do_horario_do_evento()
+    {
+        var (client, cloud) = Build(HttpStatusCode.OK);
+
+        await client.SendAsync(Event("CASH_CLOSE", """{"operatorId":"usr-1","clientSessionId":"cx-offline-1","closedAt":"2026-10-19T19:03:00Z"}"""));
+        await client.SendAsync(Event("CASH_CLOSE", """{"operatorId":"usr-1","clientSessionId":"cx-offline-1"}"""));
+        await client.SendAsync(Event("CASH_OPEN", """{"operatorId":"usr-1","clientSessionId":"cx-offline-1"}"""));
+
+        using var withClosedAt = JsonDocument.Parse(cloud.Calls[0].Body);
+        Assert.Equal("cx-offline-1", withClosedAt.RootElement.GetProperty("clientSessionId").GetString());
+        Assert.Equal("2026-10-19T19:03:00Z", withClosedAt.RootElement.GetProperty("closedAt").GetString());
+        using var fallback = JsonDocument.Parse(cloud.Calls[1].Body);
+        Assert.Equal("2026-10-06T12:00:00Z", fallback.RootElement.GetProperty("closedAt").GetString());
+        using var open = JsonDocument.Parse(cloud.Calls[2].Body);
+        Assert.Equal("cx-offline-1", open.RootElement.GetProperty("clientSessionId").GetString());
+        Assert.Equal("2026-10-06T12:00:00Z", open.RootElement.GetProperty("openedAt").GetString());
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.Unauthorized, CloudSyncStatus.Transient)]   // token revogado: guarda, não descarta
     [InlineData(HttpStatusCode.Forbidden, CloudSyncStatus.Transient)]

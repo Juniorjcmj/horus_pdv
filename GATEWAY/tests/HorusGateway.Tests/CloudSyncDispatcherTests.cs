@@ -146,6 +146,31 @@ public sealed class CloudSyncDispatcherTests : IDisposable
     }
 
     [Fact]
+    public async Task Cash_event_after_failed_cash_event_of_same_terminal_is_held_within_the_same_cycle()
+    {
+        async Task<long> Add(string id, string type)
+            => (await _store.AppendAsync(new IngestEventRequest
+            {
+                EventId = id, CompanyId = "empresa-1", TerminalId = "PDV-01", EventType = type,
+                Payload = JsonDocument.Parse("{\"operatorId\":\"u1\"}").RootElement.Clone()
+            })).Event!.Seq;
+        await Add("close-old", "CASH_CLOSE");
+        await Add("open-new", "CASH_OPEN");
+        await Add("sale-1", "SALE_CREATED");
+        var client = new FakeCloudClient
+        {
+            Behavior = ev => ev.EventId == "close-old"
+                ? CloudSyncResult.Of(CloudSyncStatus.Permanent, "HTTP 400: diferença")
+                : CloudSyncResult.Of(CloudSyncStatus.Success)
+        };
+
+        await BuildDispatcher(client).RunOnceAsync("empresa-1");
+
+        Assert.Equal(new[] { "close-old", "sale-1" }, client.SentEventIds);
+        Assert.Equal(1, await _store.CountPendingCloudAsync("empresa-1")); // CASH_OPEN retido
+    }
+
+    [Fact]
     public async Task Disabled_client_does_nothing()
     {
         await Seed("evt-x");

@@ -122,6 +122,19 @@ public sealed class CloudEndpointSyncClient : ICloudSyncClient
             if (body["occurredAt"] is null && !string.IsNullOrWhiteSpace(ev.OccurredAt)) body["occurredAt"] = ev.OccurredAt;
         }
 
+        // Caixa feito offline: a nuvem precisa do id da sessão do cliente e do horário real do fato para
+        // fechar/abrir exatamente a sessão certa (ver API HorusCaixaService). Campos já presentes no payload têm prioridade.
+        if (string.Equals(ev.EventType, "CASH_OPEN", StringComparison.OrdinalIgnoreCase) &&
+            body["openedAt"] is null && !string.IsNullOrWhiteSpace(ev.OccurredAt))
+        {
+            body["openedAt"] = ev.OccurredAt;
+        }
+        if (string.Equals(ev.EventType, "CASH_CLOSE", StringComparison.OrdinalIgnoreCase) &&
+            body["closedAt"] is null && !string.IsNullOrWhiteSpace(ev.OccurredAt))
+        {
+            body["closedAt"] = ev.OccurredAt;
+        }
+
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CloudApiBaseUrl.TrimEnd('/')}{path}")

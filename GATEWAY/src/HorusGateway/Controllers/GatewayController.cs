@@ -221,6 +221,53 @@ public sealed class GatewayController : ControllerBase
         });
     }
 
+    /// <summary>Eventos recusados pela nuvem (FAILED) com o motivo — o PDV lista os fechamentos recusados a partir daqui.</summary>
+    [HttpGet("events/failed")]
+    public async Task<IActionResult> GetFailedEvents([FromQuery] int limit = 50, CancellationToken cancellationToken = default)
+    {
+        if (!_identity.IsBound) return StatusCode(503, new { error = "Gateway não vinculado a uma empresa." });
+        if (_options.RequireTerminalAuth)
+        {
+            var auth = await AuthenticateTerminalAsync(cancellationToken);
+            if (!auth.Authenticated)
+            {
+                return Unauthorized(new { error = "Credencial de terminal inválida.", reason = auth.Outcome.ToString() });
+            }
+        }
+
+        var failed = await _eventStore.GetFailedAsync(_identity.CompanyId, Math.Clamp(limit, 1, 200), cancellationToken);
+        return Ok(new { count = failed.Count, events = failed.Select(GatewayEventDto.From).ToList() });
+    }
+
+    /// <summary>
+    /// Resolve um fechamento de caixa recusado: grava a justificativa e devolve o MESMO evento à fila de envio.
+    /// A autorização de perfil (gerente/administrador) é aplicada no PDV; aqui vale a credencial do terminal.
+    /// </summary>
+    [HttpPost("events/{seq:long}/resolve")]
+    public async Task<IActionResult> ResolveFailedEvent(long seq, [FromBody] ResolveFailedEventRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!_identity.IsBound) return StatusCode(503, new { error = "Gateway não vinculado a uma empresa." });
+        if (_options.RequireTerminalAuth)
+        {
+            var auth = await AuthenticateTerminalAsync(cancellationToken);
+            if (!auth.Authenticated)
+            {
+                return Unauthorized(new { error = "Credencial de terminal inválida.", reason = auth.Outcome.ToString() });
+            }
+        }
+
+        var reason = request?.DifferenceReason?.Trim();
+        if (string.IsNullOrEmpty(reason))
+        {
+            return BadRequest(new { error = "Informe a justificativa da diferença." });
+        }
+
+        var ok = await _eventStore.ResolveFailedCashCloseAsync(_identity.CompanyId, seq, reason, cancellationToken);
+        return ok
+            ? Ok(new { seq, status = GatewayEventStatus.PendingCloud })
+            : NotFound(new { error = "Evento não encontrado ou não é um fechamento de caixa recusado." });
+    }
+
     private Task<TerminalAuthResult> AuthenticateTerminalAsync(CancellationToken cancellationToken)
     {
         var terminalId = Request.Headers["X-Terminal-Id"].FirstOrDefault();
@@ -230,4 +277,10 @@ public sealed class GatewayController : ControllerBase
 
     private static GatewayEventDto? DtoOf(IngestResult result)
         => result.Event is null ? null : GatewayEventDto.From(result.Event);
+}
+
+public sealed class ResolveFailedEventRequest
+{
+    [System.Text.Json.Serialization.JsonPropertyName("differenceReason")]
+    public string? DifferenceReason { get; set; }
 }

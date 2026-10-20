@@ -32,6 +32,13 @@ export type GatewayEventDto = {
   payload: unknown;
 };
 
+export type GatewayFailedEvent = GatewayEventDto & {
+  terminalId?: string;
+  occurredAt?: string;
+  lastError?: string | null;
+  retryCount?: number;
+};
+
 function authHeaders(config: GatewayConfig): Record<string, string> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (config.terminalId) headers["X-Terminal-Id"] = config.terminalId;
@@ -158,6 +165,27 @@ export const gatewayClient = {
     return request(
       `/api/gateway/events?companyId=${encodeURIComponent(config.companyId)}&after=${after}`,
       { method: "GET", headers: authHeaders(config) },
+      5000,
+    );
+  },
+
+  /** Eventos recusados pela nuvem e guardados no Gateway (FAILED), com o motivo. */
+  async getFailedEvents(): Promise<GatewayFailedEvent[]> {
+    const config = getGatewayConfig();
+    const result = await request<{ events?: GatewayFailedEvent[] }>(
+      "/api/gateway/events/failed",
+      { method: "GET", headers: authHeaders(config) },
+      5000,
+    );
+    return result.events ?? [];
+  },
+
+  /** Informa a justificativa de um fechamento recusado e devolve o MESMO evento à fila do Gateway. */
+  async resolveFailedEvent(seq: number, differenceReason: string): Promise<void> {
+    const config = getGatewayConfig();
+    await request(
+      `/api/gateway/events/${seq}/resolve`,
+      { method: "POST", headers: authHeaders(config), body: JSON.stringify({ differenceReason }) },
       5000,
     );
   },

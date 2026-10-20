@@ -54,7 +54,7 @@ Raios: `--radius-sm` 8px, `--radius-md` 12px, `--radius-pill` 999px. Sombra flut
 ## Componentes
 - Existentes: `btn-success`, `btn-cancel`, `card`, `input-field` (compartilham a paleta via `--color-*`).
 - Novos (prefixo `rg-`, em `src/styles/components.css`): `rg-btn` (`--primary/--secondary/--text`), `rg-chip`,
-  `rg-card`, `rg-badge`, `rg-star`, `rg-free`. Área de toque mínima 44px; foco 2px em `--brand-text`.
+  `rg-card`, `rg-badge`, `rg-star`, `rg-free`, `rg-offline-banner` (faixa amarela de aviso de modo offline). Área de toque mínima 44px; foco 2px em `--brand-text`.
 - Administração: `rg-admin-surface` mantém campos com altura mínima de 44px, placeholders legíveis e números tabulares;
   `rg-admin-skip-link` permite ir direto ao conteúdo. `TableScrollArea` (`rg-admin-table`) fornece uma região nomeada,
   foco e orientação para rolar tabelas. `ListState` distingue carregamento, erro, lista vazia e ausência de resultados.

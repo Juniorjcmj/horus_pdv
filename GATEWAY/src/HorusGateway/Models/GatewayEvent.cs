@@ -46,4 +46,7 @@ public sealed class GatewayEvent
 
     /// <summary>Número de tentativas de envio à cloud já registradas (ciclo de vida de retry).</summary>
     public int RetryCount { get; set; }
+
+    /// <summary>Último erro de envio à cloud (motivo da falha/recusa). Preenchido nas listagens de eventos FAILED.</summary>
+    public string? LastError { get; set; }
 }

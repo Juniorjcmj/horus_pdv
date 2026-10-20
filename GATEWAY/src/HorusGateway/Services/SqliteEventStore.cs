@@ -241,14 +241,24 @@ public sealed class SqliteEventStore : IEventStore
             FROM GatewayEvents
             WHERE CompanyId = $companyId
               AND Status = $pending
-              AND RetryCount < $maxRetries
               AND (NextAttemptAt IS NULL OR NextAttemptAt <= $now)
+              -- Cadeia de caixa por terminal: evento de caixa fica retido enquanto houver evento de caixa
+              -- anterior do mesmo terminal recusado (FAILED). Vendas não são afetadas.
+              AND NOT (
+                    substr(EventType, 1, 5) = 'CASH_'
+                AND EXISTS (
+                    SELECT 1 FROM GatewayEvents f
+                    WHERE f.CompanyId = GatewayEvents.CompanyId
+                      AND f.TerminalId = GatewayEvents.TerminalId
+                      AND f.Status = $failed
+                      AND substr(f.EventType, 1, 5) = 'CASH_'
+                      AND f.Seq < GatewayEvents.Seq))
             ORDER BY Seq ASC
             LIMIT $limit;
             """;
         command.Parameters.AddWithValue("$companyId", companyId);
         command.Parameters.AddWithValue("$pending", GatewayEventStatus.PendingCloud);
-        command.Parameters.AddWithValue("$maxRetries", BackoffPolicy.MaxRetries);
+        command.Parameters.AddWithValue("$failed", GatewayEventStatus.Failed);
         command.Parameters.AddWithValue("$now", now);
         command.Parameters.AddWithValue("$limit", limit);
 
@@ -278,9 +288,9 @@ public sealed class SqliteEventStore : IEventStore
         }
 
         var now = _clock.UtcNow;
-        var exhausted = BackoffPolicy.Exhausted(retryCount);
-        var nextAttempt = exhausted ? (string?)null : now.Add(BackoffPolicy.NextDelay(retryCount)).ToString("o");
-        var status = exhausted ? GatewayEventStatus.Failed : GatewayEventStatus.PendingCloud;
+        // Falha transitória nunca abandona o evento: sempre reagenda com backoff (com teto), sem limite de tentativas.
+        var nextAttempt = now.Add(BackoffPolicy.NextDelay(retryCount)).ToString("o");
+        var status = GatewayEventStatus.PendingCloud;
 
         using var update = connection.CreateCommand();
         update.CommandText = """
@@ -299,12 +309,6 @@ public sealed class SqliteEventStore : IEventStore
         update.Parameters.AddWithValue("$status", status);
         update.Parameters.AddWithValue("$seq", seq);
         update.ExecuteNonQuery();
-
-        if (exhausted)
-        {
-            _logger.LogWarning("Evento Seq={Seq} atingiu o limite de tentativas ({Max}) e foi marcado como FAILED.",
-                seq, BackoffPolicy.MaxRetries);
-        }
 
         return Task.CompletedTask;
     }
@@ -340,6 +344,98 @@ public sealed class SqliteEventStore : IEventStore
         command.Parameters.AddWithValue("$seq", seq);
         command.ExecuteNonQuery();
         return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<GatewayEvent>> GetFailedAsync(string companyId, int limit, CancellationToken cancellationToken = default)
+    {
+        var events = new List<GatewayEvent>();
+        using var connection = _database.OpenConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT Seq, EventId, CompanyId, StoreId, TerminalId, EventType, OccurredAt, Payload, PayloadHash, ClientPayloadHash, Status, CreatedAt, ProcessedAt, RetryCount, LastError
+            FROM GatewayEvents
+            WHERE CompanyId = $companyId AND Status = $failed
+            ORDER BY Seq DESC
+            LIMIT $limit;
+            """;
+        command.Parameters.AddWithValue("$companyId", companyId);
+        command.Parameters.AddWithValue("$failed", GatewayEventStatus.Failed);
+        command.Parameters.AddWithValue("$limit", limit);
+
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            var ev = Map(reader);
+            ev.RetryCount = reader.GetInt32(13);
+            ev.LastError = reader.IsDBNull(14) ? null : reader.GetString(14);
+            events.Add(ev);
+        }
+
+        return Task.FromResult<IReadOnlyList<GatewayEvent>>(events);
+    }
+
+    public Task<bool> ResolveFailedCashCloseAsync(string companyId, long seq, string differenceReason, CancellationToken cancellationToken = default)
+    {
+        using var connection = _database.OpenConnection();
+        using var transaction = connection.BeginTransaction();
+
+        string payloadJson, eventId;
+        using (var read = connection.CreateCommand())
+        {
+            read.Transaction = transaction;
+            read.CommandText = """
+                SELECT Payload, EventId FROM GatewayEvents
+                WHERE Seq = $seq AND CompanyId = $companyId AND Status = $failed AND EventType = 'CASH_CLOSE';
+                """;
+            read.Parameters.AddWithValue("$seq", seq);
+            read.Parameters.AddWithValue("$companyId", companyId);
+            read.Parameters.AddWithValue("$failed", GatewayEventStatus.Failed);
+            using var reader = read.ExecuteReader();
+            if (!reader.Read()) return Task.FromResult(false);
+            payloadJson = reader.GetString(0);
+            eventId = reader.GetString(1);
+        }
+
+        System.Text.Json.Nodes.JsonObject body;
+        try
+        {
+            body = System.Text.Json.Nodes.JsonNode.Parse(payloadJson) as System.Text.Json.Nodes.JsonObject
+                   ?? new System.Text.Json.Nodes.JsonObject();
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            body = new System.Text.Json.Nodes.JsonObject();
+        }
+
+        body["differenceReason"] = differenceReason;
+        // O hash enviado pelo terminal descrevia o payload antigo (sem justificativa): descarta-o.
+        body.Remove("payloadHash");
+        var newPayload = body.ToJsonString();
+        using var parsed = System.Text.Json.JsonDocument.Parse(newPayload);
+        var newHash = CanonicalPayloadHasher.Compute(parsed.RootElement);
+
+        using (var update = connection.CreateCommand())
+        {
+            update.Transaction = transaction;
+            update.CommandText = """
+                UPDATE GatewayEvents
+                   SET Payload = $payload, PayloadHash = $hash, ClientPayloadHash = NULL,
+                       Status = $pending, RetryCount = 0, NextAttemptAt = NULL, LastError = NULL
+                 WHERE Seq = $seq;
+                UPDATE ProcessedEvents SET PayloadHash = $hash WHERE CompanyId = $companyId AND EventId = $eventId;
+                """;
+            update.Parameters.AddWithValue("$payload", newPayload);
+            update.Parameters.AddWithValue("$hash", newHash);
+            update.Parameters.AddWithValue("$pending", GatewayEventStatus.PendingCloud);
+            update.Parameters.AddWithValue("$seq", seq);
+            update.Parameters.AddWithValue("$companyId", companyId);
+            update.Parameters.AddWithValue("$eventId", eventId);
+            update.ExecuteNonQuery();
+        }
+
+        transaction.Commit();
+        _logger.LogInformation("CASH_CLOSE Seq={Seq} EventId={EventId} reenfileirado com justificativa informada.", seq, eventId);
+        return Task.FromResult(true);
     }
 
     public Task<bool> ExistsAsync(string companyId, string eventId, CancellationToken cancellationToken = default)

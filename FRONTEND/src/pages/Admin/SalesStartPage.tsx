@@ -82,6 +82,7 @@ import { computeSalePayloadHash } from "@/utils/cryptoHash";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 import { useOutboxStatus } from "@/hooks/useOutboxStatus";
 import OutboxStatusModal from "@/components/Admin/OutboxStatusModal";
+import OfflineModeBanner from "@/components/Admin/OfflineModeBanner";
 import PdvCashPanelModal from "@/components/Admin/PdvCashPanelModal";
 import CashMovementModal from "@/components/Admin/CashMovementModal";
 import { useCashRegisterActions } from "@/hooks/useCashRegisterActions";
@@ -2063,6 +2064,8 @@ export default function SalesStartPage({
             </div>
           </div>
         </header>
+
+        <OfflineModeBanner />
 
         {/* Duas colunas a partir de 768px (antes 1024px): monitor pequeno/zoom alto não cai no layout de celular. */}
         <main className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[240px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">

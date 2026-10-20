@@ -130,6 +130,16 @@ export async function markForwarded(id: string): Promise<void> {
 /** Status que ainda NÃO chegaram à nuvem (fiado/estoque/fechamento offline precisam contá-los). */
 export const NOT_IN_CLOUD_STATUSES: OutboxStatus[] = ["PENDING", "PROCESSING", "FORWARDED", "FISCAL_PENDING"];
 
+/** Quantos eventos da empresa logada ainda NÃO estão na nuvem (inclui os já entregues ao Gateway da loja). */
+export async function getNotInCloudCount(): Promise<number> {
+  const tenant = currentTenantId();
+  return db.outbox
+    .where("status")
+    .anyOf(NOT_IN_CLOUD_STATUSES)
+    .filter((event) => isCurrentTenant(event, tenant))
+    .count();
+}
+
 /** Marca um evento como sendo processado (em trânsito). */
 export async function markProcessing(id: string): Promise<void> {
   await db.outbox.update(id, {
@@ -145,7 +155,10 @@ export async function markProcessed(id: string): Promise<void> {
 
 export const MAX_OUTBOX_RETRIES = 10;
 
-/** Marca um evento como falho, incrementa retryCount e transiciona para FAILED ao atingir o limite. */
+/**
+ * Marca um evento como falho, incrementa retryCount e transiciona para FAILED ao atingir o limite.
+ * (Legado: o SyncEngine usa markRetryLater para falha transitória e markRejected para recusa de negócio.)
+ */
 export async function markFailed(id: string, error: string, maxRetries = MAX_OUTBOX_RETRIES): Promise<void> {
   const event = await db.outbox.get(id);
   if (!event) return;
@@ -158,6 +171,57 @@ export async function markFailed(id: string, error: string, maxRetries = MAX_OUT
     lastError: error,
     lastAttemptAt: new Date().toISOString(),
   });
+}
+
+/**
+ * Falha TRANSITÓRIA (rede, timeout, 5xx, 401/403, 408, 429): o evento volta a PENDING e é reagendado pelo
+ * backoff do SyncEngine. Nunca leva a FAILED, por maior que seja o retryCount (que só serve de diagnóstico).
+ */
+export async function markRetryLater(id: string, error: string): Promise<void> {
+  const event = await db.outbox.get(id);
+  if (!event) return;
+  await db.outbox.update(id, {
+    status: "PENDING" as OutboxStatus,
+    retryCount: event.retryCount + 1,
+    lastError: error,
+    lastAttemptAt: new Date().toISOString(),
+  });
+}
+
+/**
+ * Recusa de NEGÓCIO (4xx definitivo): o evento vai a FAILED na hora, com o motivo, e só volta por ação
+ * humana. O retryCount fica abaixo do limite legado para não ser confundido com evento abandonado por rede.
+ */
+export async function markRejected(id: string, error: string): Promise<void> {
+  const event = await db.outbox.get(id);
+  if (!event) return;
+  await db.outbox.update(id, {
+    status: "FAILED" as OutboxStatus,
+    retryCount: Math.min(event.retryCount + 1, MAX_OUTBOX_RETRIES - 1),
+    lastError: error,
+    lastAttemptAt: new Date().toISOString(),
+  });
+}
+
+/**
+ * Recuperação na inicialização: versões anteriores marcavam FAILED o evento que esgotava 10 tentativas por
+ * falha de rede. Esses (retryCount >= limite) voltam à fila; recusas de negócio (retryCount menor) ficam.
+ */
+export async function requeueExhaustedTransientEvents(): Promise<number> {
+  const tenant = currentTenantId();
+  const stuck = await db.outbox
+    .where("status")
+    .equals("FAILED")
+    .filter((event) => isCurrentTenant(event, tenant) && event.retryCount >= MAX_OUTBOX_RETRIES)
+    .toArray();
+  for (const event of stuck) {
+    await db.outbox.update(event.id, {
+      status: "PENDING" as OutboxStatus,
+      retryCount: 0,
+      lastAttemptAt: null,
+    });
+  }
+  return stuck.length;
 }
 
 /** Conta eventos pendentes de sincronização (status PENDING ou PROCESSING). */
@@ -216,6 +280,32 @@ export async function retryFailedEvent(id: string): Promise<void> {
     lastError: null,
     lastAttemptAt: null,
   });
+}
+
+/**
+ * Fechamento de caixa recusado por falta de justificativa: grava a justificativa informada pelo gerente no
+ * payload e devolve o MESMO evento (mesmo EventId) à fila. O CASH_CLOSE não carrega payloadHash próprio
+ * (a nuvem calcula); se houver um, é descartado por descrever o payload antigo.
+ */
+export async function resolveRejectedCashClose(id: string, differenceReason: string): Promise<boolean> {
+  const event = await db.outbox.get(id);
+  if (!event || event.status !== "FAILED" || event.eventType !== "CASH_CLOSE" || !isCurrentTenant(event)) return false;
+  let payload: Record<string, unknown>;
+  try {
+    payload = JSON.parse(event.payload) as Record<string, unknown>;
+  } catch {
+    payload = {};
+  }
+  payload.differenceReason = differenceReason;
+  await db.outbox.update(id, {
+    payload: JSON.stringify(payload),
+    payloadHash: undefined,
+    status: "PENDING" as OutboxStatus,
+    retryCount: 0,
+    lastError: null,
+    lastAttemptAt: null,
+  });
+  return true;
 }
 
 /** Re-enfileira todos os eventos com falha para nova tentativa em lote. */

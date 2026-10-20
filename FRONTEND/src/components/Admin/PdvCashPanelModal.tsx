@@ -19,6 +19,7 @@ import type {
   CashRegisterStatusDto,
 } from "@/services/api/cashRegisterService";
 import { getStoredAuthUser } from "@/utils/authStorage";
+import { closeCashConfirmMessage } from "@/utils/cashCloseConfirm";
 import {
   MANAGER_ROLES,
   cashPaymentLabel,
@@ -152,7 +153,9 @@ export default function PdvCashPanelModal({
       Toast.error("Confira os totais atualizados e informe o motivo da diferença antes de fechar.");
       return;
     }
-    const confirmed = await statusDialog.confirm("Fechar o caixa atual? As vendas ficam bloqueadas até nova abertura.");
+    const confirmed = await statusDialog.confirm(
+      await closeCashConfirmMessage("Fechar o caixa atual? As vendas ficam bloqueadas até nova abertura."),
+    );
     if (!confirmed) return;
 
     const closed = await closeCash(closingAmount, closingNote, latestDifference !== 0 ? differenceReason.trim() : undefined);

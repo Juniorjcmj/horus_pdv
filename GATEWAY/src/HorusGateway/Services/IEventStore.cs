@@ -40,4 +40,13 @@ public interface IEventStore
 
     /// <summary>Marca o evento como falha permanente (não reprocessável).</summary>
     Task MarkFailedAsync(long seq, string error, CancellationToken cancellationToken = default);
+
+    /// <summary>Eventos FAILED (recusados pela nuvem) da empresa, mais recentes primeiro, com o motivo (LastError).</summary>
+    Task<IReadOnlyList<GatewayEvent>> GetFailedAsync(string companyId, int limit, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Resolve um CASH_CLOSE recusado: grava a justificativa da diferença no payload, recalcula o hash e devolve
+    /// o MESMO evento (mesmo EventId) à fila. Retorna false se o evento não existe ou não é CASH_CLOSE em FAILED.
+    /// </summary>
+    Task<bool> ResolveFailedCashCloseAsync(string companyId, long seq, string differenceReason, CancellationToken cancellationToken = default);
 }

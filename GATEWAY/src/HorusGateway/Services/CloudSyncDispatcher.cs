@@ -9,6 +9,7 @@
  *           Preserva EventId + PayloadHash (idempotência ponta-a-ponta); não cria segunda verdade.
  */
 using HorusGateway.Configuration;
+using HorusGateway.Models;
 using Microsoft.Extensions.Options;
 
 namespace HorusGateway.Services;
@@ -54,9 +55,15 @@ public sealed class CloudSyncDispatcher
 
         var due = await _events.GetDueForDispatchAsync(companyId, _options.CloudSyncBatchSize, cancellationToken);
 
+        // Terminais que tiveram evento de caixa recusado NESTE ciclo: os eventos de caixa seguintes do mesmo
+        // terminal (já carregados no lote) ficam retidos. Vendas continuam. (Nos ciclos seguintes, a consulta
+        // GetDueForDispatchAsync aplica a mesma regra.)
+        var cashBlockedTerminals = new HashSet<string>(StringComparer.Ordinal);
+
         foreach (var ev in due)
         {
             if (cancellationToken.IsCancellationRequested) break;
+            if (IsCashEvent(ev) && cashBlockedTerminals.Contains(ev.TerminalId)) continue;
 
             var result = await _client.SendAsync(ev, cancellationToken);
             switch (result.Status)
@@ -78,6 +85,7 @@ public sealed class CloudSyncDispatcher
                     await _events.MarkFailedAsync(ev.Seq, result.Message ?? "falha permanente", cancellationToken);
                     _state.RecordFailure(_clock.UtcNow, result.Message);
                     summary.Failed++;
+                    if (IsCashEvent(ev)) cashBlockedTerminals.Add(ev.TerminalId);
                     _logger.LogWarning("Evento Seq={Seq} falhou permanentemente na cloud: {Message}", ev.Seq, result.Message);
                     break;
             }
@@ -91,4 +99,7 @@ public sealed class CloudSyncDispatcher
 
         return summary;
     }
+
+    private static bool IsCashEvent(GatewayEvent ev)
+        => ev.EventType.StartsWith("CASH_", StringComparison.OrdinalIgnoreCase);
 }

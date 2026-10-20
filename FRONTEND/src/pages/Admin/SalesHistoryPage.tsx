@@ -43,7 +43,12 @@ import {
 } from "@/services/api/fiscalService";
 import { salesHistoryService, type SaleHistoryDto } from "@/services/api/salesHistoryService";
 import { cashRegisterService, type CashMovementDto } from "@/services/api/cashRegisterService";
-import { getLocalSalePayments, getLocalSalesHistory } from "@/application/sales/SaleOutboxAdapter";
+import {
+  getLocalSalePayments,
+  getLocalSalesHistory,
+  getPendingLocalSalesHistory,
+} from "@/application/sales/SaleOutboxAdapter";
+import { mergePendingLocalSales, type PendingSyncMarked } from "@/utils/mergePendingSales";
 import { getStoredAuthUser, hasFinanceiroAccess } from "@/utils/authStorage";
 import {
   PAYMENT_GROUP_LABEL,
@@ -61,7 +66,7 @@ import {
   type DailySale,
 } from "@/utils/salesDailyReport";
 
-type SaleHistoryRow = SaleHistoryDto;
+type SaleHistoryRow = PendingSyncMarked<SaleHistoryDto>;
 
 function toDateKey(date: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -158,10 +163,19 @@ export default function SalesHistoryPage() {
   };
 
   const loadSalesHistory = async () => {
+    // Vendas feitas neste terminal que a nuvem ainda não aceitou (fila local). Nunca derruba o carregamento.
+    const loadPending = async () => {
+      try {
+        return await getPendingLocalSalesHistory();
+      } catch {
+        return [];
+      }
+    };
+
     try {
       const data = await salesHistoryService.list();
       if (Array.isArray(data) && data.length > 0) {
-        setSalesHistory(data);
+        setSalesHistory(mergePendingLocalSales(data, await loadPending()));
         return;
       }
     } catch {
@@ -170,7 +184,8 @@ export default function SalesHistoryPage() {
 
     try {
       const localData = await getLocalSalesHistory();
-      setSalesHistory(localData);
+      const pendingIds = new Set((await loadPending()).map((row) => row.clientSaleId).filter(Boolean));
+      setSalesHistory(localData.map((row) => (pendingIds.has(row.clientSaleId) ? { ...row, pendingSync: true } : row)));
     } catch {
       setSalesHistory([]);
     }
@@ -941,6 +956,15 @@ export default function SalesHistoryPage() {
                       <span className={isInactive ? "line-through text-text-tertiary" : ""}>
                         {sale.saleNumber}
                       </span>
+                      {sale.pendingSync && (
+                        <span
+                          className="inline-flex w-fit items-center gap-1 rounded border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-400"
+                          title="Venda guardada neste caixa; ainda não foi aceita pela nuvem. Será enviada automaticamente."
+                          data-testid="pending-sync-badge"
+                        >
+                          Pendente de envio
+                        </span>
+                      )}
                       {isCancelled && (
                         <span
                           className="inline-flex items-center gap-1 rounded bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-bold text-rose-600 dark:text-rose-400 border border-rose-500/20 w-fit"
@@ -1044,10 +1068,10 @@ export default function SalesHistoryPage() {
                           key: "cancelSale",
                           label: isInactive ? (isCorrected ? "Venda Corrigida" : "Venda Cancelada") : "Cancelar Venda (Supervisor)",
                           icon: <Ban size={13} className={isInactive ? "text-text-tertiary" : "text-rose-500"} />,
-                          disabled: isInactive,
+                          disabled: isInactive || Boolean(sale.pendingSync),
                           onClick: () => setSaleToCancel(sale),
                         },
-                        ...(canManageFiscal && !isCancelled && sale.status?.toLowerCase() !== "corrigida"
+                        ...(canManageFiscal && !isCancelled && !sale.pendingSync && sale.status?.toLowerCase() !== "corrigida"
                           ? [
                               {
                                 key: "correctSale",

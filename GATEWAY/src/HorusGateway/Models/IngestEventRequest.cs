@@ -66,6 +66,8 @@ public sealed class GatewayEventDto
     [JsonPropertyName("status")] public string Status { get; set; } = string.Empty;
     [JsonPropertyName("createdAt")] public string CreatedAt { get; set; } = string.Empty;
     [JsonPropertyName("payload")] public JsonElement Payload { get; set; }
+    [JsonPropertyName("lastError")] public string? LastError { get; set; }
+    [JsonPropertyName("retryCount")] public int RetryCount { get; set; }
 
     public static GatewayEventDto From(GatewayEvent e)
     {
@@ -93,7 +95,9 @@ public sealed class GatewayEventDto
             PayloadHash = e.PayloadHash,
             Status = e.Status,
             CreatedAt = e.CreatedAt,
-            Payload = payload
+            Payload = payload,
+            LastError = e.LastError,
+            RetryCount = e.RetryCount
         };
     }
 }

@@ -86,11 +86,12 @@ public sealed class DashboardController : ControllerBase
         var internetStatus = cloudEnabled && _cloudSync.Online ? "online" : (cloudEnabled ? "unreachable" : "unknown");
 
         // 5. Update Readiness
-        var isSafe = metrics.PendingCloudEvents == 0;
+        // FAILED também impede "seguro": são eventos que NÃO chegaram à nuvem e precisam de ação humana.
+        var isSafe = metrics.PendingCloudEvents == 0 && metrics.FailedEvents == 0;
         var updateMessage = isSafe
             ? "Gateway seguro para reinicialização ou atualização. Todos os eventos locais estão sincronizados com a Cloud."
-            : $"NÃO seguro para atualizar: existem {metrics.PendingCloudEvents} evento(s) pendente(s) de sincronização com a Cloud.";
-        var action = isSafe ? "PROCEED" : "WAIT_FOR_SYNC";
+            : DescribeUnsafe(metrics, "NÃO seguro para atualizar");
+        var action = isSafe ? "PROCEED" : (metrics.FailedEvents > 0 ? "RESOLVE_FAILED" : "WAIT_FOR_SYNC");
 
         var response = new DashboardSummaryResponse(
             Identity: new DashboardIdentity(
@@ -148,22 +149,53 @@ public sealed class DashboardController : ControllerBase
         }
 
         var metrics = await _eventStore.GetMetricsAsync(_identity.CompanyId, cancellationToken);
-        var isSafe = metrics.PendingCloudEvents == 0;
+        var isSafe = metrics.PendingCloudEvents == 0 && metrics.FailedEvents == 0;
 
         var message = isSafe
             ? "SEGURO PARA ATUALIZAÇÃO: Todos os eventos locais foram sincronizados com a Cloud. O serviço pode ser atualizado ou reiniciado."
-            : $"BLOQUEIO DE ATUALIZAÇÃO: Existem {metrics.PendingCloudEvents} evento(s) pendente(s) de envio à Cloud. Aguarde a sincronização.";
+            : DescribeUnsafe(metrics, "BLOQUEIO DE ATUALIZAÇÃO");
 
         var response = new SafeUpdateCheckResponse(
             Safe: isSafe,
             PendingEvents: metrics.PendingCloudEvents,
             FailedEvents: metrics.FailedEvents,
             Message: message,
-            ActionRecommended: isSafe ? "PROCEED" : "WAIT_FOR_SYNC",
+            ActionRecommended: isSafe ? "PROCEED" : (metrics.FailedEvents > 0 ? "RESOLVE_FAILED" : "WAIT_FOR_SYNC"),
             Timestamp: _clock.UtcNow.ToString("o")
         );
 
         return Ok(response);
+    }
+
+    private static string DescribeUnsafe(EventStoreMetrics metrics, string prefix)
+    {
+        var parts = new List<string>();
+        if (metrics.PendingCloudEvents > 0)
+            parts.Add($"{metrics.PendingCloudEvents} evento(s) pendente(s) de envio à Cloud");
+        if (metrics.FailedEvents > 0)
+            parts.Add($"{metrics.FailedEvents} evento(s) com falha (recusados pela Cloud — veja o motivo na lista de falhas)");
+        return $"{prefix}: existem {string.Join(" e ", parts)}.";
+    }
+
+    /// <summary>Eventos FAILED (últimos 50) com o motivo, para o painel local. Somente leitura.</summary>
+    [HttpGet("api/gateway/dashboard/failed-events")]
+    public async Task<IActionResult> GetFailedEvents(CancellationToken cancellationToken)
+    {
+        if (!_identity.IsBound)
+        {
+            return StatusCode(503, new { error = "Gateway não vinculado a uma empresa." });
+        }
+
+        var failed = await _eventStore.GetFailedAsync(_identity.CompanyId, 50, cancellationToken);
+        return Ok(failed.Select(e => new
+        {
+            seq = e.Seq,
+            eventType = e.EventType,
+            terminalId = e.TerminalId,
+            occurredAt = e.OccurredAt ?? e.CreatedAt,
+            retryCount = e.RetryCount,
+            lastError = e.LastError
+        }));
     }
 
     /// <summary>Dashboard Web local — acessível na LAN em / ou /dashboard.</summary>
@@ -440,6 +472,22 @@ public sealed class DashboardController : ControllerBase
       </div>
     </div>
 
+    <!-- Eventos com falha (recusados pela nuvem) -->
+    <div id="failed-card" class="card" style="margin-bottom: 2rem; display: none;">
+      <div class="card-title" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--card-border);">
+        <span style="font-size: 1rem; color: #fff;">Eventos com falha (recusados pela Cloud)</span>
+        <span id="badge-failed" class="badge badge-offline">0 falhas</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr><th>Seq</th><th>Tipo</th><th>Terminal</th><th>Quando</th><th>Motivo</th></tr>
+          </thead>
+          <tbody id="failed-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
     <footer>
       Hórus PDV &bull; Local Gateway &bull; Padrão Resiliente e Desacoplado &bull; <span id="lbl-server-time">--</span>
     </footer>
@@ -523,6 +571,16 @@ public sealed class DashboardController : ControllerBase
         desc.textContent = `${data.updateReadiness.message} Aguarde a sincronização com a Cloud para evitar retenção de dados.`;
       }
 
+      // Eventos com falha
+      const failedCard = document.getElementById('failed-card');
+      if (data.events.failed > 0) {
+        failedCard.style.display = '';
+        document.getElementById('badge-failed').textContent = data.events.failed + (data.events.failed === 1 ? ' evento com falha' : ' eventos com falha');
+        loadFailedEvents();
+      } else {
+        failedCard.style.display = 'none';
+      }
+
       // Terminals Table
       const tbody = document.getElementById('terminals-table-body');
       if (!data.terminals.items || data.terminals.items.length === 0) {
@@ -553,6 +611,22 @@ public sealed class DashboardController : ControllerBase
 
       document.getElementById('lbl-terminals-summary').textContent = `${data.terminals.total} terminal(is) cadastrado(s)`;
       document.getElementById('auto-refresh-status').textContent = 'Conectado em tempo real (' + new Date().toLocaleTimeString('pt-BR') + ')';
+    }
+
+    async function loadFailedEvents() {
+      try {
+        const res = await fetch('/api/gateway/dashboard/failed-events');
+        if (!res.ok) return;
+        const items = await res.json();
+        document.getElementById('failed-table-body').innerHTML = items.map(e => `
+          <tr>
+            <td>${e.seq}</td>
+            <td>${escapeHtml(e.eventType)}</td>
+            <td>${escapeHtml(e.terminalId)}</td>
+            <td>${e.occurredAt ? new Date(e.occurredAt).toLocaleString('pt-BR') : '--'}</td>
+            <td style="color: var(--yellow);">${escapeHtml(e.lastError || 'sem detalhe')}</td>
+          </tr>`).join('');
+      } catch (err) { /* painel segue funcionando sem a lista */ }
     }
 
     async function checkUpdateReadiness() {

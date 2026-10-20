@@ -1,7 +1,9 @@
 /**
  * Arquivo: src/components/Admin/OutboxStatusModal.tsx
  * Objetivo: modal administrativo e operacional para visualizar o estado da fila de sincronização
- *           (Outbox), inspecionar falhas após MAX_RETRIES e disparar re-tentativas manuais.
+ *           (Outbox), inspecionar eventos recusados pela nuvem e disparar re-tentativas manuais. Fechamentos de
+ *           caixa recusados (do PDV e do Local Gateway) mostram o motivo e, para gerente/administrador, permitem
+ *           informar a justificativa e reenviar o mesmo evento.
  */
 import { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, Clock, RefreshCw, X, RotateCcw } from "lucide-react";
@@ -10,7 +12,13 @@ import { useOutboxStatus } from "@/hooks/useOutboxStatus";
 import { Toast } from "@/hooks/Dialog";
 import ImportPendingBackupButton from "@/components/Admin/ImportPendingBackupButton";
 import { db } from "@/infrastructure/database/dexie";
-import { currentTenantId } from "@/infrastructure/database/repositories/OutboxRepository";
+import {
+  currentTenantId,
+  resolveRejectedCashClose,
+} from "@/infrastructure/database/repositories/OutboxRepository";
+import { gatewayClient, getGatewayConfig, type GatewayFailedEvent } from "@/infrastructure/gateway";
+import { getStoredAuthUser } from "@/utils/authStorage";
+import { MANAGER_ROLES } from "@/utils/cashRegisterFormat";
 import { releaseFiscalPendingSales } from "@/utils/gatewayFiscalAttempt";
 
 type OutboxStatusModalProps = {
@@ -24,6 +32,11 @@ export default function OutboxStatusModal({ isOpen, onClose }: OutboxStatusModal
   const [loading, setLoading] = useState(false);
 
   const [fiscalPendingCount, setFiscalPendingCount] = useState(0);
+  const [gatewayRejected, setGatewayRejected] = useState<GatewayFailedEvent[]>([]);
+  const [reasons, setReasons] = useState<Record<string, string>>({});
+
+  const loggedUser = getStoredAuthUser();
+  const isManager = loggedUser ? MANAGER_ROLES.includes(loggedUser.role.toLowerCase()) : false;
 
   const loadFailedEvents = async () => {
     try {
@@ -37,6 +50,18 @@ export default function OutboxStatusModal({ isOpen, onClose }: OutboxStatusModal
       setFailedList(items);
     } catch {
       setFailedList([]);
+    }
+    // Fechamentos recusados que estão guardados no Local Gateway da loja (se houver um configurado).
+    try {
+      const config = getGatewayConfig();
+      if (config.enabled && config.url) {
+        const events = await gatewayClient.getFailedEvents();
+        setGatewayRejected(events.filter((evt) => evt.eventType === "CASH_CLOSE"));
+      } else {
+        setGatewayRejected([]);
+      }
+    } catch {
+      setGatewayRejected([]);
     }
   };
 
@@ -83,6 +108,48 @@ export default function OutboxStatusModal({ isOpen, onClose }: OutboxStatusModal
       await loadFailedEvents();
     } catch {
       Toast.error("Erro ao liberar vendas aguardando nota fiscal.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const reasonOf = (key: string) => (reasons[key] ?? "").trim();
+
+  const handleResolveLocal = async (id: string) => {
+    const reason = reasonOf(`local-${id}`);
+    if (reason.length < 3) {
+      Toast.error("Informe a justificativa da diferença (mínimo 3 letras).");
+      return;
+    }
+    setLoading(true);
+    try {
+      if (!(await resolveRejectedCashClose(id, reason))) {
+        Toast.error("Esse fechamento não está mais recusado.");
+      } else {
+        Toast.success("Fechamento reenviado com a justificativa.");
+        await syncNow();
+      }
+      await loadFailedEvents();
+    } catch {
+      Toast.error("Erro ao reenviar o fechamento.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResolveGateway = async (seq: number) => {
+    const reason = reasonOf(`gw-${seq}`);
+    if (reason.length < 3) {
+      Toast.error("Informe a justificativa da diferença (mínimo 3 letras).");
+      return;
+    }
+    setLoading(true);
+    try {
+      await gatewayClient.resolveFailedEvent(seq, reason);
+      Toast.success("Fechamento reenviado ao Gateway com a justificativa.");
+      await loadFailedEvents();
+    } catch {
+      Toast.error("Não foi possível reenviar o fechamento pelo Gateway.");
     } finally {
       setLoading(false);
     }
@@ -151,7 +218,7 @@ export default function OutboxStatusModal({ isOpen, onClose }: OutboxStatusModal
               </div>
               <p className="mt-1 text-2xl font-bold">{failedCount}</p>
               <p className="text-xs text-text-secondary">
-                {failedCount > 0 ? "Excederam limite de 10 tentativas" : "Nenhum evento abandonado"}
+                {failedCount > 0 ? "Recusados pela nuvem — precisam de ação" : "Nenhum evento recusado"}
               </p>
             </div>
           </div>
@@ -171,6 +238,76 @@ export default function OutboxStatusModal({ isOpen, onClose }: OutboxStatusModal
                 <RotateCcw size={13} />
                 Liberar envio
               </button>
+            </div>
+          )}
+
+          {/* Fechamentos de caixa recusados (PDV e Gateway): motivo + justificativa do gerente */}
+          {(failedList.some((e) => e.eventType === "CASH_CLOSE") || gatewayRejected.length > 0) && (
+            <div className="space-y-2" data-testid="rejected-closings">
+              <h4 className="text-sm font-semibold text-rose-600 dark:text-rose-400">Fechamentos recusados</h4>
+              {!isManager && (
+                <p className="text-xs text-text-secondary">
+                  Só gerente ou administrador pode informar a justificativa e reenviar o fechamento.
+                </p>
+              )}
+              {[
+                ...failedList
+                  .filter((e) => e.eventType === "CASH_CLOSE")
+                  .map((e) => ({
+                    key: `local-${e.id}`,
+                    title: e.aggregateId || e.id,
+                    when: e.occurredAt,
+                    error: e.lastError,
+                    origin: "Este caixa",
+                    resolve: () => handleResolveLocal(e.id),
+                  })),
+                ...gatewayRejected.map((e) => ({
+                  key: `gw-${e.seq}`,
+                  title: e.eventId,
+                  when: e.occurredAt ?? e.createdAt,
+                  error: e.lastError,
+                  origin: "Gateway da loja",
+                  resolve: () => handleResolveGateway(e.seq),
+                })),
+              ].map((item) => (
+                <div key={item.key} className="space-y-2 rounded-xl border border-rose-500/20 bg-bg-gray-theme p-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-rose-500/20 px-1.5 py-0.5 font-mono text-[10px] font-bold text-rose-700 dark:text-rose-300">
+                      CASH_CLOSE
+                    </span>
+                    <span className="truncate font-mono text-text-secondary">{item.title}</span>
+                    <span className="ml-auto text-[10px] text-text-tertiary">{item.origin}</span>
+                  </div>
+                  <p className="text-rose-600 dark:text-rose-400">{item.error || "Recusado pela nuvem."}</p>
+                  {item.when && (
+                    <p className="text-[10px] text-text-tertiary">
+                      Fechado em: {new Date(item.when).toLocaleString("pt-BR")}
+                    </p>
+                  )}
+                  {isManager && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={reasons[item.key] ?? ""}
+                        onChange={(e) => setReasons((prev) => ({ ...prev, [item.key]: e.target.value }))}
+                        placeholder="Justificativa da diferença"
+                        aria-label="Justificativa da diferença"
+                        maxLength={300}
+                        className="input-field min-h-11 flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void item.resolve()}
+                        disabled={loading}
+                        className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-lg bg-accent px-3 py-1 text-xs font-semibold text-white transition hover:bg-accent/90 disabled:opacity-50"
+                      >
+                        <RotateCcw size={13} />
+                        Reenviar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
@@ -208,7 +345,7 @@ export default function OutboxStatusModal({ isOpen, onClose }: OutboxStatusModal
                         </span>
                       </div>
                       <p className="text-rose-600 dark:text-rose-400">
-                        {evt.lastError || "Erro na sincronização após 10 tentativas."}
+                        {evt.lastError || "Recusado pela nuvem."}
                       </p>
                       <p className="text-[10px] text-text-tertiary">
                         Registrado em: {new Date(evt.occurredAt).toLocaleString("pt-BR")} • Tentativas:{" "}

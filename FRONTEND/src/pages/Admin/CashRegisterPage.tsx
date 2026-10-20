@@ -51,6 +51,8 @@ import {
 } from "@/utils/cashRegisterFormat";
 import { companyService, type CompanyDto } from "@/services/api/companyService";
 import { getStoredAuthUser } from "@/utils/authStorage";
+import OfflineModeBanner from "@/components/Admin/OfflineModeBanner";
+import { closeCashConfirmMessage } from "@/utils/cashCloseConfirm";
 
 function formatDateTime(value?: string | null) {
   if (!value) return "-";
@@ -293,7 +295,7 @@ export default function CashRegisterPage() {
       return;
     }
 
-    const confirmed = await statusDialog.confirm("Fechar o caixa atual?");
+    const confirmed = await statusDialog.confirm(await closeCashConfirmMessage("Fechar o caixa atual?"));
     if (!confirmed) return;
 
     const closedSession = await cashActions.closeCash(
@@ -336,6 +338,7 @@ export default function CashRegisterPage() {
 
   return (
     <PageLayout size="wide" className="space-y-4 py-4 md:space-y-6 md:py-6 lg:py-8">
+      <OfflineModeBanner />
       <PageHeader
         title="Abertura e Fechamento de Caixa"
         description="Controle operacional do caixa, com conferência por forma de pagamento e trilha de auditoria."

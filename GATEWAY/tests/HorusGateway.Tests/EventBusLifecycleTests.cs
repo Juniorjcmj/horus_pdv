@@ -99,20 +99,23 @@ public sealed class EventBusLifecycleTests : IDisposable
     }
 
     [Fact]
-    public async Task Event_becomes_FAILED_after_max_retries_and_is_no_longer_due()
+    public async Task Transient_failures_never_abandon_the_event()
     {
-        var accepted = await _store.AppendAsync(Event("evt-exhaust"));
+        var accepted = await _store.AppendAsync(Event("evt-forever"));
         var seq = accepted.Event!.Seq;
 
-        for (var i = 0; i < BackoffPolicy.MaxRetries; i++)
+        for (var i = 0; i < 50; i++)
         {
-            await _store.RecordDispatchFailureAsync(seq, "falha");
+            await _store.RecordDispatchFailureAsync(seq, "rede indisponível");
             _clock.Advance(TimeSpan.FromMinutes(10));
         }
 
-        Assert.Equal(0, await _store.CountPendingCloudAsync("empresa-1"));
+        Assert.Equal(1, await _store.CountPendingCloudAsync("empresa-1"));
+        var metrics = await _store.GetMetricsAsync("empresa-1");
+        Assert.Equal(0, metrics.FailedEvents);
         var due = await _store.GetDueForDispatchAsync("empresa-1", 10);
-        Assert.Empty(due);
+        Assert.Single(due);
+        Assert.Equal(50, due[0].RetryCount);
     }
 
     [Fact]

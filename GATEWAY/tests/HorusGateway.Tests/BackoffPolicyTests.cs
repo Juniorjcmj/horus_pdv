@@ -34,9 +34,10 @@ public sealed class BackoffPolicyTests
     }
 
     [Fact]
-    public void Exhausted_after_max_retries()
+    public void Delay_never_exceeds_cap_even_after_thousands_of_retries()
     {
-        Assert.False(BackoffPolicy.Exhausted(BackoffPolicy.MaxRetries - 1));
-        Assert.True(BackoffPolicy.Exhausted(BackoffPolicy.MaxRetries));
+        // Sem limite de tentativas: o intervalo continua limitado (~5min + jitter), nunca cresce sem fim.
+        Assert.Equal(320, BackoffPolicy.BaseFor(5000).TotalSeconds, 3);
+        Assert.True(BackoffPolicy.NextDelay(5000, new Random(1)) <= TimeSpan.FromSeconds(320 * 1.3));
     }
 }

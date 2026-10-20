@@ -163,7 +163,35 @@ public sealed class GatewayDatabase
         EnsureColumn(connection, "Terminals", "ProvisionTokenHash", "TEXT NULL");
         EnsureColumn(connection, "Terminals", "Provisioned", "INTEGER NOT NULL DEFAULT 0");
 
+        RequeueTransientFailures(connection);
+
         _logger.LogInformation("Schema local do Gateway inicializado (SQLite).");
+    }
+
+    /// <summary>
+    /// Versões anteriores abandonavam o evento (FAILED) após 10 falhas de rede. Falha transitória nunca deve
+    /// abandonar: devolve à fila os FAILED cujo motivo é transitório (rede, timeout, 408, 429, 5xx, 401/403).
+    /// Idempotente — a nuvem deduplica por EventId, e recusas de negócio permanecem FAILED.
+    /// </summary>
+    private void RequeueTransientFailures(SqliteConnection connection)
+    {
+        using var update = connection.CreateCommand();
+        update.CommandText = """
+            UPDATE GatewayEvents
+               SET Status = 'PENDING_CLOUD', NextAttemptAt = NULL
+             WHERE Status = 'FAILED'
+               AND (LastError IN ('rede indisponível', 'timeout')
+                    OR LastError LIKE 'HTTP 5%'
+                    OR LastError LIKE 'HTTP 408%'
+                    OR LastError LIKE 'HTTP 429%'
+                    OR LastError LIKE 'Nuvem recusou o acesso%'
+                    OR LastError LIKE 'Envio à nuvem não configurado%');
+            """;
+        var requeued = update.ExecuteNonQuery();
+        if (requeued > 0)
+        {
+            _logger.LogWarning("{Count} evento(s) abandonados por falha transitória foram devolvidos à fila de envio.", requeued);
+        }
     }
 
     /// <summary>Adiciona uma coluna só se ela ainda não existir (SQLite não tem ADD COLUMN IF NOT EXISTS).</summary>

@@ -191,7 +191,8 @@ public class CaixaAB(Connection connection)
         string? eventId,
         string? payloadHash,
         Func<DateTimeOffset, Task<CaixaStatusDto>> statusBuilderAsync,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        bool sessaoDoCliente = false)
     {
         var now = openedAt;
         eventId = eventId?.Trim();
@@ -250,7 +251,30 @@ public class CaixaAB(Connection connection)
                 }
             }
 
+            if (sessaoDoCliente)
+            {
+                // Abertura offline com id gerado no cliente: se a sessão já existe, é reenvio (idempotente).
+                // Também não recusa por haver outra sessão aberta — cada uma é fechada pelo seu próprio evento.
+                const string checkExistingSql = """
+                    SELECT TOP 1 Id FROM CaixaSessoes WITH (UPDLOCK, ROWLOCK)
+                    WHERE CompanyId = @CompanyId AND Id = @Id;
+                    """;
+                await using var checkExistingCmd = new SqlCommand(checkExistingSql, db, transaction);
+                checkExistingCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                checkExistingCmd.Parameters.AddWithValue("@Id", id);
+                if (await checkExistingCmd.ExecuteScalarAsync(cancellationToken) is not null)
+                {
+                    await transaction.CommitAsync(cancellationToken);
+                    var replayStatus = await statusBuilderAsync(now);
+                    replayStatus.IsReplay = true;
+                    return replayStatus;
+                }
+            }
+
             // Multi-caixa: cada operador pode ter no máximo 1 caixa aberto ao mesmo tempo.
+            // (Abertura com id do cliente não passa por essa trava — ver acima.)
+            if (!sessaoDoCliente)
+            {
             const string checkOpenSql = """
                 SELECT TOP 1 Id
                 FROM CaixaSessoes WITH (UPDLOCK, ROWLOCK)
@@ -265,6 +289,7 @@ public class CaixaAB(Connection connection)
                 {
                     throw new InvalidOperationException("Você já possui um caixa aberto. Feche o caixa atual antes de abrir outro.");
                 }
+            }
             }
 
             const string insertSessionSql = """

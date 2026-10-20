@@ -63,6 +63,20 @@
   color: #152238;
 }
 
+/* Aviso permanente de modo offline (frente de venda e caixa): destaque amarelo da marca, texto marinho. */
+.rg-offline-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px var(--space-4);
+  background: var(--highlight);
+  color: #152238;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+}
+
 .rg-star { color: var(--highlight); }
 .rg-free { color: var(--success); font-weight: 600; }
 

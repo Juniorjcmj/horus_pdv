@@ -18,7 +18,7 @@ using HORUSPDV_API.Services.Shared;
 
 namespace HORUSPDV_API.Services.Caixa;
 
-public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
+public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB, ILogger<HorusCaixaService>? logger = null)
 {
     private static readonly TimeSpan MaxOpenPeriod = TimeSpan.FromHours(24);
     private const string FormaPagamentoDinheiro = "dinheiro";
@@ -105,19 +105,31 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
     {
         var now = HorusDateTime.Now;
         var openingAmount = HorusMoneyFormat.ParseDecimal(request.OpeningAmount);
-        var sessionId = $"cx-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+        var clientSessionId = CaixaClientSession.NormalizeSessionId(request.ClientSessionId);
+        var sessionId = clientSessionId ?? $"cx-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+        var openedAt = now;
+        if (clientSessionId is not null)
+        {
+            openedAt = CaixaClientSession.ResolveTimestamp(request.OpenedAt, now, out var outOfWindow);
+            if (outOfWindow)
+            {
+                logger?.LogWarning("Abertura de caixa {SessionId}: horário '{OpenedAt}' fora da janela aceita; usando o horário do servidor.", sessionId, request.OpenedAt);
+            }
+        }
 
         var status = await caixaAB.AbrirIdempotenteAsync(
             sessionId,
             currentUser.CompanyId,
-            now,
+            openedAt,
             openingAmount,
             currentUser.Id,
             currentUser.Name,
             request.EventId,
             request.PayloadHash,
-            t => BuildStatusAsync(currentUser.CompanyId, currentUser.Id, t, cancellationToken),
-            cancellationToken);
+            // O status é montado com a hora do servidor, não com a hora (possivelmente antiga) da abertura offline.
+            _ => BuildStatusAsync(currentUser.CompanyId, currentUser.Id, HorusDateTime.Now, cancellationToken),
+            cancellationToken,
+            sessaoDoCliente: clientSessionId is not null);
 
         if (!status.IsReplay)
         {
@@ -157,24 +169,65 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
     public async Task<CaixaStatusDto> FecharAsync(FecharCaixaRequest request, AuthenticatedUser currentUser, string? ip = null, CancellationToken cancellationToken = default)
     {
         var now = HorusDateTime.Now;
-        var openSession = await caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId, currentUser.Id, cancellationToken);
-        if (openSession is null)
+        var clientSessionId = CaixaClientSession.NormalizeSessionId(request.ClientSessionId);
+        CaixaSessionAD? openSession;
+        var closedAt = now;
+
+        if (clientSessionId is not null)
         {
-            if (!string.IsNullOrWhiteSpace(request.EventId))
+            // Fechamento de uma sessão específica (feito offline): nunca fecha outra sessão do operador.
+            var target = await caixaAB.ObterSessaoPorIdAsync(currentUser.CompanyId, clientSessionId, cancellationToken);
+            if (target is null)
             {
-                var existing = await caixaAB.ObterEventoProcessadoAsync(currentUser.CompanyId, request.EventId, request.PayloadHash, cancellationToken);
-                if (existing != null)
-                {
-                    return existing;
-                }
+                throw new InvalidOperationException($"Sessão de caixa {clientSessionId} não encontrada na nuvem.");
             }
-            throw new InvalidOperationException("Você não possui caixa aberto para fechamento.");
+
+            if (target.ClosedAt is not null)
+            {
+                if (!string.IsNullOrWhiteSpace(request.EventId))
+                {
+                    var existing = await caixaAB.ObterEventoProcessadoAsync(currentUser.CompanyId, request.EventId, request.PayloadHash, cancellationToken);
+                    if (existing != null)
+                    {
+                        return existing;
+                    }
+                }
+                throw new InvalidOperationException("Sessão já fechada.");
+            }
+
+            openSession = target;
+            closedAt = CaixaClientSession.ResolveTimestamp(request.ClosedAt, now, out var outOfWindow);
+            if (outOfWindow)
+            {
+                logger?.LogWarning("Fechamento de caixa {SessionId}: horário '{ClosedAt}' fora da janela aceita; usando o horário do servidor.", clientSessionId, request.ClosedAt);
+            }
+
+            if (closedAt < openSession.OpenedAt)
+            {
+                throw new InvalidOperationException("O horário de fechamento é anterior ao da abertura do caixa.");
+            }
+        }
+        else
+        {
+            openSession = await caixaAB.ObterSessaoAbertaAsync(currentUser.CompanyId, currentUser.Id, cancellationToken);
+            if (openSession is null)
+            {
+                if (!string.IsNullOrWhiteSpace(request.EventId))
+                {
+                    var existing = await caixaAB.ObterEventoProcessadoAsync(currentUser.CompanyId, request.EventId, request.PayloadHash, cancellationToken);
+                    if (existing != null)
+                    {
+                        return existing;
+                    }
+                }
+                throw new InvalidOperationException("Você não possui caixa aberto para fechamento.");
+            }
         }
 
         EnsureResponsavelPeloCaixa(openSession, currentUser);
 
         var closingAmount = HorusMoneyFormat.ParseDecimal(request.ClosingAmount);
-        var expectedCashAmount = await ComputeExpectedCashAsync(currentUser.CompanyId, openSession, now, cancellationToken);
+        var expectedCashAmount = await ComputeExpectedCashAsync(currentUser.CompanyId, openSession, closedAt, cancellationToken);
         var differenceAmount = Math.Round(closingAmount - expectedCashAmount, 2);
         var differenceReason = request.DifferenceReason?.Trim();
 
@@ -189,7 +242,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
         var status = await caixaAB.FecharIdempotenteAsync(
             openSession.Id,
             currentUser.CompanyId,
-            now,
+            closedAt,
             closingAmount,
             currentUser.Id,
             currentUser.Name,
@@ -199,7 +252,7 @@ public class HorusCaixaService(CaixaAB caixaAB, AuditLogAB auditLogAB)
             differenceAmount == 0 ? null : differenceReason,
             request.EventId,
             request.PayloadHash,
-            t => BuildStatusAsync(currentUser.CompanyId, currentUser.Id, t, cancellationToken),
+            _ => BuildStatusAsync(currentUser.CompanyId, currentUser.Id, HorusDateTime.Now, cancellationToken),
             cancellationToken);
 
         if (!status.IsReplay)
