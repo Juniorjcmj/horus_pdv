@@ -149,6 +149,24 @@ public class NfeImportController(NfeImportService nfeImportService, NotaEntradaA
         }
     }
 
+    [HttpGet("notas-entrada/exportar")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
+    public async Task<IActionResult> ExportarMes([FromQuery] int ano, [FromQuery] int mes)
+    {
+        var user = GetCurrentUser();
+        if (user is null) return Unauthorized();
+        try
+        {
+            var zip = await arquivoService.ExportarMesAsync(user.CompanyId, ano, mes);
+            Response.Headers.CacheControl = "no-store";
+            return File(zip, "application/zip", $"notas-entrada-{ano}-{mes:00}.zip");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ApiResponse<object> { Success = false, Message = ex.Message });
+        }
+    }
+
     [HttpPost("notas-entrada/{id}/xml")]
     [HorusAuthorizeRoles("administrador", "gerente")]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]

@@ -170,6 +170,22 @@ export const nfeImportService = {
       window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } finally { window.clearTimeout(timer); }
   },
+  /** Baixa o ZIP do mês (XMLs + resumo.csv) para enviar ao contador. */
+  async exportarMes(ano: number, mes: number) {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 120_000);
+    try {
+      const query = new URLSearchParams({ ano: String(ano), mes: String(mes) });
+      const response = await fetch(`${NFE_IMPORT_API_URL}/notas-entrada/exportar?${query}`, { credentials: "include", signal: controller.signal });
+      if (!response.ok) throw new Error(response.status === 403 ? "Somente gerente ou administrador pode exportar as notas." : "Não foi possível gerar o arquivo. Confira sua conexão e sessão.");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url; link.download = `notas-entrada-${ano}-${String(mes).padStart(2, "0")}.zip`;
+      document.body.appendChild(link); link.click(); link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } finally { window.clearTimeout(timer); }
+  },
   async estornarNota(id: string, justificativa: string) {
     const query = new URLSearchParams({ justificativa });
     const response = await apiRequest<object>(`${NFE_IMPORT_API_URL}/notas-entrada/${encodeURIComponent(id)}?${query}`, {

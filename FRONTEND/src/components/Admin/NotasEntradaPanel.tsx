@@ -64,6 +64,20 @@ export default function NotasEntradaPanel({ initialId = null }: { initialId?: st
     finally { setAnexando(false); }
   };
 
+  const [mesExport, setMesExport] = useState(() => {
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  });
+  const [exportando, setExportando] = useState(false);
+  const exportar = async () => {
+    const [ano, mes] = mesExport.split("-").map(Number);
+    if (!ano || !mes) { Toast.error("Escolha o mês."); return; }
+    setExportando(true);
+    try { await nfeImportService.exportarMes(ano, mes); }
+    catch (err) { Toast.error(err instanceof Error ? err.message : "Não foi possível gerar o arquivo."); }
+    finally { setExportando(false); }
+  };
+
   const download = async (nota: NotaEntradaResumo) => {
     setDownloading(true);
     try { if (nota.temComprovante) await nfeImportService.baixarComprovante(nota); else await nfeImportService.baixarXml(nota); }
@@ -87,6 +101,13 @@ export default function NotasEntradaPanel({ initialId = null }: { initialId?: st
         <input id="busca-notas-entrada" className="input-field w-full" value={input} onChange={event => setInput(event.target.value)} maxLength={100} placeholder="Digite para consultar" />
       </div>
       <button className="btn-primary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" type="submit"><Search size={16} /> Buscar</button>
+      <div className="ml-auto flex items-end gap-2">
+        <div>
+          <label htmlFor="mes-exportar-notas" className="mb-1 block text-sm text-text-secondary">Enviar ao contador</label>
+          <input id="mes-exportar-notas" type="month" className="input-field" value={mesExport} onChange={event => setMesExport(event.target.value)} />
+        </div>
+        <button type="button" className="btn-outline-secondary inline-flex min-h-10 items-center justify-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50" disabled={exportando} onClick={() => void exportar()} title="ZIP com os XMLs das notas do mês e um resumo.csv de todas as entradas"><Download size={16} />{exportando ? "Gerando…" : "Baixar mês (ZIP)"}</button>
+      </div>
     </form>}
 
     {loading && <p role="status" className="py-8 text-sm text-text-secondary">Carregando {selectedId ? "os detalhes da nota" : "as notas de entrada"}…</p>}

@@ -209,6 +209,71 @@ public class NotaEntradaArquivoService(Connection connection)
         return await reader.ReadAsync() ? new(Map(reader), JsonSerializer.Deserialize<JsonElement>(reader.GetString(21))) : null;
     }
 
+    /// <summary>
+    /// ZIP para o contador com as entradas do mês (pela data de entrada no sistema, horário de Brasília):
+    /// os XMLs originais das notas não estornadas e um resumo.csv com todas as entradas do período.
+    /// </summary>
+    public async Task<byte[]> ExportarMesAsync(string companyId, int ano, int mes)
+    {
+        if (ano < 2000 || ano > 2100 || mes < 1 || mes > 12) throw new InvalidOperationException("Mês inválido.");
+        var offset = TimeSpan.FromHours(-3);
+        var inicio = new DateTimeOffset(ano, mes, 1, 0, 0, 0, offset);
+        var fim = inicio.AddMonths(1);
+
+        await using var db = await connection.OpenConnectionAsync();
+        await using var cmd = new SqlCommand("""
+            SELECT Id, SWITCHOFFSET(CAST(CriadaEm AS datetimeoffset), '-03:00'), Origem, Modelo, NumeroNota, Serie, ChaveAcesso,
+                   FornecedorNome, FornecedorCnpj, DataEmissao, ValorNota, ValorEntrada, ISNULL(Estornada,0), XmlOriginal
+              FROM dbo.NotasEntradaArquivo
+             WHERE CompanyId=@CompanyId AND CriadaEm >= @Inicio AND CriadaEm < @Fim
+             ORDER BY CriadaEm;
+            """, db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        cmd.Parameters.AddWithValue("@Inicio", inicio);
+        cmd.Parameters.AddWithValue("@Fim", fim);
+
+        using var buffer = new MemoryStream();
+        using (var zip = new System.IO.Compression.ZipArchive(buffer, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))
+        {
+            var csv = new StringBuilder("Data entrada;Tipo;Numero;Serie;Chave de acesso;Fornecedor;CNPJ;Emissao;Valor da nota;Custo da entrada;Situacao;XML no pacote\r\n");
+            static string Cell(string? v) => "\"" + (v ?? "").Replace("\"", "\"\"") + "\"";
+            static string Money(decimal? v) => v?.ToString("0.00", new System.Globalization.CultureInfo("pt-BR")) ?? "";
+            var nomes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var origem = reader.GetString(2);
+                var modelo = reader.GetInt32(3);
+                var chave = reader.IsDBNull(6) ? null : reader.GetString(6);
+                var estornada = reader.GetBoolean(12);
+                var xml = reader.IsDBNull(13) ? null : (byte[])reader[13];
+                var incluiXml = xml is not null && !estornada;
+                if (incluiXml)
+                {
+                    var nome = $"xml/{(string.IsNullOrEmpty(chave) ? reader.GetString(0) : chave)}.xml";
+                    if (nomes.Add(nome))
+                    {
+                        var entry = zip.CreateEntry(nome, System.IO.Compression.CompressionLevel.Optimal);
+                        await using var s = entry.Open();
+                        await s.WriteAsync(xml!);
+                    }
+                }
+                var tipo = origem == "manual" ? "Entrada manual" : modelo == 65 ? "NFC-e" : modelo == 55 ? "NF-e" : "Sem documento";
+                csv.Append(string.Join(';',
+                    Cell(reader.GetDateTimeOffset(1).ToString("dd/MM/yyyy HH:mm")), Cell(tipo), Cell(reader.GetString(4)), Cell(reader.GetString(5)),
+                    Cell(chave is null ? "" : "'" + chave), Cell(reader.GetString(7)), Cell(reader.GetString(8)),
+                    Cell(reader.IsDBNull(9) ? "" : reader.GetValue(9).ToString()), Money(reader.IsDBNull(10) ? null : reader.GetDecimal(10)),
+                    Money(reader.GetDecimal(11)), Cell(estornada ? "Estornada" : "Ativa"), Cell(incluiXml ? "Sim" : "Nao"))).Append("\r\n");
+            }
+            var resumo = zip.CreateEntry("resumo.csv");
+            await using var rs = resumo.Open();
+            // BOM para o Excel abrir acentos corretamente.
+            await rs.WriteAsync(Encoding.UTF8.GetPreamble());
+            await rs.WriteAsync(Encoding.UTF8.GetBytes(csv.ToString()));
+        }
+        return buffer.ToArray();
+    }
+
     public async Task<byte[]?> ObterXmlAsync(string companyId, string id)
     {
         await using var db = await connection.OpenConnectionAsync();
