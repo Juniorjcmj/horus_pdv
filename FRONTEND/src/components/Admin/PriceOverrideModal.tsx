@@ -10,6 +10,7 @@ import { Toast } from "@/hooks/Dialog";
 import useInputMasks from "@/hooks/InputMasks/useInputMasks";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { userService, type SupervisorDto } from "@/services/api/userService";
+import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
 
 export type PriceOverrideApproval = {
   novoPreco: number;
@@ -97,7 +98,7 @@ export default function PriceOverrideModal({
       Toast.error("Selecione o gerente e digite a senha.");
       return;
     }
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    if (typeof navigator !== "undefined" && (navigator.onLine === false || !connectivityService.isOnline())) {
       Toast.error("Sem conexão: a alteração de preço precisa validar a senha do gerente no servidor.");
       return;
     }

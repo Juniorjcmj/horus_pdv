@@ -25,7 +25,7 @@ fs.mkdirSync(dest, { recursive: true });
 
 // Extrai publish-service do zip para gateway-bin usando PowerShell (funciona no Windows sem bsdtar).
 const tempDir = path.join(root, "gateway-tmp");
-fs.rmSync(tempDir, { recursive: true, force: true });
+fs.rmSync(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 1000 });
 execFileSync(
   "powershell",
   ["-NoProfile", "-Command", `Expand-Archive -Path '${zip}' -DestinationPath '${tempDir}' -Force`],
@@ -41,7 +41,9 @@ fs.cpSync(publishDir, dest, {
   recursive: true,
   filter: (src) => !src.includes(`${path.sep}logs`) && !src.includes(`${path.sep}gateway-data`),
 });
-fs.rmSync(tempDir, { recursive: true, force: true });
+// rmSync pode falhar com EPERM no Windows logo após Expand-Archive (handle residual). Retry com maxRetries.
+try { fs.rmSync(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 1000 }); }
+catch { console.warn("[prepare-gateway] Aviso: gateway-tmp não pôde ser removido. Será limpo na próxima execução."); }
 
 const exe = path.join(dest, "HorusGateway.exe");
 if (!fs.existsSync(exe)) {

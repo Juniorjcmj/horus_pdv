@@ -23,6 +23,8 @@ const RECENT_RESPONSE_GRACE_MS = 60_000;
 
 /** Disparado pelo apiClient a cada resposta HTTP recebida da API (qualquer status). */
 export const API_RESPONDED_EVENT = "horus-api-responded";
+/** Disparado pelo apiClient quando o fetch falha por rede (sem resposta HTTP). */
+export const API_NETWORK_FAILURE_EVENT = "horus-api-network-failure";
 
 class ConnectivityService {
   private _status: ConnectionStatus = navigator.onLine ? "ONLINE" : "OFFLINE";
@@ -74,6 +76,7 @@ class ConnectivityService {
     window.addEventListener("online", this._handleOnline);
     window.addEventListener("offline", this._handleOffline);
     window.addEventListener(API_RESPONDED_EVENT, this._handleApiResponded);
+    window.addEventListener(API_NETWORK_FAILURE_EVENT, this._handleApiNetworkFailure);
 
     // Health check periódico
     this._intervalId = setInterval(() => void this._checkHealth(), HEALTH_CHECK_INTERVAL_MS);
@@ -87,6 +90,7 @@ class ConnectivityService {
     window.removeEventListener("online", this._handleOnline);
     window.removeEventListener("offline", this._handleOffline);
     window.removeEventListener(API_RESPONDED_EVENT, this._handleApiResponded);
+    window.removeEventListener(API_NETWORK_FAILURE_EVENT, this._handleApiNetworkFailure);
     if (this._intervalId) {
       clearInterval(this._intervalId);
       this._intervalId = null;
@@ -117,6 +121,11 @@ class ConnectivityService {
   private _handleOffline = (): void => {
     this._consecutiveFailures = 0;
     this._setStatus("OFFLINE");
+  };
+
+  /** Falha de rede no apiClient — conta como health check falhado para detecção rápida. */
+  private _handleApiNetworkFailure = (): void => {
+    this._markFailure();
   };
 
   /** Qualquer resposta HTTP da API (venda, consulta…) prova que ela está acessível. */

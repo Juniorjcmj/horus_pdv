@@ -750,7 +750,7 @@ export default function SalesStartPage({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadCashStatus().catch(() => {
       setCashStatus(null);
-      if (navigator.onLine) Toast.error("Não foi possível validar a abertura de caixa. Verifique sua conexão.");
+      if (connectivityService.isOnline()) Toast.error("Não foi possível validar a abertura de caixa. Verifique sua conexão.");
     });
   }, [loadCashStatus]);
 
@@ -774,7 +774,7 @@ export default function SalesStartPage({
       })
       .catch(() => {
         try { const cached = localStorage.getItem("horus-company-cache"); if (cached) setCompany(JSON.parse(cached)); } catch { /* */ }
-        if (navigator.onLine) Toast.error("Não foi possível carregar dados da empresa no PDV.");
+        if (connectivityService.isOnline()) Toast.error("Não foi possível carregar dados da empresa no PDV.");
       });
   }, []);
 

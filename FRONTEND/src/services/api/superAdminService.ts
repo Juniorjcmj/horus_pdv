@@ -4,6 +4,7 @@
  * Acesso restrito a administradores da empresa-principal.
  */
 import { ApiError, apiRequest, requireEnvUrl, type ApiResponse } from "./apiClient";
+import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
 
 const SUPER_ADMIN_API_URL = requireEnvUrl("VITE_SUPER_ADMIN_API_URL");
 
@@ -67,7 +68,7 @@ export type ListEmpresasParams = {
 
 export const superAdminService = {
   async downloadApiDocumentation(): Promise<void> {
-    if (!navigator.onLine) throw new ApiError("Sem conexão com a internet.", 0);
+    if (!navigator.onLine || !connectivityService.isOnline()) throw new ApiError("Sem conexão com a internet.", 0);
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 30_000);
     try {

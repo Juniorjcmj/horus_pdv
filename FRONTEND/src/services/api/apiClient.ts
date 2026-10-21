@@ -5,6 +5,7 @@
 */
 import { clearAuthSession } from "@/utils/authStorage";
 import { systemLog } from "@/infrastructure/logging/systemLog";
+import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
 
 export type ApiResponse<T> = {
   success: boolean;
@@ -48,7 +49,7 @@ export async function apiRequest<T>(
   endpointUrl: string,
   options: ApiRequestOptions = {},
 ): Promise<ApiResponse<T>> {
-  if (!navigator.onLine) {
+  if (!navigator.onLine || !connectivityService.isOnline()) {
     void systemLog.warn("apiClient", `Offline — ${options.method ?? "GET"} ${endpointUrl}`);
     throw new ApiError("Sem conexão com a internet.", 0);
   }
@@ -78,6 +79,8 @@ export async function apiRequest<T>(
       // Falhas do fetch não têm resposta HTTP. O status 0 permite tratar conectividade sem
       // depender da mensagem (que varia entre Chromium, Electron e outros navegadores).
       void systemLog.error("apiClient", `Falha de rede — ${options.method ?? "GET"} ${endpointUrl}`, String(err));
+      // Notifica ConnectivityService para recheck imediato (detectar API_UNAVAILABLE mais rápido).
+      window.dispatchEvent(new CustomEvent("horus-api-network-failure"));
       throw new ApiError("Não foi possível conectar ao servidor. Verifique a conexão e tente novamente.", 0, err);
     }
 
@@ -87,7 +90,7 @@ export async function apiRequest<T>(
       window.dispatchEvent(new CustomEvent("horus-api-responded"));
     }
 
-    if (response.status === 401 && navigator.onLine) {
+    if (response.status === 401 && connectivityService.isOnline()) {
       void systemLog.warn("apiClient", `401 Unauthorized — ${endpointUrl}`);
       clearAuthSession();
     }
