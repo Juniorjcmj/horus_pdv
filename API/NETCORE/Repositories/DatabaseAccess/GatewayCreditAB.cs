@@ -23,9 +23,16 @@ public static class GatewayCreditAB
     }
     public static async Task<string?> StoreForUserAsync(SqlConnection db, string company, string user)
     {
-        await using var cmd=new SqlCommand("SELECT StoreId FROM UserCreditStores WHERE CompanyId=@Company AND UserId=@User",db);
-        cmd.Parameters.AddWithValue("@Company",company);cmd.Parameters.AddWithValue("@User",user);
-        return await cmd.ExecuteScalarAsync() as string;
+        try
+        {
+            await using var cmd=new SqlCommand("SELECT StoreId FROM UserCreditStores WHERE CompanyId=@Company AND UserId=@User",db);
+            cmd.Parameters.AddWithValue("@Company",company);cmd.Parameters.AddWithValue("@User",user);
+            return await cmd.ExecuteScalarAsync() as string;
+        }
+        catch(SqlException ex) when(ex.Number==208) // Invalid object name — table not yet created
+        {
+            return null;
+        }
     }
     // Caller must hold UPDLOCK on the company/customer row for the entire transaction.
     public static async Task<decimal> DelegatedAsync(SqlConnection db, SqlTransaction tx, string company, string customer)
