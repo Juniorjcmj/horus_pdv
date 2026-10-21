@@ -1,0 +1,5 @@
+# Root .dockerignore — used when Docker context is repo root (API build).
+# Keep only API/NETCORE/ and Shared/ in context.
+*
+!API/NETCORE/
+!Shared/

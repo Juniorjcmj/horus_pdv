@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - "API/NETCORE/**"
+      - "Shared/**"
       - "FRONTEND/**"
       - ".github/workflows/docker-publish.yml"
   workflow_dispatch:
@@ -48,7 +49,7 @@ jobs:
       - name: Build e push da imagem da API
         uses: docker/build-push-action@v6
         with:
-          context: ./API/NETCORE
+          context: .
           file: ./API/NETCORE/Dockerfile
           push: true
           tags: |
