@@ -68,7 +68,7 @@ export type ListEmpresasParams = {
 
 export const superAdminService = {
   async downloadApiDocumentation(): Promise<void> {
-    if (!navigator.onLine || !connectivityService.isOnline()) throw new ApiError("Sem conexão com a internet.", 0);
+    if (!connectivityService.isOnline()) throw new ApiError("Sem conexão com a internet.", 0);
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 30_000);
     try {

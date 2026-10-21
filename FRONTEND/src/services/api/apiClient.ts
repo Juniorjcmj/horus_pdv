@@ -49,7 +49,7 @@ export async function apiRequest<T>(
   endpointUrl: string,
   options: ApiRequestOptions = {},
 ): Promise<ApiResponse<T>> {
-  if (!navigator.onLine || !connectivityService.isOnline()) {
+  if (!connectivityService.isOnline()) {
     void systemLog.warn("apiClient", `Offline — ${options.method ?? "GET"} ${endpointUrl}`);
     throw new ApiError("Sem conexão com a internet.", 0);
   }

@@ -28,7 +28,7 @@ export function useCustomers(): UseCustomersReturn {
   const load = useCallback(async (forceOnline = false): Promise<number> => {
     setLoading(true);
     try {
-      const isOnline = forceOnline || connectivityService.status === "ONLINE" || navigator.onLine;
+      const isOnline = forceOnline || connectivityService.isOnline();
       if (isOnline) {
         const records = await syncCustomersFromApi();
         setCustomers(records.map(localToDto));

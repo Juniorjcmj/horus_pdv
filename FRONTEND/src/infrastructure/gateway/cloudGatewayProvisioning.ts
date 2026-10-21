@@ -24,7 +24,7 @@ let inFlight = false;
  */
 export async function learnGatewayFromCloud(): Promise<void> {
   if (inFlight) return;
-  if (typeof navigator !== "undefined" && (!navigator.onLine || !connectivityService.isOnline())) return;
+  if (!connectivityService.isOnline()) return;
 
   const user = getStoredAuthUser();
   if (!user?.companyId) return;

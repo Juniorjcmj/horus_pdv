@@ -27,7 +27,9 @@ export const API_RESPONDED_EVENT = "horus-api-responded";
 export const API_NETWORK_FAILURE_EVENT = "horus-api-network-failure";
 
 class ConnectivityService {
-  private _status: ConnectionStatus = navigator.onLine ? "ONLINE" : "OFFLINE";
+  // Estado inicial pessimista: o start() faz um health check imediato para descobrir a verdade.
+  // Não usar navigator.onLine — no Electron pode ficar preso em false.
+  private _status: ConnectionStatus = "OFFLINE";
   private _listeners = new Set<Listener>();
   private _intervalId: ReturnType<typeof setInterval> | null = null;
   private _healthUrl: string;
@@ -119,8 +121,9 @@ class ConnectivityService {
   };
 
   private _handleOffline = (): void => {
-    this._consecutiveFailures = 0;
-    this._setStatus("OFFLINE");
+    // Não confiar cegamente no evento offline do browser (no Electron pode ser falso positivo).
+    // Agenda um health check imediato para confirmar se a API realmente caiu.
+    void this._checkHealth();
   };
 
   /** Falha de rede no apiClient — conta como health check falhado para detecção rápida. */
@@ -139,18 +142,15 @@ class ConnectivityService {
     if (this._status !== "ONLINE" && this._status !== "SYNCING") this._setStatus("ONLINE");
   }
 
-  private _markFailure(): void {
-    if (!navigator.onLine) {
-      this._consecutiveFailures = 0;
-      this._setStatus("OFFLINE");
-      return;
-    }
+  private _markFailure(isNetworkError = true): void {
     // Uma resposta real recente vale mais que um health check lento isolado.
     if (Date.now() - this._lastApiResponseAt < RECENT_RESPONSE_GRACE_MS) return;
 
     this._consecutiveFailures++;
     if (this._consecutiveFailures >= FAILURES_BEFORE_UNAVAILABLE) {
-      this._setStatus("API_UNAVAILABLE");
+      // Sem resposta HTTP (fetch falhou) = rede caiu → OFFLINE
+      // Com resposta HTTP porém erro (5xx) = rede ok, API fora → API_UNAVAILABLE
+      this._setStatus(isNetworkError ? "OFFLINE" : "API_UNAVAILABLE");
     } else if (this._started && !this._recheckTimer) {
       // Confirma logo: se foi só lentidão, a próxima resposta zera a contagem sem alarme.
       this._recheckTimer = setTimeout(() => {
@@ -161,11 +161,8 @@ class ConnectivityService {
   }
 
   private async _checkHealth(): Promise<void> {
-    if (!navigator.onLine) {
-      this._consecutiveFailures = 0;
-      this._setStatus("OFFLINE");
-      return;
-    }
+    // NÃO usar navigator.onLine como guarda: no Electron ele pode ficar preso em false
+    // mesmo com internet funcionando. O fetch real é a única prova confiável.
     if (this._checking) return;
     this._checking = true;
 
@@ -181,9 +178,9 @@ class ConnectivityService {
 
       // 401 = API respondeu, mas usuário não autenticado — API está acessível
       if (response.ok || response.status === 401) this._markReachable();
-      else this._markFailure();
+      else this._markFailure(false); // HTTP respondeu mas com erro → API_UNAVAILABLE
     } catch {
-      this._markFailure();
+      this._markFailure(true); // fetch falhou → rede caiu → OFFLINE
     } finally {
       clearTimeout(timeoutId);
       this._checking = false;

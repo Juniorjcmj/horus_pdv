@@ -75,7 +75,7 @@ export function useProducts(): UseProductsReturn {
     setLoading(true);
     setError(null);
     try {
-      const isOnline = forceOnline || connectivityService.status === "ONLINE" || navigator.onLine;
+      const isOnline = forceOnline || connectivityService.isOnline();
 
       if (isOnline) {
         // Online: sincroniza da API → IndexedDB → retorna

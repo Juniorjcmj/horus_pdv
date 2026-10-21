@@ -98,7 +98,7 @@ export default function PriceOverrideModal({
       Toast.error("Selecione o gerente e digite a senha.");
       return;
     }
-    if (typeof navigator !== "undefined" && (navigator.onLine === false || !connectivityService.isOnline())) {
+    if (!connectivityService.isOnline()) {
       Toast.error("Sem conexão: a alteração de preço precisa validar a senha do gerente no servidor.");
       return;
     }
