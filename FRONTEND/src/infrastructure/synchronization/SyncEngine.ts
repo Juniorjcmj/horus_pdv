@@ -28,6 +28,7 @@ import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 import { forwardPendingToGateway } from "@/infrastructure/gateway/outboxGatewayForwarder";
 import { gatewayCreditCloudResult } from "@/infrastructure/gateway/gatewayCreditClient";
 import { recoverGatewayCreditSales } from "@/application/sales/SaleOutboxAdapter";
+import { systemLog } from "@/infrastructure/logging/systemLog";
 import { errorStatus, isBusinessRejection, isCashEventType } from "./failureClassification";
 
 const SYNC_INTERVAL_MS = 30_000;
@@ -321,6 +322,7 @@ class SyncEngine {
           }
 
           // Erro transitório (5xx, timeout, falha de rede, 401/403/408/429): nunca abandona o evento.
+          void systemLog.warn("SyncEngine", `Retry ${event.eventType} #${event.retryCount + 1}: ${msg}`, event.id);
           pushError = msg;
           await markRetryLater(event.id, msg);
           // Para de processar — aguarda restabelecimento da API

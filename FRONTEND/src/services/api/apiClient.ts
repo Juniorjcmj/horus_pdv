@@ -4,6 +4,7 @@
   * Entradas esperadas: recebe caminho, método e payload opcional para executar requisições autenticadas.
 */
 import { clearAuthSession } from "@/utils/authStorage";
+import { systemLog } from "@/infrastructure/logging/systemLog";
 
 export type ApiResponse<T> = {
   success: boolean;
@@ -48,6 +49,7 @@ export async function apiRequest<T>(
   options: ApiRequestOptions = {},
 ): Promise<ApiResponse<T>> {
   if (!navigator.onLine) {
+    void systemLog.warn("apiClient", `Offline — ${options.method ?? "GET"} ${endpointUrl}`);
     throw new ApiError("Sem conexão com a internet.", 0);
   }
 
@@ -75,6 +77,7 @@ export async function apiRequest<T>(
       }
       // Falhas do fetch não têm resposta HTTP. O status 0 permite tratar conectividade sem
       // depender da mensagem (que varia entre Chromium, Electron e outros navegadores).
+      void systemLog.error("apiClient", `Falha de rede — ${options.method ?? "GET"} ${endpointUrl}`, String(err));
       throw new ApiError("Não foi possível conectar ao servidor. Verifique a conexão e tente novamente.", 0, err);
     }
 
@@ -85,6 +88,7 @@ export async function apiRequest<T>(
     }
 
     if (response.status === 401 && navigator.onLine) {
+      void systemLog.warn("apiClient", `401 Unauthorized — ${endpointUrl}`);
       clearAuthSession();
     }
 
@@ -106,6 +110,7 @@ export async function apiRequest<T>(
     }
 
     if (!response.ok || !payload?.success) {
+      void systemLog.error("apiClient", `HTTP ${response.status} — ${endpointUrl}`, payload?.message);
       throw new ApiError(payload?.message || "Erro ao comunicar com a API.", response.status, payload);
     }
 

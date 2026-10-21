@@ -8,6 +8,7 @@ import { customerService, type CustomerDto } from "@/services/api/customerServic
 import { customerRepository } from "@/infrastructure/database/repositories/CustomerRepository";
 import { db, type LocalCustomerRecord } from "@/infrastructure/database/dexie";
 import { NOT_IN_CLOUD_STATUSES, currentTenantId, isCurrentTenant } from "@/infrastructure/database/repositories/OutboxRepository";
+import { systemLog } from "@/infrastructure/logging/systemLog";
 
 function mapDtoToLocal(dto: CustomerDto): LocalCustomerRecord {
   return {
@@ -165,10 +166,10 @@ export async function updateCustomerDebtLocal(customerIdOrDoc: string, newSaldoD
     await syncCustomersFromApi();
     const target = (await customerRepository.getAll()).find(c => c.tenantId === tenant && (c.id === customerIdOrDoc || (digits.length > 0 && c.cpfCnpj.replace(/\D/g, "") === digits)));
     if (target) window.dispatchEvent(new CustomEvent("customer-balance-updated", { detail: { customerId: target.id, document: target.cpfCnpj, saldoDevedor: target.saldoDevedor } }));
-  } catch {
+  } catch (error) {
     // Network failure: update the local saldo with the value we already know from the sale.
     // Do NOT mark creditUnavailable — the cache stays valid for offline operation.
     await db.customers.filter(c => c.tenantId === tenant && (c.id === customerIdOrDoc || (digits.length > 0 && c.cpfCnpj.replace(/\D/g, "") === digits))).modify({ saldoDevedor: newSaldoDevedor });
-    console.warn("Sync falhou; saldo local atualizado com valor da venda.");
+    void systemLog.warn("CustomerSync", "Sync falhou; saldo local atualizado com valor da venda", String(error));
   }
 }

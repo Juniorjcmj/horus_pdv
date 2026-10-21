@@ -5,6 +5,7 @@
  */
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { RefreshCw, AlertTriangle } from "lucide-react";
+import { systemLog } from "@/infrastructure/logging/systemLog";
 
 interface Props {
   children: ReactNode;
@@ -27,6 +28,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[ErrorBoundary] Erro capturado:", error, info.componentStack);
+    void systemLog.error("ErrorBoundary", error.message, info.componentStack ?? undefined);
   }
 
   private handleReload = () => {

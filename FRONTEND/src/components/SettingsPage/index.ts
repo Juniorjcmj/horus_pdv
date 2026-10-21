@@ -17,3 +17,4 @@ export {
   default as SecuritySessionsCard,
   type ActiveSession,
 } from "./SecuritySessionsCard";
+export { default as SystemLogCard } from "./SystemLogCard";

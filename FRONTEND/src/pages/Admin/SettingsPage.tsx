@@ -14,6 +14,7 @@ import {
   PendingBackupCard,
   PrintSettingsCard,
   SecuritySessionsCard,
+  SystemLogCard,
   ThemeColorsCard,
   ThemeSettingsCard,
   type ActiveSession,
@@ -105,6 +106,7 @@ export default function SettingsPage({
             <GatewayMonitorCard />
             {isAdminOrManager && <IntegracaoTokensCard />}
             <PendingBackupCard />
+            <SystemLogCard />
             <SecuritySessionsCard
               sessions={sessions}
               isLoading={isLoading}
