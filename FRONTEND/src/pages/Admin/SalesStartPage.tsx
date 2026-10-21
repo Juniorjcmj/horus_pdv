@@ -96,6 +96,7 @@ import { enqueueDanfePrint, flushPendingDanfePrints } from "@/utils/pendingDanfe
 import { resolveGatewayFiscalAttempts } from "@/utils/gatewayFiscalAttempt";
 import { getGatewayConfig, isGatewayConfigured } from "@/infrastructure/gateway/gatewayConfig";
 import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
+import { systemLog } from "@/infrastructure/logging/systemLog";
 import type { ProductFiscalData } from "@/services/api/productService";
 import { parseBalancaBarcode } from "@/utils/balancaBarcode";
 import { getDesktopBridge } from "@/infrastructure/desktop/bridge";
@@ -736,21 +737,35 @@ export default function SalesStartPage({
       setCashStatus(result);
       return result;
     } catch {
-      const cached = await loadCachedCashStatus();
-      if (cached) {
-        setCashStatus(cached);
-        return cached;
+      // Offline ou API indisponível: tenta restaurar último status do IndexedDB/localStorage.
+      try {
+        const cached = await loadCachedCashStatus();
+        if (cached) {
+          setCashStatus(cached);
+          return cached;
+        }
+      } catch (cacheError) {
+        void systemLog.warn("SalesStartPage", "Falha ao ler cache de caixa", String(cacheError));
       }
-      throw new Error("Não foi possível verificar o status do caixa.");
+      // Sem cache: retorna status fechado para o operador poder abrir offline via F6.
+      const fallback: CashRegisterStatusDto = {
+        state: "fechado",
+        canSell: false,
+        blockReason: "Abra o caixa para vender (modo offline).",
+        serverNow: new Date().toISOString(),
+        currentSession: null,
+        history: [],
+      };
+      setCashStatus(fallback);
+      return fallback;
     }
   }, []);
 
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadCashStatus().catch(() => {
-      setCashStatus(null);
-      if (connectivityService.isOnline()) Toast.error("Não foi possível validar a abertura de caixa. Verifique sua conexão.");
+    loadCashStatus().catch((err) => {
+      void systemLog.error("SalesStartPage", "Falha total ao carregar status do caixa", String(err));
     });
   }, [loadCashStatus]);
 
