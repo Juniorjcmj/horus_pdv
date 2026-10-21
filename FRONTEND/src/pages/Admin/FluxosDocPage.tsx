@@ -9,7 +9,6 @@ import {
   CalendarClock,
   ChevronDown,
   ChevronRight,
-  ClipboardList,
   Package,
   Receipt,
   ShoppingCart,
