@@ -18,6 +18,7 @@ import LandingPage from "@/pages/Public/LandingPage";
 import type { RegisterFormPayload } from "@/pages/Auth/types";
 import { authService } from "@/services/api/authService";
 import { cashRegisterService } from "@/services/api/cashRegisterService";
+import { loadCachedCashStatus } from "@/infrastructure/database/repositories/CashSessionRepository";
 import { connectivityService } from "@/infrastructure/synchronization/ConnectivityService";
 import { syncEngine } from "@/infrastructure/synchronization/SyncEngine";
 import { startCloudGatewayProvisioning } from "@/infrastructure/gateway/cloudGatewayProvisioning";
@@ -460,8 +461,14 @@ export default function App() {
   };
 
   const handleOpenSalesInNewTab = async () => {
+    let cashStatus: Awaited<ReturnType<typeof cashRegisterService.status>> | null = null;
     try {
-      const cashStatus = await cashRegisterService.status();
+      cashStatus = await cashRegisterService.status();
+    } catch {
+      // Offline: tenta cache local para decidir se pode vender.
+      cashStatus = (await loadCachedCashStatus().catch(() => null)) ?? null;
+    }
+    try {
       if (!cashStatus?.canSell) {
         const shouldOpenCashRegister = await statusDialog.confirm(
           cashStatus?.blockReason ||
