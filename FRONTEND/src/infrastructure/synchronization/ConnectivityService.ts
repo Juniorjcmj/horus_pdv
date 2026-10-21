@@ -139,6 +139,9 @@ class ConnectivityService {
 
   private _markReachable(): void {
     this._consecutiveFailures = 0;
+    // Atualiza o timestamp: o health check também prova que a API está acessível,
+    // ativando a janela de graça de 60s para ignorar falhas isoladas durante o sync.
+    this._lastApiResponseAt = Date.now();
     if (this._status !== "ONLINE" && this._status !== "SYNCING") this._setStatus("ONLINE");
   }
 

@@ -204,6 +204,9 @@ export const salesHistoryService = {
     const response = await apiRequest<RegisterSaleResponse>(HISTORICO_VENDAS_API_URL, {
       method: "POST",
       body: JSON.stringify(payload),
+      // Sync offline pode enviar vendas acumuladas por horas; a API de produção
+      // ocasionalmente leva 6–7s. Timeout generoso evita que o sync derrube a conectividade.
+      timeoutMs: 30_000,
     });
     return response.data;
   },
