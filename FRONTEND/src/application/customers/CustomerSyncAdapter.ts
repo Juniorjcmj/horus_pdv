@@ -3,6 +3,7 @@
  * Objetivo: puxa clientes da API e sincroniza com IndexedDB.
  */
 import { sumMoney, money } from "@/utils/saleMoney";
+import { sharedCreditRequired } from "@/infrastructure/gateway/gatewayCreditClient";
 import { customerService, type CustomerDto } from "@/services/api/customerService";
 import { customerRepository } from "@/infrastructure/database/repositories/CustomerRepository";
 import { db, type LocalCustomerRecord } from "@/infrastructure/database/dexie";
@@ -127,14 +128,14 @@ async function readCreditSnapshotOnce(): Promise<LocalCustomerRecord[]> {
   return records;
 }
 
-/** Saldo devedor atual do cliente no IndexedDB (inclui fiado offline pendente). Null se não estiver no cache. */
+/** Informational debt only. Shared-credit authority always comes from the Gateway ledger. */
 export async function getLocalCustomerDebt(customerIdOrDoc: string): Promise<number | null> {
   const digits = customerIdOrDoc.replace(/\D/g, "");
   const all = await customerRepository.getAll();
   const target = all.find(
     (c) => c.tenantId === currentTenantId() && (c.id === customerIdOrDoc || (digits.length > 0 && c.cpfCnpj.replace(/\D/g, "") === digits)),
   );
-  return target ? target.creditUnavailable ? Number.NaN : target.saldoDevedor ?? null : null;
+  return target ? target.creditUnavailable && !sharedCreditRequired() ? Number.NaN : target.saldoDevedor ?? null : null;
 }
 
 /** Carrega clientes do IndexedDB. Se vazio, tenta sync da API. */

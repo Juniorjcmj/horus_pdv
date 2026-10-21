@@ -113,6 +113,7 @@ public class HorusJwtService(HorusSecurityOptions securityOptions)
 
 public class AuthenticatedUser
 {
+    public string? CreditStoreId { get; set; }
     public string Id { get; set; } = string.Empty;
     public string CompanyId { get; set; } = "empresa-principal";
     public string SessionId { get; set; } = string.Empty;

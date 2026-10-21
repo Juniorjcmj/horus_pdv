@@ -123,7 +123,7 @@ public class PedidoController(
             catch { }
 
             var result = await historicoVendasAB.RegistrarComPrecosFixosAsync(
-                currentUser.CompanyId, pedido.CustomerName, pedido.CustomerCpf, paymentType, currentUser.Name, pedido.Itens, request.Payments, caixaSessaoId, pedido.Id);
+                currentUser.CompanyId, pedido.CustomerName, pedido.CustomerCpf, paymentType, currentUser.Name, pedido.Itens, request.Payments, caixaSessaoId, pedido.Id,currentUser.CreditStoreId);
 
 
 

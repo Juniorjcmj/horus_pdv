@@ -162,6 +162,7 @@ export type ProcessedEventRecord = {
 // ---------------------------------------------------------------------------
 
 export class LocalDatabase extends Dexie {
+  creditIntents!: EntityTable<{ id: string; tenantId: string; terminalId: string; storeId: string; payload: import("@/services/api/salesHistoryService").RegisterSalePayload; authorizationId: string; grantId: string; customerId: string }, "id">;
   devices!: EntityTable<DeviceRecord, "id">;
   users!: EntityTable<LocalUserRecord, "id">;
   products!: EntityTable<LocalProductRecord, "id">;
@@ -199,6 +200,7 @@ export class LocalDatabase extends Dexie {
     this.version(2).stores({
       sales: "id, deviceId, tenantId, sessionId, saleNumber, status, createdAt",
     });
+    this.version(3).stores({ creditIntents: "id, tenantId" });
   }
 }
 

@@ -15,6 +15,10 @@ using HorusGateway.Services;
 using Microsoft.Extensions.Hosting.WindowsServices;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<GatewayCreditLedger>();
+builder.Services.AddSingleton<CreditInstallationGuard>();
+builder.Services.AddHttpClient("GatewayCredit",client=>client.Timeout=TimeSpan.FromSeconds(15));
+builder.Services.AddHostedService<GatewayCreditSyncService>();
 
 // Execução como Serviço do Windows (CHANGE GATEWAY 08). No-op fora do Windows/quando não é serviço,
 // então é seguro em qualquer plataforma. Permite `sc create` + partida automática no boot da máquina.
@@ -63,7 +67,8 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddSingleton<GatewayIdentity>();
 builder.Services.AddSingleton<GatewayDatabase>();
-builder.Services.AddSingleton<IEventStore, SqliteEventStore>();
+builder.Services.AddSingleton<SqliteEventStore>();
+builder.Services.AddSingleton<IEventStore>(services => services.GetRequiredService<SqliteEventStore>());
 builder.Services.AddSingleton<ITerminalStore, SqliteTerminalStore>();
 builder.Services.AddSingleton<IOrderStore, SqliteOrderStore>();
 
@@ -110,6 +115,7 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
     database.Initialize();
+    scope.ServiceProvider.GetRequiredService<CreditInstallationGuard>().Start();
 
     if (identity.IsBound)
     {

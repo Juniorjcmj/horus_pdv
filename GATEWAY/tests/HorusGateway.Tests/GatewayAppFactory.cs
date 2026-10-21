@@ -17,6 +17,8 @@ public sealed class GatewayAppFactory : WebApplicationFactory<Program>
     private readonly bool _requireTerminalAuth;
     private readonly string _registrationToken;
     private readonly bool _openRegistration;
+    private readonly bool _creditEnabled;
+    private readonly string _witness;
 
     public GatewayAppFactory(
         string databasePath,
@@ -24,7 +26,9 @@ public sealed class GatewayAppFactory : WebApplicationFactory<Program>
         string storeId = "store-001",
         bool requireTerminalAuth = false,
         string registrationToken = "test-registration-token",
-        bool openRegistration = false)
+        bool openRegistration = false,
+        bool creditEnabled = false,
+        string witness = "")
     {
         _databasePath = databasePath;
         _companyId = companyId;
@@ -32,6 +36,7 @@ public sealed class GatewayAppFactory : WebApplicationFactory<Program>
         _requireTerminalAuth = requireTerminalAuth;
         _registrationToken = registrationToken;
         _openRegistration = openRegistration;
+        _creditEnabled=creditEnabled;_witness=witness;
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -42,6 +47,9 @@ public sealed class GatewayAppFactory : WebApplicationFactory<Program>
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Gateway:GatewayId"] = "gw_test",
+                ["Gateway:CreditEnabled"] = _creditEnabled.ToString(),
+                ["Gateway:CreditEpoch"] = "test-epoch",
+                ["Gateway:CreditWitnessPath"] = _witness,
                 ["Gateway:CompanyId"] = _companyId,
                 ["Gateway:StoreId"] = _storeId,
                 ["Gateway:DatabasePath"] = _databasePath,

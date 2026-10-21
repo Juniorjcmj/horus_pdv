@@ -160,7 +160,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         {
             var eventId = request.EventId?.Trim();
             // Capture canonical identity before normalization mutates settlement fields.
-            var identityHash = !string.IsNullOrWhiteSpace(request.PayloadHash) ? request.PayloadHash.Trim().ToLowerInvariant() : HorusPayloadHash.ComputeHash(request);
+            var identityHash = request.CreditAuthorization is not null
+                ? Horus.Credit.CreditProtocol.SaleHash(JsonSerializer.SerializeToElement(request, JsonOptions))
+                : !string.IsNullOrWhiteSpace(request.PayloadHash) ? request.PayloadHash.Trim().ToLowerInvariant() : HorusPayloadHash.ComputeHash(request);
             if (!string.IsNullOrWhiteSpace(eventId))
             {
                 const string checkEventSql = """
@@ -199,6 +201,24 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 await checkReader.CloseAsync();
             }
 
+            string? frozenOrderId=null;
+            List<PedidoItemAD>? frozenOrderItems=null;
+            if(!string.IsNullOrWhiteSpace(request.OrderNumber))
+            {
+                await using(var order=new SqlCommand("SELECT Id,CustomerCpf,Status FROM Pedidos WITH(UPDLOCK,HOLDLOCK) WHERE CompanyId=@Company AND OrderNumber=@Number",db,transaction))
+                {
+                    order.Parameters.AddWithValue("@Company",companyId);order.Parameters.AddWithValue("@Number",request.OrderNumber);
+                    await using var reader=await order.ExecuteReaderAsync();
+                    if(!await reader.ReadAsync() || reader.GetInt32(2)!=0 || new string(reader.GetString(1).Where(char.IsDigit).ToArray())!=new string(request.CustomerCpf.Where(char.IsDigit).ToArray()))throw new InvalidOperationException("Pedido indisponível ou cliente divergente.");
+                    frozenOrderId=reader.GetString(0);
+                }
+                frozenOrderItems=[];
+                await using var lines=new SqlCommand("SELECT ProductCode,ProductName,Quantity,UnitPrice,ItemTotal FROM PedidoItens WHERE PedidoId=@Id ORDER BY ProductCode",db,transaction);lines.Parameters.AddWithValue("@Id",frozenOrderId);
+                await using(var reader=await lines.ExecuteReaderAsync())while(await reader.ReadAsync())frozenOrderItems.Add(new(){ProductCode=reader.GetString(0),ProductName=reader.GetString(1),Quantity=reader.GetDecimal(2),UnitPrice=reader.GetDecimal(3),ItemTotal=reader.GetDecimal(4)});
+                frozenOrderItems=frozenOrderItems.OrderBy(i=>i.ProductCode,StringComparer.Ordinal).ToList();
+                var actual=request.Items.OrderBy(i=>i.ProductCode,StringComparer.Ordinal).ToList();
+                if(actual.Count!=frozenOrderItems.Count || actual.Where((line,i)=>line.ProductCode!=frozenOrderItems[i].ProductCode || line.Quantity!=frozenOrderItems[i].Quantity || line.UnitPrice!=frozenOrderItems[i].UnitPrice || line.Desconto!=0).Any())throw new InvalidOperationException("Itens divergem dos preços congelados no pedido.");
+            }
             var customerName = string.IsNullOrWhiteSpace(request.CustomerName) ? "Consumidor" : request.CustomerName.Trim();
             var customerCpf = string.IsNullOrWhiteSpace(request.CustomerCpf) ? "-" : request.CustomerCpf.Trim();
             var paymentType = string.IsNullOrWhiteSpace(request.PaymentType) ? "-" : request.PaymentType.Trim();
@@ -259,7 +279,13 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                     customerName = r.GetString(r.GetOrdinal("CustomerName"));
                 }
 
-                SaleMoney.Credit(limiteCredito, saldoDevedor, fiadoAmount);
+                if (request.CreditAuthorization is not null)
+                    await GatewayCreditAB.ConsumeAsync(db, transaction, companyId, fiadoClienteId!, fiadoAmount, request);
+                else
+                {
+                    await GatewayCreditAB.RequireLegacyAsync(db, transaction, companyId, request.AuthenticatedCreditStoreId);
+                    SaleMoney.Credit(limiteCredito, saldoDevedor + await GatewayCreditAB.DelegatedAsync(db, transaction, companyId, fiadoClienteId!), fiadoAmount);
+                }
             }
 
             var isOfflineSync = !string.IsNullOrWhiteSpace(request.EventId) 
@@ -268,24 +294,31 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 
             // Preço diferente do cadastrado exige autorização de gerente (senha dada no caixa). A conferência
             // roda na transação da venda: a autorização é consumida junto com ela e some se a venda falhar.
-            var autorizacoesPreco = await AutorizacaoPrecoAB.ValidarPrecosDaVendaAsync(
-                db, transaction, companyId, request.Items, request.ReenvioOffline);
+            var autorizacoesPreco = frozenOrderItems is null ? await AutorizacaoPrecoAB.ValidarPrecosDaVendaAsync(
+                db, transaction, companyId, request.Items, request.ReenvioOffline) : [];
 
             // A venda e a baixa de estoque compartilham a mesma transação para evitar histórico sem estoque atualizado.
-            var (saleItems, rupturas) = await BaixarEstoqueAsync(db, transaction, companyId, request.Items, isOfflineSync);
+            var (saleItems, rupturas) = frozenOrderItems is null ? await BaixarEstoqueAsync(db, transaction, companyId, request.Items, isOfflineSync)
+                : (await BaixarEstoqueComPrecoFixoAsync(db,transaction,companyId,frozenOrderItems), new List<EstoqueRupturaAvisoAD>());
 
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, payments,
                 request.ClientSaleId, request.OfflineReference, request.OccurredAt, caixaSessaoId);
 
             await AutorizacaoPrecoAB.VincularVendaAsync(db, transaction, companyId, autorizacoesPreco, result.VendaId);
+            if(frozenOrderId is not null)
+            {
+                await using var finish=new SqlCommand("UPDATE Pedidos SET Status=1,VendaId=@Sale,FinalizedAt=SYSDATETIMEOFFSET() WHERE CompanyId=@Company AND Id=@Order AND Status=0",db,transaction);
+                finish.Parameters.AddWithValue("@Company",companyId);finish.Parameters.AddWithValue("@Order",frozenOrderId);finish.Parameters.AddWithValue("@Sale",result.VendaId);
+                if(await finish.ExecuteNonQueryAsync()!=1)throw new InvalidOperationException("Pedido alterado durante finalização.");
+            }
 
             result.Warnings = rupturas;
 
             FiadoMovimentoAD? fiadoMov = null;
             if (fiadoAmount > 0 && fiadoClienteId is not null)
             {
-                fiadoMov = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteId, fiadoAmount, result.VendaId, operatorName);
+                fiadoMov = await fiadoAb.RegistrarDebitoAsync(db, transaction, companyId, fiadoClienteId, fiadoAmount, result.VendaId, operatorName, request.CreditAuthorization is not null);
                 result.FiadoSaldoAtual = fiadoMov.SaldoAtual;
                 result.FiadoClienteId = fiadoClienteId;
             }
@@ -361,7 +394,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         List<PedidoItemAD> pedidoItens,
         List<VendaPagamentoRequest>? payments = null,
         string? caixaSessaoId = null,
-        string? pedidoId = null)
+        string? pedidoId = null,
+        string? authenticatedStoreId = null)
     {
         await using var db = await connection.OpenConnectionAsync();
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
@@ -428,7 +462,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                     customerName = r.GetString(r.GetOrdinal("CustomerName"));
                 }
 
-                SaleMoney.Credit(limiteCredito, saldoDevedor, fiadoAmountFixo);
+                await GatewayCreditAB.RequireLegacyAsync(db, transaction, companyId, authenticatedStoreId);
+                SaleMoney.Credit(limiteCredito, saldoDevedor + await GatewayCreditAB.DelegatedAsync(db, transaction, companyId, fiadoClienteIdFixo!), fiadoAmountFixo);
             }
 
             var saleItems = await BaixarEstoqueComPrecoFixoAsync(db, transaction, companyId, pedidoItens);
@@ -1197,6 +1232,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 await cmdDocFiscal.ExecuteNonQueryAsync();
             }
 
+            if (!string.IsNullOrEmpty(clienteIdFiado) && valorFiado > 0)
+                await FiadoAB.ReverseDebitAsync(db,transaction,companyId,clienteIdFiado,vendaId,valorFiado,operadorNome);
             await transaction.CommitAsync();
         }
         catch (Exception ex)
@@ -1207,25 +1244,6 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 
         // Devolve aos lotes de origem o que a venda tirou deles (Fase 2). Seguro: nunca lança exceção.
         await loteAb.EstornarVendaSeguroAsync(companyId, vendaId);
-
-        // 7. Se houve fiado, estorna o saldo devedor do cliente de forma consistente
-        if (!string.IsNullOrEmpty(clienteIdFiado) && valorFiado > 0)
-        {
-            try
-            {
-                await fiadoAb.RegistrarCreditoAsync(
-                    companyId,
-                    clienteIdFiado,
-                    valorFiado,
-                    "Estorno",
-                    $"Cancelamento da Venda #{saleNumber}. Motivo: {justificativa.Trim()} (Aut: {supervisorNome})",
-                    operadorNome);
-            }
-            catch
-            {
-                // Não impede a conclusão do cancelamento caso o estorno financeiro secundário falhe
-            }
-        }
 
         // 8. Grava na trilha de auditoria
         try
@@ -1618,29 +1636,18 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 $"novo total: R$ {HorusMoneyFormat.Format(novoTotal)}. Motivo: {justificativa.Trim()}",
                 "Vendas", vendaId);
 
+            if (!string.IsNullOrEmpty(clienteIdFiado) && valorFiado > 0)
+            {
+                await FiadoAB.ReverseDebitAsync(db,transaction,companyId,clienteIdFiado,vendaId,valorFiado,financeiroNome);
+                var replacement=SaleMoney.Money(valorFiado*proporcao);
+                if(replacement>0)await fiadoAb.RegistrarDebitoAsync(db,transaction,companyId,clienteIdFiado,replacement,result.VendaId,operatorName,guaranteedCredit:true);
+            }
             await transaction.CommitAsync();
 
             // Pós-commit: estorno e reconsumo de lotes FEFO (seguro, nunca lança)
             await loteAb.EstornarVendaSeguroAsync(companyId, vendaId);
             await loteAb.ConsumirVendaSeguroAsync(
                 companyId, result.VendaId, saleItems.Select(item => (item.ProductCode, item.Quantity)));
-
-            // Pós-commit: fiado — estorna original e re-debita proporcionalmente (mesmo padrão do cancelamento)
-            if (!string.IsNullOrEmpty(clienteIdFiado) && valorFiado > 0)
-            {
-                try
-                {
-                    await fiadoAb.RegistrarCreditoAsync(companyId, clienteIdFiado, valorFiado,
-                        "Estorno", $"Correção da Venda #{saleNumber}. Motivo: {justificativa.Trim()} (Financeiro: {financeiroNome})", financeiroNome);
-
-                    var novoFiado = SaleMoney.Money(valorFiado * proporcao);
-                    if (novoFiado > 0)
-                    {
-                        await fiadoAb.RegistrarDebitoAsync(companyId, clienteIdFiado, novoFiado, result.VendaId, operatorName);
-                    }
-                }
-                catch { /* Não impede a conclusão da correção */ }
-            }
 
             return new CorrecaoVendaResultadoAD
             {

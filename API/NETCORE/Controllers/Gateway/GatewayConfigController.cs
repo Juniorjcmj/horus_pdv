@@ -10,13 +10,15 @@ using HORUSPDV_API.Models.Response;
 using HORUSPDV_API.Repositories.DatabaseAccess;
 using HORUSPDV_API.Services.Security;
 using Microsoft.AspNetCore.Mvc;
+using HORUSPDV_API.Repositories;
+using Microsoft.Data.SqlClient;
 
 namespace HORUSPDV_API.Controllers.Gateway;
 
 [ApiController]
 [Route("api/gateway-config")]
 [HorusAuthorizeRoles("administrador", "gerente", "atendente", "caixa")]
-public class GatewayConfigController(LojaGatewayConfigAB gatewayConfigAB) : ControllerBase
+public class GatewayConfigController(LojaGatewayConfigAB gatewayConfigAB,Connection creditConnection) : ControllerBase
 {
     /// <summary>Terminal autenticado obtém o endereço do Gateway da sua empresa (ou nulo se não houver).</summary>
     [HttpGet]
@@ -27,6 +29,14 @@ public class GatewayConfigController(LojaGatewayConfigAB gatewayConfigAB) : Cont
             return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
         }
 
+        if(currentUser.CreditStoreId is not null)
+        {
+            await using var db=await creditConnection.OpenConnectionAsync(cancellationToken);
+            await using var query=new SqlCommand("SELECT GatewayUrl FROM GatewayCreditStores WHERE CompanyId=@Company AND StoreId=@Store AND State<>'DISABLED'",db);
+            query.Parameters.AddWithValue("@Company",currentUser.CompanyId);query.Parameters.AddWithValue("@Store",currentUser.CreditStoreId);
+            if(await query.ExecuteScalarAsync(cancellationToken) is string gatewayUrl)
+                return Ok(new ApiResponse<object>{Success=true,Data=new{gatewayUrl,enabled=true,storeId=currentUser.CreditStoreId,updatedAt=DateTimeOffset.UtcNow.ToString("o")}});
+        }
         var config = await gatewayConfigAB.GetByCompanyAsync(currentUser.CompanyId, cancellationToken);
         return Ok(new ApiResponse<object>
         {

@@ -45,12 +45,14 @@ public sealed class CloudEndpointSyncClient : ICloudSyncClient
     private readonly HttpClient _http;
     private readonly GatewayOptions _options;
     private readonly ILogger<CloudEndpointSyncClient> _logger;
+    private readonly HorusGateway.Data.GatewayDatabase? _database;
 
-    public CloudEndpointSyncClient(HttpClient http, IOptions<GatewayOptions> options, ILogger<CloudEndpointSyncClient> logger)
+    public CloudEndpointSyncClient(HttpClient http, IOptions<GatewayOptions> options, ILogger<CloudEndpointSyncClient> logger, HorusGateway.Data.GatewayDatabase? database = null)
     {
         _http = http;
         _options = options.Value;
         _logger = logger;
+        _database = database;
     }
 
     public bool Enabled => _options.UsesCloudEndpoints;
@@ -117,6 +119,16 @@ public sealed class CloudEndpointSyncClient : ICloudSyncClient
         }
         if (string.Equals(ev.EventType, "SALE_CREATED", StringComparison.OrdinalIgnoreCase))
         {
+            if(body["creditAuthorization"] is not null && body["gatewayFiscalAttempt"] is not null && _database is not null)
+            {
+                // Credit has already committed. Preserve the event snapshot and wait for the original
+                // local invoice instead of racing the terminal with a second cloud invoice.
+                using var fiscalDb=_database.OpenConnection();using var fiscal=fiscalDb.CreateCommand();
+                fiscal.CommandText="SELECT XmlAssinado FROM LocalNfceContingencias WHERE CompanyId=$company AND VendaId=$sale";
+                fiscal.Parameters.AddWithValue("$company",ev.CompanyId);fiscal.Parameters.AddWithValue("$sale",body["clientSaleId"]?.GetValue<string>()??ev.EventId);
+                if(fiscal.ExecuteScalar() is not string xml)return CloudSyncResult.Of(CloudSyncStatus.Transient,"Venda fiado confirmada; aguardando XML original da contingência local.");
+                body["xmlNfceContingencia"]=xml;
+            }
             body["reenvioOffline"] = true;
             if (body["clientSaleId"] is null) body["clientSaleId"] = ev.EventId;
             if (body["occurredAt"] is null && !string.IsNullOrWhiteSpace(ev.OccurredAt)) body["occurredAt"] = ev.OccurredAt;
@@ -148,6 +160,14 @@ public sealed class CloudEndpointSyncClient : ICloudSyncClient
             var status = (int)response.StatusCode;
             if (response.IsSuccessStatusCode)
             {
+                if(_database is not null && body["creditAuthorization"] is not null)
+                {
+                    using var result=JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+                    var number=result.RootElement.GetProperty("data").GetProperty("saleNumber").GetString();
+                    using var db=_database.OpenConnection();using var update=db.CreateCommand();
+                    update.CommandText="UPDATE GatewayEvents SET CloudSaleNumber=$number WHERE CompanyId=$company AND EventId=$event";
+                    update.Parameters.AddWithValue("$number",(object?)number??DBNull.Value);update.Parameters.AddWithValue("$company",ev.CompanyId);update.Parameters.AddWithValue("$event",ev.EventId);update.ExecuteNonQuery();
+                }
                 return CloudSyncResult.Of(CloudSyncStatus.Success);
             }
 

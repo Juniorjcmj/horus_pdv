@@ -176,6 +176,7 @@
             <label for="pToken">Token (alternativa ao IP)</label>
             <input id="pToken" placeholder="opcional" />
           </div>
+          <div><label for="pAdminToken">Segredo gerencial (fiado habilitado)</label><input id="pAdminToken" type="password" autocomplete="off" /></div>
           <div>
             <button type="submit" id="pSubmit">Autorizar terminal</button>
           </div>
@@ -189,6 +190,17 @@
       </div>
     </section>
 
+    <section class="card" aria-labelledby="creditTitle">
+      <h2 id="creditTitle">Fiado compartilhado</h2>
+      <p class="muted">O saldo central é informativo. A autorização usa o orçamento durável deste Gateway.</p>
+      <form id="creditForm" class="form">
+        <div><label for="creditTerminal">Terminal cadastrado</label><input id="creditTerminal" autocomplete="off" required /></div>
+        <div><label for="creditKey">Credencial do terminal</label><input id="creditKey" type="password" autocomplete="off" required /></div>
+        <div><button type="submit">Consultar orçamento</button></div>
+      </form>
+      <p id="creditState" class="msg" role="status">Informe uma credencial para consultar grants, reservas e pendências.</p>
+      <div style="overflow-x:auto"><table><thead><tr><th>Cliente / grant</th><th>Livre</th><th>Reservado</th><th>Consumido</th><th>Prazo</th><th>Pendências</th></tr></thead><tbody id="creditRows"></tbody></table></div>
+    </section>
     <div class="foot">
       Quack Gateway • empresa <strong id="footCompany">—</strong> • loja <strong id="footStore">—</strong> •
       atualiza a cada 5s • <a href="/health" target="_blank">/health</a> ·
@@ -199,6 +211,26 @@
   <script>
     const $ = (id) => document.getElementById(id);
     let lastOk = false;
+    let creditVisible = false;
+    async function refreshCredit() {
+      if (!creditVisible) return;
+      try {
+        const response = await fetch('/api/gateway/credit/dashboard', { headers: { 'X-Terminal-Id': $('creditTerminal').value, 'X-Terminal-Key': $('creditKey').value } });
+        if (!response.ok) throw new Error('Consulta recusada. Confira a credencial e a identidade do terminal.');
+        const data = await response.json();
+        $('creditState').textContent = `Estado: ${data.state}. ${data.enabled ? 'Serviço habilitado.' : 'Novas autorizações bloqueadas na configuração.'}`;
+        $('creditRows').replaceChildren();
+        for (const grant of data.grants) {
+          const row = document.createElement('tr');
+          const money = (cents) => (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          for (const value of [grant.customerId + ' / ' + grant.grantId, grant.closed ? 'Fechado' : money(grant.freeCents), money(grant.reservedCents), money(grant.consumedCents), fmtTime(grant.expiresAt), String(grant.pendingReconciliation)]) {
+            const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell);
+          }
+          $('creditRows').appendChild(row);
+        }
+      } catch (error) { $('creditState').textContent = error.message; }
+    }
+    $('creditForm').addEventListener('submit', (event) => { event.preventDefault(); creditVisible = true; refreshCredit(); });
 
     function setDot(el, state) { el.className = 'dot ' + state; }
     function fmtTime(iso) {
@@ -321,7 +353,7 @@
           provisionToken: $('pToken').value.trim() || null,
         };
         const r = await fetch('/api/gateway/terminals/provision', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Registration-Token': $('pAdminToken').value }, body: JSON.stringify(payload),
         });
         if (!r.ok) {
           const err = await r.json().catch(() => ({}));
@@ -338,7 +370,7 @@
     });
 
     async function tick() {
-      await Promise.all([refreshHealth(), refreshReadiness(), refreshTerminals()]);
+      await Promise.all([refreshHealth(), refreshReadiness(), refreshTerminals(), refreshCredit()]);
     }
     refreshStatus();
     tick();

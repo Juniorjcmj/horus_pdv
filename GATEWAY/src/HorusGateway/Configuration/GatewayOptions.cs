@@ -7,6 +7,11 @@ namespace HorusGateway.Configuration;
 
 public sealed class GatewayOptions
 {
+    public bool CreditEnabled { get; set; } = false;
+    public string CreditEpoch { get; set; } = string.Empty;
+    public int CreditReservationSeconds { get; set; } = 120;
+    public long CreditLowBudgetAlertCents { get; set; } = 0;
+    public string CreditWitnessPath { get; set; } = string.Empty;
     public const string SectionName = "Gateway";
 
     /// <summary>Identidade estável do Gateway (ex.: "gw_01JABC..."). Gerada no boot se vazia.</summary>

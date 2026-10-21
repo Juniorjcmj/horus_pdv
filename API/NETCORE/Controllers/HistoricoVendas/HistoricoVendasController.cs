@@ -193,6 +193,13 @@ public class HistoricoVendasController(
         try
         {
             GatewayInvoice? originalInvoice = null;
+            request.AuthenticatedCreditStoreId = currentUser.CreditStoreId;
+            // Only the authenticated server channel can attest a durable Gateway commit.
+            if (HttpContext.Items["CurrentGateway"] is GatewayTokenValidation gateway)
+            {
+                request.AuthenticatedGatewayTokenId = gateway.TokenId;
+                request.AuthenticatedGatewayStoreId = gateway.StoreId;
+            }
             if (!string.IsNullOrWhiteSpace(request.XmlNfceContingencia))
             {
                 var issuer = await emitentes.ObterAsync(currentUser.CompanyId)

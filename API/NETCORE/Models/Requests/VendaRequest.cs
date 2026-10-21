@@ -11,6 +11,14 @@ namespace HORUSPDV_API.Models.Requests;
 
 public class VendaRequest
 {
+    public string? OrderNumber { get; set; }
+    public Horus.Credit.CreditProof? CreditAuthorization { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? AuthenticatedGatewayTokenId { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? AuthenticatedGatewayStoreId { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? AuthenticatedCreditStoreId { get; set; }
     public string? ClientSaleId { get; set; }
     public string? EventId { get; set; }
     public string? EventType { get; set; }

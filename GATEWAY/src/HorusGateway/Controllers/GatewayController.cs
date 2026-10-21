@@ -70,6 +70,9 @@ public sealed class GatewayController : ControllerBase
         {
             return BadRequest(new { error = "corpo do evento ausente." });
         }
+        if(request.EventType=="SALE_CREATED" && request.Payload.ValueKind==System.Text.Json.JsonValueKind.Object &&
+            (request.Payload.TryGetProperty("creditAuthorization",out _) || _options.CreditEnabled && request.Payload.TryGetProperty("payments",out var creditPayments) && creditPayments.ValueKind==System.Text.Json.JsonValueKind.Array && creditPayments.EnumerateArray().Any(p=>p.TryGetProperty("paymentType",out var type)&&type.GetString()?.Equals("fiado",StringComparison.OrdinalIgnoreCase)==true)))
+            return Conflict(new{error="Fiado requer reserva e commit no protocolo de crédito."});
 
         // Isolamento multi-tenant: nunca aceitar evento de outra empresa.
         if (!_identity.IsBound)

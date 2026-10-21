@@ -138,10 +138,19 @@ public class ClienteAB(Connection connection)
             """;
 
         await using var db = await connection.OpenConnectionAsync();
-        await using var command = new SqlCommand(sql, db);
+        await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
+        await using (var check = new SqlCommand("SELECT SaldoDevedor FROM Clientes WITH(UPDLOCK,HOLDLOCK) WHERE CompanyId=@CompanyId AND Id=@Id", db, transaction))
+        {
+            check.Parameters.AddWithValue("@CompanyId",companyId); check.Parameters.AddWithValue("@Id",customer.Id);
+            var debt = await check.ExecuteScalarAsync();
+            if (debt is not null && customer.LimiteCredito < Convert.ToDecimal(debt) + await GatewayCreditAB.DelegatedAsync(db, transaction, companyId, customer.Id))
+                throw new InvalidOperationException("Recolha e reconcilie os orçamentos antes de reduzir o limite abaixo dos compromissos.");
+        }
+        await using var command = new SqlCommand(sql, db, transaction);
         command.Parameters.AddWithValue("@CompanyId", companyId);
         AddParameters(command, customer);
         await command.ExecuteNonQueryAsync();
+        await transaction.CommitAsync();
         return customer;
     }
 

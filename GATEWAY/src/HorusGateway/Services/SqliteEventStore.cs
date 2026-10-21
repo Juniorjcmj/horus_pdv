@@ -26,6 +26,11 @@ public sealed class SqliteEventStore : IEventStore
     }
 
     public Task<IngestResult> AppendAsync(IngestEventRequest request, CancellationToken cancellationToken = default)
+        => AppendWithTransactionAsync(request, null, cancellationToken);
+
+    internal Task<IngestResult> AppendWithTransactionAsync(IngestEventRequest request,
+        Action<SqliteConnection, SqliteTransaction>? beforeInsert, CancellationToken cancellationToken = default,
+        Action<SqliteConnection, SqliteTransaction>? beforeCommit = null)
     {
         if (string.IsNullOrWhiteSpace(request.EventId) ||
             string.IsNullOrWhiteSpace(request.CompanyId) ||
@@ -43,6 +48,9 @@ public sealed class SqliteEventStore : IEventStore
 
         using var connection = _database.OpenConnection();
         using var transaction = connection.BeginTransaction();
+        beforeInsert?.Invoke(connection, transaction);
+        payloadHash = CanonicalPayloadHasher.Compute(request.Payload);
+        payloadJson = request.Payload.ValueKind == System.Text.Json.JsonValueKind.Undefined ? "{}" : request.Payload.GetRawText();
 
         // 1. Idempotência: o ledger ProcessedEvents é a autoridade (espelha o modelo da cloud).
         using (var lookup = connection.CreateCommand())
@@ -116,6 +124,7 @@ public sealed class SqliteEventStore : IEventStore
             ledger.ExecuteNonQuery();
         }
 
+        beforeCommit?.Invoke(connection,transaction);
         transaction.Commit();
 
         var stored = new GatewayEvent

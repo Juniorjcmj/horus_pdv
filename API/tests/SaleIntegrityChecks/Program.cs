@@ -30,6 +30,7 @@ async Task<decimal> Scalar(string commandText)
     await using var command = new SqlCommand(commandText, connection); return Convert.ToDecimal(await command.ExecuteScalarAsync());
 }
 await Exec(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "schema.sql")));
+await Exec(await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory,"credit.sql")));
 var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:HorusPdv"] = sql }).Build();
 var factory = new Connection(configuration);
 var repository = new HistoricoVendasAB(factory, new FiadoAB(factory), new AuditLogAB(factory), new LoteAB(factory, NullLogger<LoteAB>.Instance));

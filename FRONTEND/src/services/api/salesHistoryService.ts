@@ -124,6 +124,9 @@ export type SalePaymentDto = {
 };
 
 export type RegisterSalePayload = {
+  orderNumber?: string;
+  gatewayCreditAuthorizationId?: string;
+  creditAuthorization?: { version: number; authorizationId: string; grantId: string; gatewayId: string; epoch: string; storeId: string; customerId: string; amountCents: number; saleHash: string };
   clientSaleId?: string;
   eventId?: string;
   eventType?: string;

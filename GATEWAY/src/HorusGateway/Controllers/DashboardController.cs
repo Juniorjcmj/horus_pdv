@@ -367,6 +367,8 @@ public sealed class DashboardController : ControllerBase
     tr:last-child td { border-bottom: none; }
     .badge-term-order { background: #312e81; color: #a5b4fc; }
     .badge-term-cash { background: #064e3b; color: #6ee7b7; }
+    #credit-panel input { width:100%; min-width:0; padding:.6rem .75rem; border:1px solid var(--card-border); border-radius:6px; background:var(--bg-dark); color:var(--text-main); font:inherit; }
+    #credit-panel input:focus-visible { outline:2px solid var(--accent-blue); outline-offset:2px; }
 
     footer {
       margin-top: 3rem;
@@ -488,6 +490,20 @@ public sealed class DashboardController : ControllerBase
       </div>
     </div>
 
+    <section class="card" id="credit-panel" aria-labelledby="credit-title" style="margin-top:1.5rem">
+      <h2 id="credit-title">Fiado compartilhado</h2>
+      <p style="margin:.75rem 0;color:var(--text-muted);line-height:1.5">O saldo central é informativo. A autorização usa o orçamento durável deste Gateway.</p>
+      <form id="credit-form" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:end">
+        <label style="display:grid;gap:.4rem;flex:1;min-width:160px">Terminal cadastrado <input id="credit-terminal" autocomplete="off" required></label>
+        <label style="display:grid;gap:.4rem;flex:1;min-width:160px">Credencial <input id="credit-key" type="password" autocomplete="off" required></label>
+        <button type="submit" class="btn btn-secondary">Consultar orçamento</button>
+      </form>
+      <p id="credit-state" role="status" style="margin:.75rem 0;line-height:1.5">Informe uma credencial para consultar grants, reservas e pendências.</p>
+      <div style="overflow-x:auto"><table><thead><tr><th>Cliente / grant</th><th>Livre</th><th>Reservado</th><th>Consumido</th><th>Prazo</th><th>Pendências</th></tr></thead><tbody id="credit-rows"></tbody></table></div>
+      <h3 style="margin-top:1.5rem;font-size:.95rem">Auditoria de autorizações</h3>
+      <p style="margin:.5rem 0;color:var(--text-muted);font-size:.8rem;line-height:1.4">Registro durável de cada decisão. Broadcast perdido não afeta a autorização — ela é gravada na mesma transação SQLite que o evento de venda.</p>
+      <div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Autorização</th><th>Terminal</th><th>Estado</th><th>Valor</th><th>Quando</th></tr></thead><tbody id="credit-audit-rows"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:1rem">Consulte o orçamento para carregar a auditoria.</td></tr></tbody></table></div>
+    </section>
     <footer>
       Hórus PDV &bull; Local Gateway &bull; Padrão Resiliente e Desacoplado &bull; <span id="lbl-server-time">--</span>
     </footer>
@@ -648,6 +664,43 @@ public sealed class DashboardController : ControllerBase
     }
 
     // Auto-refresh a cada 3 segundos
+    let creditVisible = false;
+    async function refreshCredit() {
+      if (!creditVisible) return;
+      const field = id => document.getElementById(id);
+      try {
+        const response = await fetch('/api/gateway/credit/dashboard', { headers: { 'X-Terminal-Id': field('credit-terminal').value, 'X-Terminal-Key': field('credit-key').value } });
+        if (!response.ok) throw new Error('Consulta recusada. Confira a credencial e o terminal.');
+        const data = await response.json();
+        field('credit-state').textContent = `Estado: ${data.state}. ${data.enabled ? 'Serviço habilitado.' : 'Novas autorizações bloqueadas na configuração.'}`;
+        field('credit-rows').replaceChildren();
+        for (const grant of data.grants) {
+          const row = document.createElement('tr');
+          const money = cents => (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          for (const value of [grant.customerId + ' / ' + grant.grantId, grant.closed ? 'Fechado' : money(grant.freeCents), money(grant.reservedCents), money(grant.consumedCents), new Date(grant.expiresAt).toLocaleString('pt-BR'), String(grant.pendingReconciliation)]) {
+            const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell);
+          }
+          field('credit-rows').appendChild(row);
+        }
+        const audit = await fetch('/api/gateway/credit/audit', { headers: { 'X-Terminal-Id': field('credit-terminal').value, 'X-Terminal-Key': field('credit-key').value } });
+        if (audit.ok) {
+          const entries = await audit.json();
+          const tbody = field('credit-audit-rows');
+          tbody.replaceChildren();
+          if (entries.length === 0) { const r=document.createElement('tr'); const c=document.createElement('td'); c.colSpan=6; c.style.cssText='text-align:center;color:var(--text-muted);padding:1rem'; c.textContent='Nenhuma operação registrada.'; r.appendChild(c); tbody.appendChild(r); }
+          for (const e of entries) {
+            const row = document.createElement('tr');
+            const stateColors = { RESERVED: 'var(--accent-blue)', COMMITTED: 'var(--green)', CANCELLED: 'var(--yellow)', EXPIRED: 'var(--text-muted)' };
+            for (const value of [String(e.seq), e.authorizationId.substring(0,12)+'...', e.terminalId, e.state, (e.amountCents/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}), new Date(e.occurredAt).toLocaleString('pt-BR')]) {
+              const cell = document.createElement('td'); cell.textContent = value; if (value === e.state) cell.style.color = stateColors[e.state] || 'inherit'; row.appendChild(cell);
+            }
+            tbody.appendChild(row);
+          }
+        }
+      } catch (error) { field('credit-state').textContent = error.message; }
+    }
+    document.getElementById('credit-form').addEventListener('submit', event => { event.preventDefault(); creditVisible = true; refreshCredit(); });
+    setInterval(refreshCredit, 5000);
     setInterval(fetchData, 3000);
     fetchData();
   </script>

@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+ <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+ <ItemGroup><ProjectReference Include="../../NETCORE/HORUSPDV-API.csproj"/><Content Include="../SaleIntegrityChecks/schema.sql" Link="schema.sql" CopyToOutputDirectory="PreserveNewest"/><Content Include="../../NETCORE/DataBase/Migrations/54_gateway_credit.sql" Link="credit.sql" CopyToOutputDirectory="PreserveNewest"/></ItemGroup>
+</Project>

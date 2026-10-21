@@ -81,6 +81,7 @@ public sealed class TerminalsController : ControllerBase
     [HttpPost("terminals/provision")]
     public async Task<IActionResult> Provision([FromBody] ProvisionTerminalRequest request, CancellationToken cancellationToken)
     {
+        if(_options.CreditEnabled && (string.IsNullOrWhiteSpace(_options.RegistrationToken) || !FixedTimeEquals(Request.Headers["X-Registration-Token"].FirstOrDefault(),_options.RegistrationToken)))return Unauthorized();
         if (request is null || string.IsNullOrWhiteSpace(request.TerminalId))
         {
             return BadRequest(new { error = "terminalId é obrigatório." });
@@ -111,7 +112,8 @@ public sealed class TerminalsController : ControllerBase
         }
 
         var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var result = await _terminals.IdentifyAsync(remoteIp, request?.ProvisionToken, _identity.GatewayId, cancellationToken);
+        if(_options.CreditEnabled && string.IsNullOrWhiteSpace(request?.ProvisionToken))return Unauthorized();
+        var result = await _terminals.IdentifyAsync(_options.CreditEnabled ? null : remoteIp, request?.ProvisionToken, _identity.GatewayId, cancellationToken);
         if (result is null)
         {
             return Unauthorized(new { error = "Terminal não pré-autorizado nesta rede.", remoteIp });

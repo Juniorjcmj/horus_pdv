@@ -149,11 +149,13 @@ public sealed class GatewayDatabase
             CREATE INDEX IF NOT EXISTS IX_LocalNfce_Company_Sync ON LocalNfceContingencias (CompanyId, StatusSync);
             """;
         command.ExecuteNonQuery();
+        CreditSchema.Initialize(connection);
 
         // Colunas de ciclo de vida de retry (adicionadas de forma idempotente sobre a tabela do 02).
         EnsureColumn(connection, "GatewayEvents", "RetryCount", "INTEGER NOT NULL DEFAULT 0");
         EnsureColumn(connection, "GatewayEvents", "LastAttemptAt", "TEXT NULL");
         EnsureColumn(connection, "GatewayEvents", "LastError", "TEXT NULL");
+        EnsureColumn(connection, "GatewayEvents", "CloudSaleNumber", "TEXT NULL");
         EnsureColumn(connection, "GatewayEvents", "NextAttemptAt", "TEXT NULL");
         EnsureColumn(connection, "LocalNfceContingencias", "RequestHash", "TEXT NULL");
         EnsureColumn(connection, "LocalNfceContingencias", "ResponseJson", "TEXT NULL");

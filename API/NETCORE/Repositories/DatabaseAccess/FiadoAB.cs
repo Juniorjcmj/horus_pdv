@@ -10,6 +10,21 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public class FiadoAB(Connection connection)
 {
+    public static async Task ReverseDebitAsync(SqlConnection db,SqlTransaction transaction,string company,string customer,string sale,decimal amount,string operatorName)
+    {
+        await using var cmd=new SqlCommand("""
+            DECLARE @Debt decimal(18,2);
+            SELECT @Debt=SaldoDevedor FROM Clientes WITH(UPDLOCK,HOLDLOCK) WHERE CompanyId=@Company AND Id=@Customer;
+            IF NOT EXISTS(SELECT 1 FROM FiadoMovimentos WHERE CompanyId=@Company AND ClienteId=@Customer AND VendaId=@Sale AND Tipo=1 AND Valor=@Amount) THROW 51000,'ORIGINAL_DEBIT_REQUIRED',1;
+            IF EXISTS(SELECT 1 FROM FiadoMovimentos WHERE CompanyId=@Company AND VendaId=@Sale AND Tipo=2) RETURN;
+            IF @Debt<@Amount THROW 51000,'CANCELLATION_REQUIRES_REFUND_REVIEW',1;
+            UPDATE Clientes SET SaldoDevedor=SaldoDevedor-@Amount WHERE CompanyId=@Company AND Id=@Customer;
+            INSERT INTO FiadoMovimentos(Id,CompanyId,ClienteId,Tipo,Valor,SaldoAnterior,SaldoAtual,VendaId,FormaPagamento,Observacao,OperadorNome,CriadoEm)
+            VALUES(@Id,@Company,@Customer,2,@Amount,@Debt,@Debt-@Amount,@Sale,'Estorno','Estorno vinculado ao débito original',@Operator,SYSDATETIMEOFFSET());
+            """,db,transaction);
+        foreach(var (key,value)in new(string,object)[]{("Company",company),("Customer",customer),("Sale",sale),("Amount",amount),("Id","fm-"+Guid.NewGuid().ToString("N")),("Operator",operatorName)})cmd.Parameters.AddWithValue("@"+key,value);
+        await cmd.ExecuteNonQueryAsync();
+    }
     public async Task<FiadoMovimentoAD> RegistrarDebitoAsync(
         string companyId,
         string clienteId,
@@ -22,6 +37,7 @@ public class FiadoAB(Connection connection)
 
         try
         {
+            await GatewayCreditAB.RequireLegacyAsync(db,transaction,companyId);
             var result = await RegistrarDebitoAsync(db, transaction, companyId, clienteId, valor, vendaId, operadorNome);
             await transaction.CommitAsync();
             return result;
@@ -40,7 +56,8 @@ public class FiadoAB(Connection connection)
         string clienteId,
         decimal valor,
         string? vendaId,
-        string operadorNome)
+        string operadorNome,
+        bool guaranteedCredit = false)
     {
         if (valor <= 0)
         {
@@ -75,7 +92,11 @@ public class FiadoAB(Connection connection)
             saldoAnterior = reader.GetDecimal(reader.GetOrdinal("SaldoDevedor"));
         }
 
-        SaleMoney.Credit(limiteCredito, saldoAnterior, valor);
+        if (!guaranteedCredit)
+        {
+            await GatewayCreditAB.RequireUnblockedAsync(db,transaction,companyId,clienteId);
+            SaleMoney.Credit(limiteCredito, saldoAnterior + await GatewayCreditAB.DelegatedAsync(db, transaction, companyId, clienteId), valor);
+        }
 
         var saldoAtual = saldoAnterior + valor;
         var now = HorusDateTime.Now;

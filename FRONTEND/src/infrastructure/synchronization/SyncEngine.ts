@@ -26,6 +26,8 @@ import { db } from "@/infrastructure/database/dexie";
 import type { OutboxStatus } from "@/shared/types/sync";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
 import { forwardPendingToGateway } from "@/infrastructure/gateway/outboxGatewayForwarder";
+import { gatewayCreditCloudResult } from "@/infrastructure/gateway/gatewayCreditClient";
+import { recoverGatewayCreditSales } from "@/application/sales/SaleOutboxAdapter";
 import { errorStatus, isBusinessRejection, isCashEventType } from "./failureClassification";
 
 const SYNC_INTERVAL_MS = 30_000;
@@ -97,6 +99,7 @@ class SyncEngine {
 
   /** Inicia o engine — migra legado, agenda polling, escuta reconexão. */
   start(): () => void {
+    void recoverGatewayCreditSales().catch(() => { /* durable intent remains available for the next recovery */ });
     // Migra vendas legadas do localStorage para outbox (IndexedDB)
     void this.migrateLegacySales();
 
@@ -166,6 +169,7 @@ class SyncEngine {
   /** Processa todos os eventos pendentes no outbox com lock cross-tab e backoff exponencial. */
   private async processOutbox(): Promise<void> {
     if (this.syncing) return;
+    await recoverGatewayCreditSales().catch(() => { /* recover the same durable intent on every cycle */ });
     // Pendências sem empresa (anteriores à separação por empresa) passam a ser da empresa logada.
     try {
       await adoptUntaggedEvents();
@@ -348,6 +352,7 @@ class SyncEngine {
     switch (eventType) {
       case "SALE_CREATED": {
         const payload = JSON.parse(payloadJson) as RegisterSalePayload;
+        if (payload.gatewayCreditAuthorizationId) return gatewayCreditCloudResult(payload);
         // Marca como reenvio offline: o servidor não recusa preço sem autorização de gerente nesse caso
         // (o caixa offline não consegue validar a senha). O hash de idempotência não inclui este campo.
         const res = await salesHistoryService.register({ ...payload, reenvioOffline: true });

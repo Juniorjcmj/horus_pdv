@@ -51,6 +51,7 @@ export async function forwardPendingToGateway(): Promise<ForwardResult> {
 
   for (const event of events) {
     const payload = parsePayload(event.payload);
+    if (payload?.gatewayCreditAuthorizationId) { skipped++; continue; }
     if (!FORWARDABLE_TYPES.has(event.eventType) || !hasOperator(payload)) {
       skipped++;
       continue;

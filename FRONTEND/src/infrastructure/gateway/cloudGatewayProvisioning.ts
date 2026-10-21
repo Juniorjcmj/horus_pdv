@@ -11,6 +11,7 @@ import { connectivityService } from "@/infrastructure/synchronization/Connectivi
 import { gatewayConfigService } from "@/services/api/gatewayConfigService";
 import { isUsingEmbeddedGateway } from "@/infrastructure/desktop/desktopGateway";
 import { getGatewayConfig, saveGatewayConfig } from "./gatewayConfig";
+import { refreshCreditPolicy, refreshOperatorPermit, sharedCreditRequired, reportCreditReadiness } from "./gatewayCreditClient";
 
 let inFlight = false;
 
@@ -28,10 +29,15 @@ export async function learnGatewayFromCloud(): Promise<void> {
   const user = getStoredAuthUser();
   if (!user?.companyId) return;
   // Programa desktop com o Gateway embutido ativo: ele é o Gateway deste caixa.
-  if (isUsingEmbeddedGateway()) return;
 
   inFlight = true;
   try {
+    try {
+      await refreshCreditPolicy();
+      if (sharedCreditRequired() && getGatewayConfig().terminalId) await refreshOperatorPermit();
+      if (getGatewayConfig().terminalId) await reportCreditReadiness();
+    } catch { /* A policy refresh cannot prevent legacy address discovery. Cached policy stays conservative. */ }
+    if (isUsingEmbeddedGateway()) return;
     const cloud = await gatewayConfigService.get();
     if (!cloud || !cloud.gatewayUrl) {
       // Cloud não tem endereço: não sobrescreve o que já houver (URL manual permanece como fallback).

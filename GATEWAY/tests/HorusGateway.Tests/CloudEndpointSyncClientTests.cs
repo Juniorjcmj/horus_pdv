@@ -18,6 +18,31 @@ namespace HorusGateway.Tests;
 
 public sealed class CloudEndpointSyncClientTests
 {
+    [Fact]
+    public async Task CommittedCreditWaitsForOriginalFiscalXmlAndPreservesEventSnapshot()
+    {
+        var path=Path.Combine(Path.GetTempPath(),Guid.NewGuid()+".db");
+        var options=Options.Create(new GatewayOptions{CompanyId="empresa-1",DatabasePath=path,CloudApiBaseUrl="https://cloud.test",CloudSyncToken="qgw_test"});
+        var database=new HorusGateway.Data.GatewayDatabase(options,NullLogger<HorusGateway.Data.GatewayDatabase>.Instance);database.Initialize();
+        try
+        {
+            var cloud=new FakeCloud(HttpStatusCode.OK,"""{"data":{"saleNumber":"42"}}""");
+            var client=new CloudEndpointSyncClient(new HttpClient(cloud),options,NullLogger<CloudEndpointSyncClient>.Instance,database);
+            var ev=Event("SALE_CREATED","""{"operatorId":"operator","clientSaleId":"sale","creditAuthorization":{},"gatewayFiscalAttempt":{}}""");
+            var original=ev.Payload;
+            Assert.Equal(CloudSyncStatus.Transient,(await client.SendAsync(ev)).Status);Assert.Empty(cloud.Calls);
+            using(var db=database.OpenConnection())using(var cmd=db.CreateCommand())
+            {
+                cmd.CommandText="""
+                    INSERT INTO LocalNfceContingencias(Id,CompanyId,VendaId,TerminalId,Serie,NumeroNf,ChaveAcesso,DhContingencia,Justificativa,XmlAssinado,QrCodeUrl,DigestValue,TotalVenda,CreatedAt)
+                    VALUES('doc','empresa-1','sale','t',900,1,'fixture','2026-10-20T00:00:00Z','fixture','<original/>','','',100,'2026-10-20T00:00:00Z');
+                    """;cmd.ExecuteNonQuery();
+            }
+            Assert.Equal(CloudSyncStatus.Success,(await client.SendAsync(ev)).Status);
+            using var body=JsonDocument.Parse(Assert.Single(cloud.Calls).Body);Assert.Equal("<original/>",body.RootElement.GetProperty("xmlNfceContingencia").GetString());Assert.Equal(original,ev.Payload);
+        }
+        finally{Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();foreach(var suffix in new[]{"","-wal","-shm"})File.Delete(path+suffix);}
+    }
     private sealed class FakeCloud(HttpStatusCode status, string body = """{"success":true,"message":"ok"}""") : HttpMessageHandler
     {
         public List<(HttpRequestMessage Request, string Body)> Calls { get; } = new();

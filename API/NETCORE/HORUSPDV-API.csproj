@@ -12,6 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="../../Shared/CreditProtocol.cs" Link="Services/Shared/CreditProtocol.cs" />
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
         <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.5" />

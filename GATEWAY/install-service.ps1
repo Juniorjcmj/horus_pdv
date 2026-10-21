@@ -14,7 +14,10 @@ param(
     [string]$CloudApiUrl = $(if ($env:GATEWAY_CLOUD_API_URL) { $env:GATEWAY_CLOUD_API_URL } else { "https://api-pdv.quacksistemas.com.br" }),
     # Use -SkipPublish quando a pasta publish-service\ ja vem pronta (ex.: pendrive na visita ao cliente):
     # dispensa o .NET SDK e a internet na maquina do cliente — so registra o servico.
-    [switch]$SkipPublish
+    [switch]$SkipPublish,
+    [switch]$CreditEnabled,
+    [string]$GatewayId = $env:GATEWAY_ID,
+    [string]$CreditEpoch = $env:GATEWAY_CREDIT_EPOCH
 )
 
 $ErrorActionPreference = "Stop"
@@ -56,6 +59,26 @@ if ($SkipPublish) {
 
 New-Item -ItemType Directory -Force -Path $DataDir | Out-Null
 
+# Credit witness is machine-bound and deliberately outside portable database backups.
+$CreditWitness = Join-Path $env:ProgramData "HorusGatewayCredit\$ServiceName.witness"
+if ($CreditEnabled) {
+    if (-not $env:GATEWAY_HTTPS_CERT -or -not $GatewayId -or -not $CreditEpoch -or -not $env:GATEWAY_REGISTRATION_TOKEN) {
+        throw "Fiado exige TLS, GatewayId, CreditEpoch e GATEWAY_REGISTRATION_TOKEN provisionados."
+    }
+    if (-not $CloudApiUrl.StartsWith('https://')) { throw "Fiado exige cloud HTTPS." }
+    $WitnessDir = Split-Path -Parent $CreditWitness
+    New-Item -ItemType Directory -Force -Path $WitnessDir | Out-Null
+    icacls.exe $WitnessDir /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' | Out-Null
+    icacls.exe $DataDir /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' | Out-Null
+    if (-not (Test-Path -LiteralPath $CreditWitness)) {
+        Add-Type -AssemblyName System.Security
+        $WitnessBytes = [Text.Encoding]::UTF8.GetBytes("$CompanyId|$StoreId|$GatewayId|$CreditEpoch|0")
+        $ProtectedWitness = [Security.Cryptography.ProtectedData]::Protect($WitnessBytes, $null, [Security.Cryptography.DataProtectionScope]::LocalMachine)
+        [IO.File]::WriteAllBytes($CreditWitness, $ProtectedWitness)
+        # A nonzero existing ledger will fail closed against revision zero. Never reset its revision.
+    }
+}
+
 # 4) Remove um servico anterior de mesmo nome (atualizacao controlada: pare-o pelo painel antes).
 if (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue) {
     Write-Host "[Quack Gateway] Removendo servico anterior '$ServiceName'..." -ForegroundColor Yellow
@@ -83,6 +106,10 @@ $envLines = @(
     "Gateway__StoreId=$StoreId",
     "Gateway__DatabasePath=$([IO.Path]::Combine($DataDir,'horus-gateway.db'))"
 )
+if ($GatewayId) { $envLines += "Gateway__GatewayId=$GatewayId" }
+if ($CreditEnabled) {
+    $envLines += @("Gateway__CreditEnabled=true", "Gateway__CreditEpoch=$CreditEpoch", "Gateway__CreditWitnessPath=$CreditWitness", "Gateway__OpenRegistration=false", "Gateway__RequireTerminalAuth=true", "Gateway__RegistrationToken=$env:GATEWAY_REGISTRATION_TOKEN")
+}
 if ($CloudSyncUrl) { $envLines += "Gateway__CloudSyncUrl=$CloudSyncUrl" }
 if ($CloudToken) {
     if (-not $CloudToken.StartsWith("qgw_")) {
@@ -123,6 +150,7 @@ if (-not (Get-NetFirewallRule -DisplayName "HorusGateway" -ErrorAction SilentlyC
     New-NetFirewallRule -DisplayName "HorusGateway" -Direction Inbound -Protocol TCP -LocalPort $Port -Action Allow | Out-Null
     Write-Host "[Quack Gateway] Regra de firewall criada para a porta $Port."
 }
+if ($CreditEnabled) { Set-NetFirewallRule -DisplayName "HorusGateway" -RemoteAddress LocalSubnet -Profile Private,Domain | Out-Null }
 
 # 7) Sobe o servico.
 Start-Service -Name $ServiceName

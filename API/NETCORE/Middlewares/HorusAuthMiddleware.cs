@@ -31,6 +31,13 @@ public class HorusAuthMiddleware(RequestDelegate next)
         ("POST", "/api/Caixa/movimento", true),
         ("GET", "/api/Produto", true),
         ("GET", "/api/Cliente", true),
+        ("POST", "/api/gateway-credit/grants", false),
+        ("POST", "/api/gateway-credit/checkpoint", false),
+        ("GET", "/api/gateway-credit/grants", false),
+        ("GET", "/api/gateway-credit/operators", false),
+        ("GET", "/api/gateway-credit/state", false),
+        ("GET", "/api/gateway-credit/blocked-customers", false),
+        ("POST", "/api/gateway-credit/readiness", false),
     ];
 
     public async Task InvokeAsync(
@@ -38,7 +45,8 @@ public class HorusAuthMiddleware(RequestDelegate next)
         HorusJwtService jwtService,
         HorusSecurityStore securityStore,
         GatewayTokenAB gatewayTokenAB,
-        IntegracaoTokenAB integracaoTokenAB)
+        IntegracaoTokenAB integracaoTokenAB,
+        HORUSPDV_API.Repositories.Connection creditConnection)
     {
         if (ShouldSkipAuth(context))
         {
@@ -92,6 +100,13 @@ public class HorusAuthMiddleware(RequestDelegate next)
             authenticatedUser.PerfisAdicionais = HorusRoles.ParsePerfisAdicionais(validation.PerfisAdicionais);
         }
 
+        if(context.Items["CurrentGateway"] is GatewayTokenValidation creditGateway)
+            authenticatedUser.CreditStoreId=creditGateway.StoreId;
+        else
+        {
+            await using var creditDb=await creditConnection.OpenConnectionAsync(context.RequestAborted);
+            authenticatedUser.CreditStoreId=await GatewayCreditAB.StoreForUserAsync(creditDb,authenticatedUser.CompanyId,authenticatedUser.Id);
+        }
         context.Items["CurrentUser"] = authenticatedUser;
 
         if (!string.Equals(authenticatedUser.CompanyId, "empresa-principal", StringComparison.OrdinalIgnoreCase))

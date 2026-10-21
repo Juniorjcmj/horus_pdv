@@ -76,10 +76,13 @@ import {
 import { pedidoService, type PedidoDto } from "@/services/api/pedidoService";
 import { salesHistoryService } from "@/services/api/salesHistoryService";
 import { useProducts } from "@/hooks/useProducts";
-import { queueSaleToOutbox, saveSyncedSaleLocally } from "@/application/sales/SaleOutboxAdapter";
+import { queueSaleToOutbox, saveSyncedSaleLocally, recoverGatewayCreditSales } from "@/application/sales/SaleOutboxAdapter";
+import { sharedCreditRequired, readCreditBudget, cancelPendingCreditReservation, type CreditBudgetView } from "@/infrastructure/gateway/gatewayCreditClient";
 import { toFiscalPaymentCode } from "@/utils/fiscalPaymentCode";
 import { computeSalePayloadHash } from "@/utils/cryptoHash";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
+import { db } from "@/infrastructure/database/dexie";
+import { currentTenantId } from "@/infrastructure/database/repositories/OutboxRepository";
 import { useOutboxStatus } from "@/hooks/useOutboxStatus";
 import OutboxStatusModal from "@/components/Admin/OutboxStatusModal";
 import OfflineModeBanner from "@/components/Admin/OfflineModeBanner";
@@ -283,6 +286,33 @@ export default function SalesStartPage({
   const [currentCashGiven, setCurrentCashGiven] = useState("");
   const [cpfNota, setCpfNota] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerDto | null>(null);
+  const [gatewayBudget, setGatewayBudget] = useState<CreditBudgetView | null>(null);
+  const [pendingGatewayCredit, setPendingGatewayCredit] = useState(false);
+  const [recoveringCredit, setRecoveringCredit] = useState(false);
+  useEffect(() => {
+    let active = true;
+    const check = () => { void db.creditIntents.where("tenantId").equals(currentTenantId()).count().then(count => { if (active) setPendingGatewayCredit(count > 0); }); };
+    check(); const timer = setInterval(check, 2000);
+    return () => { active = false; clearInterval(timer); };
+  }, []);
+  const resolveGatewayCredit = async (cancel: boolean) => {
+    setRecoveringCredit(true);
+    try {
+      if (!cancel || !(await cancelPendingCreditReservation())) await recoverGatewayCreditSales();
+      setPendingGatewayCredit(await db.creditIntents.where("tenantId").equals(currentTenantId()).count() > 0);
+      Toast.success(cancel ? "Resultado conferido. Consulte o histórico para vendas já confirmadas." : "Venda recuperada no histórico local.");
+    } catch (error) { Toast.error(error instanceof Error ? error.message : "Gateway indisponível. A intenção permanece guardada."); }
+    finally { setRecoveringCredit(false); }
+  };
+  useEffect(() => {
+    let current = true;
+    const refresh = () => {
+      if (!sharedCreditRequired() || !selectedCustomer) { setGatewayBudget(null); return; }
+      void readCreditBudget(selectedCustomer.document).then(value => { if (current) setGatewayBudget(value); }).catch(() => { if (current) setGatewayBudget(null); });
+    };
+    refresh(); const timer = setInterval(refresh, 15000);
+    return () => { current = false; clearInterval(timer); };
+  }, [selectedCustomer]);
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const {
     customers: customerList,
@@ -621,6 +651,7 @@ export default function SalesStartPage({
     const currentFiadoValue = currentPaymentType === "fiado" ? currentPaymentAmountValue : 0;
     const totalPotentialFiado = totalFiadoCommitted + currentFiadoValue;
     if (totalPotentialFiado <= 0) return false;
+    if (sharedCreditRequired()) return false;
     try { validateCredit(selectedCustomer.limiteCredito, selectedCustomer.saldoDevedor, totalPotentialFiado); return false; } catch { return true; }
   }, [selectedCustomer, currentPaymentType, currentPaymentAmountValue, totalFiadoCommitted]);
 
@@ -1209,7 +1240,7 @@ export default function SalesStartPage({
       const limite = Number(selectedCustomer.limiteCredito ?? 0);
       const saldo = Number(selectedCustomer.saldoDevedor ?? 0);
       const disponivel = Math.max(0, limite - saldo - totalFiadoCommitted);
-      if (amountVal > disponivel + 0.009) {
+      if (!sharedCreditRequired() && amountVal > disponivel + 0.009) {
         Toast.error(
           `Limite de crédito insuficiente para ${selectedCustomer.customerName}! Limite total: R$ ${formatMoneyBr(
             limite,
@@ -1391,7 +1422,7 @@ export default function SalesStartPage({
       const saldoLocal = await getLocalCustomerDebt(selectedCustomer.document || selectedCustomer.id);
       const knownDebt = selectedCustomer.saldoDevedor;
       saldoAntesFiado = saldoLocal == null ? Number(knownDebt) : Math.max(Number(knownDebt), saldoLocal);
-      validateCredit(selectedCustomer.limiteCredito, knownDebt == null ? undefined : saldoAntesFiado, totalFiado);
+      if (!sharedCreditRequired()) validateCredit(selectedCustomer.limiteCredito, knownDebt == null ? undefined : saldoAntesFiado, totalFiado);
     }
 
     // Validação extra quando NF-e modelo 55 é selecionada
@@ -1441,6 +1472,7 @@ export default function SalesStartPage({
       const offlineReference = `OFF-${localDevice.slice(0, 4).toUpperCase()}-${Date.now().toString().slice(-6)}`;
 
       const registerPayload = validateSale({
+        orderNumber: activePedido?.orderNumber,
         clientSaleId,
         eventId,
         eventType: "SALE_CREATED",
@@ -1482,7 +1514,7 @@ export default function SalesStartPage({
       let fiscalDetail: FiscalDocumentDetailDto | null = null;
       let result: any = null;
       let needsFiscalPrint = fiscalModel !== "nfe";
-      const offlineBeforeRegister = !connectivityService.isApiReachable();
+      const offlineBeforeRegister = hasFiado && sharedCreditRequired() || !connectivityService.isApiReachable();
 
       try {
         if (offlineBeforeRegister) throw new Error("Venda iniciada sem conexão com a API.");
@@ -2068,6 +2100,15 @@ export default function SalesStartPage({
         <OfflineModeBanner />
 
         {/* Duas colunas a partir de 768px (antes 1024px): monitor pequeno/zoom alto não cai no layout de celular. */}
+        {pendingGatewayCredit && (
+          <div className="space-y-2 border-b border-border-primary p-3 text-xs" role="status">
+            <p>Há uma intenção de fiado pendente. Confira o resultado antes de iniciar outra venda.</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className="btn-outline-secondary px-3 py-2" disabled={recoveringCredit} onClick={() => void resolveGatewayCredit(false)}>Recuperar venda</button>
+              <button type="button" className="btn-outline-secondary px-3 py-2" disabled={recoveringCredit} onClick={() => void resolveGatewayCredit(true)}>Cancelar reserva</button>
+            </div>
+          </div>
+        )}
         <main className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[240px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="shrink-0 border-b border-border-primary bg-bg-gray-theme p-3.5 text-text-primary md:overflow-y-auto md:border-b-0 md:border-r">
             {activePedido ? (
@@ -2771,7 +2812,7 @@ export default function SalesStartPage({
                       </span>
                       <span className="text-text-secondary">•</span>
                       <span className="text-text-secondary">
-                        Disponível:{" "}
+                        {sharedCreditRequired() ? "Saldo informativo:" : "Disponível:"}{" "}
                         <strong
                           className={
                             Math.max(
@@ -2794,6 +2835,11 @@ export default function SalesStartPage({
                         </strong>
                       </span>
                     </div>
+                    {sharedCreditRequired() && (
+                      <p className="mt-1 text-[11px] text-text-secondary" role="status">
+                        {gatewayBudget ? `Orçamento no Gateway: R$ ${formatMoneyBr(gatewayBudget.freeCents / 100)} livre; R$ ${formatMoneyBr(gatewayBudget.reservedCents / 100)} reservado. A autorização será confirmada ao concluir.` : "Orçamento do Gateway indisponível. Fiado depende de autorização; outras formas de pagamento continuam disponíveis."}
+                      </p>
+                    )}
                     {fiadoLimitExceeded && (
                       <div className="mt-1 flex items-center gap-1.5 rounded bg-danger/10 p-1.5 text-[11px] font-semibold text-danger">
                         <AlertTriangle size={13} />
@@ -3513,7 +3559,7 @@ export default function SalesStartPage({
                               disponivel <= 0 ? "text-danger" : "text-success"
                             }`}
                           >
-                            Disponível: R$ {formatMoneyBr(disponivel)}
+                            {sharedCreditRequired() ? "Saldo informativo" : "Disponível"}: R$ {formatMoneyBr(disponivel)}
                           </span>
                         </div>
                       </div>

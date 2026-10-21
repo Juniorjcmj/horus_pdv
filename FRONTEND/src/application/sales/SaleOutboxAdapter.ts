@@ -16,6 +16,7 @@ import {
 import { validateSale, validateCredit, money, sumMoney, settlementKey } from "@/utils/saleMoney";
 import { computeSalePayloadHash } from "@/utils/cryptoHash";
 import { getCachedDeviceId } from "@/infrastructure/database/deviceId";
+import { commitGatewayCredit, sharedCreditRequired } from "@/infrastructure/gateway/gatewayCreditClient";
 
 /**
  * Enfileira uma venda no outbox e persiste atomicamente todas as tabelas locais do PDV.
@@ -44,7 +45,17 @@ export async function queueSaleToOutbox(payload: RegisterSalePayload, waitForFis
 
   payload.payloadHash = await computeSalePayloadHash(payload);
   original.payloadHash = payload.payloadHash;
+  const recorded = await db.sales.get(clientSaleId);
+  if (recorded) {
+    await persistSaleLocally(payload, { clientSaleId, saleNumber: recorded.saleNumber, occurredAt, origin: "OFFLINE", eventId, waitForFiscal });
+    return recorded.saleNumber;
+  }
+  if (sharedCreditRequired() && (payload.payments || []).some(p => p.paymentType.toLowerCase() === "fiado")) {
+    await commitGatewayCredit(payload);
+    Object.assign(original, payload);
+  }
   await persistSaleLocally(payload, { clientSaleId, saleNumber: localRef, occurredAt, origin: "OFFLINE", eventId, waitForFiscal });
+  if (payload.gatewayCreditAuthorizationId) await db.creditIntents.delete(eventId);
   return localRef;
 }
 
@@ -95,9 +106,11 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
         const digits = payload.customerCpf.replace(/\D/g, "");
         if (!digits) throw new Error("Selecione cliente cadastrado para comprar fiado.");
         fiadoCustomer = await db.customers.filter(c => c.tenantId === currentTenantId() && c.cpfCnpj.replace(/\D/g, "") === digits).first();
-        if (!fiadoCustomer) throw new Error("Dados do cliente indisponíveis para comprar fiado offline.");
-        if (fiadoCustomer.creditUnavailable) throw new Error("Crédito indisponível. Atualize o cliente para conferir as pendências.");
-        validateCredit(fiadoCustomer.limiteCredito, fiadoCustomer.saldoDevedor, totalFiado);
+        if (!payload.gatewayCreditAuthorizationId) {
+          if (!fiadoCustomer) throw new Error("Dados do cliente indisponíveis para comprar fiado offline.");
+          if (fiadoCustomer.creditUnavailable) throw new Error("Crédito indisponível. Atualize o cliente para conferir as pendências.");
+          validateCredit(fiadoCustomer.limiteCredito, fiadoCustomer.saldoDevedor, totalFiado);
+        }
       }
 
       // 1. Obter sessão atual de caixa (se houver)
@@ -221,6 +234,17 @@ async function persistSaleLocally(payload: RegisterSalePayload, options: Persist
       }
     },
   );
+}
+
+let creditRecovery: Promise<void> | null = null;
+export function recoverGatewayCreditSales(): Promise<void> {
+  if (creditRecovery) return creditRecovery;
+  creditRecovery = recoverCreditSales().finally(() => { creditRecovery = null; });
+  return creditRecovery;
+}
+async function recoverCreditSales(): Promise<void> {
+  const intents = await db.creditIntents.where("tenantId").equals(currentTenantId()).toArray();
+  for (const intent of intents) await queueSaleToOutbox(intent.payload);
 }
 
 /**
