@@ -23,19 +23,25 @@ if (!fs.existsSync(zip)) {
 fs.rmSync(dest, { recursive: true, force: true });
 fs.mkdirSync(dest, { recursive: true });
 
-// tar do Windows (bsdtar, nativo desde o Windows 10) abre .zip. Logs/banco de testes não entram.
+// Extrai publish-service do zip para gateway-bin usando PowerShell (funciona no Windows sem bsdtar).
+const tempDir = path.join(root, "gateway-tmp");
+fs.rmSync(tempDir, { recursive: true, force: true });
 execFileSync(
-  "tar",
-  [
-    "-xf", zip,
-    "-C", dest,
-    "--strip-components=2",
-    "--exclude=QuackGateway/publish-service/logs",
-    "--exclude=QuackGateway/publish-service/gateway-data",
-    "QuackGateway/publish-service",
-  ],
+  "powershell",
+  ["-NoProfile", "-Command", `Expand-Archive -Path '${zip}' -DestinationPath '${tempDir}' -Force`],
   { stdio: "inherit" },
 );
+const publishDir = path.join(tempDir, "QuackGateway", "publish-service");
+if (!fs.existsSync(publishDir)) {
+  console.error("[prepare-gateway] QuackGateway/publish-service não encontrado dentro do zip.");
+  process.exit(1);
+}
+// Copiar publish-service para dest, excluindo logs e gateway-data.
+fs.cpSync(publishDir, dest, {
+  recursive: true,
+  filter: (src) => !src.includes(`${path.sep}logs`) && !src.includes(`${path.sep}gateway-data`),
+});
+fs.rmSync(tempDir, { recursive: true, force: true });
 
 const exe = path.join(dest, "HorusGateway.exe");
 if (!fs.existsSync(exe)) {
