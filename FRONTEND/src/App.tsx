@@ -497,6 +497,7 @@ export default function App() {
       return;
     }
 
+    // Desktop Electron: window.open pode falhar ou ser bloqueado. Fallback: navega na mesma janela.
     const url = new URL(window.location.href);
     url.searchParams.set("pdv", "1");
 
@@ -519,9 +520,8 @@ export default function App() {
 
     posTabRef.current = window.open(url.toString(), POS_TAB_NAME);
     if (!posTabRef.current) {
-      Toast.error(
-        "Não foi possível abrir a aba do PDV. Verifique bloqueio de pop-up.",
-      );
+      // Fallback para Electron ou pop-up bloqueado: abre na mesma janela.
+      setActivePage("vendas");
       setMobileSidebarOpen(false);
       return;
     }
