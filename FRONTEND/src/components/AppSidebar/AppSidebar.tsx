@@ -61,6 +61,7 @@ export type PageKey =
   | "detalhe-licenca"
   | "sobre-pdv"
   | "aprendizado"
+  | "fluxos-doc"
   | "editar-perfil";
 
 type SidebarItemProps = {
@@ -304,6 +305,13 @@ export default function AppSidebar({
                 collapsed={collapsed}
                 onClick={() => handleChangePage("aprendizado")}
               />
+              <SidebarItem
+                icon={<ClipboardList size={20} />}
+                label="Fluxos do Sistema"
+                active={activePage === "fluxos-doc"}
+                collapsed={collapsed}
+                onClick={() => handleChangePage("fluxos-doc")}
+              />
             </div>
           ) : isEstoquistaRole ? (
             <div className="space-y-2">
@@ -328,6 +336,13 @@ export default function AppSidebar({
                 active={activePage === "aprendizado"}
                 collapsed={collapsed}
                 onClick={() => handleChangePage("aprendizado")}
+              />
+              <SidebarItem
+                icon={<ClipboardList size={20} />}
+                label="Fluxos do Sistema"
+                active={activePage === "fluxos-doc"}
+                collapsed={collapsed}
+                onClick={() => handleChangePage("fluxos-doc")}
               />
             </div>
           ) : (
@@ -542,6 +557,13 @@ export default function AppSidebar({
                   active={activePage === "aprendizado"}
                   collapsed={collapsed}
                   onClick={() => handleChangePage("aprendizado")}
+                />
+                <SidebarItem
+                  icon={<ClipboardList size={20} />}
+                  label="Fluxos do Sistema"
+                  active={activePage === "fluxos-doc"}
+                  collapsed={collapsed}
+                  onClick={() => handleChangePage("fluxos-doc")}
                 />
               </div>
             </>

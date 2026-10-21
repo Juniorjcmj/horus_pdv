@@ -81,6 +81,7 @@ const LicenseDetailsPage = lazy(
   () => import("@/pages/Admin/LicenseDetailsPage"),
 );
 const AboutPdvPage = lazy(() => import("@/pages/Admin/AboutPdvPage"));
+const FluxosDocPage = lazy(() => import("@/pages/Admin/FluxosDocPage"));
 const EditProfilePage = lazy(() => import("@/pages/Admin/EditProfilePage"));
 const PROFILE_AVATAR_STORAGE_KEY = "horuspdv.profile.avatar";
 const ACTIVE_PAGE_STORAGE_KEY = "horuspdv.activePage";
@@ -104,11 +105,11 @@ type CurrentUser = {
 // cadastros, relatórios, fiscal, pedidos ou configurações da empresa. A restrição de verdade é
 // sempre aplicada no backend (HorusAuthorizeRoles); isso aqui é só para não deixar a tela mostrar
 // menus/páginas que dariam 403 na hora de carregar os dados.
-const CAIXA_ROLE_ALLOWED_PAGES: PageKey[] = ["vendas", "caixa", "aprendizado", "editar-perfil"];
+const CAIXA_ROLE_ALLOWED_PAGES: PageKey[] = ["vendas", "caixa", "aprendizado", "fluxos-doc", "editar-perfil"];
 
 // Perfil "estoquista": acesso exclusivo a estoque/inventário, contagem de produtos e validade.
 // Sem vendas, fiscal, cadastros completos ou configurações da empresa.
-const ESTOQUISTA_ROLE_ALLOWED_PAGES: PageKey[] = ["estoque", "validade", "aprendizado", "editar-perfil"];
+const ESTOQUISTA_ROLE_ALLOWED_PAGES: PageKey[] = ["estoque", "validade", "aprendizado", "fluxos-doc", "editar-perfil"];
 
 type ThemeMode = "light" | "dark";
 type PublicAuthPage =
@@ -181,6 +182,7 @@ export default function App() {
       "detalhe-licenca",
       "sobre-pdv",
       "aprendizado",
+      "fluxos-doc",
       "editar-perfil",
       "configuracoes",
     ].includes(value);
@@ -277,6 +279,7 @@ export default function App() {
     "detalhe-licenca": "Detalhes da Licença",
     "sobre-pdv": "Sobre PDV",
     aprendizado: "Aprendizado",
+    "fluxos-doc": "Fluxos do Sistema",
     "editar-perfil": "Meu Perfil",
     configuracoes: "Configurações",
   };
@@ -363,6 +366,8 @@ export default function App() {
         return AboutPdvPage;
       case "aprendizado":
         return AprendizadoPage;
+      case "fluxos-doc":
+        return FluxosDocPage;
       default:
         return EmptyPage;
     }
