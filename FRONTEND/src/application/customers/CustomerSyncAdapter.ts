@@ -97,7 +97,7 @@ export async function syncCustomersFromApi(): Promise<LocalCustomerRecord[]> {
     try { return await readCreditSnapshotOnce(); }
     catch (error) {
       if (!(error instanceof CreditSnapshotChanged)) throw error;
-      if (attempt === 2) { await db.customers.filter(c => c.tenantId === currentTenantId()).modify({ creditUnavailable: true }); throw error; }
+      // Cache preserved — offline operation continues with last validated snapshot.
     }
   }
   throw new Error("Crédito mudou durante a conferência. Atualize novamente.");
@@ -109,12 +109,11 @@ async function readCreditSnapshotOnce(): Promise<LocalCustomerRecord[]> {
     return { sequence: Math.max(0, ...events.map(e => e.sequence)), ids: events.filter(e => NOT_IN_CLOUD_STATUSES.includes(e.status)).map(e => e.clientSaleId || e.aggregateId) };
   });
   const capturedIds = new Set(captured.ids);
-  // A routine network failure preserves the validated cache for offline operation.
-  // Known online debt/credit mutations invalidate their customer in the calling adapter.
+  // Network failure preserves the validated cache for offline operation — never poison it.
   const snapshot = await customerService.creditSnapshot([...capturedIds]);
   if (tenant !== currentTenantId()) throw new Error("Empresa alterada durante conferência de crédito.");
   const records = snapshot.customers.map(dto => ({ ...mapDtoToLocal(dto), tenantId: tenant }));
-  try { await db.transaction("rw", [db.customers, db.outbox], async () => {
+  await db.transaction("rw", [db.customers, db.outbox], async () => {
     const newEvent = await db.outbox.filter(e => isCurrentTenant(e, tenant) && e.eventType === "SALE_CREATED" && e.sequence > captured.sequence).first();
     if (newEvent) throw new CreditSnapshotChanged("Crédito mudou durante a conferência. Novo snapshot necessário.");
     const pendingFiado = await sumPendingFiadoByDocument(new Set(snapshot.acceptedClientSaleIds), capturedIds);
@@ -124,7 +123,7 @@ async function readCreditSnapshotOnce(): Promise<LocalCustomerRecord[]> {
     }
     await db.customers.filter(c => c.tenantId === tenant).delete();
     await db.customers.bulkPut(records);
-  }); } catch (error) { if (!(error instanceof CreditSnapshotChanged)) await db.customers.filter(c => c.tenantId === tenant).modify({ creditUnavailable: true }); throw error; }
+  });
   return records;
 }
 
@@ -151,23 +150,25 @@ export async function upsertCustomerLocal(dto: CustomerDto): Promise<void> {
   try {
     await syncCustomersFromApi();
     if (!(await db.customers.get(dto.id))) throw new Error("Cliente indisponível no snapshot de crédito.");
-  } catch (error) {
-    const previous = await db.customers.get(dto.id);
-    if (previous?.tenantId === currentTenantId()) await db.customers.update(dto.id, { creditUnavailable: true });
-    throw error;
+  } catch {
+    // Network failure: upsert with available data. Do NOT mark creditUnavailable.
+    const record: LocalCustomerRecord = { ...mapDtoToLocal(dto), tenantId: currentTenantId() };
+    await db.customers.put(record);
   }
 }
 
 /** A cloud balance alone cannot distinguish pending debt. Always reconcile identities. */
-export async function updateCustomerDebtLocal(customerIdOrDoc: string, _newSaldoDevedor: number): Promise<void> {
+export async function updateCustomerDebtLocal(customerIdOrDoc: string, newSaldoDevedor: number): Promise<void> {
+  const tenant = currentTenantId();
+  const digits = customerIdOrDoc.replace(/\D/g, "");
   try {
     await syncCustomersFromApi();
-    const digits = customerIdOrDoc.replace(/\D/g, "");
-    const target = (await customerRepository.getAll()).find(c => c.tenantId === currentTenantId() && (c.id === customerIdOrDoc || (digits.length > 0 && c.cpfCnpj.replace(/\D/g, "") === digits)));
+    const target = (await customerRepository.getAll()).find(c => c.tenantId === tenant && (c.id === customerIdOrDoc || (digits.length > 0 && c.cpfCnpj.replace(/\D/g, "") === digits)));
     if (target) window.dispatchEvent(new CustomEvent("customer-balance-updated", { detail: { customerId: target.id, document: target.cpfCnpj, saldoDevedor: target.saldoDevedor } }));
-  } catch (error) {
-    const tenant = currentTenantId(); const digits = customerIdOrDoc.replace(/\D/g, "");
-    await db.customers.filter(c => c.tenantId === tenant && (c.id === customerIdOrDoc || c.cpfCnpj.replace(/\D/g, "") === digits)).modify({ creditUnavailable: true });
-    console.warn("Crédito indisponível até nova conferência do saldo e pendências:", error);
+  } catch {
+    // Network failure: update the local saldo with the value we already know from the sale.
+    // Do NOT mark creditUnavailable — the cache stays valid for offline operation.
+    await db.customers.filter(c => c.tenantId === tenant && (c.id === customerIdOrDoc || (digits.length > 0 && c.cpfCnpj.replace(/\D/g, "") === digits))).modify({ saldoDevedor: newSaldoDevedor });
+    console.warn("Sync falhou; saldo local atualizado com valor da venda.");
   }
 }
