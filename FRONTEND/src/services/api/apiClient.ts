@@ -84,7 +84,7 @@ export async function apiRequest<T>(
       window.dispatchEvent(new CustomEvent("horus-api-responded"));
     }
 
-    if (response.status === 401) {
+    if (response.status === 401 && navigator.onLine) {
       clearAuthSession();
     }
 
