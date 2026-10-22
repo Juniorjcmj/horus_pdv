@@ -477,7 +477,10 @@ export default function SalesStartPage({
   );
 
   const quantityUnit = selectedProduct?.unit ?? "UN";
-  const quantityIsFractionable = isFractionableUnit(quantityUnit);
+  // Sempre permite digitar decimal no campo de quantidade — o operador pode informar o peso
+  // antes de selecionar o produto (ex.: balança sem etiqueta). A validação inteiro/fracionado
+  // acontece na hora de adicionar ao carrinho, não durante a digitação.
+  const quantityIsFractionable = selectedProduct ? isFractionableUnit(quantityUnit) : true;
 
   const quantity = useMemo(() => {
     const parsed = Number(quantityInput);
@@ -2282,7 +2285,7 @@ export default function SalesStartPage({
 
             <label className="mb-2 block">
               <span className="mb-1 block text-xs font-semibold uppercase">
-                Quantidade{quantityIsFractionable ? ` (${quantityUnit.toLowerCase()})` : " (volume)"}:
+                Quantidade{selectedProduct && isFractionableUnit(selectedProduct.unit) ? ` (${quantityUnit.toLowerCase()})` : ""}:
               </span>
               <input
                 ref={qtyInputRef}
