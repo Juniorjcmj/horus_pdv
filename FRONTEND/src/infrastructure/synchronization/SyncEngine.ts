@@ -116,7 +116,11 @@ class SyncEngine {
     // Polling periódico
     this.intervalId = setInterval(() => void this.runCycle(), SYNC_INTERVAL_MS);
 
-    // Sincroniza ao reconectar
+    // Sincroniza ao reconectar — escuta o ConnectivityService (real) em vez de só "online" do browser
+    // (no Electron o evento "online" pode não disparar; o ConnectivityService detecta via health check).
+    const unsubConnectivity = connectivityService.subscribe((status) => {
+      if (status === "ONLINE") void this.runCycle();
+    });
     const onOnline = () => void this.runCycle();
     window.addEventListener("online", onOnline);
 
@@ -128,6 +132,7 @@ class SyncEngine {
         clearInterval(this.intervalId);
         this.intervalId = null;
       }
+      unsubConnectivity();
       window.removeEventListener("online", onOnline);
     };
   }
@@ -325,8 +330,10 @@ class SyncEngine {
           void systemLog.warn("SyncEngine", `Retry ${event.eventType} #${event.retryCount + 1}: ${msg}`, event.id);
           pushError = msg;
           await markRetryLater(event.id, msg);
-          // Para de processar — aguarda restabelecimento da API
-          break;
+
+          // Sem resposta HTTP (status 0) = rede caiu de vez → para a fila, não adianta tentar outros.
+          // Com resposta HTTP (5xx, 401…) = API respondeu → pula este evento e tenta o próximo.
+          if (!status) break;
         }
       }
     } finally {
