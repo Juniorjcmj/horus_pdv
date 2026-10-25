@@ -88,7 +88,10 @@ public class SefazDFeDownloadService(
                 tpEmis = TipoEmissao.teNormal,
                 DefineVersaoServicosAutomaticamente = true,
                 DiretorioSchemas = DiretorioSchemas,
-                ValidarSchemas = SchemasDisponiveis,
+                // Desabilitado: o pacote oficial de XSD tem tipos duplicados (TCOrgaoIBGE)
+                // em múltiplos schemas, causando colisão no XmlSchemaSet do .NET.
+                // Na consulta de distribuição o XML já vem validado pela própria SEFAZ.
+                ValidarSchemas = false,
                 TimeOut = 35000,
                 SalvarXmlServicos = false,
                 Certificado = new ConfiguracaoCertificado
