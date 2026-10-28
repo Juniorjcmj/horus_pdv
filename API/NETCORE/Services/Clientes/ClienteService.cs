@@ -7,23 +7,36 @@ using HORUSPDV_API.Models.Clientes;
 using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Repositories.DataAccess;
 using HORUSPDV_API.Repositories.DatabaseAccess;
+using HORUSPDV_API.Services.Shared;
 
 namespace HORUSPDV_API.Services.Clientes;
 
-public class ClienteService(ClienteAB clientesAB) : IClienteService
+public class ClienteService(ClienteAB clientesAB, AuditLogAB auditLogAb) : IClienteService
 {
     public async Task<List<ClienteModel>> ListarAsync(string companyId)
         => (await clientesAB.ListarAsync(companyId)).Select(ToModel).ToList();
 
-    public async Task<ClienteModel> CriarAsync(string companyId, ClienteRequest request)
+    public async Task<ClienteModel> CriarAsync(string companyId, ClienteRequest request, string userId, string userName)
     {
         Validate(request);
         await ValidateDuplicatesAsync(companyId, request, null);
         var customer = MapRequest($"cl-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", request);
-        return ToModel(await clientesAB.SalvarAsync(companyId, customer));
+        var created = ToModel(await clientesAB.SalvarAsync(companyId, customer));
+
+        _ = auditLogAb.RegistrarAsync(
+            companyId, userId, userName,
+            AuditEventTypes.ClienteCriado,
+            $"Cadastrou cliente {created.CustomerName}" +
+            (created.LimiteCredito > 0
+                ? $" com limite de crédito {HorusMoneyFormat.Format(created.LimiteCredito)}."
+                : "."),
+            entityType: "Cliente",
+            entityId: created.Id);
+
+        return created;
     }
 
-    public async Task<ClienteModel?> AtualizarAsync(string companyId, string id, ClienteRequest request, bool podeAlterarFiado = true)
+    public async Task<ClienteModel?> AtualizarAsync(string companyId, string id, ClienteRequest request, bool podeAlterarFiado, string userId, string userName)
     {
         Validate(request);
         var current = await clientesAB.ObterAsync(companyId, id);
@@ -40,10 +53,32 @@ public class ClienteService(ClienteAB clientesAB) : IClienteService
         }
 
         await ValidateDuplicatesAsync(companyId, request, id);
-        return ToModel(await clientesAB.SalvarAsync(companyId, MapRequest(id, request)));
+        var updated = ToModel(await clientesAB.SalvarAsync(companyId, MapRequest(id, request)));
+
+        // Auditoria: alteração de limite de crédito (evento específico)
+        if (current.LimiteCredito != request.LimiteCredito)
+        {
+            _ = auditLogAb.RegistrarAsync(
+                companyId, userId, userName,
+                AuditEventTypes.FiadoLimiteAlterado,
+                $"Alterou limite de crédito de {current.CustomerName}: " +
+                $"{HorusMoneyFormat.Format(current.LimiteCredito)} → {HorusMoneyFormat.Format(request.LimiteCredito)}.",
+                entityType: "Cliente",
+                entityId: id);
+        }
+
+        // Auditoria: alteração geral do cadastro
+        _ = auditLogAb.RegistrarAsync(
+            companyId, userId, userName,
+            AuditEventTypes.ClienteAtualizado,
+            $"Atualizou cadastro do cliente {updated.CustomerName}.",
+            entityType: "Cliente",
+            entityId: id);
+
+        return updated;
     }
 
-    public async Task<bool> ExcluirAsync(string companyId, string id, bool podeAlterarFiado = true)
+    public async Task<bool> ExcluirAsync(string companyId, string id, bool podeAlterarFiado, string userId, string userName)
     {
         if (!podeAlterarFiado)
         {
@@ -55,7 +90,24 @@ public class ClienteService(ClienteAB clientesAB) : IClienteService
             }
         }
 
-        return await clientesAB.ExcluirAsync(companyId, id);
+        // Busca dados do cliente antes de excluir para registrar na auditoria
+        var customer = await clientesAB.ObterAsync(companyId, id);
+        var removed = await clientesAB.ExcluirAsync(companyId, id);
+
+        if (removed && customer is not null)
+        {
+            _ = auditLogAb.RegistrarAsync(
+                companyId, userId, userName,
+                AuditEventTypes.ClienteExcluido,
+                $"Excluiu cliente {customer.CustomerName}" +
+                (customer.SaldoDevedor > 0
+                    ? $" (saldo devedor: {HorusMoneyFormat.Format(customer.SaldoDevedor)})."
+                    : "."),
+                entityType: "Cliente",
+                entityId: id);
+        }
+
+        return removed;
     }
 
     private static void Validate(ClienteRequest request)

@@ -50,7 +50,7 @@ public class ClienteController(IClienteService clienteService, HORUSPDV_API.Repo
         if (currentUser is null) return Unauthorized(new ApiResponse<ClienteModel> { Success = false, Message = "Sessão não encontrada." });
         try
         {
-            var created = await clienteService.CriarAsync(currentUser.CompanyId, request);
+            var created = await clienteService.CriarAsync(currentUser.CompanyId, request, currentUser.Id, currentUser.Name);
             return StatusCode(StatusCodes.Status201Created, new ApiResponse<ClienteModel>
             {
                 Success = true,
@@ -74,7 +74,7 @@ public class ClienteController(IClienteService clienteService, HORUSPDV_API.Repo
         try
         {
             var updated = await clienteService.AtualizarAsync(
-                currentUser.CompanyId, id, request, PodeAlterarFiado(currentUser));
+                currentUser.CompanyId, id, request, PodeAlterarFiado(currentUser), currentUser.Id, currentUser.Name);
             if (updated is null)
             {
                 return NotFound(new ApiResponse<ClienteModel> { Success = false, Message = "Cliente não encontrado." });
@@ -102,7 +102,7 @@ public class ClienteController(IClienteService clienteService, HORUSPDV_API.Repo
         if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
         try
         {
-            var removed = await clienteService.ExcluirAsync(currentUser.CompanyId, id, PodeAlterarFiado(currentUser));
+            var removed = await clienteService.ExcluirAsync(currentUser.CompanyId, id, PodeAlterarFiado(currentUser), currentUser.Id, currentUser.Name);
             if (!removed)
             {
                 return NotFound(new ApiResponse<object> { Success = false, Message = "Cliente não encontrado." });

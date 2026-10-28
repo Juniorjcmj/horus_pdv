@@ -25,6 +25,10 @@ public static class AuditEventTypes
     public const string VendaCancelada = "VendaCancelada";
     public const string AlteracaoPreco = "AlteracaoPreco";
     public const string VendaCorrigida = "VendaCorrigida";
+    public const string ClienteCriado = "ClienteCriado";
+    public const string ClienteAtualizado = "ClienteAtualizado";
+    public const string ClienteExcluido = "ClienteExcluido";
+    public const string FiadoLimiteAlterado = "FiadoLimiteAlterado";
 }
 
 public class AuditLogAB(Connection connection)
