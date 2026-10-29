@@ -481,6 +481,7 @@ export default function ReportFiltersView({ report, onBack }: ReportFiltersViewP
                 onChange={(nextValue) => handleChange(filter.id, nextValue)}
                 getOptionValue={(option) => option.value}
                 getOptionLabel={(option) => option.label}
+                getOptionSearchText={(option) => `${option.label} ${option.value}`}
                 placeholder="Selecione uma opção"
                 emptyMessage="Nenhuma opção encontrada."
               />

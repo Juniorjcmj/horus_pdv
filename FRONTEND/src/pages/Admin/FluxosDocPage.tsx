@@ -5,6 +5,7 @@
  */
 import {
   ArrowRight,
+  Ban,
   BookOpen,
   CalendarClock,
   ChevronDown,
@@ -195,7 +196,69 @@ const FLUXOS: FluxoConfig[] = [
     ],
   },
 
-  /* 4 ── Fechamento de Caixa ─────────────────────────────── */
+  /* 4 ── Cancelamento de NFC-e ────────────────────────────── */
+  {
+    id: "cancelamento-nfce",
+    titulo: "Cancelamento de NFC-e",
+    resumo:
+      "Cancelamento de nota fiscal ao consumidor, com regra de tempo: até 30 minutos é cancelamento direto na SEFAZ; após 30 minutos, o sistema orienta a devolução via NF-e de entrada.",
+    icone: <Ban size={20} />,
+    cor: "bg-red-500/15 text-red-600",
+    corBorda: "border-l-red-500",
+    passos: [
+      {
+        titulo: "Localizar o documento",
+        descricao:
+          "Na tela de cancelamento (acessível pelo PDV ou pelo menu Fiscal), busque a NFC-e por número da venda, número da nota ou chave de acesso de 44 dígitos.",
+      },
+      {
+        titulo: "Verificação automática de prazo",
+        descricao:
+          "O sistema calcula o tempo decorrido desde a autorização. NFC-e (modelo 65) tem janela de 30 minutos; NF-e (modelo 55) tem janela de 24 horas. Se o prazo expirou, o botão muda automaticamente de \"Cancelar\" para \"Devolver\".",
+        destaque: true,
+      },
+      {
+        titulo: "Autenticação de supervisor",
+        descricao:
+          "O cancelamento exige autorização de um gerente ou administrador. Selecione o supervisor e informe a senha. A operação fica registrada na trilha de auditoria.",
+      },
+      {
+        titulo: "Justificativa obrigatória",
+        descricao:
+          "Informe o motivo do cancelamento com no mínimo 15 caracteres — exigência da SEFAZ. O sistema oferece sugestões de texto para facilitar o preenchimento.",
+      },
+      {
+        titulo: "Transmissão do evento à SEFAZ",
+        descricao:
+          "O sistema envia o evento de cancelamento à SEFAZ com o certificado digital A1, o protocolo de autorização original e a justificativa. Se a SEFAZ aceitar (cStat 135 ou 155), a nota é marcada como Cancelada.",
+        destaque: true,
+      },
+      {
+        titulo: "Retentativas automáticas",
+        descricao:
+          "Se a transmissão falhar (timeout, SEFAZ fora do ar), o documento entra na fila de retentativas: até 12 tentativas com espera crescente (2s, 4s, 8s... até 5 minutos). Se a SEFAZ estiver indisponível por 3 tentativas seguidas, o sistema entra em modo contingência.",
+      },
+      {
+        titulo: "Recuperação de resposta perdida",
+        descricao:
+          "Se houve timeout na resposta (a requisição saiu mas não voltou), o sistema consulta a SEFAZ antes de reenviar — um timeout não significa rejeição. Isso evita cancelamentos duplicados.",
+      },
+      {
+        titulo: "Fora do prazo: Devolução",
+        descricao:
+          "Quando passa dos 30 minutos (NFC-e) ou 24 horas (NF-e), o cancelamento direto não é mais possível pela legislação. O sistema orienta a emissão de uma NF-e modelo 55 de entrada (devolução), que é um documento fiscal formal de estorno.",
+        destaque: true,
+      },
+    ],
+    dicasImportantes: [
+      "O prazo de 30 minutos é contado a partir da autorização na SEFAZ, não da finalização da venda.",
+      "A SEFAZ pode aceitar cancelamentos fora do prazo (cStat 155), mas não é garantido — prefira cancelar rapidamente.",
+      "O cancelamento nunca trava o caixa: é processado em segundo plano pela fila do outbox.",
+      "Toda operação de cancelamento fica registrada com supervisor, operador, data/hora e justificativa.",
+    ],
+  },
+
+  /* 5 ── Fechamento de Caixa ────────────────────────────── */
   {
     id: "fechamento-caixa",
     titulo: "Fechamento de Caixa",
@@ -245,7 +308,7 @@ const FLUXOS: FluxoConfig[] = [
     ],
   },
 
-  /* 5 ── Promoções ───────────────────────────────────────── */
+  /* 6 ── Promoções ───────────────────────────────────────── */
   {
     id: "promocoes",
     titulo: "Promoções",
@@ -294,7 +357,7 @@ const FLUXOS: FluxoConfig[] = [
     ],
   },
 
-  /* 6 ── Controle de Validade ────────────────────────────── */
+  /* 7 ── Controle de Validade ────────────────────────────── */
   {
     id: "controle-validade",
     titulo: "Controle de Validade (FEFO)",

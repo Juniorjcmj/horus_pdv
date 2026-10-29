@@ -84,14 +84,25 @@ const paymentMethodOptions: ReportFilterOption[] = [
 ];
 
 const auditEventTypeOptions: ReportFilterOption[] = [
-  { label: "Todos", value: "" },
-  { label: "Abertura de caixa", value: "CaixaAbertura" },
-  { label: "Fechamento de caixa", value: "CaixaFechamento" },
-  { label: "Reforço de caixa", value: "CaixaReforco" },
-  { label: "Sangria de caixa", value: "CaixaSangria" },
-  { label: "Venda bloqueada", value: "VendaBloqueada" },
-  { label: "Débito fiado", value: "FiadoDebito" },
-  { label: "Recebimento fiado", value: "FiadoRecebimento" },
+  { label: "Todos os eventos", value: "" },
+  { label: "Abertura de caixa (CaixaAbertura)", value: "CaixaAbertura" },
+  { label: "Fechamento de caixa (CaixaFechamento)", value: "CaixaFechamento" },
+  { label: "Reforço de caixa (CaixaReforco)", value: "CaixaReforco" },
+  { label: "Sangria de caixa (CaixaSangria)", value: "CaixaSangria" },
+  { label: "Venda bloqueada (VendaBloqueada)", value: "VendaBloqueada" },
+  { label: "Débito fiado (FiadoDebito)", value: "FiadoDebito" },
+  { label: "Recebimento fiado (FiadoRecebimento)", value: "FiadoRecebimento" },
+  { label: "Alteração de limite fiado (FiadoLimiteAlterado)", value: "FiadoLimiteAlterado" },
+  { label: "Cadastro de cliente (ClienteCriado)", value: "ClienteCriado" },
+  { label: "Atualização de cliente (ClienteAtualizado)", value: "ClienteAtualizado" },
+  { label: "Exclusão de cliente (ClienteExcluido)", value: "ClienteExcluido" },
+  { label: "Alteração de preço autorizada (AlteracaoPreco)", value: "AlteracaoPreco" },
+  { label: "Cancelamento de venda (VendaCancelada)", value: "VendaCancelada" },
+  { label: "Cancelamento de NFC-e (NfceCancelamento)", value: "NfceCancelamento" },
+  { label: "Devolução de NF-e entrada (NfeDevolucaoEntrada)", value: "NfeDevolucaoEntrada" },
+  { label: "Correção de venda (VendaCorrigida)", value: "VendaCorrigida" },
+  { label: "Ruptura de estoque (EstoqueRuptura)", value: "EstoqueRuptura" },
+  { label: "Classificação fiscal IA (ProdutoFiscalIa)", value: "ProdutoFiscalIa" },
 ];
 
 const departmentOptions: ReportFilterOption[] = [
