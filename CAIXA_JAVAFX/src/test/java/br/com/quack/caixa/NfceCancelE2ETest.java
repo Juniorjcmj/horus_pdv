@@ -41,12 +41,12 @@ class NfceCancelE2ETest {
 
         PriceAuthApi.Supervisor g = ctx.priceAuthApi.supervisors().get(0);
         ApiException errada = assertThrows(ApiException.class,
-                () -> ctx.fiscalApi.cancelWithSupervisor(doc, g.id(), "senha-errada", "Desistência da compra pelo cliente."));
+                () -> ctx.fiscalApi.cancelWithSupervisor(doc, g.id(), "senha-errada", "Desistência da compra pelo cliente.", ctx.config.deviceId()));
         log("cancelar com senha errada -> " + errada.status() + " " + errada.getMessage());
 
         try {
             FiscalApi.CancelResult r = ctx.fiscalApi.cancelWithSupervisor(doc, g.id(), senha,
-                    "Desistência da compra pelo cliente.");
+                    "Desistência da compra pelo cliente.", ctx.config.deviceId());
             log("cancelar com senha certa -> OK protocolo " + r.protocoloCancelamento() + " por " + r.supervisorNome());
         } catch (ApiException e) {
             log("cancelar com senha certa -> servidor respondeu " + e.status() + ": " + e.getMessage());

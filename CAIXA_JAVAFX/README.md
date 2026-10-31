@@ -92,6 +92,27 @@ vendas pendentes: eles ficam fora da pasta do programa justamente para sobrevive
 - Testado ponta a ponta contra a API (`OfflineE2ETest`): turno inteiro offline sincronizou com o mesmo id de sessão,
   a venda dentro dele e diferença zero no fechamento.
 
+## Cancelamento de venda (senha do gerente + auditoria)
+
+Em "Vendas do caixa" (F9) → abrir a venda → **Cancelar venda**. Pede motivo (mínimo 5 caracteres), o gerente e a
+senha dele. O servidor estorna estoque e fiado e grava tudo numa transação só.
+
+- Venda com **NFC-e/NF-e autorizada** não cancela por aqui: a tela leva para o cancelamento da nota (SEFAZ), que
+  também cancela a venda e grava a mesma trilha.
+- Nota **ainda não autorizada** (na fila, transmitindo ou em contingência): a venda cancela na hora. A fila fiscal
+  (`NfceOutboxWorker`) não emite nota de venda cancelada: inutiliza o número na SEFAZ (evento `NfceNaoEmitida`; sem
+  certificado, fica como rejeitada com o aviso para inutilizar manualmente). Se a nota já tinha sido assinada ou
+  transmitida, ela é cancelada na SEFAZ assim que for autorizada; se isso falhar, o evento `NfceCancelamentoPendente`
+  avisa para cancelar manualmente (prazo de 30 min).
+- Venda corrigida ou já cancelada: recusada.
+- **Trilha de auditoria** (tabela `VendaCancelamentos`, migração 55, só INSERT): uma linha por **tentativa**,
+  autorizada ou negada (senha errada, nota pendente, venda já cancelada...), com operador, gerente, motivo, terminal
+  (`deviceId`), IP, turno de caixa (aberto/fechado) e a fotografia da venda (itens, pagamentos, cliente, notas).
+  Também vai um resumo para o Log de Atividades (`VendaCancelada` / `CancelamentoVendaNegado`).
+- Consulta: Relatórios → **Trilha de Cancelamentos (Auditoria)** (gerente/administrador) ou
+  `GET /api/HistoricoVendas/cancelamentos/auditoria?de=&ate=&venda=`.
+- Comprovante térmico com as assinaturas do gerente e do operador. Teste: `SaleCancelE2ETest`.
+
 ## Limitações desta versão
 
 - Sem pedidos do vendedor, NF-e 55, alteração de preço com senha de gerente, cancelamento de venda/NFC-e,

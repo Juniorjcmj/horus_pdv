@@ -1,6 +1,7 @@
 package br.com.quack.caixa.service;
 
 import br.com.quack.caixa.api.FiscalApi;
+import br.com.quack.caixa.api.SaleHistoryApi;
 import br.com.quack.caixa.api.dto.CaixaStatusDto;
 import br.com.quack.caixa.api.dto.VendaPayload;
 import br.com.quack.caixa.domain.Company;
@@ -451,6 +452,53 @@ public final class ReceiptPrinter {
         return r.box;
     }
 
+    /**
+     * Comprovante do cancelamento de venda sem nota (porta de buildSaleCancellationReceiptHtml): venda, itens,
+     * pagamentos, quem pediu, quem autorizou, motivo e assinaturas do gerente e do operador.
+     */
+    public static Node buildCancelamentoVenda(Company company, SaleHistoryApi.SaleDetail sale,
+            SaleHistoryApi.CancelResult result, String justificativa, String operador) {
+        Paper r = new Paper(12);
+        if (company != null) {
+            r.center(nz(company.fantasyName()).isBlank() ? nz(company.corporateName()) : company.fantasyName(), true, 13);
+            if (!nz(company.cnpj()).isBlank()) {
+                r.center("CNPJ: " + formatCnpj(company.cnpj()), false, 10);
+            }
+            r.divider();
+        }
+        r.center("COMPROVANTE DE CANCELAMENTO", true, 14);
+        r.center("DE VENDA (SEM DOCUMENTO FISCAL)", false, 10);
+        r.divider();
+        r.row("Venda:", "#" + nz(sale.saleNumber()), true, 12);
+        r.row("Data da venda:", dash(sale.saleDate()), false, 11);
+        r.row("Cancelada em:", dash(result.canceladoEm()), false, 11);
+        r.row("Valor:", "R$ " + dash(sale.totalAmount()), true, 12);
+        r.row("Cliente:", nz(sale.customerName()).isBlank() ? "Consumidor" : sale.customerName(), false, 11);
+        r.divider();
+        r.text("ITENS ESTORNADOS AO ESTOQUE", true, 11);
+        for (SaleHistoryApi.Item it : sale.uniqueItems()) {
+            r.row(Money.formatQty(it.quantity()) + "x " + nz(it.productName()), "R$ " + dash(it.itemTotal()), false, 10);
+        }
+        r.divider();
+        r.text("PAGAMENTOS ESTORNADOS", true, 11);
+        for (SaleHistoryApi.Payment p : sale.payments() == null ? List.<SaleHistoryApi.Payment>of() : sale.payments()) {
+            r.row(PaymentType.fromWire(p.paymentType()).label(), "R$ " + Money.formatBr(p.amount()), false, 10);
+        }
+        if (result.fiadoEstornado() != null && result.fiadoEstornado().signum() > 0) {
+            r.row("Fiado estornado:", "R$ " + Money.formatBr(result.fiadoEstornado()), true, 11);
+        }
+        r.divider();
+        r.row("Operador:", dash(operador), false, 11);
+        r.row("Autorizado por:", dash(result.supervisorNome()), true, 11);
+        r.text("JUSTIFICATIVA:", true, 11);
+        r.text(nz(justificativa), false, 10);
+        r.divider();
+        r.signatureBlock(dash(result.supervisorNome()), "Gerente / Supervisor Autorizador");
+        r.signatureBlock(dash(operador), "Operador Responsável pelo Caixa");
+        r.center("Registro de auditoria gravado no sistema.", false, 9);
+        return r.box;
+    }
+
     /** Comprovante térmico da devolução, com assinatura do cliente (buildDevolucaoPrintHtml). */
     public static Node buildDevolucao(FiscalApi.FiscalDoc doc, FiscalApi.DevolucaoResult result, String justificativa) {
         Paper r = new Paper(12);
@@ -593,35 +641,115 @@ public final class ReceiptPrinter {
     }
 
     /** Um nó fora de qualquer cena não tem CSS nem layout calculados e sairia em branco. */
-    private static void prepare(Node receipt) {
+    static void prepare(Node receipt) {
         if (receipt.getScene() == null) {
             new javafx.scene.Scene(new javafx.scene.Group(receipt));
         }
         receipt.applyCss();
+        // Fora de uma janela ninguém dá tamanho ao comprovante: sem autosize a largura/altura ficam 0.
+        receipt.autosize();
         if (receipt instanceof javafx.scene.Parent parent) {
             parent.layout();
         }
     }
 
-    /** O nó já preparado não está numa janela visível, então pode ser impresso fora da FX thread. */
+    /**
+     * O nó já preparado não está numa janela visível, então pode ser impresso fora da FX thread.
+     *
+     * <p>O comprovante tem {@value #RECEIPT_WIDTH_PX} px + margens (1 px = 1 ponto = 1/72"), uns 100 mm; a térmica de
+     * 80 mm imprime ~72 mm. Por isso: margem mínima do hardware, redução proporcional para caber na largura
+     * imprimível e, se ficar mais comprido que o papel informado pelo driver, várias páginas quebrando entre linhas.
+     */
     private static void printPrepared(Node receipt) {
         PrinterJob job = PrinterJob.createPrinterJob();
         if (job == null) {
             throw new DomainException("Nenhuma impressora disponível");
         }
+        List<javafx.scene.transform.Transform> original = List.copyOf(receipt.getTransforms());
+        javafx.scene.shape.Shape originalClip = receipt.getClip() instanceof javafx.scene.shape.Shape s ? s : null;
         try {
-            if (job.printPage(receipt)) {
-                job.endJob();
-            } else {
-                job.cancelJob();
-                throw new DomainException("A impressão não foi concluída.");
+            javafx.print.Printer printer = job.getPrinter();
+            javafx.print.PageLayout layout = printer.createPageLayout(printer.getDefaultPageLayout().getPaper(),
+                    javafx.print.PageOrientation.PORTRAIT, javafx.print.Printer.MarginType.HARDWARE_MINIMUM);
+            job.getJobSettings().setPageLayout(layout);
+
+            javafx.geometry.Bounds b = receipt.getBoundsInLocal();
+            if (b.getWidth() <= 0 || b.getHeight() <= 0) {
+                throw new DomainException("Comprovante vazio: nada para imprimir.");
             }
+            double scale = fitScale(b.getWidth(), layout.getPrintableWidth());
+            double pageLocal = layout.getPrintableHeight() / scale;
+            List<double[]> pages = pageRanges(rowBottoms(receipt), b.getMinY(), b.getMaxY(), pageLocal);
+            for (double[] page : pages) {
+                showPage(receipt, b, scale, page);
+                if (!job.printPage(layout, receipt)) {
+                    job.cancelJob();
+                    throw new DomainException("A impressão não foi concluída.");
+                }
+            }
+            job.endJob();
         } catch (DomainException e) {
             throw e;
         } catch (RuntimeException e) {
             job.cancelJob();
             throw new DomainException("Falha ao imprimir: " + e.getMessage());
+        } finally {
+            receipt.getTransforms().setAll(original);
+            receipt.setClip(originalClip);
         }
+    }
+
+    /** Posiciona o comprovante para imprimir só a faixa [page[0], page[1]], reduzido pela escala, a partir de (0,0). */
+    static void showPage(Node receipt, javafx.geometry.Bounds b, double scale, double[] page) {
+        receipt.getTransforms().setAll(new javafx.scene.transform.Scale(scale, scale),
+                new javafx.scene.transform.Translate(-b.getMinX(), -page[0]));
+        receipt.setClip(new javafx.scene.shape.Rectangle(b.getMinX(), page[0], b.getWidth(), page[1] - page[0]));
+    }
+
+    /** Escala para o comprovante caber na largura imprimível (nunca aumenta). */
+    static double fitScale(double contentWidth, double printableWidth) {
+        if (contentWidth <= 0 || printableWidth <= 0 || contentWidth <= printableWidth) {
+            return 1;
+        }
+        return printableWidth / contentWidth;
+    }
+
+    /** Fim (y) de cada linha do comprovante: pontos onde dá para virar a página sem cortar texto. */
+    private static List<Double> rowBottoms(Node receipt) {
+        List<Double> out = new ArrayList<>();
+        if (receipt instanceof javafx.scene.Parent p) {
+            for (Node child : p.getChildrenUnmodifiable()) {
+                out.add(child.getBoundsInParent().getMaxY());
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Divide [top, bottom] em páginas de até pageHeight, virando a página no fim da última linha que cabe.
+     * Linha maior que uma página (não deveria acontecer) é cortada no limite da página.
+     */
+    static List<double[]> pageRanges(List<Double> rowBottoms, double top, double bottom, double pageHeight) {
+        List<double[]> pages = new ArrayList<>();
+        if (pageHeight <= 0 || bottom - top <= pageHeight + 0.5) {
+            pages.add(new double[] {top, bottom});
+            return pages;
+        }
+        List<Double> breaks = rowBottoms.stream().filter(y -> y > top && y < bottom).sorted().toList();
+        double start = top;
+        while (bottom - start > pageHeight + 0.5) {
+            double limit = start + pageHeight;
+            double end = limit;
+            for (double y : breaks) {
+                if (y > start + 1 && y <= limit) {
+                    end = y;
+                }
+            }
+            pages.add(new double[] {start, end});
+            start = end;
+        }
+        pages.add(new double[] {start, bottom});
+        return pages;
     }
 
     // =====================================================================

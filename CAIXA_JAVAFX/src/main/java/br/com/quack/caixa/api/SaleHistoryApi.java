@@ -52,6 +52,11 @@ public class SaleHistoryApi {
             String financeiroNome, int itensRemovidos, String novoTotal, boolean fiscalQueued) {
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record CancelResult(String saleNumber, String canceladoEm, String supervisorNome, int itensEstornados,
+            BigDecimal fiadoEstornado) {
+    }
+
     private final ApiClient api;
 
     public SaleHistoryApi(ApiClient api) {
@@ -61,6 +66,30 @@ public class SaleHistoryApi {
     public SaleDetail details(String saleNumber) {
         return api.send("GET", "/api/HistoricoVendas/" + enc(saleNumber), null, ApiClient.LIST_TIMEOUT,
                 SaleDetail.class);
+    }
+
+    /**
+     * Cancela a venda inteira (POST /api/HistoricoVendas/{venda}/cancelar), autorizada pela senha do gerente. O
+     * servidor estorna estoque e fiado e grava a trilha completa (inclusive tentativas negadas). Venda com nota
+     * autorizada volta 409 com data.codigo = NOTA_AUTORIZADA: o cancelamento tem de ir pela NFC-e (SEFAZ).
+     */
+    public CancelResult cancel(String saleNumber, String supervisorId, String supervisorPassword, String justificativa,
+            String terminal) {
+        Map<String, Object> b = new LinkedHashMap<>();
+        b.put("supervisorId", supervisorId);
+        b.put("supervisorPassword", supervisorPassword);
+        b.put("justificativa", justificativa);
+        b.put("terminal", terminal);
+        return api.send("POST", "/api/HistoricoVendas/" + enc(saleNumber) + "/cancelar", b, ApiClient.SALE_TIMEOUT,
+                CancelResult.class);
+    }
+
+    /** Código da recusa do cancelamento (NOTA_AUTORIZADA, NOTA_PENDENTE, JA_CANCELADA...), ou "". */
+    public static String cancelCode(Throwable t) {
+        if (t instanceof ApiException e && e.data() != null) {
+            return e.data().path("codigo").asText("");
+        }
+        return "";
     }
 
     /**

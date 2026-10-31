@@ -440,7 +440,7 @@ public final class NfceCancelDialog {
         sefazRejeicaoPrazo = null;
         if (mode == Mode.CANCELAR) {
             FiscalApi.FiscalDoc d = doc;
-            Fx.async(() -> ctx.fiscalApi.cancelWithSupervisor(d, supId, pwd, just), res -> {
+            Fx.async(() -> ctx.fiscalApi.cancelWithSupervisor(d, supId, pwd, just, ctx.config.deviceId()), res -> {
                 setBusy(false);
                 changed = true;
                 FiscalApi.CancelResult r = res != null ? res

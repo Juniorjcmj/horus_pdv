@@ -92,11 +92,12 @@ public class FiscalApi {
     }
 
     public CancelResult cancelWithSupervisor(FiscalDoc doc, String supervisorId, String supervisorPassword,
-            String justificativa) {
+            String justificativa, String terminal) {
         Map<String, Object> b = new LinkedHashMap<>();
         b.put("supervisorId", supervisorId);
         b.put("supervisorPassword", supervisorPassword);
         b.put("justificativa", justificativa);
+        b.put("terminal", terminal);
         String base = doc.modelo55() ? "/api/Nfe/" : "/api/Nfce/";
         return api.send("POST", base + enc(doc.id()) + "/cancelar-com-supervisor", b, SEFAZ_TIMEOUT,
                 CancelResult.class);

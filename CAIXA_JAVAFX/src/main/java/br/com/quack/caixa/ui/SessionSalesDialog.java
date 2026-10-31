@@ -394,7 +394,14 @@ public final class SessionSalesDialog {
                     }
                 });
                 corrigir.setFocusTraversable(false);
-                HBox actions = new HBox(8, corrigir, cancelar);
+                // Cancelamento da venda inteira com senha do gerente (com nota autorizada, vai pela SEFAZ).
+                Button cancelarVenda = Fx.button("Cancelar venda", "rg-btn-small rg-btn-outline-danger", () -> {
+                    if (SaleCancelDialog.show(stage, ctx, s.number())) {
+                        load();
+                    }
+                });
+                cancelarVenda.setFocusTraversable(false);
+                HBox actions = new HBox(8, corrigir, cancelarVenda, cancelar);
                 actions.setAlignment(Pos.CENTER_RIGHT);
                 detail.getChildren().add(actions);
             }
