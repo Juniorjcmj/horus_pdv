@@ -99,6 +99,9 @@ const auditEventTypeOptions: ReportFilterOption[] = [
   { label: "Alteração de preço autorizada (AlteracaoPreco)", value: "AlteracaoPreco" },
   { label: "Venda offline abaixo do preço sem autorização (PrecoOfflineAbaixo)", value: "PrecoOfflineAbaixo" },
   { label: "Cancelamento de venda (VendaCancelada)", value: "VendaCancelada" },
+  { label: "Cancelamento de venda negado (CancelamentoVendaNegado)", value: "CancelamentoVendaNegado" },
+  { label: "NFC-e não emitida - venda cancelada (NfceNaoEmitida)", value: "NfceNaoEmitida" },
+  { label: "NFC-e de venda cancelada a cancelar manualmente (NfceCancelamentoPendente)", value: "NfceCancelamentoPendente" },
   { label: "Cancelamento de NFC-e (NfceCancelamento)", value: "NfceCancelamento" },
   { label: "Devolução de NF-e entrada (NfeDevolucaoEntrada)", value: "NfeDevolucaoEntrada" },
   { label: "Correção de venda (VendaCorrigida)", value: "VendaCorrigida" },
@@ -383,6 +386,25 @@ export const reportCatalog: ReportDefinition[] = [
     icon: Ban,
     filters: [
       ...periodFilters,
+    ],
+  },
+  {
+    id: "auditoria-cancelamentos",
+    title: "Trilha de Cancelamentos (Auditoria)",
+    description: "Cada tentativa de cancelar uma venda, autorizada ou negada (senha errada, venda com nota...): operador, gerente, motivo, turno, itens, pagamentos, terminal e IP. Disponível apenas para administradores e gerentes.",
+    icon: Ban,
+    filters: [
+      ...periodFilters,
+      {
+        id: "resultado",
+        label: "Resultado",
+        type: "select",
+        options: [
+          { label: "Todos", value: "" },
+          { label: "Canceladas", value: "cancelada" },
+          { label: "Negadas", value: "negada" },
+        ],
+      },
     ],
   },
   {

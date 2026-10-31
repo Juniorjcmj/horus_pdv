@@ -291,15 +291,18 @@ public class DocumentoFiscalAB(
     public async Task<List<DocumentoFiscalPendente>> ObterPendentesAsync(int lote, CancellationToken ct = default)
     {
         const string sql = """
-            SELECT TOP (@Lote) Id, CompanyId, VendaId, Modelo, Serie, NumeroNf, TpEmis, Tentativas,
-                   DhContingencia, JustContingencia, DestinatarioJson, NaturezaOperacao, ModalidadeFrete,
-                   XmlAssinado, ChaveAcesso, Status
-            FROM DocumentosFiscais
-            WHERE Status IN (1, 2, 8)
-              AND (ProximaTentativaEm IS NULL OR ProximaTentativaEm <= SYSDATETIMEOFFSET())
+            SELECT TOP (@Lote) d.Id, d.CompanyId, d.VendaId, d.Modelo, d.Serie, d.NumeroNf, d.TpEmis, d.Tentativas,
+                   d.DhContingencia, d.JustContingencia, d.DestinatarioJson, d.NaturezaOperacao, d.ModalidadeFrete,
+                   d.XmlAssinado, d.ChaveAcesso, d.Status
+            FROM DocumentosFiscais d
+            LEFT JOIN Vendas v ON v.Id = d.VendaId AND v.CompanyId = d.CompanyId
+            WHERE d.Status IN (1, 2, 8)
+              AND (d.ProximaTentativaEm IS NULL OR d.ProximaTentativaEm <= SYSDATETIMEOFFSET())
             ORDER BY
-              CASE WHEN Status = 8 THEN 0 ELSE 1 END,
-              CriadoEm;
+              -- nota de venda cancelada primeiro: sai da fila (ou é cancelada na SEFAZ) mesmo com a fila travada
+              CASE WHEN v.Status = 'cancelada' THEN 0 ELSE 1 END,
+              CASE WHEN d.Status = 8 THEN 0 ELSE 1 END,
+              d.CriadoEm;
             """;
 
         await using var db = await connection.OpenConnectionAsync(ct);
@@ -908,7 +911,10 @@ public class DocumentoFiscalAB(
         string supervisorNome,
         string operadorNome,
         string justificativa,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? operadorId = null,
+        string? terminal = null,
+        string? ip = null)
     {
         await using var db = await connection.OpenConnectionAsync(ct);
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync(ct);
@@ -948,8 +954,9 @@ public class DocumentoFiscalAB(
             // 2. Recupera a Venda vinculada
             string? vendaId = null;
             string? saleNumber = null;
+            int modelo = 65;
             await using (var cmdGetVenda = new SqlCommand(
-                "SELECT d.VendaId, v.SaleNumber FROM DocumentosFiscais d LEFT JOIN Vendas v ON v.Id = d.VendaId WHERE d.Id = @Id AND d.CompanyId = @CompanyId;",
+                "SELECT d.VendaId, v.SaleNumber, d.Modelo FROM DocumentosFiscais d LEFT JOIN Vendas v ON v.Id = d.VendaId WHERE d.Id = @Id AND d.CompanyId = @CompanyId;",
                 db,
                 transaction))
             {
@@ -960,56 +967,115 @@ public class DocumentoFiscalAB(
                 {
                     vendaId = ReadNullableString(reader, "VendaId");
                     saleNumber = ReadNullableString(reader, "SaleNumber");
+                    modelo = Convert.ToInt32(reader.GetValue(reader.GetOrdinal("Modelo")));
                 }
             }
 
+            var tipoNota = modelo == 55 ? "NF-e" : "NFC-e";
             if (!string.IsNullOrWhiteSpace(vendaId))
             {
-                // 3. Atualiza o status da Venda para cancelada
-                await using (var cmdVenda = new SqlCommand(
-                    "UPDATE Vendas SET Status = 'cancelada' WHERE Id = @VendaId AND CompanyId = @CompanyId;",
-                    db,
-                    transaction))
-                {
-                    cmdVenda.Parameters.AddWithValue("@VendaId", vendaId);
-                    cmdVenda.Parameters.AddWithValue("@CompanyId", companyId);
-                    await cmdVenda.ExecuteNonQueryAsync(ct);
-                }
+                var snapshot = await VendaCancelamentoAB.CapturarAsync(db, transaction, companyId, vendaId, null);
+                var jaCancelada = snapshot is not null
+                    && snapshot.Status.Equals("cancelada", StringComparison.OrdinalIgnoreCase);
+                var itensEstornados = 0;
+                decimal fiadoEstornado = 0m;
+                string? pendenciaFiado = null;
 
-                // 4. Estorno automático de estoque dos itens vendidos
-                await using (var cmdEstorno = new SqlCommand(
-                    """
-                    UPDATE p
-                       SET p.ProductQnt = p.ProductQnt + vi.Quantity,
-                           p.TotalPriceOnProduct = p.ProductUnitPrice * (p.ProductQnt + vi.Quantity)
-                      FROM Produtos p
-                      INNER JOIN VendaItens vi ON vi.ProductCode = p.ProductCode AND p.CompanyId = @CompanyId
-                     WHERE vi.VendaId = @VendaId;
-                    """,
-                    db,
-                    transaction))
+                if (!jaCancelada)
                 {
-                    cmdEstorno.Parameters.AddWithValue("@VendaId", vendaId);
-                    cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
-                    await cmdEstorno.ExecuteNonQueryAsync(ct);
+                    // 3. Venda cancelada com quem pediu, quem autorizou e o motivo (mesmas colunas do cancelamento sem nota)
+                    await using (var cmdVenda = new SqlCommand(
+                        """
+                        UPDATE Vendas
+                           SET Status = 'cancelada',
+                               CanceladoEm = SYSDATETIMEOFFSET(),
+                               CanceladoPorOperadorId = @OperadorId,
+                               CanceladoPorOperadorNome = @OperadorNome,
+                               CanceladoPorSupervisorId = @SupervisorId,
+                               CanceladoPorSupervisorNome = @SupervisorNome,
+                               CanceladoJustificativa = @Justificativa
+                         WHERE Id = @VendaId AND CompanyId = @CompanyId;
+                        """,
+                        db,
+                        transaction))
+                    {
+                        cmdVenda.Parameters.AddWithValue("@VendaId", vendaId);
+                        cmdVenda.Parameters.AddWithValue("@CompanyId", companyId);
+                        cmdVenda.Parameters.AddWithValue("@OperadorId", (object?)operadorId ?? DBNull.Value);
+                        cmdVenda.Parameters.AddWithValue("@OperadorNome", (object?)operadorNome ?? DBNull.Value);
+                        cmdVenda.Parameters.AddWithValue("@SupervisorId", (object?)supervisorId ?? DBNull.Value);
+                        cmdVenda.Parameters.AddWithValue("@SupervisorNome", (object?)supervisorNome ?? DBNull.Value);
+                        cmdVenda.Parameters.AddWithValue("@Justificativa", (object?)justificativa ?? DBNull.Value);
+                        await cmdVenda.ExecuteNonQueryAsync(ct);
+                    }
+
+                    // 4. Estorno automático de estoque dos itens vendidos
+                    await using (var cmdEstorno = new SqlCommand(
+                        """
+                        UPDATE p
+                           SET p.ProductQnt = p.ProductQnt + vi.Quantity,
+                               p.TotalPriceOnProduct = p.ProductUnitPrice * (p.ProductQnt + vi.Quantity)
+                          FROM Produtos p
+                          INNER JOIN VendaItens vi ON vi.ProductCode = p.ProductCode AND p.CompanyId = @CompanyId
+                         WHERE vi.VendaId = @VendaId;
+                        """,
+                        db,
+                        transaction))
+                    {
+                        cmdEstorno.Parameters.AddWithValue("@VendaId", vendaId);
+                        cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
+                        await cmdEstorno.ExecuteNonQueryAsync(ct);
+                    }
+                    itensEstornados = snapshot?.Itens.Count ?? 0;
+
+                    // 4b. Fiado de volta. A nota já está cancelada na SEFAZ: se o cliente já pagou parte do fiado,
+                    // não derruba o registro; fica anotado para o financeiro.
+                    (fiadoEstornado, pendenciaFiado) = await HistoricoVendasAB.TentarEstornarFiadoAsync(
+                        db, transaction, companyId, vendaId, operadorNome ?? supervisorNome);
                 }
 
                 // 5. Registra na trilha genérica AuditLog
                 await using (var cmdAudit = new SqlCommand(
                     """
                     INSERT INTO AuditLog (CompanyId, UserId, UserName, EventType, EntityType, EntityId, Description, Ip)
-                    VALUES (@CompanyId, @UserId, @UserName, 'NfceCancelamento', 'DocumentosFiscais', @EntityId, @Description, 'PDV');
+                    VALUES (@CompanyId, @UserId, @UserName, 'NfceCancelamento', 'DocumentosFiscais', @EntityId, @Description, @Ip);
                     """,
                     db,
                     transaction))
                 {
+                    var descricao = $"{tipoNota} cancelada na SEFAZ para a venda {saleNumber ?? vendaId}. Caixa: {operadorNome}. " +
+                                    $"Gerente: {supervisorNome}. Motivo: {justificativa}." +
+                                    (jaCancelada ? " Venda já estava cancelada: estoque não estornado de novo." : "") +
+                                    (fiadoEstornado > 0 ? $" Fiado estornado: R$ {HorusMoneyFormat.Format(fiadoEstornado)}." : "") +
+                                    (pendenciaFiado is null ? "" : $" {pendenciaFiado}");
                     cmdAudit.Parameters.AddWithValue("@CompanyId", companyId);
-                    cmdAudit.Parameters.AddWithValue("@UserId", supervisorId);
-                    cmdAudit.Parameters.AddWithValue("@UserName", supervisorNome);
+                    cmdAudit.Parameters.AddWithValue("@UserId", operadorId ?? supervisorId);
+                    cmdAudit.Parameters.AddWithValue("@UserName", operadorNome ?? supervisorNome);
                     cmdAudit.Parameters.AddWithValue("@EntityId", id);
-                    cmdAudit.Parameters.AddWithValue("@Description", $"NFC-e cancelada no PDV para a venda {saleNumber ?? vendaId}. Caixa: {operadorNome}. Motivo: {justificativa}");
+                    cmdAudit.Parameters.AddWithValue("@Description", descricao.Length <= 500 ? descricao : descricao[..500]);
+                    cmdAudit.Parameters.AddWithValue("@Ip", string.IsNullOrWhiteSpace(ip) ? "PDV" : ip);
                     await cmdAudit.ExecuteNonQueryAsync(ct);
                 }
+
+                // 6. Trilha completa (fotografia da venda)
+                await VendaCancelamentoAB.RegistrarAsync(db, transaction, new VendaCancelamentoRegistro
+                {
+                    CompanyId = companyId,
+                    Resultado = "cancelada",
+                    Via = modelo == 55 ? "nfe" : "nfce",
+                    MotivoRecusa = jaCancelada ? "Venda já estava cancelada; só a nota foi cancelada na SEFAZ." : pendenciaFiado,
+                    SaleNumber = saleNumber,
+                    OperadorId = operadorId ?? supervisorId,
+                    OperadorNome = operadorNome ?? supervisorNome,
+                    SupervisorId = supervisorId,
+                    SupervisorNome = supervisorNome,
+                    Justificativa = justificativa,
+                    Terminal = terminal,
+                    Ip = ip,
+                    ItensEstornados = itensEstornados,
+                    FiadoEstornado = fiadoEstornado,
+                    Snapshot = snapshot,
+                });
             }
 
             await transaction.CommitAsync(ct);
@@ -1368,6 +1434,57 @@ public class DocumentoFiscalAB(
         if (string.IsNullOrWhiteSpace(conteudo)) return null;
 
         return System.Net.WebUtility.HtmlDecode(conteudo);
+    }
+
+    /// <summary>Dados do cancelamento da venda (null se a venda não está cancelada).</summary>
+    public sealed record CancelamentoDaVenda(string? SaleNumber, string Justificativa, string? SupervisorId,
+        string? SupervisorNome, string? OperadorId, string? OperadorNome);
+
+    /// <summary>
+    /// A venda da nota foi cancelada? O worker consulta antes de emitir (não emite nota de venda cancelada) e
+    /// depois de autorizar (cancela na SEFAZ a nota que foi autorizada depois do cancelamento da venda).
+    /// </summary>
+    public async Task<CancelamentoDaVenda?> ObterCancelamentoDaVendaAsync(string companyId, string vendaId,
+        CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var cmd = new SqlCommand(
+            """
+            SELECT SaleNumber, CanceladoJustificativa, CanceladoPorSupervisorId, CanceladoPorSupervisorNome,
+                   CanceladoPorOperadorId, CanceladoPorOperadorNome
+            FROM Vendas
+            WHERE CompanyId = @CompanyId AND Id = @VendaId AND Status = 'cancelada';
+            """, db);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        cmd.Parameters.AddWithValue("@VendaId", vendaId);
+        await using var r = await cmd.ExecuteReaderAsync(ct);
+        if (!await r.ReadAsync(ct)) return null;
+        string? S(int i) => r.IsDBNull(i) ? null : r.GetString(i);
+        return new CancelamentoDaVenda(S(0), S(1) ?? "Venda cancelada no caixa.", S(2), S(3), S(4), S(5));
+    }
+
+    /// <summary>
+    /// Tira da fila uma nota que nunca foi assinada (venda cancelada antes da emissão): status Inutilizado (número
+    /// inutilizado na SEFAZ) ou Rejeitado (para inutilizar manualmente). Só altera se ela ainda estiver na fila e sem
+    /// XML: se o worker já assinou, GuardarAssinaturaAsync/este filtro impedem a troca.
+    /// </summary>
+    public async Task<bool> EncerrarSemEmissaoAsync(string companyId, string id, StatusDocumentoFiscal status,
+        string motivo, CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var cmd = new SqlCommand(
+            """
+            UPDATE DocumentosFiscais
+               SET Status = @Status, MotivoStatus = @Motivo, UltimoErro = @Motivo, ProximaTentativaEm = NULL,
+                   AtualizadoEm = SYSDATETIMEOFFSET()
+             WHERE Id = @Id AND CompanyId = @CompanyId AND Status IN (1, 2, 8)
+               AND (XmlAssinado IS NULL OR XmlAssinado = '');
+            """, db);
+        cmd.Parameters.AddWithValue("@Status", (int)status);
+        cmd.Parameters.AddWithValue("@Motivo", Truncar(motivo, 500));
+        cmd.Parameters.AddWithValue("@Id", id);
+        cmd.Parameters.AddWithValue("@CompanyId", companyId);
+        return await cmd.ExecuteNonQueryAsync(ct) == 1;
     }
 
     public Task MarcarAutorizadoAsync(string id, ResultadoFiscal resultado, CancellationToken ct = default)

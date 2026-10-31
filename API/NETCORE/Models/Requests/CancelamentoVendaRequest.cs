@@ -9,4 +9,6 @@ public class CancelamentoVendaComSupervisorRequest
     public string SupervisorId { get; set; } = string.Empty;
     public string SupervisorPassword { get; set; } = string.Empty;
     public string Justificativa { get; set; } = string.Empty;
+    /// <summary>Identificação do caixa que pediu (deviceId), para a trilha de auditoria. Opcional.</summary>
+    public string? Terminal { get; set; }
 }

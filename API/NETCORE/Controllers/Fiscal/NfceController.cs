@@ -28,7 +28,9 @@ public class NfceController(
     DocumentoFiscalAB documentoFiscalAB,
     EmitenteFiscalStore emitenteFiscalStore,
     IFiscalProvider fiscalProvider,
-    HorusSecurityStore securityStore) : ControllerBase
+    HorusSecurityStore securityStore,
+    VendaCancelamentoAB vendaCancelamentoAB,
+    HorusSecurityOptions securityOptions) : ControllerBase
 {
     [HttpGet]
     [HorusAuthorizeRoles(HorusRoles.Administrador, HorusRoles.Financeiro)]
@@ -155,6 +157,7 @@ public class NfceController(
 
         if (string.IsNullOrWhiteSpace(request.Justificativa) || request.Justificativa.Trim().Length < 15)
         {
+            await NegarCancelamento(currentUser, request, id, "nfce", "Justificativa com menos de 15 caracteres.");
             return BadRequest(new ApiResponse<object> { Success = false, Message = "Justificativa deve ter no mínimo 15 caracteres." });
         }
 
@@ -166,6 +169,7 @@ public class NfceController(
 
         if (!valido || supervisor is null)
         {
+            await NegarCancelamento(currentUser, request, id, "nfce", msgSupervisor);
             return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
             {
                 Success = false,
@@ -176,6 +180,7 @@ public class NfceController(
         var dados = await documentoFiscalAB.ObterParaCancelamentoAsync(currentUser.CompanyId, id);
         if (dados is null)
         {
+            await NegarCancelamento(currentUser, request, id, "nfce", "Documento não encontrado ou não está autorizado.", supervisor.Name);
             return NotFound(new ApiResponse<object> { Success = false, Message = "Documento não encontrado ou não está autorizado." });
         }
 
@@ -196,6 +201,7 @@ public class NfceController(
 
         if (resultado.Status != StatusDocumentoFiscal.Cancelado)
         {
+            await NegarCancelamento(currentUser, request, id, "nfce", "SEFAZ recusou o cancelamento: " + resultado.MotivoStatus, supervisor.Name);
             return BadRequest(new ApiResponse<object> { Success = false, Message = resultado.MotivoStatus });
         }
 
@@ -206,7 +212,10 @@ public class NfceController(
             supervisor.Id,
             supervisor.Name,
             currentUser.Name,
-            request.Justificativa.Trim());
+            request.Justificativa.Trim(),
+            operadorId: currentUser.Id,
+            terminal: string.IsNullOrWhiteSpace(request.Terminal) ? null : request.Terminal.Trim(),
+            ip: HorusClientIpResolver.Resolve(HttpContext, securityOptions));
 
         return Ok(new ApiResponse<object>
         {
@@ -504,6 +513,22 @@ public class NfceController(
 
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
+    private Task NegarCancelamento(AuthenticatedUser user, CancelamentoComSupervisorRequest request, string documentoId,
+        string via, string motivo, string? supervisorNome = null) => vendaCancelamentoAB.RegistrarNegadaAsync(
+        new VendaCancelamentoRegistro
+        {
+            CompanyId = user.CompanyId,
+            Resultado = "negada",
+            Via = via,
+            MotivoRecusa = motivo,
+            OperadorId = user.Id,
+            OperadorNome = user.Name,
+            SupervisorId = string.IsNullOrWhiteSpace(request.SupervisorId) ? null : request.SupervisorId.Trim(),
+            SupervisorNome = supervisorNome,
+            Justificativa = request.Justificativa?.Trim(),
+            Terminal = string.IsNullOrWhiteSpace(request.Terminal) ? null : request.Terminal.Trim(),
+            Ip = HorusClientIpResolver.Resolve(HttpContext, securityOptions),
+        }, documentoFiscalId: documentoId);
 }
 
 public sealed record EmitirContingenciaManualRequest
@@ -511,4 +536,3 @@ public sealed record EmitirContingenciaManualRequest
     public required string VendaId { get; init; }
     public string? Justificativa { get; init; }
 }
-

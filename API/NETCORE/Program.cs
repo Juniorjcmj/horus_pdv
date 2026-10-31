@@ -106,6 +106,7 @@ builder.Services.AddScoped<OrdemCompraAB>();
 builder.Services.AddScoped<ModuloMercadoAB>();
 builder.Services.AddScoped<CaixaAB>();
 builder.Services.AddScoped<AuditLogAB>();
+builder.Services.AddScoped<VendaCancelamentoAB>();
 builder.Services.AddScoped<HomeAB>();
 builder.Services.AddScoped<RelatorioAB>();
 builder.Services.AddScoped<LojaGatewayConfigAB>();

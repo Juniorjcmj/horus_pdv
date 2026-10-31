@@ -27,6 +27,8 @@ public class HistoricoVendasController(
     AutorizacaoPrecoAB autorizacaoPrecoAB,
     ProdutoAB produtoAB,
     AuditLogAB auditLogAB,
+    VendaCancelamentoAB vendaCancelamentoAB,
+    HorusSecurityOptions securityOptions,
     ILogger<HistoricoVendasController> logger) : ControllerBase
 {
     /// <summary>
@@ -352,12 +354,35 @@ public class HistoricoVendasController(
         var currentUser = GetCurrentUser();
         if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
 
-        if (string.IsNullOrWhiteSpace(request.Justificativa) || request.Justificativa.Trim().Length < 5)
+        var ip = HorusClientIpResolver.Resolve(HttpContext, securityOptions);
+        var justificativa = request.Justificativa?.Trim() ?? string.Empty;
+        var terminal = string.IsNullOrWhiteSpace(request.Terminal) ? null : request.Terminal.Trim();
+
+        // Toda recusa entra na trilha (VendaCancelamentos + AuditLog CancelamentoVendaNegado).
+        Task Negar(string motivo, string? supervisorNome = null) => vendaCancelamentoAB.RegistrarNegadaAsync(
+            new VendaCancelamentoRegistro
+            {
+                CompanyId = currentUser.CompanyId,
+                Resultado = "negada",
+                Via = "venda",
+                MotivoRecusa = motivo,
+                SaleNumber = saleNumber,
+                OperadorId = currentUser.Id,
+                OperadorNome = currentUser.Name,
+                SupervisorId = string.IsNullOrWhiteSpace(request.SupervisorId) ? null : request.SupervisorId.Trim(),
+                SupervisorNome = supervisorNome,
+                Justificativa = justificativa,
+                Terminal = terminal,
+                Ip = ip,
+            });
+
+        if (justificativa.Length < 5)
         {
-            return BadRequest(new ApiResponse<object> { Success = false, Message = "Informe uma justificativa de no mínimo 5 caracteres." });
+            const string msg = "Informe uma justificativa de no mínimo 5 caracteres.";
+            await Negar(msg);
+            return BadRequest(new ApiResponse<object> { Success = false, Message = msg });
         }
 
-        // Valida credenciais do supervisor
         var (valido, msgSupervisor, supervisor) = securityStore.ValidateSupervisorCredentials(
             request.SupervisorId,
             request.SupervisorPassword,
@@ -365,6 +390,7 @@ public class HistoricoVendasController(
 
         if (!valido || supervisor is null)
         {
+            await Negar(msgSupervisor);
             return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
             {
                 Success = false,
@@ -372,32 +398,69 @@ public class HistoricoVendasController(
             });
         }
 
-        var (sucesso, mensagem, itensEstornados, canceladoEm) = await historicoVendasAB.CancelarVendaComSupervisorAsync(
+        var r = await historicoVendasAB.CancelarVendaComSupervisorAsync(
             currentUser.CompanyId,
             saleNumber,
             supervisor.Id,
             supervisor.Name,
             currentUser.Id,
             currentUser.Name,
-            request.Justificativa.Trim());
+            justificativa,
+            terminal,
+            ip);
 
-        if (!sucesso)
+        if (!r.Sucesso)
         {
-            return BadRequest(new ApiResponse<object> { Success = false, Message = mensagem });
+            await Negar(r.Mensagem, supervisor.Name);
+            var body = new ApiResponse<object>
+            {
+                Success = false,
+                Message = r.Mensagem,
+                Data = new { codigo = r.Codigo, documentoFiscalId = r.DocumentoFiscalId, documentoModelo = r.DocumentoModelo }
+            };
+            return r.Codigo switch
+            {
+                "NAO_ENCONTRADA" => NotFound(body),
+                "NOTA_AUTORIZADA" or "NOTA_PENDENTE" or "JA_CANCELADA" or "STATUS_INVALIDO" => Conflict(body),
+                _ => BadRequest(body),
+            };
         }
 
         return Ok(new ApiResponse<object>
         {
             Success = true,
-            Message = mensagem,
+            Message = r.Mensagem,
             Data = new
             {
                 saleNumber,
-                canceladoEm,
+                canceladoEm = r.CanceladoEm,
                 supervisorNome = supervisor.Name,
-                itensEstornados
+                itensEstornados = r.ItensEstornados,
+                fiadoEstornado = r.FiadoEstornado,
             }
         });
+    }
+
+    /// <summary>
+    /// Trilha completa de cancelamentos (autorizados e negados), com a fotografia de cada venda. Só gerência:
+    /// mostra tentativas com senha errada e o IP/terminal de quem pediu.
+    /// </summary>
+    [HttpGet("cancelamentos/auditoria")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
+    public async Task<IActionResult> AuditoriaCancelamentos(
+        [FromQuery] string? de = null, [FromQuery] string? ate = null, [FromQuery] string? venda = null)
+    {
+        var currentUser = GetCurrentUser();
+        if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
+
+        DateTimeOffset? dtDe = null;
+        DateTimeOffset? dtAte = null;
+        if (!string.IsNullOrWhiteSpace(de) && DateTimeOffset.TryParse(de, out var pDe)) dtDe = pDe;
+        if (!string.IsNullOrWhiteSpace(ate) && DateTimeOffset.TryParse(ate, out var pAte)) dtAte = pAte.AddDays(1);
+
+        var rows = await vendaCancelamentoAB.ListarAsync(currentUser.CompanyId, dtDe, dtAte,
+            string.IsNullOrWhiteSpace(venda) ? null : venda.Trim());
+        return Ok(new ApiResponse<object> { Success = true, Message = "Trilha de cancelamentos.", Data = rows });
     }
 
     [HttpGet("cancelamentos")]

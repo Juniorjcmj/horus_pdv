@@ -3,6 +3,7 @@
  * Objetivo: gerar relatórios operacionais reais a partir das tabelas atuais do PDV.
  * Entradas esperadas: recebe identificador do relatório, filtros serializados e retorna colunas/linhas para o frontend.
  */
+using HORUSPDV_API.Services.Shared;
 using Microsoft.Data.SqlClient;
 using System.Globalization;
 using System.Text;
@@ -10,7 +11,8 @@ using System.Text.Json;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
-public partial class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB fiadoAB, HistoricoVendasAB historicoVendasAB)
+public partial class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB fiadoAB, HistoricoVendasAB historicoVendasAB,
+    VendaCancelamentoAB vendaCancelamentoAB)
 {
     private static readonly CultureInfo PtBr = new("pt-BR");
 
@@ -42,6 +44,7 @@ public partial class RelatorioAB(Connection connection, AuditLogAB auditLogAB, F
             "desempenho-caixa" => await GerarDesempenhoCaixaAsync(companyId, filters),
             "log-atividades" => await GerarLogAtividadesAsync(companyId, filters, restrictToUserId),
             "cancelamentos" => await GerarCancelamentosAsync(companyId, filters),
+            "auditoria-cancelamentos" => await GerarAuditoriaCancelamentosAsync(companyId, filters, restrictToUserId),
             "ficha-fiscal-produtos" => await GerarFichaFiscalAsync(companyId, filters, restrictToUserId),
             _ => throw new InvalidOperationException("Relatório não encontrado.")
         };
@@ -542,6 +545,76 @@ public partial class RelatorioAB(Connection connection, AuditLogAB auditLogAB, F
                 ("descricao", "Descrição"),
                 ("ip", "IP")),
             rows);
+    }
+
+    /// <summary>
+    /// Trilha completa dos cancelamentos: cada tentativa, autorizada ou negada (senha errada, venda com nota...),
+    /// com gerente, motivo, terminal, IP, turno e itens. Só gerente/administrador.
+    /// </summary>
+    private async Task<object> GerarAuditoriaCancelamentosAsync(string companyId, Dictionary<string, JsonElement> filters,
+        string? restrictToUserId)
+    {
+        if (restrictToUserId is not null)
+            throw new InvalidOperationException("A trilha de cancelamentos é restrita a gerentes e administradores.");
+
+        var startDate = GetDate(filters, "startDate") ?? DateTimeOffset.Now.AddDays(-30).Date;
+        var endDate = (GetDate(filters, "endDate") ?? DateTimeOffset.Now.Date).AddDays(1);
+        var resultado = GetString(filters, "resultado", "");
+        var rows = await vendaCancelamentoAB.ListarAsync(companyId, startDate, endDate);
+        if (!string.IsNullOrWhiteSpace(resultado))
+            rows = rows.Where(r => r.Resultado.Equals(resultado, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        static string Itens(System.Text.Json.JsonElement? snapshot)
+        {
+            if (snapshot is null || !snapshot.Value.TryGetProperty("itens", out var itens)) return "";
+            return string.Join("; ", itens.EnumerateArray().Select(i =>
+                $"{HorusMoneyFormat.FormatQuantity(i.GetProperty("quantidade").GetDecimal())}x {i.GetProperty("nome").GetString()}"));
+        }
+
+        static string Pagamentos(System.Text.Json.JsonElement? snapshot)
+        {
+            if (snapshot is null || !snapshot.Value.TryGetProperty("pagamentos", out var pags)) return "";
+            return string.Join(" + ", pags.EnumerateArray().Select(p =>
+                $"{NormalizePaymentType(p.GetProperty("forma").GetString() ?? "")} R$ {HorusMoneyFormat.Format(p.GetProperty("valor").GetDecimal())}"));
+        }
+
+        var reportRows = rows.Select(r => Row(
+            ("quando", HorusDateTime.Format(r.OcorridoEm)),
+            ("resultado", r.Resultado == "cancelada" ? "Cancelada" : "NEGADA"),
+            ("via", r.Via switch { "nfce" => "NFC-e (SEFAZ)", "nfe" => "NF-e (SEFAZ)", _ => "Venda sem nota" }),
+            ("venda", r.SaleNumber ?? "-"),
+            ("valor", r.TotalVenda is null ? "-" : HorusMoneyFormat.Format(r.TotalVenda.Value)),
+            ("operador", r.OperadorNome),
+            ("gerente", r.SupervisorNome ?? r.SupervisorId ?? "-"),
+            ("justificativa", r.Justificativa ?? "-"),
+            ("recusa", r.MotivoRecusa ?? "-"),
+            ("turno", r.CaixaSessaoStatus is null ? "-" : $"{r.CaixaSessaoStatus} ({r.CaixaSessaoId})"),
+            ("fiado", r.FiadoEstornado is null or 0 ? "-" : HorusMoneyFormat.Format(r.FiadoEstornado.Value)),
+            ("cliente", string.IsNullOrWhiteSpace(r.ClienteNome) ? "-" : $"{r.ClienteNome} {r.ClienteCpf}".Trim()),
+            ("pagamentos", Pagamentos(r.Snapshot)),
+            ("itens", Itens(r.Snapshot)),
+            ("terminal", r.Terminal ?? "-"),
+            ("ip", r.Ip ?? "-"))).ToList();
+
+        return Result(
+            Columns(
+                ("quando", "Data/Hora"),
+                ("resultado", "Resultado"),
+                ("via", "Via"),
+                ("venda", "Venda #"),
+                ("valor", "Valor (R$)"),
+                ("operador", "Operador"),
+                ("gerente", "Gerente"),
+                ("justificativa", "Justificativa"),
+                ("recusa", "Motivo da recusa / observação"),
+                ("turno", "Turno de caixa"),
+                ("fiado", "Fiado estornado (R$)"),
+                ("cliente", "Cliente"),
+                ("pagamentos", "Pagamentos"),
+                ("itens", "Itens"),
+                ("terminal", "Terminal"),
+                ("ip", "IP")),
+            reportRows);
     }
 
     private async Task<object> GerarCancelamentosAsync(string companyId, Dictionary<string, JsonElement> filters)

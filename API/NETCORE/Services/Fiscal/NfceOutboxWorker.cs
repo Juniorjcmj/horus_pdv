@@ -56,6 +56,7 @@ public sealed class NfceOutboxWorker(
         var documentos = scope.ServiceProvider.GetRequiredService<DocumentoFiscalAB>();
         var emitentes = scope.ServiceProvider.GetRequiredService<EmitenteFiscalStore>();
         var provider = scope.ServiceProvider.GetRequiredService<IFiscalProvider>();
+        var auditoria = scope.ServiceProvider.GetRequiredService<AuditLogAB>();
 
         // Retoma também o intervalo entre decidir a emissão e gravar a fila, inclusive
         // após reinício da API. Documentos rejeitados continuam para revisão manual.
@@ -76,6 +77,14 @@ public sealed class NfceOutboxWorker(
 
             try
             {
+                // Venda cancelada antes de a nota ser assinada: não emite (o número é inutilizado).
+                var cancelamento = await documentos.ObterCancelamentoDaVendaAsync(doc.CompanyId, doc.VendaId, ct);
+                if (cancelamento is not null && string.IsNullOrWhiteSpace(doc.XmlAssinado))
+                {
+                    await NaoEmitirAsync(documentos, emitentes, provider, auditoria, doc, cancelamento, ct);
+                    continue;
+                }
+
                 var emitente = await emitentes.ObterAsync(doc.CompanyId, ct);
                 if (emitente is null)
                 {
@@ -124,6 +133,14 @@ public sealed class NfceOutboxWorker(
                         logger.LogInformation(
                             "NFC-e autorizada. Chave {Chave} protocolo {Protocolo}",
                             resultado.ChaveAcesso, resultado.Protocolo);
+                        // A venda foi cancelada enquanto a nota estava na fila: cancela a nota na SEFAZ agora
+                        // (dentro do prazo de 30 minutos da NFC-e).
+                        var canceladaDepois = await documentos.ObterCancelamentoDaVendaAsync(doc.CompanyId, doc.VendaId, ct);
+                        if (canceladaDepois is not null)
+                        {
+                            await CancelarAposAutorizacaoAsync(documentos, provider, auditoria, emitente, doc, resultado,
+                                canceladaDepois, ct);
+                        }
                         break;
 
                     case StatusDocumentoFiscal.Denegado:
@@ -163,6 +180,142 @@ public sealed class NfceOutboxWorker(
                     doc.Id, ex.Message, DateTimeOffset.UtcNow.AddSeconds(30), ct);
             }
         }
+    }
+
+    /// <summary>
+    /// Nota de venda cancelada que nunca foi assinada: inutiliza o número na SEFAZ (NFC-e com certificado) e tira da
+    /// fila. Sem certificado, NF-e ou falha definitiva: tira da fila como rejeitada, com o aviso para inutilizar o
+    /// número manualmente. Falha transitória (SEFAZ fora): tenta de novo depois.
+    /// </summary>
+    private async Task NaoEmitirAsync(
+        DocumentoFiscalAB documentos,
+        EmitenteFiscalStore emitentes,
+        IFiscalProvider provider,
+        AuditLogAB auditoria,
+        DocumentoFiscalPendente doc,
+        DocumentoFiscalAB.CancelamentoDaVenda cancelamento,
+        CancellationToken ct)
+    {
+        var tipo = doc.Modelo == 55 ? "NF-e" : "NFC-e";
+        var venda = cancelamento.SaleNumber ?? doc.VendaId;
+        var justificativa = JustificativaSefaz("Venda cancelada no caixa antes da emissao do documento fiscal");
+        string motivo;
+        var status = StatusDocumentoFiscal.Rejeitado;
+
+        var emitente = await emitentes.ObterAsync(doc.CompanyId, ct);
+        if (doc.Modelo != 55 && emitente is not null)
+        {
+            var r = await provider.InutilizarAsync(new InutilizacaoRequest
+            {
+                Emitente = emitente,
+                Serie = doc.Serie,
+                NumeroInicial = doc.NumeroNf,
+                NumeroFinal = doc.NumeroNf,
+                Justificativa = justificativa,
+            }, ct);
+            if (r.Status == StatusDocumentoFiscal.Inutilizado)
+            {
+                status = StatusDocumentoFiscal.Inutilizado;
+                motivo = $"{tipo} não emitida: a venda #{venda} foi cancelada antes da emissão. Número {doc.NumeroNf} " +
+                         $"(série {doc.Serie}) inutilizado na SEFAZ.";
+            }
+            else if (r.Retentavel)
+            {
+                await documentos.MarcarErroAsync(doc.Id,
+                    $"Venda cancelada: inutilização do número adiada ({r.MotivoStatus}).",
+                    DateTimeOffset.UtcNow.AddMinutes(2), ct);
+                return;
+            }
+            else
+            {
+                motivo = $"{tipo} não emitida: a venda #{venda} foi cancelada antes da emissão. A SEFAZ recusou a " +
+                         $"inutilização do número {doc.NumeroNf} (série {doc.Serie}): {r.MotivoStatus}. Inutilize manualmente.";
+            }
+        }
+        else
+        {
+            motivo = $"{tipo} não emitida: a venda #{venda} foi cancelada antes da emissão. Inutilize o número " +
+                     $"{doc.NumeroNf} (série {doc.Serie}) na SEFAZ" +
+                     (emitente is null ? " (empresa sem certificado configurado)." : ".");
+        }
+
+        if (!await documentos.EncerrarSemEmissaoAsync(doc.CompanyId, doc.Id, status, motivo, ct))
+        {
+            return; // a nota mudou (foi assinada nesse meio tempo): o fluxo normal segue e cancela após autorizar
+        }
+        logger.LogWarning("Documento {Id}: {Motivo}", doc.Id, motivo);
+        await RegistrarAsync(auditoria, doc.CompanyId, cancelamento, AuditEventTypes.NfceNaoEmitida, motivo, doc.Id);
+    }
+
+    /// <summary>Nota autorizada de uma venda já cancelada: cancela na SEFAZ e grava a trilha.</summary>
+    private async Task CancelarAposAutorizacaoAsync(
+        DocumentoFiscalAB documentos,
+        IFiscalProvider provider,
+        AuditLogAB auditoria,
+        ContextoEmitente emitente,
+        DocumentoFiscalPendente doc,
+        ResultadoFiscal autorizacao,
+        DocumentoFiscalAB.CancelamentoDaVenda cancelamento,
+        CancellationToken ct)
+    {
+        var tipo = doc.Modelo == 55 ? "NF-e" : "NFC-e";
+        var venda = cancelamento.SaleNumber ?? doc.VendaId;
+        var justificativa = JustificativaSefaz("Venda cancelada no caixa: " + cancelamento.Justificativa);
+        string? erro = null;
+        try
+        {
+            var r = await provider.CancelarAsync(new CancelamentoRequest
+            {
+                Emitente = emitente,
+                ChaveAcesso = autorizacao.ChaveAcesso ?? doc.ChaveAcesso ?? string.Empty,
+                Protocolo = autorizacao.Protocolo ?? string.Empty,
+                Justificativa = justificativa,
+                SequenciaEvento = 1,
+            }, ct);
+            if (r.Status == StatusDocumentoFiscal.Cancelado)
+            {
+                await documentos.MarcarCanceladoComAuditoriaAsync(doc.CompanyId, doc.Id, r,
+                    cancelamento.SupervisorId ?? string.Empty, cancelamento.SupervisorNome ?? string.Empty,
+                    cancelamento.OperadorNome ?? string.Empty, justificativa, ct,
+                    operadorId: cancelamento.OperadorId, terminal: "fila fiscal (automático)");
+                logger.LogInformation("{Tipo} {Id} da venda cancelada {Venda} cancelada na SEFAZ automaticamente.",
+                    tipo, doc.Id, venda);
+                return;
+            }
+            erro = r.MotivoStatus;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            erro = ex.Message;
+        }
+
+        var motivo = $"{tipo} nº {doc.NumeroNf} autorizada para a venda #{venda}, que está cancelada, e o cancelamento " +
+                     $"automático na SEFAZ falhou: {erro}. Cancele a nota manualmente (prazo de 30 minutos da autorização).";
+        logger.LogError("Documento {Id}: {Motivo}", doc.Id, motivo);
+        await RegistrarAsync(auditoria, doc.CompanyId, cancelamento, AuditEventTypes.NfceCancelamentoPendente, motivo, doc.Id);
+    }
+
+    private static async Task RegistrarAsync(AuditLogAB auditoria, string companyId,
+        DocumentoFiscalAB.CancelamentoDaVenda cancelamento, string evento, string descricao, string docId)
+    {
+        try
+        {
+            await auditoria.RegistrarAsync(companyId, cancelamento.OperadorId ?? string.Empty,
+                cancelamento.OperadorNome ?? "Fila fiscal", evento,
+                descricao.Length <= 500 ? descricao : descricao[..500], "DocumentosFiscais", docId, "fila fiscal");
+        }
+        catch
+        {
+            // trilha não pode derrubar o worker
+        }
+    }
+
+    /// <summary>A SEFAZ exige de 15 a 255 caracteres, sem quebra de linha.</summary>
+    private static string JustificativaSefaz(string texto)
+    {
+        var t = string.Join(' ', texto.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        if (t.Length < 15) t = (t + " - venda cancelada no caixa").Trim();
+        return t.Length <= 255 ? t : t[..255];
     }
 
     private async Task TratarFalhaTransitoriaAsync(

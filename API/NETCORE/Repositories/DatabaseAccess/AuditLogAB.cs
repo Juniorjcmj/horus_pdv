@@ -23,6 +23,9 @@ public static class AuditEventTypes
     public const string FiadoRecebimento = "FiadoRecebimento";
     public const string EstoqueRuptura = "EstoqueRuptura";
     public const string VendaCancelada = "VendaCancelada";
+    public const string CancelamentoVendaNegado = "CancelamentoVendaNegado";
+    public const string NfceNaoEmitida = "NfceNaoEmitida";
+    public const string NfceCancelamentoPendente = "NfceCancelamentoPendente";
     public const string AlteracaoPreco = "AlteracaoPreco";
     public const string PrecoOfflineAbaixo = "PrecoOfflineAbaixo";
     public const string VendaCorrigida = "VendaCorrigida";
@@ -73,6 +76,29 @@ public class AuditLogAB(Connection connection)
         command.Parameters.AddWithValue("@Description", description);
         await command.ExecuteNonQueryAsync();
     }
+
+    /// <summary>Grava na transação da operação (tudo ou nada), com usuário e IP. Descrição limitada a 500.</summary>
+    public static async Task GravarNaTransacaoAsync(SqlConnection db, SqlTransaction transaction, string companyId,
+        string userId, string userName, string eventType, string description, string entityType, string entityId,
+        string? ip)
+    {
+        await using var command = new SqlCommand(
+            "INSERT INTO AuditLog (CompanyId, UserId, UserName, EventType, EntityType, EntityId, Description, Ip) " +
+            "VALUES (@CompanyId, @UserId, @UserName, @EventType, @EntityType, @EntityId, @Description, @Ip)",
+            db, transaction);
+        command.Parameters.AddWithValue("@CompanyId", companyId);
+        command.Parameters.AddWithValue("@UserId", Corta(userId, 40));
+        command.Parameters.AddWithValue("@UserName", Corta(userName, 180));
+        command.Parameters.AddWithValue("@EventType", eventType);
+        command.Parameters.AddWithValue("@EntityType", entityType);
+        command.Parameters.AddWithValue("@EntityId", Corta(entityId, 80));
+        command.Parameters.AddWithValue("@Description", Corta(description, 500));
+        command.Parameters.AddWithValue("@Ip", string.IsNullOrWhiteSpace(ip) ? DBNull.Value : Corta(ip, 64));
+        await command.ExecuteNonQueryAsync();
+    }
+
+    private static string Corta(string? value, int max) =>
+        string.IsNullOrEmpty(value) ? string.Empty : value.Length <= max ? value : value[..max];
 
     /// <summary>Últimos registros da empresa — o filtro por período/tipo é feito no relatório (RelatorioAB), igual ao resto dos relatórios do sistema.</summary>
     public async Task<List<AuditLogAD>> ListarAsync(string companyId, int limite = 2000)

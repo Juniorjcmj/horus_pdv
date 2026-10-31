@@ -10,6 +10,7 @@ using System.Text.Json;
 using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Repositories.DataAccess;
 using HORUSPDV_API.Services.Shared;
+using HORUSPDV_API.Services.Fiscal;
 using Microsoft.Data.SqlClient;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
@@ -1082,59 +1083,104 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         return list;
     }
 
-    public async Task<(bool Sucesso, string Mensagem, int ItensEstornados, string? CanceladoEm)> CancelarVendaComSupervisorAsync(
+    /// <summary>Resultado do cancelamento. Codigo identifica a recusa para o cliente decidir o próximo passo.</summary>
+    public sealed record CancelamentoVendaResultado(
+        bool Sucesso,
+        string Mensagem,
+        int ItensEstornados = 0,
+        string? CanceladoEm = null,
+        string? Codigo = null,
+        string? DocumentoFiscalId = null,
+        int? DocumentoModelo = null,
+        decimal FiadoEstornado = 0m);
+
+    /// <summary>
+    /// Cancela uma venda SEM nota fiscal autorizada, autorizada pela senha do gerente (validada no controlador).
+    /// Tudo na mesma transação: status da venda, estorno de estoque e fiado, AuditLog e a trilha completa em
+    /// VendaCancelamentos (fotografia da venda). Regras:
+    ///  - só venda "finalizada" (corrigida/cancelada/estornada não);
+    ///  - nota autorizada: recusa com Codigo NOTA_AUTORIZADA (o cancelamento tem de passar pela SEFAZ, que já
+    ///    cancela a venda);
+    ///  - nota ainda na fila (assinada/transmitindo/contingência): cancela a venda; a fila fiscal não emite a nota
+    ///    (inutiliza o número) ou a cancela na SEFAZ logo após a autorização;
+    ///  - notas rejeitadas/denegadas/rascunho não são alteradas (não existem na SEFAZ como autorizadas).
+    /// </summary>
+    public async Task<CancelamentoVendaResultado> CancelarVendaComSupervisorAsync(
         string companyId,
         string saleNumber,
         string supervisorId,
         string supervisorNome,
         string operadorId,
         string operadorNome,
-        string justificativa)
+        string justificativa,
+        string? terminal = null,
+        string? ip = null)
     {
         await using var db = await connection.OpenConnectionAsync();
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
-
-        string vendaId;
-        string? clienteIdFiado = null;
-        decimal valorFiado = 0m;
-        var itensParaEstornar = new List<(string ProductCode, decimal Quantity)>();
-        DateTimeOffset now = DateTimeOffset.UtcNow;
-        decimal totalVenda = 0m;
+        var now = DateTimeOffset.UtcNow;
+        justificativa = justificativa.Trim();
 
         try
         {
-            // 1. Localiza a venda com bloqueio exclusivo
-            const string sqlVenda = """
-                SELECT Id, ISNULL(Status, 'finalizada') AS Status, TotalAmount, PaymentType
-                FROM Vendas WITH (UPDLOCK, ROWLOCK)
-                WHERE CompanyId = @CompanyId AND SaleNumber = @SaleNumber;
-                """;
-            await using (var cmdVenda = new SqlCommand(sqlVenda, db, transaction))
+            // 1. Trava a venda (dois pedidos ao mesmo tempo não estornam duas vezes)
+            string? vendaId;
+            await using (var cmdVenda = new SqlCommand(
+                "SELECT Id FROM Vendas WITH (UPDLOCK, ROWLOCK) WHERE CompanyId = @CompanyId AND SaleNumber = @SaleNumber;",
+                db, transaction))
             {
                 cmdVenda.Parameters.AddWithValue("@CompanyId", companyId);
                 cmdVenda.Parameters.AddWithValue("@SaleNumber", saleNumber);
-                await using var readerVenda = await cmdVenda.ExecuteReaderAsync();
-                if (!await readerVenda.ReadAsync())
-                {
-                    await readerVenda.CloseAsync();
-                    await transaction.RollbackAsync();
-                    return (false, "Venda não encontrada.", 0, null);
-                }
-
-                vendaId = readerVenda.GetString(readerVenda.GetOrdinal("Id"));
-                var statusAtual = readerVenda.GetString(readerVenda.GetOrdinal("Status"));
-                totalVenda = readerVenda.GetDecimal(readerVenda.GetOrdinal("TotalAmount"));
-                await readerVenda.CloseAsync();
-
-                if (statusAtual.Equals("cancelada", StringComparison.OrdinalIgnoreCase))
-                {
-                    await transaction.RollbackAsync();
-                    return (false, "Esta venda já está cancelada.", 0, null);
-                }
+                vendaId = await cmdVenda.ExecuteScalarAsync() as string;
+            }
+            if (vendaId is null)
+            {
+                await transaction.RollbackAsync();
+                return new(false, "Venda não encontrada.", Codigo: "NAO_ENCONTRADA");
             }
 
-            // 2. Atualiza a venda para Status = 'cancelada' com dados de auditoria
-            const string sqlUpdateVenda = """
+            var snapshot = await VendaCancelamentoAB.CapturarAsync(db, transaction, companyId, vendaId, saleNumber)
+                ?? throw new InvalidOperationException("Venda não encontrada.");
+
+            // 2. Status da venda
+            var status = snapshot.Status.Trim().ToLowerInvariant();
+            if (status == "cancelada")
+            {
+                await transaction.RollbackAsync();
+                return new(false, "Esta venda já está cancelada.", Codigo: "JA_CANCELADA");
+            }
+            if (status != "finalizada")
+            {
+                await transaction.RollbackAsync();
+                return new(false, status == "corrigida"
+                        ? "Esta venda foi corrigida e substituída por outra. Cancele a venda nova gerada pela correção."
+                        : $"Venda com status \"{snapshot.Status}\" não pode ser cancelada.",
+                    Codigo: "STATUS_INVALIDO");
+            }
+
+            // 3. Notas fiscais da venda
+            var autorizada = snapshot.Notas.FirstOrDefault(n => n.Status == (int)StatusDocumentoFiscal.Autorizado);
+            if (autorizada is not null)
+            {
+                await transaction.RollbackAsync();
+                var tipo = autorizada.Modelo == 55 ? "NF-e" : "NFC-e";
+                return new(false,
+                    $"Esta venda tem {tipo} autorizada (nº {autorizada.Numero}). O cancelamento precisa ser feito na SEFAZ: " +
+                    $"cancele a {tipo}, que cancela a venda e estorna o estoque junto.",
+                    Codigo: "NOTA_AUTORIZADA", DocumentoFiscalId: autorizada.Id, DocumentoModelo: autorizada.Modelo);
+            }
+            // Nota ainda na fila (assinada, transmitindo ou em contingência): a venda pode ser cancelada. A fila fiscal
+            // não emite nota de venda cancelada (inutiliza o número) e, se a nota já tiver sido assinada/transmitida,
+            // cancela na SEFAZ assim que ela for autorizada (NfceOutboxWorker).
+            var pendente = snapshot.Notas.FirstOrDefault(n => n.Status is (int)StatusDocumentoFiscal.Assinado
+                or (int)StatusDocumentoFiscal.Transmitindo or (int)StatusDocumentoFiscal.ContingenciaPendente);
+            var avisoNota = pendente is null ? null
+                : $"{(pendente.Modelo == 55 ? "NF-e" : "NFC-e")} nº {pendente.Numero} ainda não autorizada: não será emitida " +
+                  "(número inutilizado) ou, se já foi transmitida, será cancelada na SEFAZ automaticamente.";
+
+            // 4. Venda cancelada com quem pediu, quem autorizou e o motivo
+            await using (var cmdUpdate = new SqlCommand(
+                """
                 UPDATE Vendas
                 SET Status = 'cancelada',
                     CanceladoEm = @CanceladoEm,
@@ -1144,133 +1190,145 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                     CanceladoPorSupervisorNome = @SupervisorNome,
                     CanceladoJustificativa = @Justificativa
                 WHERE Id = @VendaId AND CompanyId = @CompanyId;
-                """;
-            await using (var cmdUpdate = new SqlCommand(sqlUpdateVenda, db, transaction))
+                """, db, transaction))
             {
                 cmdUpdate.Parameters.AddWithValue("@CanceladoEm", now);
                 cmdUpdate.Parameters.AddWithValue("@OperadorId", operadorId);
                 cmdUpdate.Parameters.AddWithValue("@OperadorNome", operadorNome);
                 cmdUpdate.Parameters.AddWithValue("@SupervisorId", supervisorId);
                 cmdUpdate.Parameters.AddWithValue("@SupervisorNome", supervisorNome);
-                cmdUpdate.Parameters.AddWithValue("@Justificativa", justificativa.Trim());
+                cmdUpdate.Parameters.AddWithValue("@Justificativa", justificativa);
                 cmdUpdate.Parameters.AddWithValue("@VendaId", vendaId);
                 cmdUpdate.Parameters.AddWithValue("@CompanyId", companyId);
                 await cmdUpdate.ExecuteNonQueryAsync();
             }
 
-            // 3. Busca os itens da venda para estornar o estoque
-            // VendaItens não tem coluna CompanyId: o isolamento por empresa vem da junção com Vendas.
-            const string sqlItens = """
-                SELECT vi.ProductCode, vi.Quantity
-                FROM VendaItens vi
-                INNER JOIN Vendas v ON v.Id = vi.VendaId
-                WHERE vi.VendaId = @VendaId AND v.CompanyId = @CompanyId;
-                """;
-            await using (var cmdItens = new SqlCommand(sqlItens, db, transaction))
-            {
-                cmdItens.Parameters.AddWithValue("@VendaId", vendaId);
-                cmdItens.Parameters.AddWithValue("@CompanyId", companyId);
-                await using var readerItens = await cmdItens.ExecuteReaderAsync();
-                while (await readerItens.ReadAsync())
-                {
-                    var code = readerItens.GetString(readerItens.GetOrdinal("ProductCode"));
-                    var qty = readerItens.GetDecimal(readerItens.GetOrdinal("Quantity"));
-                    if (!string.IsNullOrWhiteSpace(code) && qty > 0)
-                    {
-                        itensParaEstornar.Add((code.Trim(), qty));
-                    }
-                }
-            }
-
-            // 4. Estorna os produtos no estoque
+            // 5. Estoque de volta
+            var itensParaEstornar = snapshot.Itens
+                .Where(i => !string.IsNullOrWhiteSpace(i.Codigo) && i.Quantidade > 0)
+                .Select(i => (ProductCode: i.Codigo.Trim(), Quantity: i.Quantidade))
+                .ToList();
             foreach (var (pCode, pQty) in itensParaEstornar)
             {
-                const string sqlEstorno = """
+                await using var cmdEstorno = new SqlCommand(
+                    """
                     UPDATE Produtos
                     SET ProductQnt = ProductQnt + @Quantity,
                         TotalPriceOnProduct = ProductUnitPrice * (ProductQnt + @Quantity)
                     WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;
-                    """;
-                await using var cmdEstorno = new SqlCommand(sqlEstorno, db, transaction);
+                    """, db, transaction);
                 cmdEstorno.Parameters.AddWithValue("@Quantity", pQty);
                 cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
                 cmdEstorno.Parameters.AddWithValue("@ProductCode", pCode);
                 await cmdEstorno.ExecuteNonQueryAsync();
             }
 
-            // 5. Verifica se há débito em FiadoMovimentos associado à venda
-            const string sqlCheckFiado = """
-                SELECT TOP 1 ClienteId, Valor
-                FROM FiadoMovimentos
-                WHERE VendaId = @VendaId AND CompanyId = @CompanyId AND Tipo = 1;
-                """;
-            await using (var cmdFiado = new SqlCommand(sqlCheckFiado, db, transaction))
-            {
-                cmdFiado.Parameters.AddWithValue("@VendaId", vendaId);
-                cmdFiado.Parameters.AddWithValue("@CompanyId", companyId);
-                await using var readerFiado = await cmdFiado.ExecuteReaderAsync();
-                if (await readerFiado.ReadAsync())
-                {
-                    clienteIdFiado = readerFiado.GetString(readerFiado.GetOrdinal("ClienteId"));
-                    valorFiado = readerFiado.GetDecimal(readerFiado.GetOrdinal("Valor"));
-                }
-            }
+            // 6. Fiado de volta
+            var fiadoEstornado = await EstornarFiadoDaVendaAsync(db, transaction, companyId, vendaId, operadorNome);
 
-            // 6. Atualiza documentos fiscais associados para cancelado
-            const string sqlDocFiscal = """
-                UPDATE DocumentosFiscais
-                SET Status = 3, -- Cancelado
-                    CanceladoPorSupervisorId = @SupervisorId,
-                    CanceladoPorSupervisorNome = @SupervisorNome,
-                    CanceladoPorOperador = @OperadorNome,
-                    CanceladoJustificativa = @Justificativa,
-                    AtualizadoEm = @Now
-                WHERE VendaId = @VendaId AND CompanyId = @CompanyId AND Status <> 3;
-                """;
-            await using (var cmdDocFiscal = new SqlCommand(sqlDocFiscal, db, transaction))
+            // 7. Trilha: AuditLog (resumo) + VendaCancelamentos (tudo), na mesma transação
+            var resumoItens = string.Join("; ", snapshot.Itens.Select(i =>
+                $"{HorusMoneyFormat.FormatQuantity(i.Quantidade)}x {i.Nome}"));
+            await AuditLogAB.GravarNaTransacaoAsync(db, transaction, companyId, operadorId, operadorNome,
+                AuditEventTypes.VendaCancelada,
+                $"Venda #{saleNumber} cancelada. Total: R$ {HorusMoneyFormat.Format(snapshot.TotalVenda)}. " +
+                $"Gerente: {supervisorNome} ({supervisorId}). Motivo: {justificativa.TrimEnd('.')}. " +
+                (fiadoEstornado > 0 ? $"Fiado estornado: R$ {HorusMoneyFormat.Format(fiadoEstornado)}. " : "") +
+                (snapshot.CaixaSessaoStatus == "fechada" ? "Turno de caixa já fechado. " : "") +
+                (avisoNota is null ? "" : avisoNota + " ") +
+                $"Itens: {resumoItens}",
+                "Vendas", vendaId, ip);
+            await VendaCancelamentoAB.RegistrarAsync(db, transaction, new VendaCancelamentoRegistro
             {
-                cmdDocFiscal.Parameters.AddWithValue("@SupervisorId", supervisorId);
-                cmdDocFiscal.Parameters.AddWithValue("@SupervisorNome", supervisorNome);
-                cmdDocFiscal.Parameters.AddWithValue("@OperadorNome", operadorNome);
-                cmdDocFiscal.Parameters.AddWithValue("@Justificativa", justificativa.Trim());
-                cmdDocFiscal.Parameters.AddWithValue("@Now", now);
-                cmdDocFiscal.Parameters.AddWithValue("@VendaId", vendaId);
-                cmdDocFiscal.Parameters.AddWithValue("@CompanyId", companyId);
-                await cmdDocFiscal.ExecuteNonQueryAsync();
-            }
+                CompanyId = companyId,
+                Resultado = "cancelada",
+                Via = "venda",
+                SaleNumber = saleNumber,
+                OperadorId = operadorId,
+                OperadorNome = operadorNome,
+                SupervisorId = supervisorId,
+                SupervisorNome = supervisorNome,
+                Justificativa = justificativa,
+                Terminal = terminal,
+                Ip = ip,
+                MotivoRecusa = avisoNota,
+                ItensEstornados = itensParaEstornar.Count,
+                FiadoEstornado = fiadoEstornado,
+                Snapshot = snapshot,
+            });
 
-            if (!string.IsNullOrEmpty(clienteIdFiado) && valorFiado > 0)
-                await FiadoAB.ReverseDebitAsync(db,transaction,companyId,clienteIdFiado,vendaId,valorFiado,operadorNome);
             await transaction.CommitAsync();
+
+            // Devolve aos lotes de origem o que a venda tirou deles (Fase 2). Seguro: nunca lança exceção.
+            await loteAb.EstornarVendaSeguroAsync(companyId, vendaId);
+
+            return new(true, "Venda cancelada e mercadorias estornadas ao estoque com sucesso." +
+                    (avisoNota is null ? "" : " " + avisoNota),
+                itensParaEstornar.Count, HorusDateTime.Format(now), FiadoEstornado: fiadoEstornado);
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            return (false, $"Erro ao cancelar venda: {ex.Message}", 0, null);
+            var msg = ex.Message.Contains("CANCELLATION_REQUIRES_REFUND_REVIEW")
+                ? "O cliente já pagou parte deste fiado: o saldo devedor é menor que o valor da venda. Faça o estorno pelo financeiro."
+                : $"Erro ao cancelar venda: {ex.Message}";
+            return new(false, msg, Codigo: "ERRO");
         }
+    }
 
-        // Devolve aos lotes de origem o que a venda tirou deles (Fase 2). Seguro: nunca lança exceção.
-        await loteAb.EstornarVendaSeguroAsync(companyId, vendaId);
-
-        // 8. Grava na trilha de auditoria
-        try
+    /// <summary>
+    /// Como <see cref="EstornarFiadoDaVendaAsync"/>, mas sem derrubar a transação quando o cliente já pagou parte
+    /// do fiado (saldo menor que o débito): devolve a pendência em texto para a trilha. Usado quando a nota já foi
+    /// cancelada na SEFAZ e o registro local não pode falhar.
+    /// </summary>
+    internal static async Task<(decimal Estornado, string? Pendencia)> TentarEstornarFiadoAsync(
+        SqlConnection db, SqlTransaction transaction, string companyId, string vendaId, string operadorNome)
+    {
+        await using (var check = new SqlCommand(
+            """
+            SELECT TOP 1 c.SaldoDevedor, m.Valor
+            FROM FiadoMovimentos m
+            INNER JOIN Clientes c ON c.Id = m.ClienteId AND c.CompanyId = m.CompanyId
+            WHERE m.VendaId = @VendaId AND m.CompanyId = @CompanyId AND m.Tipo = 1;
+            """, db, transaction))
         {
-            await auditLogAb.RegistrarAsync(
-                companyId,
-                operadorId,
-                operadorNome,
-                AuditEventTypes.VendaCancelada,
-                $"Venda #{saleNumber} cancelada. Total: R$ {HorusMoneyFormat.Format(totalVenda)}. Supervisor: {supervisorNome} ({supervisorId}). Motivo: {justificativa.Trim()}",
-                "Vendas",
-                vendaId);
+            check.Parameters.AddWithValue("@VendaId", vendaId);
+            check.Parameters.AddWithValue("@CompanyId", companyId);
+            await using var r = await check.ExecuteReaderAsync();
+            if (!await r.ReadAsync()) return (0m, null);
+            var saldo = r.GetDecimal(0);
+            var valor = r.GetDecimal(1);
+            if (saldo < valor)
+            {
+                return (0m, $"Fiado de R$ {HorusMoneyFormat.Format(valor)} NÃO estornado: saldo devedor do cliente " +
+                            $"(R$ {HorusMoneyFormat.Format(saldo)}) é menor. Revisar no financeiro.");
+            }
         }
-        catch
-        {
-            // Trilha de auditoria não deve lançar exceção ao usuário
-        }
+        return (await EstornarFiadoDaVendaAsync(db, transaction, companyId, vendaId, operadorNome), null);
+    }
 
-        var canceladoEmStr = HorusDateTime.Format(now);
-        return (true, "Venda cancelada e mercadorias estornadas ao estoque com sucesso.", itensParaEstornar.Count, canceladoEmStr);
+    /// <summary>Estorna o débito de fiado da venda (se houver). Devolve o valor estornado.</summary>
+    internal static async Task<decimal> EstornarFiadoDaVendaAsync(
+        SqlConnection db, SqlTransaction transaction, string companyId, string vendaId, string operadorNome)
+    {
+        string? clienteId = null;
+        decimal valor = 0m;
+        await using (var cmdFiado = new SqlCommand(
+            "SELECT TOP 1 ClienteId, Valor FROM FiadoMovimentos WHERE VendaId = @VendaId AND CompanyId = @CompanyId AND Tipo = 1;",
+            db, transaction))
+        {
+            cmdFiado.Parameters.AddWithValue("@VendaId", vendaId);
+            cmdFiado.Parameters.AddWithValue("@CompanyId", companyId);
+            await using var reader = await cmdFiado.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                clienteId = reader.GetString(0);
+                valor = reader.GetDecimal(1);
+            }
+        }
+        if (string.IsNullOrEmpty(clienteId) || valor <= 0) return 0m;
+        await FiadoAB.ReverseDebitAsync(db, transaction, companyId, clienteId, vendaId, valor, operadorNome);
+        return valor;
     }
 
     public async Task<List<VendaCanceladaResumoAD>> ListarCancelamentosAsync(

@@ -21,6 +21,8 @@ public class NfeController(
     EmitenteFiscalStore emitenteFiscalStore,
     IFiscalProvider fiscalProvider,
     HorusSecurityStore securityStore,
+    VendaCancelamentoAB vendaCancelamentoAB,
+    HorusSecurityOptions securityOptions,
     ILogger<NfeController> logger) : ControllerBase
 {
     /// <summary>
@@ -181,6 +183,7 @@ public class NfeController(
 
         if (string.IsNullOrWhiteSpace(request.Justificativa) || request.Justificativa.Trim().Length < 15)
         {
+            await NegarCancelamento(currentUser, request, id, "nfe", "Justificativa com menos de 15 caracteres.");
             return BadRequest(new ApiResponse<object> { Success = false, Message = "Justificativa deve ter no mínimo 15 caracteres." });
         }
 
@@ -192,6 +195,7 @@ public class NfeController(
 
         if (!valido || supervisor is null)
         {
+            await NegarCancelamento(currentUser, request, id, "nfe", msgSupervisor);
             return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
             {
                 Success = false,
@@ -202,6 +206,7 @@ public class NfeController(
         var dados = await documentoFiscalAB.ObterParaCancelamentoAsync(currentUser.CompanyId, id);
         if (dados is null)
         {
+            await NegarCancelamento(currentUser, request, id, "nfe", "NF-e não encontrada ou não está autorizada.", supervisor.Name);
             return NotFound(new ApiResponse<object> { Success = false, Message = "NF-e não encontrada ou não está autorizada." });
         }
 
@@ -222,6 +227,7 @@ public class NfeController(
 
         if (resultado.Status != StatusDocumentoFiscal.Cancelado)
         {
+            await NegarCancelamento(currentUser, request, id, "nfe", "SEFAZ recusou o cancelamento: " + resultado.MotivoStatus, supervisor.Name);
             return BadRequest(new ApiResponse<object> { Success = false, Message = resultado.MotivoStatus });
         }
 
@@ -232,7 +238,10 @@ public class NfeController(
             supervisor.Id,
             supervisor.Name,
             currentUser.Name,
-            request.Justificativa.Trim());
+            request.Justificativa.Trim(),
+            operadorId: currentUser.Id,
+            terminal: string.IsNullOrWhiteSpace(request.Terminal) ? null : request.Terminal.Trim(),
+            ip: HorusClientIpResolver.Resolve(HttpContext, securityOptions));
 
         return Ok(new ApiResponse<object>
         {
@@ -538,4 +547,21 @@ public class NfeController(
 
     private AuthenticatedUser? GetCurrentUser()
         => HttpContext.Items["CurrentUser"] as AuthenticatedUser;
+
+    private Task NegarCancelamento(AuthenticatedUser user, CancelamentoComSupervisorRequest request, string documentoId,
+        string via, string motivo, string? supervisorNome = null) => vendaCancelamentoAB.RegistrarNegadaAsync(
+        new VendaCancelamentoRegistro
+        {
+            CompanyId = user.CompanyId,
+            Resultado = "negada",
+            Via = via,
+            MotivoRecusa = motivo,
+            OperadorId = user.Id,
+            OperadorNome = user.Name,
+            SupervisorId = string.IsNullOrWhiteSpace(request.SupervisorId) ? null : request.SupervisorId.Trim(),
+            SupervisorNome = supervisorNome,
+            Justificativa = request.Justificativa?.Trim(),
+            Terminal = string.IsNullOrWhiteSpace(request.Terminal) ? null : request.Terminal.Trim(),
+            Ip = HorusClientIpResolver.Resolve(HttpContext, securityOptions),
+        }, documentoFiscalId: documentoId);
 }
