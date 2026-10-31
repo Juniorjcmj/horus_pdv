@@ -24,6 +24,7 @@ public static class AuditEventTypes
     public const string EstoqueRuptura = "EstoqueRuptura";
     public const string VendaCancelada = "VendaCancelada";
     public const string AlteracaoPreco = "AlteracaoPreco";
+    public const string PrecoOfflineAbaixo = "PrecoOfflineAbaixo";
     public const string VendaCorrigida = "VendaCorrigida";
     public const string ClienteCriado = "ClienteCriado";
     public const string ClienteAtualizado = "ClienteAtualizado";

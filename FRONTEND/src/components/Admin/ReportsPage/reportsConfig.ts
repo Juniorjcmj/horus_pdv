@@ -97,6 +97,7 @@ const auditEventTypeOptions: ReportFilterOption[] = [
   { label: "Atualização de cliente (ClienteAtualizado)", value: "ClienteAtualizado" },
   { label: "Exclusão de cliente (ClienteExcluido)", value: "ClienteExcluido" },
   { label: "Alteração de preço autorizada (AlteracaoPreco)", value: "AlteracaoPreco" },
+  { label: "Venda offline abaixo do preço sem autorização (PrecoOfflineAbaixo)", value: "PrecoOfflineAbaixo" },
   { label: "Cancelamento de venda (VendaCancelada)", value: "VendaCancelada" },
   { label: "Cancelamento de NFC-e (NfceCancelamento)", value: "NfceCancelamento" },
   { label: "Devolução de NF-e entrada (NfeDevolucaoEntrada)", value: "NfeDevolucaoEntrada" },

@@ -294,8 +294,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 
             // Preço diferente do cadastrado exige autorização de gerente (senha dada no caixa). A conferência
             // roda na transação da venda: a autorização é consumida junto com ela e some se a venda falhar.
-            var autorizacoesPreco = frozenOrderItems is null ? await AutorizacaoPrecoAB.ValidarPrecosDaVendaAsync(
-                db, transaction, companyId, request.Items, request.ReenvioOffline) : [];
+            var validacaoPrecos = frozenOrderItems is null ? await AutorizacaoPrecoAB.ValidarPrecosDaVendaAsync(
+                db, transaction, companyId, request.Items, request.ReenvioOffline) : new AutorizacaoPrecoAB.ValidacaoPrecos([], []);
+            var autorizacoesPreco = validacaoPrecos.Usadas;
 
             // A venda e a baixa de estoque compartilham a mesma transação para evitar histórico sem estoque atualizado.
             var (saleItems, rupturas) = frozenOrderItems is null ? await BaixarEstoqueAsync(db, transaction, companyId, request.Items, isOfflineSync)
@@ -346,6 +347,12 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 eventCmd.Parameters.AddWithValue("@ResponsePayload", responseJson);
                 await eventCmd.ExecuteNonQueryAsync();
             }
+
+            // Venda offline com preço abaixo do cadastro e sem senha de gerente: aceita, mas fica no Log de Atividades.
+            if (validacaoPrecos.Divergencias.Count > 0)
+                await auditLogAb.RegistrarNaTransacaoAsync(db, transaction, companyId, operatorName, AuditEventTypes.PrecoOfflineAbaixo,
+                    $"Venda #{result.SaleNumber} sincronizada do modo offline com preço abaixo do cadastro, sem autorização de gerente: " +
+                    string.Join("; ", validacaoPrecos.Divergencias) + ".", "Venda", result.VendaId);
 
             if (fiadoMov is not null)
                 await auditLogAb.RegistrarNaTransacaoAsync(db, transaction, companyId, operatorName, AuditEventTypes.FiadoDebito,
@@ -1556,6 +1563,14 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             if (novosPagamentos.Count > 0 && somaPagamentos != novoTotal)
             {
                 novosPagamentos[^1].Amount += (novoTotal - somaPagamentos);
+            }
+
+            // A venda nova não tem entrega de dinheiro de verdade: "recebido" = valor e troco zero. Repartir o
+            // recebido original (ex.: 30,00 x 18,90/23,90 = 23,72) com troco 0 deixava o cupom inconsistente.
+            foreach (var p in novosPagamentos.Where(p => p.CashGiven.HasValue))
+            {
+                p.CashGiven = p.Amount;
+                p.ChangeAmount = 0m;
             }
 
             var novoPaymentType = novosPagamentos.Count == 1 ? novosPagamentos[0].PaymentType : "Múltiplo";

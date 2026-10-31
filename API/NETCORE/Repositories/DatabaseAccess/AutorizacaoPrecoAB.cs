@@ -6,6 +6,7 @@
  * Entradas esperadas: recebe conexão configurada e, para validar a venda, a conexão/transação da própria venda.
  */
 using HORUSPDV_API.Models.Requests;
+using HORUSPDV_API.Services.Shared;
 using Microsoft.Data.SqlClient;
 
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
@@ -65,11 +66,13 @@ public class AutorizacaoPrecoAB(Connection connection)
     ///  - preço diferente COM autorização: a autorização precisa ser do mesmo produto e preço, não usada e
     ///    (em venda online) não expirada; é consumida aqui, na mesma transação da venda;
     ///  - preço MENOR que o cadastrado SEM autorização, em venda online: recusa (desconto manual precisa de gerente);
-    ///  - preço maior que o cadastrado ou venda sincronizada do modo offline sem autorização: aceita (catálogo do
-    ///    caixa pode estar defasado e o caixa offline não consegue validar senha).
-    /// Retorna os ids das autorizações consumidas, para vincular à venda depois.
+    ///  - preço maior que o cadastrado: aceita (catálogo do caixa pode estar defasado);
+    ///  - preço MENOR sem autorização em venda sincronizada do modo offline: aceita (o caixa offline não consegue
+    ///    validar senha e a venda já aconteceu), mas volta em <see cref="ValidacaoPrecos.Divergencias"/> para a
+    ///    venda ficar marcada no Log de Atividades (PrecoOfflineAbaixo) e o gerente revisar.
+    /// Retorna os ids das autorizações consumidas, para vincular à venda depois, e as divergências.
     /// </summary>
-    public static async Task<List<string>> ValidarPrecosDaVendaAsync(
+    public static async Task<ValidacaoPrecos> ValidarPrecosDaVendaAsync(
         SqlConnection db,
         SqlTransaction transaction,
         string companyId,
@@ -78,6 +81,7 @@ public class AutorizacaoPrecoAB(Connection connection)
         CancellationToken cancellationToken = default)
     {
         var usadas = new List<string>();
+        var divergencias = new List<string>();
 
         foreach (var item in itens)
         {
@@ -105,10 +109,18 @@ public class AutorizacaoPrecoAB(Connection connection)
                     $"O preço de \"{nome}\" foi alterado (R$ {item.UnitPrice:N2} em vez de R$ {precoTabela.Value:N2}) " +
                     "sem autorização de gerente. Peça a senha do gerente para alterar o preço ou atualize o catálogo do caixa.");
             }
+
+            if (vendaOffline && item.UnitPrice < precoTabela.Value)
+            {
+                divergencias.Add($"{nome} ({codigo}): R$ {HorusMoneyFormat.Format(item.UnitPrice)} em vez de R$ {HorusMoneyFormat.Format(precoTabela.Value)}");
+            }
         }
 
-        return usadas;
+        return new ValidacaoPrecos(usadas, divergencias);
     }
+
+    /// <summary>Autorizações consumidas e itens de venda offline vendidos abaixo do cadastro sem autorização.</summary>
+    public sealed record ValidacaoPrecos(List<string> Usadas, List<string> Divergencias);
 
     public static async Task VincularVendaAsync(
         SqlConnection db,

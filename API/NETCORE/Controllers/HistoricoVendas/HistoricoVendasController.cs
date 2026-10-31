@@ -428,7 +428,25 @@ public class HistoricoVendasController(
         var currentUser = GetCurrentUser();
         if (currentUser is null) return Unauthorized(new ApiResponse<object> { Success = false, Message = "Sessão não encontrada." });
 
-        if (!currentUser.TemAcessoFinanceiro)
+        // Responsável pela correção: o gerente que autorizou com a senha (frente de caixa) ou, sem gerente,
+        // o próprio usuário logado, que então precisa ter perfil financeiro (regra original da tela web).
+        var responsavelId = currentUser.Id;
+        var responsavelNome = currentUser.Name;
+        var comGerente = !string.IsNullOrWhiteSpace(request.SupervisorId) || !string.IsNullOrWhiteSpace(request.SupervisorPassword);
+        if (comGerente)
+        {
+            var (valido, msgSupervisor, supervisor) = securityStore.ValidateSupervisorCredentials(
+                request.SupervisorId ?? string.Empty,
+                request.SupervisorPassword ?? string.Empty,
+                currentUser.CompanyId);
+            if (!valido || supervisor is null)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object> { Success = false, Message = msgSupervisor });
+            }
+            responsavelId = supervisor.Id;
+            responsavelNome = supervisor.Name;
+        }
+        else if (!currentUser.TemAcessoFinanceiro)
         {
             return StatusCode(StatusCodes.Status403Forbidden, new ApiResponse<object>
             {
@@ -453,8 +471,8 @@ public class HistoricoVendasController(
                 currentUser.CompanyId,
                 saleNumber,
                 request.ProdutosParaRemover,
-                currentUser.Id,
-                currentUser.Name,
+                responsavelId,
+                responsavelNome,
                 request.Justificativa.Trim());
 
             // Enfileira NFC-e para a nova venda se houver emitente fiscal configurado
