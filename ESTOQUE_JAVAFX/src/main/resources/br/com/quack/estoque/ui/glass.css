@@ -1,0 +1,390 @@
+/*
+ * Tema "vidro" (glassmorphism): carregado POR CIMA do quack.css quando ligado.
+ * Painéis translúcidos com borda clara sobre um fundo azul-marinho com brilhos amarelo/laranja (cores Quack).
+ * O JavaFX não desfoca o que está atrás de um painel; o efeito vem da translucidez sobre o fundo com brilhos.
+ * Quase tudo muda só redefinindo as variáveis de cor do quack.css.
+ */
+
+.root,
+.rg-toast-host {
+    -surface: rgba(255, 255, 255, 0.075);
+    -surface-muted: rgba(255, 255, 255, 0.045);
+    -border: rgba(255, 255, 255, 0.14);
+    -border-strong: rgba(255, 255, 255, 0.26);
+    -ink: #f3f5f9;
+    -ink-muted: #aab5c7;
+
+    /* ação principal laranja (como o "Order Now" da referência) */
+    -brand: #f97316;
+    -brand-pressed: #ea580c;
+    -brand-soft: #fb923c;
+    -brand-deep: #c2410c;
+    -brand-tint: rgba(255, 194, 51, 0.16);
+    -highlight: #ffc233;
+    -highlight-strong: #ffb020;
+
+    -success: #22c55e;
+    -success-tint: rgba(34, 197, 94, 0.16);
+    -success-border: rgba(34, 197, 94, 0.45);
+    -danger: #ef4444;
+    -danger-tint: rgba(239, 68, 68, 0.16);
+    -danger-border: rgba(239, 68, 68, 0.45);
+    -sky-soft: rgba(46, 191, 244, 0.10);
+
+    /* vidro */
+    -glass-bg-1: #0a1322;
+    -glass-bg-2: #152238;
+    -glass-panel: rgba(255, 255, 255, 0.05);
+    -glass-panel-strong: rgba(255, 255, 255, 0.10);
+    -glass-edge: rgba(255, 255, 255, 0.18);
+    -glass-solid: rgba(16, 26, 44, 0.96);
+}
+
+/* Fundo com brilhos: é o que "aparece" através dos painéis translúcidos. */
+.root,
+.rg-pdv,
+.rg-auth-bg {
+    -fx-background-color:
+        radial-gradient(center 12% 18%, radius 40%, rgba(255, 194, 51, 0.38), transparent),
+        radial-gradient(center 88% 80%, radius 45%, rgba(249, 115, 22, 0.36), transparent),
+        radial-gradient(center 60% 10%, radius 30%, rgba(46, 191, 244, 0.14), transparent),
+        linear-gradient(to bottom right, -glass-bg-1, -glass-bg-2);
+}
+
+/* ---------- frente de caixa ---------- */
+
+.rg-pdv-header {
+    -fx-background-color: -glass-panel;
+    -fx-border-color: transparent transparent -glass-edge transparent;
+}
+
+.rg-logo-box {
+    -fx-background-color: rgba(255, 255, 255, 0.92);
+}
+
+.rg-pdv-side {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent -glass-edge transparent transparent;
+}
+
+.rg-pdv-main {
+    -fx-background-color: -glass-panel;
+    -fx-background-radius: 16 0 0 0;
+    -fx-border-color: -glass-edge transparent transparent -glass-edge;
+    -fx-border-radius: 16 0 0 0;
+}
+
+.rg-side-card,
+.rg-image-box {
+    -fx-background-color: -glass-panel;
+    -fx-border-color: -glass-edge;
+}
+
+.rg-list-area {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+    -fx-border-color: -glass-edge;
+}
+
+.rg-subtotal-row,
+.rg-footer,
+.rg-help-row {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+}
+
+.rg-subtotal-box {
+    -fx-background-color: linear-gradient(to right, #f97316, #ffb020);
+    -fx-background-radius: 12 0 0 0;
+}
+
+.rg-product-waiting {
+    -fx-text-fill: rgba(255, 255, 255, 0.30);
+}
+
+/* campos */
+.text-field,
+.password-field,
+.combo-box {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: -glass-edge;
+    -fx-text-fill: -ink;
+    -fx-prompt-text-fill: rgba(255, 255, 255, 0.40);
+    -fx-highlight-fill: rgba(249, 115, 22, 0.55);
+}
+
+.rg-field-readonly {
+    -fx-background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* botões */
+.button {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: -glass-edge;
+}
+
+.button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+}
+
+.rg-chip {
+    -fx-background-color: rgba(255, 255, 255, 0.10);
+    -fx-border-color: rgba(255, 255, 255, 0.22);
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+}
+
+.rg-chip-glass-on {
+    -fx-background-color: linear-gradient(to right, #f97316, #ffb020);
+    -fx-border-color: transparent;
+}
+
+.rg-btn-success,
+.rg-btn-danger-fill,
+.rg-cash-btn-primary,
+.rg-btn-primary,
+.rg-auth-submit,
+.rg-btn-remove {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 12, 0.1, 0, 3);
+}
+
+/* tabela do cupom */
+.table-view,
+.table-view .placeholder {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent -glass-edge transparent;
+}
+
+.table-row-cell,
+.table-row-cell:odd {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.06) transparent;
+}
+
+.table-row-cell .table-cell {
+    -fx-text-fill: -ink;
+    -fx-border-color: transparent;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(249, 115, 22, 0.28);
+}
+
+.table-row-cell:selected .text,
+.table-row-cell:selected .label {
+    -fx-fill: -ink;
+    -fx-text-fill: -ink;
+}
+
+/* listas (sugestões da busca, gerentes): quase opacas para não misturar com o que está atrás */
+.list-view {
+    -fx-background-color: -glass-solid;
+    -fx-border-color: -glass-edge;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ink;
+}
+
+.list-cell:selected {
+    -fx-background-color: rgba(249, 115, 22, 0.35);
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: -glass-solid;
+}
+
+.check-box .box {
+    -fx-background-color: rgba(255, 255, 255, 0.10);
+    -fx-border-color: -glass-edge;
+}
+
+.scroll-pane,
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.separator .line {
+    -fx-border-color: -glass-edge;
+}
+
+/* ---------- modais: vidro escuro quase opaco (o fundo da janela atrás não pode atrapalhar a leitura) ---------- */
+
+.rg-modal {
+    -fx-background-color: linear-gradient(to bottom, rgba(26, 40, 66, 0.97), rgba(14, 24, 42, 0.97));
+    -fx-border-color: -glass-edge;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.55), 30, 0.2, 0, 8);
+}
+
+.rg-pay-summary,
+.rg-pay-card,
+.rg-cash-card,
+.rg-sales-stat,
+.rg-sale-row,
+.rg-pay-part,
+.rg-pay-tile {
+    -fx-background-color: -glass-panel;
+    -fx-border-color: -glass-edge;
+}
+
+.rg-sale-detail {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.rg-preview-area,
+.rg-preview-scroll,
+.rg-preview-scroll > .viewport,
+.rg-sales-scroll,
+.rg-sales-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.rg-pay-tile:selected {
+    -fx-background-color: linear-gradient(to right, #f97316, #ffb020);
+    -fx-border-color: transparent;
+}
+
+.label.rg-pay-change-value.rg-pay-change-positive {
+    -fx-text-fill: #4ade80;
+}
+
+/* ---------- login ---------- */
+
+.rg-auth-card {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    -fx-border-color: -glass-edge;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 34, 0.15, 0, 10);
+}
+
+.rg-auth-form {
+    -fx-background-color: transparent;
+}
+
+.rg-auth-brand {
+    -fx-background-color: linear-gradient(to bottom right, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02));
+    -fx-border-color: transparent -glass-edge transparent transparent;
+}
+
+.rg-auth-glow-secondary {
+    -fx-fill: rgba(255, 194, 51, 0.30);
+}
+
+.rg-auth-glow-accent {
+    -fx-fill: rgba(249, 115, 22, 0.28);
+}
+
+/* ---------- botões coloridos: mais específicos que ".button" acima ---------- */
+
+.button.rg-btn-success {
+    -fx-background-color: linear-gradient(to bottom, #2fbf6a, #1e9e55);
+    -fx-border-color: transparent;
+    -fx-text-fill: -on-dark;
+}
+
+.button.rg-btn-danger-fill {
+    -fx-background-color: linear-gradient(to bottom, #f05252, #d93636);
+    -fx-border-color: transparent;
+    -fx-text-fill: -on-dark;
+}
+
+.button.rg-btn-primary,
+.button.rg-cash-btn-primary,
+.button.rg-auth-submit {
+    -fx-background-color: linear-gradient(to right, #f97316, #ffb020);
+    -fx-border-color: transparent;
+    -fx-text-fill: -on-dark;
+}
+
+.button.rg-btn-success:hover,
+.button.rg-btn-danger-fill:hover,
+.button.rg-btn-primary:hover,
+.button.rg-cash-btn-primary:hover,
+.button.rg-auth-submit:hover {
+    -fx-opacity: 0.9;
+}
+
+.button.rg-btn-remove {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-border-color: -glass-edge;
+    -fx-text-fill: -on-dark;
+}
+
+.button.rg-cash-btn-success,
+.button.rg-btn-outline-success {
+    -fx-background-color: -success-tint;
+    -fx-border-color: -success-border;
+    -fx-text-fill: #4ade80;
+}
+
+.button.rg-cash-btn-danger,
+.button.rg-btn-outline-danger {
+    -fx-background-color: -danger-tint;
+    -fx-border-color: -danger-border;
+    -fx-text-fill: #f87171;
+}
+
+.button.rg-bill-exact {
+    -fx-background-color: rgba(255, 255, 255, 0.16);
+}
+
+.button.rg-btn-icon-flat,
+.button.rg-btn-link,
+.button.rg-auth-eye,
+.button.rg-badge-undo {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.toggle-button.rg-filter-chip:selected {
+    -fx-background-color: linear-gradient(to right, #f97316, #ffb020);
+    -fx-border-color: transparent;
+    -fx-text-fill: -on-dark;
+}
+
+.button.rg-chip-glass-on {
+    -fx-background-color: linear-gradient(to right, #f97316, #ffb020);
+    -fx-border-color: transparent;
+}
+
+/* filtros (Todos / Dinheiro / Cartão / PIX / Fiado): texto claro sobre o vidro */
+.toggle-button.rg-filter-chip,
+.button.rg-filter-chip {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: -glass-edge;
+    -fx-text-fill: -ink;
+}
+
+.toggle-button.rg-filter-chip:hover,
+.button.rg-filter-chip:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.16);
+}
+
+/* caixas de texto de várias linhas (justificativas): sem o miolo branco */
+.text-area {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: -glass-edge;
+    -fx-text-fill: -ink;
+    -fx-prompt-text-fill: rgba(255, 255, 255, 0.40);
+    -fx-highlight-fill: rgba(249, 115, 22, 0.55);
+}
+
+.text-area .content,
+.text-area .scroll-pane,
+.text-area .viewport {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}

@@ -1,0 +1,1627 @@
+/* Quack Caixa - tema claro (design system Quack). Cores só via variáveis abaixo. */
+.root,
+.rg-toast-host {
+    -brand: #152238;
+    -brand-pressed: #0c1726;
+    -highlight: #ffc233;
+    -highlight-strong: #f97316;
+    -surface: #ffffff;
+    /* texto/ícone sobre fundo escuro (botões, cabeçalho): continua branco no tema vidro */
+    -on-dark: #ffffff;
+    -surface-muted: #f5f6f8;
+    -border: #e5e7eb;
+    -ink: #152238;
+    -ink-muted: #5a6472;
+    -success: #2e7d4f;
+    -danger: #dc2626;
+    -brand-soft: #22365a;
+    -success-tint: #e8f5ee;
+    -success-border: #a7d7b9;
+    -danger-tint: #fdecec;
+    -danger-border: #f5b5b5;
+    -border-strong: #cbd2db;
+    -brand-deep: #0b1626;
+    -brand-tint: #fff4d6;
+    -sky: #2ebff4;
+    -sky-soft: #e3f1fa;
+
+    -fx-font-family: "Nunito", "Arial", sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: -surface-muted;
+    -fx-text-fill: -ink;
+}
+
+.label {
+    -fx-text-fill: -ink;
+}
+
+.rg-muted {
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.rg-topbar {
+    -fx-background-color: -brand;
+    -fx-padding: 8 16 8 16;
+    -fx-spacing: 16;
+    -fx-alignment: center-left;
+}
+
+.rg-topbar .label {
+    -fx-text-fill: -on-dark;
+}
+
+.rg-brand {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -highlight !important;
+}
+
+.rg-pill {
+    -fx-padding: 4 12 4 12;
+    -fx-background-radius: 12;
+    -fx-font-weight: bold;
+}
+
+.rg-pill-ok {
+    -fx-background-color: -success;
+}
+
+.rg-pill-danger {
+    -fx-background-color: -danger;
+}
+
+.rg-pill-warn {
+    -fx-background-color: -highlight-strong;
+}
+
+.rg-card {
+    -fx-background-color: -surface;
+    -fx-background-radius: 12;
+    -fx-border-color: -border;
+    -fx-border-radius: 12;
+    -fx-padding: 16;
+}
+
+.rg-total-card {
+    -fx-background-color: -brand;
+    -fx-background-radius: 12;
+    -fx-padding: 16;
+    -fx-spacing: 4;
+}
+
+.rg-total-card .label {
+    -fx-text-fill: -on-dark;
+}
+
+.rg-total-label {
+    -fx-font-size: 14px;
+}
+
+.rg-total-value {
+    -fx-font-size: 44px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -highlight !important;
+}
+
+.text-field, .password-field, .combo-box, .text-area {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 10 8 10;
+    -fx-text-fill: -ink;
+}
+
+.text-field:focused, .password-field:focused, .text-area:focused {
+    -fx-border-color: -highlight-strong;
+}
+
+.rg-search {
+    -fx-font-size: 20px;
+}
+
+.button {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: -ink;
+    -fx-padding: 8 14 8 14;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: -surface-muted;
+}
+
+.rg-btn-primary {
+    -fx-background-color: -brand;
+    -fx-text-fill: -on-dark;
+    -fx-font-weight: bold;
+    -fx-border-color: -brand;
+}
+
+.rg-btn-primary:hover, .rg-btn-primary:pressed {
+    -fx-background-color: -brand-pressed;
+}
+
+.rg-btn-primary:disabled {
+    -fx-opacity: 0.5;
+}
+
+.rg-btn-accent {
+    -fx-background-color: -highlight;
+    -fx-text-fill: -ink;
+    -fx-font-weight: bold;
+    -fx-border-color: -highlight;
+}
+
+.rg-btn-accent:hover {
+    -fx-background-color: -highlight-strong;
+}
+
+.rg-btn-danger {
+    -fx-text-fill: -danger;
+    -fx-border-color: -danger;
+}
+
+.rg-btn-big {
+    -fx-font-size: 16px;
+    -fx-padding: 12 16 12 16;
+    -fx-max-width: infinity;
+}
+
+.rg-toggle:selected {
+    -fx-background-color: -brand;
+    -fx-text-fill: -on-dark;
+    -fx-border-color: -brand;
+}
+
+.table-view {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -surface-muted;
+}
+
+.table-view .column-header .label {
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink-muted;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: -highlight;
+}
+
+.table-row-cell:selected .text, .table-row-cell:selected .label {
+    -fx-fill: -ink;
+    -fx-text-fill: -ink;
+}
+
+.list-view {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.list-cell:selected {
+    -fx-background-color: -highlight;
+    -fx-text-fill: -ink;
+}
+
+.rg-error {
+    -fx-text-fill: -danger;
+}
+
+.rg-ok {
+    -fx-text-fill: -success;
+}
+
+/* O aviso abre num Popup próprio: o host recebe os tokens de .root, sem o fundo. */
+.rg-toast-host {
+    -fx-background-color: transparent;
+}
+
+.rg-toast {
+    -fx-padding: 12 18 12 18;
+    -fx-background-radius: 10;
+    -fx-text-fill: -on-dark;
+    -fx-font-weight: bold;
+}
+
+.rg-toast-success {
+    -fx-background-color: -success;
+}
+
+.rg-toast-error {
+    -fx-background-color: -danger;
+}
+
+.rg-toast-info {
+    -fx-background-color: -brand;
+}
+
+.rg-statusbar {
+    -fx-background-color: -surface;
+    -fx-border-color: -border transparent transparent transparent;
+    -fx-padding: 6 16 6 16;
+    -fx-spacing: 16;
+}
+
+
+/* ================= Frente de caixa (layout do caixa web) ================= */
+
+.rg-pdv {
+    -fx-background-color: -surface-muted;
+}
+
+.rg-pdv-header {
+    -fx-background-color: linear-gradient(to right, -brand, -brand-soft);
+    -fx-padding: 8 16 8 12;
+}
+
+.rg-logo-box {
+    -fx-background-color: -surface;
+    -fx-background-radius: 10;
+    -fx-padding: 4 10 4 10;
+}
+
+.rg-header-title {
+    -fx-text-fill: -on-dark;
+    -fx-font-family: "Nunito ExtraBold";
+    -fx-font-size: 23px;
+    -fx-font-style: italic;
+}
+
+.rg-header-subtitle {
+    -fx-text-fill: -on-dark;
+    -fx-font-size: 11px;
+    -fx-opacity: 0.85;
+}
+
+.rg-header-date {
+    -fx-text-fill: -on-dark;
+    -fx-font-size: 12px;
+}
+
+.rg-header-clock {
+    -fx-text-fill: -on-dark;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+.rg-chip {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: rgba(255, 255, 255, 0.35);
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-text-fill: -on-dark;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 5 10 5 10;
+}
+
+.rg-chip:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.18);
+}
+
+.rg-chip-danger {
+    -fx-background-color: derive(-danger, -45%);
+    -fx-border-color: derive(-danger, 20%);
+}
+
+.rg-chip-warn {
+    -fx-background-color: -highlight-strong;
+    -fx-border-color: -highlight-strong;
+}
+
+/* coluna da esquerda */
+.rg-pdv-side {
+    -fx-background-color: -surface-muted;
+    -fx-padding: 10 10 10 12;
+    -fx-border-color: transparent -border transparent transparent;
+}
+
+.rg-side-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink;
+}
+
+.rg-pdv-side .text-field {
+    -fx-font-size: 15px;
+    -fx-padding: 8 10 8 10;
+}
+
+.rg-pdv-side .rg-search-field, .rg-search-field {
+    -fx-padding: 8 10 8 36;
+}
+
+.rg-field-readonly {
+    -fx-background-color: -surface-muted;
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-field-strong {
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink;
+    -fx-border-color: -border-strong;
+}
+
+.rg-side-card {
+    -fx-background-color: -surface;
+    -fx-background-radius: 10;
+    -fx-border-color: -border;
+    -fx-border-radius: 10;
+    -fx-padding: 10 12 10 12;
+}
+
+.rg-clickable {
+    -fx-cursor: hand;
+}
+
+.rg-mini-label {
+    -fx-font-size: 10px;
+    -fx-text-fill: -ink-muted;
+    -fx-font-weight: bold;
+}
+
+.rg-mini-muted {
+    -fx-font-size: 11px;
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-volumes {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.rg-customer-name {
+    -fx-font-weight: bold;
+}
+
+.rg-image-box {
+    -fx-background-color: -surface-muted;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-min-height: 70;
+}
+
+.rg-icon-muted {
+    -fx-fill: -ink-muted;
+}
+
+.rg-icon-empty {
+    -fx-fill: -border-strong;
+}
+
+.rg-icon-brand {
+    -fx-fill: -brand;
+}
+
+/* area central */
+.rg-pdv-main {
+    -fx-background-color: -surface;
+}
+
+.rg-info-row {
+    -fx-padding: 6 10 6 10;
+    -fx-border-color: transparent transparent -border transparent;
+}
+
+.rg-info-text {
+    -fx-font-size: 11px;
+}
+
+.rg-info-strong {
+    -fx-font-weight: bold;
+}
+
+.rg-status-bar {
+    -fx-padding: 6 10 6 10;
+    -fx-border-color: transparent transparent -border transparent;
+}
+
+.rg-status-ok {
+    -fx-background-color: -success-tint;
+}
+
+.rg-status-blocked {
+    -fx-background-color: -danger-tint;
+}
+
+.rg-status-dot {
+    -fx-min-width: 8;
+    -fx-min-height: 8;
+    -fx-max-width: 8;
+    -fx-max-height: 8;
+    -fx-background-radius: 4;
+}
+
+.rg-status-ok .rg-status-dot {
+    -fx-background-color: -success;
+}
+
+.rg-status-blocked .rg-status-dot {
+    -fx-background-color: -danger;
+}
+
+.rg-status-text {
+    -fx-font-size: 11px;
+}
+
+.rg-status-ok .rg-status-text {
+    -fx-text-fill: -success;
+}
+
+.rg-status-blocked .rg-status-text {
+    -fx-text-fill: -danger;
+}
+
+.rg-btn-small {
+    -fx-font-size: 11px;
+    -fx-padding: 4 10 4 10;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.rg-btn-outline-success {
+    -fx-background-color: -surface;
+    -fx-text-fill: -success;
+    -fx-border-color: -success-border;
+}
+
+.rg-btn-outline-danger {
+    -fx-background-color: -surface;
+    -fx-text-fill: -danger;
+    -fx-border-color: -danger-border;
+}
+
+.rg-product-box {
+    -fx-padding: 8 10 8 10;
+    -fx-border-color: transparent transparent -border transparent;
+}
+
+.rg-product-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink;
+}
+
+.rg-product-waiting {
+    -fx-text-fill: -border-strong;
+}
+
+.rg-list-label {
+    -fx-font-size: 12px;
+}
+
+.rg-list-area {
+    -fx-border-color: -border-strong;
+    -fx-border-style: segments(5, 4);
+    -fx-border-radius: 10;
+    -fx-background-color: -surface;
+    -fx-background-radius: 10;
+}
+
+.rg-empty-title {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 13px;
+}
+
+.rg-cart-table {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.rg-btn-remove {
+    -fx-background-color: -brand;
+    -fx-text-fill: -on-dark;
+    -fx-border-color: -brand;
+    -fx-padding: 2 8 2 8;
+}
+
+.rg-help-row {
+    -fx-background-color: -surface-muted;
+    -fx-padding: 5 10 5 10;
+    -fx-font-size: 12px;
+    -fx-border-color: -border transparent -border transparent;
+    -fx-cursor: hand;
+}
+
+.rg-subtotal-row {
+    -fx-background-color: -surface-muted;
+}
+
+.rg-subtotal-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-subtotal-box {
+    -fx-background-color: -brand;
+    -fx-padding: 8 16 8 16;
+}
+
+.rg-subtotal-value {
+    -fx-text-fill: -on-dark;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+
+.rg-action-row {
+    -fx-padding: 8 8 8 8;
+}
+
+.rg-btn-action {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 9 12 9 12;
+}
+
+.rg-btn-success {
+    -fx-background-color: -success;
+    -fx-border-color: -success;
+    -fx-text-fill: -on-dark;
+    -fx-font-weight: bold;
+}
+
+.rg-btn-success:hover {
+    -fx-background-color: derive(-success, -12%);
+}
+
+.rg-btn-danger-fill {
+    -fx-background-color: -danger;
+    -fx-border-color: -danger;
+    -fx-text-fill: -on-dark;
+    -fx-font-weight: bold;
+}
+
+.rg-btn-danger-fill:hover {
+    -fx-background-color: derive(-danger, -12%);
+}
+
+.rg-btn-block {
+    -fx-max-width: infinity;
+    -fx-padding: 9 6 9 6;
+    -fx-font-size: 12px;
+}
+
+.rg-footer {
+    -fx-padding: 5 10 5 10;
+    -fx-border-color: -border transparent transparent transparent;
+    -fx-background-color: -surface-muted;
+}
+
+.rg-footer-text {
+    -fx-font-size: 10px;
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-suggest-name {
+    -fx-font-weight: bold;
+}
+
+.rg-suggest-price {
+    -fx-font-weight: bold;
+    -fx-text-fill: -success;
+}
+
+.label.rg-text-success, .rg-text-success {
+    -fx-text-fill: -success;
+}
+
+.label.rg-text-danger, .rg-text-danger {
+    -fx-text-fill: -danger;
+}
+
+/* ================= Modais em cartão ================= */
+
+.rg-modal-wrap {
+    -fx-background-color: transparent;
+    -fx-padding: 24;
+}
+
+.rg-modal {
+    -fx-background-color: -surface;
+    -fx-background-radius: 14;
+    -fx-border-color: -border;
+    -fx-border-radius: 14;
+    -fx-padding: 16 16 16 16;
+    -fx-effect: dropshadow(gaussian, rgba(21, 34, 56, 0.35), 24, 0.15, 0, 6);
+}
+
+.rg-modal-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+.rg-modal-subtitle {
+    -fx-font-size: 11px;
+}
+
+.rg-btn-icon {
+    -fx-font-size: 12px;
+    -fx-padding: 4 9 4 9;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.rg-btn-icon-flat {
+    -fx-font-size: 14px;
+    -fx-padding: 4 9 4 9;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.rg-btn-link {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 12px;
+    -fx-text-fill: -ink;
+}
+
+.rg-btn-link:hover {
+    -fx-underline: true;
+    -fx-background-color: transparent;
+}
+
+/* pagamento */
+.rg-pay-summary {
+    -fx-background-color: -surface-muted;
+    -fx-background-radius: 10;
+    -fx-border-color: -border;
+    -fx-border-radius: 10;
+    -fx-padding: 10 12 10 12;
+}
+
+.rg-pay-sum-title {
+    -fx-font-size: 10px;
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-pay-sum-value {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.rg-pay-card {
+    -fx-background-color: -surface-muted;
+    -fx-background-radius: 10;
+    -fx-border-color: -border;
+    -fx-border-radius: 10;
+    -fx-padding: 10 12 12 12;
+}
+
+.rg-pay-change-title {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink-muted;
+}
+
+.label.rg-pay-change-value {
+    -fx-font-family: "Roboto Mono", monospace;
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink-muted;
+}
+
+.label.rg-pay-change-value.rg-pay-change-positive {
+    -fx-text-fill: -success;
+}
+
+.rg-pay-form-title {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-pay-status-ok {
+    -fx-font-size: 11px;
+    -fx-text-fill: -success;
+}
+
+.rg-pay-status-pending {
+    -fx-font-size: 11px;
+    -fx-text-fill: -danger;
+}
+
+.rg-pay-field-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -ink;
+}
+
+.rg-pay-input {
+    -fx-font-size: 15px;
+    -fx-padding: 8 10 8 10;
+}
+
+.text-field.rg-pay-change-field {
+    -fx-text-fill: -success;
+}
+
+.rg-pay-tile {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 4 8 4;
+}
+
+.rg-pay-tile:selected {
+    -fx-background-color: -brand;
+    -fx-border-color: -brand;
+}
+
+.rg-tile-name {
+    -fx-font-size: 13px;
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-tile-key {
+    -fx-font-size: 9px;
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-pay-tile:selected .rg-tile-name {
+    -fx-text-fill: -on-dark;
+    -fx-font-weight: bold;
+}
+
+.rg-pay-tile:selected .rg-tile-key {
+    -fx-text-fill: -on-dark;
+}
+
+.rg-pay-customer {
+    -fx-font-size: 11px;
+    -fx-text-fill: -brand;
+}
+
+.rg-pay-part {
+    -fx-background-color: -surface;
+    -fx-background-radius: 8;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-padding: 4 6 4 10;
+}
+
+.rg-pay-part-text {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.rg-bill {
+    -fx-font-size: 11px;
+    -fx-padding: 4 8 4 8;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.rg-bill-exact {
+    -fx-background-color: -border;
+}
+
+/* caixa */
+.rg-cash-card {
+    -fx-background-color: -surface-muted;
+    -fx-background-radius: 10;
+    -fx-border-color: -border;
+    -fx-border-radius: 10;
+    -fx-padding: 10 12 10 12;
+}
+
+.rg-cash-card-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.rg-cash-line {
+    -fx-font-size: 11px;
+}
+
+.rg-cash-line-strong {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.rg-cash-btn {
+    -fx-font-size: 12px;
+    -fx-padding: 9 10 9 10;
+}
+
+.rg-cash-btn-success {
+    -fx-background-color: -success-tint;
+    -fx-border-color: -success-border;
+    -fx-text-fill: -success;
+}
+
+.rg-cash-btn-danger {
+    -fx-background-color: -danger-tint;
+    -fx-border-color: -danger-border;
+    -fx-text-fill: -danger;
+}
+
+.rg-cash-btn-primary {
+    -fx-background-color: -brand;
+    -fx-border-color: -brand;
+    -fx-text-fill: -on-dark;
+    -fx-font-weight: bold;
+}
+
+.rg-cash-btn-primary:hover {
+    -fx-background-color: -brand-pressed;
+}
+
+/* vendas do caixa atual */
+.rg-modal.rg-sales-modal {
+    -fx-padding: 0;
+}
+
+.rg-sales-header {
+    -fx-padding: 14 16 12 16;
+    -fx-border-color: transparent transparent -border transparent;
+}
+
+.rg-sales-icon {
+    -fx-background-color: -surface-muted;
+    -fx-border-color: -border;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-min-width: 38;
+    -fx-min-height: 38;
+}
+
+.rg-badge {
+    -fx-background-color: -border;
+    -fx-background-radius: 10;
+    -fx-padding: 2 8 2 8;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.label.rg-badge-ok {
+    -fx-background-color: -success-tint;
+    -fx-text-fill: -success;
+}
+
+.label.rg-badge-warn {
+    -fx-background-color: -brand-tint;
+    -fx-text-fill: -highlight-strong;
+}
+
+.label.rg-badge-danger {
+    -fx-background-color: -danger-tint;
+    -fx-text-fill: -danger;
+}
+
+.rg-sales-section {
+    -fx-padding: 10 16 6 16;
+}
+
+.rg-sales-stat {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8 12 8 12;
+}
+
+.rg-sales-stat-icon {
+    -fx-background-color: -surface-muted;
+    -fx-background-radius: 8;
+    -fx-min-width: 30;
+    -fx-min-height: 30;
+}
+
+.rg-sales-stat-icon-money {
+    -fx-background-color: -success-tint;
+    -fx-background-radius: 8;
+    -fx-min-width: 30;
+    -fx-min-height: 30;
+}
+
+.label.rg-sales-dollar {
+    -fx-text-fill: -success;
+    -fx-font-weight: bold;
+}
+
+.rg-sales-stat-value {
+    -fx-font-weight: bold;
+}
+
+.label.rg-sales-money {
+    -fx-font-family: "Roboto Mono", monospace;
+    -fx-text-fill: -success;
+}
+
+.rg-filter-chip {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-font-size: 11px;
+    -fx-padding: 4 8 4 8;
+}
+
+.rg-filter-chip:selected {
+    -fx-background-color: -brand;
+    -fx-border-color: -brand;
+    -fx-text-fill: -on-dark;
+    -fx-font-weight: bold;
+}
+
+.rg-sales-scroll, .rg-sales-scroll > .viewport {
+    -fx-background-color: -surface;
+    -fx-background: -surface;
+    -fx-border-color: -border transparent transparent transparent;
+}
+
+.rg-sales-list {
+    -fx-padding: 10 16 10 16;
+}
+
+.rg-sale-row {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8 12 8 12;
+    -fx-cursor: hand;
+}
+
+.rg-sale-row:hover {
+    -fx-border-color: -border-strong;
+}
+
+.rg-sale-number {
+    -fx-font-weight: bold;
+}
+
+.rg-sale-total {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.rg-sale-detail {
+    -fx-background-color: -surface-muted;
+    -fx-background-radius: 8;
+    -fx-padding: 8 10 8 10;
+}
+
+.rg-sales-footer {
+    -fx-padding: 10 16 12 16;
+    -fx-border-color: -border transparent transparent transparent;
+}
+
+.rg-icon-success {
+    -fx-fill: -success;
+}
+
+.rg-icon-danger {
+    -fx-fill: -danger;
+}
+
+.rg-icon-light {
+    -fx-fill: -on-dark;
+}
+
+/* pré-visualização do cupom */
+.rg-modal.rg-preview-modal {
+    -fx-padding: 0;
+}
+
+.rg-preview-header {
+    -fx-padding: 12 12 12 16;
+    -fx-border-color: transparent transparent -border transparent;
+}
+
+.rg-preview-scroll, .rg-preview-scroll > .viewport {
+    -fx-background-color: -surface-muted;
+    -fx-background: -surface-muted;
+}
+
+.rg-preview-area {
+    -fx-background-color: -surface-muted;
+    -fx-padding: 16;
+}
+
+.rg-receipt-paper {
+    -fx-effect: dropshadow(gaussian, rgba(21, 34, 56, 0.18), 10, 0.1, 0, 2);
+}
+
+.rg-preview-footer {
+    -fx-padding: 10 12 12 12;
+    -fx-border-color: -border transparent transparent transparent;
+}
+
+.rg-preview-modal .rg-error {
+    -fx-padding: 6 16 0 16;
+}
+
+.rg-preview-status {
+    -fx-text-fill: -ink;
+    -fx-font-size: 13px;
+    -fx-text-alignment: center;
+}
+
+.rg-offline-notice {
+    -fx-background-color: -brand-tint;
+    -fx-text-fill: -ink;
+    -fx-font-size: 11px;
+    -fx-padding: 6 10 6 10;
+    -fx-background-radius: 8;
+}
+
+/* ================= Login (AuthLayout da web) ================= */
+
+.rg-auth-bg {
+    -fx-background-color: linear-gradient(to bottom right, -sky-soft 0%, -surface-muted 55%, -sky-soft 100%);
+}
+
+.rg-auth-glow-secondary {
+    -fx-fill: rgba(46, 191, 244, 0.22);
+}
+
+.rg-auth-glow-accent {
+    -fx-fill: rgba(255, 194, 51, 0.20);
+}
+
+.rg-auth-card {
+    -fx-background-color: -surface;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(21, 34, 56, 0.16), 30, 0.12, 0, 8);
+}
+
+.rg-auth-brand {
+    -fx-background-color: linear-gradient(to bottom right, -brand, -brand-deep);
+    -fx-background-radius: 16 0 0 16;
+    -fx-padding: 28;
+}
+
+.rg-auth-logo {
+    -fx-background-color: rgba(15, 23, 42, 0.4);
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 4 8 4 8;
+}
+
+.rg-auth-brand-name {
+    -fx-text-fill: -on-dark;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+.rg-auth-brand-tag {
+    -fx-text-fill: rgba(255, 255, 255, 0.8);
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.rg-auth-headline {
+    -fx-text-fill: -on-dark;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+
+.rg-auth-brand-foot {
+    -fx-text-fill: rgba(255, 255, 255, 0.85);
+    -fx-font-size: 12px;
+}
+
+.rg-auth-form {
+    -fx-padding: 32 44 28 44;
+    -fx-background-color: -surface;
+    -fx-background-radius: 0 16 16 0;
+}
+
+.rg-auth-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.rg-auth-sub {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 12px;
+}
+
+.rg-auth-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: -ink;
+}
+
+.rg-auth-field .text-field, .rg-auth-field .password-field {
+    -fx-padding: 9 40 9 34;
+    -fx-font-size: 14px;
+}
+
+.rg-auth-eye {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 4 8 4 8;
+}
+
+.rg-auth-check {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 12px;
+}
+
+.rg-auth-link, .rg-auth-link-small {
+    -fx-text-fill: -ink;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.rg-auth-link {
+    -fx-font-size: 12px;
+}
+
+.rg-auth-link-small {
+    -fx-font-size: 11px;
+}
+
+.rg-auth-link:visited, .rg-auth-link-small:visited {
+    -fx-text-fill: -ink;
+}
+
+.rg-auth-submit {
+    -fx-background-color: -brand;
+    -fx-text-fill: -on-dark;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-border-color: -brand;
+    -fx-border-radius: 10;
+    -fx-padding: 11 16 11 16;
+}
+
+.rg-auth-submit:hover {
+    -fx-background-color: -brand-pressed;
+}
+
+/* resumo do fechamento */
+.rg-closing-band {
+    -fx-background-color: -surface-muted;
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: -border transparent transparent transparent;
+}
+
+.rg-closing-icon {
+    -fx-background-color: -brand-tint;
+    -fx-background-radius: 10;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+}
+
+/* alteração de preço com senha de gerente */
+.rg-btn-tag {
+    -fx-padding: 2 4 2 4;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: -border-strong;
+}
+
+.rg-btn-tag:hover {
+    -fx-border-color: -highlight-strong;
+}
+
+.label.rg-price-overridden {
+    -fx-text-fill: -highlight-strong;
+    -fx-font-weight: bold;
+}
+
+.rg-badge-price {
+    -fx-background-color: -brand-tint;
+    -fx-background-radius: 4;
+    -fx-padding: 1 2 1 6;
+}
+
+.rg-badge-price .label {
+    -fx-text-fill: -highlight-strong;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.rg-badge-undo {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -highlight-strong;
+    -fx-font-size: 11px;
+    -fx-padding: 0 4 0 2;
+}
+
+.label.rg-badge-promo {
+    -fx-background-color: -success-tint;
+    -fx-background-radius: 4;
+    -fx-padding: 1 6 1 6;
+    -fx-text-fill: -success;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.label.rg-po-product {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.text-field.rg-po-price {
+    -fx-alignment: center-right;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+/* Item escolhido dentro da caixa de seleção: sem o fundo de "linha selecionada". */
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ink;
+}
+
+/* cancelamento de NFC-e / devolução */
+.rg-nfc-header {
+    -fx-padding: 12 14 12 16;
+    -fx-border-color: transparent transparent -border transparent;
+}
+
+.rg-nfc-header-danger {
+    -fx-background-color: -danger-tint;
+    -fx-background-radius: 14 14 0 0;
+}
+
+.rg-nfc-header-accent {
+    -fx-background-color: -brand-tint;
+    -fx-background-radius: 14 14 0 0;
+}
+
+.rg-nfc-icon {
+    -fx-background-color: rgba(255, 255, 255, 0.6);
+    -fx-background-radius: 10;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+}
+
+.rg-nfc-body {
+    -fx-padding: 14 16 14 16;
+}
+
+.rg-nfc-footer {
+    -fx-padding: 10 0 0 0;
+    -fx-border-color: -border transparent transparent transparent;
+}
+
+.label.rg-nfc-error-box {
+    -fx-background-color: -danger-tint;
+    -fx-border-color: -danger-border;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8 10 8 10;
+    -fx-text-fill: -danger;
+    -fx-font-size: 12px;
+}
+
+.label.rg-nfc-warn-box {
+    -fx-background-color: -brand-tint;
+    -fx-border-color: rgba(249, 115, 22, 0.35);
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 8 10 8 10;
+    -fx-text-fill: -ink;
+    -fx-font-size: 12px;
+}
+
+.label.rg-nfc-key {
+    -fx-font-family: "Roboto Mono", monospace;
+    -fx-font-size: 11px;
+}
+
+.rg-nfc-tabs {
+    -fx-background-color: -surface-muted;
+    -fx-background-radius: 10;
+    -fx-border-color: -border;
+    -fx-border-radius: 10;
+    -fx-padding: 4;
+}
+
+.toggle-button.rg-nfc-tab {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink-muted;
+    -fx-padding: 6 10 6 10;
+}
+
+.toggle-button.rg-nfc-tab:selected {
+    -fx-background-color: -surface;
+    -fx-background-radius: 8;
+    -fx-border-color: -border;
+    -fx-border-radius: 8;
+    -fx-text-fill: -highlight-strong;
+}
+
+.toggle-button.rg-nfc-tab-danger:selected {
+    -fx-text-fill: -danger;
+}
+
+.label.rg-nfc-count-warn {
+    -fx-text-fill: -highlight-strong;
+    -fx-font-family: "Roboto Mono", monospace;
+    -fx-font-size: 11px;
+}
+
+.rg-nfc-success-icon {
+    -fx-min-width: 40;
+    -fx-min-height: 40;
+}
+
+.label.rg-badge-purple {
+    -fx-background-color: rgba(168, 85, 247, 0.15);
+    -fx-text-fill: #9333ea;
+}
+
+/* correção de venda */
+.rg-corr-list {
+    -fx-border-color: -border;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.rg-corr-row {
+    -fx-padding: 8 12 8 12;
+    -fx-cursor: hand;
+    -fx-border-color: transparent transparent -border transparent;
+}
+
+.rg-corr-row-on {
+    -fx-background-color: -danger-tint;
+}
+
+.rg-corr-row-off:hover {
+    -fx-background-color: -surface-muted;
+}
+
+.label.rg-corr-removed {
+    -fx-text-fill: -ink-muted;
+    -fx-strikethrough: true;
+}
+
+.label.rg-corr-removed-total {
+    -fx-text-fill: -danger;
+    -fx-font-weight: bold;
+    -fx-strikethrough: true;
+}
+
+.rg-corr-ok-box {
+    -fx-background-color: -success-tint;
+    -fx-border-color: -success-border;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 10 12 10 12;
+}
+
+.label.rg-corr-removed .text,
+.label.rg-corr-removed-total .text {
+    -fx-strikethrough: true;
+}
+
+/* ===================================================================
+   Quack Estoque: casca do aplicativo, páginas, tabelas e cartões (só tokens do tema)
+   =================================================================== */
+.rg-shell {
+    -fx-background-color: -surface-muted;
+}
+
+.rg-sidebar {
+    -fx-background-color: -brand;
+    -fx-padding: 14 10 14 10;
+    -fx-spacing: 4;
+    -fx-min-width: 212;
+    -fx-pref-width: 212;
+}
+
+.rg-sidebar-brand {
+    -fx-padding: 4 8 14 8;
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+}
+
+.rg-sidebar-brand .label {
+    -fx-text-fill: -on-dark;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.rg-nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -on-dark;
+    -fx-alignment: center-left;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-padding: 9 12 9 12;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.rg-nav-btn:hover {
+    -fx-background-color: -brand-soft;
+}
+
+.rg-nav-btn-active,
+.rg-nav-btn-active:hover {
+    -fx-background-color: -highlight;
+    -fx-text-fill: -brand;
+    -fx-font-weight: bold;
+}
+
+.rg-nav-key {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 11px;
+}
+
+.rg-sidebar-user {
+    -fx-padding: 8 8 0 8;
+    -fx-spacing: 2;
+}
+
+.rg-sidebar-user .label {
+    -fx-text-fill: -on-dark;
+    -fx-font-size: 12px;
+}
+
+.rg-page {
+    -fx-padding: 18 22 14 22;
+    -fx-spacing: 12;
+}
+
+.rg-page-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink;
+}
+
+.rg-page-sub {
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-toolbar {
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.rg-stat {
+    -fx-background-color: -surface;
+    -fx-background-radius: 12;
+    -fx-border-color: -border;
+    -fx-border-radius: 12;
+    -fx-padding: 14 16 14 16;
+    -fx-spacing: 2;
+    -fx-min-width: 190;
+    -fx-cursor: hand;
+}
+
+.rg-stat:hover {
+    -fx-border-color: -highlight-strong;
+}
+
+.rg-stat-value {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+}
+
+.rg-stat-danger .rg-stat-value {
+    -fx-text-fill: -danger;
+}
+
+.rg-stat-ok .rg-stat-value {
+    -fx-text-fill: -success;
+}
+
+.rg-stat-label {
+    -fx-text-fill: -ink-muted;
+}
+
+.rg-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.rg-form-label {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.rg-hint {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 12px;
+}
+
+.rg-warn-box {
+    -fx-background-color: -brand-tint;
+    -fx-background-radius: 8;
+    -fx-border-color: -highlight;
+    -fx-border-radius: 8;
+    -fx-padding: 8 12 8 12;
+}
+
+.rg-danger-box {
+    -fx-background-color: -danger-tint;
+    -fx-background-radius: 8;
+    -fx-border-color: -danger-border;
+    -fx-border-radius: 8;
+    -fx-padding: 8 12 8 12;
+}
+
+.rg-ok-box {
+    -fx-background-color: -success-tint;
+    -fx-background-radius: 8;
+    -fx-border-color: -success-border;
+    -fx-border-radius: 8;
+    -fx-padding: 8 12 8 12;
+}
+
+.rg-group-title {
+    -fx-background-color: -sky-soft;
+    -fx-padding: 6 10 6 10;
+    -fx-background-radius: 6;
+    -fx-font-weight: bold;
+}
+
+.rg-count-big {
+    -fx-font-size: 34px;
+    -fx-font-weight: bold;
+}
+
+.rg-count-input {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+
+.rg-scan-field {
+    -fx-font-size: 20px;
+    -fx-padding: 10 12 10 12;
+}
+
+.rg-row-danger {
+    -fx-background-color: -danger-tint;
+}
+
+.rg-row-warn {
+    -fx-background-color: -brand-tint;
+}
+
+.rg-label-preview {
+    -fx-background-color: -surface;
+    -fx-border-color: -border-strong;
+    -fx-border-style: dashed;
+    -fx-padding: 6;
+}
+
+.rg-statusbar-app {
+    -fx-background-color: -surface;
+    -fx-border-color: -border transparent transparent transparent;
+    -fx-padding: 5 14 5 14;
+    -fx-spacing: 16;
+}
+
+.rg-doc {
+    -fx-background-color: -surface;
+    -fx-padding: 16;
+    -fx-spacing: 3;
+}
+
+.rg-doc .label {
+    -fx-text-fill: -ink;
+}
