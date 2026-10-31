@@ -197,6 +197,19 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
             throw new InvalidOperationException("Já existe produto com este código.");
         }
 
+        // GTIN repetido (só o GTIN de verdade; "SEM GTIN" pode repetir). Na edição só confere quando o GTIN mudou,
+        // para um cadastro antigo com GTIN duplicado continuar podendo ser editado (preço, estoque mínimo...).
+        var gtin = request.Gtin?.Trim() ?? string.Empty;
+        if (gtin.Length > 0 && !gtin.Equals("SEM GTIN", StringComparison.OrdinalIgnoreCase))
+        {
+            var atual = currentId is null ? null : products.FirstOrDefault(item => item.Id == currentId);
+            var mudou = atual is null || !string.Equals(atual.Gtin?.Trim(), gtin, StringComparison.OrdinalIgnoreCase);
+            if (mudou && products.Any(item => item.Id != currentId && string.Equals(item.Gtin?.Trim(), gtin, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException("Já existe produto com este GTIN (código de barras).");
+            }
+        }
+
         var supplierName = request.ProductSupplier?.Trim() ?? string.Empty;
         if (string.IsNullOrEmpty(supplierName)) return;
 

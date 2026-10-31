@@ -14,7 +14,7 @@ namespace HORUSPDV_API.Controllers.Produtos;
 
 [ApiController]
 [Route("api/[controller]")]
-[HorusAuthorizeRoles("administrador", "gerente", "atendente")]
+[HorusAuthorizeRoles("administrador", "gerente", "atendente", "estoquista")]
 public class NfeImportController(NfeImportService nfeImportService, NotaEntradaArquivoService arquivoService) : ControllerBase
 {
     [HttpPost("preview")]

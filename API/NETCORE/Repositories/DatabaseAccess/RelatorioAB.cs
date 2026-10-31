@@ -12,7 +12,7 @@ using System.Text.Json;
 namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public partial class RelatorioAB(Connection connection, AuditLogAB auditLogAB, FiadoAB fiadoAB, HistoricoVendasAB historicoVendasAB,
-    VendaCancelamentoAB vendaCancelamentoAB)
+    VendaCancelamentoAB vendaCancelamentoAB, EstoqueRelatorioAB estoqueRelatorioAB)
 {
     private static readonly CultureInfo PtBr = new("pt-BR");
 
@@ -46,6 +46,10 @@ public partial class RelatorioAB(Connection connection, AuditLogAB auditLogAB, F
             "cancelamentos" => await GerarCancelamentosAsync(companyId, filters),
             "auditoria-cancelamentos" => await GerarAuditoriaCancelamentosAsync(companyId, filters, restrictToUserId),
             "ficha-fiscal-produtos" => await GerarFichaFiscalAsync(companyId, filters, restrictToUserId),
+            "reposicao-giro" => await GerarReposicaoGiroAsync(companyId, filters, restrictToUserId),
+            "curva-abc" => await GerarCurvaAbcAsync(companyId, filters, restrictToUserId),
+            "estoque-parado" => await GerarEstoqueParadoAsync(companyId, filters, restrictToUserId),
+            "perdas" => await GerarPerdasAsync(companyId, filters, restrictToUserId),
             _ => throw new InvalidOperationException("Relatório não encontrado.")
         };
 

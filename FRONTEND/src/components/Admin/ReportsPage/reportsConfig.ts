@@ -106,6 +106,10 @@ const auditEventTypeOptions: ReportFilterOption[] = [
   { label: "Devolução de NF-e entrada (NfeDevolucaoEntrada)", value: "NfeDevolucaoEntrada" },
   { label: "Correção de venda (VendaCorrigida)", value: "VendaCorrigida" },
   { label: "Ruptura de estoque (EstoqueRuptura)", value: "EstoqueRuptura" },
+  { label: "Inventário aberto (InventarioAberto)", value: "InventarioAberto" },
+  { label: "Inventário aplicado (InventarioAplicado)", value: "InventarioAplicado" },
+  { label: "Aplicação de inventário negada (InventarioAplicacaoNegada)", value: "InventarioAplicacaoNegada" },
+  { label: "Inventário cancelado (InventarioCancelado)", value: "InventarioCancelado" },
   { label: "Classificação fiscal IA (ProdutoFiscalIa)", value: "ProdutoFiscalIa" },
 ];
 
@@ -306,6 +310,38 @@ export const reportCatalog: ReportDefinition[] = [
       { id: "faixa", label: "Faixa de vencimento", type: "select", options: faixaValidadeOptions },
       categoriaFilter,
     ],
+  },
+  {
+    id: "reposicao-giro",
+    title: "Sugestão de Reposição (Giro)",
+    description: "Quanto repor de cada produto pela venda média diária, cobertura desejada e estoque mínimo/máximo, por fornecedor.",
+    icon: ShoppingCart,
+    filters: [
+      { id: "dias", label: "Período de vendas (dias)", type: "text" },
+      { id: "cobertura", label: "Cobertura desejada (dias)", type: "text" },
+      categoriaFilter,
+    ],
+  },
+  {
+    id: "curva-abc",
+    title: "Curva ABC de Produtos",
+    description: "Classifica os produtos vendidos em A, B e C pelo faturamento acumulado (período máximo de 365 dias).",
+    icon: TrendingUp,
+    filters: [...periodFilters, categoriaFilter],
+  },
+  {
+    id: "estoque-parado",
+    title: "Estoque Parado",
+    description: "Produtos com estoque e sem venda há X dias, com o valor parado pelo custo.",
+    icon: Boxes,
+    filters: [{ id: "dias", label: "Sem venda há (dias)", type: "text" }],
+  },
+  {
+    id: "perdas",
+    title: "Perdas de Estoque",
+    description: "Baixas por perda no período, por produto e motivo, com quantidade e valor pelo custo.",
+    icon: PackageSearch,
+    filters: [...periodFilters],
   },
   {
     id: "inadimplencia",

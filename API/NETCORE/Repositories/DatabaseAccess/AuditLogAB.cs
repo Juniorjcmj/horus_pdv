@@ -33,6 +33,10 @@ public static class AuditEventTypes
     public const string ClienteAtualizado = "ClienteAtualizado";
     public const string ClienteExcluido = "ClienteExcluido";
     public const string FiadoLimiteAlterado = "FiadoLimiteAlterado";
+    public const string InventarioAberto = "InventarioAberto";
+    public const string InventarioAplicado = "InventarioAplicado";
+    public const string InventarioAplicacaoNegada = "InventarioAplicacaoNegada";
+    public const string InventarioCancelado = "InventarioCancelado";
 }
 
 public class AuditLogAB(Connection connection)
