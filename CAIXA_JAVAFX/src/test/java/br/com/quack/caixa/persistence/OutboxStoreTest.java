@@ -52,6 +52,31 @@ class OutboxStoreTest {
     }
 
     @Test
+    void reenviaFalhaNaPosicaoOriginalEDescartaSemApagar() throws Exception {
+        OutboxStore store = new OutboxStore(new AppPaths(tmp));
+        String primeira = store.enqueue(sale("f1"));
+        Thread.sleep(5);
+        store.enqueue(sale("f2"));
+        store.moveToFailed(primeira, "Produto não encontrado");
+        assertEquals(1, store.failedCount());
+
+        // Reenviar: volta para a fila na frente (seq original), sem o erro.
+        assertTrue(store.retryFailed(primeira));
+        assertEquals(0, store.failedCount());
+        assertEquals("f1", store.listPending().get(0).payload().eventId());
+        assertFalse(store.retryFailed(primeira), "só reenvia o que está em falha");
+
+        // Descartar: sai da fila e dos avisos, mas o registro continua no banco local.
+        store.moveToFailed(primeira, "Recusado de novo");
+        store.discardFailed(primeira, "Ana");
+        assertEquals(0, store.failedCount());
+        assertEquals(1, store.pendingCount());
+        var guardado = LocalDb.at(tmp).outbox("discarded");
+        assertEquals(1, guardado.size());
+        assertTrue(guardado.get(0).error().contains("Descartado por Ana"));
+    }
+
+    @Test
     void sobreviveReabertura() {
         new OutboxStore(new AppPaths(tmp)).enqueue(sale("e4"));
         assertEquals(1, new OutboxStore(new AppPaths(tmp)).pendingCount());

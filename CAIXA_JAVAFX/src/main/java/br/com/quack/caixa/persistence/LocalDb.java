@@ -386,6 +386,20 @@ public final class LocalDb {
                 name);
     }
 
+    /** Volta um item com falha para a fila (mesma posição: seq original). */
+    public synchronized boolean outboxRetry(String name) {
+        int before = queryInt("SELECT COUNT(*) FROM outbox WHERE name = ? AND status = 'failed'", name);
+        updateBoth("UPDATE outbox SET status = 'pending', error = NULL, failed_at = NULL WHERE name = ? AND status = 'failed'",
+                name);
+        return before > 0;
+    }
+
+    /** Descarta um item com falha: sai da fila e dos avisos, mas fica guardado no banco (status discarded) para consulta. */
+    public synchronized void outboxDiscard(String name, String note, String at) {
+        updateBoth("UPDATE outbox SET status = 'discarded', error = COALESCE(error, '') || ? , failed_at = ? "
+                + "WHERE name = ? AND status = 'failed'", note, at, name);
+    }
+
     // ---------------------------------------------------------------- cache
 
     public synchronized void cachePut(String name, String companyId, String data) {

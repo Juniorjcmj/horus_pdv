@@ -74,6 +74,11 @@ public class SyncWorker {
         }
     }
 
+    /** Avisa a tela dos contadores atuais (depois de reenviar/descartar uma falha). */
+    public void notifyCounts() {
+        listener.accept(counts());
+    }
+
     /** Dispara um ciclo imediato (login, F10). */
     public synchronized void triggerNow() {
         if (scheduler != null) {

@@ -175,8 +175,15 @@ public class PdvView extends BorderPane {
 
         sendChip.getStyleClass().addAll("rg-chip", "rg-chip-danger");
         sendChip.setFocusTraversable(false);
-        sendChip.setOnAction(e -> Toasts.info(window(), "As vendas pendentes são reenviadas sozinhas a cada 15 s. "
-                + "Falhas definitivas ficam na pasta outbox/failed."));
+        sendChip.setOnAction(e -> {
+            if (ctx.outbox.failedCount() > 0) {
+                FailedSendsDialog.show(window(), ctx);
+                updateCounts(ctx.sync.counts());
+            } else {
+                Toasts.info(window(), "As vendas feitas sem internet são reenviadas sozinhas a cada 15 s.");
+                ctx.sync.triggerNow();
+            }
+        });
         offlineChip.getStyleClass().addAll("rg-chip", "rg-chip-warn");
 
         HBox chips = new HBox(8, sendChip, offlineChip,
@@ -1139,7 +1146,7 @@ public class PdvView extends BorderPane {
 
     private void updateCounts(SyncWorker.Counts c) {
         if (c.failed() > 0) {
-            sendChip.setText("⚠  " + c.failed() + (c.failed() == 1 ? " falha no envio" : " falhas no envio"));
+            sendChip.setText("⚠  " + c.failed() + (c.failed() == 1 ? " falha no envio" : " falhas no envio") + " — ver");
             show(sendChip, true);
         } else if (c.pending() > 0) {
             sendChip.setText(c.pending() + (c.pending() == 1 ? " pendente de envio" : " pendentes de envio"));

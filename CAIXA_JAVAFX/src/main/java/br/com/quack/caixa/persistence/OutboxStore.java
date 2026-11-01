@@ -32,8 +32,11 @@ public final class OutboxStore {
         }
     }
 
-    /** Venda recusada definitivamente. */
-    public record Failed(String fileName, VendaPayload payload, String error, String failedAt) {
+    /** Item recusado definitivamente pela API: venda (payload) ou operação de caixa (cash). */
+    public record Failed(String fileName, VendaPayload payload, CashEvent cash, String error, String failedAt) {
+        public Failed(String fileName, VendaPayload payload, String error, String failedAt) {
+            this(fileName, payload, null, error, failedAt);
+        }
     }
 
     private final Path root;
@@ -112,17 +115,31 @@ public final class OutboxStore {
         List<Failed> out = new ArrayList<>();
         for (LocalDb.OutboxRow r : db().outbox("failed")) {
             VendaPayload p = null;
-            if (KIND_SALE.equals(r.kind())) {
-                try {
+            CashEvent cash = null;
+            try {
+                if (KIND_SALE.equals(r.kind())) {
                     p = JsonFiles.MAPPER.readValue(r.body(), VendaPayload.class);
-                } catch (JsonProcessingException ignored) {
-                    // conteúdo ilegível guardado só para consulta
+                } else if (KIND_CASH.equals(r.kind())) {
+                    cash = JsonFiles.MAPPER.readValue(r.body(), CashEvent.class);
                 }
+            } catch (JsonProcessingException ignored) {
+                // conteúdo ilegível guardado só para consulta
             }
-            out.add(new Failed(r.name(), p, r.error() == null ? "" : r.error(),
+            out.add(new Failed(r.name(), p, cash, r.error() == null ? "" : r.error(),
                     r.failedAt() == null ? "" : r.failedAt()));
         }
         return out;
+    }
+
+    /** Devolve o item com falha à fila (na posição original) para o próximo envio. */
+    public synchronized boolean retryFailed(String fileName) {
+        return db().outboxRetry(fileName);
+    }
+
+    /** Tira o item com falha da fila sem enviar (fica guardado no banco local como descartado). */
+    public synchronized void discardFailed(String fileName, String who) {
+        db().outboxDiscard(fileName, " | Descartado por " + (who == null || who.isBlank() ? "operador" : who),
+                Instant.now().toString());
     }
 
     public synchronized int pendingCount() {
