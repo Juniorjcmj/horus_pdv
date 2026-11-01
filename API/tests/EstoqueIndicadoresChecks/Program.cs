@@ -5,6 +5,7 @@ using HORUSPDV_API.Models.Requests;
 using HORUSPDV_API.Repositories;
 using HORUSPDV_API.Repositories.DataAccess;
 using HORUSPDV_API.Repositories.DatabaseAccess;
+using HORUSPDV_API.Services.Estoque;
 using HORUSPDV_API.Services.Shared;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -68,6 +69,43 @@ ProdutoAD Novo(string id, string codigo, decimal qtd, decimal custo, decimal ven
     ProductSalePrice = venda, TotalPriceOnProduct = custo * qtd, Lucro = venda - custo, Ncm = "00000000", Cfop = "5102",
     UnidadeComercial = "UN", UnidadeTributavel = "UN", Gtin = "SEM GTIN", CsosnIcms = "102", CstPis = "07", CstCofins = "07",
 };
+
+// ---------- Formulas puras (EstoqueCalculos): exemplos numericos do spec e bordas ----------
+bool Perto(decimal? a, decimal b, decimal tol = 0.01m) => a is { } v && Math.Abs(v - b) <= tol;
+Check(EstoqueCalculos.ConsumoMedio(30, 30) == 1m, "consumo: 30 unidades em 30 dias = 1,0/dia");
+var demandas = Enumerable.Repeat(0m, 20).Concat(Enumerable.Repeat(3m, 10)).ToList(); // 30 vendidas em 10 dos 30 dias
+Check(demandas.Sum() == 30m && EstoqueCalculos.ConsumoMedio(demandas.Sum(), 30) == 1m, "consumo com dias sem venda");
+Check(Perto(EstoqueCalculos.DesvioPadraoDemanda(demandas), 1.414m, 0.001m), "desvio considera os 20 dias com demanda zero (1,414)");
+Check(EstoqueCalculos.DesvioPadraoDemanda(demandas) == EstoqueCalculos.DesvioPadraoDemanda(30m, 90m, 30), "desvio por totais = desvio pela lista");
+Check(EstoqueCalculos.ConsumoMedio(0, 30) == 0m && EstoqueCalculos.DesvioPadraoDemanda(0m, 0m, 30) == 0m && EstoqueCalculos.DesvioPadraoDemanda(Array.Empty<decimal>()) == 0m, "sem historico: consumo 0 e desvio 0");
+Check(EstoqueCalculos.Cobertura(20, 0) is null, "cobertura sem consumo = sem giro (null, nao infinito)");
+Check(EstoqueCalculos.Cobertura(20, 4) == 5m && EstoqueCalculos.Cobertura(-3, 4) == 0m, "cobertura = saldo / consumo; saldo negativo conta 0");
+var giro = EstoqueCalculos.Giro(3000m, 6000m);
+var giroAnual = EstoqueCalculos.GiroAnualizado(giro, 30);
+Check(giro == 0.5m && Perto(giroAnual, 6.0833m, 0.001m) && Perto(EstoqueCalculos.Dio(giroAnual), 60m, 0.01m), "giro 0,5; anualizado ~6,08; DIO ~60 dias");
+Check(EstoqueCalculos.Giro(3000m, null) is null && EstoqueCalculos.Giro(3000m, 0m) is null && EstoqueCalculos.Dio(null) is null && EstoqueCalculos.Dio(0m) is null, "giro sem fotografias = vazio (sem historico)");
+var seg = EstoqueCalculos.EstoqueSeguranca(1.65m, 4m, 9);
+var rop = EstoqueCalculos.PontoPedido(10m, 9, seg);
+var alvo = EstoqueCalculos.EstoqueAlvo(10m, 9, 15, seg);
+Check(Perto(seg, 19.8m) && Perto(rop, 109.8m) && Perto(alvo, 259.8m), "seguranca 19,8; ponto de pedido 109,8; alvo 259,8");
+Check(Perto(EstoqueCalculos.SugestaoCompra(alvo, 80m, 50m, true), 129.8m) && EstoqueCalculos.SugestaoCompra(alvo, 80m, 50m, false) == 130m, "sugestao 129,8 (fracionado) / 130 (unidade inteira, para cima)");
+Check(EstoqueCalculos.SugestaoCompra(alvo, 200m, 100m, false) == 0m, "pedido em transito cobre a necessidade: sugestao 0");
+Check(EstoqueCalculos.SugestaoCompra(100m, -5m, 0m, false) == 100m, "saldo negativo nao aumenta a sugestao alem do alvo");
+Check(EstoqueCalculos.LeadTimeEfetivo(5, 8.2m, 6) == 5 && EstoqueCalculos.LeadTimeEfetivo(null, 8.2m, 6) == 9 && EstoqueCalculos.LeadTimeEfetivo(null, null, 6) == 6 && EstoqueCalculos.LeadTimeEfetivo(null, null, null) == 7, "lead time: produto > real > prometido > 7");
+Check(EstoqueCalculos.LeadTimeEfetivo(null, null, null, 10) == 10, "lead time padrao configuravel");
+Check(EstoqueCalculos.TaxaRupturaPercentual(6, 30) == 20m && EstoqueCalculos.TaxaRupturaPercentual(0, 0) == 0m, "ruptura: 6 de 30 dias = 20%");
+var ac = EstoqueCalculos.Acuracidade([(10m, 10m), (20m, 18m), (5m, 7m)]);
+Check(ac is not null && Perto(ac.AcuraciaPercentual, 94.2857m, 0.001m) && Perto(ac.ItensExatosPercentual, 33.333m, 0.01m), "acuracidade 94,29% e 33,3% dos itens bateram");
+Check(EstoqueCalculos.Acuracidade([]) is null, "acuracidade sem contagens = vazio");
+Check(EstoqueCalculos.ValorExcesso(500m, 2m, 3m, 120) == 780m && EstoqueCalculos.Cobertura(500m, 2m) == 250m, "excesso: cobertura 250 dias, valor R$ 780,00");
+Check(EstoqueCalculos.ValorExcesso(100m, 2m, 3m, 120) == 0m && EstoqueCalculos.ValorExcesso(500m, 0m, 3m, 120) == 0m, "sem excesso / sem consumo = 0");
+Check(EstoqueCalculos.ValorEmEstoque(-4m, 10m) == 0m && EstoqueCalculos.ValorEmEstoque(3m, 10m) == 30m, "valor em estoque: saldo negativo conta 0");
+var abc = EstoqueCalculos.ClassificarAbc([("a", 700m), ("b", 150m), ("c", 100m), ("d", 40m), ("e", 10m), ("f", 0m)]);
+Check(abc["a"] == 'A' && abc["b"] == 'B' && abc["c"] == 'B' && abc["d"] == 'C' && abc["e"] == 'C' && abc["f"] == 'C', "ABC 80/95: a=70%->A, b=85%->B, c=95%->B, d,e,f->C");
+Check(EstoqueCalculos.ClassificarAbc([("x", 0m), ("y", 0m)]).Values.All(c => c == 'C'), "ABC sem valor = tudo C");
+Check(EstoqueCalculos.ClassificarFsn(0, 13) == 'N' && EstoqueCalculos.ClassificarFsn(7, 13) == 'F' && EstoqueCalculos.ClassificarFsn(6, 13) == 'S' && EstoqueCalculos.ClassificarFsn(3, 0) == 'N', "FSN: N sem saida, F >= 50% das semanas, S nos demais");
+Check(Perto(EstoqueCalculos.VariacaoPercentual(120m, 100m), 20m) && EstoqueCalculos.VariacaoPercentual(5m, 0m) is null, "variacao percentual (anterior zero = vazio)");
+Check(EstoqueParametros.Padrao is { JanelaConsumoDias: 30, NivelServicoZ: 1.65m, AbcLimiteA: 80m, AbcLimiteB: 95m, DiasParado: 90, DiasExcesso: 120, CoberturaAlvoDias: 15, LeadTimePadraoDias: 7 }, "parametros padrao do spec");
 
 try
 {
