@@ -1,6 +1,6 @@
 # Design System — Quack (estrutura Rango)
 
-Design system principal do Hórus/Quack PDV: **estrutura Rango** (tokens, tipografia Nunito, componentes
+Design system principal do Hórus/Quack PDV: **estrutura Rango** (tokens, tipografia Inter + Manrope, componentes
 `rg-`, regras) com as **cores da marca Quack** — marinho `#152238`, amarelo `#ffc233` e laranja `#f97316`.
 
 > Fonte da verdade no código: `FRONTEND/src/index.css` (tokens Tailwind `--color-*`, consumidos por todo
@@ -36,18 +36,36 @@ O administrador pode sobrepor a cor de acento por empresa (sistema e frente de c
 ver `EmpresaTema` / `companyTheme`.
 
 ## Tipografia
-Fonte única **Nunito** (Google Fonts), pesos 400/600/700/800, fallback `"Segoe UI", system-ui, sans-serif`.
-`--font-display` e `--font-body` já apontam para Nunito.
+**Inter** no texto e **Manrope** nos títulos e números de destaque (desde 2026-11). Fallback
+`"Segoe UI", system-ui, sans-serif`.
 
-| Estilo | Tamanho/linha | Peso |
-| --- | --- | --- |
-| display | 32/38 | 800 |
-| title | 24/30 | 800 |
-| heading | 18/24 | 700 |
-| body | 16/24 | 400 |
-| body-sm | 14/20 | 400 |
-| label | 14/16 | 700 |
-| caption | 12/16 | 600 |
+- **Web** (`FRONTEND/src/index.css`): Google Fonts — Inter 400/500/600/700 e Manrope 600/700/800.
+  `--font-body` = Inter, `--font-display` = Manrope (h1–h3); `--font-sans` (tokens Rango) = Inter.
+- **Apps JavaFX** (Quack Estoque e Caixa): fontes **estáticas** embutidas em `src/main/resources/fonts/`
+  (o JavaFX não lê fontes variáveis), carregadas pelo `FontLoader` antes de qualquer tela, e a escala em
+  `src/main/resources/css/typography.css` (aplicado antes do tema `quack.css`). Como `-fx-font-weight` só
+  distingue normal/bold, os pesos 500/600 vêm pelo nome da família: `"Inter Medium"`, `"Inter SemiBold"`,
+  `"Manrope SemiBold"`; `"Inter"` + bold e `"Manrope"` + bold usam os arquivos Bold.
+
+| Estilo (classe JavaFX) | Fonte | Tamanho | Cor |
+| --- | --- | --- | --- |
+| h1 (`.h1`) | Manrope Bold | 28 | texto primário |
+| h2 (`.h2`) | Manrope SemiBold | 22 | texto primário |
+| h3 (`.h3`) | Inter SemiBold | 18 | texto primário |
+| subtítulo (`.subtitle`) | Inter Medium | 16 | `#374151` |
+| corpo (`.body`) | Inter Regular | 14 | texto primário |
+| legenda (`.caption`) | Inter Regular | 12 | texto terciário |
+| destaque (`.label-strong`) | Inter SemiBold | 14 | texto primário |
+| KPI valor (`.kpi-value`) | Manrope Bold | 30 | texto primário |
+| KPI rótulo (`.kpi-label`) | Inter Medium, maiúsculas | 12 | texto terciário |
+| número em tabela (`.mono-number`) | Inter, alinhado à direita | — | — |
+
+Cores de texto (nunca preto puro): primária `#1F2937`, secundária `#4B5563`, terciária `#6B7280`,
+desabilitada `#9CA3AF` (`-text-primary/-secondary/-tertiary/-disabled` no JavaFX; `-ink`/`-ink-muted` do tema
+apontam para elas).
+
+**Impressos** (etiquetas, cupom/DANFE, pedido/cotação e relatórios impressos dos apps) continuam em Nunito e
+Roboto Mono: os tamanhos estão ajustados ao papel.
 
 Raios: `--radius-sm` 8px, `--radius-md` 12px, `--radius-pill` 999px. Sombra flutuante: `--shadow-card`.
 
@@ -71,4 +89,4 @@ Raios: `--radius-sm` 8px, `--radius-md` 12px, `--radius-pill` 999px. Sombra flut
 4. Apenas uma ação primária por tela; foco visível 2px.
 5. Componente novo: reutilize tokens, prefixe com `rg-` e documente aqui.
 6. A janela de impressão dos relatórios usa Arial com fallback sans-serif para funcionar sem baixar fontes;
-   essa exceção se limita ao documento impresso. A interface administrativa mantém Nunito.
+   essa exceção se limita ao documento impresso. A interface usa Inter + Manrope.

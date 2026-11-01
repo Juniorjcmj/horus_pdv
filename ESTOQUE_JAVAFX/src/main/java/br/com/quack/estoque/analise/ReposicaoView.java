@@ -211,7 +211,7 @@ public class ReposicaoView extends Tela {
     }
 
     private static javafx.scene.Node cartao(String titulo, String valor, String classes) {
-        javafx.scene.layout.VBox c = new javafx.scene.layout.VBox(2, Ui.texto(titulo, "rg-stat-label"), Ui.texto(valor, "rg-kpi-valor"));
+        javafx.scene.layout.VBox c = new javafx.scene.layout.VBox(2, Ui.texto(titulo.toUpperCase(java.util.Locale.ROOT), "kpi-label", "rg-stat-label"), Ui.texto(valor, "kpi-value", "rg-kpi-valor"));
         c.getStyleClass().add("rg-stat");
         for (String s : classes.split(" ")) {
             c.getStyleClass().add(s);

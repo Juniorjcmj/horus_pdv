@@ -375,7 +375,8 @@ public class InventarioView extends Tela {
 
         private void aviso(String msg, boolean erro) {
             aviso.setText(msg);
-            aviso.setStyle(erro ? "-fx-text-fill: -danger; -fx-font-weight: bold; -fx-font-size: 14px;" : "-fx-text-fill: -success;");
+            aviso.getStyleClass().removeAll("label-strong", "rg-error", "rg-ok-text");
+            aviso.getStyleClass().addAll(erro ? java.util.List.of("label-strong", "rg-error") : java.util.List.of("rg-ok-text"));
             if (erro) {
                 try {
                     java.awt.Toolkit.getDefaultToolkit().beep();

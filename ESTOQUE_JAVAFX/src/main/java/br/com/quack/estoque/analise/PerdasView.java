@@ -207,7 +207,7 @@ public class PerdasView extends Tela {
     }
 
     private static javafx.scene.Node cartao(String titulo, String valor, String classes) {
-        VBox c = new VBox(2, Ui.texto(titulo, "rg-stat-label"), Ui.texto(valor, "rg-kpi-valor"));
+        VBox c = new VBox(2, Ui.texto(titulo.toUpperCase(java.util.Locale.ROOT), "kpi-label", "rg-stat-label"), Ui.texto(valor, "kpi-value", "rg-kpi-valor"));
         c.getStyleClass().add("rg-stat");
         for (String s : classes.split(" ")) {
             c.getStyleClass().add(s);

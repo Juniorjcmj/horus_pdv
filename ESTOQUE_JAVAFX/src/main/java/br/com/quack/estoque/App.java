@@ -62,6 +62,13 @@ public class App extends Application {
             if (!e.isShortcutDown()) {
                 return;
             }
+            // Ctrl + Shift + T: vitrine da tipografia (só em modo dev, -Dquack.dev=true)
+            if (e.isShiftDown() && e.getCode() == javafx.scene.input.KeyCode.T
+                    && br.com.quack.estoque.ui.TypographyPreview.disponivel()) {
+                br.com.quack.estoque.ui.TypographyPreview.abrir(stage);
+                e.consume();
+                return;
+            }
             double atual = br.com.quack.estoque.ui.Zoom.get();
             Double novo = switch (e.getCode()) {
                 case MINUS, SUBTRACT -> atual - 0.05;

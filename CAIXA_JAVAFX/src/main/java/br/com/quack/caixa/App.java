@@ -52,6 +52,14 @@ public class App extends Application {
     private void setRoot(javafx.scene.Parent root) {
         Scene scene = new Scene(root, 1280, 800);
         scene.getStylesheets().setAll(Fx.stylesheets());
+        // Ctrl + Shift + T: vitrine da tipografia (só em modo dev, -Dquack.dev=true)
+        scene.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
+            if (e.isShortcutDown() && e.isShiftDown() && e.getCode() == javafx.scene.input.KeyCode.T
+                    && br.com.quack.caixa.ui.TypographyPreview.disponivel()) {
+                br.com.quack.caixa.ui.TypographyPreview.abrir(stage);
+                e.consume();
+            }
+        });
         stage.setScene(scene);
     }
 

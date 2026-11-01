@@ -30,10 +30,13 @@ public final class Fx {
     }
 
     /**
-     * Fontes embutidas (Nunito e Roboto Mono). O JavaFX desenha o negrito das fontes do sistema com as
-     * letras trocadas nesta configuração do Windows ("Quack" vira "Txdfn"), então nada usa fonte do sistema.
+     * Fontes embutidas. A interface usa Inter + Manrope ({@link FontLoader}); Nunito e Roboto Mono ficam só para os
+     * impressos (etiquetas, cupom, documentos), que têm tamanhos ajustados ao papel. O JavaFX desenha o negrito das
+     * fontes do sistema com as letras trocadas nesta configuração do Windows ("Quack" vira "Txdfn"), então nada usa
+     * fonte do sistema.
      */
     public static void loadFonts() {
+        FontLoader.carregar();
         for (String file : new String[] {"Nunito-Regular.ttf", "Nunito-Bold.ttf", "RobotoMono-Regular.ttf",
                 "RobotoMono-Bold.ttf", "Nunito-ExtraBoldItalic.ttf"}) {
             try (var in = Fx.class.getResourceAsStream("/br/com/quack/caixa/fonts/" + file)) {
@@ -78,8 +81,14 @@ public final class Fx {
 
     /** Folhas de estilo do tema atual (use em toda cena/popup no lugar de stylesheet()). */
     public static java.util.List<String> stylesheets() {
-        return glass ? java.util.List.of(stylesheet(), Fx.class.getResource("glass.css").toExternalForm())
-                : java.util.List.of(stylesheet());
+        // typography.css primeiro (base: Inter/Manrope e escala); o tema ajusta componentes específicos por cima.
+        return glass ? java.util.List.of(typography(), stylesheet(), Fx.class.getResource("glass.css").toExternalForm())
+                : java.util.List.of(typography(), stylesheet());
+    }
+
+    /** Tipografia (Inter + Manrope), comum aos apps JavaFX: /css/typography.css. */
+    public static String typography() {
+        return Fx.class.getResource("/css/typography.css").toExternalForm();
     }
 
     /** Liga/desliga o tema vidro e reaplica em todas as janelas abertas (cenas e popups). */

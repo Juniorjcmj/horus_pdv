@@ -21,8 +21,8 @@ public class InicioView extends Tela {
     }
 
     private VBox cartao(String valor, String rotulo, String estilo, String destino) {
-        Label v = Ui.texto(valor, "rg-stat-value");
-        Label r = Ui.texto(rotulo, "rg-stat-label");
+        Label v = Ui.texto(valor, "kpi-value", "rg-stat-value");
+        Label r = Ui.texto(rotulo.toUpperCase(java.util.Locale.ROOT), "kpi-label", "rg-stat-label");
         r.setWrapText(true);
         VBox c = new VBox(2, v, r);
         c.getStyleClass().addAll("rg-stat", estilo);

@@ -29,7 +29,7 @@
   --highlight-strong: #f97316; /* laranja Quack */
 
   /* tipografia, espaçamento, raios, sombra (Rango) */
-  --font-sans: Nunito, "Segoe UI", system-ui, sans-serif;
+  --font-sans: Inter, "Segoe UI", system-ui, sans-serif;
   --space-1: 4px;
   --space-2: 8px;
   --space-4: 16px;

@@ -31,6 +31,34 @@ Com o caixa aberto a partir de `dist\` o script para sem apagar nada (feche o pr
 Sem o WiX Toolset o resultado é a pasta do programa (app-image). Com o WiX instalado dá para trocar `--type`
 por `msi` no script e gerar um instalador com atalho no menu Iniciar.
 
+## Tipografia (Inter + Manrope)
+
+- Fontes **estáticas** em `src/main/resources/fonts/` (Inter Regular/Medium/SemiBold/Bold e Manrope
+  SemiBold/Bold, com as licenças OFL). O JavaFX não lê fontes variáveis.
+- `ui/FontLoader` carrega todas no início do `start()` (via `Fx.loadFonts()`), antes de qualquer Scene. Se uma
+  falhar, o app segue com a fonte do sistema e avisa no console. Com `-Dquack.debug.fontes=true` (ou
+  `-Dquack.dev=true`) ele imprime a família e o nome reais de cada fonte.
+- Famílias registradas no Windows: `"Inter"` (Regular e Bold), `"Inter Medium"`, `"Inter SemiBold"`,
+  `"Manrope SemiBold"` e `"Manrope"` (Bold). Pesos 500/600 vêm pelo nome da família no CSS, porque
+  `-fx-font-weight` só distingue normal/bold.
+- `src/main/resources/css/typography.css`: cores de texto (`-text-primary/-secondary/-tertiary/-disabled`), a
+  escala (`.h1 .h2 .h3 .subtitle .body .caption .label-strong .kpi-value .kpi-label .mono-number`) e os
+  componentes padrão. Entra em todas as telas por `Fx.stylesheets()`, **antes** do tema `quack.css`, que ajusta
+  tamanhos de componentes específicos.
+- Impressos (etiquetas, cupom/DANFE, documentos impressos) continuam em Nunito/Roboto Mono, ajustados ao papel.
+- Vitrine para conferência: rode com `-Dquack.dev=true` e aperte **Ctrl + Shift + T** (`ui/TypographyPreview`):
+  escala, botões, campos, tabela, gráfico, acentos e o status do carregamento das fontes.
+
+### Renderização do texto
+- Padrão mantido: **LCD (ClearType)**, que o tema Modena do JavaFX já liga nos controles. Comparando lado a lado
+  nesta máquina, o LCD ficou um pouco mais nítido que o cinza e sem franjas coloridas.
+- `-Dprism.lcdtext=false` troca para suavização em cinza: use se aparecerem franjas coloridas (projetor, TV,
+  monitor girado ou ampliação acima de 100%). Em fundo transparente (tema vidro, janelas sem borda) o JavaFX já
+  usa cinza.
+- `-Dprism.text=t2k` **não tem efeito** no JavaFX 21: o rasterizador T2K foi removido do OpenJFX e o app continua
+  no DirectWrite (o log com `-Dprism.debugfonts=true` mostra `DWFactory`).
+- Acentos do português (ã, ç, é, õ) conferidos na vitrine.
+
 ## Dados locais
 
 Pasta `%APPDATA%\QuackCaixa\` (fallback `~/.quack-caixa`):

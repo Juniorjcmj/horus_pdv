@@ -238,7 +238,7 @@ public class DetalheProdutoView extends Tela {
     }
 
     private static javafx.scene.Node kpi(String titulo, String valor) {
-        VBox c = new VBox(2, Ui.texto(titulo, "rg-stat-label"), Ui.texto(valor, "rg-kpi-valor"));
+        VBox c = new VBox(2, Ui.texto(titulo.toUpperCase(java.util.Locale.ROOT), "kpi-label", "rg-stat-label"), Ui.texto(valor, "kpi-value", "rg-kpi-valor"));
         c.getStyleClass().addAll("rg-stat", "rg-kpi");
         return c;
     }

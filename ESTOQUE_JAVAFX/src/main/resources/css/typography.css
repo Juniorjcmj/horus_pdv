@@ -1,0 +1,205 @@
+/*
+ * Tipografia Quack (apps JavaFX): Inter no texto, Manrope nos títulos e números de destaque.
+ * Carregado ANTES do tema (quack.css): aqui fica a base; o tema ajusta tamanhos de componentes específicos.
+ *
+ * Nomes de família registrados pelo JavaFX (fontes estáticas em /fonts, carregadas pelo FontLoader):
+ *   "Inter"            Regular (normal) e Bold (bold)
+ *   "Inter Medium"     peso 500
+ *   "Inter SemiBold"   peso 600
+ *   "Manrope SemiBold" peso 600
+ *   "Manrope"          Bold (700) — é o único arquivo Manrope de família "Manrope"
+ * -fx-font-weight só distingue normal/bold; pesos 500/600 vêm pelo nome da família.
+ */
+
+@font-face {
+    font-family: "Inter";
+    src: url("../fonts/Inter-Regular.ttf");
+}
+
+@font-face {
+    font-family: "Inter";
+    font-weight: bold;
+    src: url("../fonts/Inter-Bold.ttf");
+}
+
+@font-face {
+    font-family: "Inter Medium";
+    src: url("../fonts/Inter-Medium.ttf");
+}
+
+@font-face {
+    font-family: "Inter SemiBold";
+    src: url("../fonts/Inter-SemiBold.ttf");
+}
+
+@font-face {
+    font-family: "Manrope SemiBold";
+    src: url("../fonts/Manrope-SemiBold.ttf");
+}
+
+@font-face {
+    font-family: "Manrope";
+    font-weight: bold;
+    src: url("../fonts/Manrope-Bold.ttf");
+}
+
+.root {
+    /* cores de texto (nunca preto puro) */
+    -text-primary: #1F2937;
+    -text-secondary: #4B5563;
+    -text-tertiary: #6B7280;
+    -text-disabled: #9CA3AF;
+
+    -fx-font-family: "Inter";
+    -fx-font-size: 14px;
+    -fx-text-fill: -text-primary;
+}
+
+/* ---------------------------------------------------------------- escala */
+
+.h1 {
+    -fx-font-family: "Manrope";
+    -fx-font-weight: bold;
+    -fx-font-size: 28px;
+    -fx-text-fill: -text-primary;
+}
+
+.h2 {
+    -fx-font-family: "Manrope SemiBold";
+    -fx-font-weight: normal;
+    -fx-font-size: 22px;
+    -fx-text-fill: -text-primary;
+}
+
+.h3 {
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
+    -fx-font-size: 18px;
+    -fx-text-fill: -text-primary;
+}
+
+.subtitle {
+    -fx-font-family: "Inter Medium";
+    -fx-font-weight: normal;
+    -fx-font-size: 16px;
+    -fx-text-fill: #374151;
+}
+
+.body {
+    -fx-font-family: "Inter";
+    -fx-font-weight: normal;
+    -fx-font-size: 14px;
+    -fx-text-fill: -text-primary;
+}
+
+.caption {
+    -fx-font-family: "Inter";
+    -fx-font-weight: normal;
+    -fx-font-size: 12px;
+    -fx-text-fill: -text-tertiary;
+}
+
+.label-strong {
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
+    -fx-font-size: 14px;
+    -fx-text-fill: -text-primary;
+}
+
+.kpi-value {
+    -fx-font-family: "Manrope";
+    -fx-font-weight: bold;
+    -fx-font-size: 30px;
+    -fx-text-fill: -text-primary;
+}
+
+.kpi-label {
+    -fx-font-family: "Inter Medium";
+    -fx-font-weight: normal;
+    -fx-font-size: 12px;
+    -fx-text-fill: -text-tertiary;
+    /* maiúsculas: o JavaFX não tem text-transform; quem usa a classe passa o texto em maiúsculas (Ui/Fx). */
+}
+
+.mono-number,
+.table-cell.mono-number {
+    -fx-font-family: "Inter";
+    -fx-alignment: CENTER-RIGHT;
+}
+
+.text-secondary {
+    -fx-text-fill: -text-secondary;
+}
+
+.text-tertiary {
+    -fx-text-fill: -text-tertiary;
+}
+
+/* ---------------------------------------------------------------- componentes padrão */
+
+.button {
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
+    -fx-font-size: 14px;
+}
+
+.table-view .column-header .label {
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
+    -fx-font-size: 13px;
+    -fx-text-fill: -text-secondary;
+}
+
+.table-cell {
+    -fx-font-family: "Inter";
+    -fx-font-size: 13px;
+    -fx-text-fill: -text-primary;
+}
+
+.text-field,
+.text-area,
+.combo-box,
+.combo-box .list-cell,
+.date-picker .text-field,
+.choice-box {
+    -fx-font-family: "Inter";
+    -fx-font-size: 14px;
+    -fx-text-fill: -text-primary;
+}
+
+.text-field:disabled,
+.label:disabled,
+.button:disabled {
+    -fx-text-fill: -text-disabled;
+}
+
+.menu-item .label,
+.context-menu .label {
+    -fx-font-family: "Inter";
+    -fx-font-size: 14px;
+}
+
+.tab .tab-label {
+    -fx-font-family: "Inter Medium";
+    -fx-font-size: 14px;
+}
+
+.tooltip {
+    -fx-font-family: "Inter";
+    -fx-font-size: 12px;
+}
+
+.chart-title {
+    -fx-font-family: "Manrope SemiBold";
+    -fx-font-size: 16px;
+    -fx-text-fill: -text-primary;
+}
+
+.axis,
+.axis-label,
+.chart-legend,
+.chart-legend-item {
+    -fx-font-family: "Inter";
+    -fx-font-size: 12px;
+    -fx-tick-label-fill: -text-tertiary;
+}

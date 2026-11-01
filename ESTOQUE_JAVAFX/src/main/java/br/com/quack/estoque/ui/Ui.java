@@ -46,9 +46,9 @@ public final class Ui {
 
     /** Título da página, subtítulo opcional e botões à direita. */
     public static HBox cabecalho(String titulo, String subtitulo, Node... acoes) {
-        VBox textos = new VBox(2, texto(titulo, "rg-page-title"));
+        VBox textos = new VBox(2, texto(titulo, "h2", "rg-page-title"));
         if (subtitulo != null && !subtitulo.isBlank()) {
-            Label s = texto(subtitulo, "rg-page-sub");
+            Label s = texto(subtitulo, "text-secondary", "rg-page-sub");
             s.setWrapText(true);
             textos.getChildren().add(s);
         }
@@ -237,6 +237,7 @@ public final class Ui {
     public static <T> TableColumn<T, String> colNum(TableView<T> t, String titulo, Function<T, String> f, double largura) {
         TableColumn<T, String> c = col(t, titulo, f, largura);
         c.setStyle("-fx-alignment: CENTER-RIGHT;");
+        c.getStyleClass().add("mono-number");
         ajustar(c, Math.max(50, largura * 0.8), null);
         c.setMaxWidth(largura + 40);
         return c;

@@ -1,4 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap");
+/* Tipografia Quack: Inter (texto) + Manrope (títulos e números de destaque). Ver docs/design-system.md. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap");
 
 /* =====================================================
    Theme - 
@@ -11,8 +12,8 @@
 @import "./styles/components.css";
 
 @theme {
-  --font-display: "Nunito", "Segoe UI", system-ui, sans-serif;
-  --font-body: "Nunito", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Manrope", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
 
   /* cores base — marca Quack sobre a estrutura Rango (marinho + amarelo + laranja) */
   --color-primary: #dc2626; /* erro/perigo */

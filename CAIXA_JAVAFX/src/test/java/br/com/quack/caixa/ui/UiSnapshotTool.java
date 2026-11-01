@@ -42,6 +42,16 @@ public final class UiSnapshotTool {
         ctx.catalog.load();
         CaixaStatusDto st = ctx.caixa.status().status();
         if (!st.canSell()) {
+            // Caixa de teste esquecido aberto (outra sessão/terminal): fecha antes de abrir um novo.
+            if (st.currentSession() != null) {
+                try {
+                    String esperado = st.currentSession().expectedCashAmount();
+                    ctx.caixa.fechar(esperado == null || esperado.isBlank() ? "0,00" : esperado, "snapshot",
+                            "fechamento automático da ferramenta de imagens");
+                } catch (RuntimeException e) {
+                    System.err.println("Não fechou o caixa anterior: " + e.getMessage());
+                }
+            }
             ctx.caixa.abrir("100,00");
             st = ctx.caixa.status().status();
         }

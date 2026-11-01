@@ -243,9 +243,9 @@ public class DashboardView extends Tela {
     private static Node cartao(JsonNode k) {
         String unidade = k.path("unidade").asText("");
         boolean vazio = k.path("valor").isNull();
-        Label titulo = Ui.texto(k.path("titulo").asText(), "rg-stat-label");
+        Label titulo = Ui.texto(k.path("titulo").asText().toUpperCase(java.util.Locale.ROOT), "kpi-label", "rg-stat-label");
         titulo.setWrapText(true);
-        Label valor = Ui.texto(vazio ? "—" : AnaliseFmt.valor(unidade, k.path("valor")), "rg-kpi-valor");
+        Label valor = Ui.texto(vazio ? "—" : AnaliseFmt.valor(unidade, k.path("valor")), "kpi-value", "rg-kpi-valor");
         VBox c = new VBox(2, titulo, valor);
         if (vazio && !k.path("motivo").isNull()) {
             c.getChildren().add(Ui.muted(k.path("motivo").asText()));

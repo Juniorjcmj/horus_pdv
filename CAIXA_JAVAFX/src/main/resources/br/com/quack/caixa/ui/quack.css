@@ -10,8 +10,8 @@
     -on-dark: #ffffff;
     -surface-muted: #f5f6f8;
     -border: #e5e7eb;
-    -ink: #152238;
-    -ink-muted: #5a6472;
+    -ink: -text-primary; /* tipografia: #1F2937 */
+    -ink-muted: -text-secondary; /* tipografia: #4B5563 */
     -success: #2e7d4f;
     -danger: #dc2626;
     -brand-soft: #22365a;
@@ -25,7 +25,7 @@
     -sky: #2ebff4;
     -sky-soft: #e3f1fa;
 
-    -fx-font-family: "Nunito", "Arial", sans-serif;
+    -fx-font-family: "Inter", "System";
     -fx-font-size: 14px;
     -fx-background-color: -surface-muted;
     -fx-text-fill: -ink;
@@ -41,7 +41,8 @@
 
 .rg-title {
     -fx-font-size: 22px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope";
+    
 }
 
 .rg-topbar {
@@ -57,14 +58,16 @@
 
 .rg-brand {
     -fx-font-size: 20px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope";
+    
     -fx-text-fill: -highlight !important;
 }
 
 .rg-pill {
     -fx-padding: 4 12 4 12;
     -fx-background-radius: 12;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-pill-ok {
@@ -104,7 +107,8 @@
 
 .rg-total-value {
     -fx-font-size: 44px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope";
+    
     -fx-text-fill: -highlight !important;
 }
 
@@ -142,7 +146,8 @@
 .rg-btn-primary {
     -fx-background-color: -brand;
     -fx-text-fill: -on-dark;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-border-color: -brand;
 }
 
@@ -157,7 +162,8 @@
 .rg-btn-accent {
     -fx-background-color: -highlight;
     -fx-text-fill: -ink;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-border-color: -highlight;
 }
 
@@ -194,7 +200,8 @@
 }
 
 .table-view .column-header .label {
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-text-fill: -ink-muted;
 }
 
@@ -236,7 +243,8 @@
     -fx-padding: 12 18 12 18;
     -fx-background-radius: 10;
     -fx-text-fill: -on-dark;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-toast-success {
@@ -278,7 +286,8 @@
 
 .rg-header-title {
     -fx-text-fill: -on-dark;
-    -fx-font-family: "Nunito ExtraBold";
+    -fx-font-family: "Manrope";
+    -fx-font-weight: bold;
     -fx-font-size: 23px;
     -fx-font-style: italic;
 }
@@ -297,7 +306,8 @@
 .rg-header-clock {
     -fx-text-fill: -on-dark;
     -fx-font-size: 17px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-chip {
@@ -307,7 +317,8 @@
     -fx-background-radius: 6;
     -fx-text-fill: -on-dark;
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-padding: 5 10 5 10;
 }
 
@@ -334,7 +345,8 @@
 
 .rg-side-label {
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-text-fill: -ink;
 }
 
@@ -353,7 +365,8 @@
 }
 
 .rg-field-strong {
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-text-fill: -ink;
     -fx-border-color: -border-strong;
 }
@@ -373,7 +386,8 @@
 .rg-mini-label {
     -fx-font-size: 10px;
     -fx-text-fill: -ink-muted;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-mini-muted {
@@ -383,11 +397,13 @@
 
 .rg-volumes {
     -fx-font-size: 18px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope";
+    
 }
 
 .rg-customer-name {
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-image-box {
@@ -425,7 +441,8 @@
 }
 
 .rg-info-strong {
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-status-bar {
@@ -495,7 +512,8 @@
 
 .rg-product-title {
     -fx-font-size: 22px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope";
+    
     -fx-text-fill: -ink;
 }
 
@@ -557,7 +575,8 @@
 .rg-subtotal-value {
     -fx-text-fill: -on-dark;
     -fx-font-size: 26px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope";
+    
 }
 
 .rg-action-row {
@@ -566,7 +585,8 @@
 
 .rg-btn-action {
     -fx-font-size: 13px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-padding: 9 12 9 12;
 }
 
@@ -574,7 +594,8 @@
     -fx-background-color: -success;
     -fx-border-color: -success;
     -fx-text-fill: -on-dark;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-btn-success:hover {
@@ -585,7 +606,8 @@
     -fx-background-color: -danger;
     -fx-border-color: -danger;
     -fx-text-fill: -on-dark;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-btn-danger-fill:hover {
@@ -610,11 +632,13 @@
 }
 
 .rg-suggest-name {
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-suggest-price {
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-text-fill: -success;
 }
 
@@ -644,7 +668,8 @@
 
 .rg-modal-title {
     -fx-font-size: 17px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-modal-subtitle {
@@ -693,7 +718,8 @@
 
 .rg-pay-sum-value {
     -fx-font-size: 13px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-pay-card {
@@ -706,7 +732,8 @@
 
 .rg-pay-change-title {
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-text-fill: -ink-muted;
 }
 
@@ -723,7 +750,8 @@
 
 .rg-pay-form-title {
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-text-fill: -ink-muted;
 }
 
@@ -776,7 +804,8 @@
 
 .rg-pay-tile:selected .rg-tile-name {
     -fx-text-fill: -on-dark;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-pay-tile:selected .rg-tile-key {
@@ -798,7 +827,8 @@
 
 .rg-pay-part-text {
     -fx-font-size: 12px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-bill {
@@ -823,7 +853,8 @@
 
 .rg-cash-card-title {
     -fx-font-size: 12px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-cash-line {
@@ -832,7 +863,8 @@
 
 .rg-cash-line-strong {
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-cash-btn {
@@ -856,7 +888,8 @@
     -fx-background-color: -brand;
     -fx-border-color: -brand;
     -fx-text-fill: -on-dark;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-cash-btn-primary:hover {
@@ -887,7 +920,8 @@
     -fx-background-radius: 10;
     -fx-padding: 2 8 2 8;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .label.rg-badge-ok {
@@ -933,11 +967,13 @@
 
 .label.rg-sales-dollar {
     -fx-text-fill: -success;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope";
+    
 }
 
 .rg-sales-stat-value {
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope";
+    
 }
 
 .label.rg-sales-money {
@@ -958,7 +994,8 @@
     -fx-background-color: -brand;
     -fx-border-color: -brand;
     -fx-text-fill: -on-dark;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-sales-scroll, .rg-sales-scroll > .viewport {
@@ -985,11 +1022,13 @@
 }
 
 .rg-sale-number {
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-sale-total {
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-font-size: 14px;
 }
 
@@ -1100,19 +1139,22 @@
 .rg-auth-brand-name {
     -fx-text-fill: -on-dark;
     -fx-font-size: 17px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope";
+    
 }
 
 .rg-auth-brand-tag {
     -fx-text-fill: rgba(255, 255, 255, 0.8);
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-auth-headline {
     -fx-text-fill: -on-dark;
     -fx-font-size: 26px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope";
+    
 }
 
 .rg-auth-brand-foot {
@@ -1128,7 +1170,8 @@
 
 .rg-auth-title {
     -fx-font-size: 22px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Manrope SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-auth-sub {
@@ -1159,7 +1202,8 @@
 
 .rg-auth-link, .rg-auth-link-small {
     -fx-text-fill: -ink;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-border-color: transparent;
     -fx-padding: 0;
 }
@@ -1180,7 +1224,8 @@
     -fx-background-color: -brand;
     -fx-text-fill: -on-dark;
     -fx-font-size: 14px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-background-radius: 10;
     -fx-border-color: -brand;
     -fx-border-radius: 10;
@@ -1219,7 +1264,8 @@
 
 .label.rg-price-overridden {
     -fx-text-fill: -highlight-strong;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-badge-price {
@@ -1231,7 +1277,8 @@
 .rg-badge-price .label {
     -fx-text-fill: -highlight-strong;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .rg-badge-undo {
@@ -1248,18 +1295,21 @@
     -fx-padding: 1 6 1 6;
     -fx-text-fill: -success;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .label.rg-po-product {
     -fx-font-size: 14px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 .text-field.rg-po-price {
     -fx-alignment: center-right;
     -fx-font-size: 18px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
 }
 
 /* Item escolhido dentro da caixa de seleção: sem o fundo de "linha selecionada". */
@@ -1337,7 +1387,8 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-font-size: 12px;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-text-fill: -ink-muted;
     -fx-padding: 6 10 6 10;
 }
@@ -1398,7 +1449,8 @@
 
 .label.rg-corr-removed-total {
     -fx-text-fill: -danger;
-    -fx-font-weight: bold;
+    -fx-font-family: "Inter SemiBold";
+    -fx-font-weight: normal;
     -fx-strikethrough: true;
 }
 
