@@ -18,6 +18,10 @@ public abstract class Tela extends VBox {
 
         /** Recarrega o catálogo em memória (F5). */
         void recarregarCatalogo();
+
+        /** Abre o detalhe de análise de um produto (duplo clique nas tabelas da análise). */
+        default void abrirProduto(String produtoId) {
+        }
     }
 
     protected final AppContext ctx;

@@ -18,7 +18,8 @@ namespace HORUSPDV_API.Controllers.Estoque;
 public class InventarioController(
     InventarioAB inventarioAB,
     HorusSecurityStore securityStore,
-    HorusSecurityOptions securityOptions) : ControllerBase
+    HorusSecurityOptions securityOptions,
+    HORUSPDV_API.Services.Estoque.EstoqueAnaliseCache analiseCache) : ControllerBase
 {
     [HttpPost]
     [HorusAuthorizeRoles("administrador", "gerente", "estoquista")]
@@ -134,6 +135,8 @@ public class InventarioController(
             justificativa, request.ZerarNaoContados);
         if (!r.Sucesso && r.Codigo != "NAO_ENCONTRADO")
             await inventarioAB.RegistrarNegadaAsync(user.CompanyId, id, ator, supervisor.Id, r.Mensagem);
+        // a acuracidade e as divergências da análise passam a incluir este inventário já na próxima consulta
+        if (r.Sucesso) analiseCache.Invalidar(user.CompanyId);
         return Responder(r);
     }
 

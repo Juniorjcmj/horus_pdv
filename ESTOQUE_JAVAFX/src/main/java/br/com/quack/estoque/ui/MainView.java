@@ -33,6 +33,8 @@ public class MainView extends BorderPane implements Tela.Navegador {
     private final Map<String, Item> itens = new LinkedHashMap<>();
     private final Label statusCatalogo = Ui.muted("");
     private String atual;
+    private String anteriorAoDetalhe = "analise-dashboard";
+    private br.com.quack.estoque.analise.DetalheProdutoView detalhe;
 
     public MainView(AppContext ctx, Runnable aoSair) {
         this.ctx = ctx;
@@ -51,6 +53,9 @@ public class MainView extends BorderPane implements Tela.Navegador {
                 new Item("analise-dashboard", "Dashboard", "", true, br.com.quack.estoque.analise.DashboardView::new),
                 new Item("analise-abc", "Curva ABC", "", perfil.relatoriosDeValor(), br.com.quack.estoque.analise.CurvaAbcView::new),
                 new Item("analise-reposicao", "Reposição", "", true, br.com.quack.estoque.analise.ReposicaoView::new),
+                new Item("analise-acuracidade", "Acuracidade", "", true, br.com.quack.estoque.analise.AcuraciaView::new),
+                new Item("analise-perdas", "Perdas e parados", "", true, br.com.quack.estoque.analise.PerdasView::new),
+                new Item("analise-fornecedores", "Fornecedores", "", true, br.com.quack.estoque.analise.FornecedoresView::new),
                 new Item("cadastros", "Cadastros", "", perfil.cadastrarCategoriasEFornecedores(), CadastrosView::new));
 
         VBox menu = new VBox(2);
@@ -160,6 +165,25 @@ public class MainView extends BorderPane implements Tela.Navegador {
         });
         t.ativar();
         atualizarStatus();
+    }
+
+    @Override
+    public void abrirProduto(String produtoId) {
+        if (detalhe == null) {
+            detalhe = new br.com.quack.estoque.analise.DetalheProdutoView(ctx, this, () -> ir(anteriorAoDetalhe));
+        }
+        if (!"analise-produto".equals(atual) && atual != null) {
+            anteriorAoDetalhe = atual;
+        }
+        atual = "analise-produto";
+        conteudo.getChildren().setAll(detalhe);
+        botoes.forEach((k, b) -> b.getStyleClass().remove("rg-nav-btn-active"));
+        detalhe.abrir(produtoId);
+    }
+
+    /** Detalhe de análise aberto agora (para testes). */
+    public br.com.quack.estoque.analise.DetalheProdutoView detalheAberto() {
+        return "analise-produto".equals(atual) ? detalhe : null;
     }
 
     @Override

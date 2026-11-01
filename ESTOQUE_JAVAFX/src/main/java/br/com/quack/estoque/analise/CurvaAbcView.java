@@ -75,6 +75,7 @@ public class CurvaAbcView extends Tela {
         colunas();
         tabela.setMinHeight(220);
         tabela.setPrefHeight(300);
+        TabelasAnalise.duploCliqueAbreProduto(tabela, j -> j.path("produtoId").asText(), nav);
         VBox.setVgrow(tabela, Priority.ALWAYS);
 
         getChildren().addAll(

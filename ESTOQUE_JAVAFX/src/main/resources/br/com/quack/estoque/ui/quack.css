@@ -1933,3 +1933,48 @@
 .table-row-cell.rg-linha-critico {
     -fx-background-color: -brand-tint;
 }
+
+/* ---- Detalhe do produto: linhas de referência do saldo ---- */
+.rg-chart .chart-series-line.rg-ref-min {
+    -fx-stroke: -danger;
+    -fx-stroke-dash-array: 6 5;
+    -fx-stroke-width: 1.5px;
+}
+
+.rg-chart .chart-series-line.rg-ref-rop {
+    -fx-stroke: -highlight-strong;
+    -fx-stroke-dash-array: 6 5;
+    -fx-stroke-width: 1.5px;
+}
+
+.rg-chart .chart-series-line.rg-ref-max {
+    -fx-stroke: -success;
+    -fx-stroke-dash-array: 6 5;
+    -fx-stroke-width: 1.5px;
+}
+
+.rg-chart .default-color1.chart-bar {
+    -fx-bar-fill: -highlight-strong;
+}
+
+.rg-chart .default-color2.chart-bar {
+    -fx-bar-fill: -sky;
+}
+
+.rg-chart .default-color3.chart-bar {
+    -fx-bar-fill: -success;
+}
+
+.rg-chart .default-color4.chart-bar {
+    -fx-bar-fill: -danger;
+}
+
+.rg-chart .default-color5.chart-bar {
+    -fx-bar-fill: -ink-muted;
+}
+
+.rg-campo-contagem {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-alignment: center-right;
+}

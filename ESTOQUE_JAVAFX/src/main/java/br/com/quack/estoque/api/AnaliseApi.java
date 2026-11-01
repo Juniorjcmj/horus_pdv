@@ -37,4 +37,20 @@ public class AnaliseApi {
         body.put("observacao", observacao);
         return api.send("POST", "/api/Estoque/analise/reposicao/pedidos", body, ApiClient.LONG_TIMEOUT);
     }
+
+    /** Detalhe de um produto: {dados:{produto, kpis, series}, ...}. */
+    public JsonNode produto(String produtoId, FiltrosAnalise filtros) {
+        return bloco("produto/" + ApiClient.q(produtoId), filtros);
+    }
+
+    /** Extrato paginado do produto no período: {total, pagina, paginas, itens[]}. */
+    public JsonNode extrato(String produtoId, FiltrosAnalise filtros, int pagina, int tamanho) {
+        return api.send("GET", "/api/Estoque/analise/produto/" + ApiClient.q(produtoId) + "/extrato" + filtros.query()
+                + "&pagina=" + pagina + "&tamanho=" + tamanho, null, ApiClient.LONG_TIMEOUT);
+    }
+
+    /** Lista do dia da contagem cíclica: {itensPorDia, periodicidade, itens[]}. */
+    public JsonNode contagemCiclica() {
+        return api.send("GET", "/api/Estoque/analise/contagem-ciclica", null, ApiClient.LONG_TIMEOUT);
+    }
 }

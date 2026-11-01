@@ -74,6 +74,14 @@ public class ReposicaoView extends Tela {
         tabela.setEditable(true);
         colunas();
         tabela.setRowFactory(t -> new TableRow<>() {
+            {
+                setOnMouseClicked(e -> {
+                    if (e.getButton() == javafx.scene.input.MouseButton.PRIMARY && e.getClickCount() == 2 && !isEmpty() && nav != null) {
+                        nav.abrirProduto(getItem().j.path("produtoId").asText());
+                    }
+                });
+            }
+
             @Override
             protected void updateItem(Linha item, boolean empty) {
                 super.updateItem(item, empty);

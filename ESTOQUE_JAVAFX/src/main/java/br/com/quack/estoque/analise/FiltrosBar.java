@@ -30,6 +30,8 @@ public final class FiltrosBar extends FlowPane {
     private final ComboBox<CadastroApi.Categoria> categoria = new ComboBox<>();
     private final ComboBox<CadastroApi.Fornecedor> fornecedor = new ComboBox<>();
     private final Runnable aoAplicar;
+    private javafx.scene.layout.VBox categoriaBox;
+    private javafx.scene.layout.VBox fornecedorBox;
     private boolean ajustando;
 
     public FiltrosBar(AppContext ctx, FiltrosAnalise filtros, Runnable aoAplicar) {
@@ -70,13 +72,20 @@ public final class FiltrosBar extends FlowPane {
         if (comPeriodo) {
             getChildren().addAll(Ui.rotulado("Período", atalho), Ui.rotulado("De", de), Ui.rotulado("Até", ate));
         }
-        getChildren().addAll(Ui.rotulado("Categoria", categoria), Ui.rotulado("Fornecedor", fornecedor));
+        categoriaBox = Ui.rotulado("Categoria", categoria);
+        fornecedorBox = Ui.rotulado("Fornecedor", fornecedor);
+        getChildren().addAll(categoriaBox, fornecedorBox);
         if (comPeriodo) {
             getChildren().add(Ui.rotulado(" ", comparar));
         }
         getChildren().add(Ui.rotulado(" ", atualizar));
         mostrarDatas();
         comparar.setSelected(filtros.comparar);
+    }
+
+    /** Esconde categoria e fornecedor (telas de um produto só). */
+    public void somentePeriodo() {
+        getChildren().removeAll(categoriaBox, fornecedorBox);
     }
 
     private static <T> ListCell<T> celula(StringConverter<T> c) {

@@ -34,7 +34,7 @@ class TelasE2ETest {
     void todasAsTelasDoAdministrador() throws Exception {
         System.setProperty("quack.home", tmp.resolve("home-admin").toString());
         List<String> ok = UiSnapshotTool.executar(pasta("admin"), System.getProperty("quack.e2e.url"), "caixa@teste.com", "Teste@12345", "");
-        assertEquals(12, ok.size(), "telas renderizadas: " + ok);
+        assertEquals(15, ok.size(), "telas renderizadas: " + ok);
     }
 
     @Test
@@ -43,7 +43,7 @@ class TelasE2ETest {
         // o usuário estoquista é criado pelos outros testes E2E (E2eSupport.comoEstoquista); cria aqui também se faltar
         br.com.quack.estoque.E2eSupportAcesso.garantirEstoquista(tmp.resolve("home-prep"));
         List<String> ok = UiSnapshotTool.executar(pasta("estoquista"), System.getProperty("quack.e2e.url"), "estoquista@teste.com", "Estoq@12345", "");
-        assertTrue(ok.size() >= 10, "telas renderizadas: " + ok);
+        assertTrue(ok.size() >= 13, "telas renderizadas: " + ok);
         assertFalse(ok.contains("cadastros"), "estoquista não tem Cadastros");
     }
 }

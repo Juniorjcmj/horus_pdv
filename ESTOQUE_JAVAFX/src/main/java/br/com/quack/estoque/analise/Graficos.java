@@ -144,6 +144,43 @@ public final class Graficos {
         return chart;
     }
 
+    /**
+     * Barras verticais agrupadas (uma série por nome) ou empilhadas (perdas por motivo, mês a mês). {@code valores.get(s)[c]} é o
+     * valor da série {@code s} na categoria {@code c}; o tooltip mostra categoria, série e valor.
+     */
+    public static XYChart<String, Number> barrasVerticais(List<String> categorias, List<String> series, List<double[]> valores,
+            String unidade, boolean empilhado) {
+        CategoryAxis x = new CategoryAxis(FXCollections.observableArrayList(categorias));
+        NumberAxis y = new NumberAxis();
+        y.setTickLabelFormatter(new javafx.util.StringConverter<>() {
+            @Override
+            public String toString(Number n) {
+                return eixo(n.doubleValue(), unidade);
+            }
+
+            @Override
+            public Number fromString(String s) {
+                return 0;
+            }
+        });
+        XYChart<String, Number> chart = empilhado ? new javafx.scene.chart.StackedBarChart<>(x, y) : new BarChart<>(x, y);
+        chart.setAnimated(false);
+        chart.setLegendVisible(series.size() > 1);
+        chart.getStyleClass().add("rg-chart");
+        for (int s = 0; s < series.size(); s++) {
+            XYChart.Series<String, Number> serie = new XYChart.Series<>();
+            serie.setName(series.get(s));
+            for (int c = 0; c < categorias.size(); c++) {
+                double v = valores.get(s)[c];
+                XYChart.Data<String, Number> d = new XYChart.Data<>(categorias.get(c), v);
+                serie.getData().add(d);
+                dicaNoDado(d, categorias.get(c) + "\n" + series.get(s) + ": " + eixo(v, unidade));
+            }
+            chart.getData().add(serie);
+        }
+        return chart;
+    }
+
     /** Rosca: PieChart com um círculo no meio mostrando o total. */
     public static StackPane rosca(List<Ponto> fatias, String textoCentro) {
         PieChart pie = new PieChart(FXCollections.observableArrayList(

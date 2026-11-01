@@ -39,11 +39,11 @@ acessar a tela.**
 
 ## 5. Etapa 5 — Produto, Acuracidade, Perdas e parados, Fornecedores
 
-- [ ] 5.1 API `produto/{id}`, `produto/{id}/extrato`, `contagem-ciclica`, `acuracidade`, `divergencias`, `perdas`, `parados`, `fornecedores`. Verificar: checks/E2E com a demo.
-- [ ] 5.2 Tela Detalhe do produto (KPIs, saldo diário com mínimo/ponto de pedido/máximo, entradas × saídas por semana, histograma, extrato paginado; abre por duplo clique nas tabelas da análise). Verificar: E2E abre pelo top parados; prints.
-- [ ] 5.3 Tela Acuracidade e contagem cíclica (lista do dia por prioridade A/B/C, campos grandes para bipar/digitar, aplicar como inventário com senha do gerente, linha de acuracidade com meta 98%, divergências). Verificar: E2E gera lista, conta e aplica; acuracidade nova aparece no gráfico.
-- [ ] 5.4 Telas Perdas e parados (barras empilhadas por motivo/mês com alternância qtd/R$, tabela de parados) e Fornecedores (prometido × real, tabela). Verificar: E2E confere totais com a API; prints.
-- [ ] 5.5 Commit da etapa 5.
+- [x] 5.1 API `produto/{id}`, `produto/{id}/extrato`, `contagem-ciclica`, `acuracidade`, `divergencias`, `perdas`, `parados`, `fornecedores`. Verificar: checks/E2E com a demo.
+- [x] 5.2 Tela Detalhe do produto (KPIs, saldo diário com mínimo/ponto de pedido/máximo, entradas × saídas por semana, histograma, extrato paginado; abre por duplo clique nas tabelas da análise). Verificar: E2E abre pelo top parados; prints.
+- [x] 5.3 Tela Acuracidade e contagem cíclica (lista do dia por prioridade A/B/C, campos grandes para bipar/digitar, aplicar como inventário com senha do gerente, linha de acuracidade com meta 98%, divergências). Verificar: E2E gera lista, conta e aplica; acuracidade nova aparece no gráfico.
+- [x] 5.4 Telas Perdas e parados (barras empilhadas por motivo/mês com alternância qtd/R$, tabela de parados) e Fornecedores (prometido × real, tabela). Verificar: E2E confere totais com a API; prints.
+- [x] 5.5 Commit da etapa 5.
 
 ## 6. Etapa 6 — Configurações e entrega
 

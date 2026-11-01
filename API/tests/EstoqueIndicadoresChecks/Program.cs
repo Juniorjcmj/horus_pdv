@@ -247,7 +247,7 @@ try
     }
     async Task Mov(string comp, string prod, string tipo, decimal qtd, decimal custo, DateTime utc) => await Exec(
         "INSERT INTO EstoqueMovimentacoes (Id, CompanyId, ProdutoId, Tipo, Quantidade, EstoqueAnterior, EstoqueNovo, Motivo, UsuarioId, UsuarioNome, CriadoEm, CustoUnitario, OrigemTipo) " +
-        "VALUES (@I, @C, @P, @T, @Q, 0, 0, N'check', 'u', 'u', @D, @K, 'venda')",
+        "VALUES (@I, @C, @P, @T, @Q, 100, CASE WHEN @T IN ('saida_venda','saida','perda','uso_interno') THEN 100 - @Q ELSE 100 + @Q END, N'check', 'u', 'u', @D, @K, 'venda')",
         ("@I", Guid.NewGuid().ToString("N")), ("@C", comp), ("@P", prod), ("@T", tipo), ("@Q", qtd), ("@D", utc), ("@K", custo));
     async Task Snap(string comp, string prod, int diasAtras, decimal qtd, decimal custo) => await Exec(
         "INSERT INTO EstoqueSnapshotDiario (CompanyId, DepositoId, Data, ProdutoId, Quantidade, Valor, CustoUnitario) VALUES (@C, 'loja', @D, @P, @Q, @V, @K)",
@@ -356,6 +356,33 @@ try
     Check(Cel('A', 'F') == 1 && Cel('B', 'S') == 2 && Cel('C', 'S') == 2 && Cel('C', 'N') == 1, "matriz: k1=A/F, k2,k3=B/S, k4,k5=C/S, k6=C/N");
     Check(matriz.First(c => c.Abc == 'B' && c.Fsn == 'S').ValorEstoque == 2m, "valor em estoque da celula B/S (2 produtos de R$ 1,00)");
     Check((await classif.EmpresasDesatualizadasAsync()).All(e => e != company2), "empresa recem classificada nao aparece como desatualizada");
+
+    // ---------- Etapa 5: detalhe do produto, extrato, contagem ciclica, acuracidade, divergencias e perdas ----------
+    var det = new EstoqueAnaliseDetalheAB(connection);
+    var f30c = FiltroAnalise.UltimosDias(30);
+    var ser = await det.SeriesDoProdutoAsync(company, "d-1", f30c);
+    Check(ser.SaldoDiario.Count == 5 && ser.SaldoDiario.Count(s => s.Quantidade == 0) == 2, "serie do produto: 5 fotografias, 2 com saldo zero");
+    Check(ser.DemandaDiaria.Count == 30 && ser.DemandaDiaria.Sum() == 30m && ser.DemandaDiaria.Count(d => d == 3m) == 10 && ser.DemandaDiaria.Count(d => d == 0m) == 20, "demanda diaria: 30 dias, 10 com 3 unidades e 20 zeros");
+    Check(ser.Semanal.Sum(s => s.Saidas) == 30m && ser.Semanal.Sum(s => s.Entradas) == 70m && ser.Semanal.Count == 5, "entradas x saidas por semana: 70 entradas (cadastro), 30 saidas, 5 semanas");
+    var (totalExtrato, paginaExtrato) = await det.ExtratoAsync(company, "d-1", f30c, 1, 5);
+    Check(totalExtrato == 11 && paginaExtrato.Count == 5 && paginaExtrato.Zip(paginaExtrato.Skip(1)).All(p => p.First.CriadoEmUtc >= p.Second.CriadoEmUtc), "extrato: 11 movimentacoes, pagina de 5 do mais recente ao mais antigo");
+    var (_, ultimaPagina) = await det.ExtratoAsync(company, "d-1", f30c, 3, 5);
+    Check(ultimaPagina.Count == 1, "extrato: a terceira pagina tem 1 item");
+    var classD1 = await det.ClassificacaoDoProdutoAsync(company, "d-1");
+    Check(classD1 is null, "produto ainda nao classificado: sem classe");
+    var ciclica = await det.ContagemCiclicaAsync(company, EstoqueParametros.Padrao with { ContagemItensDia = 3 });
+    Check(ciclica.Count == 3 && ciclica.All(i => i.ProdutoId != "p-a" && i.UltimaContagemUtc is null), "contagem ciclica: 3 itens nunca contados; p-a (contado hoje) fora da lista");
+    var acPontos = await det.AcuracidadePorInventarioAsync(company, f30c);
+    Check(acPontos.Count == 1 && acPontos[0].Itens == 1 && acPontos[0].Acuracidade < 100m && acPontos[0].ItensExatosPercentual == 0m, "acuracidade por inventario: 1 contagem com divergencia");
+    var diverg = await det.DivergenciasAsync(company, f30c);
+    Check(diverg.Count == 1 && diverg[0].Delta == -2m && diverg[0].ValorDelta == -8m, "divergencias: falta de 2 unidades (R$ 8,00 ao custo 4)");
+    var perdas = await det.PerdasAsync(company, f30c);
+    Check(perdas.Any(x => x.Motivo == "Quebra" && x.Quantidade == 2m && x.Valor == 8m), "perdas: motivo Quebra, 2 unidades, R$ 8,00");
+    Check(perdas.Any(x => x.Motivo == "Inventário (falta)" && x.Quantidade == 2m), "perdas incluem a falta de inventario");
+    Check(perdas.Any(x => x.Motivo == "Ajuste negativo" && x.Quantidade == 1m), "perdas incluem o ajuste negativo (edicao de cadastro para menos)");
+    Check(perdas.All(x => x.Motivo != "Consumo") , "uso interno nao e perda");
+    var perdasCat = await det.PerdasAsync(company, FiltroAnalise.UltimosDias(30, categoriaId: "c-pai-" + company));
+    Check(perdasCat.Count == 0, "perdas respeitam o filtro de categoria");
 
     // Curva ABC do periodo (base CMV): ordenada, com participacao, acumulado, classe e FSN
     var curva = await classif.CurvaAbcAsync(company2, FiltroAnalise.UltimosDias(90), EstoqueParametros.Padrao with { AbcBase = "cmv" });

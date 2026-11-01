@@ -18,7 +18,8 @@ namespace HORUSPDV_API.Controllers.Estoque;
 [Route("api/Estoque/analise")]
 public class EstoqueAnaliseController(
     EstoqueSnapshotAB snapshots, EstoqueIndicadoresAB indicadores, EstoqueConfigAnaliseAB config,
-    EstoqueClassificacaoAB classificacao, EstoqueAnaliseCache cache, OrdemCompraAB ordensCompra) : ControllerBase
+    EstoqueClassificacaoAB classificacao, EstoqueAnaliseCache cache, OrdemCompraAB ordensCompra,
+    EstoqueAnaliseDetalheAB detalhe) : ControllerBase
 {
     private const int MaxPontosSerie = 120;
     private const int MaxDiasPeriodo = 400;
@@ -352,6 +353,232 @@ public class EstoqueAnaliseController(
         return Ok(new ApiResponse<object> { Success = true, Message = $"{criados.Count} pedido(s) em rascunho criado(s).", Data = new { pedidos = criados, ignorados } });
     }
 
+    // ---------- etapa 5: produto, acuracidade, perdas, parados e fornecedores ----------
+
+    /// <summary>Detalhe de um produto: indicadores, saldo diário, entradas x saídas por semana e histograma da demanda diária.</summary>
+    [HttpGet("produto/{id}")]
+    [HorusAuthorizeRoles("administrador", "gerente", "estoquista")]
+    public Task<IActionResult> Produto(string id, [FromQuery] FiltrosQuery q) => Bloco($"produto|{id}", q, async (u, f, p, comValores) =>
+    {
+        var itens = await indicadores.ProdutosAsync(u.CompanyId, f with { CategoriaId = null, FornecedorId = null }, p, HttpContext.RequestAborted);
+        var i = itens.FirstOrDefault(x => x.ProdutoId == id);
+        if (i is null) return null;
+        var series = await detalhe.SeriesDoProdutoAsync(u.CompanyId, id, f, HttpContext.RequestAborted);
+        var classe = await detalhe.ClassificacaoDoProdutoAsync(u.CompanyId, id, HttpContext.RequestAborted);
+        var giro = EstoqueCalculos.GiroAnualizado(EstoqueCalculos.Giro(i.Bruto.Cmv, i.Bruto.EstoqueMedioValor), f.Dias);
+        return (object?)new
+        {
+            periodo = Periodo(f),
+            produto = new { id = i.ProdutoId, codigo = i.Bruto.Codigo, nome = i.Bruto.Nome, unidade = i.Bruto.Unidade, minimo = i.Bruto.Minimo, maximo = i.Bruto.Maximo },
+            kpis = new
+            {
+                saldo = i.Saldo, valorEstoque = comValores ? (decimal?)i.ValorEstoque : null, consumoDia = Math.Round(i.Consumo, 3), desvio = Math.Round(i.Desvio, 3),
+                coberturaDias = i.CoberturaDias is { } c ? (decimal?)Math.Round(c, 1) : null, leadTimeDias = i.LeadTimeDias,
+                estoqueSeguranca = Math.Round(i.EstoqueSeguranca, 3), pontoPedido = Math.Round(i.PontoPedido, 3), estoqueAlvo = Math.Round(i.EstoqueAlvo, 3),
+                sugestao = i.Sugestao, emTransito = i.Bruto.EmTransito, giroAnualizado = giro is { } g ? (decimal?)Math.Round(g, 2) : null,
+                taxaRupturaPercentual = i.Bruto.DiasFotografados > 0 ? (decimal?)Math.Round(i.TaxaRupturaPercentual, 1) : null,
+                diasSemSaida = i.DiasSemSaida, abc = classe?.Abc.ToString(), fsn = classe?.Fsn.ToString(), historicoCurto = i.HistoricoCurto,
+            },
+            series = new
+            {
+                saldoDiario = series.SaldoDiario.Select(s => new { data = s.Data.ToString("yyyy-MM-dd"), quantidade = s.Quantidade }).ToList(),
+                semanal = series.Semanal.Select(s => new { inicio = s.Inicio.ToString("yyyy-MM-dd"), entradas = s.Entradas, saidas = s.Saidas }).ToList(),
+                histograma = Histograma(series.DemandaDiaria),
+            },
+        };
+    });
+
+    /// <summary>Extrato do produto (movimentações do período), paginado. Custo só para gerente/administrador.</summary>
+    [HttpGet("produto/{id}/extrato")]
+    [HorusAuthorizeRoles("administrador", "gerente", "estoquista")]
+    public async Task<IActionResult> Extrato(string id, [FromQuery] FiltrosQuery q, [FromQuery] int pagina = 1, [FromQuery] int tamanho = 50)
+    {
+        if (Usuario() is not { } u) return Sessao();
+        var (filtro, erro) = Filtro(q);
+        if (filtro is null) return BadRequest(Erro(erro!));
+        tamanho = Math.Clamp(tamanho, 1, 200);
+        pagina = Math.Max(1, pagina);
+        var (total, itens) = await detalhe.ExtratoAsync(u.CompanyId, id, filtro, pagina, tamanho, HttpContext.RequestAborted);
+        var comValores = HorusRoles.IsGerenteOuAdmin(u.Role);
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = "Extrato do produto.",
+            Data = new
+            {
+                total, pagina, tamanho, paginas = (int)Math.Ceiling(total / (double)tamanho),
+                itens = itens.Select(m => new
+                {
+                    data = DateTime.SpecifyKind(m.CriadoEmUtc, DateTimeKind.Utc).ToString("o"), tipo = m.Tipo, quantidade = m.Quantidade, anterior = m.Anterior,
+                    novo = m.Novo, custoUnitario = comValores ? m.Custo : null, origemTipo = m.OrigemTipo, origemId = m.OrigemId, motivo = m.Motivo, usuario = m.Usuario,
+                }).ToList(),
+            },
+        });
+    }
+
+    /// <summary>Lista do dia da contagem cíclica (A, B e C pela periodicidade da configuração). Não mostra o saldo do sistema: a contagem é cega.</summary>
+    [HttpGet("contagem-ciclica")]
+    [HorusAuthorizeRoles("administrador", "gerente", "estoquista")]
+    public async Task<IActionResult> ContagemCiclica()
+    {
+        if (Usuario() is not { } u) return Sessao();
+        var parametros = await config.ObterAsync(u.CompanyId, HttpContext.RequestAborted);
+        var lista = await detalhe.ContagemCiclicaAsync(u.CompanyId, parametros, HttpContext.RequestAborted);
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Message = "Contagem cíclica do dia.",
+            Data = new
+            {
+                itensPorDia = parametros.ContagemItensDia,
+                periodicidade = new { a = parametros.ContagemDiasA, b = parametros.ContagemDiasB, c = parametros.ContagemDiasC },
+                itens = lista.Select(i => new
+                {
+                    produtoId = i.ProdutoId, codigo = i.Codigo, nome = i.Nome, unidade = i.Unidade, classe = i.Classe.ToString(),
+                    ultimaContagem = i.UltimaContagemUtc is { } d ? DateTime.SpecifyKind(d, DateTimeKind.Utc).ToString("o") : null, diasDesdeUltima = i.DiasDesdeUltima,
+                }).ToList(),
+            },
+        });
+    }
+
+    /// <summary>Acuracidade de cada inventário aplicado no período, com a meta (padrão 98%) e a do período todo.</summary>
+    [HttpGet("acuracidade")]
+    [HorusAuthorizeRoles("administrador", "gerente", "estoquista")]
+    public Task<IActionResult> Acuracidade([FromQuery] FiltrosQuery q) => Bloco("acuracidade", q, async (u, f, p, comValores) =>
+    {
+        var pontos = await detalhe.AcuracidadePorInventarioAsync(u.CompanyId, f, HttpContext.RequestAborted);
+        var geral = await indicadores.AcuraciaAsync(u.CompanyId, f, HttpContext.RequestAborted);
+        var metas = EstoqueMetas.Efetivas(p.MetasJson);
+        return (object?)new
+        {
+            periodo = Periodo(f), meta = metas["acuracidade"].Verde,
+            atual = geral is null ? null : new { acuracidade = Math.Round(geral.AcuraciaPercentual, 2), itensExatos = Math.Round(geral.ItensExatosPercentual, 1), itens = geral.Itens },
+            pontos = pontos.Select(x => new
+            {
+                inventarioId = x.InventarioId, numero = x.Numero, data = DateTime.SpecifyKind(x.AplicadoEmUtc, DateTimeKind.Utc).ToString("o"),
+                itens = x.Itens, acuracidade = x.Acuracidade, itensExatos = x.ItensExatosPercentual,
+            }).ToList(),
+            vazio = pontos.Count == 0,
+        };
+    });
+
+    /// <summary>Itens com divergência nos inventários aplicados do período. Valor (R$) só para gerente/administrador.</summary>
+    [HttpGet("divergencias")]
+    [HorusAuthorizeRoles("administrador", "gerente", "estoquista")]
+    public Task<IActionResult> Divergencias([FromQuery] FiltrosQuery q) => Bloco("divergencias", q, async (u, f, p, comValores) =>
+    {
+        var lista = await detalhe.DivergenciasAsync(u.CompanyId, f, HttpContext.RequestAborted);
+        return (object?)new
+        {
+            periodo = Periodo(f),
+            sobras = lista.Where(d => d.Delta > 0).Sum(d => d.Delta), faltas = lista.Where(d => d.Delta < 0).Sum(d => -d.Delta),
+            valorSobras = comValores ? (decimal?)lista.Where(d => d.ValorDelta > 0).Sum(d => d.ValorDelta) : null,
+            valorFaltas = comValores ? (decimal?)lista.Where(d => d.ValorDelta < 0).Sum(d => -d.ValorDelta) : null,
+            itens = lista.Take(300).Select(d => new
+            {
+                produtoId = d.ProdutoId, codigo = d.Codigo, nome = d.Nome, inventario = d.Numero,
+                data = DateTime.SpecifyKind(d.AplicadoEmUtc, DateTimeKind.Utc).ToString("o"),
+                sistema = d.SaldoAntes, contado = d.Contado, diferenca = d.Delta, valor = comValores ? (decimal?)d.ValorDelta : null,
+            }).ToList(),
+            vazio = lista.Count == 0,
+        };
+    });
+
+    /// <summary>Perdas por motivo e por mês (quantidade e, para gerente/administrador, valor e % do CMV).</summary>
+    [HttpGet("perdas")]
+    [HorusAuthorizeRoles("administrador", "gerente", "estoquista")]
+    public Task<IActionResult> Perdas([FromQuery] FiltrosQuery q) => Bloco("perdas", q, async (u, f, p, comValores) =>
+    {
+        var movs = await detalhe.PerdasAsync(u.CompanyId, f, HttpContext.RequestAborted);
+        var cmv = EstoqueIndicadoresAB.Consolidar(await indicadores.ProdutosAsync(u.CompanyId, f, p, HttpContext.RequestAborted), f, p).Cmv;
+        var principais = movs.GroupBy(m => m.Motivo).OrderByDescending(g => g.Sum(m => m.Valor)).Take(5).Select(g => g.Key).ToHashSet();
+        string Grupo(string motivo) => principais.Contains(motivo) ? motivo : "Outros";
+        var motivos = movs.GroupBy(m => Grupo(m.Motivo)).Select(g => new
+        {
+            motivo = g.Key, quantidade = g.Sum(m => m.Quantidade), valor = comValores ? (decimal?)g.Sum(m => m.Valor) : null,
+        }).OrderByDescending(m => m.valor ?? m.quantidade).ToList();
+        var meses = movs.GroupBy(m => m.Data.ToString("yyyy-MM")).OrderBy(g => g.Key).Select(g => new
+        {
+            mes = g.Key,
+            motivos = g.GroupBy(m => Grupo(m.Motivo)).Select(x => new { motivo = x.Key, quantidade = x.Sum(m => m.Quantidade), valor = comValores ? (decimal?)x.Sum(m => m.Valor) : null }).ToList(),
+        }).ToList();
+        var valorTotal = movs.Sum(m => m.Valor);
+        return (object?)new
+        {
+            periodo = Periodo(f),
+            totais = new
+            {
+                quantidade = movs.Sum(m => m.Quantidade), ocorrencias = movs.Count,
+                valor = comValores ? (decimal?)valorTotal : null,
+                percentualCmv = comValores && cmv > 0 ? (decimal?)Math.Round(100m * valorTotal / cmv, 2) : null,
+            },
+            motivos, meses, vazio = movs.Count == 0,
+        };
+    });
+
+    /// <summary>Todos os produtos parados (sem saída além do limite de dias da configuração), do maior valor ao menor (estoquista: do mais antigo).</summary>
+    [HttpGet("parados")]
+    [HorusAuthorizeRoles("administrador", "gerente", "estoquista")]
+    public Task<IActionResult> Parados([FromQuery] FiltrosQuery q) => Bloco("parados", q, async (u, f, p, comValores) =>
+    {
+        var itens = await indicadores.ProdutosAsync(u.CompanyId, f, p, HttpContext.RequestAborted);
+        var parados = itens.Where(i => i.Parado).ToList();
+        var ordenados = comValores ? parados.OrderByDescending(i => i.ValorEstoque) : parados.OrderByDescending(i => i.DiasSemSaida ?? int.MaxValue);
+        return (object?)new
+        {
+            periodo = Periodo(f), diasParado = p.DiasParado, total = parados.Count,
+            valorTotal = comValores ? (decimal?)parados.Sum(i => i.ValorEstoque) : null,
+            itens = ordenados.Take(500).Select(i => new
+            {
+                produtoId = i.ProdutoId, codigo = i.Bruto.Codigo, nome = i.Bruto.Nome, saldo = i.Saldo, diasSemSaida = i.DiasSemSaida,
+                ultimaSaida = i.Bruto.UltimaSaidaUtc is { } d ? DateTime.SpecifyKind(d, DateTimeKind.Utc).ToString("o") : null,
+                valor = comValores ? (decimal?)i.ValorEstoque : null,
+            }).ToList(),
+            vazio = parados.Count == 0,
+        };
+    });
+
+    /// <summary>Fornecedores: lead time prometido x real, pedidos recebidos, % no prazo e produtos vinculados.</summary>
+    [HttpGet("fornecedores")]
+    [HorusAuthorizeRoles("administrador", "gerente", "estoquista")]
+    public Task<IActionResult> Fornecedores([FromQuery] FiltrosQuery q) => Bloco("fornecedores", q, async (u, f, p, comValores) =>
+    {
+        var lead = await indicadores.LeadTimeFornecedoresAsync(u.CompanyId, HttpContext.RequestAborted);
+        var produtos = await indicadores.AgregarAsync(u.CompanyId, f with { CategoriaId = null, FornecedorId = null }, HttpContext.RequestAborted);
+        var porFornecedor = produtos.Where(x => x.FornecedorId is not null).GroupBy(x => x.FornecedorId!).ToDictionary(g => g.Key, g => g.Count());
+        return (object?)new
+        {
+            fornecedores = lead.Select(l => new
+            {
+                fornecedorId = l.FornecedorId, nome = l.Nome, prometidoDias = l.PrometidoDias, realDias = l.MediaDias, desvioDias = l.DesvioDias,
+                pedidos = l.Pedidos, noPrazoPercentual = l.NoPrazoPercentual, produtos = porFornecedor.GetValueOrDefault(l.FornecedorId),
+                atrasoDias = l.MediaDias is { } r && l.PrometidoDias is { } pr ? (decimal?)Math.Round(r - pr, 1) : null,
+            }).OrderByDescending(x => x.pedidos).ThenBy(x => x.nome).ToList(),
+            vazio = lead.Count == 0,
+        };
+    });
+
+    /// <summary>Faixas do histograma da demanda diária: uma para os dias sem venda e até 6 de mesma largura para os demais.</summary>
+    private static List<object> Histograma(IReadOnlyList<decimal> demanda)
+    {
+        var faixas = new List<object>();
+        var zeros = demanda.Count(d => d <= 0);
+        faixas.Add(new { faixa = "0", dias = zeros });
+        var positivos = demanda.Where(d => d > 0).ToList();
+        if (positivos.Count == 0) return faixas;
+        var max = positivos.Max();
+        var bins = (int)Math.Min(6, Math.Max(1, Math.Ceiling(max)));
+        var largura = max / bins;
+        for (var b = 0; b < bins; b++)
+        {
+            var de = largura * b;
+            var ate = largura * (b + 1);
+            var n = positivos.Count(d => b == bins - 1 ? d > de : d > de && d <= ate);
+            faixas.Add(new { faixa = $"{de.ToString("0.#", CultureInfo.GetCultureInfo("pt-BR"))}–{ate.ToString("0.#", CultureInfo.GetCultureInfo("pt-BR"))}", dias = n });
+        }
+        return faixas;
+    }
+
     // ---------- infraestrutura dos blocos ----------
 
     private sealed record KpiDto(string Chave, string Titulo, string Unidade, decimal? Valor, decimal? Anterior,
@@ -368,7 +595,7 @@ public class EstoqueAnaliseController(
     }
 
     private async Task<IActionResult> Bloco(string rota, FiltrosQuery q,
-        Func<AuthenticatedUser, FiltroAnalise, EstoqueParametros, bool, Task<object>> calcular)
+        Func<AuthenticatedUser, FiltroAnalise, EstoqueParametros, bool, Task<object?>> calcular)
     {
         if (Usuario() is not { } u) return Sessao();
         var (filtro, erro) = Filtro(q);
@@ -376,11 +603,12 @@ public class EstoqueAnaliseController(
 
         var comValores = HorusRoles.IsGerenteOuAdmin(u.Role);
         var chave = $"{rota}|{filtro}|{q.Comparar}|{(comValores ? "v" : "q")}";
-        var (dados, calculadoEm, doCache) = await cache.ObterAsync(u.CompanyId, chave, async () =>
+        var (dados, calculadoEm, doCache) = await cache.ObterAsync<object?>(u.CompanyId, chave, async () =>
         {
             var parametros = await config.ObterAsync(u.CompanyId, HttpContext.RequestAborted);
             return await calcular(u, filtro, parametros, comValores);
         });
+        if (dados is null) return NotFound(Erro("Não encontrado."));
         return Ok(new ApiResponse<object>
         {
             Success = true,
