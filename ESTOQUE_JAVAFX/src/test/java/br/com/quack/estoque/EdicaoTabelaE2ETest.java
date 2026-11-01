@@ -65,5 +65,17 @@ class EdicaoTabelaE2ETest {
         assertEquals(movsAntes + 1, movs.size());
         log("edicao com lista velha: saldo 7 preservado; +2 digitado -> 9 (" + movs.get(0).tipo() + " "
                 + movs.get(0).quantidade() + ")");
+
+        // 3) Categoria pela tabela: a resposta já vem com o nome da categoria (a API relê o produto do banco).
+        var cat = e.ctx.cadastros.categorias().stream().filter(c -> c.ativa()).findFirst().orElseThrow();
+        ObjectNode comCategoria = buscar(e, visto.id()).raw().deepCopy();
+        comCategoria.put("estoqueConsultado", comCategoria.path("productQnt").asText());
+        comCategoria.put("categoriaId", cat.id());
+        Produto r3 = e.ctx.produtos.atualizar(visto.id(), comCategoria);
+        assertEquals(cat.id(), r3.categoriaId());
+        assertEquals(cat.nome(), r3.categoriaNome(), "resposta com o nome da categoria");
+        assertEquals(cat.id(), buscar(e, visto.id()).categoriaId(), "categoria gravada");
+        assertEquals(0, new BigDecimal("9").compareTo(buscar(e, visto.id()).estoque()), "categoria não mexe no estoque");
+        log("categoria salva: " + r3.categoriaNome());
     }
 }

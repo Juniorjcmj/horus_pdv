@@ -149,6 +149,8 @@ public class ProdutosView extends Tela {
 
     /** Categorias ativas (nome do caminho → id) para a coluna Categoria; carregadas em ativar(). */
     private final java.util.Map<String, String> categoriasPorNome = new java.util.LinkedHashMap<>();
+    /** id da categoria → nome (como a lista de produtos mostra), para completar respostas sem o nome. */
+    private final java.util.Map<String, String> nomeDaCategoria = new java.util.HashMap<>();
     private final List<String> nomesCategorias = new ArrayList<>();
     private static final String SEM_CATEGORIA = "(sem categoria)";
 
@@ -196,6 +198,7 @@ public class ProdutosView extends Tela {
             nomesCategorias.add(SEM_CATEGORIA);
             for (CadastroApi.Categoria c : CadastrosView.ordenar(cats.stream().filter(CadastroApi.Categoria::ativa).toList())) {
                 categoriasPorNome.put(c.caminho(), c.id());
+                nomeDaCategoria.put(c.id(), c.nome());
                 nomesCategorias.add(c.caminho());
             }
         }, t -> {
@@ -289,6 +292,10 @@ public class ProdutosView extends Tela {
                 }
                 case "categoria" -> {
                     String id = SEM_CATEGORIA.equals(t) ? null : categoriasPorNome.get(t);
+                    if (id == null && !SEM_CATEGORIA.equals(t)) {
+                        // nunca grava "sem categoria" por engano (lista ainda carregando ou nome que não existe)
+                        throw new DomainException("Categoria não encontrada. Aguarde a lista de categorias carregar e tente de novo.");
+                    }
                     salvarCampo(p, b -> {
                         if (id == null) {
                             b.putNull("categoriaId");
@@ -316,9 +323,18 @@ public class ProdutosView extends Tela {
             mudar.accept(body);
             return ctx.produtos.atualizar(p.id(), body);
         }, salvo -> {
-            substituir(p, salvo);
+            substituir(p, comNomeDaCategoria(salvo));
             sucesso(mensagem);
         }, this::erroEdicao);
+    }
+
+    /** A API antiga devolve o produto salvo sem o nome da categoria: completa pelo cadastro de categorias. */
+    private Produto comNomeDaCategoria(Produto salvo) {
+        if (salvo == null || salvo.categoriaId().isBlank() || !salvo.categoriaNome().isBlank()) {
+            return salvo;
+        }
+        String nome = nomeDaCategoria.get(salvo.categoriaId());
+        return nome == null ? salvo : comCampo(salvo, "categoriaNome", nome);
     }
 
     private void erroEdicao(Throwable t) {

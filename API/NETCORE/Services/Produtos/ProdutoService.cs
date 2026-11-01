@@ -37,7 +37,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
             "cadastro",
             "Cadastro de produto");
 
-        return ToModel(saved);
+        return ToModel(await produtosAB.ObterAsync(companyId, saved.Id) ?? saved);
     }
 
     public async Task<ProdutoModel?> AtualizarAsync(string companyId, string id, ProdutoRequest request, string? usuarioId = null, string? usuarioNome = null)
@@ -51,7 +51,9 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
         NormalizeRequest(request, current.ProductCode);
         Validate(request);
         await ValidateBusinessRulesAsync(companyId, request, id, current.ProductSupplier);
-        return ToModel(await produtosAB.SalvarAsync(companyId, MapRequest(id, request), OrigemCadastro(id, usuarioId, usuarioNome)));
+        var salvo = await produtosAB.SalvarAsync(companyId, MapRequest(id, request), OrigemCadastro(id, usuarioId, usuarioNome));
+        // Relê do banco: a resposta traz o nome da categoria (join) e o saldo real depois da gravação.
+        return ToModel(await produtosAB.ObterAsync(companyId, id) ?? salvo);
     }
 
     public async Task<ProdutoModel?> AtualizarPrecoAsync(string companyId, string id, ProdutoPrecoRequest request)
