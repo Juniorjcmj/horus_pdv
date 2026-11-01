@@ -32,10 +32,10 @@ acessar a tela.**
 
 ## 4. Etapa 4 — Curva ABC e Reposição
 
-- [ ] 4.1 API `abc`, `abc-fsn`, `reposicao`, `POST reposicao/pedidos`. Verificar: E2E — pedidos gerados aparecem em `GET /api/OrdemCompra` por fornecedor.
-- [ ] 4.2 Tela Curva ABC: Pareto (barras + linha acumulada, marcas 80/95%, top 100 + "Outros"), tabela e matriz ABC×FSN clicável. Verificar: E2E clica na célula e a tabela filtra; prints.
-- [ ] 4.3 Tela Reposição: cards, tabela por urgência com ruptura destacada, seleção → rascunhos por fornecedor (quantidades editáveis), CSV e Excel (`XlsxWriter`). Verificar: `XlsxWriterTest` (lê o zip de volta e confere células) e E2E gerando pedidos; prints.
-- [ ] 4.4 Commit da etapa 4.
+- [x] 4.1 API `abc`, `abc-fsn`, `reposicao`, `POST reposicao/pedidos`. Verificar: E2E — pedidos gerados aparecem em `GET /api/OrdemCompra` por fornecedor.
+- [x] 4.2 Tela Curva ABC: Pareto (barras + linha acumulada, marcas 80/95%, top 100 + "Outros"), tabela e matriz ABC×FSN clicável. Verificar: E2E clica na célula e a tabela filtra; prints.
+- [x] 4.3 Tela Reposição: cards, tabela por urgência com ruptura destacada, seleção → rascunhos por fornecedor (quantidades editáveis), CSV e Excel (`XlsxWriter`). Verificar: `XlsxWriterTest` (lê o zip de volta e confere células) e E2E gerando pedidos; prints.
+- [x] 4.4 Commit da etapa 4.
 
 ## 5. Etapa 5 — Produto, Acuracidade, Perdas e parados, Fornecedores
 

@@ -15,4 +15,26 @@ public class AnaliseApi {
     public JsonNode bloco(String rota, FiltrosAnalise filtros) {
         return api.send("GET", "/api/Estoque/analise/" + rota + filtros.query(), null, ApiClient.LONG_TIMEOUT);
     }
+
+    /** Curva ABC com filtro opcional de classe (A/B/C) e de FSN (F/S/N) para a tabela (a matriz clicável). */
+    public JsonNode abc(FiltrosAnalise filtros, String classe, String fsn) {
+        String extra = (classe == null || classe.isBlank() ? "" : "&classe=" + ApiClient.q(classe))
+                + (fsn == null || fsn.isBlank() ? "" : "&fsn=" + ApiClient.q(fsn));
+        return api.send("GET", "/api/Estoque/analise/abc" + filtros.query() + extra, null, ApiClient.LONG_TIMEOUT);
+    }
+
+    /** Reposição (categoria e fornecedor dos filtros; o período vem da janela de consumo da configuração). */
+    public JsonNode reposicao(FiltrosAnalise filtros) {
+        return api.send("GET", "/api/Estoque/analise/reposicao" + filtros.query(), null, ApiClient.LONG_TIMEOUT);
+    }
+
+    /** Cria um rascunho de pedido por fornecedor. Devolve {pedidos[], ignorados[]}. */
+    public JsonNode gerarPedidos(java.util.Map<String, java.math.BigDecimal> quantidadePorProduto, String observacao) {
+        java.util.List<java.util.Map<String, Object>> itens = new java.util.ArrayList<>();
+        quantidadePorProduto.forEach((id, qtd) -> itens.add(java.util.Map.of("produtoId", id, "quantidade", qtd)));
+        java.util.Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("itens", itens);
+        body.put("observacao", observacao);
+        return api.send("POST", "/api/Estoque/analise/reposicao/pedidos", body, ApiClient.LONG_TIMEOUT);
+    }
 }

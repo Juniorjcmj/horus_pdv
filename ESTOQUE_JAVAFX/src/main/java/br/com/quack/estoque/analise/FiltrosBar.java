@@ -33,6 +33,11 @@ public final class FiltrosBar extends FlowPane {
     private boolean ajustando;
 
     public FiltrosBar(AppContext ctx, FiltrosAnalise filtros, Runnable aoAplicar) {
+        this(ctx, filtros, aoAplicar, true);
+    }
+
+    /** Com {@code comPeriodo=false} mostra só categoria e fornecedor (telas cujo período vem da configuração, como a reposição). */
+    public FiltrosBar(AppContext ctx, FiltrosAnalise filtros, Runnable aoAplicar, boolean comPeriodo) {
         super(8, 8);
         this.ctx = ctx;
         this.filtros = filtros;
@@ -62,8 +67,14 @@ public final class FiltrosBar extends FlowPane {
         ate.valueProperty().addListener((o, a, d) -> datasEditadas());
 
         Button atualizar = Ui.primario("Atualizar", this::aplicar);
-        getChildren().addAll(Ui.rotulado("Período", atalho), Ui.rotulado("De", de), Ui.rotulado("Até", ate),
-                Ui.rotulado("Categoria", categoria), Ui.rotulado("Fornecedor", fornecedor), Ui.rotulado(" ", comparar), Ui.rotulado(" ", atualizar));
+        if (comPeriodo) {
+            getChildren().addAll(Ui.rotulado("Período", atalho), Ui.rotulado("De", de), Ui.rotulado("Até", ate));
+        }
+        getChildren().addAll(Ui.rotulado("Categoria", categoria), Ui.rotulado("Fornecedor", fornecedor));
+        if (comPeriodo) {
+            getChildren().add(Ui.rotulado(" ", comparar));
+        }
+        getChildren().add(Ui.rotulado(" ", atualizar));
         mostrarDatas();
         comparar.setSelected(filtros.comparar);
     }

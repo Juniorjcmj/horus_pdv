@@ -1868,3 +1868,68 @@
     -fx-background-insets: 0;
     -fx-padding: 0;
 }
+
+/* ---- Curva ABC e Reposição ---- */
+.rg-pareto-grade {
+    -fx-stroke: -border;
+}
+
+.rg-pareto-barra {
+    -fx-fill: -brand;
+}
+
+.rg-pareto-barra:hover {
+    -fx-fill: -brand-soft;
+}
+
+.rg-pareto-linha {
+    -fx-stroke: -highlight-strong;
+    -fx-stroke-width: 2.2px;
+    -fx-fill: transparent;
+}
+
+.rg-pareto-marca {
+    -fx-stroke: -danger;
+    -fx-stroke-dash-array: 6 5;
+    -fx-stroke-width: 1.2px;
+}
+
+.rg-pareto-marca-texto {
+    -fx-text-fill: -danger;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.rg-pareto-eixo {
+    -fx-text-fill: -ink-muted;
+    -fx-font-size: 11px;
+}
+
+.rg-matriz-celula {
+    -fx-background-color: -surface-muted;
+    -fx-border-color: -border-strong;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: -ink;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.rg-matriz-celula:hover {
+    -fx-border-color: -highlight-strong;
+}
+
+.rg-matriz-ativa,
+.rg-matriz-ativa:hover {
+    -fx-background-color: -highlight;
+    -fx-border-color: -highlight-strong;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell.rg-linha-ruptura {
+    -fx-background-color: -danger-tint;
+}
+
+.table-row-cell.rg-linha-critico {
+    -fx-background-color: -brand-tint;
+}
