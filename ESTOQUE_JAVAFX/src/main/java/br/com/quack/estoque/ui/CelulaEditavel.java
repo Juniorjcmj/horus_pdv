@@ -73,11 +73,20 @@ public final class CelulaEditavel<S> extends TableCell<S, String> {
             lista = new ComboBox<>(javafx.collections.FXCollections.observableArrayList(opcoes));
             lista.setValue(getItem());
             lista.setMaxWidth(Double.MAX_VALUE);
-            lista.setOnAction(e -> {
-                if (isEditing()) {
-                    commitEdit(lista.getValue());
+            // Grava quando o valor escolhido muda. O onAction do ComboBox não dispara de forma confiável dentro da
+            // célula em edição (a escolha aparecia na tela, mas o onEditCommit não rodava e nada era salvo).
+            ComboBox<String> esta = lista;
+            esta.valueProperty().addListener((o, antes, agora) -> {
+                if (isEditing() && lista == esta && agora != null && !agora.equals(antes)) {
+                    commitEdit(agora);
                 }
             });
+            // Fechou a lista sem trocar: sai da edição sem gravar.
+            esta.setOnHidden(e -> javafx.application.Platform.runLater(() -> {
+                if (isEditing() && lista == esta) {
+                    cancelEdit();
+                }
+            }));
             lista.setOnKeyPressed(e -> {
                 if (e.getCode() == KeyCode.ESCAPE) {
                     cancelEdit();

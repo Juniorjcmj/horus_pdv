@@ -93,7 +93,14 @@ public class ProdutosView extends Tela {
         var cMax = Ui.colNum(tabela, "Máx.", p -> Fmt.qty(p.maximo()), 60);
         Ui.col(tabela, "Situação", p -> Produto.rotulo(p.nivel()), 120);
         var cCategoria = Ui.col(tabela, "Categoria", p -> p.categoriaNome().isBlank() ? SEM_CATEGORIA : p.categoriaNome(), 160);
+        javafx.scene.control.TableColumn<Produto, String> cFornecedor = perfil.cadastrarCategoriasEFornecedores()
+                ? Ui.col(tabela, "Fornecedor", p -> p.fornecedor().isBlank() ? SEM_FORNECEDOR : p.fornecedor(), 160) : null;
         colunasEditaveis(cCodigo, cNome, cUn, cPreco, cCusto, cEstoque, cMin, cMax, cCategoria);
+        if (cFornecedor != null) {
+            // Fornecedor: um clique abre a lista dos fornecedores cadastrados; grava no cadastro do produto.
+            CelulaEditavel.lista(cFornecedor, nomesFornecedores, p -> true);
+            cFornecedor.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "fornecedor", e.getNewValue()));
+        }
         tabela.getSelectionModel().setCellSelectionEnabled(false);
         tabela.setRowFactory(t -> {
             TableRow<Produto> row = new TableRow<>() {
@@ -153,6 +160,9 @@ public class ProdutosView extends Tela {
     private final java.util.Map<String, String> nomeDaCategoria = new java.util.HashMap<>();
     private final List<String> nomesCategorias = new ArrayList<>();
     private static final String SEM_CATEGORIA = "(sem categoria)";
+    /** Fornecedores cadastrados (nome) para a coluna Fornecedor; carregados em ativar(). */
+    private final List<String> nomesFornecedores = new ArrayList<>();
+    private static final String SEM_FORNECEDOR = "(sem fornecedor)";
 
     /** Colunas editáveis com um clique: Enter salva, Esc cancela, Tab vai para a próxima. */
     private void colunasEditaveis(javafx.scene.control.TableColumn<Produto, String> codigo,
@@ -204,6 +214,16 @@ public class ProdutosView extends Tela {
         }, t -> {
             // sem categorias: a coluna fica só com "(sem categoria)"
         });
+        if (perfil.cadastrarCategoriasEFornecedores()) {
+            Fx.async(ctx.cadastros::fornecedores, fors -> {
+                nomesFornecedores.clear();
+                nomesFornecedores.add(SEM_FORNECEDOR);
+                fors.stream().map(CadastroApi.Fornecedor::nome).filter(n -> n != null && !n.isBlank()).distinct()
+                        .sorted(String.CASE_INSENSITIVE_ORDER).forEach(nomesFornecedores::add);
+            }, t -> {
+                // sem fornecedores: a coluna fica só com "(sem fornecedor)"
+            });
+        }
     }
 
     /** Valida o valor digitado e salva só aquele campo; em erro, a célula volta ao valor anterior. */
@@ -289,6 +309,18 @@ public class ProdutosView extends Tela {
                     }
                     salvarCampo(p, b -> b.put("minimo".equals(campo) ? "estoqueMinimo" : "estoqueMaximo", Fmt.qtyApi(v)),
                             ("minimo".equals(campo) ? "Estoque mínimo" : "Estoque máximo") + " atualizado.");
+                }
+                case "fornecedor" -> {
+                    String nome = SEM_FORNECEDOR.equals(t) ? "" : t;
+                    if (!nome.isEmpty() && !nomesFornecedores.contains(nome)) {
+                        throw new DomainException("Fornecedor não encontrado. Aguarde a lista de fornecedores carregar e tente de novo.");
+                    }
+                    if (nome.equals(p.fornecedor())) {
+                        tabela.refresh();
+                        return;
+                    }
+                    salvarCampo(p, b -> b.put("productSupplier", nome),
+                            nome.isEmpty() ? "Fornecedor removido." : "Fornecedor atualizado para " + nome + ".");
                 }
                 case "categoria" -> {
                     String id = SEM_CATEGORIA.equals(t) ? null : categoriasPorNome.get(t);

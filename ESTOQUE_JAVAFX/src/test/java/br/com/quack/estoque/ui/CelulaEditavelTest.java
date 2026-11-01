@@ -65,4 +65,40 @@ class CelulaEditavelTest {
         });
         assertEquals(1, salvos.size(), "Esc não salva");
     }
+
+    @Test
+    void listaGravaAoEscolher() throws Exception {
+        List<String> salvos = new ArrayList<>();
+        TableView<String[]> t = FxTestSupport.naFx(() -> {
+            TableView<String[]> tabela = new TableView<>();
+            TableColumn<String[], String> forn = new TableColumn<>("Fornecedor");
+            forn.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue()[1]));
+            CelulaEditavel.lista(forn, List.of("(sem fornecedor)", "Forn A", "Forn B"), l -> true);
+            forn.setOnEditCommit(e -> salvos.add(e.getRowValue()[0] + "=" + e.getNewValue()));
+            tabela.getColumns().add(forn);
+            tabela.setEditable(true);
+            tabela.getItems().add(new String[] {"cerveja", "Forn A"});
+            Stage st = new Stage();
+            st.setScene(new Scene(tabela, 300, 200));
+            st.setX(-10000);
+            st.show();
+            tabela.layout();
+            return tabela;
+        });
+        FxTestSupport.naFx(() -> {
+            t.edit(0, t.getColumns().get(0));
+            @SuppressWarnings("unchecked")
+            javafx.scene.control.ComboBox<String> c = (javafx.scene.control.ComboBox<String>) t.lookup(".combo-box");
+            assertNotNull(c, "lista aberta");
+            c.setValue("Forn B");
+            return null;
+        });
+        Thread.sleep(300);
+        FxTestSupport.naFx(() -> {
+            t.getScene().getWindow().hide();
+            return null;
+        });
+        assertEquals(List.of("cerveja=Forn B"), salvos, "escolher na lista grava");
+        assertNull(FxTestSupport.naFx(t::getEditingCell), "sai da edição depois de gravar");
+    }
 }
