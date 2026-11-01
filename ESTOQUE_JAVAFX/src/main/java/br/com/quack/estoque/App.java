@@ -32,8 +32,14 @@ public class App extends Application {
         for (int size : new int[] {16, 24, 32, 48, 64, 128, 256}) {
             stage.getIcons().add(new javafx.scene.image.Image(icon, size, size, true, true));
         }
-        stage.setMinWidth(1100);
-        stage.setMinHeight(700);
+        // Cabe em notebook 1366×768 (área útil ~720 px de altura com a barra de tarefas): mínimo nunca maior que a tela.
+        javafx.geometry.Rectangle2D area = javafx.stage.Screen.getPrimary().getVisualBounds();
+        stage.setMinWidth(Math.min(1024, area.getWidth()));
+        stage.setMinHeight(Math.min(600, area.getHeight()));
+        stage.setWidth(Math.min(1280, area.getWidth()));
+        stage.setHeight(Math.min(800, area.getHeight()));
+        Double salvo = ctx.config.zoom();
+        br.com.quack.estoque.ui.Zoom.set(salvo != null ? salvo : br.com.quack.estoque.ui.Zoom.padraoPara(area));
         stage.setMaximized(true);
         // 401 depois do login: volta ao login sem perder os rascunhos (conferência de NF-e e contagens ficam em disco).
         ctx.api.onUnauthorized(() -> Platform.runLater(() -> {
@@ -46,8 +52,31 @@ public class App extends Application {
     }
 
     private void setRoot(Parent root) {
-        Scene scene = new Scene(root, 1280, 800);
+        javafx.geometry.Rectangle2D area = javafx.stage.Screen.getPrimary().getVisualBounds();
+        double w = stage.getScene() != null ? stage.getScene().getWidth() : Math.min(1280, area.getWidth());
+        double h = stage.getScene() != null ? stage.getScene().getHeight() : Math.min(800, area.getHeight());
+        Scene scene = new Scene(br.com.quack.estoque.ui.Zoom.envolver(root), w, h);
         scene.getStylesheets().setAll(Fx.stylesheets());
+        // Ctrl + − / Ctrl + = (ou +) / Ctrl + 0: zoom da interface, salvo neste computador.
+        scene.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, e -> {
+            if (!e.isShortcutDown()) {
+                return;
+            }
+            double atual = br.com.quack.estoque.ui.Zoom.get();
+            Double novo = switch (e.getCode()) {
+                case MINUS, SUBTRACT -> atual - 0.05;
+                case EQUALS, PLUS, ADD -> atual + 0.05;
+                case DIGIT0, NUMPAD0 -> br.com.quack.estoque.ui.Zoom.padraoPara(area);
+                default -> null;
+            };
+            if (novo != null) {
+                br.com.quack.estoque.ui.Zoom.set(novo);
+                ctx.config.setZoom(e.getCode() == javafx.scene.input.KeyCode.DIGIT0
+                        || e.getCode() == javafx.scene.input.KeyCode.NUMPAD0 ? null : br.com.quack.estoque.ui.Zoom.get());
+                Toasts.info(stage, "Tamanho da tela: " + Math.round(br.com.quack.estoque.ui.Zoom.get() * 100) + "% (Ctrl + − / Ctrl + = / Ctrl + 0)");
+                e.consume();
+            }
+        });
         stage.setScene(scene);
     }
 

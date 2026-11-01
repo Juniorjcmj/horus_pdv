@@ -28,6 +28,8 @@ import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.ComboBoxTableCell;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 /** Sugestão de reposição (giro + mínimo/máximo) que vira um pedido de compra por fornecedor. */
@@ -89,6 +91,7 @@ public class ComprasView extends Tela {
     private final ComboBox<CadastroApi.Categoria> categoria = Ui.combo(new ArrayList<>());
     private final TableView<LinhaCompra> tabela = Ui.tabela();
     private final Label resumo = Ui.muted("");
+    private final javafx.scene.layout.FlowPane porFornecedorBox = new javafx.scene.layout.FlowPane();
     private List<CadastroApi.Fornecedor> fornecedores = new ArrayList<>();
     private final Button gerar;
 
@@ -119,8 +122,10 @@ public class ComprasView extends Tela {
                 return null;
             }
         });
-        getChildren().add(Ui.barra(Ui.rotulado("Vendas dos últimos (dias)", dias), Ui.rotulado("Cobertura desejada (dias)", cobertura),
-                Ui.rotulado("Categoria", categoria), Ui.botao("Calcular sugestão", this::calcular)));
+        categoria.setPrefWidth(300);
+        var filtros = Ui.barra(Ui.rotulado("Vendas dos últimos (dias)", dias), Ui.rotulado("Cobertura desejada (dias)", cobertura),
+                Ui.rotulado("Categoria", categoria), Ui.botao("Calcular sugestão", this::calcular));
+        getChildren().add(filtros);
 
         tabela.setEditable(perfil.gerarPedidoCompra());
         if (perfil.gerarPedidoCompra()) {
@@ -129,6 +134,8 @@ public class ComprasView extends Tela {
             inc.setCellFactory(CheckBoxTableCell.forTableColumn(inc));
             inc.setEditable(true);
             inc.setPrefWidth(52);
+            inc.setMinWidth(48);
+            inc.setMaxWidth(56);
             tabela.getColumns().add(inc);
 
             TableColumn<LinhaCompra, String> forn = new TableColumn<>("Fornecedor");
@@ -143,22 +150,28 @@ public class ComprasView extends Tela {
             });
             forn.setEditable(true);
             forn.setPrefWidth(170);
+            forn.setMinWidth(120);
             tabela.getColumns().add(forn);
         } else {
-            Ui.col(tabela, "Fornecedor", l -> l.fornecedor.get(), 160);
+            Ui.ajustar(Ui.col(tabela, "Fornecedor", l -> l.fornecedor.get(), 160), 120, null);
         }
-        Ui.col(tabela, "Código", LinhaCompra::codigo, 80);
-        Ui.col(tabela, "Produto", LinhaCompra::nome, 240);
-        Ui.colNum(tabela, "Estoque", l -> Fmt.qty(l.origem.path("saldo").decimalValue()), 64);
-        Ui.colNum(tabela, "Mín.", l -> Fmt.qty(l.origem.path("minimo").decimalValue()), 50);
-        Ui.colNum(tabela, "Máx.", l -> Fmt.qty(l.origem.path("maximo").decimalValue()), 50);
-        Ui.colNum(tabela, "Vendido", l -> Fmt.qty(l.origem.path("vendaPeriodo").decimalValue()), 64);
-        Ui.colNum(tabela, "Cobertura (dias)", l -> l.origem.path("coberturaDias").isNull() ? "—" : Fmt.qty(l.origem.path("coberturaDias").decimalValue()), 100);
-        Ui.col(tabela, "Motivo", l -> l.origem.path("motivo").asText(""), 170);
+        Ui.ajustar(Ui.col(tabela, "Código", LinhaCompra::codigo, 120), 100, null);
+        Ui.ajustar(Ui.col(tabela, "Produto", LinhaCompra::nome, 220), 140, null);
+        Ui.ajustar(Ui.colNum(tabela, "Estoque", l -> Fmt.qty(l.origem.path("saldo").decimalValue()), 64), 60,
+                "Estoque atual");
+        Ui.ajustar(Ui.colNum(tabela, "Mín./Máx.", l -> Fmt.qty(l.origem.path("minimo").decimalValue()) + " / "
+                + Fmt.qty(l.origem.path("maximo").decimalValue()), 76), 72, "Estoque mínimo / máximo do cadastro");
+        Ui.ajustar(Ui.colNum(tabela, "Vendido", l -> Fmt.qty(l.origem.path("vendaPeriodo").decimalValue()), 64), 60,
+                "Quantidade vendida no período escolhido");
+        Ui.ajustar(Ui.colNum(tabela, "Cobertura", l -> l.origem.path("coberturaDias").isNull() ? "—"
+                : Fmt.qty(l.origem.path("coberturaDias").decimalValue()) + " d", 76), 72,
+                "Para quantos dias o estoque atual dura no ritmo de venda do período");
+        Ui.ajustar(Ui.col(tabela, "Motivo", l -> motivoCurto(l.origem.path("motivo").asText("")), 124), 118, null);
 
-        TableColumn<LinhaCompra, String> qtd = new TableColumn<>("Qtd. a comprar");
+        TableColumn<LinhaCompra, String> qtd = new TableColumn<>("Comprar");
         qtd.setCellValueFactory(cd -> cd.getValue().quantidade);
-        qtd.setPrefWidth(110);
+        qtd.setPrefWidth(74);
+        qtd.setMinWidth(70);
         qtd.setStyle("-fx-alignment: CENTER-RIGHT;");
         if (perfil.gerarPedidoCompra()) {
             qtd.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -171,9 +184,10 @@ public class ComprasView extends Tela {
         }
         tabela.getColumns().add(qtd);
         if (perfil.verCustos()) {
-            TableColumn<LinhaCompra, String> cst = new TableColumn<>("Custo unit. (R$)");
+            TableColumn<LinhaCompra, String> cst = new TableColumn<>("Custo un.");
             cst.setCellValueFactory(cd -> cd.getValue().custo);
-            cst.setPrefWidth(100);
+            cst.setPrefWidth(78);
+            cst.setMinWidth(74);
             cst.setStyle("-fx-alignment: CENTER-RIGHT;");
             cst.setCellFactory(TextFieldTableCell.forTableColumn());
             cst.setOnEditCommit(e -> {
@@ -183,8 +197,16 @@ public class ComprasView extends Tela {
             });
             cst.setEditable(true);
             tabela.getColumns().add(cst);
-            Ui.colNum(tabela, "Total (R$)", l -> Fmt.dec2(l.total()), 90);
+            Ui.ajustar(Ui.colNum(tabela, "Total", l -> Fmt.dec2(l.total()), 82), 78, "Quantidade × custo unitário (R$)");
         }
+        // Colunas de número não precisam crescer: a sobra de largura vai para fornecedor, código, produto e motivo.
+        for (TableColumn<LinhaCompra, ?> c : tabela.getColumns()) {
+            String t = c.getText() != null ? c.getText() : c.getGraphic() instanceof Label l ? l.getText() : "";
+            if (!java.util.Set.of("Fornecedor", "Código", "Produto", "Motivo").contains(t)) {
+                c.setMaxWidth(Math.max(c.getMinWidth(), c.getPrefWidth()) + 16);
+            }
+        }
+        Ui.distribuir(tabela);
         VBox.setVgrow(tabela, Priority.ALWAYS);
         Button excluir = Ui.botao("Excluir item selecionado", () -> {
             LinhaCompra l = tabela.getSelectionModel().getSelectedItem();
@@ -195,7 +217,24 @@ public class ComprasView extends Tela {
         });
         excluir.setVisible(perfil.gerarPedidoCompra());
         excluir.setManaged(perfil.gerarPedidoCompra());
-        getChildren().addAll(tabela, Ui.barra(excluir, resumo));
+        excluir.setMinWidth(Region.USE_PREF_SIZE);
+        porFornecedorBox.setHgap(6);
+        porFornecedorBox.setVgap(6);
+        VBox totais = new VBox(6, resumo, porFornecedorBox);
+        HBox.setHgrow(totais, Priority.ALWAYS);
+        HBox rodape = new HBox(12, excluir, totais);
+        rodape.setStyle("-fx-alignment: top-left;");
+        getChildren().addAll(tabela, rodape);
+    }
+
+    /** Motivo da sugestão em poucas palavras (o texto completo aparece ao passar o mouse). */
+    static String motivoCurto(String motivo) {
+        return switch (motivo) {
+            case "giro de vendas e abaixo do mínimo" -> "Giro + mínimo";
+            case "giro de vendas" -> "Giro de vendas";
+            case "abaixo do mínimo" -> "Abaixo mínimo";
+            default -> motivo;
+        };
     }
 
     private List<String> nomesFornecedores() {
@@ -250,10 +289,16 @@ public class ComprasView extends Tela {
                 porFornecedor.merge(l.fornecedor.get(), l.total(), BigDecimal::add);
             }
         }
-        StringBuilder sb = new StringBuilder(tabela.getItems().size() + " produtos sugeridos");
+        long marcados = tabela.getItems().stream().filter(l -> l.incluir.get()).count();
+        StringBuilder sb = new StringBuilder(tabela.getItems().size() + " produtos sugeridos, " + marcados
+                + " marcados para pedir");
+        porFornecedorBox.getChildren().clear();
         if (perfil.verCustos() && !porFornecedor.isEmpty()) {
-            sb.append(" · ");
-            porFornecedor.forEach((f, v) -> sb.append(f).append(": ").append(Fmt.money(v)).append("   "));
+            BigDecimal geral = porFornecedor.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+            sb.append(" · Total ").append(Fmt.money(geral)).append(" em ").append(porFornecedor.size())
+                    .append(porFornecedor.size() == 1 ? " fornecedor" : " fornecedores");
+            porFornecedor.forEach((f, v) -> porFornecedorBox.getChildren().add(Ui.texto(f + "   " + Fmt.money(v),
+                    CadastrosNome.SEM_FORNECEDOR.equals(f) ? "rg-total-chip-warn" : "rg-total-chip")));
         }
         resumo.setText(sb.toString());
     }

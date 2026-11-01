@@ -66,6 +66,25 @@ public final class AppConfig {
         save();
     }
 
+    /** Zoom da interface salvo pelo operador (Ctrl + − / Ctrl + =), ou null para usar o padrão da tela. */
+    public Double zoom() {
+        try {
+            String v = props.getProperty("zoom");
+            return v == null || v.isBlank() ? null : Double.valueOf(v.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public void setZoom(Double zoom) {
+        if (zoom == null) {
+            props.remove("zoom");
+        } else {
+            props.setProperty("zoom", String.valueOf(zoom));
+        }
+        save();
+    }
+
     public String deviceId() {
         return props.getProperty("deviceId");
     }

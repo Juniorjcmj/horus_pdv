@@ -157,7 +157,8 @@ public final class Fx {
         st.initOwner(owner);
         st.initModality(Modality.WINDOW_MODAL);
         content.getStyleClass().add("rg-modal");
-        javafx.scene.layout.StackPane wrap = new javafx.scene.layout.StackPane(content);
+        // O modal acompanha o zoom da janela principal (telas pequenas).
+        javafx.scene.layout.StackPane wrap = new javafx.scene.layout.StackPane(Zoom.envolver(content));
         wrap.getStyleClass().add("rg-modal-wrap");
         Scene sc = new Scene(wrap);
         sc.setFill(javafx.scene.paint.Color.TRANSPARENT);

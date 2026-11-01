@@ -49,14 +49,14 @@ public class RelatoriosView extends Tela {
                 perfil.relatoriosDeValor() ? "Curva ABC, estoque crítico e parado, validade e perdas. Exporte em CSV ou imprima."
                         : "Estoque crítico e validade (sem valores). Exporte em CSV ou imprima."));
         abas.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        abas.setMinHeight(0);
         VBox.setVgrow(abas, Priority.ALWAYS);
         getChildren().add(abas);
 
         if (perfil.relatoriosDeValor()) {
-            ComboBox<CadastroApi.Categoria> cat = Ui.combo(new ArrayList<>());
-            cat.setPromptText("Todas as categorias");
-            DatePicker de = new DatePicker(LocalDate.now().minusDays(89));
-            DatePicker ate = new DatePicker(LocalDate.now());
+            ComboBox<CadastroApi.Categoria> cat = comboCategoria();
+            DatePicker de = data(LocalDate.now().minusDays(89));
+            DatePicker ate = data(LocalDate.now());
             Painel curva = new Painel("Curva ABC", Ui.barra(Ui.rotulado("De", de), Ui.rotulado("Até", ate), Ui.rotulado("Categoria", cat)),
                     () -> {
                         if (de.getValue() == null || ate.getValue() == null) {
@@ -64,7 +64,14 @@ public class RelatoriosView extends Tela {
                         }
                         return ctx.relatorios.curvaAbc(de.getValue(), ate.getValue(), cat.getValue() == null ? null : cat.getValue().id());
                     }, colunasCurva(), r -> r.path("itens"), RelatoriosView::totalCurva, "curva-abc");
-            curva.aoAtivar = () -> cat.setItems(FXCollections.observableArrayList(categorias));
+            curva.aoAtivar = () -> {
+                CadastroApi.Categoria atual = cat.getValue();
+                List<CadastroApi.Categoria> itens = new ArrayList<>();
+                itens.add(null); // "Todas as categorias"
+                itens.addAll(categorias);
+                cat.setItems(FXCollections.observableArrayList(itens));
+                cat.setValue(atual);
+            };
             adicionar(curva);
         }
         adicionar(new Painel("Estoque crítico", null, ctx.relatorios::critico, colunasCritico(perfil.verCustos()), r -> r,
@@ -91,8 +98,8 @@ public class RelatoriosView extends Tela {
                 () -> ctx.relatorios.validade(Ui.numero(diasVal, "os dias").intValue()), colunasValidade(perfil.verCustos()), r -> r,
                 r -> r.size() + " lotes vencidos ou a vencer", "validade"));
         if (perfil.relatoriosDeValor()) {
-            DatePicker de = new DatePicker(LocalDate.now().withDayOfMonth(1));
-            DatePicker ate = new DatePicker(LocalDate.now());
+            DatePicker de = data(LocalDate.now().withDayOfMonth(1));
+            DatePicker ate = data(LocalDate.now());
             adicionar(new Painel("Perdas", Ui.barra(Ui.rotulado("De", de), Ui.rotulado("Até", ate)),
                     () -> ctx.relatorios.perdas(de.getValue(), ate.getValue()), colunasPerdas(), r -> r.path("itens"),
                     r -> "Quantidade total " + Fmt.qty(r.path("quantidadeTotal").decimalValue()) + " · valor pelo custo "
@@ -104,6 +111,62 @@ public class RelatoriosView extends Tela {
                 paineis.get(i).carregar();
             }
         });
+    }
+
+    /** Caixa de categoria que mostra o caminho ("Açougue › Suínos") e tem a opção "Todas as categorias". */
+    private static ComboBox<CadastroApi.Categoria> comboCategoria() {
+        ComboBox<CadastroApi.Categoria> cat = new ComboBox<>();
+        cat.setPromptText("Todas as categorias");
+        cat.setPrefWidth(280);
+        cat.setMinWidth(200);
+        cat.setMaxWidth(360);
+        cat.setConverter(new javafx.util.StringConverter<>() {
+            @Override
+            public String toString(CadastroApi.Categoria c) {
+                return c == null ? "Todas as categorias" : c.caminho();
+            }
+
+            @Override
+            public CadastroApi.Categoria fromString(String s) {
+                return null;
+            }
+        });
+        // a célula da lista também precisa do conversor (sem ela aparece o toString do registro)
+        cat.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(CadastroApi.Categoria item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : cat.getConverter().toString(item));
+            }
+        });
+        cat.setButtonCell(cat.getCellFactory().call(null));
+        return cat;
+    }
+
+    /** Data com largura suficiente para "dd/MM/aaaa" e formato brasileiro. */
+    private static DatePicker data(LocalDate valor) {
+        DatePicker d = new DatePicker(valor);
+        d.setPrefWidth(150);
+        d.setMinWidth(150);
+        d.setMaxWidth(150);
+        java.time.format.DateTimeFormatter f = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        d.setConverter(new javafx.util.StringConverter<>() {
+            @Override
+            public String toString(LocalDate v) {
+                return v == null ? "" : f.format(v);
+            }
+
+            @Override
+            public LocalDate fromString(String s) {
+                try {
+                    return s == null || s.isBlank() ? null : LocalDate.parse(s.trim(), f);
+                } catch (java.time.format.DateTimeParseException e) {
+                    return d.getValue();
+                }
+            }
+        });
+        d.setPromptText("dd/mm/aaaa");
+        return d;
     }
 
     private void adicionar(Painel p) {
@@ -233,18 +296,34 @@ public class RelatoriosView extends Tela {
             this.totais = totais;
             setPadding(Ui.margem(10));
             for (Col c : colunas) {
-                if (c.numero()) {
-                    Ui.colNum(tabela, c.titulo(), c.valor(), c.largura());
-                } else {
-                    Ui.col(tabela, c.titulo(), c.valor(), c.largura());
+                String curto = c.titulo().replaceAll("\\s*\\(.*\\)$", "");
+                var col = c.numero() ? Ui.colNum(tabela, curto, c.valor(), c.largura()) : Ui.col(tabela, curto, c.valor(), c.largura());
+                boolean texto = !c.numero() && !curto.equals("Classe") && !curto.equals("Data") && !curto.equals("Validade");
+                // Mínimos somam no máximo ~740 px: cabem na menor janela do app (1024 px) sem esconder colunas.
+                double minimo = curto.equals("Produto") ? 140 : curto.equals("Código") ? 100 : curto.equals("Classe") ? 50
+                        : texto ? Math.max(80, c.largura() * 0.6) : Math.max(56, c.largura() * 0.8);
+                Ui.ajustar(col, minimo, c.titulo()); // dica com o título completo (a coluna pode ficar estreita)
+                if (!texto) {
+                    col.setMaxWidth(Math.max(minimo, c.largura()) + 30); // a sobra vai para as colunas de texto
                 }
             }
-            javafx.scene.layout.HBox barra = Ui.barra();
+            Ui.distribuir(tabela);
+
+            // Filtros e botões quebram linha quando a janela é estreita; os botões nunca encolhem.
+            javafx.scene.layout.FlowPane barra = new javafx.scene.layout.FlowPane(10, 8);
+            barra.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT);
+            barra.setRowValignment(javafx.geometry.VPos.BOTTOM);
             if (filtros != null) {
                 barra.getChildren().add(filtros);
             }
-            barra.getChildren().addAll(Ui.espaco(), Ui.primario("Gerar", this::carregar), Ui.botao("Exportar CSV", this::exportar),
-                    Ui.botao("Imprimir", this::imprimir));
+            javafx.scene.layout.HBox botoes = new javafx.scene.layout.HBox(8, Ui.primario("Gerar", this::carregar),
+                    Ui.botao("Exportar CSV", this::exportar), Ui.botao("Imprimir", this::imprimir));
+            botoes.getChildren().forEach(b -> ((javafx.scene.control.Button) b).setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE));
+            botoes.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+            barra.getChildren().add(botoes);
+            barra.prefWrapLengthProperty().bind(widthProperty().subtract(20));
+            total.setWrapText(true);
+            total.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
             getChildren().addAll(barra, tabela, total);
         }
 

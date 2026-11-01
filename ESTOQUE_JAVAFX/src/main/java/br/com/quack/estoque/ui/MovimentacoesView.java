@@ -91,8 +91,8 @@ public class MovimentacoesView extends Tela {
         Ui.col(tabela, "Motivo", Movimentacao::motivo, 240);
         Ui.col(tabela, "Usuário", Movimentacao::usuarioNome, 130);
 
-        getChildren().add(Ui.barra(Ui.texto("Histórico", "rg-section-title"), Ui.espaco(), Ui.texto("Tipo", "rg-form-label"),
-                    filtroTipo, Ui.texto("De", "rg-form-label"), de, Ui.texto("Até", "rg-form-label"), ate,
+        getChildren().add(Ui.texto("Histórico", "rg-section-title"));
+        getChildren().add(Ui.barra(Ui.rotulado("Tipo", filtroTipo), Ui.rotulado("De", de), Ui.rotulado("Até", ate),
                     Ui.botao("Filtrar", this::carregar), Ui.botao("Exportar CSV", this::exportar)));
         VBox.setVgrow(tabela, Priority.ALWAYS);
         getChildren().addAll(tabela, total);

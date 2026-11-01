@@ -1268,6 +1268,15 @@
     -fx-text-fill: -ink;
 }
 
+/* Caixa de seleção com a mesma altura dos campos de texto (o padding fica só na célula). */
+.combo-box {
+    -fx-padding: 0 4 0 0;
+}
+
+.combo-box > .list-cell {
+    -fx-padding: 8 6 8 10;
+}
+
 /* cancelamento de NFC-e / devolução */
 .rg-nfc-header {
     -fx-padding: 12 14 12 16;
@@ -1495,8 +1504,10 @@
 }
 
 .rg-toolbar {
-    -fx-spacing: 8;
-    -fx-alignment: center-left;
+    -fx-hgap: 8;
+    -fx-vgap: 8;
+    -fx-alignment: bottom-left;
+    -fx-row-valignment: bottom;
 }
 
 .rg-stat {
@@ -1624,4 +1635,21 @@
 
 .rg-doc .label {
     -fx-text-fill: -ink;
+}
+
+/* Total por fornecedor no rodapé da sugestão de compra */
+.rg-total-chip, .rg-total-chip-warn {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-text-fill: -ink;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 10 4 10;
+}
+
+.rg-total-chip-warn {
+    -fx-background-color: -brand-tint;
+    -fx-border-color: -highlight-strong;
 }

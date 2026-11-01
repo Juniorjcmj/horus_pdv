@@ -184,7 +184,7 @@ public class InventarioView extends Tela {
             }
         }));
         Button rmProd = Ui.pequeno("Remover selecionado", () -> listaProds.getItems().remove(listaProds.getSelectionModel().getSelectedItem()));
-        javafx.scene.layout.HBox acoesProd = Ui.barra(addProd, rmProd);
+        var acoesProd = Ui.barra(addProd, rmProd);
         listaProds.setVisible(false);
         listaProds.setManaged(false);
         acoesProd.setVisible(false);

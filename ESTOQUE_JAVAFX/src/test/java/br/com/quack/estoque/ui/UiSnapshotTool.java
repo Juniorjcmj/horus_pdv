@@ -55,7 +55,12 @@ public final class UiSnapshotTool {
                 MainView mv = new MainView(ctx, () -> {
                 });
                 Stage st = new Stage(StageStyle.UNDECORATED);
-                Scene sc = new Scene(mv, 1360, 820);
+                String[] tam = System.getProperty("quack.test.size", "1360x820").split("x");
+                String z = System.getProperty("quack.test.zoom");
+                if (z != null) {
+                    Zoom.set(Double.parseDouble(z));
+                }
+                Scene sc = new Scene(z == null ? mv : Zoom.envolver(mv), Double.parseDouble(tam[0]), Double.parseDouble(tam[1]));
                 sc.getStylesheets().setAll(Fx.stylesheets());
                 st.setScene(sc);
                 st.setX(-20000);
