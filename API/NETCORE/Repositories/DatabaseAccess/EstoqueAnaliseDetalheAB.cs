@@ -72,12 +72,10 @@ public class EstoqueAnaliseDetalheAB(Connection connection)
         var porDia = new Dictionary<DateOnly, decimal>();
         await using (var cmd = new SqlCommand(
             """
-            SELECT CAST(DATEADD(minute, @Off, CriadoEm) AS DATE),
-                   SUM(CASE WHEN Tipo = 'saida_venda' THEN Quantidade ELSE -Quantidade END)
-            FROM EstoqueMovimentacoes
-            WHERE CompanyId=@C AND DepositoId=@Dep AND ProdutoId=@P AND Tipo IN ('saida_venda','devolucao') AND CriadoEm>=@Ini AND CriadoEm<@Fim
-            GROUP BY CAST(DATEADD(minute, @Off, CriadoEm) AS DATE);
-            """, db))
+            SELECT CAST(DATEADD(minute, @Off, s.Em) AS DATE), SUM(s.Qtd)
+            FROM SAIDAS s
+            GROUP BY CAST(DATEADD(minute, @Off, s.Em) AS DATE);
+            """.Replace("SAIDAS", SaidasVendaSql.Derivada("@Ini", "@Fim", "@P")), db))
         {
             Parametros(cmd, companyId, produtoId, f, ini, fim);
             await using var r = await cmd.ExecuteReaderAsync(ct);

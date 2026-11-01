@@ -79,14 +79,15 @@ public class EstoqueIndicadoresAB(Connection connection)
     private static int OffsetMinutos() => (int)HorusDateTime.TimeZone.GetUtcOffset(DateTime.UtcNow).TotalMinutes;
 
     /// <summary>
-    /// Agregações por produto. Demanda diária = saida_venda - devolucao agrupada por dia de Brasília (dias negativos contam 0);
+    /// Agregações por produto. Demanda diária = saídas por venda líquidas (SaidasVendaSql: vendas do caixa antes da
+    /// migração 57, movimentações depois) agrupadas por dia de Brasília (dias negativos contam 0);
     /// os dias sem venda não aparecem no SQL porque entram como zero nas somas (N vem do período).
     /// </summary>
     public async Task<List<ProdutoAgregado>> AgregarAsync(string companyId, FiltroAnalise f, CancellationToken ct = default)
     {
         await using var db = await connection.OpenConnectionAsync(ct);
         await using var cmd = new SqlCommand(
-            """
+            $"""
             ;WITH Cat AS (
                 SELECT Id FROM Categorias WHERE CompanyId = @C AND Id = @Cat
                 UNION ALL
@@ -101,15 +102,12 @@ public class EstoqueIndicadoresAB(Connection connection)
                   AND (@For IS NULL OR p.SupplierId = @For)
             ),
             Dia AS (
-                SELECT m.ProdutoId, CAST(DATEADD(minute, @Off, m.CriadoEm) AS DATE) AS D,
-                       SUM(CASE WHEN m.Tipo = 'saida_venda' THEN m.Quantidade ELSE -m.Quantidade END) AS Liq,
-                       SUM(CASE WHEN m.Tipo = 'saida_venda' THEN m.Quantidade * ISNULL(m.CustoUnitario, p.ProductUnitPrice)
-                                ELSE -m.Quantidade * ISNULL(m.CustoUnitario, p.ProductUnitPrice) END) AS Cmv
-                FROM EstoqueMovimentacoes m
-                INNER JOIN P p ON p.Id = m.ProdutoId
-                WHERE m.CompanyId = @C AND m.DepositoId = @Dep AND m.CriadoEm >= @IniUtc AND m.CriadoEm < @FimUtc
-                  AND m.Tipo IN ('saida_venda', 'devolucao')
-                GROUP BY m.ProdutoId, CAST(DATEADD(minute, @Off, m.CriadoEm) AS DATE)
+                SELECT s.ProdutoId, CAST(DATEADD(minute, @Off, s.Em) AS DATE) AS D,
+                       SUM(s.Qtd) AS Liq,
+                       SUM(s.Cmv) AS Cmv
+                FROM {SaidasVendaSql.Derivada("@IniUtc", "@FimUtc")} s
+                INNER JOIN P p ON p.Id = s.ProdutoId
+                GROUP BY s.ProdutoId, CAST(DATEADD(minute, @Off, s.Em) AS DATE)
             ),
             Dem AS (
                 SELECT ProdutoId,
@@ -131,10 +129,10 @@ public class EstoqueIndicadoresAB(Connection connection)
                 WHERE CompanyId = @C AND DepositoId = @Dep AND Data = @Ate
             ),
             Ult AS (
-                SELECT ProdutoId, MAX(CriadoEm) AS Ultima
-                FROM EstoqueMovimentacoes
-                WHERE CompanyId = @C AND DepositoId = @Dep AND Tipo = 'saida_venda'
-                GROUP BY ProdutoId
+                SELECT s.ProdutoId, MAX(s.Em) AS Ultima
+                FROM {SaidasVendaSql.Derivada(null, null)} s
+                WHERE s.Qtd > 0
+                GROUP BY s.ProdutoId
             ),
             Tr AS (
                 SELECT pr.Id AS ProdutoId, SUM(CASE WHEN i.Quantity > i.QuantityReceived THEN i.Quantity - i.QuantityReceived ELSE 0 END) AS Qtd
@@ -239,7 +237,9 @@ public class EstoqueIndicadoresAB(Connection connection)
         var temFoto = itens.Any(i => i.Bruto.DiasFotografados > 0);
         decimal? valor = comSaldo.Count == 0 ? null : comSaldo.Sum(i => i.ValorEstoque);
         var cmv = itens.Sum(i => i.Bruto.Cmv);
-        decimal? medio = temFoto ? itens.Where(i => i.Bruto.EstoqueMedioValor is not null).Sum(i => i.Bruto.EstoqueMedioValor!.Value) : null;
+        // Sem fotografias diárias (loja recém-publicada): estima o estoque médio pelo valor atual, para o giro já aparecer.
+        decimal? medio = temFoto ? itens.Where(i => i.Bruto.EstoqueMedioValor is not null).Sum(i => i.Bruto.EstoqueMedioValor!.Value)
+            : valor is > 0 ? valor : null;
         var giro = EstoqueCalculos.Giro(cmv, medio);
         var anual = EstoqueCalculos.GiroAnualizado(giro, f.Dias);
         var dio = EstoqueCalculos.Dio(anual);
@@ -248,7 +248,7 @@ public class EstoqueIndicadoresAB(Connection connection)
         var emRuptura = comSaldo.Count(i => i.EmRuptura);
         var parados = comSaldo.Where(i => i.Parado).ToList();
         var excesso = comSaldo.Where(i => i.ValorExcesso > 0).ToList();
-        string? motivo = !temFoto ? "sem histórico" : giro is null ? "sem giro" : null;
+        string? motivo = giro is null ? (!temFoto ? "sem histórico" : "sem giro") : null;
 
         return new ResumoIndicadores(
             itens.Count, comSaldo.Count(i => i.Saldo > 0), valor, cmv, medio, giro, anual, dio,

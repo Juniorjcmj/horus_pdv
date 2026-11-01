@@ -26,14 +26,23 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
 /**
- * Curva ABC do período: Pareto (barras + acumulado com marcas em 80% e 95%, top 100 + "Outros"), matriz ABC x FSN
+ * Curva ABC do período: curva acumulada (% dos produtos × % do valor, faixas A/B/C sombreadas), matriz ABC x FSN
  * clicável (filtra a tabela) e a tabela de produtos. A classificação usa a base (faturamento ou CMV) da configuração.
  */
 public class CurvaAbcView extends Tela {
+    /** Faz o cartão da curva crescer no HBox. */
+    private static final class HBoxGrow {
+        static void cresce(javafx.scene.Node n) {
+            javafx.scene.layout.HBox.setHgrow(n, Priority.ALWAYS);
+        }
+    }
+
     private final FiltrosAnalise filtros;
     private final FiltrosBar barra;
-    private final ParetoChart pareto = new ParetoChart();
-    private final Label resumo = Ui.muted("");
+    private final CurvaAbcChart curva = new CurvaAbcChart();
+    private final Label frase = Ui.texto("", "rg-curva-abc-frase");
+    private final FlowPane selos = new FlowPane(8, 6);
+    private final Label base = Ui.muted("");
     private final Label estadoVazio = Ui.muted("");
     private final TableView<JsonNode> tabela = Ui.tabela();
     private final GridPane matriz = new GridPane();
@@ -50,30 +59,63 @@ public class CurvaAbcView extends Tela {
         this.filtros = FiltrosAnalise.carregar(ctx.paths.analiseFile(), LocalDate.now());
         this.barra = new FiltrosBar(ctx, filtros, this::carregar);
 
-        pareto.setPrefHeight(230);
-        pareto.setMinHeight(200);
-        VBox cartaoPareto = new VBox(6, Ui.texto("Pareto do período", "rg-section-title"),
-                Ui.muted("Barras: valor de cada produto. Linha: acumulado. Tracejado: limites das classes A e B."), pareto, resumo);
-        cartaoPareto.getStyleClass().add("rg-card");
-        cartaoPareto.setMinWidth(380);
+        curva.setPrefHeight(240);
+        curva.setMinHeight(200);
+        frase.setWrapText(true);
+        VBox cartaoCurva = new VBox(6, Ui.texto("Curva ABC", "rg-section-title"), frase, curva, selos, base);
+        cartaoCurva.getStyleClass().add("rg-card");
+        cartaoCurva.setMinWidth(360);
 
         matriz.setHgap(6);
         matriz.setVgap(6);
-        javafx.scene.layout.ColumnConstraints rotulos = new javafx.scene.layout.ColumnConstraints(72);
-        rotulos.setMinWidth(72);
+        javafx.scene.layout.ColumnConstraints rotulos = new javafx.scene.layout.ColumnConstraints(64);
+        rotulos.setMinWidth(64);
         matriz.getColumnConstraints().add(rotulos);
+        for (int c = 0; c < 3; c++) {
+            javafx.scene.layout.ColumnConstraints cc = new javafx.scene.layout.ColumnConstraints();
+            cc.setHgrow(Priority.ALWAYS);
+            cc.setFillWidth(true);
+            cc.setMinWidth(96);
+            matriz.getColumnConstraints().add(cc);
+        }
         VBox cartaoMatriz = new VBox(6, Ui.texto("Matriz ABC × FSN", "rg-section-title"),
-                Ui.muted("Clique numa célula para filtrar a tabela; clique de novo para limpar."), matriz, filtroAtivo);
+                Ui.muted("Valor de venda (A, B, C) × frequência de saída (rápido, lento, parado). Clique numa célula para "
+                        + "filtrar a tabela; clique de novo para limpar."), matriz, filtroAtivo);
         cartaoMatriz.getStyleClass().add("rg-card");
-        cartaoMatriz.setMinWidth(330);
-        cartaoMatriz.setPrefWidth(360);
+        cartaoMatriz.setMinWidth(360);
+        cartaoMatriz.setPrefWidth(440);
+        cartaoMatriz.setMaxWidth(520);
 
-        FlowPane topo = new FlowPane(12, 12, cartaoPareto, cartaoMatriz);
-        topo.prefWrapLengthProperty().bind(widthProperty().subtract(40));
-        cartaoPareto.setPrefWidth(620);
+        // Lado a lado em janela larga (a curva cresce); um embaixo do outro quando estreita.
+        javafx.scene.layout.HBox ladoALado = new javafx.scene.layout.HBox(12);
+        VBox empilhado = new VBox(12);
+        javafx.scene.layout.StackPane topo = new javafx.scene.layout.StackPane();
+        HBoxGrow.cresce(cartaoCurva);
+        Runnable organizar = () -> {
+            boolean largo = getWidth() >= 1000;
+            ladoALado.getChildren().clear();
+            empilhado.getChildren().clear();
+            if (largo) {
+                cartaoMatriz.setMaxWidth(520);
+                ladoALado.getChildren().addAll(cartaoCurva, cartaoMatriz);
+                topo.getChildren().setAll(ladoALado);
+            } else {
+                cartaoMatriz.setMaxWidth(Double.MAX_VALUE);
+                empilhado.getChildren().addAll(cartaoCurva, cartaoMatriz);
+                topo.getChildren().setAll(empilhado);
+            }
+        };
+        widthProperty().addListener((o, a, b) -> {
+            boolean largo = b.doubleValue() >= 1000;
+            boolean eraLargo = a.doubleValue() >= 1000;
+            if (largo != eraLargo || topo.getChildren().isEmpty()) {
+                organizar.run();
+            }
+        });
+        organizar.run();
 
         colunas();
-        tabela.setMinHeight(220);
+        tabela.setMinHeight(160);
         tabela.setPrefHeight(300);
         TabelasAnalise.duploCliqueAbreProduto(tabela, j -> j.path("produtoId").asText(), nav);
         VBox.setVgrow(tabela, Priority.ALWAYS);
@@ -129,22 +171,45 @@ public class CurvaAbcView extends Tela {
         estadoVazio.setManaged(vazio);
         estadoVazio.setVisible(vazio);
 
-        List<ParetoChart.Ponto> pontos = new ArrayList<>();
-        for (JsonNode p : abc.path("pareto")) {
-            String nome = p.path("nome").asText();
-            pontos.add(new ParetoChart.Ponto(p.path("valor").asDouble(), p.path("acumulada").asDouble(),
-                    "#" + p.path("posicao").asInt() + " " + nome + "\n" + Fmt.money(p.path("valor").decimalValue())
-                            + " · acumulado " + AnaliseFmt.valor("%", p.path("acumulada"))));
-        }
-        pareto.setDados(pontos, abc.path("limiteA").asDouble(80), abc.path("limiteB").asDouble(95));
+        // Curva: só da consulta sem filtro da matriz (a matriz filtra a tabela, não a curva).
+        if (classe == null || curva.getProperties().get("vazia") == null) {
+            List<CurvaAbcChart.Ponto> pontos = new ArrayList<>();
+            int totalProdutos = Math.max(1, abc.path("totalProdutos").asInt(1));
+            for (JsonNode p : abc.path("curva")) {
+                int pos = p.path("pos").asInt();
+                pontos.add(new CurvaAbcChart.Ponto((double) pos / totalProdutos, p.path("acumulada").asDouble(),
+                        p.path("classe").asText(), "#" + pos + " " + p.path("nome").asText() + " (" + p.path("codigo").asText() + ")\n"
+                                + Fmt.money(p.path("valor").decimalValue()) + " · classe " + p.path("classe").asText()
+                                + " · acumulado " + AnaliseFmt.valor("%", p.path("acumulada"))));
+            }
+            curva.setDados(pontos);
+            curva.getProperties().put("vazia", pontos.isEmpty() ? null : Boolean.FALSE);
 
-        StringBuilder sb = new StringBuilder("Base: ").append("cmv".equals(abc.path("baseAbc").asText()) ? "CMV" : "faturamento")
-                .append(" · total ").append(Fmt.money(abc.path("totalValor").decimalValue()));
-        for (JsonNode c : abc.path("resumo")) {
-            sb.append(" · ").append(c.path("classe").asText()).append(": ").append(c.path("produtos").asInt()).append(" produtos (")
-                    .append(AnaliseFmt.valor("%", c.path("participacao"))).append(")");
+            selos.getChildren().clear();
+            int total = 0;
+            for (JsonNode c : abc.path("resumo")) {
+                total += c.path("produtos").asInt();
+            }
+            String fraseTxt = "";
+            for (JsonNode c : abc.path("resumo")) {
+                String letra = c.path("classe").asText();
+                int prods = c.path("produtos").asInt();
+                double pctProd = total == 0 ? 0 : 100.0 * prods / total;
+                Label selo = Ui.texto("Classe " + letra + " · " + Fmt.qty(java.math.BigDecimal.valueOf(prods)) + " produtos ("
+                        + CurvaAbcChart.AnaliseFmtCurva.pct(pctProd) + ") · " + AnaliseFmt.valor("%", c.path("participacao"))
+                        + " do valor · " + Fmt.money(c.path("valor").decimalValue()), "rg-selo-abc", "rg-selo-" + letra.toLowerCase());
+                selos.getChildren().add(selo);
+                if ("A".equals(letra)) {
+                    fraseTxt = CurvaAbcChart.AnaliseFmtCurva.pct(pctProd) + " dos produtos (classe A) fazem "
+                            + AnaliseFmt.valor("%", c.path("participacao")) + " do "
+                            + ("cmv".equals(abc.path("baseAbc").asText()) ? "custo das vendas" : "faturamento") + " do período.";
+                }
+            }
+            frase.setText(fraseTxt);
+            base.setText("Base: " + ("cmv".equals(abc.path("baseAbc").asText()) ? "CMV" : "faturamento") + " · total "
+                    + Fmt.money(abc.path("totalValor").decimalValue()) + " · " + Fmt.qty(java.math.BigDecimal.valueOf(total))
+                    + " produtos vendidos no período. Passe o mouse na curva para ver cada produto.");
         }
-        resumo.setText(sb.toString());
 
         exibidos = new ArrayList<>();
         abc.path("itens").forEach(exibidos::add);
@@ -158,11 +223,18 @@ public class CurvaAbcView extends Tela {
         celulas.clear();
         String[] fsns = {"F", "S", "N"};
         String[] abcs = {"A", "B", "C"};
+        int maior = 1;
+        for (JsonNode n : dados) {
+            maior = Math.max(maior, n.path("produtos").asInt());
+        }
         for (int c = 0; c < 3; c++) {
-            matriz.add(Ui.texto(fsns[c] + (c == 0 ? " · rápido" : c == 1 ? " · lento" : " · parado"), "rg-muted"), c + 1, 0);
+            Label cab = Ui.texto(c == 0 ? "Rápido (F)" : c == 1 ? "Lento (S)" : "Parado (N)", "rg-matriz-cabecalho");
+            cab.setMaxWidth(Double.MAX_VALUE);
+            cab.setAlignment(javafx.geometry.Pos.CENTER);
+            matriz.add(cab, c + 1, 0);
         }
         for (int l = 0; l < 3; l++) {
-            matriz.add(Ui.texto("Classe " + abcs[l], "rg-muted"), 0, l + 1);
+            matriz.add(Ui.texto("Classe " + abcs[l], "rg-matriz-cabecalho", "rg-selo-" + abcs[l].toLowerCase()), 0, l + 1);
             for (int c = 0; c < 3; c++) {
                 JsonNode cel = null;
                 for (JsonNode n : dados) {
@@ -171,12 +243,18 @@ public class CurvaAbcView extends Tela {
                     }
                 }
                 int produtos = cel == null ? 0 : cel.path("produtos").asInt();
-                String valor = cel == null || cel.path("valorEstoque").isNull() ? "" : "\n" + Fmt.money(cel.path("valorEstoque").decimalValue());
-                Button b = new Button(produtos + (produtos == 1 ? " item" : " itens") + valor);
-                b.setTooltip(new javafx.scene.control.Tooltip("Classe " + abcs[l] + " · FSN " + fsns[c] + ": " + produtos + " produtos"));
+                boolean temValor = cel != null && !cel.path("valorEstoque").isNull();
+                String valor = temValor ? "\n" + Graficos.eixo(cel.path("valorEstoque").asDouble(), "R$") : "";
+                Button b = new Button(Fmt.qty(java.math.BigDecimal.valueOf(produtos)) + (produtos == 1 ? " item" : " itens") + valor);
+                b.setTooltip(new javafx.scene.control.Tooltip("Classe " + abcs[l] + " · " + (c == 0 ? "saída rápida" : c == 1
+                        ? "saída lenta" : "parado") + "\n" + produtos + " produtos"
+                        + (temValor ? "\nValor em estoque: " + Fmt.money(cel.path("valorEstoque").decimalValue()) : "")));
                 b.getStyleClass().add("rg-matriz-celula");
-                b.setMinSize(100, 54);
-                b.setPrefWidth(120);
+                // cor mais forte onde há mais produtos (4 níveis)
+                int nivel = produtos == 0 ? 0 : (int) Math.ceil(3.0 * produtos / maior);
+                b.getStyleClass().add("rg-matriz-n" + nivel);
+                b.setMinSize(96, 58);
+                b.setMaxWidth(Double.MAX_VALUE);
                 String a = abcs[l];
                 String s = fsns[c];
                 b.setOnAction(e -> alternar(a, s));

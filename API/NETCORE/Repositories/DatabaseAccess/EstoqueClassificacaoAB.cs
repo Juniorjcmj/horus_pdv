@@ -41,12 +41,10 @@ public class EstoqueClassificacaoAB(Connection connection)
         var valor = new Dictionary<string, decimal>(StringComparer.Ordinal);
         var sqlValor = p.AbcBase == "cmv"
             ? """
-              SELECT m.ProdutoId,
-                     SUM(CASE WHEN m.Tipo = 'saida_venda' THEN m.Quantidade ELSE -m.Quantidade END * ISNULL(m.CustoUnitario, pr.ProductUnitPrice))
-              FROM EstoqueMovimentacoes m INNER JOIN Produtos pr ON pr.Id = m.ProdutoId
-              WHERE m.CompanyId = @C AND m.Tipo IN ('saida_venda', 'devolucao') AND m.CriadoEm >= @Ini AND m.CriadoEm < @Fim
-              GROUP BY m.ProdutoId;
-              """
+              SELECT s.ProdutoId, SUM(s.Cmv)
+              FROM SAIDAS s
+              GROUP BY s.ProdutoId;
+              """.Replace("SAIDAS", SaidasVendaSql.Derivada("@Ini", "@Fim"))
             : """
               SELECT pr.Id, SUM(vi.ItemTotal)
               FROM VendaItens vi
@@ -68,11 +66,11 @@ public class EstoqueClassificacaoAB(Connection connection)
         var semanas = new Dictionary<string, int>(StringComparer.Ordinal);
         await using (var cmd = new SqlCommand(
             """
-            SELECT ProdutoId, COUNT(DISTINCT DATEDIFF(day, @De, CAST(DATEADD(minute, @Off, CriadoEm) AS DATE)) / 7)
-            FROM EstoqueMovimentacoes
-            WHERE CompanyId = @C AND Tipo = 'saida_venda' AND CriadoEm >= @Ini AND CriadoEm < @Fim
-            GROUP BY ProdutoId;
-            """, db))
+            SELECT s.ProdutoId, COUNT(DISTINCT DATEDIFF(day, @De, CAST(DATEADD(minute, @Off, s.Em) AS DATE)) / 7)
+            FROM SAIDAS s
+            WHERE s.Qtd > 0
+            GROUP BY s.ProdutoId;
+            """.Replace("SAIDAS", SaidasVendaSql.Derivada("@Ini", "@Fim")), db))
         {
             cmd.Parameters.AddWithValue("@C", companyId);
             cmd.Parameters.AddWithValue("@De", de.ToDateTime(TimeOnly.MinValue));
@@ -174,13 +172,10 @@ public class EstoqueClassificacaoAB(Connection connection)
         await using var db = await connection.OpenConnectionAsync(ct);
         var valorCte = porCmv
             ? """
-              SELECT m.ProdutoId AS ProdutoId,
-                     SUM(CASE WHEN m.Tipo = 'saida_venda' THEN m.Quantidade ELSE -m.Quantidade END) AS Qtd,
-                     SUM(CASE WHEN m.Tipo = 'saida_venda' THEN m.Quantidade ELSE -m.Quantidade END * ISNULL(m.CustoUnitario, pr.ProductUnitPrice)) AS Valor
-              FROM EstoqueMovimentacoes m INNER JOIN P pr ON pr.Id = m.ProdutoId
-              WHERE m.CompanyId = @C AND m.Tipo IN ('saida_venda', 'devolucao') AND m.CriadoEm >= @Ini AND m.CriadoEm < @Fim
-              GROUP BY m.ProdutoId
-              """
+              SELECT s.ProdutoId AS ProdutoId, SUM(s.Qtd) AS Qtd, SUM(s.Cmv) AS Valor
+              FROM SAIDAS s INNER JOIN P pr ON pr.Id = s.ProdutoId
+              GROUP BY s.ProdutoId
+              """.Replace("SAIDAS", SaidasVendaSql.Derivada("@Ini", "@Fim"))
             : """
               SELECT pr.Id AS ProdutoId, SUM(vi.Quantity) AS Qtd, SUM(vi.ItemTotal) AS Valor
               FROM VendaItens vi

@@ -152,7 +152,7 @@ public class EstoqueAnaliseController(
     {
         var itens = await indicadores.ProdutosAsync(u.CompanyId, f, p, HttpContext.RequestAborted);
         var lista = itens
-            .Select(i => new { i, giro = EstoqueCalculos.GiroAnualizado(EstoqueCalculos.Giro(i.Bruto.Cmv, i.Bruto.EstoqueMedioValor), f.Dias) })
+            .Select(i => new { i, giro = EstoqueCalculos.GiroAnualizado(EstoqueCalculos.Giro(i.Bruto.Cmv, i.Bruto.EstoqueMedioValor ?? (i.ValorEstoque > 0 ? i.ValorEstoque : null)), f.Dias) })
             .Where(x => x.giro is > 0)
             .OrderByDescending(x => x.giro).Take(10)
             .Select(x => new
@@ -213,6 +213,18 @@ public class EstoqueAnaliseController(
                 var resto = todos.Skip(100).Sum(i => i.Valor);
                 pareto.Add(new { posicao = 101, codigo = "", nome = $"Outros ({todos.Count - 100})", valor = resto, acumulada = 100m });
             }
+            // Curva completa reduzida a ~400 pontos (sempre com o primeiro, o último e o último item de cada classe), para
+            // desenhar a curva ABC com milhares de produtos.
+            var n = todos.Count;
+            var passo = Math.Max(1, n / 400);
+            var curva = new List<object>();
+            for (var k = 0; k < n; k++)
+            {
+                var it = todos[k];
+                var fimDeClasse = k < n - 1 && todos[k + 1].Classe != it.Classe;
+                if (k % passo == 0 || k == n - 1 || fimDeClasse)
+                    curva.Add(new { pos = k + 1, acumulada = Math.Round(it.Acumulada, 2), classe = it.Classe.ToString(), codigo = it.Codigo, nome = it.Nome, valor = it.Valor });
+            }
             var filtrados = todos.AsEnumerable();
             if (!string.IsNullOrWhiteSpace(classe)) filtrados = filtrados.Where(i => string.Equals(i.Classe.ToString(), classe, StringComparison.OrdinalIgnoreCase));
             if (!string.IsNullOrWhiteSpace(fsn)) filtrados = filtrados.Where(i => i.Fsn is { } x && string.Equals(x.ToString(), fsn, StringComparison.OrdinalIgnoreCase));
@@ -227,7 +239,7 @@ public class EstoqueAnaliseController(
                 classe = g.Key.ToString(), produtos = g.Count(), valor = g.Sum(i => i.Valor),
                 participacao = total > 0 ? Math.Round(100m * g.Sum(i => i.Valor) / total, 1) : 0m,
             }).ToList();
-            return new { periodo = Periodo(f), baseAbc = p.AbcBase, limiteA = p.AbcLimiteA, limiteB = p.AbcLimiteB, totalValor = total, pareto, itens = tabela, resumo, vazio = todos.Count == 0 };
+            return new { periodo = Periodo(f), baseAbc = p.AbcBase, limiteA = p.AbcLimiteA, limiteB = p.AbcLimiteB, totalValor = total, pareto, curva, totalProdutos = n, itens = tabela, resumo, vazio = todos.Count == 0 };
         });
 
     /// <summary>Matriz ABC x FSN: 9 combinações com produtos e valor em estoque (estoquista: só produtos).</summary>
@@ -365,7 +377,7 @@ public class EstoqueAnaliseController(
         if (i is null) return null;
         var series = await detalhe.SeriesDoProdutoAsync(u.CompanyId, id, f, HttpContext.RequestAborted);
         var classe = await detalhe.ClassificacaoDoProdutoAsync(u.CompanyId, id, HttpContext.RequestAborted);
-        var giro = EstoqueCalculos.GiroAnualizado(EstoqueCalculos.Giro(i.Bruto.Cmv, i.Bruto.EstoqueMedioValor), f.Dias);
+        var giro = EstoqueCalculos.GiroAnualizado(EstoqueCalculos.Giro(i.Bruto.Cmv, i.Bruto.EstoqueMedioValor ?? (i.ValorEstoque > 0 ? i.ValorEstoque : null)), f.Dias);
         return (object?)new
         {
             periodo = Periodo(f),

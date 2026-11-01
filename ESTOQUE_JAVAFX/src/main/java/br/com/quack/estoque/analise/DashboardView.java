@@ -24,13 +24,13 @@ import javafx.scene.layout.VBox;
  */
 public class DashboardView extends Tela {
     private static final double LARGURA = 470;
-    private static final double ALTURA = 330;
+    private static final double ALTURA = 370; // a rosca e a legenda cabem sem cortar
     /** Barras horizontais: mais que isso e os rótulos do eixo começam a se esconder. */
     private static final int MAX_BARRAS = 8;
 
     private final FiltrosAnalise filtros;
     private final FiltrosBar barra;
-    private final FlowPane cartoes = new FlowPane(12, 12);
+    private final GradeResponsiva cartoes = new GradeResponsiva(200, 12, 5);
     private final Label rodapeKpis = Ui.muted("");
     private final BlocoCard estoque = new BlocoCard("Estoque ao longo do tempo", "Valor em estoque no fim de cada dia", LARGURA, ALTURA);
     private final BlocoCard ruptura = new BlocoCard("Ruptura", "% de produtos com saldo zerado ou negativo", LARGURA, ALTURA);
@@ -47,7 +47,8 @@ public class DashboardView extends Tela {
         this.barra = new FiltrosBar(ctx, filtros, this::carregar);
 
         cartoes.getStyleClass().add("rg-kpi-flow");
-        FlowPane graficos = new FlowPane(12, 12, estoque, ruptura, cobertura, giro, parados, abc);
+        // Gráficos ocupam a largura toda: 3 colunas em tela larga, 2 em notebook, 1 em janela estreita.
+        GradeResponsiva graficos = new GradeResponsiva(400, 12, 3, estoque, ruptura, cobertura, giro, parados, abc);
         VBox miolo = new VBox(12, cartoes, rodapeKpis, graficos);
         miolo.setFillWidth(true);
         ScrollPane rolagem = new ScrollPane(miolo);

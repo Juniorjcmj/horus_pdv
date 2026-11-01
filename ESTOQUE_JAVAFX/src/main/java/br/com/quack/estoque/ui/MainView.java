@@ -61,6 +61,8 @@ public class MainView extends BorderPane implements Tela.Navegador {
 
         VBox menu = new VBox(2);
         menu.getStyleClass().add("rg-sidebar");
+        VBox listaMenu = new VBox(2); // itens do menu (rolam se não couberem; marca e usuário ficam fixos)
+        listaMenu.getStyleClass().add("rg-sidebar-lista");
         ImageView logo = new ImageView(new Image(MainView.class.getResource("quack-logo-negativo.png").toExternalForm(), 0, 72, true, true));
         logo.setFitHeight(30);
         logo.setPreserveRatio(true);
@@ -74,7 +76,7 @@ public class MainView extends BorderPane implements Tela.Navegador {
             if (i.id().startsWith("analise-") && itens.keySet().stream().noneMatch(k -> k.startsWith("analise-"))) {
                 Label secao = new Label("ANÁLISE");
                 secao.getStyleClass().add("rg-nav-secao");
-                menu.getChildren().add(secao);
+                listaMenu.getChildren().add(secao);
             }
             itens.put(i.id(), i);
             Button b = new Button(i.rotulo() + (i.atalho().isEmpty() ? "" : "   " + i.atalho()));
@@ -83,19 +85,32 @@ public class MainView extends BorderPane implements Tela.Navegador {
             b.setFocusTraversable(false);
             b.setOnAction(e -> ir(i.id()));
             botoes.put(i.id(), b);
-            menu.getChildren().add(b);
+            listaMenu.getChildren().add(b);
         }
-        javafx.scene.layout.Region folga = new javafx.scene.layout.Region();
-        VBox.setVgrow(folga, javafx.scene.layout.Priority.ALWAYS);
+        javafx.scene.control.ScrollPane rolagemMenu = new javafx.scene.control.ScrollPane(listaMenu);
+        rolagemMenu.setFitToWidth(true);
+        rolagemMenu.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        rolagemMenu.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        rolagemMenu.getStyleClass().add("rg-sidebar-rolagem");
+        rolagemMenu.setMinHeight(0);
+        VBox.setVgrow(rolagemMenu, javafx.scene.layout.Priority.ALWAYS);
         Label nome = new Label(ctx.session.user().name());
         Label papel = new Label(perfil.rotulo());
         Button sair = Fx.button("Sair", "rg-btn-small", aoSair);
         VBox usuario = new VBox(2, nome, papel, sair);
         usuario.getStyleClass().add("rg-sidebar-user");
-        menu.getChildren().addAll(folga, usuario);
+        menu.getChildren().addAll(rolagemMenu, usuario);
         setLeft(menu);
 
-        setCenter(conteudo);
+        // A tela ocupa a área toda; se precisar de mais altura que a janela (notebook, zoom), rola em vez de cortar o
+        // rodapé. Com tudo cabendo, a barra de rolagem nem aparece.
+        javafx.scene.control.ScrollPane rolagemTela = new javafx.scene.control.ScrollPane(conteudo);
+        rolagemTela.setFitToWidth(true);
+        rolagemTela.setFitToHeight(true);
+        rolagemTela.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);
+        rolagemTela.getStyleClass().add("rg-scroll-limpo");
+        rolagemTela.setMinHeight(0);
+        setCenter(rolagemTela);
         HBox status = new HBox(16, Ui.muted("Servidor: " + ctx.api.baseUrl()), statusCatalogo, Ui.espaco(),
                 Ui.muted("F5 atualiza o catálogo · Esc fecha janelas"));
         status.setAlignment(Pos.CENTER_LEFT);
