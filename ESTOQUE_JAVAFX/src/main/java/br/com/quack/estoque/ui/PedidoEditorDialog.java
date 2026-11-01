@@ -23,7 +23,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -155,7 +154,7 @@ public final class PedidoEditorDialog {
                         Ui.rotulado("Frete (R$)", frete), Ui.rotulado("Desconto (R$)", desconto)),
                 Ui.rotulado("Observação", obs),
                 Ui.texto("Itens", "rg-section-title"),
-                Ui.muted("Clique na quantidade ou no custo para alterar (Enter confirma)."),
+                Ui.muted("Clique na quantidade ou no custo para alterar (Enter, Tab ou clicar fora confirma)."),
                 addBox, tabela, Ui.barra(remover, Ui.espaco(), totais));
         atualizarTotais();
 
@@ -196,18 +195,33 @@ public final class PedidoEditorDialog {
     }
 
     private void editavel(String titulo, java.util.function.Function<Linha, SimpleStringProperty> prop, double largura) {
-        TableColumn<Linha, String> c = new TableColumn<>(titulo);
-        c.setCellValueFactory(cd -> prop.apply(cd.getValue()));
-        c.setCellFactory(TextFieldTableCell.forTableColumn());
-        c.setOnEditCommit(e -> {
-            prop.apply(e.getRowValue()).set(e.getNewValue());
+        colunaEditavel(tabela, titulo, prop, largura, true, () -> {
             tabela.refresh();
             atualizarTotais();
         });
-        c.setEditable(true);
+    }
+
+    /**
+     * Coluna editável com um clique ({@link CelulaEditavel}): grava no Enter, no Tab e ao sair do campo (clicar em
+     * outra linha ou em "Salvar"). O TextFieldTableCell padrão só gravava no Enter e perdia o valor digitado.
+     */
+    static <S> TableColumn<S, String> colunaEditavel(TableView<S> t, String titulo,
+            java.util.function.Function<S, SimpleStringProperty> prop, double largura, boolean numero, Runnable aoMudar) {
+        TableColumn<S, String> c = new TableColumn<>(titulo);
+        c.setCellValueFactory(cd -> prop.apply(cd.getValue()));
+        CelulaEditavel.em(c, l -> prop.apply(l).get(), numero, l -> true);
+        c.setOnEditCommit(e -> {
+            prop.apply(e.getRowValue()).set(e.getNewValue() == null ? "" : e.getNewValue().trim());
+            if (aoMudar != null) {
+                aoMudar.run();
+            }
+        });
         c.setPrefWidth(largura);
-        c.setStyle("-fx-alignment: CENTER-RIGHT;");
-        tabela.getColumns().add(c);
+        if (numero) {
+            c.setStyle("-fx-alignment: CENTER-RIGHT;");
+        }
+        t.getColumns().add(c);
+        return c;
     }
 
     private void atualizarTotais() {

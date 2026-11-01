@@ -24,7 +24,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -298,15 +297,8 @@ public class PedidosCompraView extends Tela {
 
     private static TableColumn<ItemEditavel, String> editavel(TableView<ItemEditavel> t, String titulo,
             java.util.function.Function<ItemEditavel, SimpleStringProperty> prop, double largura) {
-        TableColumn<ItemEditavel, String> c = new TableColumn<>(titulo);
-        c.setCellValueFactory(cd -> prop.apply(cd.getValue()));
-        c.setCellFactory(TextFieldTableCell.forTableColumn());
-        c.setOnEditCommit(e -> prop.apply(e.getRowValue()).set(e.getNewValue()));
-        c.setEditable(true);
-        c.setPrefWidth(largura);
-        c.setStyle("-fx-alignment: CENTER-RIGHT;");
-        t.getColumns().add(c);
-        return c;
+        return PedidoEditorDialog.colunaEditavel(t, titulo, prop, largura, !titulo.startsWith("Lote") && !titulo.startsWith("Validade"),
+                t::refresh);
     }
 
     /** Editor completo do pedido pendente (fornecedor, prazos, pagamento, frete, desconto, observação e itens). */
