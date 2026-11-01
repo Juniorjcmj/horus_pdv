@@ -5,6 +5,7 @@ import br.com.quack.estoque.analise.Graficos.Ponto;
 import br.com.quack.estoque.analise.Graficos.Referencia;
 import br.com.quack.estoque.domain.Fmt;
 import br.com.quack.estoque.domain.Perfil;
+import br.com.quack.estoque.ui.Carregando;
 import br.com.quack.estoque.ui.Fx;
 import br.com.quack.estoque.ui.Modal;
 import br.com.quack.estoque.ui.Tela;
@@ -175,7 +176,7 @@ public class AcuraciaView extends Tela {
         int minha = ++geracao;
         FiltrosAnalise f = filtros.copia();
         grafico.carregando();
-        Fx.async(() -> new JsonNode[] {ctx.analise.bloco("acuracidade", f), ctx.analise.bloco("divergencias", f)}, r -> {
+        Carregando.async(() -> new JsonNode[] {ctx.analise.bloco("acuracidade", f), ctx.analise.bloco("divergencias", f)}, r -> {
             if (minha == geracao) {
                 mostrar(r[0].path("dados"), r[1].path("dados"), r[0].path("calculadoEm").asText(null));
             }
@@ -229,7 +230,7 @@ public class AcuraciaView extends Tela {
 
     private void gerarLista() {
         contagemInfo.setText("Carregando…");
-        Fx.async(ctx.analise::contagemCiclica, r -> {
+        Carregando.async(ctx.analise::contagemCiclica, r -> {
             List<LinhaContagem> linhas = new ArrayList<>();
             r.path("itens").forEach(j -> linhas.add(new LinhaContagem(j)));
             contagem.setItems(FXCollections.observableArrayList(linhas));
@@ -295,7 +296,7 @@ public class AcuraciaView extends Tela {
                 return false;
             }
             m[0].ocupado(true);
-            Fx.async(() -> {
+            Carregando.async(() -> {
                 String id = abrirEContar(itens);
                 return ctx.inventarios.aplicar(id, ctx.session.user().id(), senha.getText(), j, false, ctx.terminal());
             }, r -> {

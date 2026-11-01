@@ -4,6 +4,7 @@ import br.com.quack.estoque.AppContext;
 import br.com.quack.estoque.analise.Graficos.Ponto;
 import br.com.quack.estoque.analise.Graficos.Referencia;
 import br.com.quack.estoque.domain.Fmt;
+import br.com.quack.estoque.ui.Carregando;
 import br.com.quack.estoque.ui.Fx;
 import br.com.quack.estoque.ui.Tela;
 import br.com.quack.estoque.ui.Ui;
@@ -124,7 +125,7 @@ public class DetalheProdutoView extends Tela {
         for (BlocoCard b : List.of(saldo, semanal, histograma)) {
             b.carregando();
         }
-        Fx.async(() -> ctx.analise.produto(id, f), r -> {
+        Carregando.async(() -> ctx.analise.produto(id, f), r -> {
             if (minha == geracao) {
                 mostrar(r.path("dados"), r.path("calculadoEm").asText(null));
             }
@@ -142,7 +143,7 @@ public class DetalheProdutoView extends Tela {
     private void carregarExtrato(int minha, FiltrosAnalise f) {
         String id = produtoId;
         int pg = pagina;
-        Fx.async(() -> ctx.analise.extrato(id, f, pg, POR_PAGINA), r -> {
+        Carregando.async(() -> ctx.analise.extrato(id, f, pg, POR_PAGINA), r -> {
             if (minha != geracao) {
                 return;
             }

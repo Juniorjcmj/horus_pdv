@@ -3,6 +3,7 @@ package br.com.quack.estoque.analise;
 import br.com.quack.estoque.AppContext;
 import br.com.quack.estoque.analise.Graficos.Ponto;
 import br.com.quack.estoque.analise.Graficos.Referencia;
+import br.com.quack.estoque.ui.Carregando;
 import br.com.quack.estoque.ui.Fx;
 import br.com.quack.estoque.ui.Tela;
 import br.com.quack.estoque.ui.Ui;
@@ -206,7 +207,7 @@ public class DashboardView extends Tela {
     /** Chama um bloco fora da FX thread e entrega o resultado só se os filtros não mudaram nesse meio-tempo. */
     private void bloco(String rota, FiltrosAnalise f, int minha, BlocoCard card, java.util.function.BiConsumer<JsonNode, String> ok,
             java.util.function.Consumer<Throwable> falha) {
-        Fx.async(() -> ctx.analise.bloco(rota, f), r -> {
+        Carregando.async(() -> ctx.analise.bloco(rota, f), r -> {
             if (minha != geracao) {
                 return;
             }

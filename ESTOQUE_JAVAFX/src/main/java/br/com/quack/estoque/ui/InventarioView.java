@@ -197,7 +197,7 @@ public class InventarioView extends Tela {
             acoesProd.setVisible(b == prods);
             acoesProd.setManaged(b == prods);
         });
-        Fx.async(ctx.cadastros::categorias, cs -> listaCats.setItems(FXCollections.observableArrayList(ordenarCats(cs))), e -> {
+        Carregando.async(ctx.cadastros::categorias, cs -> listaCats.setItems(FXCollections.observableArrayList(ordenarCats(cs))), e -> {
         });
         VBox corpo = new VBox(8, Ui.rotulado("Descrição", descricao), Ui.texto("O que será contado?", "rg-form-label"), loja, cats, listaCats,
                 prods, listaProds, acoesProd,
@@ -218,7 +218,7 @@ public class InventarioView extends Tela {
             }
             String desc = descricao.getText() == null ? "" : descricao.getText().trim();
             m[0].ocupado(true);
-            Fx.async(() -> ctx.inventarios.abrir(desc, escopo, catIds, prodIds, ctx.terminal()), r -> {
+            Carregando.async(() -> ctx.inventarios.abrir(desc, escopo, catIds, prodIds, ctx.terminal()), r -> {
                 m[0].ocupado(false);
                 m[0].fechar();
                 sucesso("Inventário #" + r.path("numero").asInt() + " aberto com " + r.path("itens").asInt() + " produtos.");
@@ -648,7 +648,7 @@ public class InventarioView extends Tela {
 
         void carregar() {
             String filtro = filtros.getSelectedToggle() == null ? "divergentes" : (String) filtros.getSelectedToggle().getUserData();
-            Fx.async(() -> new Object[] {ctx.inventarios.obter(inventarioId), ctx.inventarios.itens(inventarioId, filtro)}, r -> {
+            Carregando.async(() -> new Object[] {ctx.inventarios.obter(inventarioId), ctx.inventarios.itens(inventarioId, filtro)}, r -> {
                 ultimoResumo = (JsonNode) r[0];
                 @SuppressWarnings("unchecked")
                 List<br.com.quack.estoque.api.InventarioApi.Item> itens = (List<br.com.quack.estoque.api.InventarioApi.Item>) r[1];
@@ -671,7 +671,7 @@ public class InventarioView extends Tela {
                 return;
             }
             List<String> ids = sel.stream().map(i -> i.produtoId()).toList();
-            Fx.async(() -> {
+            Carregando.async(() -> {
                 ctx.inventarios.recontar(inventarioId, ids);
                 return true;
             }, ok -> {
@@ -709,7 +709,7 @@ public class InventarioView extends Tela {
                     return false;
                 }
                 m[0].ocupado(true);
-                Fx.async(() -> ctx.inventarios.aplicar(inventarioId, ctx.session.user().id(), senha.getText(), j, zerar.isSelected(), ctx.terminal()),
+                Carregando.async(() -> ctx.inventarios.aplicar(inventarioId, ctx.session.user().id(), senha.getText(), j, zerar.isSelected(), ctx.terminal()),
                         r -> {
                             m[0].ocupado(false);
                             m[0].fechar();

@@ -3,6 +3,7 @@ package br.com.quack.estoque.analise;
 import br.com.quack.estoque.AppContext;
 import br.com.quack.estoque.domain.Csv;
 import br.com.quack.estoque.domain.Fmt;
+import br.com.quack.estoque.ui.Carregando;
 import br.com.quack.estoque.ui.Fx;
 import br.com.quack.estoque.ui.Tela;
 import br.com.quack.estoque.ui.Toasts;
@@ -153,7 +154,7 @@ public class CurvaAbcView extends Tela {
         int minha = ++geracao;
         FiltrosAnalise f = filtros.copia();
         estadoVazio.setText("Carregando…");
-        Fx.async(() -> new JsonNode[] {ctx.analise.abc(f, classe, fsn), ctx.analise.bloco("abc-fsn", f)}, r -> {
+        Carregando.async(() -> new JsonNode[] {ctx.analise.abc(f, classe, fsn), ctx.analise.bloco("abc-fsn", f)}, r -> {
             if (minha != geracao) {
                 return;
             }

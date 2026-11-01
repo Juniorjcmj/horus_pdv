@@ -175,7 +175,7 @@ public class ProdutosView extends Tela {
                 return false;
             }
             m[0].ocupado(true);
-            Fx.async(() -> ctx.produtos.atualizarPreco(p.id(), Fmt.moneyApi(v), p.versaoPreco()), salvo -> {
+            Carregando.async(() -> ctx.produtos.atualizarPreco(p.id(), Fmt.moneyApi(v), p.versaoPreco()), salvo -> {
                 m[0].ocupado(false);
                 m[0].fechar();
                 sucesso("Preço de \"" + p.nome() + "\" alterado para " + Fmt.money(v) + ".");
@@ -392,7 +392,7 @@ public class ProdutosView extends Tela {
         String fornecedorNome = fornecedor.getValue() == null ? "" : fornecedor.getValue();
 
         m.ocupado(true);
-        Fx.async(() -> {
+        Carregando.async(() -> {
             ObjectNode body;
             if (novo) {
                 body = br.com.quack.estoque.persistence.JsonFiles.MAPPER.createObjectNode();

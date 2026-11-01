@@ -332,7 +332,7 @@ public class RelatoriosView extends Tela {
         }
 
         void carregar() {
-            Fx.async(consulta::get, r -> {
+            Carregando.async("Gerando o relatório…", consulta::get, r -> {
                 ultimo = r;
                 exibidos = new ArrayList<>();
                 itens.apply(r).forEach(exibidos::add);

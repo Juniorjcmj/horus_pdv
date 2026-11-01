@@ -2,6 +2,7 @@ package br.com.quack.estoque.analise;
 
 import br.com.quack.estoque.AppContext;
 import br.com.quack.estoque.domain.Fmt;
+import br.com.quack.estoque.ui.Carregando;
 import br.com.quack.estoque.ui.Fx;
 import br.com.quack.estoque.ui.Tela;
 import br.com.quack.estoque.ui.Ui;
@@ -53,7 +54,7 @@ public class FornecedoresView extends Tela {
     private void carregar() {
         int minha = ++geracao;
         grafico.carregando();
-        Fx.async(() -> ctx.analise.bloco("fornecedores", filtros), r -> {
+        Carregando.async(() -> ctx.analise.bloco("fornecedores", filtros), r -> {
             if (minha == geracao) {
                 mostrar(r.path("dados"), r.path("calculadoEm").asText(null));
             }

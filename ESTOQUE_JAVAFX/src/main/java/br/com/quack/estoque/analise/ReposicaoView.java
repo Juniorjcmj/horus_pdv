@@ -5,6 +5,7 @@ import br.com.quack.estoque.domain.Csv;
 import br.com.quack.estoque.domain.Fmt;
 import br.com.quack.estoque.domain.Perfil;
 import br.com.quack.estoque.domain.XlsxWriter;
+import br.com.quack.estoque.ui.Carregando;
 import br.com.quack.estoque.ui.Fx;
 import br.com.quack.estoque.ui.Tela;
 import br.com.quack.estoque.ui.Toasts;
@@ -179,7 +180,7 @@ public class ReposicaoView extends Tela {
         int minha = ++geracao;
         FiltrosAnalise f = filtros.copia();
         info.setText("Carregando…");
-        Fx.async(() -> ctx.analise.reposicao(f), r -> {
+        Carregando.async(() -> ctx.analise.reposicao(f), r -> {
             if (minha != geracao) {
                 return;
             }

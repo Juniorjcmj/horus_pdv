@@ -45,8 +45,14 @@ public abstract class Tela extends VBox {
         return Ui.janela(this);
     }
 
+    /** Consulta fora da tela com o loader da página (aparece se demorar mais que um instante). */
     protected <T> void rodar(Supplier<T> trabalho, Consumer<T> ok) {
-        Fx.async(trabalho, ok, this::erro);
+        Carregando.async(trabalho, ok, this::erro);
+    }
+
+    /** Igual a {@link #rodar(Supplier, Consumer)} com uma mensagem própria no loader. */
+    protected <T> void rodar(String mensagem, Supplier<T> trabalho, Consumer<T> ok) {
+        Carregando.async(mensagem, trabalho, ok, this::erro);
     }
 
     /** Igual a {@link #rodar(Supplier, Consumer)}, mostrando o indicador de carregamento enquanto a consulta roda. */

@@ -397,7 +397,7 @@ public class MovimentacoesView extends Tela {
         Ui.col(t, "Usuário", Movimentacao::usuarioNome, 120);
         Label total = Ui.muted("Carregando…");
         VBox corpo = new VBox(8, t, total);
-        Fx.async(() -> ctx.produtos.movimentacoes(p.id()), lista -> {
+        Carregando.async(() -> ctx.produtos.movimentacoes(p.id()), lista -> {
             t.setItems(FXCollections.observableArrayList(lista));
             total.setText(resumo(lista));
         }, e -> total.setText(Fx.message(e)));

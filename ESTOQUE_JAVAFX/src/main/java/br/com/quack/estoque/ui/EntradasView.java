@@ -143,7 +143,7 @@ public class EntradasView extends Tela {
                 + (i.path("dataValidade").asText("").isBlank() ? "" : " · " + Fmt.dateOnly(i.path("dataValidade").asText())), 150);
         Label topo = Ui.muted("Carregando…");
         VBox corpo = new VBox(8, topo, t);
-        Fx.async(() -> ctx.entradas.obterNota(resumo.path("id").asText()), d -> {
+        Carregando.async(() -> ctx.entradas.obterNota(resumo.path("id").asText()), d -> {
             JsonNode nota = d.path("nota");
             JsonNode entrada = d.path("entrada");
             List<JsonNode> itens = new ArrayList<>();

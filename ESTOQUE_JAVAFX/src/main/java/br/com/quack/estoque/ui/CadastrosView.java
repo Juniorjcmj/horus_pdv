@@ -133,7 +133,7 @@ public class CadastrosView extends Tela {
                     }
                     String paiId = sub ? pai.getValue().id() : null;
                     m[0].ocupado(true);
-                    Fx.async(() -> ctx.cadastros.salvarCategoria(c == null ? null : c.id(), n, paiId, ativa.isSelected()), id -> {
+                    Carregando.async(() -> ctx.cadastros.salvarCategoria(c == null ? null : c.id(), n, paiId, ativa.isSelected()), id -> {
                         m[0].ocupado(false);
                         m[0].fechar();
                         sucesso("Categoria salva.");
@@ -202,7 +202,7 @@ public class CadastrosView extends Tela {
                 return false;
             }
             m[0].ocupado(true);
-            Fx.async(() -> ctx.cadastros.salvarFornecedor(f == null ? null : f.id(), corpo), salvo -> {
+            Carregando.async(() -> ctx.cadastros.salvarFornecedor(f == null ? null : f.id(), corpo), salvo -> {
                 m[0].ocupado(false);
                 m[0].fechar();
                 sucesso("Fornecedor salvo.");

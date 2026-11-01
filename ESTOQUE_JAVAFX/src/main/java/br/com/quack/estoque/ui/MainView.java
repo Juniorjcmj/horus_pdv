@@ -104,7 +104,9 @@ public class MainView extends BorderPane implements Tela.Navegador {
 
         // A tela ocupa a área toda; se precisar de mais altura que a janela (notebook, zoom), rola em vez de cortar o
         // rodapé. Com tudo cabendo, a barra de rolagem nem aparece.
-        javafx.scene.control.ScrollPane rolagemTela = new javafx.scene.control.ScrollPane(conteudo);
+        Carregando carregandoPagina = new Carregando(conteudo).comAtraso();
+        Carregando.definirPagina(carregandoPagina);
+        javafx.scene.control.ScrollPane rolagemTela = new javafx.scene.control.ScrollPane(carregandoPagina);
         rolagemTela.setFitToWidth(true);
         rolagemTela.setFitToHeight(true);
         rolagemTela.setHbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER);

@@ -2,6 +2,7 @@ package br.com.quack.estoque.analise;
 
 import br.com.quack.estoque.AppContext;
 import br.com.quack.estoque.domain.Fmt;
+import br.com.quack.estoque.ui.Carregando;
 import br.com.quack.estoque.ui.Fx;
 import br.com.quack.estoque.ui.Tela;
 import br.com.quack.estoque.ui.Toasts;
@@ -171,7 +172,7 @@ public class ConfiguracoesView extends Tela {
     @Override
     public void ativar() {
         status.setText("Carregando…");
-        Fx.async(() -> ctx.analise.config(), this::mostrar, t -> status.setText("Não foi possível carregar: " + Fx.message(t)));
+        Carregando.async(() -> ctx.analise.config(), this::mostrar, t -> status.setText("Não foi possível carregar: " + Fx.message(t)));
     }
 
     private void mostrar(JsonNode r) {

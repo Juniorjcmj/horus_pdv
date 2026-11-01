@@ -2,6 +2,7 @@ package br.com.quack.estoque.analise;
 
 import br.com.quack.estoque.AppContext;
 import br.com.quack.estoque.domain.Fmt;
+import br.com.quack.estoque.ui.Carregando;
 import br.com.quack.estoque.ui.Fx;
 import br.com.quack.estoque.ui.Tela;
 import br.com.quack.estoque.ui.Ui;
@@ -125,7 +126,7 @@ public class PerdasView extends Tela {
         int minha = ++geracao;
         FiltrosAnalise f = filtros.copia();
         graficoPerdas.carregando();
-        Fx.async(() -> ctx.analise.bloco("perdas", f), r -> {
+        Carregando.async(() -> ctx.analise.bloco("perdas", f), r -> {
             if (minha == geracao) {
                 ultimasPerdas = r.path("dados");
                 desenharPerdas();
@@ -135,7 +136,7 @@ public class PerdasView extends Tela {
                 graficoPerdas.erro(Fx.message(t));
             }
         });
-        Fx.async(() -> ctx.analise.bloco("parados", f), r -> {
+        Carregando.async(() -> ctx.analise.bloco("parados", f), r -> {
             if (minha == geracao) {
                 mostrarParados(r.path("dados"));
             }
