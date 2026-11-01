@@ -49,6 +49,7 @@ public class MainView extends BorderPane implements Tela.Navegador {
                 new Item("inventario", "Inventário", "F6", true, InventarioView::new),
                 new Item("etiquetas", "Etiquetas", "F8", true, EtiquetasView::new),
                 new Item("compras", "Compras", "", true, ComprasView::new),
+                new Item("pedidos-compra", "Pedidos de compra", "", perfil.gerarPedidoCompra(), PedidosCompraView::new),
                 new Item("relatorios", "Relatórios", "", true, RelatoriosView::new),
                 new Item("analise-dashboard", "Dashboard", "", true, br.com.quack.estoque.analise.DashboardView::new),
                 new Item("analise-abc", "Curva ABC", "", perfil.relatoriosDeValor(), br.com.quack.estoque.analise.CurvaAbcView::new),

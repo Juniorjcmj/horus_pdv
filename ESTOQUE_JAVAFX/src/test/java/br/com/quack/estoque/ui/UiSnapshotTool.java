@@ -85,7 +85,10 @@ public final class UiSnapshotTool {
         if (!pronto.await(60, TimeUnit.SECONDS) || principal.get() == null) {
             throw new IllegalStateException("O aplicativo não abriu (login falhou?)");
         }
-        List<String> ids = List.of("inicio", "produtos", "entradas", "ajustes", "inventario", "etiquetas", "compras", "relatorios", "analise-dashboard", "analise-abc", "analise-reposicao", "analise-acuracidade", "analise-perdas", "analise-fornecedores", "analise-config", "cadastros");
+        List<String> todas = List.of("inicio", "produtos", "entradas", "ajustes", "inventario", "etiquetas", "compras", "pedidos-compra", "relatorios", "analise-dashboard", "analise-abc", "analise-reposicao", "analise-acuracidade", "analise-perdas", "analise-fornecedores", "analise-config", "cadastros");
+        // -Dquack.test.telas=compras,pedidos-compra fotografa só essas
+        String so = System.getProperty("quack.test.telas");
+        List<String> ids = so == null || so.isBlank() ? todas : List.of(so.split(","));
         java.util.ArrayList<String> ok = new java.util.ArrayList<>();
         for (String id : ids) {
             if (!principal.get().possui(id)) {

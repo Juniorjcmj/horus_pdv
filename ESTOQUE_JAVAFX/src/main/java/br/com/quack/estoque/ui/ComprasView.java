@@ -395,58 +395,43 @@ public class ComprasView extends Tela {
                     + (perfil.verCustos() && !semFornecedor ? " · " + Fmt.money(total) : ""), "rg-section-title"), Ui.espaco(),
                     semFornecedor ? cotar : imprimir, semFornecedor ? imprimir : cotar));
         }
+        corpo.getChildren().add(Ui.barra(Ui.muted("Depois, acompanhe, troque o fornecedor e receba em \"Pedidos de compra\"."),
+                Ui.espaco(), Ui.pequeno("Abrir Pedidos de compra", () -> nav.ir("pedidos-compra"))));
         Modal.informativo(janela(), "Pedidos criados", "Os pedidos ficam em aberto para receber depois. \"Imprimir cotação\" sai "
                 + "sem os seus custos, com espaço para cada fornecedor preencher o preço; imprima quantas cópias quiser.", corpo, 640, 0)
                 .mostrar();
     }
 
-    /** Solicitação de cotação: produtos e quantidades, sem os nossos custos, com preço e total em branco para o fornecedor. */
     private void imprimirCotacao(String numero, List<LinhaCompra> itens) {
-        var doc = Documento.tabela("Solicitação de cotação " + numero,
-                List.of("Fornecedor: ________________________________________   Telefone: ____________________",
-                        "Solicitado em " + Fmt.date(LocalDate.now()) + " por " + ctx.session.user().name()
-                                + ". Preencha o preço unitário e devolva com o prazo de entrega."),
-                COLUNAS_COTACAO, linhasCotacao(itens),
-                List.of("Prazo de entrega: ______ dias     Condição de pagamento: ______________     Validade da proposta: ______"));
-        PrintService.imprimirDocumento(doc, "", erro -> {
-            if (erro != null) {
-                Toasts.error(janela(), erro);
-            } else {
-                sucesso("Cotação " + numero + " enviada para a impressora.");
-            }
-        });
+        imprimir(PedidoImpressao.cotacao(numero, ctx.session.user().name(), paraImpressao(itens)),
+                "Cotação " + numero + " enviada para a impressora.");
     }
-
-    static final List<Documento.Col> COLUNAS_COTACAO = List.of(Documento.Col.texto("Código", 12),
-            Documento.Col.texto("Produto", 44), Documento.Col.numero("Quantidade", 14), Documento.Col.numero("Preço unit.", 14),
-            Documento.Col.numero("Total", 14));
 
     /** Linhas da cotação: sem custo (o fornecedor preenche). */
     public static List<List<String>> linhasCotacao(List<LinhaCompra> itens) {
-        List<List<String>> linhas = new ArrayList<>();
-        for (LinhaCompra l : itens) {
-            linhas.add(List.of(l.codigo(), l.nome(), (Fmt.qty(l.qtd()) + " " + l.unidade()).trim(), "__________", "__________"));
-        }
-        return linhas;
+        return PedidoImpressao.linhasCotacao(paraImpressao(itens));
     }
 
     private void imprimirPedido(String numero, String fornecedor, List<LinhaCompra> itens) {
-        List<List<String>> linhas = new ArrayList<>();
-        for (LinhaCompra l : itens) {
-            linhas.add(List.of(l.codigo(), l.nome(), Fmt.qty(l.qtd()), Fmt.dec2(l.custoUnit()), Fmt.dec2(l.total())));
-        }
-        BigDecimal total = itens.stream().map(LinhaCompra::total).reduce(BigDecimal.ZERO, BigDecimal::add);
-        var doc = Documento.tabela("Pedido de compra " + numero,
-                List.of("Fornecedor: " + fornecedor, "Emitido em " + Fmt.date(LocalDate.now()) + " por " + ctx.session.user().name()),
-                List.of(Documento.Col.texto("Código", 12), Documento.Col.texto("Produto", 44), Documento.Col.numero("Quantidade", 14),
-                        Documento.Col.numero("Custo unit.", 14), Documento.Col.numero("Total", 14)),
-                linhas, List.of("Total do pedido: " + Fmt.money(total)));
+        imprimir(PedidoImpressao.pedido(numero, fornecedor, ctx.session.user().name(), paraImpressao(itens)),
+                "Pedido " + numero + " enviado para a impressora.");
+    }
+
+    private void imprimir(javafx.scene.Node doc, String ok) {
         PrintService.imprimirDocumento(doc, "", erro -> {
             if (erro != null) {
                 Toasts.error(janela(), erro);
             } else {
-                sucesso("Pedido " + numero + " enviado para a impressora.");
+                sucesso(ok);
             }
         });
+    }
+
+    static List<PedidoImpressao.Linha> paraImpressao(List<LinhaCompra> itens) {
+        List<PedidoImpressao.Linha> r = new ArrayList<>();
+        for (LinhaCompra l : itens) {
+            r.add(new PedidoImpressao.Linha(l.codigo(), l.nome(), l.qtd(), l.unidade(), l.custoUnit()));
+        }
+        return r;
     }
 }
