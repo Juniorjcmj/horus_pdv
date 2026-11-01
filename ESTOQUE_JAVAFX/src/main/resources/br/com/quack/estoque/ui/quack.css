@@ -2074,3 +2074,19 @@
     -fx-shape: "";
     -fx-padding: 0;
 }
+
+/* Indicador de carregamento sobre tabelas/gráficos */
+.rg-carregando {
+    -fx-background-color: rgba(255, 255, 255, 0.78);
+    -fx-background-radius: 10;
+}
+
+.rg-carregando .progress-indicator {
+    -fx-progress-color: -highlight-strong;
+}
+
+.rg-carregando-texto {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink;
+}

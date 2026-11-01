@@ -94,6 +94,8 @@ public class ComprasView extends Tela {
     private final javafx.scene.layout.FlowPane porFornecedorBox = new javafx.scene.layout.FlowPane();
     private List<CadastroApi.Fornecedor> fornecedores = new ArrayList<>();
     private final Button gerar;
+    private final Button calcularBtn = Ui.botao("Calcular sugestão", this::calcular);
+    private Carregando carregando;
 
     public ComprasView(AppContext ctx, Navegador nav) {
         super(ctx, nav);
@@ -124,7 +126,7 @@ public class ComprasView extends Tela {
         });
         categoria.setPrefWidth(300);
         var filtros = Ui.barra(Ui.rotulado("Vendas dos últimos (dias)", dias), Ui.rotulado("Cobertura desejada (dias)", cobertura),
-                Ui.rotulado("Categoria", categoria), Ui.botao("Calcular sugestão", this::calcular));
+                Ui.rotulado("Categoria", categoria), calcularBtn);
         getChildren().add(filtros);
 
         tabela.setEditable(perfil.gerarPedidoCompra());
@@ -224,7 +226,8 @@ public class ComprasView extends Tela {
         HBox.setHgrow(totais, Priority.ALWAYS);
         HBox rodape = new HBox(12, excluir, totais);
         rodape.setStyle("-fx-alignment: top-left;");
-        getChildren().addAll(tabela, rodape);
+        carregando = new Carregando(tabela, calcularBtn, gerar, excluir);
+        getChildren().addAll(carregando, rodape);
     }
 
     /** Motivo da sugestão em poucas palavras (o texto completo aparece ao passar o mouse). */
@@ -246,7 +249,8 @@ public class ComprasView extends Tela {
 
     @Override
     public void ativar() {
-        rodar(() -> new Object[] {ctx.cadastros.categorias(), perfil.gerarPedidoCompra() ? ctx.cadastros.fornecedores() : List.of()}, r -> {
+        rodar(carregando, "Carregando categorias e fornecedores…",
+                () -> new Object[] {ctx.cadastros.categorias(), perfil.gerarPedidoCompra() ? ctx.cadastros.fornecedores() : List.of()}, r -> {
             @SuppressWarnings("unchecked")
             List<CadastroApi.Categoria> cats = (List<CadastroApi.Categoria>) r[0];
             @SuppressWarnings("unchecked")
@@ -270,7 +274,8 @@ public class ComprasView extends Tela {
             return;
         }
         String cat = categoria.getValue() == null ? null : categoria.getValue().id();
-        rodar(() -> ctx.relatorios.reposicao(d, c, cat), r -> {
+        rodar(carregando, "Calculando a sugestão de compra pelas vendas dos últimos " + d + " dias…",
+                () -> ctx.relatorios.reposicao(d, c, cat), r -> {
             List<LinhaCompra> linhas = new ArrayList<>();
             for (JsonNode i : r.path("itens")) {
                 LinhaCompra nova = new LinhaCompra(i, perfil.verCustos());
@@ -346,7 +351,7 @@ public class ComprasView extends Tela {
         }
         Map<String, List<LinhaCompra>> alvo = grupos;
         Modal.confirmar(janela(), "Gerar pedidos de compra", "Serão criados " + alvo.size() + " pedido(s) de compra em aberto, um por fornecedor.",
-                "Gerar pedidos", () -> rodar(() -> {
+                "Gerar pedidos", () -> rodar(carregando, "Gerando " + alvo.size() + " pedido(s) de compra…", () -> {
                     List<Object[]> criados = new ArrayList<>();
                     for (var e : alvo.entrySet()) {
                         List<OrdemCompraApi.Item> itens = new ArrayList<>();

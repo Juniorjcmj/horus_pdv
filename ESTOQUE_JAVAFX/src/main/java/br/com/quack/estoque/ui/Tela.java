@@ -49,6 +49,18 @@ public abstract class Tela extends VBox {
         Fx.async(trabalho, ok, this::erro);
     }
 
+    /** Igual a {@link #rodar(Supplier, Consumer)}, mostrando o indicador de carregamento enquanto a consulta roda. */
+    protected <T> void rodar(Carregando carregando, String mensagem, Supplier<T> trabalho, Consumer<T> ok) {
+        carregando.mostrar(mensagem);
+        Fx.async(trabalho, r -> {
+            carregando.ocultar();
+            ok.accept(r);
+        }, t -> {
+            carregando.ocultar();
+            erro(t);
+        });
+    }
+
     protected void erro(Throwable t) {
         Toasts.error(janela(), Fx.message(t));
     }
