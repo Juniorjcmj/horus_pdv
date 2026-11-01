@@ -19,6 +19,12 @@ public class ProdutoRequest
     public string? ProductSupplier { get; set; } = string.Empty;
     public string ProductDescription { get; set; } = string.Empty;
     public string ProductQnt { get; set; } = string.Empty;
+    /// <summary>
+    /// Opcional, só na edição: o estoque que o cliente viu ao carregar o produto. Quando informado, a edição aplica só a
+    /// diferença digitada (ProductQnt − EstoqueConsultado) sobre o saldo atual — vendas feitas nesse meio tempo não são
+    /// desfeitas, e sem diferença não há movimentação. Sem ele, vale o comportamento antigo (ProductQnt vira o saldo).
+    /// </summary>
+    public string? EstoqueConsultado { get; set; }
     public string EstoqueMinimo { get; set; } = "0";
     public string ProductUnitPrice { get; set; } = string.Empty;
     public string ProductSalePrice { get; set; } = string.Empty;

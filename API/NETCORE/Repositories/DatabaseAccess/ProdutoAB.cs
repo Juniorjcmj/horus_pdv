@@ -364,6 +364,11 @@ public class ProdutoAB(Connection connection)
                 if (await read.ExecuteScalarAsync() is decimal atual) saldoAtual = atual;
             }
 
+            // Edição com o estoque consultado: aplica só a diferença digitada sobre o saldo atual (não desfaz vendas
+            // feitas depois que a tela carregou o produto).
+            if (product.EstoqueConsultado is { } visto)
+                product.ProductQnt = saldoAtual + (product.ProductQnt - visto);
+
             await using var command = connection.CreateCommand(sql, db, transaction);
             command.Parameters.AddWithValue("@CompanyId", companyId);
             AddParameters(command, product, supplierId);

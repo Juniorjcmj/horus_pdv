@@ -237,6 +237,8 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
         return new()
         {
             Id = id,
+            EstoqueConsultado = string.IsNullOrWhiteSpace(request.EstoqueConsultado)
+                ? null : HorusMoneyFormat.ParseDecimal(request.EstoqueConsultado),
             ProductImageUrl = request.ProductImageUrl,
             ProductImageName = request.ProductImageName,
             ProductName = request.ProductName.Trim(),

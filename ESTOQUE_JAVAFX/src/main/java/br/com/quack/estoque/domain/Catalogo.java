@@ -40,6 +40,19 @@ public final class Catalogo {
         return id == null ? null : porId.get(id);
     }
 
+    /** Troca um produto já carregado pela versão salva (edição na tabela), mantendo a ordem por nome. */
+    public synchronized void substituir(Produto novo) {
+        if (novo == null || novo.id() == null) {
+            return;
+        }
+        List<Produto> lista = new ArrayList<>(produtos);
+        lista.removeIf(p -> p.id().equals(novo.id()));
+        lista.add(novo);
+        lista.sort(Comparator.comparing(p -> Fmt.normalizar(p.nome())));
+        produtos = List.copyOf(lista);
+        porId.put(novo.id(), novo);
+    }
+
     /** Marca o catálogo como velho: a próxima tela que precisar recarrega. */
     public void invalidar() {
         carregadoEm = 0;

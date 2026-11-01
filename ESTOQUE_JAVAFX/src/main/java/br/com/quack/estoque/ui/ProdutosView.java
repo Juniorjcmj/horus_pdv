@@ -80,18 +80,21 @@ public class ProdutosView extends Tela {
         HBoxHelper.cresce(busca);
         getChildren().add(Ui.barra(busca, ficha, preco, etiqueta, movimentos));
 
-        Ui.col(tabela, "Código", Produto::codigo, 90);
-        Ui.col(tabela, "Produto", Produto::nome, 300);
-        Ui.col(tabela, "Un", Produto::unidade, 44);
-        Ui.colNum(tabela, "Preço", p -> Fmt.dec2(p.preco()), 80);
+        var cCodigo = Ui.col(tabela, "Código", Produto::codigo, 110);
+        var cNome = Ui.col(tabela, "Produto", Produto::nome, 300);
+        var cUn = Ui.col(tabela, "Un", Produto::unidade, 56);
+        var cPreco = Ui.colNum(tabela, "Preço", p -> Fmt.dec2(p.preco()), 80);
+        javafx.scene.control.TableColumn<Produto, String> cCusto = null;
         if (perfil.verCustos()) {
-            Ui.colNum(tabela, "Custo", p -> Fmt.dec2(p.custo()), 80);
+            cCusto = Ui.colNum(tabela, "Custo", p -> Fmt.dec2(p.custo()), 80);
         }
-        Ui.colNum(tabela, "Estoque", p -> Fmt.qty(p.estoque()), 76);
-        Ui.colNum(tabela, "Mín.", p -> Fmt.qty(p.minimo()), 56);
-        Ui.colNum(tabela, "Máx.", p -> Fmt.qty(p.maximo()), 56);
+        var cEstoque = Ui.colNum(tabela, "Estoque", p -> Fmt.qty(p.estoque()), 80);
+        var cMin = Ui.colNum(tabela, "Mín.", p -> Fmt.qty(p.minimo()), 60);
+        var cMax = Ui.colNum(tabela, "Máx.", p -> Fmt.qty(p.maximo()), 60);
         Ui.col(tabela, "Situação", p -> Produto.rotulo(p.nivel()), 120);
-        Ui.col(tabela, "Categoria", Produto::categoriaNome, 140);
+        var cCategoria = Ui.col(tabela, "Categoria", p -> p.categoriaNome().isBlank() ? SEM_CATEGORIA : p.categoriaNome(), 160);
+        colunasEditaveis(cCodigo, cNome, cUn, cPreco, cCusto, cEstoque, cMin, cMax, cCategoria);
+        tabela.getSelectionModel().setCellSelectionEnabled(false);
         tabela.setRowFactory(t -> {
             TableRow<Produto> row = new TableRow<>() {
                 @Override
@@ -108,7 +111,7 @@ public class ProdutosView extends Tela {
                 }
             };
             row.setOnMouseClicked(e -> {
-                if (e.getClickCount() == 2 && !row.isEmpty()) {
+                if (e.getClickCount() == 2 && !row.isEmpty() && tabela.getEditingCell() == null) {
                     abrirFicha(row.getItem());
                 }
             });
@@ -120,6 +123,7 @@ public class ProdutosView extends Tela {
 
     @Override
     public void ativar() {
+        carregarCategorias();
         rodar(() -> {
             ctx.garantirCatalogo(false);
             return true;
@@ -139,6 +143,207 @@ public class ProdutosView extends Tela {
         long baixo = ctx.catalogo.todos().stream().filter(p -> p.nivel() == Produto.Nivel.BAIXO).count();
         resumo.setText(ctx.catalogo.todos().size() + " produtos no catálogo · " + semEstoque + " sem estoque · " + baixo
                 + " com estoque baixo" + (lista.size() >= 500 ? " · mostrando os 500 primeiros" : ""));
+    }
+
+    // ------------------------------------------------------------------ edição direto na tabela
+
+    /** Categorias ativas (nome do caminho → id) para a coluna Categoria; carregadas em ativar(). */
+    private final java.util.Map<String, String> categoriasPorNome = new java.util.LinkedHashMap<>();
+    private final List<String> nomesCategorias = new ArrayList<>();
+    private static final String SEM_CATEGORIA = "(sem categoria)";
+
+    /** Colunas editáveis com um clique: Enter salva, Esc cancela, Tab vai para a próxima. */
+    private void colunasEditaveis(javafx.scene.control.TableColumn<Produto, String> codigo,
+            javafx.scene.control.TableColumn<Produto, String> nome, javafx.scene.control.TableColumn<Produto, String> un,
+            javafx.scene.control.TableColumn<Produto, String> preco, javafx.scene.control.TableColumn<Produto, String> custo,
+            javafx.scene.control.TableColumn<Produto, String> estoque, javafx.scene.control.TableColumn<Produto, String> minimo,
+            javafx.scene.control.TableColumn<Produto, String> maximo, javafx.scene.control.TableColumn<Produto, String> categoria) {
+        boolean cadastro = perfil.cadastrarProdutos();
+        tabela.setEditable(true);
+        // Estoque: todos os perfis do app ajustam (vira movimentação de entrada/saída).
+        CelulaEditavel.em(estoque, p -> Fmt.qty(p.estoque()), true, p -> true);
+        estoque.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "estoque", e.getNewValue()));
+        if (!cadastro) {
+            return;
+        }
+        CelulaEditavel.em(codigo, Produto::codigo, false, p -> true);
+        codigo.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "codigo", e.getNewValue()));
+        CelulaEditavel.em(nome, Produto::nome, false, p -> true);
+        nome.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "nome", e.getNewValue()));
+        CelulaEditavel.lista(un, UNIDADES, p -> true);
+        un.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "unidade", e.getNewValue()));
+        CelulaEditavel.em(preco, p -> Fmt.dec2(p.preco()), true, p -> true);
+        preco.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "preco", e.getNewValue()));
+        if (custo != null) {
+            CelulaEditavel.em(custo, p -> Fmt.dec2(p.custo()), true, p -> true);
+            custo.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "custo", e.getNewValue()));
+        }
+        CelulaEditavel.em(minimo, p -> Fmt.qty(p.minimo()), true, p -> true);
+        minimo.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "minimo", e.getNewValue()));
+        CelulaEditavel.em(maximo, p -> Fmt.qty(p.maximo()), true, p -> true);
+        maximo.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "maximo", e.getNewValue()));
+        CelulaEditavel.lista(categoria, nomesCategorias, p -> true);
+        categoria.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "categoria", e.getNewValue()));
+    }
+
+    private void carregarCategorias() {
+        if (!perfil.cadastrarProdutos()) {
+            return;
+        }
+        Fx.async(ctx.cadastros::categorias, cats -> {
+            categoriasPorNome.clear();
+            nomesCategorias.clear();
+            nomesCategorias.add(SEM_CATEGORIA);
+            for (CadastroApi.Categoria c : CadastrosView.ordenar(cats.stream().filter(CadastroApi.Categoria::ativa).toList())) {
+                categoriasPorNome.put(c.caminho(), c.id());
+                nomesCategorias.add(c.caminho());
+            }
+        }, t -> {
+            // sem categorias: a coluna fica só com "(sem categoria)"
+        });
+    }
+
+    /** Valida o valor digitado e salva só aquele campo; em erro, a célula volta ao valor anterior. */
+    private void salvarEdicao(Produto p, String campo, String texto) {
+        String t = texto == null ? "" : texto.trim();
+        try {
+            switch (campo) {
+                case "preco" -> {
+                    BigDecimal v = Fmt.parse(t);
+                    if (v.signum() <= 0) {
+                        throw new DomainException("O preço de venda deve ser maior que zero.");
+                    }
+                    if (v.compareTo(p.preco()) == 0) {
+                        tabela.refresh();
+                        return;
+                    }
+                    Carregando.async("Salvando o preço…", () -> ctx.produtos.atualizarPreco(p.id(), Fmt.moneyApi(v), p.versaoPreco()),
+                            salvo -> {
+                                substituir(p, salvo != null ? salvo : comCampo(p, "productSalePrice", Fmt.moneyApi(v)));
+                                sucesso("Preço de \"" + p.nome() + "\": " + Fmt.money(p.preco()) + " → " + Fmt.money(v)
+                                        + ". Use \"Preços alterados\" em Etiquetas para imprimir.");
+                            }, this::erroEdicao);
+                }
+                case "estoque" -> {
+                    BigDecimal v = Fmt.parse(t);
+                    if (v.signum() < 0) {
+                        throw new DomainException("O estoque não pode ser negativo.");
+                    }
+                    if (!p.fracionavel() && v.stripTrailingZeros().scale() > 0) {
+                        throw new DomainException("Produto vendido por " + p.unidade() + " não aceita quantidade fracionada.");
+                    }
+                    BigDecimal delta = v.subtract(p.estoque());
+                    if (delta.signum() == 0) {
+                        tabela.refresh();
+                        return;
+                    }
+                    String tipo = delta.signum() > 0 ? "entrada" : "saida";
+                    // Ajuste relativo: vendas feitas depois do carregamento continuam valendo.
+                    Carregando.async("Ajustando o estoque…", () -> {
+                        ctx.produtos.ajustar(p.id(), tipo, delta.abs(), "Acerto pela tabela de produtos", null, null);
+                        return true;
+                    }, ok -> {
+                        substituir(p, comCampo(p, "productQnt", Fmt.qtyApi(p.estoque().add(delta))));
+                        sucesso("Estoque de \"" + p.nome() + "\": " + Fmt.qty(p.estoque()) + " → " + Fmt.qty(v) + " " + p.unidade()
+                                + " (movimentação de " + ("entrada".equals(tipo) ? "entrada" : "saída") + " registrada).");
+                    }, this::erroEdicao);
+                }
+                case "nome" -> {
+                    if (t.length() < 3) {
+                        throw new DomainException("Informe o nome do produto (mínimo 3 letras).");
+                    }
+                    salvarCampo(p, b -> b.put("productName", t), "Nome atualizado.");
+                }
+                case "codigo" -> {
+                    if (t.isEmpty()) {
+                        throw new DomainException("O código não pode ficar vazio.");
+                    }
+                    salvarCampo(p, b -> b.put("productCode", t), "Código atualizado.");
+                }
+                case "unidade" -> {
+                    String u = t.toUpperCase();
+                    salvarCampo(p, b -> {
+                        b.put("unidadeComercial", u);
+                        b.put("unidadeTributavel", u);
+                    }, "Unidade atualizada para " + u + ".");
+                }
+                case "custo" -> {
+                    BigDecimal v = Fmt.parse(t);
+                    if (v.signum() <= 0) {
+                        throw new DomainException("O preço de custo deve ser maior que zero.");
+                    }
+                    salvarCampo(p, b -> b.put("productUnitPrice", Fmt.cost4Api(v)), "Custo atualizado para " + Fmt.money(v) + ".");
+                }
+                case "minimo", "maximo" -> {
+                    BigDecimal v = t.isEmpty() ? BigDecimal.ZERO : Fmt.parse(t);
+                    if (v.signum() < 0) {
+                        throw new DomainException("O valor não pode ser negativo.");
+                    }
+                    BigDecimal min = "minimo".equals(campo) ? v : p.minimo();
+                    BigDecimal max = "maximo".equals(campo) ? v : p.maximo();
+                    if (max.signum() > 0 && max.compareTo(min) < 0) {
+                        throw new DomainException("O estoque máximo não pode ser menor que o mínimo.");
+                    }
+                    salvarCampo(p, b -> b.put("minimo".equals(campo) ? "estoqueMinimo" : "estoqueMaximo", Fmt.qtyApi(v)),
+                            ("minimo".equals(campo) ? "Estoque mínimo" : "Estoque máximo") + " atualizado.");
+                }
+                case "categoria" -> {
+                    String id = SEM_CATEGORIA.equals(t) ? null : categoriasPorNome.get(t);
+                    salvarCampo(p, b -> {
+                        if (id == null) {
+                            b.putNull("categoriaId");
+                        } else {
+                            b.put("categoriaId", id);
+                        }
+                    }, "Categoria atualizada.");
+                }
+                default -> tabela.refresh();
+            }
+        } catch (DomainException e) {
+            tabela.refresh();
+            Toasts.error(janela(), e.getMessage());
+        }
+    }
+
+    /**
+     * Regrava o cadastro trocando só o campo editado. Manda o estoque que a tela viu (estoqueConsultado): a API não mexe
+     * no saldo nem desfaz vendas feitas depois que a lista carregou.
+     */
+    private void salvarCampo(Produto p, java.util.function.Consumer<ObjectNode> mudar, String mensagem) {
+        Carregando.async("Salvando…", () -> {
+            ObjectNode body = p.raw().deepCopy();
+            body.put("estoqueConsultado", body.path("productQnt").asText("0"));
+            mudar.accept(body);
+            return ctx.produtos.atualizar(p.id(), body);
+        }, salvo -> {
+            substituir(p, salvo);
+            sucesso(mensagem);
+        }, this::erroEdicao);
+    }
+
+    private void erroEdicao(Throwable t) {
+        tabela.refresh();
+        Toasts.error(janela(), Fx.message(t));
+    }
+
+    private static Produto comCampo(Produto p, String campo, String valor) {
+        ObjectNode raw = p.raw().deepCopy();
+        raw.put(campo, valor);
+        return Produto.de(raw);
+    }
+
+    /** Troca o produto na tabela e no catálogo em memória (sem recarregar a lista inteira). */
+    private void substituir(Produto antigo, Produto novo) {
+        if (novo == null) {
+            return;
+        }
+        ctx.catalogo.substituir(novo);
+        int i = tabela.getItems().indexOf(antigo);
+        if (i >= 0) {
+            tabela.getItems().set(i, novo);
+        } else {
+            tabela.refresh();
+        }
     }
 
     // ------------------------------------------------------------------ alterar preço
@@ -409,10 +614,10 @@ public class ProdutosView extends Tela {
                 body.put("qtdEmbalagem", "1");
                 body.put("productSupplier", fornecedorNome);
             } else {
-                // Relê o cadastro antes de salvar: o PUT regrava o estoque, que pode ter mudado por venda/entrada.
-                Produto atual = ctx.produtos.listar().stream().filter(x -> x.id().equals(original.id())).findFirst()
-                        .orElseThrow(() -> new DomainException("O produto não existe mais."));
-                body = atual.raw().deepCopy();
+                // Manda o estoque que a tela viu: a API aplica só diferenças digitadas e não desfaz vendas feitas
+                // depois que o catálogo carregou (sem precisar reler a lista inteira de produtos).
+                body = original.raw().deepCopy();
+                body.put("estoqueConsultado", body.path("productQnt").asText("0"));
                 if (perfil.cadastrarCategoriasEFornecedores()) {
                     body.put("productSupplier", fornecedorNome);
                 }

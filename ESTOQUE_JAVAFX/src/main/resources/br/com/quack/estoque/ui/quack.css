@@ -2090,3 +2090,18 @@
     -fx-font-weight: bold;
     -fx-text-fill: -ink;
 }
+
+/* Célula editável com um clique: dica visual ao passar o mouse e campo compacto */
+.rg-celula-editavel:hover {
+    -fx-background-color: rgba(249, 115, 22, 0.10);
+    -fx-cursor: text;
+}
+
+.rg-celula-editavel .text-field.rg-celula-campo,
+.rg-celula-editavel .combo-box {
+    -fx-padding: 0 4 0 4;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: -highlight-strong;
+    -fx-border-width: 1.5;
+}
