@@ -1675,3 +1675,58 @@
     -fx-border-color: transparent;
     -fx-padding: 6 0 0 0;
 }
+
+/* Tipo do ajuste: botões lado a lado (segmentado) */
+.rg-seg .rg-seg-btn {
+    -fx-background-color: -surface;
+    -fx-border-color: -border;
+    -fx-border-width: 1 0 1 1;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 8 18 8 18;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink-muted;
+    -fx-cursor: hand;
+}
+
+.rg-seg .rg-seg-btn:first-child {
+    -fx-background-radius: 8 0 0 8;
+    -fx-border-radius: 8 0 0 8;
+}
+
+.rg-seg .rg-seg-btn:last-child {
+    -fx-border-width: 1;
+    -fx-background-radius: 0 8 8 0;
+    -fx-border-radius: 0 8 8 0;
+}
+
+.rg-seg .rg-seg-btn:hover {
+    -fx-background-color: -surface-muted;
+}
+
+.rg-seg .rg-seg-entrada:selected {
+    -fx-background-color: #e7f6ec;
+    -fx-text-fill: #1d7a3c;
+}
+
+.rg-seg .rg-seg-saida:selected {
+    -fx-background-color: #fdeaea;
+    -fx-text-fill: #b42318;
+}
+
+.rg-seg .rg-seg-uso_interno:selected {
+    -fx-background-color: #e8f0fd;
+    -fx-text-fill: #1d4ed8;
+}
+
+.rg-seg .rg-seg-perda:selected {
+    -fx-background-color: #fff1e6;
+    -fx-text-fill: #c2410c;
+}
+
+/* "Saldo 28,933 → 26,933 KG" ao lado do botão de lançar */
+.rg-saldo-previa {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink;
+}

@@ -110,7 +110,8 @@ public final class Fmt {
             return "";
         }
         try {
-            java.time.LocalDateTime utc = java.time.LocalDateTime.parse(iso.trim());
+            // a API manda "yyyy-MM-dd HH:mm:ss" (espaço) ou ISO com "T"
+            java.time.LocalDateTime utc = java.time.LocalDateTime.parse(iso.trim().replace(' ', 'T'));
             return DATA_HORA.format(utc.atZone(ZoneId.of("UTC")).withZoneSameInstant(SAO_PAULO));
         } catch (RuntimeException e) {
             return dateTime(iso);
