@@ -1,6 +1,7 @@
 /**
  * Arquivo: src/services/api/integracaoTokenService.ts
- * Objetivo: tokens de integração para agentes de IA (servidor MCP, somente leitura) — gerar, listar, revogar.
+ * Objetivo: tokens de integração para agentes de IA (servidor MCP) — gerar, listar, revogar. Somente leitura,
+ *           a não ser que o token seja gerado com permissão para editar produtos e ajustar estoque.
  *           O token em texto só vem na resposta de "gerar"; depois a API devolve apenas o prefixo.
  */
 import { apiRequest, requireEnvUrl } from "./apiClient";
@@ -15,6 +16,8 @@ export type IntegracaoTokenInfo = {
   createdBy?: string | null;
   lastUsedAt?: string | null;
   revokedAt?: string | null;
+  /** true = o agente pode editar produtos e ajustar estoque (sempre simulando antes). */
+  permiteEscritaProdutos?: boolean;
 };
 
 export const integracaoTokenService = {
@@ -29,10 +32,10 @@ export const integracaoTokenService = {
   },
 
   /** Gera um token novo. O campo `token` é o segredo: mostrar uma única vez. */
-  async gerar(nome: string) {
+  async gerar(nome: string, permiteEditarProdutos = false) {
     const response = await apiRequest<{ token: string; info: IntegracaoTokenInfo }>(INTEGRACAO_TOKEN_API_URL, {
       method: "POST",
-      body: JSON.stringify({ nome }),
+      body: JSON.stringify({ nome, permiteEditarProdutos }),
     });
     if (!response.data?.token) throw new Error("A API não devolveu o token.");
     return response.data;

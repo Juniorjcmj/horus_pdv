@@ -10,9 +10,9 @@ em linguagem natural.
 | **Endereço (desenvolvimento)** | `http://localhost:5260/mcp` |
 | **Transporte** | Streamable HTTP, sem sessão (*stateless*) — só `POST` |
 | **Autenticação** | `Authorization: Bearer qmcp_...` (token de integração) |
-| **Acesso** | **Somente leitura** — nenhuma ferramenta altera dados |
+| **Acesso** | **Somente leitura** por padrão. Token gerado com "Pode editar produtos e ajustar estoque" também edita produtos e lança movimentações (sempre simulando antes) |
 | **Escopo** | Uma empresa por token (a empresa de quem gerou o token) |
-| **Ferramentas** | 19 (lista completa [abaixo](#4-ferramentas)) |
+| **Ferramentas** | 21 — 19 de leitura + 2 de escrita (lista completa [abaixo](#4-ferramentas)) |
 
 ## Sumário
 
@@ -76,7 +76,10 @@ Tudo é feito em **Configurações → Agente de IA (MCP)** (visível para admin
 
 - **Gerar**: dê um nome que identifique o agente. O token (`qmcp_` + 43 caracteres) aparece **só na hora**; o
   sistema guarda apenas o hash (SHA-256), então não há como recuperá-lo depois. Perdeu? Gere outro.
-- **Listar**: mostra nome, início do token, quem criou, quando e o **último uso**.
+- **Permissão de escrita** (opcional): marque **"Pode editar produtos e ajustar estoque"** ao gerar para liberar
+  `editar_produto` e `ajustar_estoque_produto`. Sem ela o token é somente leitura. A permissão é fixa: para mudar,
+  gere outro token e revogue o antigo.
+- **Listar**: mostra nome, início do token, permissão ("Somente leitura" / "Edita produtos"), quem criou, quando e o **último uso**.
 - **Revogar**: o agente perde o acesso na requisição seguinte. Não há como desfazer; gere um token novo.
 
 Recomendação: **um token por agente**. Assim dá para revogar um sem derrubar os outros e saber, pelo "último
@@ -86,7 +89,7 @@ A mesma operação existe na API REST (sessão de administrador/gerente):
 
 | Método | Rota | O que faz |
 |---|---|---|
-| `POST` | `/api/IntegracaoToken` | Gera um token. Corpo: `{ "nome": "Agente Hermes" }`. Devolve `data.token` (uma vez). |
+| `POST` | `/api/IntegracaoToken` | Gera um token. Corpo: `{ "nome": "Agente Hermes", "permiteEditarProdutos": false }`. Devolve `data.token` (uma vez). |
 | `GET` | `/api/IntegracaoToken` | Lista os tokens da empresa (sem o segredo). |
 | `POST` | `/api/IntegracaoToken/{id}/revogar` | Revoga o token. |
 
@@ -174,7 +177,8 @@ cabeçalho `Accept` com os dois tipos é obrigatório pelo protocolo.
 
 ## 4. Ferramentas
 
-Todas são **somente leitura** (`readOnlyHint: true`). Parâmetros sem "obrigatório" são opcionais.
+Todas são **somente leitura** (`readOnlyHint: true`), exceto as duas do grupo **Edição**, que exigem token com
+permissão de escrita. Parâmetros sem "obrigatório" são opcionais.
 
 | Grupo | Ferramenta | Para quê |
 |---|---|---|
@@ -197,6 +201,8 @@ Todas são **somente leitura** (`readOnlyHint: true`). Parâmetros sem "obrigat�
 | Auditoria fiscal | [`listar_pendencias_fiscais`](#listar_pendencias_fiscais) | Produtos com problemas fiscais estruturais |
 | Notas de entrada | [`listar_notas_entrada`](#listar_notas_entrada) | Notas fiscais de entrada (compras) |
 | Notas de entrada | [`obter_itens_nota_entrada`](#obter_itens_nota_entrada) | Itens e dados fiscais de uma nota de entrada |
+| Edição | [`editar_produto`](#editar_produto) | Altera o cadastro de um produto (simula antes) |
+| Edição | [`ajustar_estoque_produto`](#ajustar_estoque_produto) | Lança entrada/saída/perda/uso interno ou acerta o saldo (simula antes) |
 
 ### Relatórios
 
@@ -599,6 +605,43 @@ detalhes tributários completos).
 > **Atenção**: CFOP, CST, CSOSN e alíquotas são da nota de **entrada** (operação do fornecedor). A
 > tributação de **saída** (venda pelo varejista) é diferente e deve ser configurada no cadastro do produto.
 
+### Edição
+
+Só funcionam com token gerado com **"Pode editar produtos e ajustar estoque"**; com token somente leitura a
+ferramenta responde erro. As duas **simulam por padrão** (`confirmar=false`): devolvem o antes → depois sem gravar.
+O agente deve mostrar a simulação ao lojista e, só depois da confirmação, chamar de novo com os mesmos dados e
+`confirmar=true`. Toda alteração aplicada vai para o log de auditoria (`ProdutoEditadoMcp` / `EstoqueAjustadoMcp`,
+usuário `MCP: <nome do token>`).
+
+#### `editar_produto`
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `idOuCodigo` | texto, obrigatório | Id, código interno ou GTIN exato. |
+| `confirmar` | booleano | `false` (padrão) só simula; `true` grava. |
+| `nome`, `codigo`, `gtin`, `unidade`, `fornecedor`, `marca`, `localizacao` | texto | Novos valores (informe só o que muda). |
+| `precoVenda`, `custo` | número | Em reais (`12.9` = R$ 12,90), maior que zero. |
+| `estoqueMinimo`, `estoqueMaximo` | número | `0` = sem limite; máximo não pode ser menor que o mínimo. |
+| `categoria` | texto | Id ou nome exato (ver `listar_categorias`); `""` remove a categoria. |
+| `controlaValidade` | booleano | Liga/desliga o controle de validade por lote. |
+
+Resposta: `simulacao`, `aplicado`, `produto` (resumo) e `alteracoes` (`campo`, `de`, `para`). **Não altera o
+saldo de estoque** — mesmo que uma venda aconteça entre a simulação e a confirmação, o saldo fica intacto.
+
+#### `ajustar_estoque_produto`
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `idOuCodigo` | texto, obrigatório | Id, código interno ou GTIN exato. |
+| `motivo` | texto, obrigatório | Ex.: "Contagem do corredor 3", "Avaria no recebimento". |
+| `confirmar` | booleano | `false` (padrão) só simula; `true` grava a movimentação. |
+| `novoSaldo` | número | Saldo contado: a ferramenta lança a entrada/saída da diferença. |
+| `tipo` + `quantidade` | texto + número | Alternativa a `novoSaldo`: `entrada`, `saida`, `perda` ou `uso_interno`. |
+
+Resposta: `ajuste` (`tipo`, `quantidade`, `saldoAntes`, `saldoDepois`, `unidade`, `motivo`) e, ao aplicar,
+`saldoFinal`. Produtos vendidos por unidade não aceitam quantidade fracionada. **Cada chamada confirmada grava
+uma movimentação nova** — não repita a chamada com `confirmar=true`.
+
 ---
 
 ## 5. Relatórios disponíveis
@@ -697,9 +740,11 @@ Dica de *prompt* para o agente: *"Use as ferramentas do Quack PDV. Antes de afir
 
 ## 8. Segurança
 
-- **Somente leitura.** O servidor não tem ferramenta que crie, altere ou apague dados. Além disso, o token de
-  integração **só é aceito em `/mcp`**: usado em qualquer rota REST (`/api/...`), a API responde `403`. Um token
-  vazado não consegue alterar preço, estoque, promoção nem nada.
+- **Somente leitura por padrão.** Um token comum não altera nada. Só o token gerado com "Pode editar produtos e
+  ajustar estoque" usa `editar_produto` e `ajustar_estoque_produto` — e mesmo assim sem excluir produto, mexer em
+  vendas, promoções ou dados fiscais, e sempre deixando rastro na auditoria. Gere token com escrita só para agentes
+  que precisam, e revogue se vazar. O token de integração **só é aceito em `/mcp`**: usado em qualquer rota REST
+  (`/api/...`), a API responde `403`.
 - **Isolamento por empresa.** A empresa vem do token validado no servidor; um token nunca enxerga dados de outra
   empresa.
 - **Segredo não armazenado.** O banco guarda apenas o SHA-256 do token (tabela `IntegracaoTokens`). O texto do

@@ -236,7 +236,8 @@ public class HorusAuthMiddleware(RequestDelegate next)
             CompanyId = validation.CompanyId,
             SessionId = $"integracao:{validation.TokenId}",
             Name = validation.Nome,
-            Role = HorusRoles.Integracao
+            Role = HorusRoles.Integracao,
+            PermiteEscritaProdutos = validation.PermiteEscritaProdutos
         };
         return (user, validation.CompanyStatus);
     }

@@ -121,6 +121,9 @@ public class AuthenticatedUser
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
 
+    /// <summary>Só para token de integração (MCP): pode editar produtos e ajustar estoque.</summary>
+    public bool PermiteEscritaProdutos { get; set; }
+
     /// <summary>
     /// Perfis adicionais (ex.: "financeiro"). Lidos do banco a cada requisição (HorusAuthMiddleware), não do
     /// token: tirar o Financeiro de alguém vale na hora, sem esperar novo login.

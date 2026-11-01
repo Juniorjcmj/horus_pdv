@@ -20,6 +20,8 @@ public sealed class IntegracaoTokenDto
     public string? CreatedBy { get; set; }
     public DateTimeOffset? LastUsedAt { get; set; }
     public DateTimeOffset? RevokedAt { get; set; }
+    /// <summary>true = o agente pode editar produtos e ajustar estoque pelo MCP; false = somente leitura.</summary>
+    public bool PermiteEscritaProdutos { get; set; }
 }
 
 /// <summary>Resultado da validação: token ativo, a empresa dele e a situação dessa empresa.</summary>
@@ -28,7 +30,9 @@ public sealed record IntegracaoTokenValidation(
     string CompanyId,
     string Nome,
     /// <summary>Situação da empresa do token ("aprovada" quando sem registro, como no login normal).</summary>
-    string CompanyStatus);
+    string CompanyStatus,
+    /// <summary>Token com permissão para editar produtos e ajustar estoque.</summary>
+    bool PermiteEscritaProdutos = false);
 
 public class IntegracaoTokenAB(Connection connection)
 {
@@ -52,6 +56,7 @@ public class IntegracaoTokenAB(Connection connection)
         string companyId,
         string nome,
         string? createdBy,
+        bool permiteEscritaProdutos = false,
         CancellationToken cancellationToken = default)
     {
         var raw = GenerateRawToken();
@@ -61,12 +66,13 @@ public class IntegracaoTokenAB(Connection connection)
             Nome = nome,
             TokenPrefix = raw[..Math.Min(12, raw.Length)],
             CreatedAt = DateTimeOffset.UtcNow,
-            CreatedBy = createdBy
+            CreatedBy = createdBy,
+            PermiteEscritaProdutos = permiteEscritaProdutos
         };
 
         const string sql = """
-            INSERT INTO IntegracaoTokens (Id, CompanyId, Nome, TokenHash, TokenPrefix, CreatedAt, CreatedBy)
-            VALUES (@Id, @CompanyId, @Nome, @TokenHash, @TokenPrefix, @CreatedAt, @CreatedBy);
+            INSERT INTO IntegracaoTokens (Id, CompanyId, Nome, TokenHash, TokenPrefix, CreatedAt, CreatedBy, PermiteEscritaProdutos)
+            VALUES (@Id, @CompanyId, @Nome, @TokenHash, @TokenPrefix, @CreatedAt, @CreatedBy, @PermiteEscritaProdutos);
             """;
         await using var db = await connection.OpenConnectionAsync(cancellationToken);
         await using var cmd = new SqlCommand(sql, db);
@@ -77,6 +83,7 @@ public class IntegracaoTokenAB(Connection connection)
         cmd.Parameters.AddWithValue("@TokenPrefix", dto.TokenPrefix);
         cmd.Parameters.AddWithValue("@CreatedAt", dto.CreatedAt);
         cmd.Parameters.AddWithValue("@CreatedBy", (object?)createdBy ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@PermiteEscritaProdutos", permiteEscritaProdutos);
         await cmd.ExecuteNonQueryAsync(cancellationToken);
 
         return (dto, raw);
@@ -85,7 +92,7 @@ public class IntegracaoTokenAB(Connection connection)
     public async Task<List<IntegracaoTokenDto>> ListAsync(string companyId, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT Id, Nome, TokenPrefix, CreatedAt, CreatedBy, LastUsedAt, RevokedAt
+            SELECT Id, Nome, TokenPrefix, CreatedAt, CreatedBy, LastUsedAt, RevokedAt, PermiteEscritaProdutos
             FROM IntegracaoTokens
             WHERE CompanyId = @CompanyId
             ORDER BY CreatedAt DESC;
@@ -105,7 +112,8 @@ public class IntegracaoTokenAB(Connection connection)
                 CreatedAt = reader.GetDateTimeOffset(3),
                 CreatedBy = reader.IsDBNull(4) ? null : reader.GetString(4),
                 LastUsedAt = reader.IsDBNull(5) ? null : reader.GetDateTimeOffset(5),
-                RevokedAt = reader.IsDBNull(6) ? null : reader.GetDateTimeOffset(6)
+                RevokedAt = reader.IsDBNull(6) ? null : reader.GetDateTimeOffset(6),
+                PermiteEscritaProdutos = !reader.IsDBNull(7) && reader.GetBoolean(7)
             });
         }
         return rows;
@@ -133,7 +141,8 @@ public class IntegracaoTokenAB(Connection connection)
     {
         const string sql = """
             SELECT t.Id, t.CompanyId, t.Nome, t.LastUsedAt,
-                   (SELECT TOP 1 e.Status FROM Empresas e WHERE e.Id = t.CompanyId) AS CompanyStatus
+                   (SELECT TOP 1 e.Status FROM Empresas e WHERE e.Id = t.CompanyId) AS CompanyStatus,
+                   t.PermiteEscritaProdutos
             FROM IntegracaoTokens t
             WHERE t.TokenHash = @TokenHash AND t.RevokedAt IS NULL;
             """;
@@ -153,7 +162,8 @@ public class IntegracaoTokenAB(Connection connection)
                 TokenId: reader.GetString(0),
                 CompanyId: reader.GetString(1),
                 Nome: reader.GetString(2),
-                CompanyStatus: reader.IsDBNull(4) ? "aprovada" : reader.GetString(4));
+                CompanyStatus: reader.IsDBNull(4) ? "aprovada" : reader.GetString(4),
+                PermiteEscritaProdutos: !reader.IsDBNull(5) && reader.GetBoolean(5));
         }
 
         // "Último uso" para o painel, gravado no máximo 1x por minuto (não escreve a cada requisição).

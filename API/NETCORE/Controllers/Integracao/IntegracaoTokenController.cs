@@ -1,6 +1,7 @@
 /**
  * Arquivo: API/NETCORE/Controllers/Integracao/IntegracaoTokenController.cs
- * Objetivo: token de integração por empresa para agentes de IA usarem o servidor MCP (/mcp), somente leitura.
+ * Objetivo: token de integração por empresa para agentes de IA usarem o servidor MCP (/mcp). Por padrão é
+ *           somente leitura; com PermiteEditarProdutos o agente também edita produtos e ajusta estoque.
  *   - POST /api/IntegracaoToken              → admin/gerente gera um token (o texto volta UMA vez).
  *   - GET  /api/IntegracaoToken              → admin/gerente lista os tokens da empresa (sem o segredo).
  *   - POST /api/IntegracaoToken/{id}/revogar → admin/gerente revoga.
@@ -33,7 +34,8 @@ public class IntegracaoTokenController(IntegracaoTokenAB integracaoTokenAB) : Co
             return BadRequest(new ApiResponse<object> { Success = false, Message = "Informe um nome para o token (até 120 caracteres), ex.: \"Agente Hermes\"." });
         }
 
-        var (token, raw) = await integracaoTokenAB.CreateAsync(currentUser.CompanyId, nome, currentUser.Name, cancellationToken);
+        var (token, raw) = await integracaoTokenAB.CreateAsync(
+            currentUser.CompanyId, nome, currentUser.Name, request!.PermiteEditarProdutos, cancellationToken);
 
         return Ok(new ApiResponse<object>
         {
@@ -73,4 +75,7 @@ public class IntegracaoTokenController(IntegracaoTokenAB integracaoTokenAB) : Co
 public class GerarIntegracaoTokenRequest
 {
     public string Nome { get; set; } = string.Empty;
+
+    /// <summary>Libera as ferramentas de escrita do MCP (editar_produto, ajustar_estoque_produto).</summary>
+    public bool PermiteEditarProdutos { get; set; }
 }

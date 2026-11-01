@@ -1,7 +1,8 @@
 /**
  * Arquivo: src/components/SettingsPage/IntegracaoTokensCard.tsx
  * Objetivo: token de integração para agentes de IA (servidor MCP). Admin/gerente gera, vê e revoga.
- *           O token é somente leitura e aparece UMA única vez (na geração), já dentro do trecho de
+ *           O token é somente leitura, a não ser que seja gerado com "Pode editar produtos e ajustar estoque"
+ *           (o agente sempre simula e pede confirmação antes de gravar). Aparece UMA única vez (na geração), já dentro do trecho de
  *           configuração pronto para colar no agente (ex.: Hermes).
  */
 import { Bot, Copy, KeyRound, ShieldOff } from "lucide-react";
@@ -25,6 +26,7 @@ export default function IntegracaoTokensCard() {
   const [tokens, setTokens] = useState<IntegracaoTokenInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [nome, setNome] = useState("");
+  const [podeEditar, setPodeEditar] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [newToken, setNewToken] = useState<string | null>(null);
   const mcpUrl = integracaoTokenService.mcpUrl();
@@ -52,9 +54,10 @@ export default function IntegracaoTokensCard() {
     }
     setGenerating(true);
     try {
-      const result = await integracaoTokenService.gerar(name);
+      const result = await integracaoTokenService.gerar(name, podeEditar);
       setNewToken(result.token);
       setNome("");
+      setPodeEditar(false);
       await load();
     } catch (error) {
       Toast.error(error instanceof Error ? error.message : "Não foi possível gerar o token.");
@@ -97,7 +100,8 @@ export default function IntegracaoTokensCard() {
           <p className="text-base font-semibold text-text-primary">Agente de IA (MCP)</p>
           <p className="mt-1 text-sm text-text-secondary">
             Conecte um agente de IA (ex.: Hermes) para consultar relatórios, produtos, validade e promoções desta
-            loja. O token é somente leitura: o agente não altera nada. Ele aparece uma única vez.
+            loja. Por padrão o token é somente leitura. Marque a opção abaixo para o agente também editar produtos e
+            ajustar estoque: ele mostra o antes → depois e só grava depois da sua confirmação. O token aparece uma única vez.
           </p>
 
           <div className="mt-3 flex items-center gap-2">
@@ -135,6 +139,19 @@ export default function IntegracaoTokensCard() {
               {generating ? "Gerando..." : "Gerar token"}
             </button>
           </div>
+
+          <label className="mt-2 flex cursor-pointer items-start gap-2 text-sm text-text-secondary">
+            <input
+              type="checkbox"
+              checked={podeEditar}
+              onChange={(event) => setPodeEditar(event.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-accent"
+            />
+            <span>
+              <span className="font-semibold text-text-primary">Pode editar produtos e ajustar estoque</span> — preço,
+              custo, nome, código, categoria, mínimo/máximo e movimentações de estoque (tudo fica na auditoria).
+            </span>
+          </label>
 
           {newToken ? (
             <div className="mt-3 rounded-xl border border-success/30 bg-success/10 p-3">
@@ -195,7 +212,14 @@ export default function IntegracaoTokensCard() {
                   <div className="min-w-0">
                     <p className="font-semibold text-text-primary">
                       {token.nome}{" "}
-                      <span className="font-mono text-xs font-normal text-text-secondary">{token.tokenPrefix}…</span>
+                      <span className="font-mono text-xs font-normal text-text-secondary">{token.tokenPrefix}…</span>{" "}
+                      <span
+                        className={`ml-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                          token.permiteEscritaProdutos ? "bg-accent/10 text-accent" : "bg-bg-light text-text-secondary"
+                        }`}
+                      >
+                        {token.permiteEscritaProdutos ? "Edita produtos" : "Somente leitura"}
+                      </span>
                     </p>
                     <p className="text-xs text-text-secondary">
                       Criado em {formatDate(token.createdAt)}

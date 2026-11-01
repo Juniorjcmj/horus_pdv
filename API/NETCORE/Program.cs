@@ -167,7 +167,8 @@ builder.Services
     })
     .WithHttpTransport(options => options.Stateless = true)
     .WithTools<PdvMcpTools>()
-    .WithTools<FiscalAuditMcpTools>();
+    .WithTools<FiscalAuditMcpTools>()
+    .WithTools<ProdutoEdicaoMcpTools>();
 
 var app = builder.Build();
 

@@ -91,6 +91,7 @@ public static class HorusDatabaseInitializer
         new("55_venda_cancelamento_auditoria",  Path.Combine("DataBase", "Migrations", "55_venda_cancelamento_auditoria.sql")),
         new("56_inventario",                    Path.Combine("DataBase", "Migrations", "56_inventario.sql")),
         new("57_analise_estoque",               Path.Combine("DataBase", "Migrations", "57_analise_estoque.sql")),
+        new("58_integracao_token_escrita",      Path.Combine("DataBase", "Migrations", "58_integracao_token_escrita.sql")),
     ];
 
     public static async Task InitializeAsync(IServiceProvider services)

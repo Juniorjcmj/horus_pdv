@@ -1,7 +1,8 @@
 /**
  * Arquivo: API/NETCORE/Services/Mcp/PdvMcpTools.cs
  * Objetivo: ferramentas do servidor MCP (endpoint /mcp) para agentes de IA consultarem relatórios, produtos,
- *           controle de validade e promoções. SOMENTE LEITURA: nenhuma ferramenta daqui altera dados.
+ *           controle de validade e promoções. SOMENTE LEITURA: nenhuma ferramenta daqui altera dados
+ *           (as de escrita ficam em ProdutoEdicaoMcpTools, só para token com permissão).
  * Entradas esperadas: chamadas MCP já autenticadas pelo HorusAuthMiddleware com token de integração.
  * Isolamento: a empresa vem sempre do token (HttpContext.Items["CurrentUser"]); nunca de parâmetro da ferramenta.
  * Documentação: docs/MCP.md (ao criar/alterar ferramenta, atualize lá também).
@@ -36,13 +37,15 @@ public class PdvMcpTools(
     IPromocaoService promocaoService)
 {
     public const string ServerInstructions =
-        "Servidor MCP do Quack PDV (somente leitura). Consulta relatórios, produtos, controle de validade por lote, " +
+        "Servidor MCP do Quack PDV. Consulta relatórios, produtos, controle de validade por lote, " +
         "promoções, auditoria fiscal e notas de entrada da loja dona do token. Datas sempre em AAAA-MM-DD. " +
         "Valores em reais já formatados (R$) nos relatórios. Comece por listar_relatorios para conhecer os " +
         "relatórios e filtros, e por listar_categorias quando precisar de um categoriaId. Para auditoria fiscal, " +
         "comece por resumo_auditoria_fiscal e use listar_produtos_fiscais/obter_fiscal_produto para conferir os " +
         "dados. Listas grandes são paginadas: use pagina/tamanhoPagina e confira totalLinhas/total antes de " +
-        "concluir que viu tudo.";
+        "concluir que viu tudo. Escrita (só com token que tenha permissão de edição): editar_produto e " +
+        "ajustar_estoque_produto SIMULAM por padrão (confirmar=false); mostre o antes → depois ao lojista e só chame " +
+        "com confirmar=true depois que ele confirmar. Valores em reais como número (12.9 = R$ 12,90).";
 
     private const int MaxPageSize = 200;
 
