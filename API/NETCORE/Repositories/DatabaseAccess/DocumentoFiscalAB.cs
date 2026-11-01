@@ -1010,22 +1010,9 @@ public class DocumentoFiscalAB(
                     }
 
                     // 4. Estorno automático de estoque dos itens vendidos
-                    await using (var cmdEstorno = new SqlCommand(
-                        """
-                        UPDATE p
-                           SET p.ProductQnt = p.ProductQnt + vi.Quantity,
-                               p.TotalPriceOnProduct = p.ProductUnitPrice * (p.ProductQnt + vi.Quantity)
-                          FROM Produtos p
-                          INNER JOIN VendaItens vi ON vi.ProductCode = p.ProductCode AND p.CompanyId = @CompanyId
-                         WHERE vi.VendaId = @VendaId;
-                        """,
-                        db,
-                        transaction))
-                    {
-                        cmdEstorno.Parameters.AddWithValue("@VendaId", vendaId);
-                        cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
-                        await cmdEstorno.ExecuteNonQueryAsync(ct);
-                    }
+                    await EstoqueMovimentacaoAB.DevolverItensDaVendaAsync(db, transaction, companyId, vendaId,
+                        "nfce", "Cancelamento da NFC-e da venda #{venda}",
+                        supervisorId ?? operadorId ?? "sistema", supervisorNome ?? operadorNome ?? "Sistema", ct);
                     itensEstornados = snapshot?.Itens.Count ?? 0;
 
                     // 4b. Fiado de volta. A nota já está cancelada na SEFAZ: se o cliente já pagou parte do fiado,
@@ -1370,22 +1357,8 @@ public class DocumentoFiscalAB(
             }
 
             // 4. Estorno automático de estoque dos produtos da venda
-            await using (var cmdEstorno = new SqlCommand(
-                """
-                UPDATE p
-                   SET p.ProductQnt = p.ProductQnt + vi.Quantity,
-                       p.TotalPriceOnProduct = p.ProductUnitPrice * (p.ProductQnt + vi.Quantity)
-                  FROM Produtos p
-                  INNER JOIN VendaItens vi ON vi.ProductCode = p.ProductCode AND p.CompanyId = @CompanyId
-                 WHERE vi.VendaId = @VendaId;
-                """,
-                db,
-                transaction))
-            {
-                cmdEstorno.Parameters.AddWithValue("@VendaId", vendaId);
-                cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
-                await cmdEstorno.ExecuteNonQueryAsync(ct);
-            }
+            await EstoqueMovimentacaoAB.DevolverItensDaVendaAsync(db, transaction, companyId, vendaId,
+                "nfe", "Devolucao por NF-e da venda #{venda}", supervisorId, supervisorNome, ct);
 
             // 4. Registra no AuditLog
             await using (var cmdAudit = new SqlCommand(

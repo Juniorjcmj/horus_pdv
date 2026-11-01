@@ -59,7 +59,7 @@ public class ProdutoController(IProdutoService produtoService, ProdutoAB produto
         if (currentUser is null) return Unauthorized(new ApiResponse<ProdutoModel> { Success = false, Message = "Sessão não encontrada." });
         try
         {
-            var created = await produtoService.CriarAsync(currentUser.CompanyId, request);
+            var created = await produtoService.CriarAsync(currentUser.CompanyId, request, currentUser.Id, currentUser.Name);
             return StatusCode(StatusCodes.Status201Created, new ApiResponse<ProdutoModel>
             {
                 Success = true,
@@ -83,7 +83,7 @@ public class ProdutoController(IProdutoService produtoService, ProdutoAB produto
         if (currentUser is null) return Unauthorized(new ApiResponse<ProdutoModel> { Success = false, Message = "Sessão não encontrada." });
         try
         {
-            var updated = await produtoService.AtualizarAsync(currentUser.CompanyId, id, request);
+            var updated = await produtoService.AtualizarAsync(currentUser.CompanyId, id, request, currentUser.Id, currentUser.Name);
             if (updated is null)
             {
                 return NotFound(new ApiResponse<ProdutoModel> { Success = false, Message = "Produto não encontrado." });

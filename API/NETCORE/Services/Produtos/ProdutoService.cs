@@ -17,13 +17,13 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
     public async Task<List<ProdutoModel>> ListarAsync(string companyId)
         => (await produtosAB.ListarAsync(companyId)).Select(ToModel).ToList();
 
-    public async Task<ProdutoModel> CriarAsync(string companyId, ProdutoRequest request)
+    public async Task<ProdutoModel> CriarAsync(string companyId, ProdutoRequest request, string? usuarioId = null, string? usuarioNome = null)
     {
         NormalizeRequest(request);
         Validate(request);
         await ValidateBusinessRulesAsync(companyId, request, null);
         var product = MapRequest($"pr-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", request);
-        var saved = await produtosAB.SalvarAsync(companyId, product);
+        var saved = await produtosAB.SalvarAsync(companyId, product, OrigemCadastro(product.Id, usuarioId, usuarioNome));
 
         // A quantidade inicial do cadastro é uma entrada de estoque: gera o primeiro lote
         // (validade informada ou sugerida pelo prazo padrão da categoria).
@@ -40,7 +40,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
         return ToModel(saved);
     }
 
-    public async Task<ProdutoModel?> AtualizarAsync(string companyId, string id, ProdutoRequest request)
+    public async Task<ProdutoModel?> AtualizarAsync(string companyId, string id, ProdutoRequest request, string? usuarioId = null, string? usuarioNome = null)
     {
         var current = await produtosAB.ObterAsync(companyId, id);
         if (current is null)
@@ -51,7 +51,7 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
         NormalizeRequest(request, current.ProductCode);
         Validate(request);
         await ValidateBusinessRulesAsync(companyId, request, id, current.ProductSupplier);
-        return ToModel(await produtosAB.SalvarAsync(companyId, MapRequest(id, request)));
+        return ToModel(await produtosAB.SalvarAsync(companyId, MapRequest(id, request), OrigemCadastro(id, usuarioId, usuarioNome)));
     }
 
     public async Task<ProdutoModel?> AtualizarPrecoAsync(string companyId, string id, ProdutoPrecoRequest request)
@@ -123,12 +123,10 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
             validade = parsed;
         }
 
-        // uso_interno e perda são saídas de estoque no banco
-        var tipoEstoque = entrada ? "entrada" : "saida";
-        var result = await produtosAB.AjustarEstoqueAsync(companyId, id, tipoEstoque, quantidade);
+        // O registrador único grava a movimentação (tipo real: entrada/saida/uso_interno/perda) na mesma transação do saldo.
+        var result = await produtosAB.AjustarEstoqueAsync(companyId, id, tipoNorm, quantidade,
+            motivo.Trim(), string.IsNullOrWhiteSpace(usuarioId) ? "sistema" : usuarioId, string.IsNullOrWhiteSpace(usuarioNome) ? "Sistema" : usuarioNome);
         if (result is null) return false;
-
-        var (anterior, novo) = result.Value;
 
         if (entrada)
         {
@@ -140,13 +138,13 @@ public class ProdutoService(ProdutoAB produtosAB, FornecedorAB fornecedoresAB, L
             await loteAB.ConsumirAjusteSeguroAsync(companyId, id, quantidade);
         }
 
-        // Registra log de auditoria com todos os dados da operação.
-        await movimentacoesAB.RegistrarAsync(
-            companyId, id, tipoNorm, quantidade, anterior, novo,
-            motivo.Trim(), usuarioId ?? "", usuarioNome ?? "");
-
         return true;
     }
+
+    private static MovimentoOrigem OrigemCadastro(string produtoId, string? usuarioId, string? usuarioNome) => new(
+        "cadastro", produtoId, "Cadastro/edição de produto",
+        string.IsNullOrWhiteSpace(usuarioId) ? "sistema" : usuarioId,
+        string.IsNullOrWhiteSpace(usuarioNome) ? "Sistema" : usuarioNome);
 
     private static void NormalizeRequest(ProdutoRequest request, string? existingCode = null)
     {

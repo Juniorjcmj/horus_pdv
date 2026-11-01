@@ -300,12 +300,13 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             var autorizacoesPreco = validacaoPrecos.Usadas;
 
             // A venda e a baixa de estoque compartilham a mesma transação para evitar histórico sem estoque atualizado.
-            var (saleItems, rupturas) = frozenOrderItems is null ? await BaixarEstoqueAsync(db, transaction, companyId, request.Items, isOfflineSync)
-                : (await BaixarEstoqueComPrecoFixoAsync(db,transaction,companyId,frozenOrderItems), new List<EstoqueRupturaAvisoAD>());
+            var origemProvisoria = EstoqueMovimentacaoAB.NovaOrigemProvisoria();
+            var (saleItems, rupturas) = frozenOrderItems is null ? await BaixarEstoqueAsync(db, transaction, companyId, request.Items, isOfflineSync, origemProvisoria)
+                : (await BaixarEstoqueComPrecoFixoAsync(db,transaction,companyId,frozenOrderItems, origemProvisoria), new List<EstoqueRupturaAvisoAD>());
 
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, payments,
-                request.ClientSaleId, request.OfflineReference, request.OccurredAt, caixaSessaoId);
+                request.ClientSaleId, request.OfflineReference, request.OccurredAt, caixaSessaoId, origemProvisoria);
 
             await AutorizacaoPrecoAB.VincularVendaAsync(db, transaction, companyId, autorizacoesPreco, result.VendaId);
             if(frozenOrderId is not null)
@@ -474,10 +475,11 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 SaleMoney.Credit(limiteCredito, saldoDevedor + await GatewayCreditAB.DelegatedAsync(db, transaction, companyId, fiadoClienteIdFixo!), fiadoAmountFixo);
             }
 
-            var saleItems = await BaixarEstoqueComPrecoFixoAsync(db, transaction, companyId, pedidoItens);
+            var origemProvisoria = EstoqueMovimentacaoAB.NovaOrigemProvisoria();
+            var saleItems = await BaixarEstoqueComPrecoFixoAsync(db, transaction, companyId, pedidoItens, origemProvisoria);
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, paymentType, totalAmount, operatorName, saleItems, pagamentos,
-                caixaSessaoId: caixaSessaoId);
+                caixaSessaoId: caixaSessaoId, origemProvisoria: origemProvisoria);
 
             FiadoMovimentoAD? fiadoMovFixo = null;
             if (fiadoAmountFixo > 0 && fiadoClienteIdFixo is not null)
@@ -528,9 +530,12 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         string? clientSaleId = null,
         string? offlineReference = null,
         DateTimeOffset? occurredAt = null,
-        string? caixaSessaoId = null)
+        string? caixaSessaoId = null,
+        string? origemProvisoria = null)
     {
         var saleNumber = await NextSaleNumberAsync(db, transaction, companyId);
+        if (origemProvisoria is not null)
+            await EstoqueMovimentacaoAB.VincularOrigemAsync(db, transaction, companyId, origemProvisoria, saleNumber, $"Venda #{saleNumber}");
         var now = HorusDateTime.Now;
         var saleDate = occurredAt ?? now;
         var saleId = $"sale-{companyId}-{saleNumber}";
@@ -719,7 +724,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         SqlTransaction transaction,
         string companyId,
         IEnumerable<VendaItemRequest> items,
-        bool allowNegativeStock = false)
+        bool allowNegativeStock = false,
+        string? origemProvisoria = null)
     {
         var itemList = items.ToList();
         if (itemList.Count == 0)
@@ -783,21 +789,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 });
             }
 
-            var nextStock = currentStock - totalQty;
-            await using var update = new SqlCommand(
-                """
-                UPDATE Produtos
-                   SET ProductQnt = @ProductQnt,
-                       TotalPriceOnProduct = @TotalPriceOnProduct
-                 WHERE Id = @Id AND CompanyId = @CompanyId;
-                """,
-                db,
-                transaction);
-            update.Parameters.AddWithValue("@ProductQnt", nextStock);
-            update.Parameters.AddWithValue("@TotalPriceOnProduct", unitCost * nextStock);
-            update.Parameters.AddWithValue("@Id", productId);
-            update.Parameters.AddWithValue("@CompanyId", companyId);
-            await update.ExecuteNonQueryAsync();
+            await EstoqueMovimentacaoAB.AplicarMovimentoAsync(db, transaction, companyId, productId,
+                -totalQty, EstoqueTipos.SaidaVenda, unitCost,
+                new MovimentoOrigem("venda", origemProvisoria, "Venda"));
 
             pricesByCode[code] = (productId, productName, effectivePrice, unitCost);
         }
@@ -832,7 +826,8 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
         SqlConnection db,
         SqlTransaction transaction,
         string companyId,
-        IEnumerable<PedidoItemAD> pedidoItens)
+        IEnumerable<PedidoItemAD> pedidoItens,
+        string? origemProvisoria = null)
     {
         var groupedItems = pedidoItens
             .Select(item => new VendaItemRecord
@@ -880,21 +875,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                     $"Estoque insuficiente para {item.ProductName}. Disponível: {HorusMoneyFormat.FormatQuantity(currentStock)}.");
             }
 
-            var nextStock = currentStock - item.Quantity;
-            await using var update = new SqlCommand(
-                """
-                UPDATE Produtos
-                   SET ProductQnt = @ProductQnt,
-                       TotalPriceOnProduct = @TotalPriceOnProduct
-                 WHERE Id = @Id AND CompanyId = @CompanyId;
-                """,
-                db,
-                transaction);
-            update.Parameters.AddWithValue("@ProductQnt", nextStock);
-            update.Parameters.AddWithValue("@TotalPriceOnProduct", costUnitPrice * nextStock);
-            update.Parameters.AddWithValue("@Id", productId);
-            update.Parameters.AddWithValue("@CompanyId", companyId);
-            await update.ExecuteNonQueryAsync();
+            await EstoqueMovimentacaoAB.AplicarMovimentoAsync(db, transaction, companyId, productId,
+                -item.Quantity, EstoqueTipos.SaidaVenda, costUnitPrice,
+                new MovimentoOrigem("venda", origemProvisoria, "Venda de pedido"));
         }
 
         return groupedItems;
@@ -1210,17 +1193,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 .ToList();
             foreach (var (pCode, pQty) in itensParaEstornar)
             {
-                await using var cmdEstorno = new SqlCommand(
-                    """
-                    UPDATE Produtos
-                    SET ProductQnt = ProductQnt + @Quantity,
-                        TotalPriceOnProduct = ProductUnitPrice * (ProductQnt + @Quantity)
-                    WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;
-                    """, db, transaction);
-                cmdEstorno.Parameters.AddWithValue("@Quantity", pQty);
-                cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
-                cmdEstorno.Parameters.AddWithValue("@ProductCode", pCode);
-                await cmdEstorno.ExecuteNonQueryAsync();
+                await EstoqueMovimentacaoAB.AplicarMovimentoPorCodigoAsync(db, transaction, companyId, pCode,
+                    pQty, EstoqueTipos.Devolucao, null,
+                    new MovimentoOrigem("venda", saleNumber, $"Cancelamento da venda #{saleNumber}", supervisorId, supervisorNome));
             }
 
             // 6. Fiado de volta
@@ -1545,17 +1520,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             {
                 if (item.Quantity > 0 && !string.IsNullOrWhiteSpace(item.ProductCode))
                 {
-                    const string sqlEstorno = """
-                        UPDATE Produtos
-                        SET ProductQnt = ProductQnt + @Quantity,
-                            TotalPriceOnProduct = ProductUnitPrice * (ProductQnt + @Quantity)
-                        WHERE CompanyId = @CompanyId AND ProductCode = @ProductCode;
-                        """;
-                    await using var cmdEstorno = new SqlCommand(sqlEstorno, db, transaction);
-                    cmdEstorno.Parameters.AddWithValue("@Quantity", item.Quantity);
-                    cmdEstorno.Parameters.AddWithValue("@CompanyId", companyId);
-                    cmdEstorno.Parameters.AddWithValue("@ProductCode", item.ProductCode);
-                    await cmdEstorno.ExecuteNonQueryAsync();
+                    await EstoqueMovimentacaoAB.AplicarMovimentoPorCodigoAsync(db, transaction, companyId, item.ProductCode,
+                        item.Quantity, EstoqueTipos.Devolucao, null,
+                        new MovimentoOrigem("correcao", saleNumber, $"Correcao da venda #{saleNumber} (devolucao da original)", financeiroId, financeiroNome));
 
                     itensParaEstornar.Add((item.ProductCode, item.Quantity));
                 }
@@ -1634,6 +1601,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
             var novoPaymentType = novosPagamentos.Count == 1 ? novosPagamentos[0].PaymentType : "Múltiplo";
 
             // Baixa estoque dos itens restantes (re-consome)
+            var origemProvisoriaNova = EstoqueMovimentacaoAB.NovaOrigemProvisoria();
             var saleItems = new List<VendaItemRecord>();
             foreach (var item in itensRestantes)
             {
@@ -1657,20 +1625,9 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
                 var costPrice = readerProd.GetDecimal(readerProd.GetOrdinal("ProductUnitPrice"));
                 await readerProd.CloseAsync();
 
-                var nextStock = currentStock - item.Quantity;
-                await using var update = new SqlCommand(
-                    """
-                    UPDATE Produtos
-                    SET ProductQnt = @ProductQnt,
-                        TotalPriceOnProduct = @TotalPriceOnProduct
-                    WHERE Id = @Id AND CompanyId = @CompanyId;
-                    """,
-                    db, transaction);
-                update.Parameters.AddWithValue("@ProductQnt", nextStock);
-                update.Parameters.AddWithValue("@TotalPriceOnProduct", costPrice * nextStock);
-                update.Parameters.AddWithValue("@Id", productId);
-                update.Parameters.AddWithValue("@CompanyId", companyId);
-                await update.ExecuteNonQueryAsync();
+                await EstoqueMovimentacaoAB.AplicarMovimentoAsync(db, transaction, companyId, productId,
+                    -item.Quantity, EstoqueTipos.SaidaVenda, costPrice,
+                    new MovimentoOrigem("correcao", origemProvisoriaNova, "Venda corrigida", financeiroId, financeiroNome));
 
                 saleItems.Add(new VendaItemRecord
                 {
@@ -1686,7 +1643,7 @@ public class HistoricoVendasAB(Connection connection, FiadoAB fiadoAb, AuditLogA
 
             var result = await InserirVendaAsync(
                 db, transaction, companyId, customerName, customerCpf, novoPaymentType, novoTotal, operatorName,
-                saleItems, novosPagamentos, caixaSessaoId: caixaSessaoId);
+                saleItems, novosPagamentos, caixaSessaoId: caixaSessaoId, origemProvisoria: origemProvisoriaNova);
 
             // 9. Vincular vendas: original → nova e nova → original
             const string sqlVinculo = """

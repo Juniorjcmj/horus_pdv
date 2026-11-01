@@ -627,33 +627,10 @@ public class InventarioAB(Connection connection, LoteAB loteAB, ILogger<Inventar
 
                     if (deltaReal != 0)
                     {
-                        await using (var up = new SqlCommand(
-                            "UPDATE Produtos SET ProductQnt = @Q, TotalPriceOnProduct = @T WHERE Id = @P AND CompanyId = @C;", db, tx))
-                        {
-                            up.Parameters.AddWithValue("@Q", novo);
-                            up.Parameters.AddWithValue("@T", custoAtual * novo);
-                            up.Parameters.AddWithValue("@P", item.ProdutoId);
-                            up.Parameters.AddWithValue("@C", companyId);
-                            await up.ExecuteNonQueryAsync();
-                        }
-
-                        await using (var mv = new SqlCommand(
-                            """
-                            INSERT INTO EstoqueMovimentacoes (Id, CompanyId, ProdutoId, Tipo, Quantidade, EstoqueAnterior, EstoqueNovo, Motivo, UsuarioId, UsuarioNome)
-                            VALUES (@Id, @C, @P, N'inventario', @Q, @A, @N, @M, @U, @UN);
-                            """, db, tx))
-                        {
-                            mv.Parameters.AddWithValue("@Id", $"mov-{Guid.NewGuid():N}");
-                            mv.Parameters.AddWithValue("@C", companyId);
-                            mv.Parameters.AddWithValue("@P", item.ProdutoId);
-                            mv.Parameters.AddWithValue("@Q", Math.Abs(deltaReal));
-                            mv.Parameters.AddWithValue("@A", atual);
-                            mv.Parameters.AddWithValue("@N", novo);
-                            mv.Parameters.AddWithValue("@M", motivo);
-                            mv.Parameters.AddWithValue("@U", Corta(supervisorId, 36));
-                            mv.Parameters.AddWithValue("@UN", Corta($"{supervisorNome} (inventário)", 200));
-                            await mv.ExecuteNonQueryAsync();
-                        }
+                        // Registrador unico: atualiza o saldo e grava a movimentacao "inventario" na mesma transacao.
+                        await EstoqueMovimentacaoAB.AplicarMovimentoAsync(db, tx, companyId, item.ProdutoId,
+                            deltaReal, EstoqueTipos.Inventario, custoAtual,
+                            new MovimentoOrigem("inventario", inventarioId, motivo, Corta(supervisorId, 36), Corta($"{supervisorNome} (inventário)", 200)));
 
                         lotes.Add((item.ProdutoId, deltaReal));
                         ajustados++;

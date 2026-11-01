@@ -392,7 +392,9 @@ public class OrdemCompraAB(Connection connection, ProdutoAB produtoAb, LoteAB lo
             if (produto is null) continue;
 
             // Entrada de estoque (atualiza custo e recalcula preço de venda se margem configurada)
-            await produtoAb.EntradaEstoqueAsync(companyId, produto.Id, recvData.QuantityReceived, item.UnitCost);
+            await produtoAb.EntradaEstoqueAsync(companyId, produto.Id, recvData.QuantityReceived, item.UnitCost,
+                origem: new MovimentoOrigem("pedido_compra", orderNumber, "Recebimento do pedido de compra " + orderNumber,
+                    string.IsNullOrWhiteSpace(receivedBy) ? "sistema" : receivedBy, string.IsNullOrWhiteSpace(receivedByName) ? "Sistema" : receivedByName));
 
             // Cada recebimento vira um lote (validade informada ou sugerida pelo prazo padrão da categoria).
             // Produtos.DataValidade passa a refletir o lote que vence primeiro, em vez de ser sobrescrita

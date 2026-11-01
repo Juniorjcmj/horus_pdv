@@ -179,7 +179,7 @@ public class ProdutoAB(Connection connection)
     /// aqui — permanece o que já estava cadastrado, a menos que o operador o edite à parte).
     /// </summary>
     public async Task<ProdutoAD> EntradaEstoqueAsync(string companyId, string productId, decimal quantidadeRecebida, decimal custoUnitario,
-        bool preservarPrecoVenda = false, decimal? precoVendaExplicito = null)
+        bool preservarPrecoVenda = false, decimal? precoVendaExplicito = null, MovimentoOrigem? origem = null)
     {
         await using var db = await connection.OpenLeaseAsync();
         await using var ownedTransaction = connection.CurrentImportTransaction is null ? (SqlTransaction)await db.BeginTransactionAsync() : null;
@@ -224,24 +224,25 @@ public class ProdutoAB(Connection connection)
             await using var update = connection.CreateCommand(
                 """
                 UPDATE Produtos
-                   SET ProductQnt = @ProductQnt,
-                       ProductUnitPrice = @ProductUnitPrice,
+                   SET ProductUnitPrice = @ProductUnitPrice,
                        ProductSalePrice = @ProductSalePrice,
-                       TotalPriceOnProduct = @TotalPriceOnProduct,
                        Lucro = @Lucro
                  WHERE Id = @Id AND CompanyId = @CompanyId;
                 """,
                 db,
                 transaction);
             var nextLucro = nextSalePrice - custoUnitario;
-            update.Parameters.AddWithValue("@ProductQnt", nextQuantity);
             update.Parameters.AddWithValue("@ProductUnitPrice", custoUnitario);
             update.Parameters.AddWithValue("@ProductSalePrice", nextSalePrice);
-            update.Parameters.AddWithValue("@TotalPriceOnProduct", nextTotal);
             update.Parameters.AddWithValue("@Lucro", nextLucro);
             update.Parameters.AddWithValue("@Id", productId);
             update.Parameters.AddWithValue("@CompanyId", companyId);
             await update.ExecuteNonQueryAsync();
+
+            // Saldo só muda pelo registrador único (grava a movimentação na mesma transação).
+            await EstoqueMovimentacaoAB.AplicarMovimentoAsync(db, transaction, companyId, productId,
+                quantidadeRecebida, EstoqueTipos.Entrada, custoUnitario,
+                origem ?? MovimentoOrigem.Sistema("nfe", null, "Entrada de estoque"));
 
             if (ownedTransaction is not null) await ownedTransaction.CommitAsync();
 
@@ -259,7 +260,7 @@ public class ProdutoAB(Connection connection)
         }
     }
 
-    public async Task<ProdutoAD> SalvarAsync(string companyId, ProdutoAD product)
+    public async Task<ProdutoAD> SalvarAsync(string companyId, ProdutoAD product, MovimentoOrigem? origem = null)
     {
         var supplierId = await ResolveSupplierIdAsync(companyId, product.ProductSupplier);
         const string sql = """
@@ -273,7 +274,6 @@ public class ProdutoAB(Connection connection)
                        ProductSupplier = @ProductSupplier,
                        SupplierId = @SupplierId,
                        ProductDescription = @ProductDescription,
-                       ProductQnt = @ProductQnt,
                        EstoqueMinimo = @EstoqueMinimo,
                        ProductUnitPrice = @ProductUnitPrice,
                        ProductSalePrice = @ProductSalePrice,
@@ -336,7 +336,7 @@ public class ProdutoAB(Connection connection)
                      CsosnIcms, CstIcms, AliquotaIcms, CstPis, CstCofins, CstIbsCbs, CClassTrib)
                 VALUES
                     (@Id, @CompanyId, @ProductImageUrl, @ProductImageName, @ProductName, @ProductCode, @ProductSupplier, @SupplierId,
-                     @ProductDescription, @ProductQnt, @EstoqueMinimo, @ProductUnitPrice, @ProductSalePrice, @TotalPriceOnProduct,
+                     @ProductDescription, 0, @EstoqueMinimo, @ProductUnitPrice, @ProductSalePrice, @TotalPriceOnProduct,
                      @Lucro, @MargemDesejadaPercentual, @CategoriaId, @DataValidade, @ControlaValidade, @DiasAlertaValidade,
                      @UnidadeCompra, @FatorConversao, @QtdEmbalagem,
                      @Marca, @Fabricante, @ReferenciaFabricante,
@@ -350,30 +350,64 @@ public class ProdutoAB(Connection connection)
             """;
 
         await using var db = await connection.OpenLeaseAsync();
-        await using var command = connection.CreateCommand(sql, db);
-        command.Parameters.AddWithValue("@CompanyId", companyId);
-        AddParameters(command, product, supplierId);
-        await command.ExecuteNonQueryAsync();
-        return product;
+        await using var ownedTransaction = connection.CurrentImportTransaction is null ? (SqlTransaction)await db.BeginTransactionAsync() : null;
+        var transaction = connection.CurrentImportTransaction ?? ownedTransaction!;
+        try
+        {
+            // Saldo atual (0 se o produto é novo): a diferença vira movimentação pelo registrador único.
+            decimal saldoAtual = 0m;
+            await using (var read = connection.CreateCommand(
+                "SELECT ProductQnt FROM Produtos WITH (UPDLOCK, ROWLOCK) WHERE Id = @Id AND CompanyId = @CompanyId;", db, transaction))
+            {
+                read.Parameters.AddWithValue("@Id", product.Id);
+                read.Parameters.AddWithValue("@CompanyId", companyId);
+                if (await read.ExecuteScalarAsync() is decimal atual) saldoAtual = atual;
+            }
+
+            await using var command = connection.CreateCommand(sql, db, transaction);
+            command.Parameters.AddWithValue("@CompanyId", companyId);
+            AddParameters(command, product, supplierId);
+            await command.ExecuteNonQueryAsync();
+
+            var delta = product.ProductQnt - saldoAtual;
+            if (delta != 0m)
+            {
+                await EstoqueMovimentacaoAB.AplicarMovimentoAsync(db, transaction, companyId, product.Id,
+                    delta, delta > 0 ? EstoqueTipos.Entrada : EstoqueTipos.Saida, null,
+                    origem ?? MovimentoOrigem.Sistema("cadastro", product.Id, "Cadastro/edição de produto"));
+            }
+
+            if (ownedTransaction is not null) await ownedTransaction.CommitAsync();
+            return product;
+        }
+        catch
+        {
+            if (ownedTransaction is not null) await ownedTransaction.RollbackAsync();
+            throw;
+        }
     }
 
     /// <summary>
     /// Estorna (subtrai) uma quantidade do estoque do produto. Permite estoque negativo para manter
     /// a integridade do estorno mesmo que parte do estoque já tenha sido vendida.
     /// </summary>
-    public async Task EstornarEstoqueAsync(string companyId, string productId, decimal quantidade)
+    public async Task EstornarEstoqueAsync(string companyId, string productId, decimal quantidade, MovimentoOrigem? origem = null)
     {
         await using var db = await connection.OpenLeaseAsync();
-        await using var cmd = connection.CreateCommand("""
-            UPDATE Produtos
-               SET ProductQnt = ProductQnt - @Quantidade,
-                   TotalPriceOnProduct = ProductUnitPrice * (ProductQnt - @Quantidade)
-             WHERE Id = @Id AND CompanyId = @CompanyId;
-            """, db);
-        cmd.Parameters.AddWithValue("@Quantidade", quantidade);
-        cmd.Parameters.AddWithValue("@Id", productId);
-        cmd.Parameters.AddWithValue("@CompanyId", companyId);
-        await cmd.ExecuteNonQueryAsync();
+        await using var ownedTransaction = connection.CurrentImportTransaction is null ? (SqlTransaction)await db.BeginTransactionAsync() : null;
+        var transaction = connection.CurrentImportTransaction ?? ownedTransaction!;
+        try
+        {
+            await EstoqueMovimentacaoAB.AplicarMovimentoAsync(db, transaction, companyId, productId,
+                -quantidade, EstoqueTipos.Saida, null,
+                origem ?? MovimentoOrigem.Sistema("nota_entrada", null, "Estorno de nota de entrada"));
+            if (ownedTransaction is not null) await ownedTransaction.CommitAsync();
+        }
+        catch
+        {
+            if (ownedTransaction is not null) await ownedTransaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<bool> ExcluirAsync(string companyId, string id)
@@ -462,7 +496,7 @@ public class ProdutoAB(Connection connection)
         return await command.ExecuteNonQueryAsync() > 0;
     }
 
-    public async Task BaixarEstoqueAsync(string companyId, IEnumerable<(string ProductCode, decimal Quantity)> items)
+    public async Task BaixarEstoqueAsync(string companyId, IEnumerable<(string ProductCode, decimal Quantity)> items, MovimentoOrigem? origem = null)
     {
         var groupedItems = items
             .GroupBy(item => item.ProductCode.Trim(), StringComparer.OrdinalIgnoreCase)
@@ -510,21 +544,9 @@ public class ProdutoAB(Connection connection)
                         $"Estoque insuficiente para {productName}. Disponível: {currentStock}.");
                 }
 
-                var nextStock = currentStock - item.Quantity;
-                await using var update = connection.CreateCommand(
-                    """
-                    UPDATE Produtos
-                       SET ProductQnt = @ProductQnt,
-                           TotalPriceOnProduct = @TotalPriceOnProduct
-                     WHERE Id = @Id AND CompanyId = @CompanyId;
-                    """,
-                    db,
-                    transaction);
-                update.Parameters.AddWithValue("@ProductQnt", nextStock);
-                update.Parameters.AddWithValue("@TotalPriceOnProduct", unitPrice * nextStock);
-                update.Parameters.AddWithValue("@Id", productId);
-                update.Parameters.AddWithValue("@CompanyId", companyId);
-                await update.ExecuteNonQueryAsync();
+                await EstoqueMovimentacaoAB.AplicarMovimentoAsync(db, transaction, companyId, productId,
+                    -item.Quantity, EstoqueTipos.Saida, unitPrice,
+                    origem ?? MovimentoOrigem.Sistema("ajuste", null, "Baixa de estoque"));
             }
 
             await transaction.CommitAsync();
@@ -904,7 +926,7 @@ public class ProdutoAB(Connection connection)
     /// Ajuste manual de estoque (entrada ou saída). Atualiza ProductQnt e TotalPriceOnProduct.
     /// Retorna (estoqueAnterior, estoqueNovo) ou null se o produto não existe.
     /// </summary>
-    public async Task<(decimal anterior, decimal novo)?> AjustarEstoqueAsync(string companyId, string productId, string tipo, decimal quantidade)
+    public async Task<(decimal anterior, decimal novo)?> AjustarEstoqueAsync(string companyId, string productId, string tipo, decimal quantidade, string motivo = "Ajuste de estoque", string usuarioId = "sistema", string usuarioNome = "Sistema")
     {
         await using var db = await connection.OpenLeaseAsync();
         await using var transaction = (SqlTransaction)await db.BeginTransactionAsync();
@@ -932,28 +954,16 @@ public class ProdutoAB(Connection connection)
                 unitPrice = reader.GetDecimal(reader.GetOrdinal("ProductUnitPrice"));
             }
 
-            var nextQty = string.Equals(tipo, "entrada", StringComparison.OrdinalIgnoreCase)
-                ? currentQty + quantidade
-                : currentQty - quantidade;
-
-            if (nextQty < 0)
+            var entrada = string.Equals(tipo, "entrada", StringComparison.OrdinalIgnoreCase);
+            if (!entrada && currentQty - quantidade < 0)
                 throw new InvalidOperationException(
                     $"Estoque insuficiente. Disponível: {currentQty}, solicitado: {quantidade}.");
 
-            await using var update = connection.CreateCommand(
-                """
-                UPDATE Produtos
-                   SET ProductQnt = @ProductQnt,
-                       TotalPriceOnProduct = @TotalPriceOnProduct
-                 WHERE Id = @Id AND CompanyId = @CompanyId;
-                """,
-                db,
-                transaction);
-            update.Parameters.AddWithValue("@ProductQnt", nextQty);
-            update.Parameters.AddWithValue("@TotalPriceOnProduct", unitPrice * nextQty);
-            update.Parameters.AddWithValue("@Id", productId);
-            update.Parameters.AddWithValue("@CompanyId", companyId);
-            await update.ExecuteNonQueryAsync();
+            var applied = await EstoqueMovimentacaoAB.AplicarMovimentoAsync(db, transaction, companyId, productId,
+                entrada ? quantidade : -quantidade, tipo.Trim().ToLowerInvariant(), unitPrice,
+                new MovimentoOrigem("ajuste", null, motivo, usuarioId, usuarioNome));
+            if (applied is null) return null;
+            var nextQty = applied.Value.Novo;
 
             await transaction.CommitAsync();
             return (currentQty, nextQty);

@@ -292,6 +292,8 @@ public class NfeImportService(
         await fornecedoresAB.SalvarAsync(companyId, fornecedor);
 
         var resultado = new NfeImportResultModel { FornecedorCriado = fornecedorExistente is null };
+        var origemMov = new MovimentoOrigem("nfe", documento.Chave ?? documento.Numero, "Entrada por NF-e " + documento.Numero,
+            string.IsNullOrWhiteSpace(usuarioId) ? "sistema" : usuarioId, string.IsNullOrWhiteSpace(usuarioNome) ? "Sistema" : usuarioNome);
 
         var indice = 0;
         foreach (var item in request.Itens)
@@ -307,7 +309,7 @@ public class NfeImportService(
 
             if (!string.IsNullOrWhiteSpace(item.ProdutoExistenteId))
             {
-                await produtosAB.EntradaEstoqueAsync(companyId, item.ProdutoExistenteId, quantidade, precoCusto);
+                await produtosAB.EntradaEstoqueAsync(companyId, item.ProdutoExistenteId, quantidade, precoCusto, origem: origemMov);
                 resultado.ProdutosAtualizados++;
                 await loteAB.RegistrarEntradaAsync(
                     companyId, item.ProdutoExistenteId, ParseValidade(item), quantidade, item.NumeroLote, OrigemLoteNfe, CriadoPorImportacao);
@@ -378,7 +380,7 @@ public class NfeImportService(
                 CstIbsCbs = null,
                 CClassTrib = null,
             };
-            await produtosAB.SalvarAsync(companyId, novoProduto);
+            await produtosAB.SalvarAsync(companyId, novoProduto, origemMov);
             item.ProdutoExistenteId = novoProduto.Id;
             resultado.ProdutosCriados++;
             await loteAB.RegistrarEntradaAsync(
@@ -419,7 +421,8 @@ public class NfeImportService(
                 if (qtdStr is null || !HorusMoneyFormat.TryParseDecimal(qtdStr, out var quantidade) || quantidade <= 0)
                     continue;
 
-                try { await produtosAB.EstornarEstoqueAsync(companyId, produtoId, quantidade); }
+                try { await produtosAB.EstornarEstoqueAsync(companyId, produtoId, quantidade,
+                    new MovimentoOrigem("nota_entrada", notaId, "Estorno de nota de entrada: " + justificativa.Trim(), usuarioId, usuarioNome)); }
                 catch { /* produto pode ter sido excluído — segue */ }
             }
         }

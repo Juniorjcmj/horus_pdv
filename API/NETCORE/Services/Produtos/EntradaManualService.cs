@@ -106,6 +106,8 @@ public sealed class EntradaManualService(Connection connection, ProdutoAB produt
             totals.Add(decimal.Round(purchased * packCost, 2, MidpointRounding.AwayFromZero));
         }
         var result = new NfeImportResultModel();
+        var origemMov = new MovimentoOrigem("nota_entrada", operation.ToString("N"), "Entrada manual",
+            string.IsNullOrWhiteSpace(userId) ? "sistema" : userId, string.IsNullOrWhiteSpace(userName) ? "Sistema" : userName);
         // Ordem estável de bloqueios de estoque evita inversão entre recebimentos simultâneos.
         foreach (var (item, quantity, cost, sale, expiry) in validations.OrderBy(v => v.Item.ProdutoExistenteId ?? v.Item.ProductCode, StringComparer.Ordinal))
         {
@@ -113,7 +115,7 @@ public sealed class EntradaManualService(Connection connection, ProdutoAB produt
             decimal before;
             if (!string.IsNullOrWhiteSpace(item.ProdutoExistenteId))
             {
-                product = await produtos.EntradaEstoqueAsync(companyId, item.ProdutoExistenteId, quantity, cost, preservarPrecoVenda: true, precoVendaExplicito: sale);
+                product = await produtos.EntradaEstoqueAsync(companyId, item.ProdutoExistenteId, quantity, cost, preservarPrecoVenda: true, precoVendaExplicito: sale, origem: origemMov);
                 if (!string.Equals(item.UnidadeComercial.Trim(), product.UnidadeComercial, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException("A unidade de venda do produto mudou. Atualize o produto selecionado antes de confirmar.");
                 before = product.ProductQnt - quantity;
@@ -133,7 +135,7 @@ public sealed class EntradaManualService(Connection connection, ProdutoAB produt
                     QtdEmbalagem = HorusMoneyFormat.ParseDecimal(item.FatorConversao), UnidadeComercial = item.UnidadeComercial.Trim().ToUpperInvariant(),
                     UnidadeTributavel = item.UnidadeComercial.Trim().ToUpperInvariant(), Ncm = item.Ncm, Gtin = "SEM GTIN", CsosnIcms = "102",
                 };
-                await produtos.SalvarAsync(companyId, product);
+                await produtos.SalvarAsync(companyId, product, origemMov);
                 result.ProdutosCriados++;
             }
             item.ProdutoExistenteId = product.Id;

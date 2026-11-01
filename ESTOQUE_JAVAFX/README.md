@@ -79,6 +79,40 @@ Pasta `%APPDATA%\QuackEstoque\` (fallback `~/.quack-estoque`):
 Na contagem: bipe → (quantidade, padrão 1; fração só para unidades diferentes de UN; etiqueta de balança traz o peso) → local →
 Enter. Código desconhecido ou fora do escopo toca o aviso sonoro, destaca em vermelho e não registra nada.
 
+## Análise de estoque (dados e demonstração)
+
+A análise (menu "Análise", etapas 3 a 6 da change `analise-estoque`) lê números calculados pela API a partir de:
+
+- **Movimentações** (`EstoqueMovimentacoes`): toda mudança de saldo (venda, cancelamento, correção, entrada por NF-e/manual/
+  pedido de compra, estorno, ajuste, inventário e edição de cadastro) grava uma linha com tipo, custo unitário, documento de
+  origem, autor e horário, na mesma transação do saldo. Regra: só `EstoqueMovimentacaoAB.AplicarMovimentoAsync` altera
+  `Produtos.ProductQnt`.
+- **Fotografia diária** (`EstoqueSnapshotDiario`): quantidade e valor ao custo por produto ao fim de cada dia (Brasília).
+  Gravada pelo `EstoqueSnapshotWorker` (a cada 30 min, para "ontem") ou sob demanda por
+  `POST api/Estoque/analise/snapshot?data=AAAA-MM-DD` (gerente/administrador). Idempotente; o dia passado é reconstruído
+  pelo saldo atual menos as movimentações posteriores. O histórico real começa na publicação da migração 57.
+
+### Empresa de demonstração (só em ambiente de teste)
+
+```
+dotnet run --project API/tests/EstoqueAnaliseSeed -- --connection "Server=localhost,14333;Database=HorusPdv;User ID=sa;Password=<senha>;TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=True"
+```
+
+Cria a empresa `demo-analise` (re-executável: apaga e recria só ela) com 200 SKUs em 10 categorias, 12 fornecedores (prazo
+prometido x real diferentes), 12 meses de vendas diárias com sazonalidade, pedidos de compra, perdas, 15 parados, 5 itens sem
+nenhuma venda, 10 em excesso, rupturas, 6 inventários e as fotografias diárias. Usuários: `gerente.demo@teste.com` e
+`estoquista.demo@teste.com` (senha `Demo@12345`). O seed **recusa** qualquer servidor que não seja `localhost` e exige
+`--connection` explícita. Grava por SQL em lote (rápido) e confere ao final que a soma das movimentações é igual ao saldo.
+
+### Verificações da API
+
+```
+dotnet run --project API/tests/EstoqueIndicadoresChecks    # SQL de teste em localhost,14333 (ou --connection)
+```
+
+Confere a regra "soma das movimentações = variação do saldo" em todos os fluxos, tipos/origens/custo e a fotografia diária
+(idempotência e reconstrução).
+
 ## Inventário (resumo da regra)
 
 Na **primeira** contagem de cada produto o servidor guarda o saldo do sistema naquele instante. Ao aplicar:
