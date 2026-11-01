@@ -53,4 +53,19 @@ public class AnaliseApi {
     public JsonNode contagemCiclica() {
         return api.send("GET", "/api/Estoque/analise/contagem-ciclica", null, ApiClient.LONG_TIMEOUT);
     }
+
+    /** Configurações da análise: {atual, padrao, podeEditar}. */
+    public JsonNode config() {
+        return api.send("GET", "/api/Estoque/analise/config", null, ApiClient.LIST_TIMEOUT);
+    }
+
+    /** Salva as configurações (gerente/administrador). Devolve o mesmo formato de {@link #config()}. */
+    public JsonNode salvarConfig(java.util.Map<String, Object> corpo) {
+        return api.send("PUT", "/api/Estoque/analise/config", corpo, ApiClient.LONG_TIMEOUT);
+    }
+
+    /** Volta aos padrões (apaga a configuração da empresa). */
+    public JsonNode restaurarConfig() {
+        return api.send("DELETE", "/api/Estoque/analise/config", null, ApiClient.LONG_TIMEOUT);
+    }
 }

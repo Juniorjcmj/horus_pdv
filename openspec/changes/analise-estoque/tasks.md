@@ -47,9 +47,9 @@ acessar a tela.**
 
 ## 6. Etapa 6 — Configurações e entrega
 
-- [ ] 6.1 API `GET/PUT config` (gerente/admin escrevem; invalida cache) e tela Configurações com padrões visíveis e "restaurar padrão" (estoquista só leitura). Verificar: E2E muda dias de parado 90→60 e o dashboard/perdas refletem.
-- [ ] 6.2 Integração final: checks da API, `mvn test` do estoque e do caixa com E2E, prints de todas as telas de análise nos dois tamanhos e como estoquista, `build-exe.ps1`. Verificar: tudo verde; zip gerado.
-- [ ] 6.3 README do estoque (seção Análise: telas, fórmulas, configurações, seed) e memória do projeto atualizados; `graphify update .`. Commit da etapa 6.
+- [x] 6.1 API `GET/PUT config` (gerente/admin escrevem; invalida cache) e tela Configurações com padrões visíveis e "restaurar padrão" (estoquista só leitura). Verificar: E2E muda dias de parado 90→60 e o dashboard/perdas refletem.
+- [x] 6.2 Integração final: checks da API, `mvn test` do estoque e do caixa com E2E, prints de todas as telas de análise nos dois tamanhos e como estoquista, `build-exe.ps1`. Verificar: tudo verde; zip gerado.
+- [x] 6.3 README do estoque (seção Análise: telas, fórmulas, configurações, seed) e memória do projeto atualizados; `graphify update .`. Commit da etapa 6.
 
 ## Workflow follow-up
 

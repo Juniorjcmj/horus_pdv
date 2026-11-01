@@ -56,6 +56,7 @@ public class MainView extends BorderPane implements Tela.Navegador {
                 new Item("analise-acuracidade", "Acuracidade", "", true, br.com.quack.estoque.analise.AcuraciaView::new),
                 new Item("analise-perdas", "Perdas e parados", "", true, br.com.quack.estoque.analise.PerdasView::new),
                 new Item("analise-fornecedores", "Fornecedores", "", true, br.com.quack.estoque.analise.FornecedoresView::new),
+                new Item("analise-config", "Configurações", "", true, br.com.quack.estoque.analise.ConfiguracoesView::new),
                 new Item("cadastros", "Cadastros", "", perfil.cadastrarCategoriasEFornecedores(), CadastrosView::new));
 
         VBox menu = new VBox(2);

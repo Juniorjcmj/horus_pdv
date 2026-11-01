@@ -579,6 +579,109 @@ public class EstoqueAnaliseController(
         return faixas;
     }
 
+    // ---------- etapa 6: configurações ----------
+
+    public sealed class MetaRequest
+    {
+        public decimal? Verde { get; set; }
+        public decimal? Amarelo { get; set; }
+    }
+
+    public sealed class ConfigRequest
+    {
+        public int? JanelaConsumoDias { get; set; }
+        public decimal? NivelServicoZ { get; set; }
+        public decimal? AbcLimiteA { get; set; }
+        public decimal? AbcLimiteB { get; set; }
+        public string? AbcBase { get; set; }
+        public decimal? FsnLimiteFast { get; set; }
+        public int? DiasParado { get; set; }
+        public int? DiasExcesso { get; set; }
+        public int? CoberturaAlvoDias { get; set; }
+        public int? LeadTimePadraoDias { get; set; }
+        public int? ContagemDiasA { get; set; }
+        public int? ContagemDiasB { get; set; }
+        public int? ContagemDiasC { get; set; }
+        public int? ContagemItensDia { get; set; }
+        public Dictionary<string, MetaRequest>? Metas { get; set; }
+    }
+
+    private static object ConfigDto(EstoqueParametros p, bool podeEditar) => new
+    {
+        atual = ParametrosDto(p), padrao = ParametrosDto(EstoqueParametros.Padrao), podeEditar,
+    };
+
+    private static object ParametrosDto(EstoqueParametros p) => new
+    {
+        janelaConsumoDias = p.JanelaConsumoDias, nivelServicoZ = p.NivelServicoZ, abcLimiteA = p.AbcLimiteA, abcLimiteB = p.AbcLimiteB, abcBase = p.AbcBase,
+        fsnLimiteFast = p.FsnLimiteFast, diasParado = p.DiasParado, diasExcesso = p.DiasExcesso, coberturaAlvoDias = p.CoberturaAlvoDias,
+        leadTimePadraoDias = p.LeadTimePadraoDias, contagemDiasA = p.ContagemDiasA, contagemDiasB = p.ContagemDiasB, contagemDiasC = p.ContagemDiasC,
+        contagemItensDia = p.ContagemItensDia,
+        metas = EstoqueMetas.Efetivas(p.MetasJson).ToDictionary(k => k.Key, k => new { verde = k.Value.Verde, amarelo = k.Value.Amarelo, maiorMelhor = k.Value.MaiorMelhor }),
+    };
+
+    /// <summary>Configurações da análise da empresa (padrões do spec quando nunca salvas). Leitura para os três perfis.</summary>
+    [HttpGet("config")]
+    [HorusAuthorizeRoles("administrador", "gerente", "estoquista")]
+    public async Task<IActionResult> ObterConfig()
+    {
+        if (Usuario() is not { } u) return Sessao();
+        var p = await config.ObterAsync(u.CompanyId, HttpContext.RequestAborted);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Configurações da análise.", Data = ConfigDto(p, HorusRoles.IsGerenteOuAdmin(u.Role)) });
+    }
+
+    /// <summary>Salva as configurações (só gerente/administrador), invalida o cache e recalcula a classificação ABC/FSN na hora.</summary>
+    [HttpPut("config")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
+    public async Task<IActionResult> SalvarConfig([FromBody] ConfigRequest body)
+    {
+        if (Usuario() is not { } u) return Sessao();
+        var atual = await config.ObterAsync(u.CompanyId, HttpContext.RequestAborted);
+        var metas = EstoqueMetas.Efetivas(atual.MetasJson).ToDictionary(k => k.Key, k => new { verde = k.Value.Verde, amarelo = k.Value.Amarelo });
+        if (body.Metas is not null)
+        {
+            foreach (var (chave, m) in body.Metas)
+            {
+                if (!EstoqueMetas.Padrao.ContainsKey(chave)) return BadRequest(Erro($"Meta desconhecida: {chave}."));
+                var anterior = metas[chave];
+                var verde = m.Verde ?? anterior.verde;
+                var amarelo = m.Amarelo ?? anterior.amarelo;
+                var maior = EstoqueMetas.Padrao[chave].MaiorMelhor;
+                if (maior ? amarelo > verde : amarelo < verde) return BadRequest(Erro($"Meta de {chave}: o limite do amarelo deve ficar além do verde."));
+                metas[chave] = new { verde, amarelo };
+            }
+        }
+        var novo = atual with
+        {
+            JanelaConsumoDias = body.JanelaConsumoDias ?? atual.JanelaConsumoDias, NivelServicoZ = body.NivelServicoZ ?? atual.NivelServicoZ,
+            AbcLimiteA = body.AbcLimiteA ?? atual.AbcLimiteA, AbcLimiteB = body.AbcLimiteB ?? atual.AbcLimiteB,
+            AbcBase = string.IsNullOrWhiteSpace(body.AbcBase) ? atual.AbcBase : body.AbcBase.Trim().ToLowerInvariant(),
+            FsnLimiteFast = body.FsnLimiteFast ?? atual.FsnLimiteFast, DiasParado = body.DiasParado ?? atual.DiasParado,
+            DiasExcesso = body.DiasExcesso ?? atual.DiasExcesso, CoberturaAlvoDias = body.CoberturaAlvoDias ?? atual.CoberturaAlvoDias,
+            LeadTimePadraoDias = body.LeadTimePadraoDias ?? atual.LeadTimePadraoDias, ContagemDiasA = body.ContagemDiasA ?? atual.ContagemDiasA,
+            ContagemDiasB = body.ContagemDiasB ?? atual.ContagemDiasB, ContagemDiasC = body.ContagemDiasC ?? atual.ContagemDiasC,
+            ContagemItensDia = body.ContagemItensDia ?? atual.ContagemItensDia,
+            MetasJson = System.Text.Json.JsonSerializer.Serialize(metas),
+        };
+        if (EstoqueConfigAnaliseAB.Validar(novo) is { } erro) return BadRequest(Erro(erro));
+        await config.SalvarAsync(u.CompanyId, novo, u.Name, HttpContext.RequestAborted);
+        await classificacao.RecalcularAsync(u.CompanyId, novo, ct: HttpContext.RequestAborted);
+        cache.Invalidar(u.CompanyId);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Configurações salvas.", Data = ConfigDto(novo, true) });
+    }
+
+    /// <summary>Volta aos padrões do spec (apaga a configuração da empresa).</summary>
+    [HttpDelete("config")]
+    [HorusAuthorizeRoles("administrador", "gerente")]
+    public async Task<IActionResult> RestaurarConfig()
+    {
+        if (Usuario() is not { } u) return Sessao();
+        await config.RestaurarPadraoAsync(u.CompanyId, HttpContext.RequestAborted);
+        await classificacao.RecalcularAsync(u.CompanyId, EstoqueParametros.Padrao, ct: HttpContext.RequestAborted);
+        cache.Invalidar(u.CompanyId);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Configurações restauradas para o padrão.", Data = ConfigDto(EstoqueParametros.Padrao, true) });
+    }
+
     // ---------- infraestrutura dos blocos ----------
 
     private sealed record KpiDto(string Chave, string Titulo, string Unidade, decimal? Valor, decimal? Anterior,

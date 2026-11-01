@@ -92,6 +92,42 @@ A análise (menu "Análise", etapas 3 a 6 da change `analise-estoque`) lê núme
   `POST api/Estoque/analise/snapshot?data=AAAA-MM-DD` (gerente/administrador). Idempotente; o dia passado é reconstruído
   pelo saldo atual menos as movimentações posteriores. O histórico real começa na publicação da migração 57.
 
+### Telas do menu "Análise"
+
+| Tela | Para que serve | Quem vê |
+| --- | --- | --- |
+| Dashboard | 12 indicadores com variação e semáforo e 6 gráficos (estoque no tempo, ruptura, cobertura por categoria, maior giro, maiores parados, curva ABC do estoque) | todos (estoquista sem R$) |
+| Curva ABC | Pareto do período (top 100 + "Outros"), matriz ABC × FSN clicável que filtra a tabela | gerente/administrador |
+| Reposição | produtos abaixo do ponto de pedido por urgência (ruptura > crítico > repor > planejar), quantidades editáveis, **rascunho de pedido por fornecedor**, CSV e Excel | todos; gerar pedido só gerente |
+| Acuracidade | acuracidade por inventário (meta 98%), divergências e a **contagem cíclica do dia** (lista cega A/B/C; registra ou conta e aplica com a senha do gerente) | todos; aplicar só gerente |
+| Perdas e parados | perdas por motivo e mês (quantidade ou R$) e todos os produtos parados | todos (estoquista sem R$) |
+| Fornecedores | prazo prometido × real, desvio, % no prazo e produtos | todos |
+| Configurações | parâmetros e metas do semáforo, com o padrão ao lado e "Restaurar padrão" | todos veem; só gerente edita |
+| Detalhe do produto | indicadores, saldo diário com mínimo/ponto de pedido/máximo, entradas × saídas por semana, histograma da demanda e extrato | duplo clique em qualquer tabela da análise |
+
+Os filtros (período com atalhos, comparação com o período anterior, categoria e fornecedor) ficam lembrados neste terminal em
+`%APPDATA%\QuackEstoque\analise.json`. Cada bloco carrega sozinho; o servidor guarda cada bloco por 5 minutos e informa o horário do
+cálculo (salvar a configuração, gerar pedidos ou aplicar um inventário invalidam o cache da empresa).
+
+### Fórmulas (calculadas na API, `EstoqueCalculos`)
+
+- **Consumo** = saídas líquidas (vendas − devoluções) na janela ÷ N dias; **desvio** populacional das N demandas diárias, com os dias sem
+  venda valendo zero. Sem venda: consumo 0 e "sem giro" (nunca infinito).
+- **Giro** = CMV ÷ estoque médio em valor (média das fotografias); anualizado × 365 ÷ dias; **DIO** = 365 ÷ giro anualizado;
+  **cobertura** = saldo ÷ consumo. Sem fotografias: "sem histórico".
+- **Segurança** = Z × desvio × √lead time; **ponto de pedido** = consumo × lead time + segurança; **alvo** = consumo × (lead time +
+  cobertura alvo) + segurança; **sugestão** = máx(0, alvo − saldo − em trânsito), arredondada para cima na unidade (inteira ou 3 casas).
+  Lead time: do produto → real do fornecedor → prometido → 7 dias. Período com menos de 14 dias: a sugestão ignora a segurança.
+- **Ruptura** = dias com saldo ≤ 0 ÷ dias fotografados; **acuracidade** = Σ mín(contado, sistema) ÷ Σ sistema; **excesso** = (saldo −
+  consumo × limite) × custo; **ABC** pelo acumulado (80%/95%) do faturamento ou CMV; **FSN** pelas semanas com saída (F ≥ 50%).
+- Saldo negativo vale zero no valor em estoque e conta como ruptura.
+
+### Configurações (padrões)
+
+Janela de consumo 30 dias · Z 1,65 · ABC 80/95 sobre faturamento · FSN rápido ≥ 50% das semanas · parado após 90 dias · excesso acima de
+120 dias de cobertura · cobertura alvo 15 dias · lead time padrão 7 dias · contagem A 30 / B 90 / C 180 dias, 20 itens por dia · metas
+(verde/amarelo): giro 6/3, cobertura 45/90, ruptura 2%/5%, acuracidade 98%/95%.
+
 ### Empresa de demonstração (só em ambiente de teste)
 
 ```
@@ -111,7 +147,10 @@ dotnet run --project API/tests/EstoqueIndicadoresChecks    # SQL de teste em loc
 ```
 
 Confere a regra "soma das movimentações = variação do saldo" em todos os fluxos, tipos/origens/custo e a fotografia diária
-(idempotência e reconstrução).
+(idempotência e reconstrução), as fórmulas com os exemplos do spec e as agregações com dados controlados (demanda, CMV, estoque
+médio, lead time real, curva ABC, matriz ABC × FSN, contagem cíclica, acuracidade e perdas). No app: `AnaliseFmtTest`,
+`XlsxWriterTest` e os E2E `DashboardE2ETest`, `CurvaReposicaoE2ETest`, `Etapa5E2ETest` e `ConfigE2ETest` (contra a empresa de
+demonstração; `-Dquack.test.png=<pasta>` guarda prints; `PrintsAnaliseTest` com `-Dquack.prints=<pasta>` imprime o menu inteiro).
 
 ## Inventário (resumo da regra)
 
