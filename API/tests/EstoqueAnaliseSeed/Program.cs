@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using HORUSPDV_API.Repositories;
 using HORUSPDV_API.Repositories.DataAccess;
 using HORUSPDV_API.Repositories.DatabaseAccess;
+using HORUSPDV_API.Services.Estoque;
 using HORUSPDV_API.Services.Shared;
 using Microsoft.Data.SqlClient;
 
@@ -384,6 +385,10 @@ Console.WriteLine("Reconstruindo as fotografias diarias...");
 var snap = new EstoqueSnapshotAB(connection);
 for (var d = inicio; d <= ultimo; d = d.AddDays(1))
     await EstoqueSnapshotAB.GravarAsync(db, null, Company, d);
+
+// classificacao ABC/FSN (o worker recalcula todo dia; aqui ja deixa pronta)
+Console.WriteLine("Classificando ABC/FSN...");
+await new EstoqueClassificacaoAB(connection).RecalcularAsync(Company, EstoqueParametros.Padrao);
 
 // conferencia: soma das movimentacoes = saldo
 await using (var chk = new SqlCommand(

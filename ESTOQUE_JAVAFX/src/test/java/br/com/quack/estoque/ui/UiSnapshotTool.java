@@ -85,7 +85,7 @@ public final class UiSnapshotTool {
         if (!pronto.await(60, TimeUnit.SECONDS) || principal.get() == null) {
             throw new IllegalStateException("O aplicativo não abriu (login falhou?)");
         }
-        List<String> ids = List.of("inicio", "produtos", "entradas", "ajustes", "inventario", "etiquetas", "compras", "relatorios", "cadastros");
+        List<String> ids = List.of("inicio", "produtos", "entradas", "ajustes", "inventario", "etiquetas", "compras", "relatorios", "analise-dashboard", "cadastros");
         java.util.ArrayList<String> ok = new java.util.ArrayList<>();
         for (String id : ids) {
             if (!principal.get().possui(id)) {

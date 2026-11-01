@@ -25,10 +25,10 @@ acessar a tela.**
 
 ## 3. Etapa 3 — Dashboard geral
 
-- [ ] 3.1 `EstoqueAnaliseController` com `kpis`, `serie-estoque`, `serie-ruptura`, `cobertura-categorias`, `top-giro`, `top-parados`, `abc-valor`, cache de 5 min e remoção de R$ para estoquista (D6). Verificar: `dotnet build` e E2E/curl contra a empresa demo (estoquista sem campos de valor; perfil caixa → 403).
-- [ ] 3.2 App: `AnaliseApi`, menu "Análise", `FiltrosAnalise` (atalhos, comparação, categoria, fornecedor, memória no terminal) e componentes de gráfico (linha com referências, barras, rosca, tooltips pt-BR). Verificar: JUnit de formatação de tooltip e de persistência dos filtros.
-- [ ] 3.3 Tela Dashboard: cards com variação e semáforo, 6 gráficos, carregamento por bloco e estado vazio. Verificar: E2E contra a demo confere os números dos cards com a API; prints em 1366×690 (zoom 0,85) e 1024×680 revisados.
-- [ ] 3.4 Commit da etapa 3; resumo com como acessar (menu Análise → Dashboard).
+- [x] 3.1 `EstoqueAnaliseController` com `kpis`, `serie-estoque`, `serie-ruptura`, `cobertura-categorias`, `top-giro`, `top-parados`, `abc-valor`, cache de 5 min e remoção de R$ para estoquista (D6). Verificar: `dotnet build` e E2E/curl contra a empresa demo (estoquista sem campos de valor; perfil caixa → 403).
+- [x] 3.2 App: `AnaliseApi`, menu "Análise", `FiltrosAnalise` (atalhos, comparação, categoria, fornecedor, memória no terminal) e componentes de gráfico (linha com referências, barras, rosca, tooltips pt-BR). Verificar: JUnit de formatação de tooltip e de persistência dos filtros.
+- [x] 3.3 Tela Dashboard: cards com variação e semáforo, 6 gráficos, carregamento por bloco e estado vazio. Verificar: E2E contra a demo confere os números dos cards com a API; prints em 1366×690 (zoom 0,85) e 1024×680 revisados.
+- [x] 3.4 Commit da etapa 3; resumo com como acessar (menu Análise → Dashboard).
 
 ## 4. Etapa 4 — Curva ABC e Reposição
 

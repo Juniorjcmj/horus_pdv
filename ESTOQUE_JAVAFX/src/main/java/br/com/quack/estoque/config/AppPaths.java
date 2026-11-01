@@ -35,6 +35,11 @@ public final class AppPaths {
         return root.resolve("etiquetas.json");
     }
 
+    /** Últimos filtros da tela de análise de estoque (período, categoria, fornecedor, comparação). */
+    public Path analiseFile() {
+        return root.resolve("analise.json");
+    }
+
     /** Rascunhos locais (entrada em conferência, contagens não enviadas). */
     public Path rascunhosDir() {
         return root.resolve("rascunhos");

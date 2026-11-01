@@ -48,6 +48,7 @@ public class MainView extends BorderPane implements Tela.Navegador {
                 new Item("etiquetas", "Etiquetas", "F8", true, EtiquetasView::new),
                 new Item("compras", "Compras", "", true, ComprasView::new),
                 new Item("relatorios", "Relatórios", "", true, RelatoriosView::new),
+                new Item("analise-dashboard", "Dashboard", "", true, br.com.quack.estoque.analise.DashboardView::new),
                 new Item("cadastros", "Cadastros", "", perfil.cadastrarCategoriasEFornecedores(), CadastrosView::new));
 
         VBox menu = new VBox(2);
@@ -61,6 +62,11 @@ public class MainView extends BorderPane implements Tela.Navegador {
         for (Item i : lista) {
             if (!i.visivel()) {
                 continue;
+            }
+            if (i.id().startsWith("analise-") && itens.keySet().stream().noneMatch(k -> k.startsWith("analise-"))) {
+                Label secao = new Label("ANÁLISE");
+                secao.getStyleClass().add("rg-nav-secao");
+                menu.getChildren().add(secao);
             }
             itens.put(i.id(), i);
             Button b = new Button(i.rotulo() + (i.atalho().isEmpty() ? "" : "   " + i.atalho()));

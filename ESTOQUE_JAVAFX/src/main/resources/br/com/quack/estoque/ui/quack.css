@@ -1730,3 +1730,141 @@
     -fx-font-weight: bold;
     -fx-text-fill: -ink;
 }
+
+/* ---- Análise de estoque (dashboard e telas de análise) ---- */
+.rg-nav-secao {
+    -fx-text-fill: -on-dark;
+    -fx-opacity: 0.6;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 12 2 12;
+}
+
+.rg-kpi {
+    -fx-cursor: default;
+    -fx-min-width: 200;
+    -fx-pref-width: 215;
+    -fx-border-width: 1 1 1 5;
+    -fx-border-color: -border -border -border -border-strong;
+}
+
+.rg-kpi:hover {
+    -fx-border-color: -border -border -border -border-strong;
+}
+
+.rg-kpi-valor {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.rg-kpi-variacao {
+    -fx-font-size: 12px;
+}
+
+.rg-kpi-verde {
+    -fx-border-color: -border -border -border -success;
+}
+
+.rg-kpi-amarelo {
+    -fx-border-color: -border -border -border -highlight-strong;
+}
+
+.rg-kpi-vermelho {
+    -fx-border-color: -border -border -border -danger;
+}
+
+.rg-kpi-vermelho .rg-kpi-valor {
+    -fx-text-fill: -danger;
+}
+
+.rg-kpi-verde .rg-kpi-valor {
+    -fx-text-fill: -success;
+}
+
+.rg-kpi-esqueleto {
+    -fx-opacity: 0.6;
+}
+
+.rg-chart-dica,
+.rg-chart-rodape {
+    -fx-font-size: 12px;
+}
+
+.rg-bloco-estado {
+    -fx-padding: 24;
+}
+
+.rg-bloco-erro {
+    -fx-text-fill: -danger;
+}
+
+.rg-chart {
+    -fx-background-color: transparent;
+}
+
+.rg-chart .chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.rg-chart .chart-vertical-grid-lines,
+.rg-chart .chart-horizontal-grid-lines {
+    -fx-stroke: -border;
+}
+
+.rg-chart .axis {
+    -fx-tick-label-fill: -ink-muted;
+    -fx-font-size: 11px;
+}
+
+.rg-chart .default-color0.chart-series-line {
+    -fx-stroke: -brand;
+    -fx-stroke-width: 2.5px;
+}
+
+.rg-chart .default-color0.chart-line-symbol {
+    -fx-background-color: -brand, -surface;
+}
+
+.rg-chart .default-color0.chart-bar {
+    -fx-bar-fill: -brand;
+}
+
+.rg-chart .default-color1.chart-series-line {
+    -fx-stroke: -danger;
+    -fx-stroke-dash-array: 6 5;
+    -fx-stroke-width: 1.5px;
+}
+
+.rg-chart .chart-series-line.rg-ref-meta {
+    -fx-stroke: -success;
+    -fx-stroke-dash-array: 6 5;
+    -fx-stroke-width: 1.5px;
+}
+
+.rg-chart .chart-pie.data0 {
+    -fx-pie-color: -brand;
+}
+
+.rg-chart .chart-pie.data1 {
+    -fx-pie-color: -sky;
+}
+
+.rg-chart .chart-pie.data2 {
+    -fx-pie-color: -highlight;
+}
+
+.rg-rosca-furo {
+    -fx-fill: -surface;
+}
+
+.rg-rosca-total {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.rg-scroll-limpo,
+.rg-scroll-limpo > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}

@@ -66,6 +66,9 @@ public sealed record LeadTimeFornecedor(
     string FornecedorId, string Nome, int Pedidos, decimal? MediaDias, decimal? DesvioDias, int PedidosComPrevisao,
     int PedidosNoPrazo, decimal? NoPrazoPercentual, int? PrometidoDias);
 
+/// <summary>Um dia das fotografias consolidadas (filtros aplicados).</summary>
+public sealed record PontoSerieDia(DateOnly Data, decimal Valor, decimal Quantidade, int Produtos, int ProdutosEmRuptura);
+
 public class EstoqueIndicadoresAB(Connection connection)
 {
     private static readonly HashSet<string> UnidadesFracionadas = new(StringComparer.OrdinalIgnoreCase)
@@ -325,5 +328,64 @@ public class EstoqueIndicadoresAB(Connection connection)
         await using var r = await cmd.ExecuteReaderAsync(ct);
         while (await r.ReadAsync(ct)) lista.Add((r.GetDecimal(0), r.GetDecimal(1)));
         return EstoqueCalculos.Acuracidade(lista);
+    }
+
+    /// <summary>Fotografias diárias consolidadas no período (valor, quantidade e produtos em ruptura por dia).</summary>
+    public async Task<List<PontoSerieDia>> SerieDiariaAsync(string companyId, FiltroAnalise f, CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var cmd = new SqlCommand(
+            """
+            ;WITH Cat AS (
+                SELECT Id FROM Categorias WHERE CompanyId = @C AND Id = @Cat
+                UNION ALL
+                SELECT c.Id FROM Categorias c INNER JOIN Cat ON c.CategoriaPaiId = Cat.Id WHERE c.CompanyId = @C
+            )
+            SELECT s.Data, SUM(s.Valor), SUM(CASE WHEN s.Quantidade > 0 THEN s.Quantidade ELSE 0 END), COUNT(*),
+                   SUM(CASE WHEN s.Quantidade <= 0 THEN 1 ELSE 0 END)
+            FROM EstoqueSnapshotDiario s
+            INNER JOIN Produtos p ON p.Id = s.ProdutoId AND p.CompanyId = s.CompanyId
+            WHERE s.CompanyId = @C AND s.DepositoId = @Dep AND s.Data >= @De AND s.Data <= @Ate
+              AND (@Cat IS NULL OR p.CategoriaId IN (SELECT Id FROM Cat))
+              AND (@For IS NULL OR p.SupplierId = @For)
+            GROUP BY s.Data ORDER BY s.Data
+            OPTION (MAXRECURSION 30);
+            """, db);
+        cmd.Parameters.AddWithValue("@C", companyId);
+        cmd.Parameters.AddWithValue("@Cat", (object?)Normalizar(f.CategoriaId) ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@For", (object?)Normalizar(f.FornecedorId) ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Dep", f.DepositoId);
+        cmd.Parameters.AddWithValue("@De", f.De.ToDateTime(TimeOnly.MinValue));
+        cmd.Parameters.AddWithValue("@Ate", f.Ate.ToDateTime(TimeOnly.MinValue));
+        var lista = new List<PontoSerieDia>();
+        await using var r = await cmd.ExecuteReaderAsync(ct);
+        while (await r.ReadAsync(ct))
+            lista.Add(new PontoSerieDia(DateOnly.FromDateTime(r.GetDateTime(0)), r.GetDecimal(1), r.GetDecimal(2), r.GetInt32(3), r.GetInt32(4)));
+        return lista;
+    }
+
+    /// <summary>Nome das categorias da empresa (id → nome), para agrupar indicadores.</summary>
+    public async Task<Dictionary<string, string>> NomesCategoriasAsync(string companyId, CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var cmd = new SqlCommand("SELECT Id, Nome FROM Categorias WHERE CompanyId = @C;", db);
+        cmd.Parameters.AddWithValue("@C", companyId);
+        var mapa = new Dictionary<string, string>(StringComparer.Ordinal);
+        await using var r = await cmd.ExecuteReaderAsync(ct);
+        while (await r.ReadAsync(ct)) mapa[r.GetString(0)] = r.GetString(1);
+        return mapa;
+    }
+
+    /// <summary>Fornecedores da empresa: id → (nome, cnpj).</summary>
+    public async Task<Dictionary<string, (string Nome, string Cnpj)>> FornecedoresAsync(string companyId, CancellationToken ct = default)
+    {
+        await using var db = await connection.OpenConnectionAsync(ct);
+        await using var cmd = new SqlCommand(
+            "SELECT Id, ISNULL(NULLIF(FantasyName, ''), CompanyName), ISNULL(Cnpj, '') FROM Fornecedores WHERE CompanyId = @C;", db);
+        cmd.Parameters.AddWithValue("@C", companyId);
+        var mapa = new Dictionary<string, (string, string)>(StringComparer.Ordinal);
+        await using var r = await cmd.ExecuteReaderAsync(ct);
+        while (await r.ReadAsync(ct)) mapa[r.GetString(0)] = (r.IsDBNull(1) ? "" : r.GetString(1), r.GetString(2));
+        return mapa;
     }
 }

@@ -357,6 +357,13 @@ try
     Check(matriz.First(c => c.Abc == 'B' && c.Fsn == 'S').ValorEstoque == 2m, "valor em estoque da celula B/S (2 produtos de R$ 1,00)");
     Check((await classif.EmpresasDesatualizadasAsync()).All(e => e != company2), "empresa recem classificada nao aparece como desatualizada");
 
+    // Curva ABC do periodo (base CMV): ordenada, com participacao, acumulado, classe e FSN
+    var curva = await classif.CurvaAbcAsync(company2, FiltroAnalise.UltimosDias(90), EstoqueParametros.Padrao with { AbcBase = "cmv" });
+    Check(curva.Count == 5 && curva[0].Codigo == "K1" && curva[0].Valor == 700m && Perto(curva[0].Participacao, 70m) && curva[0].Classe == 'A' && curva[0].Fsn == 'F', "curva ABC: k1 lidera com R$ 700 (70%), classe A, FSN F; k6 sem venda fora da curva");
+    Check(Perto(curva[1].Acumulada, 85m) && curva[1].Classe == 'B' && Perto(curva[2].Acumulada, 95m) && curva[2].Classe == 'B' && curva[3].Classe == 'C' && Perto(curva[4].Acumulada, 100m), "curva ABC: acumulado 85/95/99/100 e classes A,B,B,C,C");
+    var curvaPeriodoCurto = await classif.CurvaAbcAsync(company2, FiltroAnalise.UltimosDias(5), EstoqueParametros.Padrao with { AbcBase = "cmv" });
+    Check(curvaPeriodoCurto.Count == 5 && curvaPeriodoCurto.All(c => c.Codigo != "K6"), "curva ABC respeita o periodo (vendas de ha 1 dia)");
+
     Check(await Query("SELECT COUNT(*) FROM EstoqueMovimentacoes WHERE CompanyId=@C AND Tipo NOT IN ('entrada','saida','saida_venda','devolucao','uso_interno','perda','inventario','transferencia')", r => r.GetInt32(0)) == 0, "todos os tipos sao validos");
     Check(await Query("SELECT COUNT(*) FROM EstoqueMovimentacoes WHERE CompanyId=@C AND (CustoUnitario IS NULL OR DepositoId <> 'loja')", r => r.GetInt32(0)) == 0, "todas as movimentacoes tem custo e deposito loja");
     Console.WriteLine($"\n{passed} verificacoes OK");

@@ -32,6 +32,7 @@ public final class AppContext {
     public final EstoqueRelatorioApi relatorios;
     public final OrdemCompraApi compras;
     public final PromocaoApi promocoes;
+    public final br.com.quack.estoque.api.AnaliseApi analise;
     public final Session session = new Session();
     public final Catalogo catalogo = new Catalogo();
     public final br.com.quack.estoque.labels.FilaEtiquetas etiquetas;
@@ -49,6 +50,7 @@ public final class AppContext {
         this.relatorios = new EstoqueRelatorioApi(api);
         this.compras = new OrdemCompraApi(api);
         this.promocoes = new PromocaoApi(api);
+        this.analise = new br.com.quack.estoque.api.AnaliseApi(api);
         this.etiquetas = new br.com.quack.estoque.labels.FilaEtiquetas(paths.etiquetasFile());
         this.rascunhos = new br.com.quack.estoque.service.Rascunhos(paths.rascunhosDir());
     }

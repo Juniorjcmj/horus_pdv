@@ -11,6 +11,10 @@ namespace HORUSPDV_API.Repositories.DatabaseAccess;
 
 public sealed record MatrizCelula(char Abc, char Fsn, int Produtos, decimal ValorEstoque);
 
+public sealed record ItemCurvaAbc(
+    string ProdutoId, string Codigo, string Nome, decimal Quantidade, decimal Valor, decimal Participacao, decimal Acumulada,
+    char Classe, char? Fsn, decimal Saldo, decimal ValorEstoque);
+
 public class EstoqueClassificacaoAB(Connection connection)
 {
     public const int DiasClassificacaoPadrao = 90;
@@ -158,5 +162,80 @@ public class EstoqueClassificacaoAB(Connection connection)
             foreach (var f in "FSN")
                 matriz.Add(achados.TryGetValue((a, f), out var c) ? c : new MatrizCelula(a, f, 0, 0m));
         return matriz;
+    }
+
+    /// <summary>
+    /// Curva ABC do período (base faturamento ou CMV da configuração) com filtros de categoria (com filhas) e fornecedor.
+    /// Ordenada por valor decrescente, com participação, acumulado e classe pelos limites da configuração.
+    /// </summary>
+    public async Task<List<ItemCurvaAbc>> CurvaAbcAsync(string companyId, FiltroAnalise f, EstoqueParametros p, CancellationToken ct = default)
+    {
+        var porCmv = p.AbcBase == "cmv";
+        await using var db = await connection.OpenConnectionAsync(ct);
+        var valorCte = porCmv
+            ? """
+              SELECT m.ProdutoId AS ProdutoId,
+                     SUM(CASE WHEN m.Tipo = 'saida_venda' THEN m.Quantidade ELSE -m.Quantidade END) AS Qtd,
+                     SUM(CASE WHEN m.Tipo = 'saida_venda' THEN m.Quantidade ELSE -m.Quantidade END * ISNULL(m.CustoUnitario, pr.ProductUnitPrice)) AS Valor
+              FROM EstoqueMovimentacoes m INNER JOIN P pr ON pr.Id = m.ProdutoId
+              WHERE m.CompanyId = @C AND m.Tipo IN ('saida_venda', 'devolucao') AND m.CriadoEm >= @Ini AND m.CriadoEm < @Fim
+              GROUP BY m.ProdutoId
+              """
+            : """
+              SELECT pr.Id AS ProdutoId, SUM(vi.Quantity) AS Qtd, SUM(vi.ItemTotal) AS Valor
+              FROM VendaItens vi
+              INNER JOIN Vendas v ON v.Id = vi.VendaId
+              INNER JOIN P pr ON pr.ProductCode = vi.ProductCode
+              WHERE v.CompanyId = @C AND ISNULL(v.Status, 'finalizada') NOT IN ('cancelada', 'corrigida')
+                AND v.SaleDate >= @Ini AND v.SaleDate < @Fim
+              GROUP BY pr.Id
+              """;
+        await using var cmd = new SqlCommand(
+            $$"""
+            ;WITH Cat AS (
+                SELECT Id FROM Categorias WHERE CompanyId = @C AND Id = @Cat
+                UNION ALL
+                SELECT c.Id FROM Categorias c INNER JOIN Cat ON c.CategoriaPaiId = Cat.Id WHERE c.CompanyId = @C
+            ),
+            P AS (
+                SELECT p.Id, p.ProductCode, p.ProductName, p.ProductQnt, p.ProductUnitPrice
+                FROM Produtos p
+                WHERE p.CompanyId = @C
+                  AND (@Cat IS NULL OR p.CategoriaId IN (SELECT Id FROM Cat))
+                  AND (@For IS NULL OR p.SupplierId = @For)
+            ),
+            V AS ({{valorCte}})
+            SELECT p.Id, p.ProductCode, p.ProductName, v.Qtd, v.Valor, p.ProductQnt, p.ProductUnitPrice, k.Fsn
+            FROM V v
+            INNER JOIN P p ON p.Id = v.ProdutoId
+            LEFT JOIN ProdutoClassificacao k ON k.CompanyId = @C AND k.ProdutoId = p.Id
+            WHERE v.Valor > 0
+            ORDER BY v.Valor DESC, p.ProductName
+            OPTION (MAXRECURSION 30);
+            """, db);
+        cmd.CommandTimeout = 60;
+        cmd.Parameters.AddWithValue("@C", companyId);
+        cmd.Parameters.AddWithValue("@Cat", string.IsNullOrWhiteSpace(f.CategoriaId) ? DBNull.Value : f.CategoriaId);
+        cmd.Parameters.AddWithValue("@For", string.IsNullOrWhiteSpace(f.FornecedorId) ? DBNull.Value : f.FornecedorId);
+        cmd.Parameters.AddWithValue("@Ini", EstoqueSnapshotAB.FimDoDiaUtc(f.De.AddDays(-1)));
+        cmd.Parameters.AddWithValue("@Fim", EstoqueSnapshotAB.FimDoDiaUtc(f.Ate));
+
+        var brutos = new List<(string Id, string Codigo, string Nome, decimal Qtd, decimal Valor, decimal Saldo, decimal Custo, char? Fsn)>();
+        await using (var r = await cmd.ExecuteReaderAsync(ct))
+            while (await r.ReadAsync(ct))
+                brutos.Add((r.GetString(0), r.GetString(1), r.GetString(2), r.GetDecimal(3), r.GetDecimal(4), r.GetDecimal(5), r.GetDecimal(6),
+                    r.IsDBNull(7) ? null : r.GetString(7)[0]));
+
+        var total = brutos.Sum(b => b.Valor);
+        var classes = EstoqueCalculos.ClassificarAbc(brutos.Select(b => (b.Id, b.Valor)), p.AbcLimiteA, p.AbcLimiteB);
+        decimal acumulado = 0;
+        var itens = new List<ItemCurvaAbc>(brutos.Count);
+        foreach (var b in brutos)
+        {
+            acumulado += b.Valor;
+            itens.Add(new ItemCurvaAbc(b.Id, b.Codigo, b.Nome, b.Qtd, b.Valor, total > 0 ? 100m * b.Valor / total : 0m,
+                total > 0 ? 100m * acumulado / total : 0m, classes[b.Id], b.Fsn, b.Saldo, EstoqueCalculos.ValorEmEstoque(b.Saldo, b.Custo)));
+        }
+        return itens;
     }
 }

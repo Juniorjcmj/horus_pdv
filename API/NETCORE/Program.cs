@@ -99,6 +99,8 @@ builder.Services.AddScoped<EstoqueSnapshotAB>();
 builder.Services.AddScoped<EstoqueIndicadoresAB>();
 builder.Services.AddScoped<EstoqueConfigAnaliseAB>();
 builder.Services.AddScoped<EstoqueClassificacaoAB>();
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<HORUSPDV_API.Services.Estoque.EstoqueAnaliseCache>();
 builder.Services.AddHostedService<HORUSPDV_API.Services.Estoque.EstoqueSnapshotWorker>();
 builder.Services.AddScoped<AutorizacaoPrecoAB>();
 builder.Services.AddScoped<LoteService>();
