@@ -74,25 +74,25 @@ class ComprasE2ETest {
         }
         assertEquals(3, linhas.size());
 
-        // sem fornecedor: o app recusa gerar o pedido até escolher um fornecedor
-        DomainException semFornecedor = assertThrows(DomainException.class, () -> ComprasView.agrupar(linhas));
-        assertTrue(semFornecedor.getMessage().contains("sem fornecedor"));
-        linhas.removeIf(l -> l.codigo().equals(p3.codigo()));
-
+        // um pedido por fornecedor + um para cotação com o item sem fornecedor
         Map<String, List<ComprasView.LinhaCompra>> grupos = ComprasView.agrupar(linhas);
-        assertEquals(2, grupos.size(), "um pedido por fornecedor");
+        assertEquals(3, grupos.size(), "um pedido por fornecedor e um para cotação");
+        assertEquals(List.of(p3.codigo()), grupos.get("").stream().map(ComprasView.LinhaCompra::codigo).toList());
+        List<List<String>> cotacao = ComprasView.linhasCotacao(grupos.get(""));
+        assertEquals("__________", cotacao.get(0).get(3), "cotação sai sem o nosso custo");
 
         List<String> numeros = new ArrayList<>();
         for (var g : grupos.entrySet()) {
             List<OrdemCompraApi.Item> itens = new ArrayList<>();
             for (ComprasView.LinhaCompra l : g.getValue()) {
-                assertEquals(0, new BigDecimal(l.codigo().startsWith("CPA") ? "9" : "8").compareTo(l.qtd()), "completa o mínimo de 10");
+                String esperado = l.codigo().startsWith("CPA") ? "9" : l.codigo().startsWith("CPB") ? "8" : "7";
+                assertEquals(0, new BigDecimal(esperado).compareTo(l.qtd()), "completa o mínimo de 10");
                 itens.add(new OrdemCompraApi.Item(l.codigo(), l.qtd(), l.custoUnit()));
             }
             numeros.add(e.ctx.compras.criar(g.getKey(), "teste e2e", itens));
         }
-        assertEquals(2, numeros.size());
-        assertNotEquals(numeros.get(0), numeros.get(1));
+        assertEquals(3, numeros.size());
+        assertEquals(3, new java.util.HashSet<>(numeros).size());
 
         JsonNode todas = e.ctx.compras.listar();
         List<String> existentes = new ArrayList<>();
@@ -102,6 +102,9 @@ class ComprasE2ETest {
         }
         JsonNode oc = e.ctx.compras.obter(numeros.get(0));
         assertNotNull(oc, "detalhe do pedido");
+        int idxCotacao = new ArrayList<>(grupos.keySet()).indexOf("");
+        JsonNode cot = e.ctx.compras.obter(numeros.get(idxCotacao));
+        log("pedido para cotação: " + cot.path("supplierName").asText(cot.path("SupplierName").asText()));
         log("pedidos criados: " + numeros);
     }
 

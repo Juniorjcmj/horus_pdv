@@ -207,7 +207,7 @@ public class ReposicaoView extends Tela {
         tabela.setItems(FXCollections.observableArrayList(linhas));
         info.setText((linhas.isEmpty() ? "Nenhum produto precisa de reposição com os filtros atuais." : linhas.size() + " produtos")
                 + " · consumo dos últimos " + dados.path("janelaDias").asInt() + " dias · " + AnaliseFmt.calculadoEm(quando)
-                + (r.path("semFornecedor").asInt() > 0 ? " · " + r.path("semFornecedor").asInt() + " sem fornecedor (não entram em pedido)" : ""));
+                + (r.path("semFornecedor").asInt() > 0 ? " · " + r.path("semFornecedor").asInt() + " sem fornecedor (vão para um pedido de cotação)" : ""));
     }
 
     private static javafx.scene.Node cartao(String titulo, String valor, String classes) {
@@ -244,14 +244,15 @@ public class ReposicaoView extends Tela {
             itens.put(l.j.path("produtoId").asText(), q);
         }
         if (!Fx.confirm(janela(), "Gerar pedidos", "Criar rascunhos de pedido de compra para " + itens.size()
-                + " produtos, um por fornecedor? Nada é enviado ao fornecedor: os rascunhos ficam em Compras.")) {
+                + " produtos, um por fornecedor (os sem fornecedor ficam num pedido para cotação)? Nada é enviado ao fornecedor: "
+                + "os rascunhos ficam em Compras.")) {
             return;
         }
         rodar(() -> ctx.analise.gerarPedidos(itens, "Rascunho gerado pela análise de reposição."), r -> {
             JsonNode pedidos = r.path("pedidos");
             StringBuilder sb = new StringBuilder(pedidos.size() + (pedidos.size() == 1 ? " rascunho criado" : " rascunhos criados") + " em Compras");
             if (r.path("ignorados").size() > 0) {
-                sb.append("; ").append(r.path("ignorados").size()).append(" produto(s) ficaram de fora (sem fornecedor).");
+                sb.append("; ").append(r.path("ignorados").size()).append(" produto(s) ficaram de fora (não encontrados).");
             }
             sucesso(sb.toString());
             carregar();

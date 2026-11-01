@@ -322,6 +322,9 @@ public class EstoqueAnaliseController(
     }
 
     /// <summary>Gera um rascunho de pedido de compra (pendente) por fornecedor com os itens escolhidos. Produto sem fornecedor é recusado.</summary>
+    /** Nome gravado no pedido feito com os itens sem fornecedor. */
+    private const string SemFornecedorCotacao = "Para cotação (sem fornecedor)";
+
     [HttpPost("reposicao/pedidos")]
     [HorusAuthorizeRoles("administrador", "gerente")]
     public async Task<IActionResult> GerarPedidos([FromBody] PedidoReposicaoRequest body)
@@ -340,11 +343,8 @@ public class EstoqueAnaliseController(
         foreach (var it in body.Itens.GroupBy(i => i.ProdutoId).Select(g => (Id: g.Key, Qtd: g.Sum(x => x.Quantidade))))
         {
             if (!porProduto.TryGetValue(it.Id, out var prod)) { ignorados.Add(new { produtoId = it.Id, motivo = "Produto não encontrado." }); continue; }
-            if (prod.Bruto.FornecedorId is not { } fid || !fornecedores.ContainsKey(fid))
-            {
-                ignorados.Add(new { produtoId = it.Id, codigo = prod.Bruto.Codigo, nome = prod.Bruto.Nome, motivo = "Produto sem fornecedor cadastrado." });
-                continue;
-            }
+            // Sem fornecedor: entra num pedido "para cotação" (chave vazia), para mandar a quantos fornecedores quiser.
+            var fid = prod.Bruto.FornecedorId is { } f && fornecedores.ContainsKey(f) ? f : "";
             var qtd = EstoqueIndicadoresAB.UnidadeFracionada(prod.Bruto.Unidade) ? Math.Round(it.Qtd, 3) : Math.Ceiling(it.Qtd);
             if (!grupos.TryGetValue(fid, out var lista)) grupos[fid] = lista = [];
             lista.Add((prod, qtd));
@@ -354,12 +354,12 @@ public class EstoqueAnaliseController(
         var criados = new List<object>();
         foreach (var (fid, itens) in grupos)
         {
-            var (nome, cnpj) = fornecedores[fid];
+            var (nome, cnpj) = fid.Length == 0 ? (SemFornecedorCotacao, "") : fornecedores[fid];
             var previsao = DateTimeOffset.Now.AddDays(itens.Max(i => i.Item.LeadTimeDias));
             var nota = string.IsNullOrWhiteSpace(body.Observacao) ? "Rascunho gerado pela análise de reposição." : body.Observacao!.Trim();
             var oc = await ordensCompra.CriarAsync(u.CompanyId, fid, nome, cnpj, u.Id, u.Name, nota, previsao, null, null, 0m, 0m,
                 itens.Select(i => (i.Item.Bruto.Codigo, i.Item.Bruto.Nome, i.Quantidade, i.Item.Bruto.Custo)).ToList());
-            criados.Add(new { numero = oc.OrderNumber, fornecedorId = fid, fornecedor = nome, itens = itens.Count, total = oc.TotalEstimado, previsaoEntrega = previsao.ToString("yyyy-MM-dd") });
+            criados.Add(new { numero = oc.OrderNumber, fornecedorId = fid.Length == 0 ? null : fid, fornecedor = nome, itens = itens.Count, total = oc.TotalEstimado, previsaoEntrega = previsao.ToString("yyyy-MM-dd") });
         }
         cache.Invalidar(u.CompanyId);
         return Ok(new ApiResponse<object> { Success = true, Message = $"{criados.Count} pedido(s) em rascunho criado(s).", Data = new { pedidos = criados, ignorados } });

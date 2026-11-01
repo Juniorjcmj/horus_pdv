@@ -32,7 +32,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-/** Sugestão de reposição (giro + mínimo/máximo) que vira um pedido de compra por fornecedor. */
+/**
+ * Sugestão de reposição (giro + mínimo/máximo) que vira pedido de compra: um por fornecedor e, para os itens sem
+ * fornecedor, um pedido "para cotação" (sem fornecedor) que pode ser impresso sem preços e mandado a vários fornecedores.
+ */
 public class ComprasView extends Tela {
     /** Linha editável da sugestão. */
     public static final class LinhaCompra {
@@ -78,11 +81,17 @@ public class ComprasView extends Tela {
         public String nome() {
             return origem.path("nome").asText("");
         }
+
+        public String unidade() {
+            return origem.path("unidade").asText("");
+        }
     }
 
     /** Nome do grupo sem fornecedor (o mesmo texto da API). */
     static final class CadastrosNome {
         static final String SEM_FORNECEDOR = "Sem fornecedor";
+        /** Chave do grupo sem fornecedor no agrupamento (vira um pedido para cotação). */
+        static final String COTACAO = "";
     }
 
     private final Perfil perfil;
@@ -100,12 +109,12 @@ public class ComprasView extends Tela {
     public ComprasView(AppContext ctx, Navegador nav) {
         super(ctx, nav);
         this.perfil = ctx.session.perfil();
-        gerar = Ui.primario("Gerar pedidos por fornecedor", this::gerar);
+        gerar = Ui.primario("Gerar pedidos", this::gerar);
         gerar.setVisible(perfil.gerarPedidoCompra());
         gerar.setManaged(perfil.gerarPedidoCompra());
         getChildren().add(Ui.cabecalho("Compras: sugestão de reposição",
                 "Calcula quanto repor pelo giro de vendas e pelo estoque mínimo/máximo. "
-                        + (perfil.gerarPedidoCompra() ? "Revise e gere um pedido por fornecedor."
+                        + (perfil.gerarPedidoCompra() ? "Revise e gere um pedido por fornecedor; os itens sem fornecedor viram um pedido para cotação."
                         : "Como estoquista você vê os produtos e as quantidades sugeridas."), gerar));
 
         dias.setText("30");
@@ -308,10 +317,12 @@ public class ComprasView extends Tela {
         resumo.setText(sb.toString());
     }
 
-    /** Agrupa as linhas marcadas por fornecedor; recusa itens sem fornecedor ou com quantidade/custo inválidos. */
+    /**
+     * Agrupa as linhas marcadas por fornecedor; os itens sem fornecedor ficam juntos na chave {@link CadastrosNome#COTACAO}
+     * (um pedido para cotação). Recusa quantidade inválida.
+     */
     public static Map<String, List<LinhaCompra>> agrupar(List<LinhaCompra> linhas) {
         Map<String, List<LinhaCompra>> grupos = new LinkedHashMap<>();
-        int semFornecedor = 0;
         for (LinhaCompra l : linhas) {
             if (!l.incluir.get()) {
                 continue;
@@ -325,15 +336,8 @@ public class ComprasView extends Tela {
             if (q.signum() <= 0) {
                 throw new DomainException("A quantidade de " + l.nome() + " deve ser maior que zero (ou desmarque o item).");
             }
-            if (l.fornecedorId == null || l.fornecedorId.isBlank()) {
-                semFornecedor++;
-                continue;
-            }
-            grupos.computeIfAbsent(l.fornecedorId, k -> new ArrayList<>()).add(l);
-        }
-        if (semFornecedor > 0) {
-            throw new DomainException(semFornecedor + " item(ns) estão sem fornecedor. Escolha o fornecedor na coluna \"Fornecedor\" "
-                    + "(duplo clique) ou desmarque os itens.");
+            String chave = l.fornecedorId == null || l.fornecedorId.isBlank() ? CadastrosNome.COTACAO : l.fornecedorId;
+            grupos.computeIfAbsent(chave, k -> new ArrayList<>()).add(l);
         }
         if (grupos.isEmpty()) {
             throw new DomainException("Nenhum item marcado para pedido.");
@@ -350,7 +354,13 @@ public class ComprasView extends Tela {
             return;
         }
         Map<String, List<LinhaCompra>> alvo = grupos;
-        Modal.confirmar(janela(), "Gerar pedidos de compra", "Serão criados " + alvo.size() + " pedido(s) de compra em aberto, um por fornecedor.",
+        long comFornecedor = alvo.keySet().stream().filter(k -> !CadastrosNome.COTACAO.equals(k)).count();
+        List<LinhaCompra> cotacao = alvo.getOrDefault(CadastrosNome.COTACAO, List.of());
+        String texto = "Serão criados " + alvo.size() + " pedido(s) de compra em aberto"
+                + (comFornecedor > 0 ? ": " + comFornecedor + " por fornecedor" : "")
+                + (cotacao.isEmpty() ? "." : (comFornecedor > 0 ? " e " : ": ") + "1 para cotação com os " + cotacao.size()
+                        + " item(ns) sem fornecedor. Imprima a cotação (sem preços) e mande para quantos fornecedores quiser.");
+        Modal.confirmar(janela(), "Gerar pedidos de compra", texto,
                 "Gerar pedidos", () -> rodar(carregando, "Gerando " + alvo.size() + " pedido(s) de compra…", () -> {
                     List<Object[]> criados = new ArrayList<>();
                     for (var e : alvo.entrySet()) {
@@ -376,13 +386,48 @@ public class ComprasView extends Tela {
         for (Object[] c : criados) {
             String numero = (String) c[0];
             List<LinhaCompra> itens = (List<LinhaCompra>) c[1];
-            String forn = itens.get(0).fornecedor.get();
+            boolean semFornecedor = itens.get(0).fornecedorId == null || itens.get(0).fornecedorId.isBlank();
+            String forn = semFornecedor ? "Para cotação (sem fornecedor)" : itens.get(0).fornecedor.get();
             BigDecimal total = itens.stream().map(LinhaCompra::total).reduce(BigDecimal.ZERO, BigDecimal::add);
-            Button imprimir = Ui.pequeno("Imprimir", () -> imprimirPedido(numero, forn, itens));
+            Button imprimir = Ui.pequeno("Imprimir pedido", () -> imprimirPedido(numero, forn, itens));
+            Button cotar = Ui.pequeno("Imprimir cotação", () -> imprimirCotacao(numero, itens));
             corpo.getChildren().add(Ui.barra(Ui.texto("Pedido " + numero + " · " + forn + " · " + itens.size() + " itens"
-                    + (perfil.verCustos() ? " · " + Fmt.money(total) : ""), "rg-section-title"), Ui.espaco(), imprimir));
+                    + (perfil.verCustos() && !semFornecedor ? " · " + Fmt.money(total) : ""), "rg-section-title"), Ui.espaco(),
+                    semFornecedor ? cotar : imprimir, semFornecedor ? imprimir : cotar));
         }
-        Modal.informativo(janela(), "Pedidos criados", "Os pedidos ficam em aberto para receber depois.", corpo, 560, 0).mostrar();
+        Modal.informativo(janela(), "Pedidos criados", "Os pedidos ficam em aberto para receber depois. \"Imprimir cotação\" sai "
+                + "sem os seus custos, com espaço para cada fornecedor preencher o preço; imprima quantas cópias quiser.", corpo, 640, 0)
+                .mostrar();
+    }
+
+    /** Solicitação de cotação: produtos e quantidades, sem os nossos custos, com preço e total em branco para o fornecedor. */
+    private void imprimirCotacao(String numero, List<LinhaCompra> itens) {
+        var doc = Documento.tabela("Solicitação de cotação " + numero,
+                List.of("Fornecedor: ________________________________________   Telefone: ____________________",
+                        "Solicitado em " + Fmt.date(LocalDate.now()) + " por " + ctx.session.user().name()
+                                + ". Preencha o preço unitário e devolva com o prazo de entrega."),
+                COLUNAS_COTACAO, linhasCotacao(itens),
+                List.of("Prazo de entrega: ______ dias     Condição de pagamento: ______________     Validade da proposta: ______"));
+        PrintService.imprimirDocumento(doc, "", erro -> {
+            if (erro != null) {
+                Toasts.error(janela(), erro);
+            } else {
+                sucesso("Cotação " + numero + " enviada para a impressora.");
+            }
+        });
+    }
+
+    static final List<Documento.Col> COLUNAS_COTACAO = List.of(Documento.Col.texto("Código", 12),
+            Documento.Col.texto("Produto", 44), Documento.Col.numero("Quantidade", 14), Documento.Col.numero("Preço unit.", 14),
+            Documento.Col.numero("Total", 14));
+
+    /** Linhas da cotação: sem custo (o fornecedor preenche). */
+    public static List<List<String>> linhasCotacao(List<LinhaCompra> itens) {
+        List<List<String>> linhas = new ArrayList<>();
+        for (LinhaCompra l : itens) {
+            linhas.add(List.of(l.codigo(), l.nome(), (Fmt.qty(l.qtd()) + " " + l.unidade()).trim(), "__________", "__________"));
+        }
+        return linhas;
     }
 
     private void imprimirPedido(String numero, String fornecedor, List<LinhaCompra> itens) {
