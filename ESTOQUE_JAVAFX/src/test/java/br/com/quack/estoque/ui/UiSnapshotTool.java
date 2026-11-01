@@ -51,6 +51,13 @@ public final class UiSnapshotTool {
                 ctx.api.setBaseUrl(url);
                 ctx.entrar(email, senha);
                 ctx.garantirCatalogo(true);
+                String etq = System.getProperty("quack.test.etiqueta");
+                if (etq != null) {
+                    var p = ctx.catalogo.buscar(etq, 1);
+                    if (!p.isEmpty()) {
+                        ctx.etiquetas.adicionar(p.get(0).id(), 2);
+                    }
+                }
                 ctxRef.set(ctx);
                 MainView mv = new MainView(ctx, () -> {
                 });

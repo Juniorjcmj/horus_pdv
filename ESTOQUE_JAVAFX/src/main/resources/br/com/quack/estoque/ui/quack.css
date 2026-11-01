@@ -1653,3 +1653,25 @@
     -fx-background-color: -brand-tint;
     -fx-border-color: -highlight-strong;
 }
+
+/* Área da pré-visualização de etiqueta: fundo neutro para a etiqueta branca se destacar */
+.rg-label-stage {
+    -fx-background-color: #e9ecf1;
+    -fx-background-radius: 10;
+    -fx-border-color: -border;
+    -fx-border-radius: 10;
+}
+
+/* "Ajuste fino da impressão" recolhível no painel de etiquetas */
+.rg-ajuste-fino > .title {
+    -fx-background-color: transparent;
+    -fx-padding: 4 0 4 0;
+    -fx-font-weight: bold;
+    -fx-text-fill: -ink;
+}
+
+.rg-ajuste-fino > .content {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 6 0 0 0;
+}

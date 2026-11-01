@@ -16,11 +16,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javafx.collections.FXCollections;
-import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -39,7 +37,7 @@ public class EtiquetasView extends Tela {
     private final TextField dy = Ui.campo("0");
     private final Label total = Ui.muted("");
     private final Label avisos = Ui.muted("");
-    private final VBox previa = new VBox(8);
+    private final EtiquetaPrevia previa = new EtiquetaPrevia();
     private final Button imprimir;
     private List<PromocaoApi.Promocao> promocoes = List.of();
     private boolean carregando;
@@ -117,7 +115,7 @@ public class EtiquetasView extends Tela {
                 atualizarPrevia();
             }
         });
-        Button personalizado = Ui.pequeno("Tamanho personalizado…", this::personalizar);
+        Button personalizado = Ui.pequeno("Personalizado…", this::personalizar);
         impressora.valueProperty().addListener((o, a, b) -> {
             if (!carregando && b != null) {
                 ctx.etiquetas.definirImpressora(b);
@@ -126,18 +124,30 @@ public class EtiquetasView extends Tela {
         dx.setPrefWidth(70);
         dy.setPrefWidth(70);
         Button salvarCal = Ui.pequeno("Salvar ajuste", this::salvarCalibracao);
-        VBox config = new VBox(8, Ui.rotulado("Modelo (tamanho da etiqueta)", modelo), personalizado,
-                Ui.rotulado("Impressora do Windows", impressora),
-                Ui.texto("Ajuste fino (mm): negativo = esquerda / acima", "rg-form-label"),
-                Ui.barra(Ui.rotulado("Horizontal", dx), Ui.rotulado("Vertical", dy), salvarCal), total, avisos);
+        // Calibração recolhida: só se mexe quando a etiqueta sai deslocada (sobra espaço para a pré-visualização).
+        VBox calibracao = new VBox(6, Ui.muted("Em milímetros: negativo = esquerda / acima. A pré-visualização mostra o deslocamento."),
+                Ui.barra(Ui.rotulado("Horizontal", dx), Ui.rotulado("Vertical", dy), salvarCal));
+        javafx.scene.control.TitledPane ajusteFino = new javafx.scene.control.TitledPane("Ajuste fino da impressão", calibracao);
+        ajusteFino.setExpanded(false);
+        ajusteFino.setAnimated(false);
+        ajusteFino.getStyleClass().add("rg-ajuste-fino");
+        HBox modeloLinha = new HBox(6, modelo, personalizado);
+        HBox.setHgrow(modelo, Priority.ALWAYS);
+        modeloLinha.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        VBox config = new VBox(8, Ui.rotulado("Modelo (tamanho da etiqueta)", modeloLinha),
+                Ui.rotulado("Impressora do Windows", impressora), ajusteFino, total, avisos);
         config.getStyleClass().add("rg-card");
         config.setPrefWidth(330);
         config.setMinWidth(330);
 
-        ScrollPane rolagem = new ScrollPane(previa);
-        rolagem.setPrefHeight(230);
-        rolagem.setFitToWidth(true);
-        VBox direita = new VBox(10, config, Ui.texto("Pré-visualização em tamanho real", "rg-section-title"), rolagem);
+        VBox.setVgrow(previa, Priority.ALWAYS);
+        VBox direita = new VBox(10, config, previa);
+        direita.setPrefWidth(360);
+        direita.setMinWidth(330);
+        direita.setMaxWidth(380);
+        // o ajuste fino aparece na pré-visualização enquanto é digitado
+        dx.textProperty().addListener((o, a, b) -> atualizarPrevia());
+        dy.textProperty().addListener((o, a, b) -> atualizarPrevia());
         HBox corpo = new HBox(14, tabela, direita);
         HBox.setHgrow(tabela, Priority.ALWAYS);
         VBox.setVgrow(corpo, Priority.ALWAYS);
@@ -186,7 +196,9 @@ public class EtiquetasView extends Tela {
         }
         orfaos.forEach(ctx.etiquetas::remover); // produto excluído desde a última vez
         tabela.setItems(FXCollections.observableArrayList(linhas));
-        total.setText(ctx.etiquetas.totalEtiquetas() + " etiquetas de " + linhas.size() + " produtos");
+        int etq = ctx.etiquetas.totalEtiquetas();
+        total.setText(etq + (etq == 1 ? " etiqueta de " : " etiquetas de ") + linhas.size()
+                + (linhas.size() == 1 ? " produto" : " produtos"));
         imprimir.setDisable(linhas.isEmpty());
         if (!linhas.isEmpty() && tabela.getSelectionModel().getSelectedItem() == null) {
             tabela.getSelectionModel().selectFirst();
@@ -222,34 +234,34 @@ public class EtiquetasView extends Tela {
     }
 
     private void atualizarPrevia() {
-        previa.getChildren().clear();
         avisos.setText("");
+        avisos.setStyle("");
         Linha l = tabela.getSelectionModel().getSelectedItem();
         LabelModel m = modelo.getValue();
-        if (l == null || m == null) {
-            previa.getChildren().add(Ui.muted("Selecione um produto da fila."));
+        if (m == null) {
+            previa.vazio("Escolha o modelo da etiqueta.");
+            return;
+        }
+        if (l == null) {
+            previa.vazio(tabela.getItems().isEmpty() ? "Adicione produtos à fila para ver a etiqueta."
+                    : "Selecione um produto da fila.");
             return;
         }
         try {
-            LabelRenderer.Resultado r = LabelRenderer.render(m, dadosDe(l.produto()));
-            double tela = 96.0 / 72.0; // pontos -> pixels de tela: tamanho real
-            Group g = new Group(r.no());
-            g.setScaleX(tela);
-            g.setScaleY(tela);
-            VBox caixa = new VBox(g);
-            caixa.getStyleClass().add("rg-label-preview");
-            caixa.setPrefSize(m.larguraPt() * tela + 16, m.alturaPt() * tela + 16);
-            caixa.setMaxSize(m.larguraPt() * tela + 16, m.alturaPt() * tela + 16);
-            caixa.setPadding(new javafx.geometry.Insets((m.alturaPt() * (tela - 1)) / 2 + 6, 0, (m.alturaPt() * (tela - 1)) / 2 + 6,
-                    (m.larguraPt() * (tela - 1)) / 2 + 6));
-            previa.getChildren().add(caixa);
+            LabelData dados = dadosDe(l.produto());
+            LabelRenderer.Resultado r = LabelRenderer.render(m, dados);
+            String codigo = r.barras().formato() == com.google.zxing.BarcodeFormat.EAN_13 ? "EAN-13" : "Code128";
+            String legenda = m.nome() + (m.folha() ? " · " + m.porFolha() + " por folha" : "") + " · código de barras " + codigo
+                    + " · " + l.item().copias + (l.item().copias == 1 ? " cópia" : " cópias")
+                    + (dados.emPromocao() ? " · preço promocional" : "");
+            previa.mostrar(r.no(), m, Fmt.parseOrZero(dx.getText()).doubleValue(), Fmt.parseOrZero(dy.getText()).doubleValue(),
+                    legenda);
             avisos.setText(r.aviso());
             if (!r.aviso().isBlank()) {
                 avisos.setStyle("-fx-text-fill: -danger;");
             }
-            previa.getChildren().add(Ui.muted(m.nome() + (m.folha() ? " · " + m.porFolha() + " por folha" : "")));
         } catch (RuntimeException e) {
-            previa.getChildren().add(Ui.caixa("Não foi possível desenhar a etiqueta: " + e.getMessage(), "rg-danger-box"));
+            previa.vazio("Não foi possível desenhar a etiqueta: " + e.getMessage());
         }
     }
 
