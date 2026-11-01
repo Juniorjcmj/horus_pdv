@@ -96,6 +96,9 @@ builder.Services.AddSingleton<FiscalAiService>(services => new FiscalAiService(
 builder.Services.AddScoped<LoteAB>();
 builder.Services.AddScoped<EstoqueMovimentacaoAB>();
 builder.Services.AddScoped<EstoqueSnapshotAB>();
+builder.Services.AddScoped<EstoqueIndicadoresAB>();
+builder.Services.AddScoped<EstoqueConfigAnaliseAB>();
+builder.Services.AddScoped<EstoqueClassificacaoAB>();
 builder.Services.AddHostedService<HORUSPDV_API.Services.Estoque.EstoqueSnapshotWorker>();
 builder.Services.AddScoped<AutorizacaoPrecoAB>();
 builder.Services.AddScoped<LoteService>();

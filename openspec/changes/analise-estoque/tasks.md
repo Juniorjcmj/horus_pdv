@@ -18,10 +18,10 @@ acessar a tela.**
 ## 2. Etapa 2 — Serviço de cálculos e testes
 
 - [x] 2.1 `EstoqueCalculos` (fórmulas puras de D5) com os exemplos numéricos do spec e bordas em `EstoqueIndicadoresChecks` (consumo zero → "sem giro", sem histórico, saldo negativo, lead time ausente → fallback, desvio com dias zero, arredondamento por unidade). Verificar: checks passam.
-- [ ] 2.2 `EstoqueIndicadoresAB`: CTEs de agregação por produto (demanda diária com calendário, média/desvio, CMV, estoque médio, dias de ruptura, última saída, em trânsito, contagens) com filtros período/categoria (com filhas)/fornecedor/depósito e comparação com período anterior. Verificar: checks de integração com dados controlados (demanda conhecida → média e desvio esperados).
-- [ ] 2.3 `EstoqueConfigAnaliseAB` (get com padrões, put) e `ProdutoClassificacao` (ABC por faturamento/CMV com limites, FSN por semanas com saída) recalculados no worker. Verificar: checks (sem configuração → padrões; matriz 3×3 com contagens esperadas).
-- [ ] 2.4 Lead time real por fornecedor (média, desvio, nº pedidos, % no prazo) e fallback do lead time do produto. Verificar: check com pedidos de datas conhecidas.
-- [ ] 2.5 Commit da etapa 2 com resumo dos números conferidos.
+- [x] 2.2 `EstoqueIndicadoresAB`: CTEs de agregação por produto (demanda diária com calendário, média/desvio, CMV, estoque médio, dias de ruptura, última saída, em trânsito, contagens) com filtros período/categoria (com filhas)/fornecedor/depósito e comparação com período anterior. Verificar: checks de integração com dados controlados (demanda conhecida → média e desvio esperados).
+- [x] 2.3 `EstoqueConfigAnaliseAB` (get com padrões, put) e `ProdutoClassificacao` (ABC por faturamento/CMV com limites, FSN por semanas com saída) recalculados no worker. Verificar: checks (sem configuração → padrões; matriz 3×3 com contagens esperadas).
+- [x] 2.4 Lead time real por fornecedor (média, desvio, nº pedidos, % no prazo) e fallback do lead time do produto. Verificar: check com pedidos de datas conhecidas.
+- [x] 2.5 Commit da etapa 2 com resumo dos números conferidos.
 
 ## 3. Etapa 3 — Dashboard geral
 

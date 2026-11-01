@@ -208,6 +208,9 @@ try
     Check(aplicar.Sucesso, "inventario aplicado: " + aplicar.Mensagem);
     Check(await Saldo("p-a") == saldoAntesInv - 2 && await Qtd("ProdutoId='p-a' AND Tipo='inventario' AND CustoUnitario=4 AND Quantidade=2") == 1, "inventario grava movimentacao inventario com custo");
     await Conciliar("inventario", "p-a", "p-b");
+    var indic = new EstoqueIndicadoresAB(connection);
+    var acInv = await indic.AcuraciaAsync(company, FiltroAnalise.UltimosDias(1));
+    Check(acInv is { Itens: 1 } && Perto(acInv.AcuraciaPercentual, 100m * (saldoAntesInv - 2) / saldoAntesInv, 0.01m), "acuracidade da contagem aplicada (sistema x contado)");
 
     // Fotografia diaria: idempotente e reconstrucao pelo saldo atual menos movimentacoes posteriores
     await produtos.SalvarAsync(company, Novo("p-s", "S", 10, 4m, 9m), user);
@@ -232,6 +235,128 @@ try
     Check(EstoqueSnapshotAB.FimDoDiaUtc(hoje.AddDays(-1)) <= DateTime.UtcNow, "fim do dia de ontem (UTC) ja passou");
     await Conciliar("fotografia", "p-s", "p-novo");
 
+    // ---------- Etapa 2.2/2.3/2.4: agregacoes com dados controlados ----------
+    var hojeDia = FiltroAnalise.Hoje();
+    DateTime Dia(int diasAtras, int hora = 15) => EstoqueSnapshotAB.FimDoDiaUtc(hojeDia.AddDays(-diasAtras - 1)).AddHours(hora);
+    async Task Exec(string sql, params (string, object)[] ps)
+    {
+        await using var db = await connection.OpenConnectionAsync();
+        await using var cmd = new SqlCommand(sql, db);
+        foreach (var (n, v) in ps) cmd.Parameters.AddWithValue(n, v);
+        await cmd.ExecuteNonQueryAsync();
+    }
+    async Task Mov(string comp, string prod, string tipo, decimal qtd, decimal custo, DateTime utc) => await Exec(
+        "INSERT INTO EstoqueMovimentacoes (Id, CompanyId, ProdutoId, Tipo, Quantidade, EstoqueAnterior, EstoqueNovo, Motivo, UsuarioId, UsuarioNome, CriadoEm, CustoUnitario, OrigemTipo) " +
+        "VALUES (@I, @C, @P, @T, @Q, 0, 0, N'check', 'u', 'u', @D, @K, 'venda')",
+        ("@I", Guid.NewGuid().ToString("N")), ("@C", comp), ("@P", prod), ("@T", tipo), ("@Q", qtd), ("@D", utc), ("@K", custo));
+    async Task Snap(string comp, string prod, int diasAtras, decimal qtd, decimal custo) => await Exec(
+        "INSERT INTO EstoqueSnapshotDiario (CompanyId, DepositoId, Data, ProdutoId, Quantidade, Valor, CustoUnitario) VALUES (@C, 'loja', @D, @P, @Q, @V, @K)",
+        ("@C", comp), ("@D", hojeDia.AddDays(-diasAtras).ToDateTime(TimeOnly.MinValue)), ("@P", prod), ("@Q", qtd), ("@V", qtd > 0 ? qtd * custo : 0m), ("@K", custo));
+    async Task Pedido(string num, string forn, int criadoAtras, int? recebidoAtras, int? previsaoAtras, int status, string? codigo = null, decimal qtd = 0, decimal recebida = 0)
+    {
+        var id = "oc-" + num + "-" + company;
+        await Exec(
+            "INSERT INTO OrdemCompra (Id, CompanyId, OrderNumber, SupplierId, SupplierName, Status, CreatedAt, ReceivedAt, PrevisaoEntrega) " +
+            "VALUES (@I, @C, @N, @F, N'Fornecedor', @S, @Cr, @Rc, @Pv)",
+            ("@I", id), ("@C", company), ("@N", num), ("@F", forn), ("@S", status),
+            ("@Cr", new DateTimeOffset(Dia(criadoAtras, 12), TimeSpan.Zero)),
+            ("@Rc", recebidoAtras is { } r ? new DateTimeOffset(Dia(r, 12), TimeSpan.Zero) : DBNull.Value),
+            ("@Pv", previsaoAtras is { } v ? new DateTimeOffset(Dia(v, 12), TimeSpan.Zero) : DBNull.Value));
+        if (codigo is not null)
+            await Exec("INSERT INTO OrdemCompraItens (Id, OrdemCompraId, ProductCode, ProductName, Quantity, UnitCost, ItemTotal, QuantityReceived) VALUES (@I, @O, @P, N'x', @Q, 1, @Q, @R)",
+                ("@I", id + "-i"), ("@O", id), ("@P", codigo), ("@Q", qtd), ("@R", recebida));
+    }
+
+    await Exec("INSERT INTO Empresas (Id) VALUES (@C)", ("@C", company));
+    await Exec("INSERT INTO Categorias (Id, CompanyId, Nome) VALUES (@I, @C, N'Pai')", ("@I", "c-pai-" + company), ("@C", company));
+    await Exec("INSERT INTO Categorias (Id, CompanyId, Nome, CategoriaPaiId) VALUES (@I, @C, N'Filha', @P)", ("@I", "c-fil-" + company), ("@C", company), ("@P", "c-pai-" + company));
+    await Exec("INSERT INTO Categorias (Id, CompanyId, Nome) VALUES (@I, @C, N'Outra')", ("@I", "c-out-" + company), ("@C", company));
+    await Exec("INSERT INTO Fornecedores (Id, CompanyId, CompanyName, FantasyName, LeadTimePrometidoDias) VALUES (@I, @C, N'Forn Um', N'Forn Um', 12)", ("@I", "f1-" + company), ("@C", company));
+    await Exec("INSERT INTO Fornecedores (Id, CompanyId, CompanyName, FantasyName) VALUES (@I, @C, N'Forn Dois', N'Forn Dois')", ("@I", "f2-" + company), ("@C", company));
+
+    await produtos.SalvarAsync(company, Novo("d-1", "D1", 70, 4m, 9m), user);
+    await produtos.SalvarAsync(company, Novo("d-2", "D2", 20, 5m, 9m), user);
+    await Exec("UPDATE Produtos SET CategoriaId=@Cat, SupplierId=@F WHERE Id='d-1' AND CompanyId=@C", ("@Cat", "c-fil-" + company), ("@F", "f1-" + company), ("@C", company));
+    await Exec("UPDATE Produtos SET CategoriaId=@Cat, SupplierId=@F, LeadTimeDias=5 WHERE Id='d-2' AND CompanyId=@C", ("@Cat", "c-out-" + company), ("@F", "f1-" + company), ("@C", company));
+    // d-1: 3 unidades em cada um de 10 dias (30 vendidas); d-2: dia com venda 5 e devolucao 2 (liquido 3) e dia so com devolucao (ignorado)
+    for (var k = 1; k <= 10; k++) await Mov(company, "d-1", "saida_venda", 3, 4m, Dia(k));
+    await Mov(company, "d-2", "saida_venda", 5, 5m, Dia(2));
+    await Mov(company, "d-2", "devolucao", 2, 5m, Dia(2, 18));
+    await Mov(company, "d-2", "devolucao", 1, 5m, Dia(4));
+    // fotografias: d-1 com 5 dias no periodo (2 em ruptura) e 1 no fim do periodo anterior
+    foreach (var (d, q) in new[] { (5, 100m), (4, 100m), (3, 100m), (2, 0m), (1, 0m), (30, 50m) }) await Snap(company, "d-1", d, q, 4m);
+    // pedidos: 3 recebidos do fornecedor 1 (lead 8, 6 e 4 dias; previsao: no prazo, atrasado, sem previsao) e 1 em transito (40, 10 recebidas)
+    await Pedido("T1", "f1-" + company, 20, 12, 11, 1);
+    await Pedido("T2", "f1-" + company, 10, 4, 5, 1);
+    await Pedido("T3", "f1-" + company, 6, 2, null, 1);
+    await Pedido("T4", "f1-" + company, 1, null, null, 3, "D1", 40, 10);
+
+    var f30 = FiltroAnalise.UltimosDias(30, fornecedorId: "f1-" + company);
+    var agg = (await indic.AgregarAsync(company, f30)).ToDictionary(a => a.ProdutoId);
+    Check(agg.Count == 2, "filtro por fornecedor traz so os 2 produtos do fornecedor");
+    var a1 = agg["d-1"]; var a2 = agg["d-2"];
+    Check(a1.SaidasLiquidas == 30m && a1.DiasComVenda == 10 && a1.SomaQuadrados == 90m && a1.Cmv == 120m, "d-1: 30 vendidas em 10 dias, soma dos quadrados 90, CMV 120");
+    Check(a2.SaidasLiquidas == 3m && a2.SomaQuadrados == 9m && a2.DiasComVenda == 1 && a2.Cmv == 10m, "d-2: venda 5 - devolucao 2 no mesmo dia = demanda 3; devolucao sem venda no dia nao entra na demanda (mas abate o CMV: 15 - 5 = 10)");
+    Check(a1.DiasFotografados == 5 && a1.DiasRuptura == 2 && a1.EstoqueMedioValor == 240m && a2.EstoqueMedioValor is null, "d-1: 5 fotografias, 2 em ruptura, estoque medio R$ 240; d-2 sem fotografia");
+    Check(a1.EmTransito == 30m && a2.EmTransito == 0m, "pedido em transito = quantidade - recebida (30)");
+    Check(a1.UltimaSaidaUtc is not null, "ultima saida preenchida");
+
+    var parametros = EstoqueParametros.Padrao;
+    var lead = (await indic.LeadTimeFornecedoresAsync(company)).First(l => l.FornecedorId == "f1-" + company);
+    Check(lead.Pedidos == 3 && Perto(lead.MediaDias, 6m, 0.01m) && Perto(lead.DesvioDias, 1.63m, 0.01m), "lead time real: 3 pedidos, media 6 dias, desvio 1,63");
+    Check(lead.PedidosComPrevisao == 2 && lead.PedidosNoPrazo == 1 && lead.NoPrazoPercentual == 50m && lead.PrometidoDias == 12, "no prazo 50% (pedido sem previsao fora do calculo); prometido 12");
+    var f2l = (await indic.LeadTimeFornecedoresAsync(company)).First(l => l.FornecedorId == "f2-" + company);
+    Check(f2l.Pedidos == 0 && f2l.MediaDias is null && f2l.NoPrazoPercentual is null, "fornecedor sem pedidos recebidos: lead time vazio");
+
+    var indicProdutos = (await indic.ProdutosAsync(company, f30, parametros)).ToDictionary(i => i.ProdutoId);
+    var i1 = indicProdutos["d-1"]; var i2 = indicProdutos["d-2"];
+    Check(i1.Consumo == 1m && Perto(i1.Desvio, 1.414m, 0.001m), "d-1: consumo 1,0/dia e desvio 1,414 (20 dias zero)");
+    Check(i1.LeadTimeDias == 6 && i2.LeadTimeDias == 5, "lead time: real do fornecedor (6) sem lead do produto; lead do produto (5) tem prioridade");
+    Check(Perto(i1.EstoqueSeguranca, 1.65m * 1.414m * (decimal)Math.Sqrt(6), 0.01m) && Perto(i1.CoberturaDias, 70m), "d-1: seguranca = Z x desvio x raiz(lead); cobertura 70 dias");
+    Check(i1.Saldo == 70m && i1.ValorEstoque == 280m && i1.DiasSemSaida == 1 && !i1.Parado && !i1.EmRuptura, "d-1: saldo 70, valor R$ 280, ultima saida ha 1 dia");
+    Check(Perto(i1.TaxaRupturaPercentual, 40m), "d-1: ruptura 2 de 5 dias fotografados = 40%");
+    var resumo = await indic.ResumoAsync(company, f30, parametros, comparar: true);
+    Check(resumo.Atual.ValorEstoque == 380m && resumo.Atual.Cmv == 130m && resumo.Atual.EstoqueMedioValor == 240m, "resumo: valor R$ 380, CMV R$ 130, estoque medio R$ 240");
+    Check(Perto(resumo.Atual.Giro, 130m / 240m, 0.0001m) && resumo.Atual.MotivoSemGiro is null, "resumo: giro = CMV / estoque medio");
+    Check(resumo.Anterior is not null && resumo.Anterior.ValorEstoque == 200m && Perto(resumo.VariacaoValorEstoque, 90m), "comparacao: periodo anterior R$ 200 (fotografia do ultimo dia) e variacao +90%");
+    Check(resumo.Anterior!.Cmv == 0m && resumo.Anterior.Giro == 0m, "periodo anterior sem vendas: CMV 0 e giro 0 (ha fotografia)");
+    var fCat = FiltroAnalise.UltimosDias(30, categoriaId: "c-pai-" + company);
+    var porCat = await indic.AgregarAsync(company, fCat);
+    Check(porCat.Count == 1 && porCat[0].ProdutoId == "d-1", "filtro por categoria inclui as filhas (pai -> d-1 na filha)");
+    var semFiltro = Perto(((await indic.ResumoAsync(company, FiltroAnalise.UltimosDias(30, fornecedorId: "nao-existe"), parametros, false)).Atual.Skus), 0m);
+    Check(semFiltro, "fornecedor sem produtos: resumo vazio sem erro");
+
+    // Configuracao e classificacao ABC/FSN em empresa propria (dados controlados)
+    var company2 = company + "-cl";
+    var configAb = new EstoqueConfigAnaliseAB(connection);
+    Check(await configAb.ObterAsync(company2) == EstoqueParametros.Padrao, "sem configuracao: padroes do spec");
+    await configAb.SalvarAsync(company2, EstoqueParametros.Padrao with { DiasParado = 60, AbcBase = "cmv" }, "Gerente");
+    var salvo = await configAb.ObterAsync(company2);
+    Check(salvo.DiasParado == 60 && salvo.AbcBase == "cmv" && salvo.NivelServicoZ == 1.65m, "configuracao salva e lida de volta");
+    Check(EstoqueConfigAnaliseAB.Validar(EstoqueParametros.Padrao) is null && EstoqueConfigAnaliseAB.Validar(EstoqueParametros.Padrao with { AbcLimiteA = 96 }) is not null, "validacao dos limites ABC");
+    await configAb.RestaurarPadraoAsync(company2);
+    Check(await configAb.ObterAsync(company2) == EstoqueParametros.Padrao, "restaurar padrao");
+
+    var classif = new EstoqueClassificacaoAB(connection);
+    var valores = new (string Id, decimal Total, int[] Dias)[]
+    {
+        ("k1", 700m, new[] { 1, 8, 15, 22, 29, 36, 43, 50 }), ("k2", 150m, new[] { 1, 8, 15 }), ("k3", 100m, new[] { 1 }),
+        ("k4", 40m, new[] { 1 }), ("k5", 10m, new[] { 1 }), ("k6", 0m, Array.Empty<int>()),
+    };
+    foreach (var (id, total, dias) in valores)
+    {
+        await produtos.SalvarAsync(company2, Novo(id, id.ToUpperInvariant(), 1, 1m, 2m), user);
+        foreach (var d in dias) await Mov(company2, id, "saida_venda", 1, total / dias.Length, Dia(d));
+    }
+    var nClass = await classif.RecalcularAsync(company2, EstoqueParametros.Padrao with { AbcBase = "cmv" });
+    Check(nClass == 6, "classificacao grava os 6 produtos");
+    var matriz = await classif.MatrizAsync(company2);
+    int Cel(char a, char f) => matriz.First(c => c.Abc == a && c.Fsn == f).Produtos;
+    Check(matriz.Count == 9 && matriz.Sum(c => c.Produtos) == 6, "matriz tem as 9 combinacoes e soma 6 produtos");
+    Check(Cel('A', 'F') == 1 && Cel('B', 'S') == 2 && Cel('C', 'S') == 2 && Cel('C', 'N') == 1, "matriz: k1=A/F, k2,k3=B/S, k4,k5=C/S, k6=C/N");
+    Check(matriz.First(c => c.Abc == 'B' && c.Fsn == 'S').ValorEstoque == 2m, "valor em estoque da celula B/S (2 produtos de R$ 1,00)");
+    Check((await classif.EmpresasDesatualizadasAsync()).All(e => e != company2), "empresa recem classificada nao aparece como desatualizada");
+
     Check(await Query("SELECT COUNT(*) FROM EstoqueMovimentacoes WHERE CompanyId=@C AND Tipo NOT IN ('entrada','saida','saida_venda','devolucao','uso_interno','perda','inventario','transferencia')", r => r.GetInt32(0)) == 0, "todos os tipos sao validos");
     Check(await Query("SELECT COUNT(*) FROM EstoqueMovimentacoes WHERE CompanyId=@C AND (CustoUnitario IS NULL OR DepositoId <> 'loja')", r => r.GetInt32(0)) == 0, "todas as movimentacoes tem custo e deposito loja");
     Console.WriteLine($"\n{passed} verificacoes OK");
@@ -247,18 +372,31 @@ finally
     try
     {
         await using var db = await connection.OpenConnectionAsync();
+        foreach (var comp in new[] { company, company + "-cl" })
         foreach (var sql in new[]
         {
+            "DELETE FROM OrdemCompraItens WHERE OrdemCompraId IN (SELECT Id FROM OrdemCompra WHERE CompanyId=@C)",
+            "DELETE FROM OrdemCompra WHERE CompanyId=@C",
+            "DELETE FROM InventarioContagens WHERE InventarioId IN (SELECT Id FROM Inventarios WHERE CompanyId=@C)",
+            "DELETE FROM InventarioItens WHERE CompanyId=@C",
+            "DELETE FROM InventarioEventos WHERE InventarioId IN (SELECT Id FROM Inventarios WHERE CompanyId=@C)",
+            "DELETE FROM Inventarios WHERE CompanyId=@C",
             "DELETE FROM EstoqueSnapshotDiario WHERE CompanyId=@C",
             "DELETE FROM EstoqueMovimentacoes WHERE CompanyId=@C",
+            "DELETE FROM ProdutoClassificacao WHERE CompanyId=@C",
+            "DELETE FROM EstoqueConfigAnalise WHERE CompanyId=@C",
             "DELETE FROM VendaPagamentos WHERE VendaId IN (SELECT Id FROM Vendas WHERE CompanyId=@C)",
             "DELETE FROM VendaItens WHERE VendaId IN (SELECT Id FROM Vendas WHERE CompanyId=@C)",
             "DELETE FROM Vendas WHERE CompanyId=@C",
             "DELETE FROM Produtos WHERE CompanyId=@C",
+            "DELETE FROM Categorias WHERE CompanyId=@C AND CategoriaPaiId IS NOT NULL",
+            "DELETE FROM Categorias WHERE CompanyId=@C",
+            "DELETE FROM Fornecedores WHERE CompanyId=@C",
+            "DELETE FROM Empresas WHERE Id=@C",
         })
         {
             await using var cmd = new SqlCommand(sql, db);
-            cmd.Parameters.AddWithValue("@C", company);
+            cmd.Parameters.AddWithValue("@C", comp);
             try { await cmd.ExecuteNonQueryAsync(); } catch { }
         }
     }

@@ -45,5 +45,15 @@ public sealed class EstoqueSnapshotWorker(IServiceScopeFactory scopeFactory, ILo
             var linhas = await snapshots.GravarAsync(companyId, ontem, ct);
             logger.LogInformation("Fotografia do estoque de {Data} gravada para {Empresa}: {Linhas} produtos.", ontem, companyId, linhas);
         }
+
+        // Classificação ABC/FSN: recalculada uma vez por dia por empresa, no mesmo ciclo.
+        var config = scope.ServiceProvider.GetRequiredService<EstoqueConfigAnaliseAB>();
+        var classificacao = scope.ServiceProvider.GetRequiredService<EstoqueClassificacaoAB>();
+        foreach (var companyId in await classificacao.EmpresasDesatualizadasAsync(ct))
+        {
+            var parametros = await config.ObterAsync(companyId, ct);
+            var n = await classificacao.RecalcularAsync(companyId, parametros, ct: ct);
+            logger.LogInformation("Classificação ABC/FSN recalculada para {Empresa}: {Linhas} produtos.", companyId, n);
+        }
     }
 }

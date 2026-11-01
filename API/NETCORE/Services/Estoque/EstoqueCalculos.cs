@@ -16,7 +16,13 @@ public sealed record EstoqueParametros(
     int DiasParado = 90,
     int DiasExcesso = 120,
     int CoberturaAlvoDias = 15,
-    int LeadTimePadraoDias = 7)
+    int LeadTimePadraoDias = 7,
+    string AbcBase = "faturamento",
+    int ContagemDiasA = 30,
+    int ContagemDiasB = 90,
+    int ContagemDiasC = 180,
+    int ContagemItensDia = 20,
+    string? MetasJson = null)
 {
     public static EstoqueParametros Padrao { get; } = new();
 }
