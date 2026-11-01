@@ -51,7 +51,7 @@ public class PedidosCompraView extends Tela {
     private final Button verItens = Ui.botao("Ver itens", this::verItens);
     private final Button imprimir = Ui.botao("Imprimir pedido", () -> imprimir(false));
     private final Button cotacao = Ui.botao("Imprimir cotação", () -> imprimir(true));
-    private final Button fornecedorPrecos = Ui.botao("Fornecedor e preços", this::editarFornecedorEPrecos);
+    private final Button fornecedorPrecos = Ui.botao("Editar pedido", this::editarPedido);
     private final Button receber = Ui.primario("Receber", this::receber);
     private final Button cancelar = Ui.perigo("Cancelar pedido", this::cancelar);
     private final Carregando carregando;
@@ -63,7 +63,7 @@ public class PedidosCompraView extends Tela {
         this.perfil = ctx.session.perfil();
         getChildren().add(Ui.cabecalho("Pedidos de compra",
                 "Pedidos gerados em Compras, na Reposição ou no sistema web. Imprima a cotação para quantos fornecedores "
-                        + "quiser, escolha o fornecedor e os preços depois, e dê entrada ao receber.",
+                        + "quiser, edite o pedido (fornecedor, preços, itens, prazo) e dê entrada ao receber.",
                 Ui.botao("Atualizar", this::ativar)));
 
         filtro.setValue("Em aberto");
@@ -309,64 +309,18 @@ public class PedidosCompraView extends Tela {
         return c;
     }
 
-    private void editarFornecedorEPrecos() {
+    /** Editor completo do pedido pendente (fornecedor, prazos, pagamento, frete, desconto, observação e itens). */
+    private void editarPedido() {
         comDetalhe("Abrindo o pedido…", oc -> {
-            ComboBox<String> forn = Ui.combo(new ArrayList<>());
-            List<String> nomes = new ArrayList<>();
-            nomes.add(SEM_FORNECEDOR);
-            fornecedores.forEach(f -> nomes.add(f.nome()));
-            forn.setItems(FXCollections.observableArrayList(nomes));
-            forn.setValue(semFornecedor(oc) ? SEM_FORNECEDOR : oc.path("supplierName").asText(SEM_FORNECEDOR));
-            forn.setPrefWidth(360);
-
-            TableView<ItemEditavel> t = Ui.tabela();
-            t.setEditable(true);
-            Ui.col(t, "Código", ItemEditavel::codigo, 110);
-            Ui.col(t, "Produto", ItemEditavel::nome, 260);
-            editavel(t, "Quantidade", i -> i.quantidade, 90);
-            editavel(t, "Custo un. (R$)", i -> i.custo, 110);
-            List<ItemEditavel> itens = new ArrayList<>();
-            oc.path("itens").forEach(i -> itens.add(new ItemEditavel(i)));
-            t.setItems(FXCollections.observableArrayList(itens));
-            t.setPrefHeight(Math.min(380, 60 + itens.size() * 30));
-
-            VBox corpo = new VBox(10, Ui.rotulado("Fornecedor escolhido", forn),
-                    Ui.muted("Clique na quantidade ou no custo para alterar (Enter confirma). Use os preços da cotação vencedora."), t);
-            Modal[] m = new Modal[1];
-            m[0] = Modal.formulario(janela(), "Fornecedor e preços · pedido " + numero(oc), corpo, "Salvar", 720, () -> {
-                List<OrdemCompraApi.Item> novos = new ArrayList<>();
-                try {
-                    for (ItemEditavel i : itens) {
-                        BigDecimal q = Fmt.parse(i.quantidade.get());
-                        BigDecimal c = Fmt.parseOrZero(i.custo.get());
-                        if (q.signum() <= 0) {
-                            throw new DomainException("A quantidade de " + i.nome() + " deve ser maior que zero.");
-                        }
-                        if (c.signum() < 0) {
-                            throw new DomainException("O custo de " + i.nome() + " não pode ser negativo.");
-                        }
-                        novos.add(new OrdemCompraApi.Item(i.codigo(), q, c));
-                    }
-                } catch (DomainException e) {
-                    m[0].erro(e.getMessage());
-                    return false;
-                }
-                String nome = forn.getValue();
-                String id = fornecedores.stream().filter(f -> f.nome().equals(nome)).map(CadastroApi.Fornecedor::id).findFirst()
-                        .orElse("");
-                m[0].ocupado(true);
-                Carregando.async("Salvando o pedido…", () -> ctx.compras.atualizar(oc, id, novos), r -> {
-                    m[0].ocupado(false);
-                    m[0].fechar();
-                    sucesso("Pedido " + numero(oc) + " atualizado" + (id.isEmpty() ? "." : ": fornecedor " + nome + "."));
-                    ativar();
-                }, err -> {
-                    m[0].ocupado(false);
-                    m[0].erro(Fx.message(err));
-                });
-                return false;
+            if (oc.path("status").asInt() != PENDENTE) {
+                Toasts.error(janela(), "Só pedidos pendentes podem ser editados (este está " + rotulo(oc.path("status").asInt())
+                        .toLowerCase(java.util.Locale.ROOT) + ").");
+                return;
+            }
+            PedidoEditorDialog.abrir(janela(), ctx, oc, fornecedores, () -> {
+                sucesso("Pedido " + numero(oc) + " atualizado.");
+                ativar();
             });
-            m[0].mostrar();
         });
     }
 
@@ -389,13 +343,13 @@ public class PedidosCompraView extends Tela {
             VBox corpo = new VBox(10, Ui.muted("Já vem preenchido com o que falta receber. Ajuste o que chegou (0 = não chegou). "
                     + "A entrada atualiza o estoque e o custo do produto."), t);
             if (semPreco) {
-                corpo.getChildren().add(0, Ui.caixa("Há itens sem custo neste pedido. Informe os preços em \"Fornecedor e preços\" "
+                corpo.getChildren().add(0, Ui.caixa("Há itens sem custo neste pedido. Informe os preços em \"Editar pedido\" "
                         + "antes de receber, para não zerar o custo dos produtos.", "rg-warn-box"));
             }
             Modal[] m = new Modal[1];
             m[0] = Modal.formulario(janela(), "Receber pedido " + numero(oc) + " · " + fornecedor(oc), corpo, "Dar entrada", 780, () -> {
                 if (semPreco) {
-                    m[0].erro("Informe os preços do pedido antes de receber (botão \"Fornecedor e preços\").");
+                    m[0].erro("Informe os preços do pedido antes de receber (botão \"Editar pedido\").");
                     return false;
                 }
                 List<OrdemCompraApi.Recebido> recebidos;

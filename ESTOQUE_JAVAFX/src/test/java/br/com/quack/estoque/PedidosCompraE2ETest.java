@@ -87,4 +87,56 @@ class PedidosCompraE2ETest {
         assertEquals("Cotação não aprovada", cancelado.path("motivoCancelamento").asText());
         log("pedido " + numero + " recebido em 2 partes; pedido " + outro + " cancelado");
     }
+
+    @Test
+    void edicaoCompletaDoPedido() {
+        E2eSupport e = new E2eSupport(home);
+        e.loginAdmin();
+        Produto a = produto(e, "Edit A", "EDA");
+        Produto b = produto(e, "Edit B", "EDB");
+        Produto c = produto(e, "Edit C", "EDC");
+        String numero = e.ctx.compras.criar("", "original", List.of(
+                new OrdemCompraApi.Item(a.codigo(), new BigDecimal("5"), new BigDecimal("2")),
+                new OrdemCompraApi.Item(b.codigo(), new BigDecimal("3"), new BigDecimal("4"))));
+
+        // remove B, inclui C, muda quantidade/custo de A e todo o cabeçalho
+        var cab = new OrdemCompraApi.Cabecalho("", "pedido revisado", "2026-12-20", "30/60 dias", "Boleto",
+                new BigDecimal("15.50"), new BigDecimal("3"));
+        e.ctx.compras.atualizar(numero, cab, List.of(
+                new OrdemCompraApi.Item(a.codigo(), new BigDecimal("8"), new BigDecimal("2.25")),
+                new OrdemCompraApi.Item(c.codigo(), new BigDecimal("2"), new BigDecimal("10"))));
+
+        JsonNode oc = e.ctx.compras.obter(numero);
+        assertEquals("pedido revisado", oc.path("note").asText());
+        assertEquals("2026-12-20", oc.path("previsaoEntrega").asText().substring(0, 10));
+        assertEquals("30/60 dias", oc.path("condicaoPagamento").asText());
+        assertEquals("Boleto", oc.path("formaPagamento").asText());
+        assertEquals(0, new BigDecimal("15.50").compareTo(oc.path("valorFrete").decimalValue()));
+        assertEquals(0, new BigDecimal("3").compareTo(oc.path("valorDesconto").decimalValue()));
+        List<String> codigos = new java.util.ArrayList<>();
+        oc.path("itens").forEach(i -> codigos.add(i.path("productCode").asText()));
+        assertEquals(java.util.Set.of(a.codigo(), c.codigo()), java.util.Set.copyOf(codigos), "A e C no pedido");
+        assertFalse(codigos.contains(b.codigo()), "item removido");
+
+        // o cabeçalho lido de volta é o mesmo que foi gravado (base do editor)
+        var lido = OrdemCompraApi.Cabecalho.de(oc);
+        assertEquals("2026-12-20", lido.previsaoEntrega());
+        assertEquals("Boleto", lido.formaPagamento());
+
+        // validação local do editor
+        assertThrows(br.com.quack.estoque.domain.DomainException.class,
+                () -> br.com.quack.estoque.ui.PedidoEditorDialog.itensValidos(List.of()));
+        log("pedido " + numero + " editado: " + codigos);
+    }
+
+    private static Produto produto(E2eSupport e, String nome, String codigo) {
+        ObjectNode b = JsonFiles.MAPPER.createObjectNode();
+        b.put("productName", nome + " " + e.sufixo);
+        b.put("productCode", codigo + "-" + e.sufixo);
+        b.put("productQnt", "1");
+        b.put("productUnitPrice", "1,0000");
+        b.put("productSalePrice", "3,00");
+        b.put("unidadeComercial", "UN");
+        return e.ctx.produtos.criar(b);
+    }
 }

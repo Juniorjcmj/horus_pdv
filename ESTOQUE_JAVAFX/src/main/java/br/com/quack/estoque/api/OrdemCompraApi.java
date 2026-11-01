@@ -41,21 +41,35 @@ public class OrdemCompraApi {
         return api.send("GET", "/api/OrdemCompra", null, ApiClient.LIST_TIMEOUT);
     }
 
-    /**
-     * Regrava um pedido pendente (fornecedor e itens). Os demais campos (observação, previsão, condição, frete,
-     * desconto) vêm do pedido atual para não se perderem.
-     */
-    public JsonNode atualizar(JsonNode atual, String supplierId, List<Item> itens) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("supplierId", supplierId == null ? "" : supplierId);
-        body.put("note", atual.path("note").asText(""));
-        if (!atual.path("previsaoEntrega").isNull() && !atual.path("previsaoEntrega").isMissingNode()) {
-            body.put("previsaoEntrega", atual.path("previsaoEntrega").asText());
+    /** Dados do pedido além dos itens (null/zero = vazio). previsaoEntrega em AAAA-MM-DD. */
+    public record Cabecalho(String supplierId, String observacao, String previsaoEntrega, String condicaoPagamento,
+            String formaPagamento, BigDecimal frete, BigDecimal desconto) {
+        /** Cabeçalho atual do pedido (para trocar só fornecedor/itens sem perder o resto). */
+        public static Cabecalho de(JsonNode oc) {
+            String prev = oc.path("previsaoEntrega").isNull() || oc.path("previsaoEntrega").isMissingNode() ? null
+                    : oc.path("previsaoEntrega").asText("");
+            return new Cabecalho(oc.path("supplierId").isNull() ? "" : oc.path("supplierId").asText(""), oc.path("note").asText(""),
+                    prev == null || prev.length() < 10 ? null : prev.substring(0, 10), texto(oc, "condicaoPagamento"),
+                    texto(oc, "formaPagamento"), oc.path("valorFrete").decimalValue(), oc.path("valorDesconto").decimalValue());
         }
-        body.put("condicaoPagamento", atual.path("condicaoPagamento").isNull() ? null : atual.path("condicaoPagamento").asText(null));
-        body.put("formaPagamento", atual.path("formaPagamento").isNull() ? null : atual.path("formaPagamento").asText(null));
-        body.put("valorFrete", atual.path("valorFrete").decimalValue());
-        body.put("valorDesconto", atual.path("valorDesconto").decimalValue());
+
+        private static String texto(JsonNode oc, String campo) {
+            return oc.path(campo).isNull() ? null : oc.path(campo).asText(null);
+        }
+    }
+
+    /** Regrava um pedido pendente (cabeçalho e itens). A API só aceita pedido com situação Pendente. */
+    public JsonNode atualizar(String numero, Cabecalho c, List<Item> itens) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("supplierId", c.supplierId() == null ? "" : c.supplierId());
+        body.put("note", c.observacao() == null ? "" : c.observacao());
+        if (c.previsaoEntrega() != null && !c.previsaoEntrega().isBlank()) {
+            body.put("previsaoEntrega", c.previsaoEntrega() + "T12:00:00-03:00");
+        }
+        body.put("condicaoPagamento", vazioNull(c.condicaoPagamento()));
+        body.put("formaPagamento", vazioNull(c.formaPagamento()));
+        body.put("valorFrete", c.frete() == null ? BigDecimal.ZERO : c.frete());
+        body.put("valorDesconto", c.desconto() == null ? BigDecimal.ZERO : c.desconto());
         List<Map<String, Object>> its = new ArrayList<>();
         for (Item i : itens) {
             Map<String, Object> m = new LinkedHashMap<>();
@@ -65,7 +79,18 @@ public class OrdemCompraApi {
             its.add(m);
         }
         body.put("items", its);
-        return api.send("PUT", "/api/OrdemCompra/" + ApiClient.q(atual.path("orderNumber").asText()), body, ApiClient.LONG_TIMEOUT);
+        return api.send("PUT", "/api/OrdemCompra/" + ApiClient.q(numero), body, ApiClient.LONG_TIMEOUT);
+    }
+
+    /** Atalho: troca fornecedor e itens mantendo o resto do pedido. */
+    public JsonNode atualizar(JsonNode atual, String supplierId, List<Item> itens) {
+        Cabecalho c = Cabecalho.de(atual);
+        return atualizar(atual.path("orderNumber").asText(), new Cabecalho(supplierId, c.observacao(), c.previsaoEntrega(),
+                c.condicaoPagamento(), c.formaPagamento(), c.frete(), c.desconto()), itens);
+    }
+
+    private static String vazioNull(String s) {
+        return s == null || s.isBlank() ? null : s.trim();
     }
 
     /** Item recebido: código, quantidade e (opcional) validade AAAA-MM-DD e lote. */
