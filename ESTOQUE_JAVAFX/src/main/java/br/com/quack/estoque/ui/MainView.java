@@ -48,6 +48,8 @@ public class MainView extends BorderPane implements Tela.Navegador {
                 new Item("ajustes", "Ajustes e histórico", "F4", true, MovimentacoesView::new),
                 new Item("inventario", "Inventário", "F6", true, InventarioView::new),
                 new Item("etiquetas", "Etiquetas", "F8", true, EtiquetasView::new),
+                new Item("promocoes", "Promoções", "", true, PromocoesView::new),
+                new Item("validade", "Validade", "", true, ValidadeView::new),
                 new Item("compras", "Compras", "", true, ComprasView::new),
                 new Item("pedidos-compra", "Pedidos de compra", "", perfil.gerarPedidoCompra(), PedidosCompraView::new),
                 new Item("relatorios", "Relatórios", "", true, RelatoriosView::new),

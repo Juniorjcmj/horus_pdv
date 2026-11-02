@@ -2193,3 +2193,22 @@
     -fx-border-color: -highlight-strong;
     -fx-border-width: 1.5;
 }
+
+/* Controle de validade: cartões que filtram a lista (clique liga/desliga) */
+.rg-filtro-cartao {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.rg-filtro-cartao:selected .rg-stat {
+    -fx-border-color: -brand;
+    -fx-border-width: 2;
+}
+
+.rg-scroll-transparente,
+.rg-scroll-transparente > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}

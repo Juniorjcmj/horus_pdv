@@ -5,7 +5,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Promoções ativas, para a etiqueta mostrar o preço promocional (GET /api/Promocao/ativas). */
+/**
+ * Promoções (PromocaoController): ativas para a etiqueta mostrar o preço promocional, e o cadastro completo da tela
+ * Promoções (listar, criar, editar, ativar/desativar, excluir e resultado). Escrita: gerente/administrador.
+ */
 public class PromocaoApi {
     /** Só as promoções de preço fixo interessam à etiqueta. */
     public record Promocao(String nome, String tipo, BigDecimal precoFixo, String inicio, String fim,
@@ -38,5 +41,34 @@ public class PromocaoApi {
             }
         }
         return out;
+    }
+
+    /** Todas as promoções da empresa (JSON da API: nome, tipo, valores, vigência, ativa, categoria e produtoIds). */
+    public JsonNode listar() {
+        return api.send("GET", "/api/Promocao", null, ApiClient.LIST_TIMEOUT);
+    }
+
+    public JsonNode obter(String id) {
+        return api.send("GET", "/api/Promocao/" + ApiClient.q(id), null, ApiClient.LIST_TIMEOUT);
+    }
+
+    /** Desempenho: quantidadeVendas, receitaBruta, receitaLiquida, descontoTotal, margemLiquida. */
+    public JsonNode resultado(String id) {
+        return api.send("GET", "/api/Promocao/" + ApiClient.q(id) + "/resultado", null, ApiClient.LIST_TIMEOUT);
+    }
+
+    /** Cria (id null) ou atualiza a promoção; o corpo segue o PromocaoRequest da API. */
+    public JsonNode salvar(String id, java.util.Map<String, Object> corpo) {
+        return id == null || id.isBlank()
+                ? api.send("POST", "/api/Promocao", corpo, ApiClient.LONG_TIMEOUT)
+                : api.send("PUT", "/api/Promocao/" + ApiClient.q(id), corpo, ApiClient.LONG_TIMEOUT);
+    }
+
+    public void definirAtiva(String id, boolean ativa) {
+        api.send("PATCH", "/api/Promocao/" + ApiClient.q(id) + "/status", java.util.Map.of("ativa", ativa), ApiClient.LONG_TIMEOUT);
+    }
+
+    public void excluir(String id) {
+        api.send("DELETE", "/api/Promocao/" + ApiClient.q(id), null, ApiClient.LONG_TIMEOUT);
     }
 }
