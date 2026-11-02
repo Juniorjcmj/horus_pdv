@@ -1,0 +1,25 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Usuario atualizado com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "usr-ct-atend",
+      "companyId" : "empresa-principal",
+      "cpf" : "44444444444",
+      "name" : "Ari",
+      "email" : "atendente@contrato.quack",
+      "phone" : "",
+      "role" : "atendente",
+      "status" : "ativo",
+      "createdAt" : "2026-11-02",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : true,
+      "perfisAdicionais" : [ ]
+    }
+  }
+}

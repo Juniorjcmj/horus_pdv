@@ -1,0 +1,53 @@
+[
+  {
+    "nome": "listar-so-a-atual",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/Sessao"},
+    "volateis": {"data[0].id": "id", "data[0].ip": "texto"}
+  },
+  {
+    "nome": "listar-com-duas-sessoes",
+    "usuario": "gerente@contrato.quack",
+    "outraSessao": true,
+    "requisicao": {"metodo": "GET", "caminho": "/api/Sessao"},
+    "volateis": {"data[0].id": "id", "data[1].id": "id", "data[0].ip": "texto", "data[1].ip": "texto"}
+  },
+  {
+    "nome": "listar-sem-token",
+    "requisicao": {"metodo": "GET", "caminho": "/api/Sessao"}
+  },
+  {
+    "nome": "encerrar-outra-ok",
+    "usuario": "gerente@contrato.quack",
+    "outraSessao": true,
+    "requisicao": {"metodo": "DELETE", "caminho": "/api/Sessao/{outraSessao}"},
+    "volateis": {"data[0].id": "id", "data[0].ip": "texto"}
+  },
+  {
+    "nome": "encerrar-a-atual-recusa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "DELETE", "caminho": "/api/Sessao/{sessaoAtual}"}
+  },
+  {
+    "nome": "encerrar-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "DELETE", "caminho": "/api/Sessao/sess-que-nao-existe"}
+  },
+  {
+    "nome": "encerrar-outras-ok",
+    "usuario": "caixa@contrato.quack",
+    "outraSessao": true,
+    "requisicao": {"metodo": "DELETE", "caminho": "/api/Sessao/outras"},
+    "volateis": {"data[0].id": "id", "data[0].ip": "texto"}
+  },
+  {
+    "nome": "encerrar-outras-sem-outras",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "DELETE", "caminho": "/api/Sessao/outras"},
+    "volateis": {"data[0].id": "id", "data[0].ip": "texto"}
+  },
+  {
+    "nome": "encerrar-sem-token",
+    "requisicao": {"metodo": "DELETE", "caminho": "/api/Sessao/qualquer"}
+  }
+]

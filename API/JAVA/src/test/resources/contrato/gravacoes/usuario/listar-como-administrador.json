@@ -1,0 +1,129 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Usuarios obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "usr-ct-admin",
+      "companyId" : "empresa-principal",
+      "cpf" : "11111111111",
+      "name" : "Ana Administradora",
+      "email" : "admin@contrato.quack",
+      "phone" : "11999990001",
+      "role" : "administrador",
+      "status" : "ativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "2026-11-02T04:03:42.9355455Z",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }, {
+      "id" : "usr-ct-atend",
+      "companyId" : "empresa-principal",
+      "cpf" : "44444444444",
+      "name" : "Ari Atendente",
+      "email" : "atendente@contrato.quack",
+      "phone" : "11999990004",
+      "role" : "atendente",
+      "status" : "ativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }, {
+      "id" : "usr-ct-bloq2",
+      "companyId" : "empresa-principal",
+      "cpf" : "88888888888",
+      "name" : "Beto Bloqueio",
+      "email" : "bloqueio2@contrato.quack",
+      "phone" : "11999990008",
+      "role" : "atendente",
+      "status" : "ativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }, {
+      "id" : "usr-ct-bloqueio",
+      "companyId" : "empresa-principal",
+      "cpf" : "77777777777",
+      "name" : "Bia Bloqueio",
+      "email" : "bloqueio@contrato.quack",
+      "phone" : "11999990007",
+      "role" : "atendente",
+      "status" : "ativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }, {
+      "id" : "usr-ct-caixa",
+      "companyId" : "empresa-principal",
+      "cpf" : "55555555555",
+      "name" : "Cai Caixa",
+      "email" : "caixa@contrato.quack",
+      "phone" : "11999990005",
+      "role" : "caixa",
+      "status" : "ativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }, {
+      "id" : "usr-ct-gerfin",
+      "companyId" : "empresa-principal",
+      "cpf" : "33333333333",
+      "name" : "Gal Gerente Fin",
+      "email" : "gerfin@contrato.quack",
+      "phone" : "11999990003",
+      "role" : "gerente",
+      "status" : "ativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ "financeiro" ]
+    }, {
+      "id" : "usr-ct-gerente",
+      "companyId" : "empresa-principal",
+      "cpf" : "22222222222",
+      "name" : "Gil Gerente",
+      "email" : "gerente@contrato.quack",
+      "phone" : "11999990002",
+      "role" : "gerente",
+      "status" : "ativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }, {
+      "id" : "usr-ct-inativo",
+      "companyId" : "empresa-principal",
+      "cpf" : "66666666666",
+      "name" : "Ivo Inativo",
+      "email" : "inativo@contrato.quack",
+      "phone" : "11999990006",
+      "role" : "atendente",
+      "status" : "inativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }, {
+      "id" : "usr-ct-troca",
+      "companyId" : "empresa-principal",
+      "cpf" : "99999999999",
+      "name" : "Tina Troca",
+      "email" : "troca@contrato.quack",
+      "phone" : "11999990009",
+      "role" : "atendente",
+      "status" : "ativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    } ]
+  }
+}

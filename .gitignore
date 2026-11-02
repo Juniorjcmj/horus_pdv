@@ -33,3 +33,11 @@ DESKTOP/frontend-bin/
 
 # Isolated integrity regression artifacts
 /FRONTEND/test-results-integrity/
+
+# API Java (Spring Boot)
+API/JAVA/target/
+API/JAVA/.env.homologacao
+API/JAVA/backups/
+API/JAVA/contrato/vetores-dotnet/bin/
+API/JAVA/contrato/vetores-dotnet/obj/
+API/JAVA/poc-fiscal/target/

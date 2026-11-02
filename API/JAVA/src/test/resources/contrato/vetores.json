@@ -1,0 +1,73 @@
+{
+  "jwtSecret": "segredo-jwt-de-vetores-0123456789-abcdefghijklmnop",
+  "encryptionKey": "chave-de-cifra-de-vetores-0123456789-abcdefghijklm",
+  "issuer": "horus-pdv-api",
+  "audience": "horus-pdv-web",
+  "senhas": [
+    {
+      "senha": "Senha#Quack2026",
+      "hash": "100000.Q0wmjZSGSpZjzetxaWmnOg==./e7RA0660AYv/UNXRsWH7jS/LW9C9uhWJccn0quZxXs="
+    },
+    {
+      "senha": "Çenha-ção#é9ü",
+      "hash": "100000.91alhjF8ennxajXYniC5Ww==.0OPHUuTOPK+fPvSt7Hd+rKNqC6iQRnWvauYdFKmnDBw="
+    },
+    {
+      "senha": "12345678",
+      "hash": "100000.0ZMSecD+jktSo8WtA9HyOA==.wCAuoZoOZJTfni8fbzHmhbJT8uZpxQhR6E7qL+lWCHM="
+    },
+    {
+      "senha": "senha com espaços  ",
+      "hash": "100000.qn5SxtD3tOnFP+gIAgtqjA==.4hYxVSJZn6snOx9wZRMrGmc1UBdB85gOn8dG7z4WBU4="
+    }
+  ],
+  "segredos": [
+    {
+      "texto": "smtp-senha-123",
+      "cifrado": "enc:v1:dIEL8eJKbTv9JyQ6.Ha/PeTPcbLhrLfv1vM6lpQ==.noLRiAoSKNAsBQ8bk3Y=",
+      "usaChaveDeCifra": true
+    },
+    {
+      "texto": "Açaí & café #2026 ✓",
+      "cifrado": "enc:v1:meU6/Nl8LBuIwx7U.bNmHAkblrtKtyHLYt3gI6w==.wYyuVQPH2kvkWvUwM+CvDe9k3SbO08WD",
+      "usaChaveDeCifra": true
+    },
+    {
+      "texto": "x",
+      "cifrado": "enc:v1:l4h5tD+9aIYi8BM+.uzZjLlLxUuVQ2a44FxH6ig==.pg==",
+      "usaChaveDeCifra": true
+    },
+    {
+      "texto": "smtp-senha-123",
+      "cifrado": "enc:v1:MPzEGR79cgypUQv2.9Ov3faFyJbH8nnigvzWufg==.Cyb5LKuOWgv1HZcaU/k=",
+      "usaChaveDeCifra": false
+    },
+    {
+      "texto": "Açaí & café #2026 ✓",
+      "cifrado": "enc:v1:T58QPsWP0x7sk8do.KJ4YjruCuMb+WDBU3YG0gQ==.+qEe/P0JzNH+Pmb6XzkYDOdInZWBjU9S",
+      "usaChaveDeCifra": false
+    },
+    {
+      "texto": "x",
+      "cifrado": "enc:v1:84EQ9jplhoIYjklJ.ewL5qYSXOh1vXO7yBQvJvg==.FQ==",
+      "usaChaveDeCifra": false
+    }
+  ],
+  "jwt": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJob3J1cy1wZHYtYXBpIiwiYXVkIjoiaG9ydXMtcGR2LXdlYiIsInN1YiI6InVzci0xNzAwMDAwMDAwMDAwIiwiaWQiOiJ1c3ItMTcwMDAwMDAwMDAwMCIsImNvbXBhbnlJZCI6ImVtcHJlc2EtcHJpbmNpcGFsIiwibmFtZSI6IkpvXHUwMEUzbyBkYSBDb25jZWlcdTAwRTdcdTAwRTNvIiwiZW1haWwiOiJqb2FvQGV4ZW1wbG8uY29tLmJyIiwicm9sZSI6ImdlcmVudGUiLCJ0b2tlblR5cGUiOiJCZWFyZXIiLCJzZXNzaW9uSWQiOiJzZXNzLTAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwic2Vzc2lvblR0bCI6IjhoIiwiaXAiOiIyMDAuMS4xLjEiLCJpYXQiOjE3OTM1ODg3MDYsImV4cCI6MTc5MzYxNzUwNn0.3j8qYUvBinOAD0LQEMr4N7C9fv_GR-DosFvyXz7FQjY",
+    "iat": 1793588706,
+    "exp": 1793617506,
+    "userId": "usr-1700000000000",
+    "companyId": "empresa-principal",
+    "name": "João da Conceição",
+    "email": "joao@exemplo.com.br",
+    "role": "gerente",
+    "sessionId": "sess-0123456789abcdef0123456789abcdef",
+    "ip": "200.1.1.1",
+    "sessionTtl": "8h"
+  },
+  "tokenRedefinicao": {
+    "token": "tok-Redefinicao_abc-123",
+    "hash": "a386feaa23c5048958a16839f98db936cf04d8a1d5422a1454bee96692d21321"
+  }
+}

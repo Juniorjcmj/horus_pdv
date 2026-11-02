@@ -1,0 +1,25 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Status atualizado com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "usr-ct-inativo",
+      "companyId" : "empresa-principal",
+      "cpf" : "66666666666",
+      "name" : "Ivo Inativo",
+      "email" : "inativo@contrato.quack",
+      "phone" : "11999990006",
+      "role" : "atendente",
+      "status" : "ativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }
+  }
+}

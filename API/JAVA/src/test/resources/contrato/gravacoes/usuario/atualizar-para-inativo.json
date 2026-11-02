@@ -1,0 +1,25 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Usuario atualizado com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "usr-ct-caixa",
+      "companyId" : "empresa-principal",
+      "cpf" : "55555555555",
+      "name" : "Cai",
+      "email" : "caixa@contrato.quack",
+      "phone" : "",
+      "role" : "caixa",
+      "status" : "inativo",
+      "createdAt" : "2026-11-02",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }
+  }
+}

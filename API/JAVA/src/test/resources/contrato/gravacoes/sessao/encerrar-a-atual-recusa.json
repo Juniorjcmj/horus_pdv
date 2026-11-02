@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "A sessão atual não pode ser encerrada por esta ação.",
+    "details" : null,
+    "data" : null
+  }
+}

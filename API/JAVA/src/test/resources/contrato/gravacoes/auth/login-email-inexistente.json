@@ -1,0 +1,12 @@
+{
+  "status" : 401,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "E-mail ou senha inválidos.",
+    "details" : null,
+    "data" : null
+  }
+}

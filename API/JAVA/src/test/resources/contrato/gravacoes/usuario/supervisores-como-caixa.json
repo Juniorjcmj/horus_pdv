@@ -1,0 +1,24 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Supervisores obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "usr-ct-admin",
+      "name" : "Ana Administradora",
+      "role" : "administrador"
+    }, {
+      "id" : "usr-ct-gerfin",
+      "name" : "Gal Gerente Fin",
+      "role" : "gerente"
+    }, {
+      "id" : "usr-ct-gerente",
+      "name" : "Gil Gerente",
+      "role" : "gerente"
+    } ]
+  }
+}

@@ -1,0 +1,85 @@
+name: API Java (Spring Boot) - testes e imagem
+
+# Branch spring-api: roda toda a bateria (unidade, web, integracao com SQL Server em Testcontainers e o comparador
+# de contrato) e publica a imagem de homologacao no GitHub Container Registry. Nao mexe no workflow da API .NET
+# (docker-publish.yml) nem publica a tag "latest": a API .NET segue atendendo a producao.
+
+on:
+  push:
+    branches: [spring-api]
+    paths:
+      - "API/JAVA/**"
+      - ".github/workflows/api-java.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: api-java-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # O runner do GitHub ja traz Docker, que o Testcontainers usa para o SQL Server 2022.
+      - name: mvn verify (unidade, web, IT e comparador de contrato)
+        working-directory: API/JAVA
+        run: mvn -B verify
+
+      - name: Relatorios de teste
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios-api-java
+          path: |
+            API/JAVA/target/surefire-reports
+            API/JAVA/target/failsafe-reports
+
+  imagem:
+    needs: testes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Normalizar nome do dono da imagem (ghcr.io exige minusculo)
+        run: echo "IMAGE_NAMESPACE=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+
+      - name: Login no ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build e push da imagem da API Java
+        uses: docker/build-push-action@v6
+        with:
+          context: API/JAVA
+          file: API/JAVA/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/quack-pdv-api-java:spring-api
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/quack-pdv-api-java:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

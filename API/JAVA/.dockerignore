@@ -1,0 +1,7 @@
+target/
+contrato/
+poc-fiscal/
+.git
+*.md
+Dockerfile
+docker-compose*.yml

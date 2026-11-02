@@ -1,0 +1,76 @@
+# Homologacao da API Java (Spring Boot) numa VPS nova: SQL Server 2022 com volume + a API.
+# NAO substitui a stack de producao (docker-compose.yml da raiz, API .NET). Ver a secao "Homologacao" do README.
+#
+# Uso:
+#   cp .env.homologacao.example .env.homologacao   # preencha as senhas e os segredos
+#   docker compose --env-file .env.homologacao -f docker-compose.homologacao.yml up -d
+#
+# Segredos: QUACK_AUTH_JWT_SECRET e QUACK_SECURITY_ENCRYPTION_KEY devem ter 32+ caracteres. Para usar um banco
+# restaurado da producao e aceitar as senhas/segredos ja gravados, use OS MESMOS valores da API .NET.
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:?defina MSSQL_SA_PASSWORD}"
+    volumes:
+      - mssql-data:/var/opt/mssql
+      # Para restaurar um backup da producao: coloque o .bak em ./backups e rode o RESTORE (README).
+      - ./backups:/var/opt/mssql/backups
+    ports:
+      - "127.0.0.1:${SQL_PORT:-14333}:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # Cria o banco vazio se ele ainda nao existir (o Flyway cria as tabelas). Num banco restaurado ele nao faz nada.
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: "no"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
+      DB_NAME: "${DB_NAME:-HorusPdv}"
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - /opt/mssql-tools18/bin/sqlcmd -C -b -S sqlserver -U sa -P "$$MSSQL_SA_PASSWORD" -Q "IF DB_ID(N'$$DB_NAME') IS NULL CREATE DATABASE [$$DB_NAME]"
+
+  api:
+    image: ${QUACK_API_IMAGE:-ghcr.io/SEU_USUARIO/quack-pdv-api-java:spring-api}
+    restart: unless-stopped
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    environment:
+      TZ: America/Sao_Paulo
+      # Vazio = producao. "dev" liga o Swagger e cria o usuario de demonstracao: so para teste, nunca com dados reais.
+      SPRING_PROFILES_ACTIVE: "${SPRING_PROFILES_ACTIVE:-}"
+      SPRING_DATASOURCE_URL: "jdbc:sqlserver://sqlserver:1433;databaseName=${DB_NAME:-HorusPdv};encrypt=true;trustServerCertificate=true"
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: "${MSSQL_SA_PASSWORD}"
+      QUACK_AUTH_JWT_SECRET: "${QUACK_AUTH_JWT_SECRET:?defina QUACK_AUTH_JWT_SECRET}"
+      QUACK_SECURITY_ENCRYPTION_KEY: "${QUACK_SECURITY_ENCRYPTION_KEY:?defina QUACK_SECURITY_ENCRYPTION_KEY}"
+      QUACK_SECURITY_CORS_ORIGINS: "${QUACK_SECURITY_CORS_ORIGINS:-}"
+      QUACK_SECURITY_TRUST_FORWARDED_HEADERS: "${QUACK_SECURITY_TRUST_FORWARDED_HEADERS:-false}"
+      QUACK_RECAPTCHA_ENABLED: "${QUACK_RECAPTCHA_ENABLED:-false}"
+      QUACK_RECAPTCHA_SECRET_KEY: "${QUACK_RECAPTCHA_SECRET_KEY:-}"
+      QUACK_EMAIL_ENABLED: "${QUACK_EMAIL_ENABLED:-false}"
+      QUACK_EMAIL_HOST: "${QUACK_EMAIL_HOST:-smtp-mail.outlook.com}"
+      QUACK_EMAIL_PORT: "${QUACK_EMAIL_PORT:-587}"
+      QUACK_EMAIL_USER: "${QUACK_EMAIL_USER:-}"
+      QUACK_EMAIL_PASSWORD: "${QUACK_EMAIL_PASSWORD:-}"
+      QUACK_EMAIL_FROM_EMAIL: "${QUACK_EMAIL_FROM_EMAIL:-}"
+      QUACK_EMAIL_FRONTEND_BASE_URL: "${QUACK_EMAIL_FRONTEND_BASE_URL:-}"
+    ports:
+      - "${API_PORT:-8080}:8080"
+
+volumes:
+  mssql-data:

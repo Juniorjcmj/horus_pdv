@@ -1,0 +1,172 @@
+[
+  {
+    "nome": "listar-como-administrador",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/Usuario"},
+    "volateis": {"data[0].lastLoginAt": "iso"}
+  },
+  {
+    "nome": "listar-como-gerente-empresa-aprovada",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/Usuario"},
+    "volateis": {"data[0].lastLoginAt": "iso"}
+  },
+  {
+    "nome": "listar-como-caixa-recusa",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/Usuario"}
+  },
+  {
+    "nome": "listar-como-atendente-recusa",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/Usuario"}
+  },
+  {
+    "nome": "listar-sem-token",
+    "requisicao": {"metodo": "GET", "caminho": "/api/Usuario"}
+  },
+  {
+    "nome": "supervisores-como-caixa",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/Usuario/supervisores"}
+  },
+  {
+    "nome": "supervisores-como-atendente",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/Usuario/supervisores"}
+  },
+  {
+    "nome": "criar-ok-como-gerente-ignora-perfis-adicionais",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": {"cpf": "52998224725", "name": "  Novo Usuário ", "email": " NOVO@Contrato.quack ", "phone": "11911112222", "role": "caixa", "status": "ativo", "password": "Senha#Quack2026", "perfisAdicionais": ["financeiro"]}},
+    "volateis": {"data.id": "id", "data.createdAt": "data"}
+  },
+  {
+    "nome": "criar-ok-como-administrador-com-financeiro",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": {"cpf": "529.982.247-25", "name": "Fin Novo", "email": "fin@contrato.quack", "phone": "", "role": "gerente", "status": "ativo", "password": "Senha#Quack2026", "perfisAdicionais": ["Financeiro", "inexistente"]}},
+    "volateis": {"data.id": "id", "data.createdAt": "data"}
+  },
+  {
+    "nome": "criar-perfil-e-status-padrao",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": {"cpf": "52998224725", "name": "Padrao", "email": "padrao@contrato.quack", "password": "Senha#Quack2026", "status": "qualquer"}},
+    "volateis": {"data.id": "id", "data.createdAt": "data"}
+  },
+  {
+    "nome": "criar-cpf-invalido",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": {"cpf": "123", "name": "X", "email": "x@contrato.quack", "password": "Senha#Quack2026"}}
+  },
+  {
+    "nome": "criar-nome-vazio",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": {"cpf": "52998224725", "name": "  ", "email": "x@contrato.quack", "password": "Senha#Quack2026"}}
+  },
+  {
+    "nome": "criar-email-invalido",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": {"cpf": "52998224725", "name": "X", "email": "sem-arroba", "password": "Senha#Quack2026"}}
+  },
+  {
+    "nome": "criar-senha-curta",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": {"cpf": "52998224725", "name": "X", "email": "x@contrato.quack", "password": "curta"}}
+  },
+  {
+    "nome": "criar-email-duplicado-no-sistema",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": {"cpf": "52998224725", "name": "X", "email": "ADM.APROVADA@contrato.quack", "password": "Senha#Quack2026"}}
+  },
+  {
+    "nome": "criar-cpf-duplicado-na-empresa",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": {"cpf": "11111111111", "name": "X", "email": "x@contrato.quack", "password": "Senha#Quack2026"}}
+  },
+  {
+    "nome": "criar-como-caixa-recusa",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": {"cpf": "52998224725", "name": "X", "email": "x@contrato.quack", "password": "Senha#Quack2026"}}
+  },
+  {
+    "nome": "criar-corpo-invalido",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario", "corpo": "[1,2"},
+    "volateis": {"traceId": "texto", "errors.$[0]": "texto"}
+  },
+  {
+    "nome": "atualizar-ok-sem-senha",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PUT", "caminho": "/api/Usuario/usr-ct-atend", "corpo": {"cpf": "44444444444", "name": "Ari Editado", "email": "atendente@contrato.quack", "phone": "11000000000", "role": "gerente", "status": "ativo", "password": ""}},
+    "volateis": {"data.createdAt": "data"}
+  },
+  {
+    "nome": "atualizar-com-senha-nova",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PUT", "caminho": "/api/Usuario/usr-ct-atend", "corpo": {"cpf": "44444444444", "name": "Ari", "email": "atendente@contrato.quack", "phone": "", "role": "atendente", "status": "ativo", "password": "NovaSenha#2026"}},
+    "volateis": {"data.createdAt": "data"}
+  },
+  {
+    "nome": "atualizar-gerente-nao-muda-perfis-adicionais",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "PUT", "caminho": "/api/Usuario/usr-ct-gerfin", "corpo": {"cpf": "33333333333", "name": "Gal", "email": "gerfin@contrato.quack", "phone": "", "role": "gerente", "status": "ativo", "password": "", "perfisAdicionais": []}},
+    "volateis": {"data.createdAt": "data"}
+  },
+  {
+    "nome": "atualizar-administrador-remove-financeiro",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PUT", "caminho": "/api/Usuario/usr-ct-gerfin", "corpo": {"cpf": "33333333333", "name": "Gal", "email": "gerfin@contrato.quack", "phone": "", "role": "gerente", "status": "ativo", "password": "", "perfisAdicionais": []}},
+    "volateis": {"data.createdAt": "data"}
+  },
+  {
+    "nome": "atualizar-para-inativo",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PUT", "caminho": "/api/Usuario/usr-ct-caixa", "corpo": {"cpf": "55555555555", "name": "Cai", "email": "caixa@contrato.quack", "phone": "", "role": "caixa", "status": "inativo", "password": ""}},
+    "volateis": {"data.createdAt": "data"}
+  },
+  {
+    "nome": "atualizar-usuario-de-outra-empresa",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PUT", "caminho": "/api/Usuario/usr-ct-apr-adm", "corpo": {"cpf": "11222333000181", "name": "X", "email": "adm.aprovada@contrato.quack", "role": "administrador", "status": "ativo"}}
+  },
+  {
+    "nome": "atualizar-email-duplicado",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PUT", "caminho": "/api/Usuario/usr-ct-atend", "corpo": {"cpf": "44444444444", "name": "Ari", "email": "gerente@contrato.quack", "role": "atendente", "status": "ativo"}}
+  },
+  {
+    "nome": "atualizar-inexistente",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PUT", "caminho": "/api/Usuario/usr-que-nao-existe", "corpo": {"cpf": "44444444444", "name": "Ari", "email": "a@contrato.quack", "role": "atendente", "status": "ativo"}}
+  },
+  {
+    "nome": "status-inativar",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PATCH", "caminho": "/api/Usuario/usr-ct-atend/status", "corpo": {"status": "inativo"}}
+  },
+  {
+    "nome": "status-valor-qualquer-vira-ativo",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PATCH", "caminho": "/api/Usuario/usr-ct-inativo/status", "corpo": {"status": "bloqueado"}}
+  },
+  {
+    "nome": "status-sem-corpo-usa-ativo",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PATCH", "caminho": "/api/Usuario/usr-ct-inativo/status", "corpo": {}}
+  },
+  {
+    "nome": "status-usuario-de-outra-empresa",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "PATCH", "caminho": "/api/Usuario/usr-ct-apr-adm/status", "corpo": {"status": "inativo"}}
+  },
+  {
+    "nome": "resetar-senha-email-desligado-em-producao",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario/usr-ct-atend/resetar-senha"}
+  },
+  {
+    "nome": "resetar-senha-como-caixa-recusa",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/Usuario/usr-ct-atend/resetar-senha"}
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Usuario atualizado com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "usr-ct-gerfin",
+      "companyId" : "empresa-principal",
+      "cpf" : "33333333333",
+      "name" : "Gal",
+      "email" : "gerfin@contrato.quack",
+      "phone" : "",
+      "role" : "gerente",
+      "status" : "ativo",
+      "createdAt" : "2026-11-02",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ "financeiro" ]
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Já existe um usuário com este CPF nesta empresa.",
+    "details" : null,
+    "data" : null
+  }
+}

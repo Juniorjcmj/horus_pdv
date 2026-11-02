@@ -1,0 +1,12 @@
+{
+  "status" : 401,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "O acesso da sua empresa está suspenso/bloqueado. Motivo: Inadimplência",
+    "details" : null,
+    "data" : null
+  }
+}

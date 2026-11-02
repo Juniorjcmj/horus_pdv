@@ -1,0 +1,27 @@
+# Equivale ao ambiente Development da API .NET.
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/dev
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+quack:
+  dev: true
+  auth:
+    jwt-secret: ${QUACK_AUTH_JWT_SECRET:dev-only-jwt-secret-change-me-0123456789}
+  security:
+    encryption-key: ${QUACK_SECURITY_ENCRYPTION_KEY:dev-only-encryption-key-change-me-0123}
+
+logging:
+  level:
+    br.com.quack: DEBUG

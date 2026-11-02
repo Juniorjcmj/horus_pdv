@@ -1,0 +1,25 @@
+{
+  "status" : 201,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Cadastro criado com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "usr-1793592219822",
+      "companyId" : "emp-1793592219822",
+      "cpf" : "45.997.418/0001-53",
+      "name" : "Mercado Novo",
+      "email" : "dono@mercadonovo.com",
+      "phone" : "11999990000",
+      "role" : "administrador",
+      "status" : "ativo",
+      "createdAt" : "2026-11-02",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }
+  }
+}

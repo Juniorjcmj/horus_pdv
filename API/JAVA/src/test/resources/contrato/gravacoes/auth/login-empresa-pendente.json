@@ -1,0 +1,12 @@
+{
+  "status" : 401,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "O cadastro da sua empresa está em análise e aguarda aprovação pelo administrador do sistema.",
+    "details" : null,
+    "data" : null
+  }
+}

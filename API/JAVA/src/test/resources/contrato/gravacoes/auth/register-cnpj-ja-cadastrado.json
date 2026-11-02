@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Este CNPJ já possui uma empresa cadastrada no sistema. Faça login com sua conta.",
+    "details" : null,
+    "data" : null
+  }
+}

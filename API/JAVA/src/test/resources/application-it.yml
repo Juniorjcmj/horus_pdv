@@ -1,0 +1,13 @@
+# Perfil dos testes de integracao: banco real (Testcontainers) com Flyway; o resto igual a producao.
+quack:
+  dev: false
+  auth:
+    jwt-secret: segredo-jwt-de-integracao-com-mais-de-32-caracteres
+  security:
+    encryption-key: chave-de-cifra-de-integracao-com-mais-de-32-caracteres
+    rate-limit:
+      max-requests: 5000
+logging:
+  level:
+    org.flywaydb: WARN
+    com.zaxxer: WARN

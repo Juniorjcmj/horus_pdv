@@ -1,0 +1,31 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8",
+    "set-cookie" : [ "horuspdv.auth=<valor>; path=/; secure; samesite=strict; httponly" ]
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Login realizado com sucesso.",
+    "details" : null,
+    "data" : {
+      "tokenType" : "Bearer",
+      "expiresInSeconds" : 28800,
+      "sessionId" : "sess-f656976617aa44b0a21cd1162d0de4f2",
+      "user" : {
+        "id" : "usr-ct-gerfin",
+        "companyId" : "empresa-principal",
+        "cpf" : "33333333333",
+        "name" : "Gal Gerente Fin",
+        "email" : "gerfin@contrato.quack",
+        "phone" : "11999990003",
+        "role" : "gerente",
+        "status" : "ativo",
+        "createdAt" : "2026-01-15",
+        "lastLoginAt" : "2026-11-02T04:03:32.5089841Z",
+        "mustChangePassword" : false,
+        "perfisAdicionais" : [ "financeiro" ]
+      }
+    }
+  }
+}
