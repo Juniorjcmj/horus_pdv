@@ -34,7 +34,9 @@ public final class Modal {
             ScrollPane sp = new ScrollPane(corpo);
             sp.setFitToWidth(true);
             sp.setPrefViewportHeight(altura);
-            sp.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+            // -fx-background é a base que o JavaFX usa para escolher a cor do texto dos controles (opções, caixas de marcar):
+            // transparente fazia o texto sair branco sobre o fundo branco do cartão.
+            sp.setStyle("-fx-background-color: transparent; -fx-background: -surface;");
             VBox.setVgrow(sp, Priority.ALWAYS);
             conteudo = sp;
         }

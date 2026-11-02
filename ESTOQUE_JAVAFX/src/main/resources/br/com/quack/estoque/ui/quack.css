@@ -2212,3 +2212,9 @@
     -fx-background-insets: 0;
     -fx-padding: 0;
 }
+
+/* Opções e caixas de marcar usam a cor de texto do tema (não a calculada pelo fundo, que falha em fundo transparente) */
+.radio-button,
+.check-box {
+    -fx-text-fill: -ink;
+}
