@@ -139,7 +139,7 @@ public final class Ui {
      */
     static final java.util.List<String> OPCIONAIS = java.util.List.of("Categoria", "Máx.", "Mín.", "Mín./Máx.", "Usuário",
             "Aberto por", "Escopo", "Último impresso", "Código de barras", "1ª contagem", "Itens", "Situação", "Cobertura",
-            "Un", "Fornecedor", "Código");
+            "Margem", "Lucro R$", "Un", "Fornecedor", "Código");
 
     /** Mostra todas as colunas e esconde as opcionais (na ordem de {@link #OPCIONAIS}) até a soma dos mínimos caber. */
     static <T> void colunasVisiveis(TableView<T> t) {

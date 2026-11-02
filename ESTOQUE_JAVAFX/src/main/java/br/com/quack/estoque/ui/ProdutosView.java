@@ -5,6 +5,7 @@ import br.com.quack.estoque.api.CadastroApi;
 import br.com.quack.estoque.domain.DomainException;
 import br.com.quack.estoque.domain.Fmt;
 import br.com.quack.estoque.domain.Perfil;
+import br.com.quack.estoque.domain.Precificacao;
 import br.com.quack.estoque.domain.Produto;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.math.BigDecimal;
@@ -85,8 +86,15 @@ public class ProdutosView extends Tela {
         var cUn = Ui.col(tabela, "Un", Produto::unidade, 56);
         var cPreco = Ui.colNum(tabela, "Preço", p -> Fmt.dec2(p.preco()), 80);
         javafx.scene.control.TableColumn<Produto, String> cCusto = null;
+        javafx.scene.control.TableColumn<Produto, String> cLucro = null;
+        javafx.scene.control.TableColumn<Produto, String> cMargem = null;
+        javafx.scene.control.TableColumn<Produto, String> cMarkup = null;
         if (perfil.verCustos()) {
             cCusto = Ui.colNum(tabela, "Custo", p -> Fmt.dec2(p.custo()), 80);
+            // Derivados de custo e preço; editar qualquer um recalcula o preço de venda (Precificacao).
+            cLucro = Ui.colNum(tabela, "Lucro R$", p -> Fmt.dec2(Precificacao.lucro(p.custo(), p.preco())), 84);
+            cMargem = Ui.colNum(tabela, "Margem", p -> pct(Precificacao.margem(p.custo(), p.preco())), 84);
+            cMarkup = Ui.colNum(tabela, "Markup", p -> pct(Precificacao.markup(p.custo(), p.preco())), 84);
         }
         var cEstoque = Ui.colNum(tabela, "Estoque", p -> Fmt.qty(p.estoque()), 80);
         var cMin = Ui.colNum(tabela, "Mín.", p -> Fmt.qty(p.minimo()), 60);
@@ -96,6 +104,11 @@ public class ProdutosView extends Tela {
         javafx.scene.control.TableColumn<Produto, String> cFornecedor = perfil.cadastrarCategoriasEFornecedores()
                 ? Ui.col(tabela, "Fornecedor", p -> p.fornecedor().isBlank() ? SEM_FORNECEDOR : p.fornecedor(), 160) : null;
         colunasEditaveis(cCodigo, cNome, cUn, cPreco, cCusto, cEstoque, cMin, cMax, cCategoria);
+        if (perfil.cadastrarProdutos() && cLucro != null) {
+            precificacaoEditavel(cLucro, "lucro", p -> Fmt.dec2(Precificacao.lucro(p.custo(), p.preco())));
+            precificacaoEditavel(cMargem, "margem", p -> numPct(Precificacao.margem(p.custo(), p.preco())));
+            precificacaoEditavel(cMarkup, "markup", p -> numPct(Precificacao.markup(p.custo(), p.preco())));
+        }
         if (cFornecedor != null) {
             // Fornecedor: um clique abre a lista dos fornecedores cadastrados; grava no cadastro do produto.
             CelulaEditavel.lista(cFornecedor, nomesFornecedores, p -> true);
@@ -240,12 +253,25 @@ public class ProdutosView extends Tela {
                         tabela.refresh();
                         return;
                     }
-                    Carregando.async("Salvando o preço…", () -> ctx.produtos.atualizarPreco(p.id(), Fmt.moneyApi(v), p.versaoPreco()),
-                            salvo -> {
-                                substituir(p, salvo != null ? salvo : comCampo(p, "productSalePrice", Fmt.moneyApi(v)));
-                                sucesso("Preço de \"" + p.nome() + "\": " + Fmt.money(p.preco()) + " → " + Fmt.money(v)
-                                        + ". Use \"Preços alterados\" em Etiquetas para imprimir.");
-                            }, this::erroEdicao);
+                    salvarPreco(p, v, "Preço");
+                }
+                case "lucro", "margem", "markup" -> {
+                    BigDecimal v = Fmt.parse(t.replace("%", "").trim());
+                    BigDecimal novo = switch (campo) {
+                        case "lucro" -> Precificacao.precoPorLucro(p.custo(), v);
+                        case "margem" -> Precificacao.precoPorMargem(p.custo(), v);
+                        default -> Precificacao.precoPorMarkup(p.custo(), v);
+                    };
+                    if (novo.compareTo(p.preco()) == 0) {
+                        tabela.refresh();
+                        return;
+                    }
+                    String rotulo = switch (campo) {
+                        case "lucro" -> "Lucro";
+                        case "margem" -> "Margem";
+                        default -> "Markup";
+                    };
+                    salvarPreco(p, novo, rotulo);
                 }
                 case "estoque" -> {
                     BigDecimal v = Fmt.parse(t);
@@ -342,6 +368,35 @@ public class ProdutosView extends Tela {
             tabela.refresh();
             Toasts.error(janela(), e.getMessage());
         }
+    }
+
+    /** Grava o novo preço de venda (com controle de versão) e mostra preço, lucro, margem e markup resultantes. */
+    private void salvarPreco(Produto p, BigDecimal v, String origem) {
+        Carregando.async("Salvando o preço…", () -> ctx.produtos.atualizarPreco(p.id(), Fmt.moneyApi(v), p.versaoPreco()),
+                salvo -> {
+                    Produto novo = salvo != null ? salvo : comCampo(p, "productSalePrice", Fmt.moneyApi(v));
+                    substituir(p, novo);
+                    sucesso(origem + " de \"" + p.nome() + "\": preço " + Fmt.money(p.preco()) + " → " + Fmt.money(novo.preco())
+                            + " · lucro " + Fmt.money(Precificacao.lucro(novo.custo(), novo.preco()))
+                            + " · margem " + pct(Precificacao.margem(novo.custo(), novo.preco()))
+                            + " · markup " + pct(Precificacao.markup(novo.custo(), novo.preco()))
+                            + ". Use \"Preços alterados\" em Etiquetas para imprimir.");
+                }, this::erroEdicao);
+    }
+
+    /** Lucro/margem/markup editáveis: só com custo informado (sem custo não há como calcular o preço). */
+    private void precificacaoEditavel(javafx.scene.control.TableColumn<Produto, String> col, String campo,
+            java.util.function.Function<Produto, String> valor) {
+        CelulaEditavel.em(col, valor, true, p -> p.custo() != null && p.custo().signum() > 0);
+        col.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), campo, e.getNewValue()));
+    }
+
+    static String pct(BigDecimal v) {
+        return v == null ? "—" : Fmt.dec2(v) + "%";
+    }
+
+    private static String numPct(BigDecimal v) {
+        return v == null ? "" : Fmt.dec2(v);
     }
 
     /**
