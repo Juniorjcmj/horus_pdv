@@ -243,6 +243,7 @@ public class ValidadeView extends Tela {
         tAlertas.setPlaceholder(Ui.muted("Nenhum lote em alerta."));
         Button baixar = Ui.botao("Baixar perda do lote selecionado", this::baixarPerda);
         baixar.setTooltip(new javafx.scene.control.Tooltip("Reduz o estoque do produto pela quantidade do lote (perda por vencimento)"));
+        Button promoA = botaoPromocao(tAlertas);
         VBox v = new VBox(10, new javafx.scene.control.ScrollPane(cards) {
             {
                 setFitToHeight(true);
@@ -250,7 +251,7 @@ public class ValidadeView extends Tela {
                 setMinHeight(110);
                 getStyleClass().add("rg-scroll-transparente");
             }
-        }, aNota, tAlertas, Ui.barra(baixar));
+        }, aNota, tAlertas, Ui.barra(baixar, promoA));
         v.setPadding(new javafx.geometry.Insets(10, 0, 0, 0));
         return v;
     }
@@ -304,6 +305,63 @@ public class ValidadeView extends Tela {
                 }));
     }
 
+    // ------------------------------------------------------------------ colocar em promoção
+
+    /** "Colocar em promoção": várias linhas podem ser escolhidas (Ctrl/Shift + clique). Só gerente/administrador. */
+    private Button botaoPromocao(TableView<JsonNode> t) {
+        t.getSelectionModel().setSelectionMode(javafx.scene.control.SelectionMode.MULTIPLE);
+        Button b = Ui.botao("Colocar em promoção", () -> colocarEmPromocao(List.copyOf(t.getSelectionModel().getSelectedItems())));
+        b.setTooltip(new javafx.scene.control.Tooltip("Cria uma promoção com os produtos dos lotes selecionados, válida até o "
+                + "vencimento (Ctrl ou Shift + clique para escolher vários)"));
+        b.setVisible(perfil.gerencia());
+        b.setManaged(perfil.gerencia());
+        return b;
+    }
+
+    /** Monta a promoção a partir dos lotes: produtos (sem repetir), fim da vigência no dia do lote que vence primeiro. */
+    public static PromocaoFormDialog.Preenchimento preenchimento(List<JsonNode> lotes, java.util.function.Function<String, Produto> produto) {
+        List<Produto> produtos = new ArrayList<>();
+        LocalDate fim = null;
+        for (JsonNode j : lotes) {
+            if (j.path("diasParaVencer").asInt() < 0) {
+                throw new DomainException("\"" + j.path("productName").asText() + "\" está com lote vencido: produto vencido não "
+                        + "pode ser vendido. Use \"Baixar perda\" e escolha só lotes dentro da validade.");
+            }
+            Produto p = produto.apply(j.path("produtoId").asText());
+            if (p == null) {
+                throw new DomainException("Produto \"" + j.path("productName").asText() + "\" não encontrado no catálogo. Atualize (F5).");
+            }
+            if (produtos.stream().noneMatch(x -> x.id().equals(p.id()))) {
+                produtos.add(p);
+            }
+            LocalDate dia = LocalDate.parse(j.path("dataValidade").asText().substring(0, 10));
+            fim = fim == null || dia.isBefore(fim) ? dia : fim;
+        }
+        if (produtos.isEmpty()) {
+            throw new DomainException("Selecione na lista os lotes que vão para a promoção (Ctrl ou Shift + clique para vários).");
+        }
+        String nome = produtos.size() == 1 ? "Validade: " + produtos.get(0).nome() : "Validade: " + produtos.size() + " produtos";
+        return new PromocaoFormDialog.Preenchimento(nome.length() > 120 ? nome.substring(0, 120) : nome, produtos,
+                fim.atTime(23, 59), null);
+    }
+
+    private void colocarEmPromocao(List<JsonNode> lotes) {
+        rodar(carregando, "Preparando a promoção…", () -> {
+            ctx.garantirCatalogo(false);
+            return ctx.cadastros.categorias();
+        }, cats -> {
+            PromocaoFormDialog.Preenchimento pre;
+            try {
+                pre = preenchimento(lotes, ctx.catalogo::porId);
+            } catch (DomainException e) {
+                Toasts.error(janela(), e.getMessage());
+                return;
+            }
+            PromocaoFormDialog.abrir(janela(), ctx, cats, null, pre,
+                    msg -> sucesso(msg + " Ela vale até " + Fmt.date(pre.fim().toLocalDate()) + " e aparece em Promoções."));
+        });
+    }
+
     // ------------------------------------------------------------------ consulta
 
     private Node montarConsulta() {
@@ -351,7 +409,7 @@ public class ValidadeView extends Tela {
         tConsulta.setPlaceholder(Ui.muted("Nenhum lote com esses filtros."));
         VBox v = new VBox(10, Ui.barra(Ui.rotulado("Buscar", cBusca), Ui.rotulado("De", cDe), Ui.rotulado("Até", cAte),
                 Ui.rotulado("Categoria", cCategoria), Ui.rotulado("Situação", cFaixa), Ui.rotulado("Origem", cOrigem), cComSaldo,
-                filtrar), rapidos, tConsulta, Ui.barra(cInfo, Ui.espaco(), cAnterior, cProxima));
+                filtrar), rapidos, tConsulta, Ui.barra(botaoPromocao(tConsulta), cInfo, Ui.espaco(), cAnterior, cProxima));
         v.setPadding(new javafx.geometry.Insets(10, 0, 0, 0));
         return v;
     }
