@@ -21,9 +21,26 @@ public class OrdemCompraApi {
 
     /** Cria um pedido para o fornecedor e devolve o número (OrderNumber). */
     public String criar(String supplierId, String observacao, List<Item> itens) {
+        return criar(new Cabecalho(supplierId, observacao, null, null, null, BigDecimal.ZERO, BigDecimal.ZERO), itens);
+    }
+
+    /** Cria um pedido completo (pedido personalizado: fornecedor, prazos, pagamento, frete, desconto e itens). */
+    public String criar(Cabecalho c, List<Item> itens) {
+        JsonNode data = api.send("POST", "/api/OrdemCompra", corpo(c, itens), ApiClient.LONG_TIMEOUT);
+        return data == null ? "" : data.path("orderNumber").asText(data.path("OrderNumber").asText(""));
+    }
+
+    private static Map<String, Object> corpo(Cabecalho c, List<Item> itens) {
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("supplierId", supplierId);
-        body.put("note", observacao);
+        body.put("supplierId", c.supplierId() == null ? "" : c.supplierId());
+        body.put("note", c.observacao() == null ? "" : c.observacao());
+        if (c.previsaoEntrega() != null && !c.previsaoEntrega().isBlank()) {
+            body.put("previsaoEntrega", c.previsaoEntrega() + "T12:00:00-03:00");
+        }
+        body.put("condicaoPagamento", vazioNull(c.condicaoPagamento()));
+        body.put("formaPagamento", vazioNull(c.formaPagamento()));
+        body.put("valorFrete", c.frete() == null ? BigDecimal.ZERO : c.frete());
+        body.put("valorDesconto", c.desconto() == null ? BigDecimal.ZERO : c.desconto());
         List<Map<String, Object>> its = new ArrayList<>();
         for (Item i : itens) {
             Map<String, Object> m = new LinkedHashMap<>();
@@ -33,8 +50,7 @@ public class OrdemCompraApi {
             its.add(m);
         }
         body.put("items", its);
-        JsonNode data = api.send("POST", "/api/OrdemCompra", body, ApiClient.LONG_TIMEOUT);
-        return data == null ? "" : data.path("orderNumber").asText(data.path("OrderNumber").asText(""));
+        return body;
     }
 
     public JsonNode listar() {
@@ -60,26 +76,7 @@ public class OrdemCompraApi {
 
     /** Regrava um pedido pendente (cabeçalho e itens). A API só aceita pedido com situação Pendente. */
     public JsonNode atualizar(String numero, Cabecalho c, List<Item> itens) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("supplierId", c.supplierId() == null ? "" : c.supplierId());
-        body.put("note", c.observacao() == null ? "" : c.observacao());
-        if (c.previsaoEntrega() != null && !c.previsaoEntrega().isBlank()) {
-            body.put("previsaoEntrega", c.previsaoEntrega() + "T12:00:00-03:00");
-        }
-        body.put("condicaoPagamento", vazioNull(c.condicaoPagamento()));
-        body.put("formaPagamento", vazioNull(c.formaPagamento()));
-        body.put("valorFrete", c.frete() == null ? BigDecimal.ZERO : c.frete());
-        body.put("valorDesconto", c.desconto() == null ? BigDecimal.ZERO : c.desconto());
-        List<Map<String, Object>> its = new ArrayList<>();
-        for (Item i : itens) {
-            Map<String, Object> m = new LinkedHashMap<>();
-            m.put("productCode", i.productCode());
-            m.put("quantity", i.quantity());
-            m.put("unitCost", i.unitCost());
-            its.add(m);
-        }
-        body.put("items", its);
-        return api.send("PUT", "/api/OrdemCompra/" + ApiClient.q(numero), body, ApiClient.LONG_TIMEOUT);
+        return api.send("PUT", "/api/OrdemCompra/" + ApiClient.q(numero), corpo(c, itens), ApiClient.LONG_TIMEOUT);
     }
 
     /** Atalho: troca fornecedor e itens mantendo o resto do pedido. */

@@ -63,7 +63,7 @@ public class PedidosCompraView extends Tela {
         getChildren().add(Ui.cabecalho("Pedidos de compra",
                 "Pedidos gerados em Compras, na Reposição ou no sistema web. Imprima a cotação para quantos fornecedores "
                         + "quiser, edite o pedido (fornecedor, preços, itens, prazo) e dê entrada ao receber.",
-                Ui.botao("Atualizar", this::ativar)));
+                Ui.botao("Atualizar", this::ativar), Ui.primario("Novo pedido", this::novoPedido)));
 
         filtro.setValue("Em aberto");
         filtro.setOnAction(e -> aplicarFiltro());
@@ -301,6 +301,15 @@ public class PedidosCompraView extends Tela {
                 t::refresh);
     }
 
+    /** Pedido personalizado do zero (como a "Nova Ordem" da web). */
+    private void novoPedido() {
+        PedidoEditorDialog.novo(janela(), ctx, fornecedores, n -> {
+            sucesso("Pedido " + n + " criado. Ele aparece na lista como pendente.");
+            filtro.setValue("Em aberto");
+            ativar();
+        });
+    }
+
     /** Editor completo do pedido pendente (fornecedor, prazos, pagamento, frete, desconto, observação e itens). */
     private void editarPedido() {
         comDetalhe("Abrindo o pedido…", oc -> {
@@ -309,8 +318,8 @@ public class PedidosCompraView extends Tela {
                         .toLowerCase(java.util.Locale.ROOT) + ").");
                 return;
             }
-            PedidoEditorDialog.abrir(janela(), ctx, oc, fornecedores, () -> {
-                sucesso("Pedido " + numero(oc) + " atualizado.");
+            PedidoEditorDialog.abrir(janela(), ctx, oc, fornecedores, n -> {
+                sucesso("Pedido " + n + " atualizado.");
                 ativar();
             });
         });

@@ -6,6 +6,7 @@ import br.com.quack.estoque.api.OrdemCompraApi;
 import br.com.quack.estoque.domain.DomainException;
 import br.com.quack.estoque.domain.Fmt;
 import br.com.quack.estoque.domain.Produto;
+import br.com.quack.estoque.persistence.JsonFiles;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -30,8 +31,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 
 /**
- * Edição de um pedido de compra pendente: fornecedor, previsão de entrega, condição e forma de pagamento, frete,
- * desconto, observação e itens (incluir, remover, quantidade e custo). Grava com PUT /api/OrdemCompra/{numero}.
+ * Pedido de compra personalizado (novo) ou edição de um pedido pendente: fornecedor, previsão de entrega, condição e
+ * forma de pagamento, frete, desconto, observação e itens (incluir, remover, quantidade e custo), como a "Nova Ordem"
+ * da versão web. Novo grava com POST /api/OrdemCompra; edição com PUT /api/OrdemCompra/{numero}.
  */
 public final class PedidoEditorDialog {
     static final String SEM_FORNECEDOR = "Sem fornecedor (cotação)";
@@ -63,7 +65,8 @@ public final class PedidoEditorDialog {
     private final AppContext ctx;
     private final JsonNode oc;
     private final List<CadastroApi.Fornecedor> fornecedores;
-    private final Runnable aoSalvar;
+    private final java.util.function.Consumer<String> aoSalvar;
+    private ComboBox<String> forn;
     private final ObservableList<Linha> itens = FXCollections.observableArrayList();
     private final TableView<Linha> tabela = Ui.tabela();
     private final Label totais = Ui.muted("");
@@ -71,22 +74,34 @@ public final class PedidoEditorDialog {
     private final TextField desconto = Ui.campo("0,00");
     private Modal modal;
 
-    private PedidoEditorDialog(AppContext ctx, JsonNode oc, List<CadastroApi.Fornecedor> fornecedores, Runnable aoSalvar) {
+    private PedidoEditorDialog(AppContext ctx, JsonNode oc, List<CadastroApi.Fornecedor> fornecedores,
+            java.util.function.Consumer<String> aoSalvar) {
         this.ctx = ctx;
         this.oc = oc;
         this.fornecedores = fornecedores;
         this.aoSalvar = aoSalvar;
     }
 
-    public static void abrir(Window dono, AppContext ctx, JsonNode oc, List<CadastroApi.Fornecedor> fornecedores, Runnable aoSalvar) {
+    /** Edita um pedido pendente; {@code aoSalvar} recebe o número do pedido. */
+    public static void abrir(Window dono, AppContext ctx, JsonNode oc, List<CadastroApi.Fornecedor> fornecedores,
+            java.util.function.Consumer<String> aoSalvar) {
         new PedidoEditorDialog(ctx, oc, fornecedores, aoSalvar).montar(dono);
     }
 
-    private void montar(Window dono) {
-        OrdemCompraApi.Cabecalho atual = OrdemCompraApi.Cabecalho.de(oc);
-        String numero = oc.path("orderNumber").asText();
+    /** Monta um pedido personalizado do zero; {@code aoSalvar} recebe o número do pedido criado. */
+    public static void novo(Window dono, AppContext ctx, List<CadastroApi.Fornecedor> fornecedores,
+            java.util.function.Consumer<String> aoSalvar) {
+        new PedidoEditorDialog(ctx, null, fornecedores, aoSalvar).montar(dono);
+    }
 
-        ComboBox<String> forn = Ui.combo(new ArrayList<>());
+    private void montar(Window dono) {
+        boolean novo = oc == null;
+        OrdemCompraApi.Cabecalho atual = novo
+                ? new OrdemCompraApi.Cabecalho("", "", null, null, null, BigDecimal.ZERO, BigDecimal.ZERO)
+                : OrdemCompraApi.Cabecalho.de(oc);
+        String numero = novo ? null : oc.path("orderNumber").asText();
+
+        forn = Ui.combo(new ArrayList<>());
         List<String> nomes = new ArrayList<>();
         nomes.add(SEM_FORNECEDOR);
         fornecedores.forEach(f -> nomes.add(f.nome()));
@@ -116,7 +131,7 @@ public final class PedidoEditorDialog {
         obs.setText(atual.observacao() == null ? "" : atual.observacao());
 
         // itens
-        for (JsonNode i : oc.path("itens")) {
+        for (JsonNode i : novo ? JsonFiles.MAPPER.createArrayNode() : oc.path("itens")) {
             itens.add(new Linha(i.path("productCode").asText(), i.path("productName").asText(), i.path("quantity").decimalValue(),
                     i.path("unitCost").decimalValue()));
         }
@@ -158,8 +173,10 @@ public final class PedidoEditorDialog {
                 addBox, tabela, Ui.barra(remover, Ui.espaco(), totais));
         atualizarTotais();
 
-        modal = Modal.formularioRolavel(dono, "Editar pedido " + numero, "Só pedidos pendentes podem ser editados.", corpo,
-                "Salvar pedido", 860, 640, () -> {
+        modal = Modal.formularioRolavel(dono, novo ? "Novo pedido de compra" : "Editar pedido " + numero,
+                novo ? "Escolha o fornecedor (ou deixe sem, para cotação), busque os produtos e informe quantidade e custo."
+                        : "Só pedidos pendentes podem ser editados.",
+                corpo, novo ? "Criar pedido" : "Salvar pedido", 860, 640, () -> {
                     List<OrdemCompraApi.Item> novos;
                     OrdemCompraApi.Cabecalho cab;
                     try {
@@ -181,10 +198,16 @@ public final class PedidoEditorDialog {
                         return false;
                     }
                     modal.ocupado(true);
-                    Carregando.async("Salvando o pedido…", () -> ctx.compras.atualizar(numero, cab, novos), r -> {
+                    Carregando.async(novo ? "Criando o pedido…" : "Salvando o pedido…", () -> {
+                        if (novo) {
+                            return ctx.compras.criar(cab, novos);
+                        }
+                        ctx.compras.atualizar(numero, cab, novos);
+                        return numero;
+                    }, n -> {
                         modal.ocupado(false);
                         modal.fechar();
-                        aoSalvar.run();
+                        aoSalvar.accept(n);
                     }, err -> {
                         modal.ocupado(false);
                         modal.erro(Fx.message(err));
@@ -262,10 +285,19 @@ public final class PedidoEditorDialog {
         if (t.isEmpty()) {
             return;
         }
+        String fornecedor = forn.getValue() == null || SEM_FORNECEDOR.equals(forn.getValue()) ? "" : forn.getValue();
         Carregando.async(() -> {
             ctx.garantirCatalogo(false);
             Produto exato = ctx.catalogo.porCodigoOuGtin(t);
-            return exato != null ? List.of(exato) : ctx.catalogo.buscar(t, 30);
+            if (exato != null) {
+                return List.of(exato);
+            }
+            List<Produto> achados = new ArrayList<>(ctx.catalogo.buscar(t, 60));
+            if (!fornecedor.isEmpty()) {
+                // como na web: primeiro os produtos desse fornecedor (ou sem fornecedor), depois os demais
+                achados.sort(java.util.Comparator.comparingInt(p -> doFornecedor(p, fornecedor) ? 0 : 1));
+            }
+            return achados.size() > 30 ? achados.subList(0, 30) : achados;
         }, achados -> {
             if (achados.isEmpty()) {
                 modal.erro("Nenhum produto encontrado para \"" + t + "\".");
@@ -279,6 +311,10 @@ public final class PedidoEditorDialog {
                 });
             }
         }, err -> modal.erro(Fx.message(err)));
+    }
+
+    private static boolean doFornecedor(Produto p, String fornecedor) {
+        return p.fornecedor() == null || p.fornecedor().isBlank() || p.fornecedor().equalsIgnoreCase(fornecedor);
     }
 
     private void incluir(Produto p) {

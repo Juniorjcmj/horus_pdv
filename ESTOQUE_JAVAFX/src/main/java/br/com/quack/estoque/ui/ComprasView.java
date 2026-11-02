@@ -112,10 +112,13 @@ public class ComprasView extends Tela {
         gerar = Ui.primario("Gerar pedidos", this::gerar);
         gerar.setVisible(perfil.gerarPedidoCompra());
         gerar.setManaged(perfil.gerarPedidoCompra());
+        Button personalizado = Ui.botao("Novo pedido personalizado", this::pedidoPersonalizado);
+        personalizado.setVisible(perfil.gerarPedidoCompra());
+        personalizado.setManaged(perfil.gerarPedidoCompra());
         getChildren().add(Ui.cabecalho("Compras: sugestão de reposição",
                 "Calcula quanto repor pelo giro de vendas e pelo estoque mínimo/máximo. "
                         + (perfil.gerarPedidoCompra() ? "Revise e gere um pedido por fornecedor; os itens sem fornecedor viram um pedido para cotação."
-                        : "Como estoquista você vê os produtos e as quantidades sugeridas."), gerar));
+                        : "Como estoquista você vê os produtos e as quantidades sugeridas."), personalizado, gerar));
 
         dias.setText("30");
         cobertura.setText("15");
@@ -237,6 +240,16 @@ public class ComprasView extends Tela {
         rodape.setStyle("-fx-alignment: top-left;");
         carregando = new Carregando(tabela, calcularBtn, gerar, excluir);
         getChildren().addAll(carregando, rodape);
+    }
+
+    /** Pedido montado à mão (fornecedor, condições e produtos), como a "Nova Ordem" da versão web. */
+    private void pedidoPersonalizado() {
+        PedidoEditorDialog.novo(janela(), ctx, fornecedores, n -> {
+            sucesso("Pedido " + n + " criado.");
+            Modal.confirmar(janela(), "Pedido " + n + " criado",
+                    "O pedido ficou pendente em \"Pedidos de compra\", onde dá para imprimir (pedido ou cotação), editar e receber.",
+                    "Abrir Pedidos de compra", () -> nav.ir("pedidos-compra"));
+        });
     }
 
     /** Motivo da sugestão em poucas palavras (o texto completo aparece ao passar o mouse). */
