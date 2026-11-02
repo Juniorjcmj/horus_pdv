@@ -1,0 +1,534 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Categorias obtidas com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "cat-mercearia-graos",
+      "nome" : "Arroz e Grãos",
+      "categoriaPaiId" : "cat-mercearia",
+      "categoriaPaiNome" : "Mercearia",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-acougue-bovinos",
+      "nome" : "Bovinos",
+      "categoriaPaiId" : "cat-acougue",
+      "categoriaPaiNome" : "Açougue",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bomboniere-chocolates",
+      "nome" : "Chocolates",
+      "categoriaPaiId" : "cat-bomboniere",
+      "categoriaPaiNome" : "Bomboniere",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-tabacaria-cigarros",
+      "nome" : "Cigarros e Isqueiros",
+      "categoriaPaiId" : "cat-tabacaria",
+      "categoriaPaiNome" : "Tabacaria",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-hortifruti-frutas",
+      "nome" : "Frutas",
+      "categoriaPaiId" : "cat-hortifruti",
+      "categoriaPaiNome" : "Hortifruti",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-limpeza-lavanderia",
+      "nome" : "Lavanderia",
+      "categoriaPaiId" : "cat-limpeza",
+      "categoriaPaiNome" : "Limpeza",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-laticinios-leite",
+      "nome" : "Leites e Derivados",
+      "categoriaPaiId" : "cat-laticinios",
+      "categoriaPaiNome" : "Laticínios",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-mercearia",
+      "nome" : "Mercearia",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-padaria-paes",
+      "nome" : "Pães",
+      "categoriaPaiId" : "cat-padaria",
+      "categoriaPaiNome" : "Padaria",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-congelados-pratos",
+      "nome" : "Pratos Prontos e Pizzas",
+      "categoriaPaiId" : "cat-congelados",
+      "categoriaPaiNome" : "Congelados",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-frios-queijos",
+      "nome" : "Queijos",
+      "categoriaPaiId" : "cat-frios",
+      "categoriaPaiNome" : "Frios",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-pet-caes",
+      "nome" : "Ração Cães",
+      "categoriaPaiId" : "cat-pet",
+      "categoriaPaiNome" : "Pet",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bebidas-refrigerantes",
+      "nome" : "Refrigerantes",
+      "categoriaPaiId" : "cat-bebidas",
+      "categoriaPaiNome" : "Bebidas",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-higiene-banho",
+      "nome" : "Sabonetes e Banhos",
+      "categoriaPaiId" : "cat-higiene",
+      "categoriaPaiNome" : "Higiene",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bazar-utilidades",
+      "nome" : "Utilidades Domésticas",
+      "categoriaPaiId" : "cat-bazar",
+      "categoriaPaiNome" : "Bazar",
+      "ordem" : 1,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-acougue-aves",
+      "nome" : "Aves",
+      "categoriaPaiId" : "cat-acougue",
+      "categoriaPaiNome" : "Açougue",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bomboniere-balas",
+      "nome" : "Balas e Chicletes",
+      "categoriaPaiId" : "cat-bomboniere",
+      "categoriaPaiNome" : "Bomboniere",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bebidas",
+      "nome" : "Bebidas",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-padaria-bolos",
+      "nome" : "Bolos e Tortas",
+      "categoriaPaiId" : "cat-padaria",
+      "categoriaPaiNome" : "Padaria",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-higiene-cabelo",
+      "nome" : "Cabelos",
+      "categoriaPaiId" : "cat-higiene",
+      "categoriaPaiNome" : "Higiene",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bebidas-cervejas",
+      "nome" : "Cervejas",
+      "categoriaPaiId" : "cat-bebidas",
+      "categoriaPaiNome" : "Bebidas",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-limpeza-desinfetantes",
+      "nome" : "Desinfetantes e Multiuso",
+      "categoriaPaiId" : "cat-limpeza",
+      "categoriaPaiNome" : "Limpeza",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-frios-embutidos",
+      "nome" : "Embutidos e Presuntos",
+      "categoriaPaiId" : "cat-frios",
+      "categoriaPaiNome" : "Frios",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-congelados-hamburguer",
+      "nome" : "Hambúrgueres e Empanados",
+      "categoriaPaiId" : "cat-congelados",
+      "categoriaPaiNome" : "Congelados",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-laticinios-iogurtes",
+      "nome" : "Iogurtes e Sobremesas",
+      "categoriaPaiId" : "cat-laticinios",
+      "categoriaPaiNome" : "Laticínios",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-hortifruti-legumes",
+      "nome" : "Legumes",
+      "categoriaPaiId" : "cat-hortifruti",
+      "categoriaPaiNome" : "Hortifruti",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-mercearia-oleos",
+      "nome" : "Óleos e Temperos",
+      "categoriaPaiId" : "cat-mercearia",
+      "categoriaPaiNome" : "Mercearia",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bazar-acessorios",
+      "nome" : "Pilhas e Acessórios",
+      "categoriaPaiId" : "cat-bazar",
+      "categoriaPaiNome" : "Bazar",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-pet-gatos",
+      "nome" : "Ração Gatos",
+      "categoriaPaiId" : "cat-pet",
+      "categoriaPaiNome" : "Pet",
+      "ordem" : 2,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-padaria-biscoitos",
+      "nome" : "Biscoitos e Torradas",
+      "categoriaPaiId" : "cat-padaria",
+      "categoriaPaiNome" : "Padaria",
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-higiene-bucal",
+      "nome" : "Higiene Bucal",
+      "categoriaPaiId" : "cat-higiene",
+      "categoriaPaiNome" : "Higiene",
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-laticinios",
+      "nome" : "Laticínios",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-laticinios-manteigas",
+      "nome" : "Manteigas e Requeijão",
+      "categoriaPaiId" : "cat-laticinios",
+      "categoriaPaiNome" : "Laticínios",
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-mercearia-massas",
+      "nome" : "Massas e Molhos",
+      "categoriaPaiId" : "cat-mercearia",
+      "categoriaPaiNome" : "Mercearia",
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bomboniere-snacks",
+      "nome" : "Salgadinhos e Snacks",
+      "categoriaPaiId" : "cat-bomboniere",
+      "categoriaPaiNome" : "Bomboniere",
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-congelados-sorvetes",
+      "nome" : "Sorvetes",
+      "categoriaPaiId" : "cat-congelados",
+      "categoriaPaiNome" : "Congelados",
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bebidas-sucos-aguas",
+      "nome" : "Sucos e Águas",
+      "categoriaPaiId" : "cat-bebidas",
+      "categoriaPaiNome" : "Bebidas",
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-acougue-suinos",
+      "nome" : "Suínos",
+      "categoriaPaiId" : "cat-acougue",
+      "categoriaPaiNome" : "Açougue",
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-limpeza-utensilios",
+      "nome" : "Utensílios de Limpeza",
+      "categoriaPaiId" : "cat-limpeza",
+      "categoriaPaiNome" : "Limpeza",
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-hortifruti-verduras",
+      "nome" : "Verduras e Temperos",
+      "categoriaPaiId" : "cat-hortifruti",
+      "categoriaPaiNome" : "Hortifruti",
+      "ordem" : 3,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-mercearia-enlatados",
+      "nome" : "Conservas e Enlatados",
+      "categoriaPaiId" : "cat-mercearia",
+      "categoriaPaiNome" : "Mercearia",
+      "ordem" : 4,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bebidas-destilados",
+      "nome" : "Destilados e Vinhos",
+      "categoriaPaiId" : "cat-bebidas",
+      "categoriaPaiNome" : "Bebidas",
+      "ordem" : 4,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-padaria",
+      "nome" : "Padaria",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 4,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-higiene-papeis",
+      "nome" : "Papéis e Descartáveis",
+      "categoriaPaiId" : "cat-higiene",
+      "categoriaPaiNome" : "Higiene",
+      "ordem" : 4,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-acougue",
+      "nome" : "Açougue",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 5,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-mercearia-farinhas",
+      "nome" : "Farinhas e Açúcares",
+      "categoriaPaiId" : "cat-mercearia",
+      "categoriaPaiNome" : "Mercearia",
+      "ordem" : 5,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-hortifruti",
+      "nome" : "Hortifruti",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 6,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-frios",
+      "nome" : "Frios",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 7,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-limpeza",
+      "nome" : "Limpeza",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 8,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-higiene",
+      "nome" : "Higiene",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 9,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-congelados",
+      "nome" : "Congelados",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 10,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bomboniere",
+      "nome" : "Bomboniere",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 11,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-bazar",
+      "nome" : "Bazar",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 12,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-pet",
+      "nome" : "Pet",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 13,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-tabacaria",
+      "nome" : "Tabacaria",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 14,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-ct-livre",
+      "nome" : "Categoria Livre",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 90,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-ct-dep",
+      "nome" : "Departamento Contrato",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 90,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }, {
+      "id" : "cat-ct-sub",
+      "nome" : "Subcategoria Contrato",
+      "categoriaPaiId" : "cat-ct-dep",
+      "categoriaPaiNome" : "Departamento Contrato",
+      "ordem" : 90,
+      "ativa" : true,
+      "quantidadeProdutos" : 1,
+      "subcategorias" : [ ]
+    } ]
+  }
+}

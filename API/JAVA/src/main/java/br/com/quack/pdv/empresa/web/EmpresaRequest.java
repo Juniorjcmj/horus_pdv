@@ -1,0 +1,51 @@
+package br.com.quack.pdv.empresa.web;
+
+public class EmpresaRequest {
+    public String fantasyName = "";
+    public String corporateName = "";
+    public String cnpj = "";
+    public String stateRegistration = "";
+    public String website = "";
+    public String email = "";
+    public String sacPhone = "";
+    public String phone = "";
+    public String mobile = "";
+    public String cep = "";
+    public String address = "";
+    public String number = "";
+    public String neighborhood = "";
+    public String city = "";
+    public String uf = "";
+    public String complement = "";
+    public boolean emailSmtpEnabled = false;
+    public String emailSmtpHost = "";
+    public int emailSmtpPort = 587;
+    public boolean emailSmtpEnableSsl = true;
+    public String emailSmtpUser = "";
+    public String emailSmtpPassword = "";
+    public boolean emailSmtpHasPassword = false;
+    public String emailSmtpFromEmail = "";
+    public String emailSmtpFromName = "";
+    public String emailSmtpReplyTo = "";
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using=br.com.quack.pdv.shared.ByteDotnetDeserializer.class)
+    public int crt = 1;
+    public String cnaeFiscal = "";
+    public String codigoMunicipioIbge = "3304557";
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using=br.com.quack.pdv.shared.ByteDotnetDeserializer.class)
+    public int codigoUfIbge = 33;
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(using=br.com.quack.pdv.shared.ByteDotnetDeserializer.class)
+    public int ambienteFiscal = 2;
+    public int serieNfce = 2;
+    public String cscId = "";
+    public String csc = "";
+    public boolean cscHasValue = false;
+    public String certificadoPfxBase64 = "";
+    public String certificadoSenha = "";
+    public boolean certificadoHasValue = false;
+    public String certificadoThumbprint = "";
+    public String certificadoValidoAte = null;
+    public String respTecCnpj = "";
+    public String respTecContato = "";
+    public String respTecEmail = "";
+    public String respTecFone = "";
+}

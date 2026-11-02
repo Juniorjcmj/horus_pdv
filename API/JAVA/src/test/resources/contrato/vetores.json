@@ -1,4 +1,10 @@
 {
+  "certificado": {
+    "base64": "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",
+    "senha": "Certificado#Teste2026",
+    "thumbprint": "4583040D38F66E6EE462A8732BA22D1807FF38F1",
+    "notAfter": "2036-01-01T00:00:00.0000000+00:00"
+  },
   "jwtSecret": "segredo-jwt-de-vetores-0123456789-abcdefghijklmnop",
   "encryptionKey": "chave-de-cifra-de-vetores-0123456789-abcdefghijklm",
   "issuer": "horus-pdv-api",
@@ -6,57 +12,57 @@
   "senhas": [
     {
       "senha": "Senha#Quack2026",
-      "hash": "100000.Q0wmjZSGSpZjzetxaWmnOg==./e7RA0660AYv/UNXRsWH7jS/LW9C9uhWJccn0quZxXs="
+      "hash": "100000.E+rPPYstkcEzat0tEJfPow==.l28k75E2EuzUN69U4sJ32g3eXi5LMO36E08YyRJ+f8g="
     },
     {
       "senha": "Çenha-ção#é9ü",
-      "hash": "100000.91alhjF8ennxajXYniC5Ww==.0OPHUuTOPK+fPvSt7Hd+rKNqC6iQRnWvauYdFKmnDBw="
+      "hash": "100000.gfrLNV2N91MMisVqLg1tkQ==.5fh4p5D87F5Au8ocTm6dg2Tl0V2yAwp5NeX/ObKTg60="
     },
     {
       "senha": "12345678",
-      "hash": "100000.0ZMSecD+jktSo8WtA9HyOA==.wCAuoZoOZJTfni8fbzHmhbJT8uZpxQhR6E7qL+lWCHM="
+      "hash": "100000.UzanrnSYYtPbcb1mCaLCYg==.8/fTmXfFKcKLTZDpe7ykzMKrrlkWygGSWAa6lVlRvxM="
     },
     {
       "senha": "senha com espaços  ",
-      "hash": "100000.qn5SxtD3tOnFP+gIAgtqjA==.4hYxVSJZn6snOx9wZRMrGmc1UBdB85gOn8dG7z4WBU4="
+      "hash": "100000.yuRJtFjc8EZ2ZI8q2ydlNg==.zOlWRKQzG8Lj+CDyz0eetIiFB2Y+1MwW131ET/eLtKA="
     }
   ],
   "segredos": [
     {
       "texto": "smtp-senha-123",
-      "cifrado": "enc:v1:dIEL8eJKbTv9JyQ6.Ha/PeTPcbLhrLfv1vM6lpQ==.noLRiAoSKNAsBQ8bk3Y=",
+      "cifrado": "enc:v1:c/P+srMT0N0spdKE.9iKx/uHQju6OBoHgycpObg==.9HyXFMM3sQwuPeJHeYA=",
       "usaChaveDeCifra": true
     },
     {
       "texto": "Açaí & café #2026 ✓",
-      "cifrado": "enc:v1:meU6/Nl8LBuIwx7U.bNmHAkblrtKtyHLYt3gI6w==.wYyuVQPH2kvkWvUwM+CvDe9k3SbO08WD",
+      "cifrado": "enc:v1:/PSoYdPlhXSiV/v1.loLYRzNuqFtH08W6MGFlVA==.e5RmJorlAQLKKIUrGyEU8zrqez9eMOxx",
       "usaChaveDeCifra": true
     },
     {
       "texto": "x",
-      "cifrado": "enc:v1:l4h5tD+9aIYi8BM+.uzZjLlLxUuVQ2a44FxH6ig==.pg==",
+      "cifrado": "enc:v1:sH6nfd5Y5pIUMg9m.FTJUx2lp/YW0ai7HrhTf8g==.Aw==",
       "usaChaveDeCifra": true
     },
     {
       "texto": "smtp-senha-123",
-      "cifrado": "enc:v1:MPzEGR79cgypUQv2.9Ov3faFyJbH8nnigvzWufg==.Cyb5LKuOWgv1HZcaU/k=",
+      "cifrado": "enc:v1:hvvnak+99rlddEOE.24F+Iniz/3zV9raB4vS9Aw==.kjyj8+lb8fXpmCF7D90=",
       "usaChaveDeCifra": false
     },
     {
       "texto": "Açaí & café #2026 ✓",
-      "cifrado": "enc:v1:T58QPsWP0x7sk8do.KJ4YjruCuMb+WDBU3YG0gQ==.+qEe/P0JzNH+Pmb6XzkYDOdInZWBjU9S",
+      "cifrado": "enc:v1:9TOTS6Hn42dSe8Ds.FjYnhBebYTTICIhFtz+gMg==.yWX/hjINAmTYf4xEpF9SECY+XpAuqLSW",
       "usaChaveDeCifra": false
     },
     {
       "texto": "x",
-      "cifrado": "enc:v1:84EQ9jplhoIYjklJ.ewL5qYSXOh1vXO7yBQvJvg==.FQ==",
+      "cifrado": "enc:v1:MEatHxj0nkg+s/zd.qa6CUFmixEB42116rekxww==.DA==",
       "usaChaveDeCifra": false
     }
   ],
   "jwt": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJob3J1cy1wZHYtYXBpIiwiYXVkIjoiaG9ydXMtcGR2LXdlYiIsInN1YiI6InVzci0xNzAwMDAwMDAwMDAwIiwiaWQiOiJ1c3ItMTcwMDAwMDAwMDAwMCIsImNvbXBhbnlJZCI6ImVtcHJlc2EtcHJpbmNpcGFsIiwibmFtZSI6IkpvXHUwMEUzbyBkYSBDb25jZWlcdTAwRTdcdTAwRTNvIiwiZW1haWwiOiJqb2FvQGV4ZW1wbG8uY29tLmJyIiwicm9sZSI6ImdlcmVudGUiLCJ0b2tlblR5cGUiOiJCZWFyZXIiLCJzZXNzaW9uSWQiOiJzZXNzLTAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwic2Vzc2lvblR0bCI6IjhoIiwiaXAiOiIyMDAuMS4xLjEiLCJpYXQiOjE3OTM1ODg3MDYsImV4cCI6MTc5MzYxNzUwNn0.3j8qYUvBinOAD0LQEMr4N7C9fv_GR-DosFvyXz7FQjY",
-    "iat": 1793588706,
-    "exp": 1793617506,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJob3J1cy1wZHYtYXBpIiwiYXVkIjoiaG9ydXMtcGR2LXdlYiIsInN1YiI6InVzci0xNzAwMDAwMDAwMDAwIiwiaWQiOiJ1c3ItMTcwMDAwMDAwMDAwMCIsImNvbXBhbnlJZCI6ImVtcHJlc2EtcHJpbmNpcGFsIiwibmFtZSI6IkpvXHUwMEUzbyBkYSBDb25jZWlcdTAwRTdcdTAwRTNvIiwiZW1haWwiOiJqb2FvQGV4ZW1wbG8uY29tLmJyIiwicm9sZSI6ImdlcmVudGUiLCJ0b2tlblR5cGUiOiJCZWFyZXIiLCJzZXNzaW9uSWQiOiJzZXNzLTAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2Nzg5YWJjZGVmIiwic2Vzc2lvblR0bCI6IjhoIiwiaXAiOiIyMDAuMS4xLjEiLCJpYXQiOjE3OTM1OTYzMDgsImV4cCI6MTc5MzYyNTEwOH0.shDkyhCa5Og47T5EI0F2j9goX8Sm2CdeeFFlznQO5xo",
+    "iat": 1793596308,
+    "exp": 1793625108,
     "userId": "usr-1700000000000",
     "companyId": "empresa-principal",
     "name": "João da Conceição",

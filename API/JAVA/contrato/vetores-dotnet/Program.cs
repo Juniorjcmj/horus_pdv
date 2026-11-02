@@ -6,6 +6,7 @@
  */
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using HORUSPDV_API.Repositories.DatabaseAccess;
@@ -82,8 +83,16 @@ static int Gerar(string caminho)
     var token = new HorusJwtService(opcoes).CreateToken(usuario, sessao, "200.1.1.1");
     var payload = JsonDocument.Parse(Base64UrlDecode(token.Split('.')[1])).RootElement;
 
+    using var rsa = RSA.Create(2048);
+    var requisicao = new CertificateRequest("CN=Quack Contrato Teste", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+    using var certificado = requisicao.CreateSelfSigned(new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero), new DateTimeOffset(2036, 1, 1, 0, 0, 0, TimeSpan.Zero));
+    const string senhaPfx = "Certificado#Teste2026";
+    var pfx = certificado.Export(X509ContentType.Pfx, senhaPfx);
+    using var certificadoImportado = new X509Certificate2(pfx, senhaPfx, X509KeyStorageFlags.EphemeralKeySet);
+
     var vetores = new Dictionary<string, object?>
     {
+        ["certificado"] = new { base64 = Convert.ToBase64String(pfx), senha = senhaPfx, thumbprint = certificadoImportado.Thumbprint, notAfter = new DateTimeOffset(certificadoImportado.NotAfter.ToUniversalTime(), TimeSpan.Zero).ToString("o") },
         ["jwtSecret"] = JwtSecret,
         ["encryptionKey"] = EncryptionKey,
         ["issuer"] = Issuer,

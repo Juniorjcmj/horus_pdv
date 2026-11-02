@@ -1,9 +1,7 @@
 # API Quack PDV (Spring Boot)
 
-Migração da API .NET (`API/NETCORE`) para Java 21 + Spring Boot 3.5. Esta pasta contém a **fundação**: configuração,
-banco (Flyway + JPA), envelope e erros, segurança (login, sessão, usuários, recuperação de senha, cadastro público),
-o teste de contrato contra a API .NET e a entrega (Docker + CI). Plano geral: `docs/migracao-api-springboot.md`.
-Os módulos de negócio (produtos, vendas, fiscal…) entram nas fases seguintes.
+Migração da API .NET (`API/NETCORE`) para Java 21 + Spring Boot 3.5. Esta pasta contém a fundação e os módulos já
+implementados da migração. Plano geral: `docs/migracao-api-springboot.md`.
 
 A API .NET continua atendendo a produção. **Onde algo não estiver documentado, vale o comportamento da API .NET.**
 
@@ -74,7 +72,8 @@ recusados (igual à API .NET).
   `fn_HorusParseDecimal`) de um banco criado do zero pela API .NET. É **gerado**, não escrito à mão:
   `SQLPACKAGE=<caminho> contrato/esquema/gerar-v1.sh` (ver o cabeçalho do script).
 - `V2__dados_referencia.sql`: a empresa `empresa-principal` (e só ela por enquanto). É idempotente (`IF NOT EXISTS`).
-  Categorias padrão, conteúdo de Treinamento e sequências fiscais entram em `V3+` junto com cada módulo.
+- `V3__cadastros_dados_referencia.sql`: 55 categorias padrão, 2 seções e 9 vídeos de treinamento; cada INSERT é
+  protegido por `IF NOT EXISTS` pelo `Id`.
 - `db/dev/R__seed_dev.sql`: o usuário de desenvolvimento, **só no perfil `dev`**.
 - A equivalência com o esquema da API .NET é provada pelo `EsquemaEquivalenteIT`, que compara colunas, índices e chaves
   com o snapshot `contrato/esquema/esquema-dotnet.json`.
@@ -92,6 +91,29 @@ O Flyway guarda o checksum de cada migração (`validate-on-migrate=true`). Alte
 com `FlywayValidateException` (teste: `BaselineBancoRestauradoIT.migracaoAlteradaDepoisDeAplicadaImpedeASubida`).
 Mudança de esquema = nova migração `V3__...`. O JPA roda com `ddl-auto=validate`: entidade que não bate com o banco
 derruba a subida.
+
+## Migração de cadastros (Fase 2)
+
+Endpoints implementados na Fase 2:
+
+- Empresa (`GET`/`PUT`) e tema da empresa (`GET`/`PUT`);
+- Categoria (consulta, CRUD e alteração de status), Fornecedor (CRUD) e Cliente (CRUD e `credito-snapshot`);
+- `ModuloMercado` (consulta do módulo e CRUD de registros);
+- treinamento (consulta e CRUD de seções/vídeos);
+- Admin/Empresas (lista, métricas, configuração, aprovar, rejeitar, bloquear, reativar, credenciais e exclusão);
+- documentação da API (`documentacao-api`).
+
+`mvn -B verify` passa (2026-11-02): 351 testes de unidade/web e 279 de integração/contrato, sem falhas, erros ou
+skips. O comparador cobre os 11 grupos (`MotorDeContrato.GRUPOS`), com 233 cenários iguais às gravações da API .NET.
+
+Falta só a validação manual pelas telas web (FRONTEND apontado para a API Java em `dev`), registrada aqui quando for
+feita. A Fase 2 fica aberta até lá.
+
+Notas da comparação:
+- O `ApiJavaContratoTest` usa as mesmas chaves de JWT e de cifra do ambiente .NET de contrato
+  (`contrato/ambiente-dotnet/subir.sh`), porque o seed traz segredos `enc:v1:` cifrados com elas.
+- Rejeitar e bloquear empresa rodam o `UPDATE` e o `DELETE` das sessões como instruções separadas, na mesma
+  transação, e somam as linhas: o mssql-jdbc devolveria só a contagem da última instrução do lote.
 
 ## Estrutura
 

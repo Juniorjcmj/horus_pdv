@@ -1,0 +1,216 @@
+[
+  {
+    "nome": "arvore",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Categoria"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "plana",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Categoria?plana=true"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "apenas-ativas",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Categoria?apenasAtivas=true"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Categoria"
+    }
+  },
+  {
+    "nome": "caixa-le",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Categoria"
+    },
+    "usuario": "caixa@contrato.quack"
+  },
+  {
+    "nome": "obter",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Categoria/cat-ct-dep"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "criar-departamento",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Categoria",
+      "corpo": {
+        "nome": "Departamento"
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "criar-subcategoria",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Categoria",
+      "corpo": {
+        "nome": "Sub",
+        "categoriaPaiId": "cat-ct-dep"
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "terceiro-nivel",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Categoria",
+      "corpo": {
+        "nome": "Terceiro",
+        "categoriaPaiId": "cat-ct-sub"
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "pai-inexistente",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Categoria",
+      "corpo": {
+        "nome": "Sub",
+        "categoriaPaiId": "inexistente"
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "pai-propria",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Categoria/cat-ct-dep",
+      "corpo": {
+        "nome": "Dep",
+        "categoriaPaiId": "cat-ct-dep"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "nome-vazio",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Categoria",
+      "corpo": {
+        "nome": ""
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "nome-longo",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Categoria",
+      "corpo": {
+        "nome": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "atendente-nao-cria",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Categoria",
+      "corpo": {
+        "nome": "Dep"
+      }
+    },
+    "usuario": "atendente@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "outra-empresa",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Categoria/cat-ct-outra"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "ativar",
+    "requisicao": {
+      "metodo": "PATCH",
+      "caminho": "/api/Categoria/cat-ct-dep/status",
+      "corpo": {
+        "ativa": true
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "desativar",
+    "requisicao": {
+      "metodo": "PATCH",
+      "caminho": "/api/Categoria/cat-ct-dep/status",
+      "corpo": {
+        "ativa": false
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "excluir-com-filhos",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Categoria/cat-ct-dep"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "excluir-com-produto",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Categoria/cat-ct-sub"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "excluir-livre",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Categoria/cat-ct-livre"
+    },
+    "usuario": "admin@contrato.quack"
+  }
+]

@@ -1,0 +1,2177 @@
+{
+  "contrato/ambiente-dotnet/descer.sh": {
+    "mtime": 1793589796.308293,
+    "ast_hash": "45506669d3787e19032aa42b24a10857",
+    "semantic_hash": ""
+  },
+  "contrato/ambiente-dotnet/subir.sh": {
+    "mtime": 1793592152.0434608,
+    "ast_hash": "95e5c9063d2f45983319546ce7e8cfa4",
+    "semantic_hash": ""
+  },
+  "contrato/esquema/esquema-dotnet.json": {
+    "mtime": 1793590142.7965274,
+    "ast_hash": "792038d0068e1d717175fb3382863e50",
+    "semantic_hash": ""
+  },
+  "contrato/esquema/gerar-v1.sh": {
+    "mtime": 1793590029.5353696,
+    "ast_hash": "9023273062443d8a29e465fc775f9b8e",
+    "semantic_hash": ""
+  },
+  "contrato/esquema/snapshot-esquema.sql": {
+    "mtime": 1793590140.3937442,
+    "ast_hash": "e497a14c5eb65117f43aaccc6e872783",
+    "semantic_hash": ""
+  },
+  "contrato/openapi-dotnet.json": {
+    "mtime": 1793592474.3649907,
+    "ast_hash": "31a126eae38c1a0c44e5a3201e88c189",
+    "semantic_hash": ""
+  },
+  "contrato/seed/reset-contrato.sql": {
+    "mtime": 1793614383.4913378,
+    "ast_hash": "af8f84c79aaef07f9afb6ee968c6616e",
+    "semantic_hash": ""
+  },
+  "contrato/seed/seed-contrato.sql": {
+    "mtime": 1793614998.7482343,
+    "ast_hash": "08c3707779eb673a0c355447c6ee3e44",
+    "semantic_hash": ""
+  },
+  "contrato/vetores-dotnet/Program.cs": {
+    "mtime": 1793596269.8453207,
+    "ast_hash": "b9538c248d209979ea6634908e2c4912",
+    "semantic_hash": ""
+  },
+  "contrato/vetores-dotnet/VetoresDotnet.csproj": {
+    "mtime": 1793588699.8947744,
+    "ast_hash": "bcbeb26d6734f1db9b0830fbd95be14c",
+    "semantic_hash": ""
+  },
+  "poc-fiscal/pom.xml": {
+    "mtime": 1793593230.6830132,
+    "ast_hash": "10c41174b65f617816a39bcaf799a6b6",
+    "semantic_hash": ""
+  },
+  "poc-fiscal/src/main/java/br/com/quack/poc/Certificados.java": {
+    "mtime": 1793593513.504647,
+    "ast_hash": "23121401a46512c5513a3b634470659e",
+    "semantic_hash": ""
+  },
+  "poc-fiscal/src/main/java/br/com/quack/poc/NotaFiscal.java": {
+    "mtime": 1793593565.715645,
+    "ast_hash": "102d301fd3a06a87cb2dab5a5f99795b",
+    "semantic_hash": ""
+  },
+  "poc-fiscal/src/main/java/br/com/quack/poc/OperacoesSefaz.java": {
+    "mtime": 1793593606.2787335,
+    "ast_hash": "554da49acba0e5142abd2a75d6335917",
+    "semantic_hash": ""
+  },
+  "poc-fiscal/src/main/java/br/com/quack/poc/PocFiscal.java": {
+    "mtime": 1793593607.1027107,
+    "ast_hash": "0603515522ca6bf7f3a182735827df8a",
+    "semantic_hash": ""
+  },
+  "poc-fiscal/src/main/java/br/com/quack/poc/VendaExemplo.java": {
+    "mtime": 1793593539.8669443,
+    "ast_hash": "51e7ca45868b9408d91565a53dd331cf",
+    "semantic_hash": ""
+  },
+  "poc-fiscal/src/test/java/br/com/quack/poc/NfceOfflineTest.java": {
+    "mtime": 1793593513.5057747,
+    "ast_hash": "ba243f79a906ced07267ca13f180e665",
+    "semantic_hash": ""
+  },
+  "pom.xml": {
+    "mtime": 1793592012.2086835,
+    "ast_hash": "35c387e9b0ede68e066aa2eb8e2a381f",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/QuackPdvApiApplication.java": {
+    "mtime": 1793593695.1967502,
+    "ast_hash": "6c4addb2b9e7aeb2b3dc78119a882373",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auditoria/app/AuditoriaService.java": {
+    "mtime": 1793589429.244614,
+    "ast_hash": "1f2d016b06fe7d65cef351c8a4b880bd",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auditoria/domain/AuditLog.java": {
+    "mtime": 1793589351.3457687,
+    "ast_hash": "001d20cb4005fb0814074f5763ecbb48",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auditoria/repo/AuditLogRepository.java": {
+    "mtime": 1793589400.649262,
+    "ast_hash": "3298460720509cc4e05d63909b84089a",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auth/app/AutenticacaoService.java": {
+    "mtime": 1793589573.1991937,
+    "ast_hash": "17164ee775ff3f244b4419679bdcd7cf",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auth/app/CadastroPublicoService.java": {
+    "mtime": 1793589605.0260627,
+    "ast_hash": "7dfae5a679c45bf89dbaf5ba9fbd3747",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auth/app/RecaptchaService.java": {
+    "mtime": 1793589430.086043,
+    "ast_hash": "4d38b447c4312dacc402642d37f09598",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auth/app/RecuperacaoSenhaService.java": {
+    "mtime": 1793589604.213384,
+    "ast_hash": "0a7a00749015872646dc1845fa8f9a7b",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auth/domain/PasswordResetToken.java": {
+    "mtime": 1793589350.536532,
+    "ast_hash": "ae00f18875987c1fe188c5bcd1d83e48",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auth/repo/PasswordResetTokenRepository.java": {
+    "mtime": 1793589399.820757,
+    "ast_hash": "323da80da23a35e74e7662fd60dfe3a5",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auth/web/AuthController.java": {
+    "mtime": 1793589718.1738114,
+    "ast_hash": "46e1daf3b9e3718f61f9d43a3cf8a59d",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/auth/web/AuthRequests.java": {
+    "mtime": 1793589572.349093,
+    "ast_hash": "49ae9d9bb005ad82023bd3c81ad8caf0",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/categoria/app/CategoriaService.java": {
+    "mtime": 1793597817.6518466,
+    "ast_hash": "7332e8b45be3ed1afef525dcb93e709a",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/categoria/domain/Categoria.java": {
+    "mtime": 1793597817.6430833,
+    "ast_hash": "c4d4ac4026b96007340fea3ad83f9f73",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/categoria/repo/CategoriaRepository.java": {
+    "mtime": 1793597817.6456072,
+    "ast_hash": "8021632cb1a24e5207b8d897f1f1e1f3",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/categoria/web/CategoriaController.java": {
+    "mtime": 1793597817.6518466,
+    "ast_hash": "0d3ef1b4f3f6dcff44c258a64ba1fadf",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/categoria/web/CategoriaDto.java": {
+    "mtime": 1793597817.6456072,
+    "ast_hash": "895488e3869792c6306a85f1138c3696",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/categoria/web/CategoriaRequest.java": {
+    "mtime": 1793597817.6446,
+    "ast_hash": "b7238155dc073447b90d48aa51e7976a",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/cliente/app/ClienteService.java": {
+    "mtime": 1793613847.4925368,
+    "ast_hash": "07d6e156b0d32bcc68d38a03a8d275ab",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/cliente/app/ClienteTransacao.java": {
+    "mtime": 1793613441.9736862,
+    "ast_hash": "cb7d47eefbf1b624b1740e20e1c263d5",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/cliente/domain/Cliente.java": {
+    "mtime": 1793598148.3312151,
+    "ast_hash": "c379bc92c0b0614ffa72441a8aad9b98",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/cliente/repo/ClienteRepository.java": {
+    "mtime": 1793598148.3337517,
+    "ast_hash": "2d0a7dc93806f56fa4a8d603c7cf80a2",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/cliente/web/ClienteController.java": {
+    "mtime": 1793616636.5324504,
+    "ast_hash": "c83e9aa3bef8e285981b866ec2867ea5",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/cliente/web/ClienteDto.java": {
+    "mtime": 1793598148.3327386,
+    "ast_hash": "0789bb90a3b03aebe843695832d9ef03",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/cliente/web/ClienteRequest.java": {
+    "mtime": 1793599008.1012175,
+    "ast_hash": "3faab795b18e467e1efbbbbb996538a0",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/fornecedor/app/FornecedorService.java": {
+    "mtime": 1793597705.4896877,
+    "ast_hash": "6599d22e7fcfd383c3833967f8148a37",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/fornecedor/domain/Fornecedor.java": {
+    "mtime": 1793597705.4873204,
+    "ast_hash": "5bed37f7c712a9762a4d2e9fe7d8df86",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/fornecedor/repo/FornecedorRepository.java": {
+    "mtime": 1793597705.4883225,
+    "ast_hash": "4ca7516305c7c3c4f8dc4a33d6fd56f0",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/fornecedor/web/FornecedorController.java": {
+    "mtime": 1793597705.4906762,
+    "ast_hash": "0672f9663cf0bf6456977b646ebb7f7c",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/fornecedor/web/FornecedorDto.java": {
+    "mtime": 1793597705.4883225,
+    "ast_hash": "c7c9ff2a8c96d5d6f79db5d0819f0655",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/fornecedor/web/FornecedorRequest.java": {
+    "mtime": 1793597705.4873204,
+    "ast_hash": "7dc410edb9a98b4e08a6a46da3d95b4f",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/mercado/app/ModuloMercadoService.java": {
+    "mtime": 1793613441.9693775,
+    "ast_hash": "cd8c14098069d09d81360f6d78f98815",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/mercado/domain/ModuloMercado.java": {
+    "mtime": 1793598040.0962627,
+    "ast_hash": "c55c038499b17588232e5bbfc9324a7d",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/mercado/domain/ModuloMercadoRegistro.java": {
+    "mtime": 1793598040.0972698,
+    "ast_hash": "90796d35d37e4dc9b5046d6b868d0c06",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/mercado/repo/ModuloMercadoRegistroRepository.java": {
+    "mtime": 1793598040.0982733,
+    "ast_hash": "680edf2c4febc210765826ae48142e04",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/mercado/repo/ModuloMercadoRepository.java": {
+    "mtime": 1793598040.0972698,
+    "ast_hash": "255b149c215646809ba898b8cd8e1f72",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/mercado/web/ModuloMercadoController.java": {
+    "mtime": 1793598040.1060288,
+    "ast_hash": "f9bec8f965070d8ec78636c423e2486c",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/cadastro/mercado/web/RegistroRequest.java": {
+    "mtime": 1793598040.0982733,
+    "ast_hash": "073ccae20dbda06406549ba58dd99018",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/config/JacksonConfig.java": {
+    "mtime": 1793589152.2453132,
+    "ast_hash": "c11475e78e132ebe21d09081a1c1e4aa",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/config/OpenApiConfig.java": {
+    "mtime": 1793613972.9266336,
+    "ast_hash": "ccb0eaa1466f898c6ad4da5ca851a204",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/config/QuackProperties.java": {
+    "mtime": 1793588565.9046085,
+    "ast_hash": "d3a28a0e20ebfeb7cca1c7fe48643230",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/config/RelogioConfig.java": {
+    "mtime": 1793588789.8676474,
+    "ast_hash": "3a8f8bf0c22162d532af4b2c7ad4c2ad",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/config/RoteamentoConfig.java": {
+    "mtime": 1793589157.127761,
+    "ast_hash": "f32e7f95b2f81855e3bf9778a175f489",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/config/SegurancaConfig.java": {
+    "mtime": 1793590326.1541984,
+    "ast_hash": "a31efafcd3c4c69f6fcb8744601356a5",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/config/ValidadorProducao.java": {
+    "mtime": 1793588566.744586,
+    "ast_hash": "57dbf40bbd14edfed7bcca25be32af8c",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/email/app/EmailService.java": {
+    "mtime": 1793589465.9658222,
+    "ast_hash": "11b5aa943548538301109ca813bdf357",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/email/app/EmailTemplate.java": {
+    "mtime": 1793589465.1376204,
+    "ast_hash": "2e8056d7fcf62896dabcf48a4ca3d222",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/app/AdministradorGeral.java": {
+    "mtime": 1793596454.0487542,
+    "ast_hash": "dfc268a5a695371560c3e90e769b8ebc",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/app/EmpresaService.java": {
+    "mtime": 1793596830.5023994,
+    "ast_hash": "6ca07b4c4117e76199ce15552990188c",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/app/EmpresaTemaService.java": {
+    "mtime": 1793596454.0514164,
+    "ast_hash": "020b2db2afe0f357dfb1e800d6474e6b",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/app/GerenciamentoEmpresasService.java": {
+    "mtime": 1793613441.9772925,
+    "ast_hash": "1f314c2e8214685762b75f45d08e80dd",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/app/LeitorCertificado.java": {
+    "mtime": 1793596737.2844164,
+    "ast_hash": "aa51cf9244cd9154b9b2b39270483438",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/app/TreinamentoService.java": {
+    "mtime": 1793613442.0268211,
+    "ast_hash": "f1f0e2f3ca10feec92ee590cf6d8262c",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/domain/Empresa.java": {
+    "mtime": 1793613456.694129,
+    "ast_hash": "1a99187de330b24e9dcc1426fda9679c",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/domain/EmpresaTema.java": {
+    "mtime": 1793596454.0544877,
+    "ast_hash": "90a5ab29c8c9769ab359d29d7c864afa",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/domain/TreinamentoSecao.java": {
+    "mtime": 1793597940.374478,
+    "ast_hash": "104c5b16e10f514c74125e09741a2152",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/domain/TreinamentoVideo.java": {
+    "mtime": 1793597940.3754795,
+    "ast_hash": "2d0e362248ffb6cb2fddb71037983e69",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/repo/EmpresaRepository.java": {
+    "mtime": 1793596454.0550182,
+    "ast_hash": "7278ccaae2bd96467336641d55975d59",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/repo/EmpresaTemaRepository.java": {
+    "mtime": 1793596454.0560904,
+    "ast_hash": "a3492f8b526088bd122af22bd9c2bd95",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/repo/GerenciamentoEmpresasRepository.java": {
+    "mtime": 1793616600.0708704,
+    "ast_hash": "b8cc99c88553030aae3289aff4932898",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/repo/TreinamentoSecaoRepository.java": {
+    "mtime": 1793597940.374478,
+    "ast_hash": "904145403337331d4791e18ac11183d5",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/repo/TreinamentoVideoRepository.java": {
+    "mtime": 1793597940.3759873,
+    "ast_hash": "007660a5fe5adf9d3ccca6702a1f43e8",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/web/ApiDocumentationController.java": {
+    "mtime": 1793613441.983899,
+    "ast_hash": "49a989da33384fde63b1c5ed9f26eec0",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/web/CompanyThemeController.java": {
+    "mtime": 1793596454.057111,
+    "ast_hash": "f7f493b205d017c74e3958b62ede7bcd",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/web/EmpresaAdminItem.java": {
+    "mtime": 1793598277.7772021,
+    "ast_hash": "0bd2ffc6b61ad4acdce699a0e6545293",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/web/EmpresaController.java": {
+    "mtime": 1793596454.0580914,
+    "ast_hash": "f937c82807cef33195ed4ce31e1bc223",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/web/EmpresaRequest.java": {
+    "mtime": 1793596830.4973762,
+    "ast_hash": "dfcfdabbca2af198864144454f29e26b",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/web/GerenciamentoEmpresasController.java": {
+    "mtime": 1793613441.983899,
+    "ast_hash": "e773b5ed21bd13c2e447fe79067baf85",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/empresa/web/TreinamentoController.java": {
+    "mtime": 1793613441.985357,
+    "ast_hash": "9e88f04219e93adfc48ac7a4e5811c6d",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/AutenticacaoFilter.java": {
+    "mtime": 1793615569.755485,
+    "ast_hash": "9f9aa26a8f9dc0ffd84512e3f178f88b",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/CabecalhosSegurancaFilter.java": {
+    "mtime": 1793589230.3878517,
+    "ast_hash": "42f7a61db1a0f38eadb22c59018a16d6",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/ClienteIpResolver.java": {
+    "mtime": 1793589636.8014755,
+    "ast_hash": "9e7de8f0efcc2a3d820a479794b25f99",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/CnpjValidator.java": {
+    "mtime": 1793588787.3580568,
+    "ast_hash": "f656cd499aa47697a54fb1c88ea1d898",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/JwtService.java": {
+    "mtime": 1793588785.141729,
+    "ast_hash": "6934fabad88f0a90c96cc823a45baa95",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/LimiteCorpoFilter.java": {
+    "mtime": 1793589232.0163393,
+    "ast_hash": "7d6258203ef73bffd82e4c7015d450c9",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/LimiteRequisicoesFilter.java": {
+    "mtime": 1793589232.819568,
+    "ast_hash": "8eeb36d829e703d3b05207817a4a81fc",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/MascaraEmail.java": {
+    "mtime": 1793588788.2080603,
+    "ast_hash": "daab2f5037a9ef7a9dd078b156e817dd",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/PasswordHasher.java": {
+    "mtime": 1793588782.711945,
+    "ast_hash": "64c1b1874e7b71c514eeabdb5b5d797f",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/Perfis.java": {
+    "mtime": 1793589523.6936264,
+    "ast_hash": "49a67c818a82753b289fabe7090c28c8",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/PerfisInterceptor.java": {
+    "mtime": 1793589677.3805556,
+    "ast_hash": "d221a863de7ff9254f7334cd67aa52e1",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/PerfisPermitidos.java": {
+    "mtime": 1793589676.5465753,
+    "ast_hash": "70d9ab585ed76b29febaf2ba091330d4",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/RespostaJson.java": {
+    "mtime": 1793589229.5780823,
+    "ast_hash": "1cab00aed72b6502bf7beab7b1a46970",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/RotuloDispositivo.java": {
+    "mtime": 1793588789.056324,
+    "ast_hash": "5b70f8c219893618c620cdd142d1952d",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/SecretProtector.java": {
+    "mtime": 1793588783.5180597,
+    "ast_hash": "e1b6f9891fbca0300440498318ff5b89",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/TelemetriaFilter.java": {
+    "mtime": 1793589231.198683,
+    "ast_hash": "a67d6abec6000d42d408488493c08ba8",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/TokenRedefinicao.java": {
+    "mtime": 1793588786.5231183,
+    "ast_hash": "08a677574e47ba88442cbbc134fc49ea",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/security/UsuarioAutenticado.java": {
+    "mtime": 1793588784.3236995,
+    "ast_hash": "f2eebe0291405d6d0e2ad6cfe11ef860",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/sessao/app/SessaoService.java": {
+    "mtime": 1793589540.0438094,
+    "ast_hash": "518942516585e00d871564b467e84787",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/sessao/app/ValidadorSessao.java": {
+    "mtime": 1793589674.8967552,
+    "ast_hash": "ddc14eee3a6f775be3d9f14af4b630e7",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/sessao/domain/Sessao.java": {
+    "mtime": 1793589348.9017978,
+    "ast_hash": "ef7fa1c831f9d5bd876c847f3c025dc5",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/sessao/repo/SessaoRepository.java": {
+    "mtime": 1793589398.1817932,
+    "ast_hash": "f6df67437e2ef0804a4891ade50aa2b1",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/sessao/web/SessaoController.java": {
+    "mtime": 1793589742.065066,
+    "ast_hash": "1794b989ebc7201ae7c71025a188e70b",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/sessao/web/SessaoDto.java": {
+    "mtime": 1793589540.8541927,
+    "ast_hash": "a33873fa9a1101ddde6b8abc6f0a006c",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/shared/ApiResponse.java": {
+    "mtime": 1793589148.9258008,
+    "ast_hash": "91b4aff44f2270bf20d408aae3c81ac7",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/shared/ByteDotnetDeserializer.java": {
+    "mtime": 1793596830.4973762,
+    "ast_hash": "c73ed9a851dc3b7fa78746456f59720f",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/shared/Dinheiro.java": {
+    "mtime": 1793596223.7070801,
+    "ast_hash": "1f04fec096471bf2a89f252bb309b87e",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/shared/FormatoDataDotNet.java": {
+    "mtime": 1793589151.4233875,
+    "ast_hash": "2ea7a2a7724bc783084736d65b482f07",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/shared/FormatoO.java": {
+    "mtime": 1793589541.6796358,
+    "ast_hash": "383e40011f3c993375271f4933b2aef7",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/shared/GlobalExceptionHandler.java": {
+    "mtime": 1793592260.269835,
+    "ast_hash": "d2760defd7e8905fae01e728e1244174",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/shared/NegocioException.java": {
+    "mtime": 1793589149.7451763,
+    "ast_hash": "ec561a59b0e2743992596f0e72e65a75",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/usuario/app/UsuarioService.java": {
+    "mtime": 1793589526.1816082,
+    "ast_hash": "0f6f3d1037bf1628165124ec6957bb7c",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/usuario/domain/Usuario.java": {
+    "mtime": 1793589348.078148,
+    "ast_hash": "0eb5522d72b06dff9b45060ebf6b7654",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/usuario/repo/UsuarioRepository.java": {
+    "mtime": 1793591526.0888026,
+    "ast_hash": "4804f313d04cbcaf990b24ff41af7cf9",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/usuario/web/UsuarioController.java": {
+    "mtime": 1793589742.8884213,
+    "ast_hash": "ee8c57effe4adba086e1d442d1a090dd",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/usuario/web/UsuarioDto.java": {
+    "mtime": 1793589524.5611508,
+    "ast_hash": "b20445672db2cb56e628dc18381767a7",
+    "semantic_hash": ""
+  },
+  "src/main/java/br/com/quack/pdv/usuario/web/UsuarioRequest.java": {
+    "mtime": 1793589525.3671653,
+    "ast_hash": "c334bf31f94b55a798d69740b3681705",
+    "semantic_hash": ""
+  },
+  "src/main/resources/db/dev/R__seed_dev.sql": {
+    "mtime": 1793590179.8785036,
+    "ast_hash": "dc36934982f7c986a162cef94e83754f",
+    "semantic_hash": ""
+  },
+  "src/main/resources/db/migration/V1__esquema_inicial.sql": {
+    "mtime": 1793590047.5478833,
+    "ast_hash": "bad9e6f795ba87214b004b64d70aac65",
+    "semantic_hash": ""
+  },
+  "src/main/resources/db/migration/V2__dados_referencia.sql": {
+    "mtime": 1793590179.0108926,
+    "ast_hash": "4598263ef1aad9c2840627e215259a83",
+    "semantic_hash": ""
+  },
+  "src/main/resources/db/migration/V3__cadastros_dados_referencia.sql": {
+    "mtime": 1793596275.1314876,
+    "ast_hash": "ba4a4b52dff35d4ecd96c5167a70b567",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/ApiIT.java": {
+    "mtime": 1793591526.0903106,
+    "ast_hash": "4be1d7d5123ffb4bd4a0f6e5c93f3b91",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/BancoIT.java": {
+    "mtime": 1793590389.3739438,
+    "ast_hash": "f9ef499247f31c30a4fcd11341f33565",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/ContextoVazioTest.java": {
+    "mtime": 1793590834.1530926,
+    "ast_hash": "acf4bf9ce47fbf0c178e811cd0302df6",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/auth/AutenticacaoServiceTest.java": {
+    "mtime": 1793590874.7922351,
+    "ast_hash": "7ea1db28622c59036f8e3a7e07719f95",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/auth/CadastroPublicoIT.java": {
+    "mtime": 1793591330.376305,
+    "ast_hash": "44996be55dafedd5d1b99a1baf467d8b",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/auth/CadastroPublicoServiceTest.java": {
+    "mtime": 1793591069.9925532,
+    "ast_hash": "0074a7dcb307ce8462111a7bebce7d52",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/auth/LoginBloqueioIT.java": {
+    "mtime": 1793591266.6165516,
+    "ast_hash": "2c957960643946134e9184c830c74e28",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/auth/RecaptchaServiceTest.java": {
+    "mtime": 1793590763.9592576,
+    "ast_hash": "38ed083154c9de5ab72ffe6f15250824",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/auth/RecuperacaoSenhaIT.java": {
+    "mtime": 1793591706.7596061,
+    "ast_hash": "a80beb9a63834e5573d536ea1d2030b5",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/auth/RecuperacaoSenhaServiceTest.java": {
+    "mtime": 1793591069.1694732,
+    "ast_hash": "52a5a5e7f06efb24ea9d44bffb656804",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/banco/BaselineBancoRestauradoIT.java": {
+    "mtime": 1793614008.0100367,
+    "ast_hash": "487e6a7cb2813a7bc305921d65ce0401",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/banco/CadastrosIT.java": {
+    "mtime": 1793615136.2716777,
+    "ast_hash": "b2120add11dc901fc8bb504813ca5156",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/banco/EsquemaEquivalenteIT.java": {
+    "mtime": 1793590205.7831557,
+    "ast_hash": "784041c71c5426ac1b3b978ada90ed7a",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/banco/RepositoriosIT.java": {
+    "mtime": 1793590511.45465,
+    "ast_hash": "b1a36290856a4ae2317ba3d3884d2beb",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/banco/SeedDevIT.java": {
+    "mtime": 1793593911.7561152,
+    "ast_hash": "f47cfa874988025bc255a6e61f0be9bb",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/cadastro/CategoriaServiceTest.java": {
+    "mtime": 1793613553.7076614,
+    "ast_hash": "04d43547e47b5a5fa15a0c4578f5feb2",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/cadastro/ClienteAuditoriaTest.java": {
+    "mtime": 1793613847.4935613,
+    "ast_hash": "725ed12e702b9976fa19ab6f1833e4fa",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/cadastro/ClienteTransacaoTest.java": {
+    "mtime": 1793613441.9863932,
+    "ast_hash": "98c1d1f97100d2c4e989d1f682b4bd17",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/cadastro/FornecedorServiceTest.java": {
+    "mtime": 1793597741.4090161,
+    "ast_hash": "b10beba1bcf7f257222a3d54ea7f2f52",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/cadastro/ModuloMercadoServiceTest.java": {
+    "mtime": 1793613441.9888632,
+    "ast_hash": "1bd140ddee39a5fae7348ead8736b11b",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/config/QuackPropertiesTest.java": {
+    "mtime": 1793588567.5762026,
+    "ast_hash": "5c097b4bac474e24d00ef58582a2ea08",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/contrato/ApiJavaContratoTest.java": {
+    "mtime": 1793616630.1041417,
+    "ast_hash": "fbd629709c399117675918836d536f6f",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/contrato/DocumentoContratoTest.java": {
+    "mtime": 1793615033.8518486,
+    "ast_hash": "75a1d5a0db684d1947ad9f65a370ee0c",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/contrato/EstadoDoBanco.java": {
+    "mtime": 1793592075.4490376,
+    "ast_hash": "fa899760a47a0eacc604136f28621841",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/contrato/GravadorDoContrato.java": {
+    "mtime": 1793614453.4172008,
+    "ast_hash": "92697058e2f3fcf9b8af5cc260d7c92f",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/contrato/MotorDeContrato.java": {
+    "mtime": 1793615033.850833,
+    "ast_hash": "15b81fdfb90e453a4a700fd36f26c371",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/email/EmailServiceTest.java": {
+    "mtime": 1793591139.8516548,
+    "ast_hash": "6baa3824b4340860fab7d4431dd1e23b",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/empresa/BaseCadastrosTest.java": {
+    "mtime": 1793596454.060903,
+    "ast_hash": "bcc4faca92059158304eecff186b86b8",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/empresa/EmpresaServiceTest.java": {
+    "mtime": 1793596482.6575527,
+    "ast_hash": "fc1e36ea84152ffbccddeab434b1635d",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/empresa/EmpresaTemaServiceTest.java": {
+    "mtime": 1793596454.060903,
+    "ast_hash": "d3e246cbee5ebe1894a7537b180ed254",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/empresa/GerenciamentoEmpresasServiceTest.java": {
+    "mtime": 1793613441.9923801,
+    "ast_hash": "52bf6ee8abcfc98793d5e30bb4d022d2",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/empresa/GerenciamentoEmpresasSqlTest.java": {
+    "mtime": 1793613903.8490405,
+    "ast_hash": "45dab427a9658927120ddbf64efea099",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/empresa/TreinamentoServiceTest.java": {
+    "mtime": 1793613441.9934363,
+    "ast_hash": "0913ab3fa435b25dbd0dcacd26bd0202",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/security/ClienteIpResolverTest.java": {
+    "mtime": 1793596454.0629172,
+    "ast_hash": "514348a891724584fdcf47438d63771c",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/security/CompatibilidadeDotnetTest.java": {
+    "mtime": 1793596454.0629172,
+    "ast_hash": "bd39b4a309f99d3255fd0d1eee637346",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/security/JwtServiceTest.java": {
+    "mtime": 1793596454.0658088,
+    "ast_hash": "8476b577b88b2349bed86c522716378c",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/security/LimiteRequisicoesFilterTest.java": {
+    "mtime": 1793596454.0673664,
+    "ast_hash": "4da11056beea01f2e9e863182788e39e",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/security/ValidadoresTest.java": {
+    "mtime": 1793596454.0688837,
+    "ast_hash": "e438ec4ce7554c2efc3f993e08dd70fe",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/sessao/SessaoIT.java": {
+    "mtime": 1793591267.433254,
+    "ast_hash": "faba02f8d538ee99a1941e85e36613a8",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/sessao/SessaoServiceTest.java": {
+    "mtime": 1793590964.712512,
+    "ast_hash": "94c4974c95089f4b349ce7ae76bb6776",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/teste/ControladorDeTeste.java": {
+    "mtime": 1793590622.4296644,
+    "ast_hash": "465cf8ebd7d28a2ae04cf11c7c25b6cc",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/usuario/UsuarioServiceTest.java": {
+    "mtime": 1793590965.5916967,
+    "ast_hash": "f543fc75b5ede6ff6f4325c821f4e4c6",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/AdminEmpresasWebTest.java": {
+    "mtime": 1793613441.9949033,
+    "ast_hash": "fadea267fec237a8b610f943f406e34a",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/ApiDocumentationWebTest.java": {
+    "mtime": 1793613972.9271593,
+    "ast_hash": "c2a0ba5df041580434408159baa16093",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/AutenticacaoFilterWebTest.java": {
+    "mtime": 1793590788.0327783,
+    "ast_hash": "d3155c4191a68bd58f6deb79a39059f1",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/AuthControllerWebTest.java": {
+    "mtime": 1793591900.0770297,
+    "ast_hash": "149b7838b2987a272556e9ae1f221ac9",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/AuthDevWebTest.java": {
+    "mtime": 1793591153.523909,
+    "ast_hash": "16e5f0131326a11d0792fb91bb292341",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/CategoriaWebTest.java": {
+    "mtime": 1793597855.7309031,
+    "ast_hash": "2898d4af7d7e5995994f5152c3653aab",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/ClienteWebTest.java": {
+    "mtime": 1793615569.7564962,
+    "ast_hash": "e8f5e775d7df8a9f1737a2636e801422",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/EmpresaCadastrosWebTest.java": {
+    "mtime": 1793596830.5034041,
+    "ast_hash": "ae6a5eec136de639deb7b29adca202ee",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/FornecedorWebTest.java": {
+    "mtime": 1793597741.4100237,
+    "ast_hash": "30fe9b114106ab0152cd78bc553ee9be",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/ModuloMercadoWebTest.java": {
+    "mtime": 1793598072.4946985,
+    "ast_hash": "8ea2ae9a038069e594895814a0212b90",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/PerfisWebTest.java": {
+    "mtime": 1793590763.124021,
+    "ast_hash": "0aa32ff997746d287f07025d5534cb92",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/ProtocoloHttpWebTest.java": {
+    "mtime": 1793593767.8053448,
+    "ast_hash": "7756cabd5d1a332c59eae345210a3f59",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/SessaoControllerWebTest.java": {
+    "mtime": 1793590963.8827908,
+    "ast_hash": "8d8d8585a63d9bda3694fb771a8da1a1",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/SwaggerDevWebTest.java": {
+    "mtime": 1793590702.3158226,
+    "ast_hash": "89a821781a69e0a161febb02f77bbc2c",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/SwaggerProducaoWebTest.java": {
+    "mtime": 1793590703.120969,
+    "ast_hash": "79a850c31b12cb2636f30d5d57f03829",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/TelemetriaWebTest.java": {
+    "mtime": 1793590761.4692278,
+    "ast_hash": "87be6475956443229de2891e0a33ce68",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/TreinamentoWebTest.java": {
+    "mtime": 1793597976.7891045,
+    "ast_hash": "771fd931505e152888d2c74c4256a2a9",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/UsuarioControllerWebTest.java": {
+    "mtime": 1793591004.5546796,
+    "ast_hash": "14eb00c2acddd58c987fb8d6954d63f2",
+    "semantic_hash": ""
+  },
+  "src/test/java/br/com/quack/pdv/web/WebTestBase.java": {
+    "mtime": 1793598324.603276,
+    "ast_hash": "6e9d86870591adcb408f3d0a2e9d1c96",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/admin-empresas.json": {
+    "mtime": 1793598742.3257153,
+    "ast_hash": "2580fe51f3b055d799cbe598fabe0353",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/auth.json": {
+    "mtime": 1793592455.0629869,
+    "ast_hash": "e423d129b6f9fa813f181884d8b46825",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/categoria.json": {
+    "mtime": 1793597855.7318997,
+    "ast_hash": "3b529e689efc4faba50087b74d333481",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/cliente.json": {
+    "mtime": 1793614383.4960442,
+    "ast_hash": "1b92447e9f193ec5e68908b453c6aa87",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/empresa.json": {
+    "mtime": 1793614998.7482343,
+    "ast_hash": "1adace1fc4b77ae7561a4ef51cdae9c1",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/fornecedor.json": {
+    "mtime": 1793614998.749243,
+    "ast_hash": "51fe85f8738ec03dc027f136a25900fb",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/modulo-mercado.json": {
+    "mtime": 1793614998.756512,
+    "ast_hash": "9c338faa49ab72a4ef5abb61312c82a1",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/sessao.json": {
+    "mtime": 1793592249.8732026,
+    "ast_hash": "589c10fba8d18d8ce89e76de935b3fba",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/tema.json": {
+    "mtime": 1793596737.2844164,
+    "ast_hash": "92a0536a42bde2fb0d5427a7322af7eb",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/treinamento.json": {
+    "mtime": 1793614383.4973829,
+    "ast_hash": "5164756439adcfcf0c2fb5aeddc8c4e7",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/cenarios/usuario.json": {
+    "mtime": 1793592249.874724,
+    "ast_hash": "3928ec1a105882babe6e944ded1518c4",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/admin-loja-negado.json": {
+    "mtime": 1793615227.3226297,
+    "ast_hash": "a4bb306b29c4b37599918a354e7380db",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/aprovar-inexistente.json": {
+    "mtime": 1793615219.0179596,
+    "ast_hash": "d5e8dd383a3629bf27bcdac2490e3a84",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/aprovar-principal.json": {
+    "mtime": 1793615219.646607,
+    "ast_hash": "9def3d06c19f6beba92e8a24223d3c82",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/aprovar.json": {
+    "mtime": 1793615218.302451,
+    "ast_hash": "21e5bf1b5772cc539cc2e569a5301393",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/bloquear-revoga-sessao.json": {
+    "mtime": 1793615230.838219,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/bloquear.json": {
+    "mtime": 1793615221.532305,
+    "ast_hash": "b6dc4ad791b61b656e54714626011e0b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/busca.json": {
+    "mtime": 1793615215.121157,
+    "ast_hash": "97d43b326aefc410dba7ef2757701a34",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/configuracao-false.json": {
+    "mtime": 1793615223.9905071,
+    "ast_hash": "9325b4c32e7967435f4dbc3b5b277bda",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/configuracao-true.json": {
+    "mtime": 1793615223.4387805,
+    "ast_hash": "bbf576e39e031a4d902bf92759aa4444",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/configuracao.json": {
+    "mtime": 1793615222.7906237,
+    "ast_hash": "5ad90d22db8e27dd49d939dd2636661a",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/documentacao.json": {
+    "mtime": 1793615230.2491784,
+    "ast_hash": "9b2bee902fb0453cef4515a7b4e655e4",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/email-em-uso.json": {
+    "mtime": 1793615226.6893637,
+    "ast_hash": "e098a9c543a52d4133bec24498d85252",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/excluir-descartavel.json": {
+    "mtime": 1793615229.2814124,
+    "ast_hash": "fec27df63ba83d984ef13144983c43b8",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/excluir-principal.json": {
+    "mtime": 1793615228.4803584,
+    "ast_hash": "02928efda275e24f5450f2a7e55c1330",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/listar.json": {
+    "mtime": 1793615214.4631412,
+    "ast_hash": "694ffe7e9b59d51f5ff4461aeda1556e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/metricas.json": {
+    "mtime": 1793615217.6893256,
+    "ast_hash": "5337f5a689b2a93d337799f29be564d9",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/nada-informado.json": {
+    "mtime": 1793615226.0815904,
+    "ast_hash": "cf3ffce857176314f9a7f9a7444f6790",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/pagina-grande.json": {
+    "mtime": 1793615216.3109643,
+    "ast_hash": "7ad4bf36b4f6c549e019fbe3d2472ae2",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/pagina-zero.json": {
+    "mtime": 1793615216.9009993,
+    "ast_hash": "694ffe7e9b59d51f5ff4461aeda1556e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/reativar.json": {
+    "mtime": 1793615222.1496294,
+    "ast_hash": "e902f4d68029abc0ad4c2417ba0ef043",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/rejeitar-sem-motivo.json": {
+    "mtime": 1793615220.2679358,
+    "ast_hash": "9df92cb16ed2adead42527d69d0999a8",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/rejeitar.json": {
+    "mtime": 1793615220.9772935,
+    "ast_hash": "509e2536ceab22b5a78619d7bf50a287",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/sem-sessao.json": {
+    "mtime": 1793615227.8763528,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/status.json": {
+    "mtime": 1793615215.692557,
+    "ast_hash": "480e059b8cca10d7108df0b11a909d79",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/trocar-email.json": {
+    "mtime": 1793615224.717198,
+    "ast_hash": "bdeb564534e66374313c23b4387565f4",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/admin-empresas/trocar-senha.json": {
+    "mtime": 1793615225.4537613,
+    "ast_hash": "ce83727f00e2fe85040eb9b99ad43062",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/change-password-nova-curta.json": {
+    "mtime": 1793592218.7028353,
+    "ast_hash": "54ee477005a83198c6599274f5baf631",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/change-password-ok.json": {
+    "mtime": 1793592218.288367,
+    "ast_hash": "e2e77b1aa1fbed927f15609819993082",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/change-password-senha-atual-errada.json": {
+    "mtime": 1793592218.5234122,
+    "ast_hash": "f1936932bd79fc85752ff7c2f252162b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/forgot-password-cnpj-invalido.json": {
+    "mtime": 1793592219.1716194,
+    "ast_hash": "00d19afc21b023cab998a1c6c164de96",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/forgot-password-email-desligado-em-producao.json": {
+    "mtime": 1793592219.3500333,
+    "ast_hash": "01dcd3c5931b2dc3de0a4e0e4ae8d328",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/forgot-password-email-invalido.json": {
+    "mtime": 1793592219.2619817,
+    "ast_hash": "167d74f3fec6465015c232700eaa1c17",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-bloqueado-com-senha-certa.json": {
+    "mtime": 1793592215.9351437,
+    "ast_hash": "5e40dea44c21392c0d8e2b2898a4d2c4",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-campos-vazios.json": {
+    "mtime": 1793592213.3906386,
+    "ast_hash": "492cf01763612c1cb2dbb25c65a9a41c",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-corpo-json-invalido.json": {
+    "mtime": 1793592216.0515392,
+    "ast_hash": "73db97c743b464efa454444241d09175",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-corpo-vazio-objeto.json": {
+    "mtime": 1793592213.520504,
+    "ast_hash": "492cf01763612c1cb2dbb25c65a9a41c",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-email-inexistente.json": {
+    "mtime": 1793592213.8414474,
+    "ast_hash": "d90ecd9ab564126511251f0745d01ba6",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-empresa-bloqueada-com-motivo.json": {
+    "mtime": 1793592214.3527436,
+    "ast_hash": "91e74ec19c9e09f1bfca550e4810aad9",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-empresa-pendente.json": {
+    "mtime": 1793592214.176535,
+    "ast_hash": "a9c4e25c2f52c0a51c020e24e7e70f30",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-ok-admin.json": {
+    "mtime": 1793592212.3835697,
+    "ast_hash": "1ecf70832ac9f70574e304883c6ad055",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-ok-email-maiusculas-e-espacos.json": {
+    "mtime": 1793592212.832937,
+    "ast_hash": "299ee565d232dbecada1263c396ecae6",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-ok-gerente-com-financeiro.json": {
+    "mtime": 1793592212.6040678,
+    "ast_hash": "30d9a07cba132ab9d82b59ac1380109a",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-ok-propriedades-pascalcase.json": {
+    "mtime": 1793592213.2611005,
+    "ast_hash": "674ff53efe96de5db9225350e1b31ce5",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-ok-remember-me-cookie.json": {
+    "mtime": 1793592213.0331273,
+    "ast_hash": "3ce7c61a40372812b6ec6ae6aac8a7b9",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-quarta-tentativa-errada.json": {
+    "mtime": 1793592214.8266227,
+    "ast_hash": "d90ecd9ab564126511251f0745d01ba6",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-quinta-tentativa-errada-bloqueia.json": {
+    "mtime": 1793592215.342477,
+    "ast_hash": "5170c77808c601d0072659f144d5605e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-rota-com-barra-final-e-maiusculas.json": {
+    "mtime": 1793592216.2158628,
+    "ast_hash": "15d15886d16016b507d3a2f9733ec953",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-senha-errada.json": {
+    "mtime": 1793592213.737936,
+    "ast_hash": "d90ecd9ab564126511251f0745d01ba6",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/login-usuario-inativo.json": {
+    "mtime": 1793592213.9572704,
+    "ast_hash": "d90ecd9ab564126511251f0745d01ba6",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/logout-ok-apaga-cookie.json": {
+    "mtime": 1793592218.9931483,
+    "ast_hash": "6deb158f1559701e079f8fd82910b4c2",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/me-atualizar-email-de-outro-usuario.json": {
+    "mtime": 1793592217.4732225,
+    "ast_hash": "85b6015374b3fc2198398d0aa59bed1e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/me-atualizar-email-invalido.json": {
+    "mtime": 1793592217.925325,
+    "ast_hash": "9d1724e56928eae7907796faa53c4bf8",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/me-atualizar-nome-vazio.json": {
+    "mtime": 1793592217.688961,
+    "ast_hash": "a17beb52d51aa66b380e0b501451d765",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/me-atualizar-ok.json": {
+    "mtime": 1793592217.2197742,
+    "ast_hash": "eba6c20c969ae55caa2617f9f65ad914",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/me-empresa-aprovada.json": {
+    "mtime": 1793592216.9989727,
+    "ast_hash": "fd6f561753b0ed52ebb3199f09fbe11e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/me-ok-bearer.json": {
+    "mtime": 1793592216.4287791,
+    "ast_hash": "adcde17aa43380fa2b2030de66141600",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/me-ok-cookie.json": {
+    "mtime": 1793592216.6138911,
+    "ast_hash": "d97c0c9c8669ac9e6d71f52ecd75abbc",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/me-token-invalido.json": {
+    "mtime": 1793592216.7925959,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/metodo-nao-permitido-autenticado.json": {
+    "mtime": 1793592220.878743,
+    "ast_hash": "711cc7374d0a43047c9aba51f80dbecb",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/register-cnpj-invalido.json": {
+    "mtime": 1793592220.0243604,
+    "ast_hash": "8457bc78557725a1d90f7a48e4bef98e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/register-cnpj-ja-cadastrado.json": {
+    "mtime": 1793592220.3039117,
+    "ast_hash": "5a00f355fe2fa0a1fbb3bf066820d5cc",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/register-email-ja-cadastrado.json": {
+    "mtime": 1793592220.4095564,
+    "ast_hash": "20e25f8f7bb7e0a976114eafc8a3bb80",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/register-ok-empresa-pendente.json": {
+    "mtime": 1793592219.9339297,
+    "ast_hash": "78f7e074852da70901149e0a098be302",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/register-senha-curta.json": {
+    "mtime": 1793592220.214017,
+    "ast_hash": "61dda7e63685e13ac6546327c0c0107b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/register-senhas-diferentes.json": {
+    "mtime": 1793592220.1119082,
+    "ast_hash": "43bb186bafafe6c2d646a12e66e9e3d0",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/reset-password-confirmacao-diferente.json": {
+    "mtime": 1793592219.5424235,
+    "ast_hash": "43bb186bafafe6c2d646a12e66e9e3d0",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/reset-password-senha-curta.json": {
+    "mtime": 1793592219.62546,
+    "ast_hash": "54ee477005a83198c6599274f5baf631",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/reset-password-token-invalido.json": {
+    "mtime": 1793592219.450443,
+    "ast_hash": "65ffbb210ef1df75b1aefc19580fe6eb",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/reset-password-token-vazio.json": {
+    "mtime": 1793592219.7102947,
+    "ast_hash": "72093c97a1cc524ef071c4c46708b9b1",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/auth/rota-inexistente-autenticada.json": {
+    "mtime": 1793592220.6778276,
+    "ast_hash": "111df6861880111d579ee020763828bc",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/apenas-ativas.json": {
+    "mtime": 1793615162.0259562,
+    "ast_hash": "3d4c7e42a2813c2d36c817539e8d07c1",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/arvore.json": {
+    "mtime": 1793615160.8729022,
+    "ast_hash": "3d4c7e42a2813c2d36c817539e8d07c1",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/atendente-nao-cria.json": {
+    "mtime": 1793615168.8128915,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/ativar.json": {
+    "mtime": 1793615169.981826,
+    "ast_hash": "cac7baf4ffe47bff368edbf3264fa810",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/caixa-le.json": {
+    "mtime": 1793615163.397769,
+    "ast_hash": "3d4c7e42a2813c2d36c817539e8d07c1",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/criar-departamento.json": {
+    "mtime": 1793615164.5644898,
+    "ast_hash": "23058f4989fe45432cc7b4796189d041",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/criar-subcategoria.json": {
+    "mtime": 1793615165.152539,
+    "ast_hash": "f026ecf3972f2aa746d48160aaf6db5d",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/desativar.json": {
+    "mtime": 1793615170.6000361,
+    "ast_hash": "4e1655630cf1270be8596640f295632b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/excluir-com-filhos.json": {
+    "mtime": 1793615171.1680827,
+    "ast_hash": "fee0142a332f6af329e57ccd7549ca6b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/excluir-com-produto.json": {
+    "mtime": 1793615171.7423043,
+    "ast_hash": "b46e173d94858dcaa5d90ba266c8709d",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/excluir-livre.json": {
+    "mtime": 1793615172.3427358,
+    "ast_hash": "b994ea54ac4b5e843df5a0e7301878b3",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/nome-longo.json": {
+    "mtime": 1793615168.3220387,
+    "ast_hash": "422e37918fada99dac9ab55ada05008e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/nome-vazio.json": {
+    "mtime": 1793615167.6284752,
+    "ast_hash": "fe7b2ca1cefb1ba397e3aa1a65883978",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/obter.json": {
+    "mtime": 1793615163.9761958,
+    "ast_hash": "55bf84c4fec15abbfba1465abad8580b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/outra-empresa.json": {
+    "mtime": 1793615169.3415833,
+    "ast_hash": "72e1152d909862de226effe927c0d3fa",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/pai-inexistente.json": {
+    "mtime": 1793615166.4449773,
+    "ast_hash": "49c0594cfe0900376fa0e3bde3da750b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/pai-propria.json": {
+    "mtime": 1793615167.0062194,
+    "ast_hash": "d5569fc2db15873b9045f5ac2ddbaf6f",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/plana.json": {
+    "mtime": 1793615161.478048,
+    "ast_hash": "61fb8b181b18ffa77d43366409fba69a",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/sem-sessao.json": {
+    "mtime": 1793615162.7379014,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/categoria/terceiro-nivel.json": {
+    "mtime": 1793615165.7688143,
+    "ast_hash": "221ad7a61a1dc1d29190c2636685e42a",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/abaixo-compromissos.json": {
+    "mtime": 1793615187.4146142,
+    "ast_hash": "7844f52e5a81d2d9f863826a26e26432",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/admin-exclui-devedor.json": {
+    "mtime": 1793615189.2497895,
+    "ast_hash": "97233deb51310eaba656c0510e2495fb",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/atendente-muda-limite.json": {
+    "mtime": 1793615185.4625673,
+    "ast_hash": "24cdfed09b04a26adbbe8d9bbc78e49c",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/atendente-nao-exclui.json": {
+    "mtime": 1793615189.8666449,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/caixa-nao-edita.json": {
+    "mtime": 1793615187.9571853,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/criar-caixa.json": {
+    "mtime": 1793615180.96019,
+    "ast_hash": "2a697e423551533866a2fbc4daa34e10",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/documento-invalido.json": {
+    "mtime": 1793615182.2975025,
+    "ast_hash": "ad34bf0fcf04beb071de39252d18d93d",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/documento-repetido.json": {
+    "mtime": 1793615184.825515,
+    "ast_hash": "4884d600f2d5d98de2bd170594f3538e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/email-invalido.json": {
+    "mtime": 1793615184.0508153,
+    "ast_hash": "792fad5606a675885969a29f01951f13",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/gerente-mantem-limite.json": {
+    "mtime": 1793615186.7617905,
+    "ast_hash": "f917e3fb98390d5521d7a84da09cb6e8",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/gerente-muda-limite.json": {
+    "mtime": 1793615186.1223018,
+    "ast_hash": "fb6bebd471eb4f5d70754b10ec62b8b7",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/gerente-nao-exclui-devedor.json": {
+    "mtime": 1793615188.5802789,
+    "ast_hash": "c7876fa1219d16d4b0103494ecde5d9b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/listar.json": {
+    "mtime": 1793615180.316778,
+    "ast_hash": "00476554b8eda21b57a59895bc5cf508",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/nome-curto.json": {
+    "mtime": 1793615181.5845623,
+    "ast_hash": "2eea8615b61e492b68bb48778695871d",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/outra-empresa.json": {
+    "mtime": 1793615190.4800785,
+    "ast_hash": "d369f9b8b57876f497d2288239364462",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/sem-sessao.json": {
+    "mtime": 1793615192.7307646,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/sem-telefone.json": {
+    "mtime": 1793615182.8413353,
+    "ast_hash": "e0644f2eac4e8003998788f4f3252883",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/snapshot-5001.json": {
+    "mtime": 1793615191.622623,
+    "ast_hash": "89d9fa0faace585b01c3039daaf82835",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/snapshot-sem-sessao.json": {
+    "mtime": 1793615192.1833944,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/snapshot.json": {
+    "mtime": 1793615191.1117132,
+    "ast_hash": "152ed1bcb35e5fbbf0dc83b44d17f145",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/cliente/telefone-invalido.json": {
+    "mtime": 1793615183.421365,
+    "ast_hash": "d51e59e186dc11f48a52e5f856b0dfc0",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/certificado-sem-senha.json": {
+    "mtime": 1793615151.4871235,
+    "ast_hash": "13b917d247999c5b18ea3d2181568995",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/certificado-senha-errada.json": {
+    "mtime": 1793615152.8361275,
+    "ast_hash": "c1c0623e81bc18e92823df168e0a9732",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/certificado-valido.json": {
+    "mtime": 1793615152.1884463,
+    "ast_hash": "2b359dafbc30d1a4f7e698e0f75b24e4",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/cnpj-invalido.json": {
+    "mtime": 1793615148.2915294,
+    "ast_hash": "a285c315c57eb30a3826e6d1ab1a5c2f",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/crt-invalido.json": {
+    "mtime": 1793615149.660269,
+    "ast_hash": "4f0aedafcebba9df1eb9e895b0781108",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/csc-id-invalido.json": {
+    "mtime": 1793615150.2043483,
+    "ast_hash": "4e0ae854aefb5b453ff3b9adc925c4c4",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/csc-id-longo.json": {
+    "mtime": 1793615150.7766886,
+    "ast_hash": "4e0ae854aefb5b453ff3b9adc925c4c4",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/gerente-nao-salva.json": {
+    "mtime": 1793615146.5051339,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/nome-curto.json": {
+    "mtime": 1793615147.6705606,
+    "ast_hash": "5ac82c4b1136cf303e058f1c6596827b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/obter-administrador.json": {
+    "mtime": 1793615143.5717835,
+    "ast_hash": "ba4b3033ea47b5221f3d9d2c79904f40",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/obter-atendente.json": {
+    "mtime": 1793615144.782528,
+    "ast_hash": "ba4b3033ea47b5221f3d9d2c79904f40",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/obter-caixa.json": {
+    "mtime": 1793615145.3477192,
+    "ast_hash": "ba4b3033ea47b5221f3d9d2c79904f40",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/obter-gerente.json": {
+    "mtime": 1793615144.2041883,
+    "ast_hash": "ba4b3033ea47b5221f3d9d2c79904f40",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/obter-sem-sessao.json": {
+    "mtime": 1793615145.943584,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/salvar-dados.json": {
+    "mtime": 1793615147.1046824,
+    "ast_hash": "98ceae663b22fcf5aa7f177db962358d",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/segredos-vazios-preservam.json": {
+    "mtime": 1793615153.4517138,
+    "ast_hash": "98ceae663b22fcf5aa7f177db962358d",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/smtp-porta-invalida.json": {
+    "mtime": 1793615153.977862,
+    "ast_hash": "4bbfb237be5195a86c15e523f8ee8c69",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/smtp-remetente-invalido.json": {
+    "mtime": 1793615155.1462939,
+    "ast_hash": "141dd5bd15d41d5b0daee125fe7cd29a",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/smtp-resposta-invalida.json": {
+    "mtime": 1793615155.7171364,
+    "ast_hash": "b1ce3cde905eb78a4cf48a7b8e3405f6",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/smtp-sem-host.json": {
+    "mtime": 1793615148.965139,
+    "ast_hash": "289f347e11011fad4c3b9078eb643c72",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/smtp-sem-senha.json": {
+    "mtime": 1793615156.3882143,
+    "ast_hash": "d8fa4658a9c0e484e34a9e1158544f4d",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/empresa/smtp-usuario-invalido.json": {
+    "mtime": 1793615154.530583,
+    "ast_hash": "77824362d99f888c6642fa125066dadb",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/caixa-recusado.json": {
+    "mtime": 1793615175.4143937,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/cnpj-repetido.json": {
+    "mtime": 1793615176.492722,
+    "ast_hash": "8eca7fa15044575cceb758296d09c0bd",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/criar-so-fantasia.json": {
+    "mtime": 1793615173.5908582,
+    "ast_hash": "2ade742cc5dc448187931ead57ca8f43",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/criar-so-razao.json": {
+    "mtime": 1793615174.21253,
+    "ast_hash": "7cdcd225c763905a2e7b3425eeb8a5d5",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/editar-outra-empresa.json": {
+    "mtime": 1793615177.7546518,
+    "ast_hash": "4b3b17e9580bb6874b809744b4ffb67c",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/editar.json": {
+    "mtime": 1793615177.1713665,
+    "ast_hash": "2161fb591bdee663a874593af5497ed1",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/excluir-em-uso.json": {
+    "mtime": 1793615178.393967,
+    "ast_hash": "ef7d2612a036f77466a795322fce19e4",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/excluir-livre.json": {
+    "mtime": 1793615178.986526,
+    "ast_hash": "2391d07c3aeee672d53ad9f729fc87ee",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/listar.json": {
+    "mtime": 1793615172.9794772,
+    "ast_hash": "ceb4a7dc64c98586819ac2ba652d0b73",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/mesmo-cnpj-outra-empresa.json": {
+    "mtime": 1793615179.6749008,
+    "ast_hash": "343808f3521e157f120f0720ba7db92e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/sem-nomes.json": {
+    "mtime": 1793615174.884581,
+    "ast_hash": "1fde7bc9e3debbf497d6e552522f2310",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/fornecedor/sem-sessao.json": {
+    "mtime": 1793615175.9451916,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/atualizar.json": {
+    "mtime": 1793615200.5066977,
+    "ast_hash": "7b24b9b5ee0937962706538183aed0e1",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/caixa-recusado.json": {
+    "mtime": 1793615202.0091417,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/criar.json": {
+    "mtime": 1793615198.8375194,
+    "ast_hash": "b897c39460230681c3af9b4174799c6a",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/excluir.json": {
+    "mtime": 1793615201.5823448,
+    "ast_hash": "39afe4dac7a9b1eafd91deda0a00753a",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/obter-caixa.json": {
+    "mtime": 1793615195.260464,
+    "ast_hash": "2c7271719fb947f21a47457af7164aed",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/obter-compras.json": {
+    "mtime": 1793615195.8911002,
+    "ast_hash": "873f6c37f49728aed3ed17be4ade8950",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/obter-crm-fidelidade.json": {
+    "mtime": 1793615196.982027,
+    "ast_hash": "52c07dbc10613ffe8417af04bfa21d64",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/obter-devolucoes.json": {
+    "mtime": 1793615196.476832,
+    "ast_hash": "2f659fa31c705047e83b31ad52fd0b05",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/obter-estoque.json": {
+    "mtime": 1793615194.5848486,
+    "ast_hash": "c2b2a39b153aaed7411991e8ec81d3f1",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/obter-financeiro.json": {
+    "mtime": 1793615198.186526,
+    "ast_hash": "8d57394a4f9a9331866d76e200636082",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/obter-fiscal.json": {
+    "mtime": 1793615193.3816235,
+    "ast_hash": "450c3d3e22780d5212b81486666667e4",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/obter-omnichannel.json": {
+    "mtime": 1793615197.5698845,
+    "ast_hash": "6ca952f52117d88211a686077e4aabed",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/obter-pagamentos.json": {
+    "mtime": 1793615193.9626973,
+    "ast_hash": "2dc7b9a0b0e7185a44ff2a97d17121c3",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/outra-empresa.json": {
+    "mtime": 1793615201.0432882,
+    "ast_hash": "398c3529de14c5750552294459f46005",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/painel-misto.json": {
+    "mtime": 1793615203.116934,
+    "ast_hash": "f40765372a2ddbdf90c9384ceef81120",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/sem-sessao.json": {
+    "mtime": 1793615202.5529597,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/status-vazio.json": {
+    "mtime": 1793615199.8774433,
+    "ast_hash": "0cd4bd6e0041c1ca5684f429bd6f088a",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/modulo-mercado/titulo-curto.json": {
+    "mtime": 1793615199.340658,
+    "ast_hash": "00d38f29cb15dcc5e4d7deec5a4bf7de",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/sessao/encerrar-a-atual-recusa.json": {
+    "mtime": 1793592222.030283,
+    "ast_hash": "f05f2388fec567479e231e47b9377778",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/sessao/encerrar-inexistente.json": {
+    "mtime": 1793592222.2186446,
+    "ast_hash": "6f4164dcc70a6f48ccfbc38b7ba60ee0",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/sessao/encerrar-outra-ok.json": {
+    "mtime": 1793592221.8556716,
+    "ast_hash": "90200d5f580ed4090fd03ddee558a330",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/sessao/encerrar-outras-ok.json": {
+    "mtime": 1793592222.512299,
+    "ast_hash": "9282c7f7594c4d0c1fc505e1ddedc3f5",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/sessao/encerrar-outras-sem-outras.json": {
+    "mtime": 1793592222.7357314,
+    "ast_hash": "da2217fa88fccc6ef654876e7a40746e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/sessao/listar-com-duas-sessoes.json": {
+    "mtime": 1793592221.483801,
+    "ast_hash": "d9b81df7e8be2ab2b2b4775b482aebfc",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/sessao/listar-so-a-atual.json": {
+    "mtime": 1793592221.2255685,
+    "ast_hash": "14de1153f39f646ba05a9defeed042bb",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/tema/atendente-nao-salva.json": {
+    "mtime": 1793615159.2935486,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/tema/caixa-le.json": {
+    "mtime": 1793615159.807178,
+    "ast_hash": "0c9bb76836ae2d5610d9649f87439e69",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/tema/cor-invalida.json": {
+    "mtime": 1793615158.0680258,
+    "ast_hash": "b72546d4dde8c22ab46e5ca57f8f6228",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/tema/cor-vazia.json": {
+    "mtime": 1793615158.6457481,
+    "ast_hash": "4581139cbbe39d2ddd17b3ce16f07f84",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/tema/obter-sem-tema.json": {
+    "mtime": 1793615156.926112,
+    "ast_hash": "e791e8408701866ea0dc3f12ec82be4e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/tema/salvar-gerente.json": {
+    "mtime": 1793615157.5070143,
+    "ast_hash": "b5e296101227beeb321d35894c18633b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/tema/sem-sessao.json": {
+    "mtime": 1793615160.2748437,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/admin-loja-nao-edita.json": {
+    "mtime": 1793615206.2901568,
+    "ast_hash": "27317948a4eee7b932505c7642961045",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/criar-secao.json": {
+    "mtime": 1793615205.033798,
+    "ast_hash": "984a354d06fae3b24c7fe35a174e1243",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/editar-secao.json": {
+    "mtime": 1793615206.872843,
+    "ast_hash": "66a7c3e7f77fb5f0561d81bd871ff24e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/excluir-secao.json": {
+    "mtime": 1793615207.3817909,
+    "ast_hash": "cd9db083590b6313226b6cfb2737054e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/listar-admin.json": {
+    "mtime": 1793615203.7335489,
+    "ast_hash": "72aa0ff7504ff09210d9d72af4229f9c",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/listar-caixa.json": {
+    "mtime": 1793615204.3982873,
+    "ast_hash": "bb35855f1a6fe2e5cc45cbc8f27f2a87",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/secao-ausente.json": {
+    "mtime": 1793615207.856872,
+    "ast_hash": "f34994bf138294e9e29f6e11169cb3ba",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/secao-sem-nome.json": {
+    "mtime": 1793615205.613512,
+    "ast_hash": "69488d87c9cd9cf8b2cb3cef5c72ef4a",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/sem-sessao.json": {
+    "mtime": 1793615213.7216938,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/video-ausente.json": {
+    "mtime": 1793615213.2034864,
+    "ast_hash": "b8de20167390417fac81c422bf7d0bc2",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/video-curto.json": {
+    "mtime": 1793615208.9561791,
+    "ast_hash": "a7d606e43c2b7a8f0521cbb2c23723ab",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/video-embed.json": {
+    "mtime": 1793615210.2105522,
+    "ast_hash": "df3d51198cbebbf3b895e48d607fc645",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/video-id-puro.json": {
+    "mtime": 1793615208.3974886,
+    "ast_hash": "bccbd780f8ec993ce4662ddd9688b5ff",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/video-invalido.json": {
+    "mtime": 1793615212.009256,
+    "ast_hash": "fcf0f966519c2d1a15c74441046c58d7",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/video-live.json": {
+    "mtime": 1793615211.3997972,
+    "ast_hash": "30152a09f1d33431570344f4b67a3911",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/video-sem-titulo.json": {
+    "mtime": 1793615212.6060164,
+    "ast_hash": "1c045bcb2a993db411f24b3f3543a755",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/video-shorts.json": {
+    "mtime": 1793615210.8131256,
+    "ast_hash": "454a4daf9d565f5b624fdb65051ea988",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/treinamento/video-watch.json": {
+    "mtime": 1793615209.5445676,
+    "ast_hash": "d7768691b00f844e190b41aa7aa49f41",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/atualizar-administrador-remove-financeiro.json": {
+    "mtime": 1793592227.474354,
+    "ast_hash": "172362b00abaffc385dadc47038d7ec4",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/atualizar-com-senha-nova.json": {
+    "mtime": 1793592227.0630934,
+    "ast_hash": "0b71e7ee876e843564fbd9a6004ea133",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/atualizar-email-duplicado.json": {
+    "mtime": 1793592228.0724282,
+    "ast_hash": "85b6015374b3fc2198398d0aa59bed1e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/atualizar-gerente-nao-muda-perfis-adicionais.json": {
+    "mtime": 1793592227.2659848,
+    "ast_hash": "6045685d4a0e7348f73b2978fc902e0b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/atualizar-inexistente.json": {
+    "mtime": 1793592228.2519658,
+    "ast_hash": "8237018348f13d1aa9f2f7f8ebca65ad",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/atualizar-ok-sem-senha.json": {
+    "mtime": 1793592226.736757,
+    "ast_hash": "5e263b2a99b9447bee8e7865fa7f955c",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/atualizar-para-inativo.json": {
+    "mtime": 1793592227.6716855,
+    "ast_hash": "82111bf6e8387e95aa49d1b264f50d76",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/atualizar-usuario-de-outra-empresa.json": {
+    "mtime": 1793592227.877378,
+    "ast_hash": "8237018348f13d1aa9f2f7f8ebca65ad",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-como-caixa-recusa.json": {
+    "mtime": 1793592226.3670266,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-corpo-invalido.json": {
+    "mtime": 1793592226.5345733,
+    "ast_hash": "893b1ef31a294782391bc729bd2fb124",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-cpf-duplicado-na-empresa.json": {
+    "mtime": 1793592226.1999998,
+    "ast_hash": "e2f85814d1e22fc1ee38094ebc843446",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-cpf-invalido.json": {
+    "mtime": 1793592225.1744623,
+    "ast_hash": "1ade7bb5cb93986d06bfd1aecbde4e1c",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-email-duplicado-no-sistema.json": {
+    "mtime": 1793592225.9523275,
+    "ast_hash": "85b6015374b3fc2198398d0aa59bed1e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-email-invalido.json": {
+    "mtime": 1793592225.534931,
+    "ast_hash": "9d1724e56928eae7907796faa53c4bf8",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-nome-vazio.json": {
+    "mtime": 1793592225.3528023,
+    "ast_hash": "a17beb52d51aa66b380e0b501451d765",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-ok-como-administrador-com-financeiro.json": {
+    "mtime": 1793592224.748669,
+    "ast_hash": "9a574be7ea379a2c8d4492a39c7973e0",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-ok-como-gerente-ignora-perfis-adicionais.json": {
+    "mtime": 1793592224.491365,
+    "ast_hash": "ff467da68d0286f8993b641ff67ccecd",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-perfil-e-status-padrao.json": {
+    "mtime": 1793592224.9920018,
+    "ast_hash": "e1c611e6162eed501129719111dfd0bd",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/criar-senha-curta.json": {
+    "mtime": 1793592225.7144687,
+    "ast_hash": "61dda7e63685e13ac6546327c0c0107b",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/listar-como-administrador.json": {
+    "mtime": 1793592223.0636642,
+    "ast_hash": "f8a4a1404bd37c82a6f93e68ec936220",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/listar-como-atendente-recusa.json": {
+    "mtime": 1793592223.6748574,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/listar-como-caixa-recusa.json": {
+    "mtime": 1793592223.4844904,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/listar-como-gerente-empresa-aprovada.json": {
+    "mtime": 1793592223.2760818,
+    "ast_hash": "912d6f2dd0faac0703f708fa61ab8db6",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/resetar-senha-como-caixa-recusa.json": {
+    "mtime": 1793592229.4258306,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/resetar-senha-email-desligado-em-producao.json": {
+    "mtime": 1793592229.2248693,
+    "ast_hash": "61ecadccc2070d21bdc41dfad1803a8e",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/status-inativar.json": {
+    "mtime": 1793592228.462211,
+    "ast_hash": "c132eb7285f840b390c143d32b55b32d",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/status-sem-corpo-usa-ativo.json": {
+    "mtime": 1793592228.8321328,
+    "ast_hash": "71a24f6b15f5eae1d6bef4b3663bbdc9",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/status-usuario-de-outra-empresa.json": {
+    "mtime": 1793592228.999791,
+    "ast_hash": "8237018348f13d1aa9f2f7f8ebca65ad",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/status-valor-qualquer-vira-ativo.json": {
+    "mtime": 1793592228.6404667,
+    "ast_hash": "71a24f6b15f5eae1d6bef4b3663bbdc9",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/supervisores-como-atendente.json": {
+    "mtime": 1793592224.2186668,
+    "ast_hash": "72e2245c4f7ad58d15267efc65c005b8",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/gravacoes/usuario/supervisores-como-caixa.json": {
+    "mtime": 1793592224.0537026,
+    "ast_hash": "72e2245c4f7ad58d15267efc65c005b8",
+    "semantic_hash": ""
+  },
+  "src/test/resources/contrato/vetores.json": {
+    "mtime": 1793596309.5289588,
+    "ast_hash": "9aa5fe146fbddfa30e5a1156fb017f29",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1793616984.1990874,
+    "ast_hash": "111ee66f7bf7531cefd1b7bddc21766e",
+    "semantic_hash": ""
+  },
+  "contrato/README.md": {
+    "mtime": 1793615253.5123663,
+    "ast_hash": "448d6c0760cc0731f90d082671d7666e",
+    "semantic_hash": ""
+  },
+  "docker-compose.homologacao.yml": {
+    "mtime": 1793593110.3437052,
+    "ast_hash": "dc70428dcd1b4b10acb16cc8a2a7d574",
+    "semantic_hash": ""
+  },
+  "poc-fiscal/RELATORIO.md": {
+    "mtime": 1793593677.749532,
+    "ast_hash": "436c795980386a8f80742a72b22c6fc0",
+    "semantic_hash": ""
+  },
+  "src/main/resources/application-dev.yml": {
+    "mtime": 1793588583.7274308,
+    "ast_hash": "f9417a9aefa32b5f352894745018038b",
+    "semantic_hash": ""
+  },
+  "src/main/resources/application.yml": {
+    "mtime": 1793598383.703267,
+    "ast_hash": "d1042cfe0c72170ac93efe6eb897cbe0",
+    "semantic_hash": ""
+  },
+  "src/test/resources/application-it.yml": {
+    "mtime": 1793590204.9687476,
+    "ast_hash": "0d06ab1816dcd30f57e521288764452c",
+    "semantic_hash": ""
+  },
+  "src/test/resources/application-test.yml": {
+    "mtime": 1793590629.4813857,
+    "ast_hash": "24120890973b398aa61733869f144903",
+    "semantic_hash": ""
+  }
+}

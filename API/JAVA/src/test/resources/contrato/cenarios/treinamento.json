@@ -1,0 +1,229 @@
+[
+  {
+    "nome": "listar-admin",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/treinamento"
+    }
+  },
+  {
+    "nome": "listar-caixa",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/treinamento"
+    }
+  },
+  {
+    "nome": "criar-secao",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/secoes",
+      "corpo": {
+        "nome": "Nova secao"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "secao-sem-nome",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/secoes",
+      "corpo": {
+        "nome": ""
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "admin-loja-nao-edita",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/secoes",
+      "corpo": {
+        "nome": "Nova"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "editar-secao",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/treinamento/secoes/trs-ct",
+      "corpo": {
+        "nome": "Editada"
+      }
+    }
+  },
+  {
+    "nome": "excluir-secao",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/treinamento/secoes/trs-ct"
+    }
+  },
+  {
+    "nome": "secao-ausente",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/treinamento/secoes/ausente"
+    }
+  },
+  {
+    "nome": "video-id-puro",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/videos",
+      "corpo": {
+        "secaoId": "trs-ct",
+        "titulo": "Video teste",
+        "url": "dQw4w9WgXcQ"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "video-curto",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/videos",
+      "corpo": {
+        "secaoId": "trs-ct",
+        "titulo": "Video teste",
+        "url": "https://youtu.be/dQw4w9WgXcQ"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "video-watch",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/videos",
+      "corpo": {
+        "secaoId": "trs-ct",
+        "titulo": "Video teste",
+        "url": "https://youtube.com/watch?a=1&v=dQw4w9WgXcQ"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "video-embed",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/videos",
+      "corpo": {
+        "secaoId": "trs-ct",
+        "titulo": "Video teste",
+        "url": "https://youtube.com/embed/dQw4w9WgXcQ"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "video-shorts",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/videos",
+      "corpo": {
+        "secaoId": "trs-ct",
+        "titulo": "Video teste",
+        "url": "https://youtube.com/shorts/dQw4w9WgXcQ"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "video-live",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/videos",
+      "corpo": {
+        "secaoId": "trs-ct",
+        "titulo": "Video teste",
+        "url": "https://youtube.com/live/dQw4w9WgXcQ"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "video-invalido",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/videos",
+      "corpo": {
+        "secaoId": "trs-ct",
+        "titulo": "Video teste",
+        "url": "https://vimeo.com/123"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "video-sem-titulo",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/treinamento/videos",
+      "corpo": {
+        "secaoId": "trs-ct",
+        "url": "dQw4w9WgXcQ"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "video-ausente",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/treinamento/videos/ausente"
+    }
+  },
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/treinamento"
+    }
+  }
+]

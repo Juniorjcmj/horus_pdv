@@ -17,6 +17,22 @@ src/test/resources/contrato/
   gravacoes/<grupo>/<cenario>.json      as respostas gravadas da API .NET (versionadas)
 ```
 
+## Fase 2: cadastros
+
+Os endpoints Java implementados nesta fase cobrem Empresa (`GET`/`PUT`), tema da empresa (`GET`/`PUT`), Categoria
+(consulta, CRUD e status), Fornecedor (CRUD), Cliente (CRUD e `credito-snapshot`), `ModuloMercado` (consulta e CRUD de
+registros), treinamento (consulta e CRUD de seções/vídeos), Admin/Empresas (lista, métricas, configuração, aprovar,
+rejeitar, bloquear, reativar, credenciais e `DELETE`) e `documentacao-api`.
+
+A migração Flyway V3 inclui 55 categorias padrão, 2 seções e 9 vídeos. Cada INSERT é idempotente por `Id`, usando
+`IF NOT EXISTS`.
+
+Os 11 grupos estão habilitados em `MotorDeContrato.GRUPOS`. As gravações da API .NET e os comparadores dos 8 grupos
+novos estão em andamento. O fluxo manual pelo frontend também está em andamento, usando banco separado
+`HorusPdvUiFase2` e API na porta 18080; ainda não foi concluído. `mvn -B verify` passou com 352 testes de unidade/web e
+131 de integração/contrato, sem falhas, erros ou skips. A Fase 2 continua aberta até a conclusão dos comparadores e da
+validação de UI.
+
 ## Rodar o comparador (só precisa de Docker)
 
 ```bash
@@ -27,6 +43,7 @@ mvn -B verify -Dtest=NaoExiste -Dsurefire.failIfNoSpecifiedTests=false -Dit.test
 Sobe a aplicação inteira em porta real sobre um SQL Server 2022 do Testcontainers (Flyway + seed) e executa cada
 cenário. Uma diferença aparece com o caminho e os dois valores, por exemplo
 `corpo.data.user.role: esperado "gerente" mas veio "caixa"`.
+Para limitar a execução, acrescente `-Dcontrato.grupo=empresa,categoria` (nomes separados por vírgula) ao comando.
 
 ## Gravar um grupo novo (ou regravar)
 
@@ -36,7 +53,7 @@ cenário. Uma diferença aparece com o caminho e os dois valores, por exemplo
 2. Escreva o cenário em `src/test/resources/contrato/cenarios/<grupo>.json` (e, para um grupo novo, acrescente o nome em
    `MotorDeContrato.GRUPOS`).
 3. Grave: `mvn -B test -Dtest=GravadorDoContrato -Dgroups=gravar-contrato -Dexcluir.grupos=nenhum -Dcontrato.gravar=true -Dcontrato.url=http://localhost:5270`
-   (opcional `-Dcontrato.grupo=auth` para um grupo só).
+   (opcional `-Dcontrato.grupo=auth,sessao` para selecionar grupos separados por vírgula).
 4. Confira os arquivos novos em `gravacoes/`, versione-os e rode o comparador.
 5. `contrato/ambiente-dotnet/descer.sh` derruba tudo.
 

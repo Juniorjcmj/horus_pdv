@@ -1,0 +1,34 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Cliente atualizado com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "cl-ct-devedor",
+      "customerName" : "Cliente Novo",
+      "document" : "",
+      "birthDate" : "",
+      "age" : "",
+      "cep" : "",
+      "city" : "",
+      "state" : "",
+      "address" : "",
+      "neighborhood" : "",
+      "streetComplement" : "",
+      "number" : "",
+      "referencePoint" : "",
+      "telephone" : "11999990000",
+      "cellphone" : "",
+      "email" : "",
+      "indIeDest" : 9,
+      "inscricaoEstadual" : null,
+      "codigoMunicipioIbge" : null,
+      "limiteCredito" : 200,
+      "saldoDevedor" : 0
+    }
+  }
+}

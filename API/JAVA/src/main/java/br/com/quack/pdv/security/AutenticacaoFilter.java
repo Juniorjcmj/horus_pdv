@@ -69,6 +69,11 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
             return;
         }
 
+        String rota = request.getRequestURI().substring(request.getContextPath().length()).toLowerCase(Locale.ROOT);
+        if (!props.isDev() && (rota.startsWith("/v3/api-docs") || rota.startsWith("/swagger"))) {
+            response.setStatus(404);
+            return;
+        }
         request.setAttribute(ATRIBUTO_USUARIO, usuario);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
                 usuario, null, List.of(new SimpleGrantedAuthority("ROLE_" + usuario.role().toUpperCase(Locale.ROOT)))));

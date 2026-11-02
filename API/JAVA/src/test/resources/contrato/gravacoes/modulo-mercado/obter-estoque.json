@@ -1,0 +1,45 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Modulo obtido com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "estoque",
+      "title" : "Estoque e Inventário",
+      "description" : "Gestão operacional do módulo Estoque e Inventário.",
+      "primaryAction" : "Ajustar estoque",
+      "statusLabel" : "Status do módulo",
+      "statusValue" : "Operação ativa",
+      "kpis" : [ {
+        "label" : "Volume",
+        "value" : "0",
+        "hint" : "Movimentações registradas",
+        "tone" : "secondary"
+      }, {
+        "label" : "Pendências",
+        "value" : "0",
+        "hint" : "Aguardando ação",
+        "tone" : "accent"
+      }, {
+        "label" : "Concluídos",
+        "value" : "0%",
+        "hint" : "Fluxos processados",
+        "tone" : "success"
+      }, {
+        "label" : "Alertas",
+        "value" : "1",
+        "hint" : "Pontos de atenção",
+        "tone" : "primary"
+      } ],
+      "recordsTitle" : "Registros operacionais",
+      "records" : [ ],
+      "workflowTitle" : "Fluxo operacional",
+      "workflow" : [ "Consultar os dados atualizados do módulo.", "Validar informações e regras operacionais.", "Executar ação operacional no frontend.", "Registrar movimentação e acompanhar status." ],
+      "alerts" : [ "Nenhuma pendência crítica no momento.", "Revise os registros com prioridade operacional.", "Acompanhe os indicadores antes do fechamento do período." ]
+    }
+  }
+}

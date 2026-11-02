@@ -1,0 +1,300 @@
+[
+  {
+    "nome": "obter-administrador",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Empresa"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "obter-gerente",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Empresa"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "obter-atendente",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Empresa"
+    },
+    "usuario": "atendente@contrato.quack"
+  },
+  {
+    "nome": "obter-caixa",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Empresa"
+    },
+    "usuario": "caixa@contrato.quack"
+  },
+  {
+    "nome": "obter-sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Empresa"
+    }
+  },
+  {
+    "nome": "gerente-nao-salva",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181"
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "salvar-dados",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "nome-curto",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "ab",
+        "cnpj": "11222333000181"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "cnpj-invalido",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "123"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "smtp-sem-host",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "emailSmtpEnabled": true
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "crt-invalido",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "crt": 5
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "csc-id-invalido",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "cscId": "A"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "csc-id-longo",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "cscId": "1234567"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "certificado-sem-senha",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "certificadoPfxBase64": "AA=="
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "certificado-valido",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "certificadoPfxBase64": "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",
+        "certificadoSenha": "Certificado#Teste2026"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "certificado-senha-errada",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "certificadoPfxBase64": "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",
+        "certificadoSenha": "errada"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "segredos-vazios-preservam",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181"
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "antes": [
+      {
+        "metodo": "PUT",
+        "caminho": "/api/Empresa",
+        "corpo": {
+          "fantasyName": "Mercado Contrato",
+          "cnpj": "11222333000181",
+          "csc": "CSC de teste",
+          "cscId": "000001",
+          "emailSmtpPassword": "SMTP de teste"
+        },
+        "auth": "bearer",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "nome": "smtp-porta-invalida",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "emailSmtpEnabled": true,
+        "emailSmtpHost": "smtp.teste",
+        "emailSmtpPort": 0,
+        "emailSmtpUser": "user@teste",
+        "emailSmtpFromEmail": "from@teste",
+        "emailSmtpPassword": "senha"
+      }
+    }
+  },
+  {
+    "nome": "smtp-usuario-invalido",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "emailSmtpEnabled": true,
+        "emailSmtpHost": "smtp.teste",
+        "emailSmtpPort": 587,
+        "emailSmtpUser": "invalido",
+        "emailSmtpFromEmail": "from@teste",
+        "emailSmtpPassword": "senha"
+      }
+    }
+  },
+  {
+    "nome": "smtp-remetente-invalido",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "emailSmtpEnabled": true,
+        "emailSmtpHost": "smtp.teste",
+        "emailSmtpPort": 587,
+        "emailSmtpUser": "user@teste",
+        "emailSmtpFromEmail": "invalido",
+        "emailSmtpPassword": "senha"
+      }
+    }
+  },
+  {
+    "nome": "smtp-resposta-invalida",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "emailSmtpEnabled": true,
+        "emailSmtpHost": "smtp.teste",
+        "emailSmtpPort": 587,
+        "emailSmtpUser": "user@teste",
+        "emailSmtpFromEmail": "from@teste",
+        "emailSmtpPassword": "senha",
+        "emailSmtpReplyTo": "invalido"
+      }
+    }
+  },
+  {
+    "nome": "smtp-sem-senha",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Empresa",
+      "corpo": {
+        "fantasyName": "Mercado Contrato",
+        "cnpj": "11222333000181",
+        "emailSmtpEnabled": true,
+        "emailSmtpHost": "smtp.teste",
+        "emailSmtpPort": 587,
+        "emailSmtpUser": "user@teste",
+        "emailSmtpFromEmail": "from@teste",
+        "emailSmtpPassword": ""
+      }
+    }
+  }
+]

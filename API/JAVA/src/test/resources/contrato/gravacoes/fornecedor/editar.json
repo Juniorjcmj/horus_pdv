@@ -1,0 +1,28 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Fornecedor atualizado com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "fr-ct-sol",
+      "companyName" : "Sol Editada",
+      "fantasyName" : "Sol Editada",
+      "cnpj" : "",
+      "cep" : "",
+      "city" : "",
+      "state" : "",
+      "address" : "",
+      "neighborhood" : "",
+      "streetComplement" : "",
+      "number" : "",
+      "referencePoint" : "",
+      "telephone" : "",
+      "cellphone" : "",
+      "email" : ""
+    }
+  }
+}

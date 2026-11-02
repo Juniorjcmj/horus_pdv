@@ -28,8 +28,8 @@ class GravadorDoContrato {
         String so = System.getProperty("contrato.grupo");
 
         int total = 0;
-        for (String grupo : MotorDeContrato.GRUPOS) {
-            if (so != null && !so.isBlank() && !so.equals(grupo)) continue;
+        String[] grupos = so != null && !so.isBlank() ? so.split(",") : MotorDeContrato.GRUPOS;
+        for (String grupo : grupos) {
             for (JsonNode cenario : MotorDeContrato.carregarCenarios(grupo)) {
                 JsonNode gravacao = motor.executar(cenario);
                 MotorDeContrato.gravar(raiz, grupo, cenario.get("nome").asText(), gravacao);

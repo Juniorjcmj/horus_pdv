@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Recolha e reconcilie os orçamentos antes de reduzir o limite abaixo dos compromissos.",
+    "details" : null,
+    "data" : null
+  }
+}

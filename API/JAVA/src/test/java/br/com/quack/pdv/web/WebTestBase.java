@@ -34,6 +34,16 @@ public abstract class WebTestBase {
     @Autowired protected MockMvc mvc;
     @Autowired protected JwtService jwt;
 
+    @MockitoBean protected br.com.quack.pdv.empresa.app.EmpresaService empresas;
+    @MockitoBean protected br.com.quack.pdv.empresa.app.EmpresaTemaService temas;
+    @MockitoBean protected br.com.quack.pdv.cadastro.fornecedor.app.FornecedorService fornecedores;
+    @MockitoBean protected br.com.quack.pdv.cadastro.categoria.app.CategoriaService categorias;
+    @MockitoBean protected br.com.quack.pdv.empresa.app.TreinamentoService treinamento;
+    @MockitoBean protected br.com.quack.pdv.cadastro.mercado.app.ModuloMercadoService modulos;
+    @MockitoBean protected br.com.quack.pdv.cadastro.cliente.app.ClienteService clientes;
+    @MockitoBean protected br.com.quack.pdv.cadastro.cliente.app.ClienteTransacao clienteTransacao;
+    @MockitoBean protected br.com.quack.pdv.empresa.app.GerenciamentoEmpresasService gerenciamento;
+    @MockitoBean protected br.com.quack.pdv.empresa.repo.GerenciamentoEmpresasRepository gerenciamentoRepo;
     @MockitoBean protected ValidadorSessao validador;
     @MockitoBean protected AutenticacaoService autenticacao;
     @MockitoBean protected CadastroPublicoService cadastro;

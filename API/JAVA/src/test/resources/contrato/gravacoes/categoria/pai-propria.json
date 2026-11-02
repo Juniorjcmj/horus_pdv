@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Uma categoria não pode ser subcategoria dela mesma.",
+    "details" : null,
+    "data" : null
+  }
+}

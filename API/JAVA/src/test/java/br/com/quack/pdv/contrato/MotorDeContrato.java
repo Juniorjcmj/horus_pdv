@@ -36,7 +36,7 @@ public final class MotorDeContrato {
 
     public static final ObjectMapper JSON = new ObjectMapper();
     public static final String SENHA = "Senha#Quack2026";
-    public static final String[] GRUPOS = {"auth", "sessao", "usuario"};
+    public static final String[] GRUPOS = {"auth", "sessao", "usuario", "empresa", "tema", "categoria", "fornecedor", "cliente", "modulo-mercado", "treinamento", "admin-empresas"};
 
     private static final Pattern ISO = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$");
     private static final Pattern DATA = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
@@ -90,17 +90,37 @@ public final class MotorDeContrato {
             }
         }
 
+        Map<String,String> variaveis = new LinkedHashMap<>();
         for (JsonNode passo : cenario.path("antes")) {
+            String tokenPasso = tokenAtual;
+            if (passo.hasNonNull("usuario")) {
+                Resposta login = enviar("POST", "/api/Auth/login", JSON.createObjectNode().put("email", passo.get("usuario").asText()).put("password", SENHA).toString(), Map.of(), null);
+                if (login.status != 200) throw new IllegalStateException("login do passo anterior falhou: " + login.corpo);
+                tokenPasso = login.cookieDeAutenticacao();
+            }
             int vezes = passo.path("vezes").asInt(1);
             for (int i = 0; i < vezes; i++) {
-                enviar(passo.get("metodo").asText(), passo.get("caminho").asText(), corpoComoTexto(passo.get("corpo")),
-                        cabecalhos(passo.get("cabecalhos")), null);
+                String authPasso = passo.path("auth").asText("nenhum").equals("bearer") ? "Bearer " + tokenPasso : null;
+                String caminhoPasso = substituir(passo.get("caminho").asText(), variaveis);
+                Resposta resultado = enviar(passo.get("metodo").asText(), caminhoPasso, corpoComoTexto(passo.get("corpo")), cabecalhos(passo.get("cabecalhos")), authPasso);
+                if (passo.has("status") && resultado.status != passo.get("status").asInt()) throw new IllegalStateException("passo anterior falhou: " + resultado.status + " " + resultado.corpo);
+                if (passo.has("capturar")) {
+                    JsonNode corpo = JSON.readTree(resultado.corpo);
+                    for (var campos = passo.get("capturar").fields(); campos.hasNext();) {
+                        var campo = campos.next();
+                        JsonNode valor = corpo;
+                        for (String chave : campo.getValue().asText().split("\\.")) valor = valor.path(chave);
+                        if (!valor.isTextual()) throw new IllegalStateException("captura ausente: " + campo.getValue());
+                        variaveis.put(campo.getKey(), valor.asText());
+                    }
+                }
             }
         }
 
         JsonNode req = cenario.get("requisicao");
         String auth = req.path("auth").asText(usuario != null ? "bearer" : "nenhum");
         String caminho = req.get("caminho").asText().replace("{sessaoAtual}", sessaoAtual).replace("{outraSessao}", outraSessao);
+        caminho = substituir(caminho, variaveis);
         String authorization = switch (auth) {
             case "bearer" -> "Bearer " + tokenAtual;
             case "invalido" -> "Bearer token.invalido.aqui";
@@ -110,6 +130,11 @@ public final class MotorDeContrato {
         if ("cookie".equals(auth)) cab.put("Cookie", "horuspdv.auth=" + tokenAtual);
         Resposta r = enviar(req.get("metodo").asText(), caminho, corpoComoTexto(req.get("corpo")), cab, authorization);
         return r.comoGravacao();
+    }
+
+    private static String substituir(String caminho, Map<String,String> variaveis) {
+        for (var entrada : variaveis.entrySet()) caminho = caminho.replace("{" + entrada.getKey() + "}", entrada.getValue());
+        return caminho;
     }
 
     private static Map<String, String> cabecalhos(JsonNode no) {
@@ -141,6 +166,7 @@ public final class MotorDeContrato {
             g.put("status", status);
             ObjectNode h = g.putObject("cabecalhos");
             cabecalhos.firstValue("content-type").ifPresent(v -> h.put("content-type", v.toLowerCase(Locale.ROOT).replace(" ", "")));
+            cabecalhos.firstValue("content-disposition").ifPresent(v -> h.put("content-disposition", v));
             cabecalhos.firstValue("retry-after").ifPresent(v -> h.put("retry-after", v));
             ArrayNode cookies = h.putArray("set-cookie");
             for (String c : cabecalhos.allValues("set-cookie")) cookies.add(normalizarCookie(c));
@@ -197,7 +223,9 @@ public final class MotorDeContrato {
                 difs.add("cabecalho " + chave + ": esperado " + hg.path(chave) + " mas veio " + ha.path(chave));
             }
         }
-        compararNo(gravada.path("corpo"), atual.path("corpo"), "corpo", volateis, difs);
+        if (cenario.path("compararDocumentoOpenApi").asBoolean(false) && atual.path("status").asInt() == 200) {
+            if (!atual.path("corpo").path("openapi").asText().startsWith("3.") || !atual.path("corpo").path("paths").isObject()) difs.add("documento OpenAPI 3 invalido");
+        } else compararNo(gravada.path("corpo"), atual.path("corpo"), "corpo", volateis, difs);
         return difs;
     }
 
@@ -265,6 +293,8 @@ public final class MotorDeContrato {
                     : !ISO.matcher(e).matches() ? "gravacao fora do formato ISO: " + e : formaDaFracao(e, a);
             case "data" -> DATA.matcher(a).matches() ? null : "nao e yyyy-MM-dd: " + a;
             case "id" -> {
+                String guid = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+                if (e.matches(guid) || a.matches(guid)) yield e.matches(guid) && a.matches(guid) ? null : "GUID fora do formato canonico";
                 String pe = e.contains("-") ? e.substring(0, e.indexOf('-')) : e;
                 String pa = a.contains("-") ? a.substring(0, a.indexOf('-')) : a;
                 yield !pe.equals(pa) ? "prefixo " + pa + " em vez de " + pe

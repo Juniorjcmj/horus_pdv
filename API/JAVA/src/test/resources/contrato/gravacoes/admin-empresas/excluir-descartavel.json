@@ -1,0 +1,12 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Empresa e todos os seus dados foram excluídos permanentemente.",
+    "details" : null,
+    "data" : null
+  }
+}

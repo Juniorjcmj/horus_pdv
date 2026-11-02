@@ -1,0 +1,75 @@
+[
+  {
+    "nome": "obter-sem-tema",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/company-theme"
+    },
+    "usuario": "adm.aprovada@contrato.quack"
+  },
+  {
+    "nome": "salvar-gerente",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/company-theme",
+      "corpo": {
+        "systemAccent": "#0369a1",
+        "pdvAccent": "#ABCDEF"
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.updatedAt": "texto"
+    }
+  },
+  {
+    "nome": "cor-invalida",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/company-theme",
+      "corpo": {
+        "systemAccent": "azul"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "cor-vazia",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/company-theme",
+      "corpo": {
+        "systemAccent": "",
+        "pdvAccent": ""
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.updatedAt": "texto"
+    }
+  },
+  {
+    "nome": "atendente-nao-salva",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/company-theme",
+      "corpo": {}
+    },
+    "usuario": "atendente@contrato.quack"
+  },
+  {
+    "nome": "caixa-le",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/company-theme"
+    },
+    "usuario": "caixa@contrato.quack"
+  },
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/company-theme"
+    }
+  }
+]

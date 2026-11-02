@@ -18,7 +18,11 @@ import org.springframework.boot.test.web.server.LocalServerPort;
  * Testcontainers criado pelo Flyway + seed, repete cada cenario e compara status, cabecalhos e corpo por caminho JSON.
  */
 @Tag("contrato")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+// Mesmas chaves do ambiente .NET de contrato (contrato/ambiente-dotnet/subir.sh): o seed traz segredos `enc:v1:`
+// cifrados com elas, que os dois lados precisam decifrar igual.
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+        "quack.auth.jwt-secret=segredo-jwt-do-contrato-0123456789-abcdefghijkl",
+        "quack.security.encryption-key=chave-de-cifra-do-contrato-0123456789-abcdefgh"})
 class ApiJavaContratoTest extends BancoIT {
 
     @LocalServerPort int porta;
@@ -29,7 +33,9 @@ class ApiJavaContratoTest extends BancoIT {
         MotorDeContrato motor = new MotorDeContrato("http://localhost:" + porta, estado::restaurar);
 
         List<DynamicTest> testes = new ArrayList<>();
-        for (String grupo : MotorDeContrato.GRUPOS) {
+        String so = System.getProperty("contrato.grupo");
+        String[] grupos = so != null && !so.isBlank() ? so.split(",") : MotorDeContrato.GRUPOS;
+        for (String grupo : grupos) {
             for (JsonNode cenario : MotorDeContrato.carregarCenarios(grupo)) {
                 String nome = cenario.get("nome").asText();
                 testes.add(DynamicTest.dynamicTest(grupo + "/" + nome, () -> {

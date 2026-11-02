@@ -1,0 +1,265 @@
+[
+  {
+    "nome": "listar",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Admin/Empresas"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "busca",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Admin/Empresas?search=Mercado"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "status",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Admin/Empresas?status=pendente"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "pagina-grande",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Admin/Empresas?pageSize=500"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "pagina-zero",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Admin/Empresas?page=0"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "metricas",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Admin/Empresas/metricas"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "aprovar",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Admin/Empresas/emp-contrato-pendente/aprovar"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "aprovar-inexistente",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Admin/Empresas/ausente/aprovar"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "aprovar-principal",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Admin/Empresas/empresa-principal/aprovar"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "rejeitar-sem-motivo",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Admin/Empresas/emp-contrato-pendente/rejeitar",
+      "corpo": {
+        "reason": ""
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "rejeitar",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Admin/Empresas/emp-contrato-pendente/rejeitar",
+      "corpo": {
+        "reason": "Cadastro recusado"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "bloquear",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Admin/Empresas/emp-contrato-aprovada/bloquear",
+      "corpo": {
+        "reason": "Contrato bloqueado"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "reativar",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Admin/Empresas/emp-contrato-bloqueada/reativar"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "configuracao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Admin/Empresas/configuracao"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "configuracao-true",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Admin/Empresas/configuracao",
+      "corpo": {
+        "requireApprovalForNewCompanies": true
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "configuracao-false",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Admin/Empresas/configuracao",
+      "corpo": {
+        "requireApprovalForNewCompanies": false
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "trocar-email",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Admin/Empresas/emp-contrato-aprovada/credenciais",
+      "corpo": {
+        "newEmail": "novo@contrato.quack"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "trocar-senha",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Admin/Empresas/emp-contrato-aprovada/credenciais",
+      "corpo": {
+        "newPassword": "NovaSenha#2026"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "nada-informado",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Admin/Empresas/emp-contrato-aprovada/credenciais",
+      "corpo": {}
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "email-em-uso",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Admin/Empresas/emp-contrato-aprovada/credenciais",
+      "corpo": {
+        "newEmail": "admin@contrato.quack"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "admin-loja-negado",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Admin/Empresas"
+    },
+    "usuario": "adm.aprovada@contrato.quack"
+  },
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Admin/Empresas"
+    }
+  },
+  {
+    "nome": "excluir-principal",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Admin/Empresas/empresa-principal"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "excluir-descartavel",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Admin/Empresas/{descartavel}"
+    },
+    "usuario": "admin@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Auth/register",
+        "corpo": {
+          "cnpj": "45.997.418/0001-53",
+          "name": "Mercado Descartavel",
+          "email": "descartavel@contrato.quack",
+          "phone": "11999990000",
+          "password": "Senha#Quack2026",
+          "confirmPassword": "Senha#Quack2026"
+        },
+        "status": 201,
+        "capturar": {
+          "descartavel": "data.companyId"
+        }
+      }
+    ]
+  },
+  {
+    "nome": "documentacao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Admin/Empresas/documentacao-api"
+    },
+    "usuario": "admin@contrato.quack",
+    "compararDocumentoOpenApi": true
+  },
+  {
+    "nome": "bloquear-revoga-sessao",
+    "usuario": "adm.aprovada@contrato.quack",
+    "antes": [
+      {
+        "usuario": "admin@contrato.quack",
+        "auth": "bearer",
+        "metodo": "POST",
+        "caminho": "/api/Admin/Empresas/emp-contrato-aprovada/bloquear",
+        "corpo": {
+          "reason": "Bloqueio do contrato"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Auth/me"
+    }
+  }
+]

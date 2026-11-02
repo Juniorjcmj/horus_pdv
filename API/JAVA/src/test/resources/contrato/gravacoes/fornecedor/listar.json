@@ -1,0 +1,60 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Fornecedores obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "fr-ct-exclusivo",
+      "companyName" : "Distribuidora Exclusiva SA",
+      "fantasyName" : "Distribuidora Exclusiva",
+      "cnpj" : "99888777000166",
+      "cep" : "",
+      "city" : "",
+      "state" : "",
+      "address" : "",
+      "neighborhood" : "",
+      "streetComplement" : "",
+      "number" : "",
+      "referencePoint" : "",
+      "telephone" : "",
+      "cellphone" : "",
+      "email" : ""
+    }, {
+      "id" : "fr-ct-sol",
+      "companyName" : "Distribuidora Sol SA",
+      "fantasyName" : "Distribuidora Sol",
+      "cnpj" : "11222333000181",
+      "cep" : "",
+      "city" : "",
+      "state" : "",
+      "address" : "",
+      "neighborhood" : "",
+      "streetComplement" : "",
+      "number" : "",
+      "referencePoint" : "",
+      "telephone" : "",
+      "cellphone" : "",
+      "email" : ""
+    }, {
+      "id" : "fr-ct-livre",
+      "companyName" : "Fornecedor Livre SA",
+      "fantasyName" : "Fornecedor Livre",
+      "cnpj" : "",
+      "cep" : "",
+      "city" : "",
+      "state" : "",
+      "address" : "",
+      "neighborhood" : "",
+      "streetComplement" : "",
+      "number" : "",
+      "referencePoint" : "",
+      "telephone" : "",
+      "cellphone" : "",
+      "email" : ""
+    } ]
+  }
+}

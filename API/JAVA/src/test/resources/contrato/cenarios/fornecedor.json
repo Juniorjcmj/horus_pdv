@@ -1,0 +1,133 @@
+[
+  {
+    "nome": "listar",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Fornecedor"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "criar-so-fantasia",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Fornecedor",
+      "corpo": {
+        "fantasyName": "Distribuidora Sol"
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "criar-so-razao",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Fornecedor",
+      "corpo": {
+        "companyName": "Distribuidora Sol SA"
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "sem-nomes",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Fornecedor",
+      "corpo": {}
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "caixa-recusado",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Fornecedor"
+    },
+    "usuario": "caixa@contrato.quack"
+  },
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Fornecedor"
+    }
+  },
+  {
+    "nome": "cnpj-repetido",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Fornecedor",
+      "corpo": {
+        "companyName": "Sol",
+        "cnpj": "11222333000181"
+      }
+    },
+    "usuario": "admin@contrato.quack",
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "editar",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Fornecedor/fr-ct-sol",
+      "corpo": {
+        "companyName": "Sol Editada"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "editar-outra-empresa",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Fornecedor/fr-ct-outra",
+      "corpo": {
+        "companyName": "Sol"
+      }
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "excluir-em-uso",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Fornecedor/fr-ct-sol"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "excluir-livre",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Fornecedor/fr-ct-livre"
+    },
+    "usuario": "admin@contrato.quack"
+  },
+  {
+    "nome": "mesmo-cnpj-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Fornecedor",
+      "corpo": {
+        "fantasyName": "Novo fornecedor",
+        "cnpj": "99888777000166"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  }
+]

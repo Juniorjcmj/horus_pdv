@@ -1,0 +1,80 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Empresas listadas com sucesso.",
+    "details" : null,
+    "data" : {
+      "items" : [ {
+        "id" : "emp-contrato-pendente",
+        "fantasyName" : "Mercado Pendente",
+        "corporateName" : "Mercado Pendente LTDA",
+        "cnpj" : "45.723.174/0001-10",
+        "email" : "pendente@contrato.quack",
+        "phone" : "",
+        "mobile" : "",
+        "city" : "",
+        "uf" : "",
+        "status" : "pendente",
+        "createdAt" : "2026-01-15T12:00:00+00:00",
+        "reviewedAt" : null,
+        "reviewedBy" : null,
+        "rejectionReason" : null,
+        "adminUserName" : "Paulo Pendente",
+        "adminUserEmail" : "adm.pendente@contrato.quack",
+        "adminUserPhone" : "11999990011",
+        "totalUsers" : 1,
+        "totalProducts" : 0,
+        "totalSales" : 0
+      }, {
+        "id" : "emp-contrato-aprovada",
+        "fantasyName" : "Mercado Aprovado",
+        "corporateName" : "Mercado Aprovado LTDA",
+        "cnpj" : "11.222.333/0001-81",
+        "email" : "aprovada@contrato.quack",
+        "phone" : "",
+        "mobile" : "",
+        "city" : "",
+        "uf" : "",
+        "status" : "aprovada",
+        "createdAt" : "2026-01-15T12:00:00+00:00",
+        "reviewedAt" : null,
+        "reviewedBy" : null,
+        "rejectionReason" : null,
+        "adminUserName" : "Ada Aprovada",
+        "adminUserEmail" : "adm.aprovada@contrato.quack",
+        "adminUserPhone" : "11999990010",
+        "totalUsers" : 1,
+        "totalProducts" : 2,
+        "totalSales" : 1
+      }, {
+        "id" : "emp-contrato-bloqueada",
+        "fantasyName" : "Mercado Bloqueado",
+        "corporateName" : "Mercado Bloqueado LTDA",
+        "cnpj" : "34.028.316/0001-03",
+        "email" : "bloqueada@contrato.quack",
+        "phone" : "",
+        "mobile" : "",
+        "city" : "",
+        "uf" : "",
+        "status" : "bloqueada",
+        "createdAt" : "2026-01-15T12:00:00+00:00",
+        "reviewedAt" : null,
+        "reviewedBy" : null,
+        "rejectionReason" : "Inadimplência",
+        "adminUserName" : "Bruna Bloqueada",
+        "adminUserEmail" : "adm.bloqueada@contrato.quack",
+        "adminUserPhone" : "11999990012",
+        "totalUsers" : 1,
+        "totalProducts" : 0,
+        "totalSales" : 0
+      } ],
+      "totalCount" : 3,
+      "page" : 1,
+      "pageSize" : 20
+    }
+  }
+}

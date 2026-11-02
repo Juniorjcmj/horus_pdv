@@ -1,0 +1,105 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Treinamentos obtidos com sucesso.",
+    "details" : null,
+    "data" : {
+      "podeGerenciar" : false,
+      "secoes" : [ {
+        "id" : "trs-primeiros-passos",
+        "nome" : "Primeiros passos",
+        "descricao" : "Como acessar e começar a usar o Quack Sistemas.",
+        "ordem" : 1,
+        "videos" : [ {
+          "id" : "trv-entrar-sistema",
+          "secaoId" : "trs-primeiros-passos",
+          "titulo" : "Como entrar no Quack Sistemas",
+          "descricao" : "Passo a passo para acessar o sistema com seu usuário e senha.",
+          "instrucoes" : "Acesse o endereço do sistema no navegador.\nInforme seu e-mail e sua senha.\nClique em Entrar.\nEm caso de dúvida na senha, fale com o administrador da sua loja.",
+          "youtubeId" : "uEj6GUdI0BI",
+          "ordem" : 1
+        } ]
+      }, {
+        "id" : "trs-caixa",
+        "nome" : "Caixa",
+        "descricao" : "Tudo sobre a frente de caixa: abertura, vendas, ajustes e fechamento.",
+        "ordem" : 2,
+        "videos" : [ {
+          "id" : "trv-abertura-caixa",
+          "secaoId" : "trs-caixa",
+          "titulo" : "Abertura de caixa",
+          "descricao" : "Como abrir o caixa informando o fundo de troco.",
+          "instrucoes" : "Abra a tela Caixa.\nInforme o valor do fundo de troco.\nConfirme a abertura do caixa.\nPronto: o PDV já pode registrar vendas.",
+          "youtubeId" : "SzV2ejoasmw",
+          "ordem" : 1
+        }, {
+          "id" : "trv-venda-simples",
+          "secaoId" : "trs-caixa",
+          "titulo" : "Fazer uma venda simples",
+          "descricao" : "Registrando uma venda do início ao fim.",
+          "instrucoes" : "Na tela de Vendas, busque o produto pelo nome ou código de barras.\nInforme a quantidade e adicione o item.\nClique em Pagamento, escolha a forma de pagamento e informe o valor.\nConfirme a venda e entregue o troco, se houver.",
+          "youtubeId" : "VWoaz46u564",
+          "ordem" : 2
+        }, {
+          "id" : "trv-venda-fiado",
+          "secaoId" : "trs-caixa",
+          "titulo" : "Venda fiado",
+          "descricao" : "Como vender no fiado (crediário) para um cliente cadastrado.",
+          "instrucoes" : "Adicione os produtos à venda.\nNo pagamento, escolha Fiado.\nSelecione o cliente.\nConfirme a venda: o valor fica lançado no fiado do cliente.",
+          "youtubeId" : "uBAkCw_WxEw",
+          "ordem" : 3
+        }, {
+          "id" : "trv-alterar-valor",
+          "secaoId" : "trs-caixa",
+          "titulo" : "Alteração do valor do produto no caixa",
+          "descricao" : "Mudando o preço de um item na venda com a senha de um gerente.",
+          "instrucoes" : "Clique no ícone de preço do item.\nInforme o novo valor.\nPeça ao gerente para digitar a senha de autorização.\nO item passa a valer o novo preço apenas nesta venda.",
+          "youtubeId" : "4ZAPZEemohI",
+          "ordem" : 4
+        }, {
+          "id" : "trv-vendas-caixa",
+          "secaoId" : "trs-caixa",
+          "titulo" : "Relatório de vendas do caixa",
+          "descricao" : "Consultando as vendas feitas no caixa atual.",
+          "instrucoes" : "Abra Vendas do Caixa na tela do PDV.\nUse os filtros (forma de pagamento, valor) para localizar vendas.\nO total no topo acompanha os filtros aplicados.",
+          "youtubeId" : "EXcpcR43h9o",
+          "ordem" : 5
+        }, {
+          "id" : "trv-cancelar-venda",
+          "secaoId" : "trs-caixa",
+          "titulo" : "Cancelamento de venda",
+          "descricao" : "Como cancelar uma venda já finalizada a partir do caixa.",
+          "instrucoes" : "Abra Vendas do Caixa e localize a venda.\nEscolha a opção de cancelar.\nInforme o motivo e confirme.\nO estoque e os valores do caixa são ajustados.",
+          "youtubeId" : "otCFMlPVScQ",
+          "ordem" : 6
+        }, {
+          "id" : "trv-sangria-reforco",
+          "secaoId" : "trs-caixa",
+          "titulo" : "Sangria e reforço",
+          "descricao" : "Retirando dinheiro do caixa (sangria) e colocando troco (reforço).",
+          "instrucoes" : "Abra a tela Caixa.\nEscolha Sangria (retirada) ou Reforço (entrada de dinheiro).\nInforme o valor e o motivo.\nConfirme: o movimento entra no relatório de fechamento.",
+          "youtubeId" : "j6MFC1eT9Zc",
+          "ordem" : 7
+        }, {
+          "id" : "trv-fechamento-caixa",
+          "secaoId" : "trs-caixa",
+          "titulo" : "Fechamento de caixa",
+          "descricao" : "Conferindo valores e fechando o caixa no fim do turno.",
+          "instrucoes" : "Abra a tela Caixa e clique em Fechar caixa.\nInforme o dinheiro contado na gaveta.\nConfira o resumo por forma de pagamento, sangrias e reforços.\nConfirme o fechamento e imprima o relatório.",
+          "youtubeId" : "OE_mPHYK8cE",
+          "ordem" : 8
+        } ]
+      }, {
+        "id" : "trs-ct",
+        "nome" : "Treinamento Contrato",
+        "descricao" : "",
+        "ordem" : 99,
+        "videos" : [ ]
+      } ]
+    }
+  }
+}

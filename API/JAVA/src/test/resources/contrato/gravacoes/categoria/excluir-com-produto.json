@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Não é possível excluir uma categoria que possui produtos vinculados. Remova ou altere a categoria dos produtos primeiro.",
+    "details" : null,
+    "data" : null
+  }
+}

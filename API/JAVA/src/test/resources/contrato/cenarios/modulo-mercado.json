@@ -1,0 +1,212 @@
+[
+  {
+    "nome": "obter-fiscal",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/fiscal"
+    }
+  },
+  {
+    "nome": "obter-pagamentos",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/pagamentos"
+    }
+  },
+  {
+    "nome": "obter-estoque",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/estoque"
+    }
+  },
+  {
+    "nome": "obter-caixa",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/caixa"
+    }
+  },
+  {
+    "nome": "obter-compras",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/compras"
+    },
+    "antes": [
+      {
+        "metodo": "DELETE",
+        "caminho": "/api/ModuloMercado/compras/registros/mm-ct",
+        "auth": "bearer",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "nome": "obter-devolucoes",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/devolucoes"
+    }
+  },
+  {
+    "nome": "obter-crm-fidelidade",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/crm-fidelidade"
+    }
+  },
+  {
+    "nome": "obter-omnichannel",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/omnichannel"
+    }
+  },
+  {
+    "nome": "obter-financeiro",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/financeiro"
+    }
+  },
+  {
+    "nome": "criar",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/ModuloMercado/compras/registros",
+      "corpo": {
+        "title": "Registro",
+        "status": "Pendente"
+      }
+    },
+    "volateis": {
+      "data.records[0].id": "id"
+    }
+  },
+  {
+    "nome": "titulo-curto",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/ModuloMercado/compras/registros",
+      "corpo": {
+        "title": "ab",
+        "status": "Pendente"
+      }
+    }
+  },
+  {
+    "nome": "status-vazio",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/ModuloMercado/compras/registros",
+      "corpo": {
+        "title": "Titulo"
+      }
+    }
+  },
+  {
+    "nome": "atualizar",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/ModuloMercado/compras/registros/mm-ct",
+      "corpo": {
+        "title": "Atualizado",
+        "status": "Concluido"
+      }
+    }
+  },
+  {
+    "nome": "outra-empresa",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/ModuloMercado/compras/registros/mm-ct-outra",
+      "corpo": {
+        "title": "Atualizado",
+        "status": "Concluido"
+      }
+    }
+  },
+  {
+    "nome": "excluir",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/ModuloMercado/compras/registros/mm-ct"
+    }
+  },
+  {
+    "nome": "caixa-recusado",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/caixa"
+    }
+  },
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/estoque"
+    }
+  },
+  {
+    "nome": "painel-misto",
+    "usuario": "admin@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/ModuloMercado/compras/registros",
+        "auth": "bearer",
+        "status": 201,
+        "corpo": {
+          "title": "Registro 0",
+          "status": "Aguardando"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/ModuloMercado/compras/registros",
+        "auth": "bearer",
+        "status": 201,
+        "corpo": {
+          "title": "Registro 1",
+          "status": "Concluido"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/ModuloMercado/compras/registros",
+        "auth": "bearer",
+        "status": 201,
+        "corpo": {
+          "title": "Registro 2",
+          "status": "Em andamento"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/ModuloMercado/compras"
+    },
+    "volateis": {
+      "data.records[0].id": "id",
+      "data.records[1].id": "id",
+      "data.records[2].id": "id"
+    }
+  }
+]

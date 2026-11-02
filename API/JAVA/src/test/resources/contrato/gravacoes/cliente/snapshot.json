@@ -1,0 +1,59 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "",
+    "details" : null,
+    "data" : {
+      "customers" : [ {
+        "id" : "cl-ct-ana",
+        "customerName" : "Ana Cliente",
+        "document" : "12345678901",
+        "birthDate" : "",
+        "age" : "",
+        "cep" : "",
+        "city" : "",
+        "state" : "",
+        "address" : "",
+        "neighborhood" : "",
+        "streetComplement" : "",
+        "number" : "",
+        "referencePoint" : "",
+        "telephone" : "11999990000",
+        "cellphone" : "",
+        "email" : "",
+        "indIeDest" : 9,
+        "inscricaoEstadual" : null,
+        "codigoMunicipioIbge" : null,
+        "limiteCredito" : 100.0,
+        "saldoDevedor" : 0.0
+      }, {
+        "id" : "cl-ct-devedor",
+        "customerName" : "Zelia Devedora",
+        "document" : "98765432100",
+        "birthDate" : "",
+        "age" : "",
+        "cep" : "",
+        "city" : "",
+        "state" : "",
+        "address" : "",
+        "neighborhood" : "",
+        "streetComplement" : "",
+        "number" : "",
+        "referencePoint" : "",
+        "telephone" : "11999990000",
+        "cellphone" : "",
+        "email" : "",
+        "indIeDest" : 9,
+        "inscricaoEstadual" : null,
+        "codigoMunicipioIbge" : null,
+        "limiteCredito" : 100.0,
+        "saldoDevedor" : 50.0
+      } ],
+      "acceptedClientSaleIds" : [ "client-sale-ct" ]
+    }
+  }
+}

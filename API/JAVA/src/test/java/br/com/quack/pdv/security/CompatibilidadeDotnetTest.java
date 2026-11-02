@@ -34,6 +34,17 @@ class CompatibilidadeDotnetTest {
     }
 
     @Test
+    void certificadoDoDotnetTemMesmaImpressaoDigitalEValidade() {
+        var vetor = vetores.get("certificado");
+        var leitor = new br.com.quack.pdv.empresa.app.LeitorCertificado();
+        var dados = leitor.ler(vetor.get("base64").asText(), vetor.get("senha").asText());
+        assertThat(dados.thumbprint()).isEqualTo(vetor.get("thumbprint").asText());
+        assertThat(br.com.quack.pdv.shared.FormatoO.comOffset(dados.validoAte())).isEqualTo(vetor.get("notAfter").asText());
+        assertThatThrownBy(() -> leitor.ler(vetor.get("base64").asText(), "errada"))
+            .hasMessage("Certificado digital ou senha inválidos.");
+    }
+
+    @Test
     void senhasDoDotNetSaoAceitasERecusaErrada() {
         for (JsonNode item : vetores.get("senhas")) {
             String senha = item.get("senha").asText();
