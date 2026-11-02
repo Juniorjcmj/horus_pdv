@@ -105,7 +105,7 @@ class PedidoPersonalizadoUiE2ETest {
             List<TextField> campos = todos(raiz, TextField.class);
             campos.stream().filter(t -> "Ex.: À vista, 30 dias, 30/60".equals(t.getPromptText())).findFirst().orElseThrow()
                     .setText("30 dias");
-            TextField busca = campos.stream().filter(t -> t.getPromptText() != null && t.getPromptText().startsWith("Código, código de barras"))
+            TextField busca = campos.stream().filter(t -> t.getPromptText() != null && t.getPromptText().startsWith("Digite 2 letras"))
                     .findFirst().orElseThrow();
             busca.setText(a.codigo());
             busca.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER, false, false, false, false));
@@ -115,7 +115,7 @@ class PedidoPersonalizadoUiE2ETest {
         FxTestSupport.naFx(() -> {
             Node raiz = ficha[0].getScene().getRoot();
             TextField busca = todos(raiz, TextField.class).stream()
-                    .filter(t -> t.getPromptText() != null && t.getPromptText().startsWith("Código, código de barras")).findFirst().orElseThrow();
+                    .filter(t -> t.getPromptText() != null && t.getPromptText().startsWith("Digite 2 letras")).findFirst().orElseThrow();
             busca.setText(b.codigo());
             busca.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.ENTER, false, false, false, false));
             return null;

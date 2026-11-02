@@ -67,6 +67,7 @@ public final class PedidoEditorDialog {
     private final List<CadastroApi.Fornecedor> fornecedores;
     private final java.util.function.Consumer<String> aoSalvar;
     private ComboBox<String> forn;
+    private BuscaProdutoCampo buscaProduto;
     private final ObservableList<Linha> itens = FXCollections.observableArrayList();
     private final TableView<Linha> tabela = Ui.tabela();
     private final Label totais = Ui.muted("");
@@ -145,15 +146,11 @@ public final class PedidoEditorDialog {
         tabela.setPrefHeight(260);
         Ui.distribuir(tabela);
 
-        TextField busca = Ui.campo("Código, código de barras ou nome do produto");
+        TextField busca = Ui.campo("Digite 2 letras do nome, o código ou o código de barras");
         HBox.setHgrow(busca, Priority.ALWAYS);
-        Button adicionar = Ui.botao("Adicionar item", () -> adicionar(busca));
-        busca.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                adicionar(busca);
-                e.consume();
-            }
-        });
+        // Lista aparece enquanto digita (a partir do 2º caractere); produtos do fornecedor escolhido primeiro.
+        buscaProduto = new BuscaProdutoCampo(busca, this::buscarOrdenado, ctx.catalogo::porCodigoOuGtin, this::incluir);
+        Button adicionar = Ui.botao("Adicionar item", () -> buscaProduto.confirmar());
         Button remover = Ui.botao("Remover item selecionado", () -> {
             Linha l = tabela.getSelectionModel().getSelectedItem();
             if (l != null) {
@@ -280,37 +277,14 @@ public final class PedidoEditorDialog {
         return r;
     }
 
-    private void adicionar(TextField busca) {
-        String t = busca.getText() == null ? "" : busca.getText().trim();
-        if (t.isEmpty()) {
-            return;
-        }
+    /** Produtos que casam com o texto; com fornecedor escolhido, os dele (ou sem fornecedor) vêm primeiro, como na web. */
+    private List<Produto> buscarOrdenado(String t) {
+        List<Produto> achados = new ArrayList<>(ctx.catalogo.buscar(t, 60));
         String fornecedor = forn.getValue() == null || SEM_FORNECEDOR.equals(forn.getValue()) ? "" : forn.getValue();
-        Carregando.async(() -> {
-            ctx.garantirCatalogo(false);
-            Produto exato = ctx.catalogo.porCodigoOuGtin(t);
-            if (exato != null) {
-                return List.of(exato);
-            }
-            List<Produto> achados = new ArrayList<>(ctx.catalogo.buscar(t, 60));
-            if (!fornecedor.isEmpty()) {
-                // como na web: primeiro os produtos desse fornecedor (ou sem fornecedor), depois os demais
-                achados.sort(java.util.Comparator.comparingInt(p -> doFornecedor(p, fornecedor) ? 0 : 1));
-            }
-            return achados.size() > 30 ? achados.subList(0, 30) : achados;
-        }, achados -> {
-            if (achados.isEmpty()) {
-                modal.erro("Nenhum produto encontrado para \"" + t + "\".");
-            } else if (achados.size() == 1) {
-                incluir(achados.get(0));
-                busca.clear();
-            } else {
-                escolher(achados, p -> {
-                    incluir(p);
-                    busca.clear();
-                });
-            }
-        }, err -> modal.erro(Fx.message(err)));
+        if (!fornecedor.isEmpty()) {
+            achados.sort(java.util.Comparator.comparingInt(p -> doFornecedor(p, fornecedor) ? 0 : 1));
+        }
+        return achados;
     }
 
     private static boolean doFornecedor(Produto p, String fornecedor) {
@@ -334,45 +308,5 @@ public final class PedidoEditorDialog {
         tabela.getSelectionModel().select(nova);
         tabela.scrollTo(nova);
         atualizarTotais();
-    }
-
-    private void escolher(List<Produto> opcoes, java.util.function.Consumer<Produto> aoEscolher) {
-        ListView<Produto> lista = new ListView<>(FXCollections.observableArrayList(opcoes));
-        lista.setCellFactory(v -> new javafx.scene.control.ListCell<>() {
-            @Override
-            protected void updateItem(Produto p, boolean vazio) {
-                super.updateItem(p, vazio);
-                setText(vazio || p == null ? null : p.codigo() + " · " + p.nome() + " · estoque " + Fmt.qty(p.estoque()));
-            }
-        });
-        lista.setPrefHeight(320);
-        lista.getSelectionModel().selectFirst();
-        Modal[] m = new Modal[1];
-        Runnable ok = () -> {
-            Produto p = lista.getSelectionModel().getSelectedItem();
-            if (p != null) {
-                aoEscolher.accept(p);
-                m[0].fechar();
-            }
-        };
-        lista.setOnMouseClicked(e -> {
-            if (e.getClickCount() == 2) {
-                ok.run();
-            }
-        });
-        lista.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER) {
-                ok.run();
-            }
-        });
-        m[0] = Modal.formulario(modal.stage(), "Escolha o produto", new VBox(8, lista), "Adicionar", 560, () -> {
-            Produto p = lista.getSelectionModel().getSelectedItem();
-            if (p != null) {
-                aoEscolher.accept(p);
-            }
-            return true;
-        });
-        m[0].mostrar();
-        lista.requestFocus();
     }
 }
