@@ -52,34 +52,32 @@ public class ProdutosView extends Tela {
             }
         });
         Button ficha = Ui.botao(perfil.cadastrarProdutos() ? "Ficha / editar" : "Ver ficha", () -> {
-            Produto p = tabela.getSelectionModel().getSelectedItem();
+            Produto p = umProduto("abrir a ficha");
             if (p != null) {
                 abrirFicha(p);
             }
         });
         Button preco = Ui.botao("Alterar preço", () -> {
-            Produto p = tabela.getSelectionModel().getSelectedItem();
+            Produto p = umProduto("alterar o preço");
             if (p != null) {
                 alterarPreco(p);
             }
         });
         preco.setVisible(perfil.cadastrarProdutos());
         preco.setManaged(perfil.cadastrarProdutos());
-        Button etiqueta = Ui.botao("Etiqueta", () -> {
-            Produto p = tabela.getSelectionModel().getSelectedItem();
-            if (p != null) {
-                ctx.etiquetas.adicionar(p.id(), 1);
-                sucesso("Etiqueta de \"" + p.nome() + "\" na fila (" + ctx.etiquetas.totalEtiquetas() + " no total).");
-            }
-        });
+        Button etiqueta = Ui.botao("Etiqueta", this::etiquetasDosMarcados);
         Button movimentos = Ui.botao("Movimentações", () -> {
-            Produto p = tabela.getSelectionModel().getSelectedItem();
+            Produto p = umProduto("ver as movimentações");
             if (p != null) {
                 MovimentacoesView.abrirDoProduto(janela(), ctx, p);
             }
         });
         HBoxHelper.cresce(busca);
-        getChildren().add(Ui.barra(busca, ficha, preco, etiqueta, movimentos));
+        marcadosInfo.setVisible(false);
+        marcadosInfo.setManaged(false);
+        limparMarcados.setVisible(false);
+        limparMarcados.setManaged(false);
+        getChildren().add(Ui.barra(busca, ficha, preco, etiqueta, movimentos, marcadosInfo, limparMarcados));
 
         var cCodigo = Ui.col(tabela, "Código", Produto::codigo, 110);
         var cNome = Ui.col(tabela, "Produto", Produto::nome, 300);
@@ -115,6 +113,7 @@ public class ProdutosView extends Tela {
             cFornecedor.setOnEditCommit(e -> salvarEdicao(e.getRowValue(), "fornecedor", e.getNewValue()));
         }
         tabela.getSelectionModel().setCellSelectionEnabled(false);
+        colunaSelecao();
         tabela.setRowFactory(t -> {
             TableRow<Produto> row = new TableRow<>() {
                 @Override
@@ -176,6 +175,115 @@ public class ProdutosView extends Tela {
     /** Fornecedores cadastrados (nome) para a coluna Fornecedor; carregados em ativar(). */
     private final List<String> nomesFornecedores = new ArrayList<>();
     private static final String SEM_FORNECEDOR = "(sem fornecedor)";
+
+    // ------------------------------------------------------------------ seleção (primeira coluna)
+
+    /** Produtos marcados na primeira coluna (por id: a marca sobrevive à busca e ao recarregar a lista). */
+    private final java.util.Map<String, javafx.beans.property.SimpleBooleanProperty> marcas = new java.util.HashMap<>();
+    private final Label marcadosInfo = Ui.muted("");
+    private final Button limparMarcados = Ui.pequeno("Desmarcar", this::desmarcarTodos);
+
+    private javafx.beans.property.SimpleBooleanProperty marca(Produto p) {
+        return marcas.computeIfAbsent(p.id(), id -> {
+            var prop = new javafx.beans.property.SimpleBooleanProperty(false);
+            prop.addListener((o, antes, agora) -> {
+                if (agora) {
+                    tabela.getSelectionModel().select(p);
+                }
+                atualizarMarcados();
+            });
+            return prop;
+        });
+    }
+
+    /** Caixa de marcar no início da linha: escolhe o produto sem abrir a edição das outras colunas. */
+    private void colunaSelecao() {
+        javafx.scene.control.TableColumn<Produto, Boolean> sel = new javafx.scene.control.TableColumn<>();
+        javafx.scene.control.CheckBox todos = new javafx.scene.control.CheckBox();
+        todos.setTooltip(new javafx.scene.control.Tooltip("Marcar ou desmarcar todos os produtos da lista"));
+        todos.setOnAction(e -> {
+            for (Produto p : tabela.getItems()) {
+                marca(p).set(todos.isSelected());
+            }
+        });
+        sel.setGraphic(todos);
+        sel.setCellValueFactory(cd -> marca(cd.getValue()));
+        sel.setCellFactory(javafx.scene.control.cell.CheckBoxTableCell.forTableColumn(sel));
+        sel.setEditable(true);
+        sel.setSortable(false);
+        sel.setResizable(false);
+        sel.setReorderable(false);
+        sel.setPrefWidth(40);
+        sel.setMinWidth(40);
+        sel.setMaxWidth(40);
+        sel.setStyle("-fx-alignment: CENTER;");
+        tabela.getColumns().add(0, sel);
+    }
+
+    /** Produtos marcados (na ordem do catálogo). */
+    List<Produto> marcados() {
+        List<Produto> r = new ArrayList<>();
+        for (Produto p : ctx.catalogo.todos()) {
+            var m = marcas.get(p.id());
+            if (m != null && m.get()) {
+                r.add(p);
+            }
+        }
+        return r;
+    }
+
+    private void atualizarMarcados() {
+        int n = marcados().size();
+        marcadosInfo.setText(n == 1 ? "1 produto marcado" : n + " produtos marcados");
+        marcadosInfo.setVisible(n > 0);
+        marcadosInfo.setManaged(n > 0);
+        limparMarcados.setVisible(n > 0);
+        limparMarcados.setManaged(n > 0);
+    }
+
+    private void desmarcarTodos() {
+        marcas.values().forEach(m -> m.set(false));
+        tabela.refresh();
+    }
+
+    /**
+     * Produto para as ações de um produto só (ficha, preço, movimentações): o marcado; sem marca, a linha selecionada.
+     * Avisa quando não há nenhum ou há mais de um marcado.
+     */
+    private Produto umProduto(String acao) {
+        List<Produto> m = marcados();
+        if (m.size() > 1) {
+            Toasts.error(janela(), "Há " + m.size() + " produtos marcados. Para " + acao + ", deixe só um marcado.");
+            return null;
+        }
+        if (m.size() == 1) {
+            return m.get(0);
+        }
+        Produto p = tabela.getSelectionModel().getSelectedItem();
+        if (p == null) {
+            Toasts.error(janela(), "Marque um produto na primeira coluna da tabela para " + acao + ".");
+        }
+        return p;
+    }
+
+    /** Etiqueta: todos os marcados vão para a fila (1 de cada); sem marca, a linha selecionada. */
+    private void etiquetasDosMarcados() {
+        List<Produto> alvo = marcados();
+        if (alvo.isEmpty()) {
+            Produto p = tabela.getSelectionModel().getSelectedItem();
+            if (p == null) {
+                Toasts.error(janela(), "Marque na primeira coluna os produtos que vão para a fila de etiquetas.");
+                return;
+            }
+            alvo = List.of(p);
+        }
+        for (Produto p : alvo) {
+            ctx.etiquetas.adicionar(p.id(), 1);
+        }
+        sucesso((alvo.size() == 1 ? "Etiqueta de \"" + alvo.get(0).nome() + "\" na fila" : alvo.size() + " etiquetas na fila")
+                + " (" + ctx.etiquetas.totalEtiquetas() + " no total). Imprima em Etiquetas (F8).");
+        desmarcarTodos();
+    }
 
     /** Colunas editáveis com um clique: Enter salva, Esc cancela, Tab vai para a próxima. */
     private void colunasEditaveis(javafx.scene.control.TableColumn<Produto, String> codigo,
