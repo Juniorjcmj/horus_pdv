@@ -133,7 +133,7 @@ Decisões já tomadas:
 Pacotes por domínio (o mesmo recorte dos módulos do § 2.2), cada um com suas camadas:
 
 ```
-API/JAVA/                              (repositório atual, pasta nova)
+JAVA/api/                              (repositório atual, pasta nova)
 └── src/main/java/br/com/quack/pdv/
     ├── QuackPdvApiApplication.java
     ├── shared/            envelope ApiResponse, erros, formatação pt-BR, Jackson, paginação
@@ -160,6 +160,49 @@ Regras:
 - **Repositórios Spring Data** por agregado; consultas de relatório em `@Query(nativeQuery = true)` com *projections* (interfaces ou records).
 - **Uma única porta de mudança de estoque** (equivalente ao `EstoqueMovimentacaoAB.AplicarMovimentoAsync`): todo serviço que mexe em saldo passa por ela, na mesma transação.
 - **Transações** declarativas (`@Transactional`) no serviço; o comportamento de cada operação composta hoje (venda + estoque + caixa + fiscal) é mapeado na fase correspondente.
+
+### 3.3 Modo loja (servidor local)
+
+Decisão de 03/11/2026, para a loja de material de construção (7 máquinas). Lojas com vários terminais rodam a
+**mesma API Java** num **servidor dedicado da loja**, com **SQL Server Express** local. Todos os caixas, o Quack
+Estoque e a web da loja apontam para esse servidor pela rede local. Ele concentra os dados e as transações da loja e
+sincroniza com a nuvem. Sem internet, a loja inteira continua operando junta: nenhum caixa fica isolado.
+
+```
+NUVEM: API Java + SQL Server (todas as empresas), painel web, MCP
+          ▲  sincronização pela internet (sobe eventos, desce comandos)
+LOJA:  servidor dedicado: API Java (modo loja) + SQL Server Express
+          ▲  rede local
+       caixas 1..7 · Quack Estoque · web da loja  (cada caixa mantém sua fila offline)
+```
+
+Regras:
+
+1. **Uma autoridade por empresa.** Com a empresa em modo loja, o servidor da loja é a autoridade de todos os dados
+   da loja (vendas, caixa, estoque, cadastros, preços, fiado). A nuvem é uma réplica. Edições feitas pela web na
+   nuvem (o dono alterando preço ou cadastro de fora da loja) **descem como comandos** e são aplicadas pelo servidor
+   da loja, que devolve o resultado. Não há mestre duplo nem resolução de conflito.
+2. **Numeração única.** Número da venda (`SaleNumber`), numeração fiscal (`FiscalSequencias`) e número do inventário
+   são gerados só pela autoridade da empresa, por um único serviço de numeração (Fase 4). Isso é obrigatório porque o
+   ID da venda **deriva do número** (`sale-{empresa}-{número}`, assim como itens e pagamentos); os demais IDs são
+   GUID em texto e não colidem.
+3. **Sincronização loja → nuvem pelo Change Tracking do SQL Server** (disponível na Express; ligado só no banco da
+   loja). Um processo lê, em snapshot, as linhas que mudaram até uma versão e as envia à nuvem em lotes, com backoff
+   exponencial; separa erro temporário (rede, 408, 429, 5xx: tenta de novo) de erro definitivo (4xx: para e alerta).
+   A nuvem aplica o estado das linhas de forma idempotente. Como há uma só autoridade, não há conflito. Escolhido em
+   03/11/2026 no lugar de uma fila de saída gravada pela aplicação, porque cobre todas as tabelas sem mexer em cada
+   gravação (ver design D9 de `api-java-vendas`).
+4. **Caixas falam só com o servidor da loja.** Se ele cair, cada caixa usa a própria fila offline (Caixa JavaFX) e
+   reenvia quando ele voltar. Os caixas não pulam para a nuvem (evita duas versões da verdade).
+5. **NFC-e emitida pelo servidor da loja**, com o certificado lá; sem internet, contingência offline e transmissão
+   depois.
+6. **Gateway .NET aposentado** nas lojas com servidor: a API local absorve fiado compartilhado, assinatura fiscal
+   local e fila. O Gateway continua para lojas pequenas sem servidor.
+7. **Infra da loja:** máquina dedicada (não é um dos caixas), nobreak, IP fixo na rede, backup automático do banco
+   local. SQL Server Express (10 GB por banco) basta para uma loja; o histórico completo fica na nuvem.
+
+Enquanto o modo loja não estiver pronto, a loja pode começar com os caixas ligados direto à nuvem atual (cada caixa
+com sua fila offline) e migrar para o servidor da loja quando as fases 4, 4b e 7 estiverem prontas.
 
 ---
 
@@ -297,13 +340,16 @@ Estimativa para **1 desenvolvedor em tempo integral**. Com 2, as fases 2 a 7 pod
 | 1 | Fundação | Projeto Spring Boot; Flyway (V1 + baseline); Jackson e envelope; erros; segurança completa (JWT/cookie/sessão, PBKDF2, AES-GCM, perfis, rate limit, cabeçalhos, CORS); auditoria; springdoc; Docker + CI | Login, sessão e troca de senha funcionando com usuários reais da cópia; segredos decifrados | 3 sem |
 | 2 | Cadastros e administração | Empresa, tema, usuários, categorias, fornecedores, clientes, módulo mercado, treinamento, admin de empresas | Rotas iguais ao contrato; telas web de cadastro funcionando contra a API Java | 3 sem |
 | 3 | Produtos e estoque | Produtos (inclusive preço com versão e estoque relativo), registrador único de movimentação, lotes/validade e FEFO, entrada manual, importação de NF-e, inventário, ordens de compra, promoções | E2E do Quack Estoque passando contra a API Java | 4 sem |
-| 4 | Vendas | Caixa (abertura, fechamento, sangria/reforço), vendas e itens, idempotência offline, cancelamento e correção com senha do gerente, pedidos, histórico, fiado, autorizações de preço | E2E do Caixa JavaFX (inclusive offline) e Playwright de vendas passando | 5 sem |
+| 4 | Vendas | Caixa (abertura, fechamento, sangria/reforço), vendas e itens, idempotência offline, cancelamento e correção com senha do gerente, pedidos, histórico, fiado, autorizações de preço | E2E do Caixa JavaFX (inclusive offline) e Playwright de vendas passando; volta ao aceite do Quack Estoque os 6 E2E de inventário que dependem de venda (excluídos na Fase 3, ver D10 de `api-java-produtos-estoque`) | 5 sem |
+| 4b | Modo loja e sincronização | Perfil `loja` da API; sincronização loja → nuvem por Change Tracking; comandos nuvem → loja; carga inicial da loja; instalador do servidor da loja (API + SQL Server Express + backup) | Loja de teste com 2+ caixas operando sem internet e convergindo com a nuvem ao voltar | 3–4 sem |
 | 5 | Gateway (rotas da API) | Tokens do Gateway, configuração, fiado do Gateway (`gateway-credit`, protocolo do `Shared`) | Gateway .NET atual sincronizando com a API Java em homologação | 2 sem |
 | 6 | Relatórios e análise | Relatórios gerais, relatórios de estoque, análise de estoque (23 rotas), foto diária | Relatórios iguais aos da API .NET sobre a mesma base | 3 sem |
 | 7 | Fiscal | NFC-e e NF-e (emissão, fila, contingência, cancelamento, inutilização, DF-e, regras de emissão), revisão fiscal com IA | Bateria em homologação SEFAZ aprovada; XML equivalente ao do .NET | 6–8 sem |
 | 8 | MCP e backup | Servidor MCP com as 21 ferramentas, tokens de integração, backup | Agente conectado à API Java respondendo igual | 1–2 sem |
 | 9 | Homologação geral | Todos os clientes apontados para a VPS nova (homologação), uso assistido, correções, teste de carga | Checklist de corte (§ 12) completo | 2–3 sem |
 | 10 | Corte | Migração dos dados e virada (§ 12) | Produção na VPS nova | 1 dia + 1 sem de acompanhamento |
+
+**Prioridade da loja de material de construção (modo loja):** 4 → 4b → 7 → 6. As fases 5 e 8 seguem depois. A Fase 4 já nasce com a numeração centralizada (§ 3.3).
 
 **Total estimado: 32 a 37 semanas (cerca de 8 a 9 meses) com 1 pessoa; 5 a 6 meses com 2.**
 
@@ -379,7 +425,7 @@ Fora do escopo desta migração, mas condiciona decisões dela:
 
 ## 16. Decisões em aberto
 
-1. **Nome e local do projeto:** proposta `API/JAVA` neste repositório, pacote `br.com.quack.pdv`.
+1. **Nome e local do projeto:** proposta `JAVA/api` neste repositório, pacote `br.com.quack.pdv`.
 2. **Banco na VPS nova:** SQL Server em contêiner ou instância gerenciada? (Licença: a edição Express tem limite de 10 GB por banco.)
 3. **Endereço no corte:** trocar o DNS do domínio atual (recomendado) ou publicar um domínio novo e reconfigurar os clientes.
 4. **Congelamento da API .NET:** a partir de qual fase novas funcionalidades passam a ser feitas só no Java.
