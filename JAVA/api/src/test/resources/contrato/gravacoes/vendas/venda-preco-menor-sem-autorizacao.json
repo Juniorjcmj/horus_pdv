@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "O preço de \"Produto Contrato 1\" foi alterado (R$ 2.00 em vez de R$ 3.00) sem autorização de gerente. Peça a senha do gerente para alterar o preço ou atualize o catálogo do caixa.",
+    "details" : null,
+    "data" : null
+  }
+}

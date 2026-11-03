@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "A autorização de preço de \"Produto Contrato 1\" já foi utilizada em outra venda.",
+    "details" : null,
+    "data" : null
+  }
+}

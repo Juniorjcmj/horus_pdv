@@ -1,0 +1,12 @@
+{
+  "status" : 409,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Conflito de idempotência: o EventId 'ev-idem-1' já foi processado anteriormente com um payload diferente.",
+    "details" : null,
+    "data" : null
+  }
+}

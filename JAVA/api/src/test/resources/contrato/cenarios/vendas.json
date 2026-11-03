@@ -1,0 +1,370 @@
+[
+  {
+    "nome": "venda-simples",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}]}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-varios-pagamentos-com-troco",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"9,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0},{"productCode":"CT002","productName":"Produto Contrato 2","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":5,"cashGiven":10,"changeAmount":5},{"paymentType":"pix","amount":4}]}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-total-divergente",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"5,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}]}}
+  },
+  {
+    "nome": "venda-item-sem-preco",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6}]}}
+  },
+  {
+    "nome": "venda-sem-itens",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[],"payments":[]}}
+  },
+  {
+    "nome": "venda-caixa-fechado-online",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}]}}
+  },
+  {
+    "nome": "venda-caixa-fechado-offline",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}],"eventId":"ev-off-1","clientSaleId":"cs-off-1"}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-estoque-insuficiente-online",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"33,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":11,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":33}]}}
+  },
+  {
+    "nome": "venda-ruptura-offline",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"36,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":12,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":36}],"eventId":"ev-rup-1","clientSaleId":"cs-rup-1","offlineReference":"off-rup-1"}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-pagamento-soma-diferente",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":1234.5}]}}
+  },
+  {
+    "nome": "venda-troco-fora-do-dinheiro",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"pix","amount":6,"changeAmount":1}]}}
+  },
+  {
+    "nome": "venda-produto-inexistente",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"ZZ999","productName":"Produto Z","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}]}}
+  },
+  {
+    "nome": "venda-fiado-sem-cliente",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"fiado","amount":6}]}}
+  },
+  {
+    "nome": "venda-fiado-cliente-inexistente",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"X","customerCpf":"00000000000","paymentType":"fiado","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"fiado","amount":6}]}}
+  },
+  {
+    "nome": "venda-fiado-limite-estourado",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"X","customerCpf":"529.982.247-25","paymentType":"fiado","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"fiado","amount":6}]}}
+  },
+  {
+    "nome": "venda-fiado-ok",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"X","customerCpf":"111.444.777-35","paymentType":"fiado","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"fiado","amount":6}]}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-fiado-credit-authorization",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"X","customerCpf":"11144477735","paymentType":"fiado","totalAmount":"6,00","operatorName":"Cai Caixa","eventId":"ev-cred-1","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"fiado","amount":6}],"creditAuthorization":{"version":1,"authorizationId":"a1","grantId":"g1","gatewayId":"gw","epoch":"e1","storeId":"s1","customerId":"cl-ct-folgado","amountCents":600,"saleHash":"abc"}}}
+  },
+  {
+    "nome": "venda-preco-menor-sem-autorizacao",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"2,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":2,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":2}]}}
+  },
+  {
+    "nome": "venda-preco-menor-com-autorizacao",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}},{"metodo":"POST","caminho":"/api/HistoricoVendas/autorizar-preco","auth":"bearer","corpo":{"supervisorId":"usr-ct-gerente","supervisorPassword":"Senha#Quack2026","productCode":"CT001","precoNovo":2,"motivo":"Cliente fiel"},"status":200,"capturar":{"aut":"data.autorizacaoId"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"2,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":2,"desconto":0,"autorizacaoPrecoId":"{aut}"}],"payments":[{"paymentType":"dinheiro","amount":2}]}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-autorizacao-usada-duas-vezes",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}},{"metodo":"POST","caminho":"/api/HistoricoVendas/autorizar-preco","auth":"bearer","corpo":{"supervisorId":"usr-ct-gerente","supervisorPassword":"Senha#Quack2026","productCode":"CT001","precoNovo":2,"motivo":"Cliente fiel"},"status":200,"capturar":{"aut":"data.autorizacaoId"}},{"metodo":"POST","caminho":"/api/HistoricoVendas","auth":"bearer","corpo":{"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"2,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":2,"desconto":0,"autorizacaoPrecoId":"{aut}"}],"payments":[{"paymentType":"dinheiro","amount":2}]},"status":201}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"2,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":2,"desconto":0,"autorizacaoPrecoId":"{aut}"}],"payments":[{"paymentType":"dinheiro","amount":2}]}}
+  },
+  {
+    "nome": "venda-autorizacao-inexistente",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"2,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":2,"desconto":0,"autorizacaoPrecoId":"ap-nao-existe"}],"payments":[{"paymentType":"dinheiro","amount":2}]}}
+  },
+  {
+    "nome": "venda-autorizacao-de-outro-produto",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}},{"metodo":"POST","caminho":"/api/HistoricoVendas/autorizar-preco","auth":"bearer","corpo":{"supervisorId":"usr-ct-gerente","supervisorPassword":"Senha#Quack2026","productCode":"CT001","precoNovo":2,"motivo":"Cliente fiel"},"status":200,"capturar":{"aut":"data.autorizacaoId"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"2,00","operatorName":"Cai Caixa","items":[{"productCode":"CT002","productName":"Produto Contrato 2","quantity":1,"unitPrice":2,"desconto":0,"autorizacaoPrecoId":"{aut}"}],"payments":[{"paymentType":"dinheiro","amount":2}]}}
+  },
+  {
+    "nome": "venda-preco-maior-aceita",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"4,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":4,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":4}]}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-offline-preco-abaixo-sem-autorizacao",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"2,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":2,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":2}],"eventId":"ev-pre-1","reenvioOffline":true}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "autorizar-preco-ok",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/autorizar-preco", "corpo": {"supervisorId":"usr-ct-gerente","supervisorPassword":"Senha#Quack2026","productCode":"CT001","precoNovo":2.5,"motivo":"Promocao do dia"}},
+    "volateis": {"data.autorizacaoId":"id","data.expiraEm":"iso"}
+  },
+  {
+    "nome": "autorizar-preco-senha-errada",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/autorizar-preco", "corpo": {"supervisorId":"usr-ct-gerente","supervisorPassword":"errada","productCode":"CT001","precoNovo":2.5}}
+  },
+  {
+    "nome": "autorizar-preco-produto-inexistente",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/autorizar-preco", "corpo": {"supervisorId":"usr-ct-gerente","supervisorPassword":"Senha#Quack2026","productCode":"ZZ999","precoNovo":2.5}}
+  },
+  {
+    "nome": "autorizar-preco-zero",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/autorizar-preco", "corpo": {"supervisorId":"usr-ct-gerente","supervisorPassword":"Senha#Quack2026","productCode":"CT001","precoNovo":0}}
+  },
+  {
+    "nome": "autorizar-preco-sem-produto",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/autorizar-preco", "corpo": {"supervisorId":"usr-ct-gerente","supervisorPassword":"Senha#Quack2026","productCode":"","precoNovo":2}}
+  },
+  {
+    "nome": "autorizar-preco-perfil-sem-permissao",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/autorizar-preco", "corpo": {"supervisorId":"usr-ct-gerente","supervisorPassword":"Senha#Quack2026","productCode":"CT001","precoNovo":2}}
+  },
+  {
+    "nome": "autorizar-preco-sem-token",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/autorizar-preco", "corpo": {"supervisorId":"usr-ct-gerente","supervisorPassword":"x","productCode":"CT001","precoNovo":2}}
+  },
+  {
+    "nome": "venda-replay-mesmo-evento",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}},{"metodo":"POST","caminho":"/api/HistoricoVendas","auth":"bearer","corpo":{"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}],"eventId":"ev-idem-1","clientSaleId":"cs-idem-1"},"status":201}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}],"eventId":"ev-idem-1","clientSaleId":"cs-idem-1"}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-conflito-mesmo-evento-outro-total",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}},{"metodo":"POST","caminho":"/api/HistoricoVendas","auth":"bearer","corpo":{"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}],"eventId":"ev-idem-1","clientSaleId":"cs-idem-1"},"status":201}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"3,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":3}],"eventId":"ev-idem-1","clientSaleId":"cs-idem-1"}}
+  },
+  {
+    "nome": "venda-replay-com-payload-hash-enviado",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}},{"metodo":"POST","caminho":"/api/HistoricoVendas","auth":"bearer","corpo":{"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}],"eventId":"ev-idem-2","payloadHash":"ABC123"},"status":201}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}],"eventId":"ev-idem-2","payloadHash":"abc123"}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-pedido-ok",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"9,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0},{"productCode":"CT002","productName":"Produto Contrato 2","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":9}],"orderNumber":"1"}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-pedido-itens-divergentes",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"12,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":3,"unitPrice":3,"desconto":0},{"productCode":"CT002","productName":"Produto Contrato 2","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":12}],"orderNumber":"1"}}
+  },
+  {
+    "nome": "venda-pedido-inexistente",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}],"orderNumber":"99"}}
+  },
+  {
+    "nome": "venda-terceira-em-dinheiro-emite-nfce",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}},{"metodo":"POST","caminho":"/api/HistoricoVendas","auth":"bearer","corpo":{"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"3,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":3}]},"status":201},{"metodo":"POST","caminho":"/api/HistoricoVendas","auth":"bearer","corpo":{"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"3,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":3}]},"status":201}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"3,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":3}]}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-segunda-em-dinheiro-nao-emite",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}},{"metodo":"POST","caminho":"/api/HistoricoVendas","auth":"bearer","corpo":{"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"3,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":3}]},"status":201}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"3,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":3}]}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-pix-sempre-emite",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"pix","amount":6}]}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-com-cpf-na-nota-emite",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"X","customerCpf":"529.982.247-25","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6}]}},
+    "volateis": {"data.rows[0].saleDate":"texto","data.rows[1].saleDate":"texto"}
+  },
+  {
+    "nome": "venda-xml-nfce-contingencia",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
+    "divergencia": {"status": 400, "mensagem": "A importação da NFC-e de contingência do Gateway ainda não está disponível nesta versão.", "motivo": "A .NET exige o emitente fiscal e valida o XML do Gateway; a Java so importa a nota na Fase 7 (D10)."},
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}],"xmlNfceContingencia":"<NFe/>"}}
+  },
+  {
+    "nome": "venda-sem-token",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}]}}
+  },
+  {
+    "nome": "venda-token-invalido",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "auth": "invalido", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}]}}
+  },
+  {
+    "nome": "lista-sem-filtro",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas"}
+  },
+  {
+    "nome": "lista-por-data-futura",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas?desde=2027-01-01"}
+  },
+  {
+    "nome": "lista-por-data-desde-seed",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas?desde=2026-01-16T10:30:00Z"}
+  },
+  {
+    "nome": "lista-desde-invalida-ignorada",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas?desde=nao-e-data"}
+  },
+  {
+    "nome": "lista-turno-do-gerente-como-gerente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas?caixaSessaoId=cx-ct-aberto"}
+  },
+  {
+    "nome": "lista-turno-de-outro-operador-como-caixa",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas?caixaSessaoId=cx-ct-aberto"}
+  },
+  {
+    "nome": "lista-turno-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas?caixaSessaoId=cx-nao-existe"}
+  },
+  {
+    "nome": "lista-turno-proprio-do-caixa",
+    "usuario": "caixa@contrato.quack",
+    "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}},{"metodo":"POST","caminho":"/api/HistoricoVendas","auth":"bearer","corpo":{"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"6,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":6,"cashGiven":10,"changeAmount":4}]},"status":201}],
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas?caixaSessaoId={sessao}"},
+    "volateis": {"data[0].saleDate":"texto"}
+  },
+  {
+    "nome": "lista-perfil-sem-permissao",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas"}
+  },
+  {
+    "nome": "lista-sem-token",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas"}
+  },
+  {
+    "nome": "lista-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas"}
+  },
+  {
+    "nome": "detalhe-venda-finalizada",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas/15040"}
+  },
+  {
+    "nome": "detalhe-venda-com-documento-fiscal",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas/15042"}
+  },
+  {
+    "nome": "detalhe-venda-cancelada",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas/15041"}
+  },
+  {
+    "nome": "detalhe-venda-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas/99999"}
+  },
+  {
+    "nome": "detalhe-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas/15042"}
+  },
+  {
+    "nome": "detalhe-perfil-sem-permissao",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {"metodo": "GET", "caminho": "/api/HistoricoVendas/15040"}
+  },
+  {
+    "nome": "imprimir-venda",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/15040/imprimir"},
+    "volateis": {"data.printedAt":"texto"}
+  },
+  {
+    "nome": "imprimir-venda-inexistente",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/99999/imprimir"}
+  },
+  {
+    "nome": "imprimir-sem-token",
+    "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/15040/imprimir"}
+  }
+]

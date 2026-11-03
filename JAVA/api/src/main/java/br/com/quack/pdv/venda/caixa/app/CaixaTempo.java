@@ -52,6 +52,11 @@ public final class CaixaTempo {
 
     record Resolucao(OffsetDateTime horario, boolean foraDaJanela) {}
 
+    /** DateTimeOffset.TryParse: ISO com offset, sem offset (UTC) ou so a data (UTC). */
+    public static Optional<OffsetDateTime> lerDataHora(String texto) {
+        return texto == null ? Optional.empty() : lerHorario(texto.strip());
+    }
+
     private static Optional<OffsetDateTime> lerHorario(String texto) {
         try {
             return Optional.of(OffsetDateTime.parse(texto));

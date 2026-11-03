@@ -36,7 +36,7 @@ public final class MotorDeContrato {
 
     public static final ObjectMapper JSON = new ObjectMapper();
     public static final String SENHA = "Senha#Quack2026";
-    public static final String[] GRUPOS = {"auth", "sessao", "usuario", "empresa", "tema", "categoria", "fornecedor", "cliente", "modulo-mercado", "treinamento", "admin-empresas", "produto", "movimentacao", "lote", "nfe-import", "entrada-manual", "ordem-compra", "promocao", "inventario", "caixa"};
+    public static final String[] GRUPOS = {"auth", "sessao", "usuario", "empresa", "tema", "categoria", "fornecedor", "cliente", "modulo-mercado", "treinamento", "admin-empresas", "produto", "movimentacao", "lote", "nfe-import", "entrada-manual", "ordem-compra", "promocao", "inventario", "caixa", "vendas"};
 
     private static final Pattern ISO = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$");
     private static final Pattern DATA = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
@@ -102,7 +102,7 @@ public final class MotorDeContrato {
             for (int i = 0; i < vezes; i++) {
                 String authPasso = passo.path("auth").asText("nenhum").equals("bearer") ? "Bearer " + tokenPasso : null;
                 String caminhoPasso = substituir(passo.get("caminho").asText(), variaveis);
-                Resposta resultado = enviar(passo.get("metodo").asText(), caminhoPasso, corpoComoTexto(passo.get("corpo")), cabecalhos(passo.get("cabecalhos")), authPasso);
+                Resposta resultado = enviar(passo.get("metodo").asText(), caminhoPasso, substituirCorpo(corpoComoTexto(passo.get("corpo")), variaveis), cabecalhos(passo.get("cabecalhos")), authPasso);
                 if (passo.has("status") && resultado.status != passo.get("status").asInt()) throw new IllegalStateException("passo anterior falhou: " + resultado.status + " " + resultado.corpo);
                 if (passo.has("capturar")) {
                     JsonNode corpo = JSON.readTree(resultado.corpo);
@@ -130,13 +130,17 @@ public final class MotorDeContrato {
         };
         Map<String, String> cab = new LinkedHashMap<>(cabecalhos(req.get("cabecalhos")));
         if ("cookie".equals(auth)) cab.put("Cookie", "horuspdv.auth=" + tokenAtual);
-        Resposta r = enviar(req.get("metodo").asText(), caminho, corpoComoTexto(req.get("corpo")), cab, authorization);
+        Resposta r = enviar(req.get("metodo").asText(), caminho, substituirCorpo(corpoComoTexto(req.get("corpo")), variaveis), cab, authorization);
         return r.comoGravacao();
     }
 
     private static String substituir(String caminho, Map<String,String> variaveis) {
         for (var entrada : variaveis.entrySet()) caminho = caminho.replace("{" + entrada.getKey() + "}", entrada.getValue());
         return caminho;
+    }
+
+    private static String substituirCorpo(String corpo, Map<String,String> variaveis) {
+        return corpo == null ? null : substituir(corpo, variaveis);
     }
 
     private static Map<String, String> cabecalhos(JsonNode no) {

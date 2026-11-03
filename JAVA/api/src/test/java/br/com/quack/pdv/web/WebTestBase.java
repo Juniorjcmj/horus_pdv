@@ -64,6 +64,17 @@ public abstract class WebTestBase {
     @MockitoBean protected br.com.quack.pdv.venda.caixa.app.CaixaStatusService caixaStatusService;
     @MockitoBean protected br.com.quack.pdv.venda.caixa.app.CaixaOperacoes caixaOperacoes;
     @MockitoBean protected br.com.quack.pdv.venda.caixa.repo.CaixaRepository caixaRepository;
+    @MockitoBean protected br.com.quack.pdv.venda.registro.repo.VendaRepository vendaRepository;
+    @MockitoBean protected br.com.quack.pdv.venda.registro.app.BaixaEstoqueVenda baixaEstoqueVenda;
+    @MockitoBean protected br.com.quack.pdv.venda.registro.app.AutorizacaoPrecoService autorizacaoPreco;
+    @MockitoBean protected br.com.quack.pdv.venda.registro.app.VendaRegistroService vendaRegistro;
+    @MockitoBean protected br.com.quack.pdv.venda.registro.app.VendaConsultaService vendaConsulta;
+    @MockitoBean protected br.com.quack.pdv.venda.fiado.app.FiadoDebitos fiadoDebitos;
+    @MockitoBean protected br.com.quack.pdv.venda.fiado.app.CreditoGateway creditoGateway;
+    @MockitoBean protected br.com.quack.pdv.fiscal.fila.repo.DocumentoFiscalConsulta documentoFiscalConsulta;
+    @MockitoBean protected br.com.quack.pdv.fiscal.fila.app.DecisaoEmissaoNfce decisaoEmissao;
+    @MockitoBean protected br.com.quack.pdv.fiscal.fila.app.PendenciaFiscal pendenciaFiscal;
+    @MockitoBean protected br.com.quack.pdv.fiscal.fila.app.FiscalDaVenda fiscalDaVenda;
     @MockitoBean protected ValidadorSessao validador;
     @MockitoBean protected AutenticacaoService autenticacao;
     @MockitoBean protected CadastroPublicoService cadastro;

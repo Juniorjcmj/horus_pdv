@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Soma dos pagamentos difere do total R$ 6.00.",
+    "details" : null,
+    "data" : null
+  }
+}

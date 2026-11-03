@@ -55,24 +55,24 @@
 
 ## 3. Registro de venda (`api/HistoricoVendas`)
 
-- [ ] 3.1 Escrever e gravar `cenarios/vendas.json` para registrar: venda simples, vários pagamentos com troco, total
+- [x] 3.1 Escrever e gravar `cenarios/vendas.json` para registrar: venda simples, vários pagamentos com troco, total
   divergente, item sem preço, sem itens, caixa fechado online e offline, estoque insuficiente online, ruptura offline,
   fiado (sem cliente, cliente inexistente, limite estourado, ok), preço diferente sem e com autorização, autorizar
   preço (ok, senha errada, produto inexistente, preço zero), replay e conflito de idempotência, `orderNumber` com
   itens divergentes, `xmlNfceContingencia` (divergência D10) e `creditAuthorization`; verificar a gravação de todos
-- [ ] 3.2 Implementar `venda/registro` (D2: transação na ordem do .NET, `SaleMoney`, preço autorizado, fiado com
+- [x] 3.2 Implementar `venda/registro` (D2: transação na ordem do .NET, `SaleMoney`, preço autorizado, fiado com
   leituras do crédito do Gateway, baixa pelo registrador, numeração, IDs derivados, `ProcessedEvents` com
   `ResponsePayload` legível pela .NET, auditorias, lotes e rupturas pós-commit) e a autorização de preço; testes:
   Mockito das regras de dinheiro, IT (venda baixa estoque e grava itens, pagamentos e movimentação com origem
   `Venda #n`; venda recusada não deixa nada; replay não baixa de novo; `ResponsePayload` gravado pela .NET em fixture
   é lido e devolvido), web (perfis, 401) e o grupo `vendas` do comparador verde nos cenários de registro; travas de produto em ordem de código (D13) com IT de vendas cruzadas sem deadlock
-- [ ] 3.3 Acrescentar a `cenarios/vendas.json` lista (por data, por turno próprio, de outro operador como caixa e como
+- [x] 3.3 Acrescentar a `cenarios/vendas.json` lista (por data, por turno próprio, de outro operador como caixa e como
   gerente), detalhe (com e sem documento fiscal, inexistente) e imprimir; implementar e verificar com o comparador
   verde e IT do filtro por turno
 
 ## 4. Fronteira fiscal (`fiscal/fila`)
 
-- [ ] 4.1 Implementar a decisão de emissão e a pendência (D6: `AvaliarEmissaoParaVenda`, `Enfileirar` com
+- [x] 4.1 Implementar a decisão de emissão e a pendência (D6: `AvaliarEmissaoParaVenda`, `Enfileirar` com
   `proximoNumeroFiscal`, 503 na falha) ligadas ao registro e à finalização de pedido; testes: IT do intervalo (3 vendas
   em dinheiro com intervalo 3: só a terceira emite e o contador zera), forma "sempre emitir", CPF na nota, replay sem
   avançar o contador, pendência única por venda, venda cancelada recusada, e unitário do 503 com `data` igual ao .NET

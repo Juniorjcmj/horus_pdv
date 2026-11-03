@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Crédito insuficiente. Disponível: R$ 5.00, solicitado em fiado: R$ 6.00, insuficiência: R$ 1.00. Cliente sem limite não pode comprar fiado.",
+    "details" : null,
+    "data" : null
+  }
+}

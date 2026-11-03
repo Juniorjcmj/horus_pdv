@@ -1,0 +1,52 @@
+{
+  "status" : 201,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Venda registrada com sucesso.",
+    "details" : null,
+    "data" : {
+      "saleNumber" : "15043",
+      "clientSaleId" : null,
+      "vendaId" : "sale-empresa-principal-15043",
+      "rows" : [ {
+        "saleNumber" : "15043",
+        "status" : "finalizada",
+        "customerName" : "Consumidor",
+        "customerCpf" : "-",
+        "paymentType" : "dinheiro",
+        "totalAmount" : "6,00",
+        "operatorName" : "Cai Caixa",
+        "productCode" : "CT001",
+        "productName" : "Produto Contrato 1",
+        "quantity" : 2,
+        "unitPrice" : "3,00",
+        "desconto" : 0,
+        "promocaoId" : null,
+        "itemTotal" : "6,00",
+        "saleDate" : "03/11/2026 20:00:33",
+        "clientSaleId" : null,
+        "offlineReference" : null,
+        "fiscalDocId" : null,
+        "fiscalModelo" : null,
+        "fiscalNumeroNf" : null,
+        "fiscalSerie" : null,
+        "fiscalStatus" : null,
+        "fiscalChaveAcesso" : null,
+        "paymentBreakdown" : null,
+        "canceladoEm" : null,
+        "canceladoPorOperadorNome" : null,
+        "canceladoPorSupervisorNome" : null,
+        "canceladoJustificativa" : null
+      } ],
+      "fiscalQueued" : false,
+      "emitirFiscal" : false,
+      "isReplay" : false,
+      "warnings" : [ ],
+      "fiadoSaldoAtual" : null,
+      "fiadoClienteId" : null
+    }
+  }
+}

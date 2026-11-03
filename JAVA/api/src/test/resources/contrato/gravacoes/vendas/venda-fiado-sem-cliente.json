@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Para compras a prazo / fiado, é obrigatório vincular um cliente cadastrado.",
+    "details" : null,
+    "data" : null
+  }
+}

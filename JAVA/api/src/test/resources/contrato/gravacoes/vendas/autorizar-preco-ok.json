@@ -1,0 +1,18 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Alteração de preço autorizada.",
+    "details" : null,
+    "data" : {
+      "autorizacaoId" : "ap-03de99a2c67e4e32830f626bbc3d98b5",
+      "supervisorNome" : "Gil Gerente",
+      "precoTabela" : 3.0,
+      "precoNovo" : 2.5,
+      "expiraEm" : "2026-11-04T01:01:16.8761145+00:00"
+    }
+  }
+}

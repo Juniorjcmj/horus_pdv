@@ -1,0 +1,64 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Detalhes da venda obtidos com sucesso.",
+    "details" : null,
+    "data" : {
+      "vendaId" : "vd-ct-fin",
+      "saleNumber" : "15040",
+      "customerName" : "Consumidor",
+      "customerCpf" : "",
+      "paymentType" : "Dinheiro",
+      "totalAmount" : "6,00",
+      "operatorName" : "Gil Gerente",
+      "saleDate" : "16/01/2026 07:00:00",
+      "clientSaleId" : "client-sale-ct-fin",
+      "offlineReference" : null,
+      "items" : [ {
+        "saleNumber" : "15040",
+        "status" : "finalizada",
+        "customerName" : "Consumidor",
+        "customerCpf" : "",
+        "paymentType" : "Dinheiro",
+        "totalAmount" : "6,00",
+        "operatorName" : "Gil Gerente",
+        "productCode" : "CT001",
+        "productName" : "Produto Contrato 1",
+        "quantity" : 2.0,
+        "unitPrice" : "3,00",
+        "desconto" : 0.0,
+        "promocaoId" : null,
+        "itemTotal" : "6,00",
+        "saleDate" : "16/01/2026 07:00:00",
+        "clientSaleId" : "client-sale-ct-fin",
+        "offlineReference" : null,
+        "fiscalDocId" : null,
+        "fiscalModelo" : null,
+        "fiscalNumeroNf" : null,
+        "fiscalSerie" : null,
+        "fiscalStatus" : null,
+        "fiscalChaveAcesso" : null,
+        "paymentBreakdown" : "dinheiro=6.00",
+        "canceladoEm" : null,
+        "canceladoPorOperadorNome" : null,
+        "canceladoPorSupervisorNome" : null,
+        "canceladoJustificativa" : null
+      } ],
+      "payments" : [ {
+        "id" : "vd-ct-fin-pag-001",
+        "companyId" : "empresa-principal",
+        "vendaId" : "vd-ct-fin",
+        "paymentType" : "Dinheiro",
+        "amount" : 6.0,
+        "cashGiven" : 10.0,
+        "changeAmount" : 4.0,
+        "createdAt" : "2026-01-16T10:00:00+00:00"
+      } ],
+      "documentoFiscal" : null
+    }
+  }
+}
