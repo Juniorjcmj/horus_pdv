@@ -28,7 +28,7 @@
         "adminUserPhone" : "11999990004",
         "totalUsers" : 10,
         "totalProducts" : 8,
-        "totalSales" : 1
+        "totalSales" : 4
       }, {
         "id" : "emp-contrato-pendente",
         "fantasyName" : "Mercado Pendente",

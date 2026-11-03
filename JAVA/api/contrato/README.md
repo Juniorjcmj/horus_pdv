@@ -118,3 +118,17 @@ dotnet run -- gerar ../../src/test/resources/contrato/vetores.json   # .NET -> J
 mvn -B test -Dtest=CompatibilidadeDotnetTest                          # Java confere e escreve target/vetores-java.json
 dotnet run -- verificar ../../target/vetores-java.json                # .NET confere o que o Java gerou
 ```
+
+### Vetores do hash de idempotência (Fase 4)
+
+`dotnet run -- gerar-hash` usa o `HorusPayloadHash` real da API .NET e grava `vetores-hash.json` (venda, abertura,
+fechamento e movimento de caixa: acentos, aspas, `+`, desconto, vários pagamentos, decimais com zeros à direita,
+arredondamento para par, `xmlNfceContingencia`). O `HashPayloadTest` confere cada hash com o `HashPayload` Java e
+os casos `caixa-compat-*` com o `PayloadHash` do Caixa JavaFX (que só coincide com o .NET em texto ASCII e decimais
+sem zeros finais: o Caixa escreve números como o JS e não escapa não-ASCII; o servidor usa o hash enviado quando há).
+
+```bash
+cd JAVA/api/contrato/vetores-dotnet
+dotnet run -- gerar-hash ../../src/test/resources/contrato/vetores-hash.json
+mvn -B test -Dtest=HashPayloadTest
+```

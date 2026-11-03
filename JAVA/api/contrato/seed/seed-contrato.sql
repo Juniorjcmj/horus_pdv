@@ -332,3 +332,97 @@ IF NOT EXISTS(SELECT 1 FROM EmpresaTema WHERE CompanyId=N'empresa-principal') IN
 IF NOT EXISTS(SELECT 1 FROM TreinamentoSecoes WHERE Id=N'trs-ct') INSERT INTO TreinamentoSecoes(Id,Nome,Descricao,Ordem) VALUES(N'trs-ct',N'Treinamento Contrato',NULL,99);
 UPDATE Empresas SET CreatedAt='2026-01-15T12:00:00+00:00' WHERE Id IN(N'empresa-principal',N'emp-contrato-aprovada',N'emp-contrato-pendente',N'emp-contrato-bloqueada');
 UPDATE Empresas SET EmailSmtpPassword=N'enc:v1:FdmCcDDOY2RD6PZz.TgFhBrDDOZyvEdnNrP9DeQ==.nZnx9yNnKCuB5RImbERH5kiNK17YbMpW2g==', CscId=N'000001', CscCifrado=N'enc:v1:tDuKfLdnfLp1FBfw.0CPVA1DR0jjNuPw6VaVQGQ==.q3TdR9IsQ4PKzi6v5eGLW9ra8uRlLMdp' WHERE Id=N'empresa-principal';
+
+-- Fase 4: caixa, vendas, fiado, pedidos e fiscal (D11) -----------------------
+-- empresa-principal NAO tem certificado/CSC (o reset zera os campos), ou seja, nao tem emitente: o NfceOutboxWorker da
+-- .NET manda toda nota enfileirada para erro de forma deterministica ("Empresa sem certificado ou CSC configurado.").
+
+-- Turnos: um fechado do caixa (com movimentos) e um aberto do gerente (onde as vendas do seed estao).
+IF NOT EXISTS (SELECT 1 FROM CaixaSessoes WHERE Id=N'cx-ct-fechado')
+    INSERT INTO CaixaSessoes (Id, CompanyId, OpenedAt, ClosedAt, OperatorId, OperatorName, ClosedById, ClosedByName, Note, ExpectedCashAmount, DifferenceAmount, DifferenceReason, OpeningAmount, ClosingAmount)
+    VALUES (N'cx-ct-fechado', N'empresa-principal', '2026-01-15T08:00:00+00:00', '2026-01-15T18:00:00+00:00', N'usr-ct-caixa', N'Cai Caixa', N'usr-ct-caixa', N'Cai Caixa', N'', 150.00, -5.00, N'Troco errado', 100.00, 145.00);
+IF NOT EXISTS (SELECT 1 FROM CaixaSessoes WHERE Id=N'cx-ct-aberto')
+    INSERT INTO CaixaSessoes (Id, CompanyId, OpenedAt, ClosedAt, OperatorId, OperatorName, ClosedById, ClosedByName, Note, ExpectedCashAmount, DifferenceAmount, DifferenceReason, OpeningAmount, ClosingAmount)
+    VALUES (N'cx-ct-aberto', N'empresa-principal', '2026-01-16T08:00:00+00:00', NULL, N'usr-ct-gerente', N'Gil Gerente', N'', N'', N'', NULL, NULL, NULL, 200.00, 0);
+IF NOT EXISTS (SELECT 1 FROM CaixaMovimentos WHERE Id=N'cm-ct-1')
+    INSERT INTO CaixaMovimentos (Id, CompanyId, CaixaSessaoId, Tipo, Valor, Motivo, CreatedAt, OperatorId, OperatorName)
+    VALUES (N'cm-ct-1', N'empresa-principal', N'cx-ct-fechado', 1, 50.00, N'Reforço de troco', '2026-01-15T10:00:00+00:00', N'usr-ct-caixa', N'Cai Caixa');
+IF NOT EXISTS (SELECT 1 FROM CaixaMovimentos WHERE Id=N'cm-ct-2')
+    INSERT INTO CaixaMovimentos (Id, CompanyId, CaixaSessaoId, Tipo, Valor, Motivo, CreatedAt, OperatorId, OperatorName)
+    VALUES (N'cm-ct-2', N'empresa-principal', N'cx-ct-fechado', 2, 20.00, N'Sangria para o cofre', '2026-01-15T14:00:00+00:00', N'usr-ct-caixa', N'Cai Caixa');
+IF NOT EXISTS (SELECT 1 FROM CaixaMovimentos WHERE Id=N'cm-ct-3')
+    INSERT INTO CaixaMovimentos (Id, CompanyId, CaixaSessaoId, Tipo, Valor, Motivo, CreatedAt, OperatorId, OperatorName)
+    VALUES (N'cm-ct-3', N'empresa-principal', N'cx-ct-aberto', 1, 30.00, N'Reforço da manhã', '2026-01-16T09:00:00+00:00', N'usr-ct-gerente', N'Gil Gerente');
+
+-- Clientes do fiado: limite pequeno (estoura com uma venda) e limite folgado.
+IF NOT EXISTS (SELECT 1 FROM Clientes WHERE Id=N'cl-ct-limite')
+    INSERT INTO Clientes (Id, CompanyId, CustomerName, Document, BirthDate, Age, Cep, City, State, Address, Neighborhood, StreetComplement, Number, ReferencePoint, Telephone, Cellphone, Email, IndIeDest, LimiteCredito, SaldoDevedor)
+    VALUES (N'cl-ct-limite', N'empresa-principal', N'Lia Limite', N'52998224725', N'', N'', N'', N'', N'', N'', N'', N'', N'', N'', N'11999990000', N'', N'', 9, 5, 0);
+IF NOT EXISTS (SELECT 1 FROM Clientes WHERE Id=N'cl-ct-folgado')
+    INSERT INTO Clientes (Id, CompanyId, CustomerName, Document, BirthDate, Age, Cep, City, State, Address, Neighborhood, StreetComplement, Number, ReferencePoint, Telephone, Cellphone, Email, IndIeDest, LimiteCredito, SaldoDevedor)
+    VALUES (N'cl-ct-folgado', N'empresa-principal', N'Fabio Folgado', N'11144477735', N'', N'', N'', N'', N'', N'', N'', N'', N'', N'', N'11999990000', N'', N'', 9, 1000, 0);
+IF NOT EXISTS (SELECT 1 FROM FiadoMovimentos WHERE Id=N'fm-ct-1')
+    INSERT INTO FiadoMovimentos (Id, CompanyId, ClienteId, Tipo, Valor, SaldoAnterior, SaldoAtual, VendaId, FormaPagamento, Observacao, OperadorNome, CriadoEm)
+    VALUES (N'fm-ct-1', N'empresa-principal', N'cl-ct-devedor', 1, 80.00, 0, 80.00, NULL, NULL, N'Compra a prazo', N'Contrato', '2026-01-10T12:00:00+00:00');
+IF NOT EXISTS (SELECT 1 FROM FiadoMovimentos WHERE Id=N'fm-ct-2')
+    INSERT INTO FiadoMovimentos (Id, CompanyId, ClienteId, Tipo, Valor, SaldoAnterior, SaldoAtual, VendaId, FormaPagamento, Observacao, OperadorNome, CriadoEm)
+    VALUES (N'fm-ct-2', N'empresa-principal', N'cl-ct-devedor', 2, 30.00, 80.00, 50.00, NULL, N'Dinheiro', N'Pagamento parcial', N'Contrato', '2026-01-12T12:00:00+00:00');
+
+-- Regras de emissao de NFC-e: Pix e CPF na nota emitem sempre; as demais formas, 1 a cada 3 vendas.
+IF NOT EXISTS (SELECT 1 FROM RegrasEmissaoNfce WHERE CompanyId=N'empresa-principal')
+    INSERT INTO RegrasEmissaoNfce (CompanyId, Habilitado, FormasPagamentoHabilitadas, IntervaloNotas, EmitirSempreComCpf, ContadorVendas, UpdatedAt, UpdatedBy, SemanticaV2)
+    VALUES (N'empresa-principal', 1, N'pix', 3, 1, 0, '2026-01-15T12:00:00', N'usr-ct-admin', 1);
+
+-- Vendas do seed: finalizada (no turno aberto), cancelada e com nota autorizada. Numeros 15040 a 15042 (a proxima e a 15043).
+IF NOT EXISTS (SELECT 1 FROM Vendas WHERE Id=N'vd-ct-fin')
+    INSERT INTO Vendas (Id, CompanyId, SaleNumber, CustomerName, CustomerCpf, PaymentType, OperatorName, SaleDate, CaixaSessaoId, TotalAmount, ClientSaleId, Status, EmitirNfce)
+    VALUES (N'vd-ct-fin', N'empresa-principal', N'15040', N'Consumidor', N'', N'Dinheiro', N'Gil Gerente', '2026-01-16T10:00:00+00:00', N'cx-ct-aberto', 6.00, N'client-sale-ct-fin', N'finalizada', 0);
+IF NOT EXISTS (SELECT 1 FROM VendaItens WHERE Id=N'vd-ct-fin-item-001')
+    INSERT INTO VendaItens (Id, VendaId, ProductCode, ProductName, Quantity, UnitPrice, ItemTotal, Desconto, PromocaoId, CostPrice)
+    VALUES (N'vd-ct-fin-item-001', N'vd-ct-fin', N'CT001', N'Produto Contrato 1', 2.0000, 3.0000, 6.00, 0.00, NULL, 2.0000);
+IF NOT EXISTS (SELECT 1 FROM VendaPagamentos WHERE Id=N'vd-ct-fin-pag-001')
+    INSERT INTO VendaPagamentos (Id, CompanyId, VendaId, PaymentType, Amount, CashGiven, ChangeAmount, CreatedAt)
+    VALUES (N'vd-ct-fin-pag-001', N'empresa-principal', N'vd-ct-fin', N'Dinheiro', 6.00, 10.00, 4.00, '2026-01-16T10:00:00+00:00');
+
+IF NOT EXISTS (SELECT 1 FROM Vendas WHERE Id=N'vd-ct-canc')
+    INSERT INTO Vendas (Id, CompanyId, SaleNumber, CustomerName, CustomerCpf, PaymentType, OperatorName, SaleDate, CaixaSessaoId, TotalAmount, ClientSaleId, Status, CanceladoEm, CanceladoPorOperadorId, CanceladoPorOperadorNome, CanceladoPorSupervisorId, CanceladoPorSupervisorNome, CanceladoJustificativa, EmitirNfce)
+    VALUES (N'vd-ct-canc', N'empresa-principal', N'15041', N'Consumidor', N'', N'Dinheiro', N'Gil Gerente', '2026-01-16T11:00:00+00:00', N'cx-ct-aberto', 3.00, N'client-sale-ct-canc', N'cancelada', '2026-01-16T11:30:00+00:00', N'usr-ct-caixa', N'Cai Caixa', N'usr-ct-gerente', N'Gil Gerente', N'Cliente desistiu da compra', 0);
+IF NOT EXISTS (SELECT 1 FROM VendaItens WHERE Id=N'vd-ct-canc-item-001')
+    INSERT INTO VendaItens (Id, VendaId, ProductCode, ProductName, Quantity, UnitPrice, ItemTotal, Desconto, PromocaoId, CostPrice)
+    VALUES (N'vd-ct-canc-item-001', N'vd-ct-canc', N'CT001', N'Produto Contrato 1', 1.0000, 3.0000, 3.00, 0.00, NULL, 2.0000);
+IF NOT EXISTS (SELECT 1 FROM VendaPagamentos WHERE Id=N'vd-ct-canc-pag-001')
+    INSERT INTO VendaPagamentos (Id, CompanyId, VendaId, PaymentType, Amount, CashGiven, ChangeAmount, CreatedAt)
+    VALUES (N'vd-ct-canc-pag-001', N'empresa-principal', N'vd-ct-canc', N'Dinheiro', 3.00, NULL, NULL, '2026-01-16T11:00:00+00:00');
+IF NOT EXISTS (SELECT 1 FROM VendaCancelamentos WHERE Id=N'vc-ct-1')
+    INSERT INTO VendaCancelamentos (Id, CompanyId, OcorridoEm, Resultado, Via, MotivoRecusa, VendaId, SaleNumber, OperadorId, OperadorNome, SupervisorId, SupervisorNome, Justificativa, Terminal, Ip, CaixaSessaoId, CaixaSessaoStatus, TotalVenda, ClienteNome, ClienteCpf, ItensEstornados, FiadoEstornado, Snapshot)
+    VALUES (N'vc-ct-1', N'empresa-principal', '2026-01-16T11:30:00+00:00', N'cancelada', N'venda', NULL, N'vd-ct-canc', N'15041', N'usr-ct-caixa', N'Cai Caixa', N'usr-ct-gerente', N'Gil Gerente', N'Cliente desistiu da compra', NULL, N'127.0.0.1', N'cx-ct-aberto', N'aberto', 3.00, N'Consumidor', N'', 1, 0, N'{"itens":[],"pagamentos":[],"notas":[]}');
+IF NOT EXISTS (SELECT 1 FROM VendaCancelamentos WHERE Id=N'vc-ct-2')
+    INSERT INTO VendaCancelamentos (Id, CompanyId, OcorridoEm, Resultado, Via, MotivoRecusa, VendaId, SaleNumber, OperadorId, OperadorNome, SupervisorId, SupervisorNome, Justificativa, Terminal, Ip, CaixaSessaoId, CaixaSessaoStatus, TotalVenda, ClienteNome, ClienteCpf, ItensEstornados, FiadoEstornado, Snapshot)
+    VALUES (N'vc-ct-2', N'empresa-principal', '2026-01-16T12:00:00+00:00', N'negada', N'venda', N'Senha do supervisor inválida.', N'vd-ct-fin', N'15040', N'usr-ct-caixa', N'Cai Caixa', NULL, NULL, N'Tentativa com senha errada', NULL, N'127.0.0.1', N'cx-ct-aberto', N'aberto', 6.00, N'Consumidor', N'', NULL, NULL, NULL);
+
+IF NOT EXISTS (SELECT 1 FROM Vendas WHERE Id=N'vd-ct-nota')
+    INSERT INTO Vendas (Id, CompanyId, SaleNumber, CustomerName, CustomerCpf, PaymentType, OperatorName, SaleDate, CaixaSessaoId, TotalAmount, ClientSaleId, Status, EmitirNfce)
+    VALUES (N'vd-ct-nota', N'empresa-principal', N'15042', N'Consumidor', N'', N'Pix', N'Gil Gerente', '2026-01-16T13:00:00+00:00', N'cx-ct-aberto', 3.00, N'client-sale-ct-nota', N'finalizada', 1);
+IF NOT EXISTS (SELECT 1 FROM VendaItens WHERE Id=N'vd-ct-nota-item-001')
+    INSERT INTO VendaItens (Id, VendaId, ProductCode, ProductName, Quantity, UnitPrice, ItemTotal, Desconto, PromocaoId, CostPrice)
+    VALUES (N'vd-ct-nota-item-001', N'vd-ct-nota', N'CT001', N'Produto Contrato 1', 1.0000, 3.0000, 3.00, 0.00, NULL, 2.0000);
+IF NOT EXISTS (SELECT 1 FROM VendaPagamentos WHERE Id=N'vd-ct-nota-pag-001')
+    INSERT INTO VendaPagamentos (Id, CompanyId, VendaId, PaymentType, Amount, CashGiven, ChangeAmount, CreatedAt)
+    VALUES (N'vd-ct-nota-pag-001', N'empresa-principal', N'vd-ct-nota', N'Pix', 3.00, NULL, NULL, '2026-01-16T13:00:00+00:00');
+IF NOT EXISTS (SELECT 1 FROM DocumentosFiscais WHERE Id=N'df-ct-nota')
+    INSERT INTO DocumentosFiscais (Id, CompanyId, VendaId, Modelo, Serie, NumeroNf, Ambiente, ChaveAcesso, Status, TpEmis, Protocolo, DhAutorizacao, CodigoStatus, MotivoStatus, Tentativas, CriadoEm, AtualizadoEm, ModalidadeFrete)
+    VALUES (N'df-ct-nota', N'empresa-principal', N'vd-ct-nota', 65, 2, 1, 2, '33260106332765000105650020000000011000000019', 3, 1, N'133260000000001', '2026-01-16T13:00:05+00:00', 100, N'Autorizado o uso da NF-e', 1, '2026-01-16T13:00:01+00:00', '2026-01-16T13:00:05+00:00', 9);
+IF NOT EXISTS (SELECT 1 FROM FiscalSequencias WHERE CompanyId=N'empresa-principal' AND Modelo=65 AND Serie=2 AND Ambiente=2)
+    INSERT INTO FiscalSequencias (CompanyId, Modelo, Serie, Ambiente, ProximoNumero, AtualizadoEm)
+    VALUES (N'empresa-principal', 65, 2, 2, 2, '2026-01-16T13:00:01+00:00');
+
+-- Pedido aberto (numero 1) com dois itens.
+IF NOT EXISTS (SELECT 1 FROM Pedidos WHERE Id=N'ped-ct-aberto')
+    INSERT INTO Pedidos (Id, CompanyId, OrderNumber, CustomerName, CustomerCpf, SellerId, SellerName, Status, VendaId, CreatedAt, FinalizedAt, CanceledAt, Note)
+    VALUES (N'ped-ct-aberto', N'empresa-principal', N'1', N'Consumidor', N'-', N'usr-ct-atend', N'Ari Atendente', 0, NULL, '2026-01-16T09:30:00+00:00', NULL, NULL, N'');
+IF NOT EXISTS (SELECT 1 FROM PedidoItens WHERE Id=N'ped-ct-aberto-item-001')
+    INSERT INTO PedidoItens (Id, PedidoId, ProductCode, ProductName, Quantity, UnitPrice, ItemTotal)
+    VALUES (N'ped-ct-aberto-item-001', N'ped-ct-aberto', N'CT001', N'Produto Contrato 1', 2.0000, 3.0000, 6.00);
+IF NOT EXISTS (SELECT 1 FROM PedidoItens WHERE Id=N'ped-ct-aberto-item-002')
+    INSERT INTO PedidoItens (Id, PedidoId, ProductCode, ProductName, Quantity, UnitPrice, ItemTotal)
+    VALUES (N'ped-ct-aberto-item-002', N'ped-ct-aberto', N'CT002', N'Produto Contrato 2', 1.0000, 3.0000, 3.00);

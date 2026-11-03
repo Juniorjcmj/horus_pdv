@@ -25,6 +25,7 @@ return comando switch
 {
     "gerar" => Gerar(args.Length > 1 ? args[1] : "vetores.json"),
     "verificar" => Verificar(args.Length > 1 ? args[1] : "vetores-java.json"),
+    "gerar-hash" => VetoresHash.Gerar(args.Length > 1 ? args[1] : "vetores-hash.json"),
     _ => Uso()
 };
 

@@ -4,6 +4,7 @@ import br.com.quack.pdv.auditoria.app.AuditoriaService;
 import br.com.quack.pdv.estoque.registrador.EstoqueTipos;
 import br.com.quack.pdv.estoque.registrador.MovimentoOrigem;
 import br.com.quack.pdv.estoque.registrador.RegistradorEstoque;
+import br.com.quack.pdv.plataforma.numeracao.NumeradorDocumentos;
 import br.com.quack.pdv.produto.lote.app.LoteOperacoes;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,6 +57,7 @@ public class InventarioService {
     private final RegistradorEstoque registrador;
     private final LoteOperacoes lotes;
     private final AuditoriaService auditoria;
+    private final NumeradorDocumentos numerador;
 
     public InventarioService(
             JdbcTemplate jdbc,
@@ -63,13 +65,15 @@ public class InventarioService {
             InventarioConsultas consultas,
             RegistradorEstoque registrador,
             LoteOperacoes lotes,
-            AuditoriaService auditoria) {
+            AuditoriaService auditoria,
+            NumeradorDocumentos numerador) {
         this.jdbc = jdbc;
         this.tx = new TransactionTemplate(tm);
         this.consultas = consultas;
         this.registrador = registrador;
         this.lotes = lotes;
         this.auditoria = auditoria;
+        this.numerador = numerador;
     }
 
     // ------------------------------------------------------------------ abertura
@@ -120,8 +124,7 @@ public class InventarioService {
                     "Já existe o inventário #" + abertos.getFirst() + " em contagem que se sobrepõe a este escopo.",
                     detalhe);
         }
-        Integer numero = jdbc.queryForObject(
-                "SELECT ISNULL(MAX(Numero), 0) + 1 FROM Inventarios WHERE CompanyId = ?", Integer.class, companyId);
+        int numero = numerador.proximoNumeroInventario(companyId);
         String id = "inv-" + UUID.randomUUID().toString().replace("-", "");
         jdbc.update("""
                 INSERT INTO Inventarios (Id, CompanyId, Numero, Descricao, Escopo, EscopoJson, Status, AbertoPorId, AbertoPorNome)

@@ -18,24 +18,29 @@
 
 ## 1. Base: seed, numeração, hash e origem provisória
 
-- [ ] 1.1 Ampliar `contrato/seed/seed-contrato.sql` e `reset-contrato.sql` com os dados do D11: turnos, clientes com
+- [x] 1.1 Ampliar `contrato/seed/seed-contrato.sql` e `reset-contrato.sql` com os dados do D11: turnos, clientes com
   limite, regras de emissão, pedido aberto, vendas finalizada, cancelada e com nota autorizada, e uma empresa sem
   emitente para as vendas; verificar aplicando seed e reset duas vezes no ambiente .NET sem erro e com os 19 grupos
   de contrato existentes ainda verdes
-- [ ] 1.2 Criar `plataforma/numeracao/NumeradorDocumentos` (D4: venda, fiscal, inventário, `MANDATORY`), passar o
+- [x] 1.2 Criar `plataforma/numeracao/NumeradorDocumentos` (D4: venda, fiscal, inventário, `MANDATORY`), passar o
   `InventarioService` a usá-lo e criar o `NumeracaoUnicaTest`; verificar com IT de vendas concorrentes (duas threads,
   números distintos e consecutivos), IT da sequência fiscal (linha criada e números 1, 2), o grupo `inventario` do
   contrato ainda verde e o teste de arquitetura falhando num cálculo de `MAX(SaleNumber)` colocado de propósito fora
   do numerador (e removido depois)
-- [ ] 1.3 Portar o `HorusPayloadHash` (D3) e acrescentar ao `contrato/vetores-dotnet/Program.cs` os vetores de venda,
+- [x] 1.3 Portar o `HorusPayloadHash` (D3) e acrescentar ao `contrato/vetores-dotnet/Program.cs` os vetores de venda,
   abertura, fechamento e movimento (acentos, aspas, `+`, desconto, vários pagamentos, decimais com zeros à direita,
   `xmlNfceContingencia`); verificar com o `CompatibilidadeDotnetTest` comparando todos os vetores gerados pela .NET e
   um teste que confere o hash do `PayloadHash` do Caixa JavaFX para os mesmos dados
-- [ ] 1.4 Estender o `RegistradorEstoque` com a origem provisória e o `vincularOrigem` (porta de
+- [x] 1.4 Estender o `RegistradorEstoque` com a origem provisória e o `vincularOrigem` (porta de
   `NovaOrigemProvisoria`/`VincularOrigemAsync`) e o `LoteOperacoes` com `consumirVendaSeguro` e `estornarVendaSeguro`
   (porta do `LoteAB`, `REQUIRES_NEW`, sem lançar exceção); verificar com IT (movimento com origem provisória vinculado
   ao número, consumo FEFO de dois lotes, estorno devolvendo aos lotes de origem, falha no consumo não desfazendo a
   operação principal) e os grupos `movimentacao` e `lote` ainda verdes
+- [x] 1.5 Nova tentativa da baixa de lotes (D13): migração Flyway `V4` com tabela de pendência só da Java (venda,
+  tipo consumo/estorno, tentativas, próxima tentativa, estado); falha do `consumirVendaSeguro`/`estornarVendaSeguro`
+  grava a pendência; rotina periódica com backoff e limite (depois do limite fica marcada para revisão e é logada como
+  erro), idempotente (não consome duas vezes a mesma venda); verificar com IT de falha simulada no primeiro consumo e
+  sucesso na nova tentativa sem consumo em dobro, e o `EsquemaEquivalenteIT` ainda verde
 
 ## 2. Caixa (`api/Caixa`)
 
@@ -60,7 +65,7 @@
   `ResponsePayload` legível pela .NET, auditorias, lotes e rupturas pós-commit) e a autorização de preço; testes:
   Mockito das regras de dinheiro, IT (venda baixa estoque e grava itens, pagamentos e movimentação com origem
   `Venda #n`; venda recusada não deixa nada; replay não baixa de novo; `ResponsePayload` gravado pela .NET em fixture
-  é lido e devolvido), web (perfis, 401) e o grupo `vendas` do comparador verde nos cenários de registro
+  é lido e devolvido), web (perfis, 401) e o grupo `vendas` do comparador verde nos cenários de registro; travas de produto em ordem de código (D13) com IT de vendas cruzadas sem deadlock
 - [ ] 3.3 Acrescentar a `cenarios/vendas.json` lista (por data, por turno próprio, de outro operador como caixa e como
   gerente), detalhe (com e sem documento fiscal, inexistente) e imprimir; implementar e verificar com o comparador
   verde e IT do filtro por turno
@@ -86,7 +91,7 @@
 - [ ] 5.2 Implementar o cancelamento e a trilha (D5: `Negar`, mapa de código para HTTP, transação na ordem do .NET,
   estorno de estoque, fiado e lotes); testes: IT (estoque volta pelo registrador com tipo `Devolucao`; fiado
   estornado; lotes de volta; dois cancelamentos simultâneos estornam uma vez só; recusa grava `VendaCancelamentos`
-  negada e `AuditLog`) e o comparador verde nos cenários de cancelamento
+  negada e `AuditLog`) e o comparador verde nos cenários de cancelamento; travas de produto em ordem de código (D13) com IT de vendas cruzadas sem deadlock
 - [ ] 5.3 Implementar a correção (porte literal do `CorrigirVendaAsync`, número pelo `NumeradorDocumentos`, decisão
   fiscal só com emitente, sem derrubar a correção); testes: IT (venda original "corrigida", nova venda com os itens
   restantes, estoque dos removidos de volta) e o comparador verde nos cenários de correção

@@ -59,10 +59,10 @@ class BaselineBancoRestauradoIT extends BancoIT {
                     + "N'maria@producao.com', N'administrador', N'ativo', N'2025-01-01', N'-', N'100000.x.y')");
         }
 
-        // 3) a API sobe: baseline na versao 1, V2 e V3 rodam
+        // 3) a API sobe: baseline na versao 1, V2, V3 e V4 rodam
         flyway("restaurado", null).migrate();
 
-        assertThat(historico("restaurado")).containsExactly("1:BASELINE", "2:SQL", "3:SQL");
+        assertThat(historico("restaurado")).containsExactly("1:BASELINE", "2:SQL", "3:SQL", "4:SQL");
         try (Connection c = conexao("restaurado"); Statement s = c.createStatement()) {
             try (ResultSet r = s.executeQuery("SELECT FantasyName FROM Empresas WHERE Id = N'empresa-principal'")) {
                 assertThat(r.next()).isTrue();
@@ -88,9 +88,9 @@ class BaselineBancoRestauradoIT extends BancoIT {
     }
 
     @Test
-    void bancoNovoRecebeV1V2EV3() throws Exception {
+    void bancoNovoRecebeV1V2V3EV4() throws Exception {
         criarBanco("novo");
         flyway("novo", null).migrate();
-        assertThat(historico("novo")).containsExactly("1:SQL", "2:SQL", "3:SQL");
+        assertThat(historico("novo")).containsExactly("1:SQL", "2:SQL", "3:SQL", "4:SQL");
     }
 }

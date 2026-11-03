@@ -314,6 +314,27 @@ Copiar, sem corrigir, por exemplo:
 
 Corrigir depois do corte.
 
+### D13. Melhorias aprovadas que não mudam o contrato
+
+Aprovadas pelo dono do produto em 03/11/2026, a partir da revisão contra *System Design Interview, vol. 2* (cap. 7 e
+11):
+
+- **Travar produtos em ordem de código.**
+  - O .NET trava os produtos da venda na ordem em que aparecem. Duas vendas simultâneas com os mesmos produtos em
+    ordem inversa podem dar deadlock, e o SQL Server derruba uma delas.
+  - Na Java, a venda, a finalização de pedido, o cancelamento e a correção travam/baixam os produtos ordenados por
+    código (`String.CASE_INSENSITIVE_ORDER`) dentro da mesma transação. A saída de itens na resposta mantém a ordem do
+    .NET; só muda a ordem das travas.
+  - Teste: IT com duas vendas cruzadas ([A, B] e [B, A]) em paralelo, repetida várias vezes, sem deadlock e com
+    saldos exatos.
+- **Nova tentativa da baixa de lotes.**
+  - No .NET, se o `ConsumirVendaSeguro` ou o `EstornarVendaSeguro` falha depois do commit, só fica no log.
+  - Na Java, a falha fica registrada como pendência, e uma rotina periódica tenta de novo com backoff até um limite.
+    Depois do limite, a pendência fica marcada para revisão e é logada como erro.
+  - A rotina é idempotente: não consome duas vezes a mesma venda.
+  - A pendência fica numa tabela nova só da Java (migração `V4`), sem mudar tabelas existentes.
+  - Teste: IT com falha simulada no primeiro consumo e sucesso na nova tentativa, sem consumo em dobro.
+
 ## Risks / Trade-offs
 
 - **Hash diferente da .NET** quebraria o replay de eventos offline após o corte → vetores gerados pela própria .NET

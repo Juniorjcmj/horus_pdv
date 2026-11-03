@@ -62,16 +62,27 @@ public class LoteOperacoes {
     private final JdbcTemplate jdbc;
     private final TransactionOperations txNova;
     private final Clock clock;
+    private final LotePendencias pendencias;
 
     @Autowired
-    public LoteOperacoes(JdbcTemplate jdbc, PlatformTransactionManager transactionManager, Clock clock) {
-        this(jdbc, criarRequiresNew(transactionManager), clock);
+    public LoteOperacoes(
+            JdbcTemplate jdbc,
+            PlatformTransactionManager transactionManager,
+            Clock clock,
+            LotePendencias pendencias) {
+        this(jdbc, criarRequiresNew(transactionManager), clock, pendencias);
     }
 
+    /** Sem fila de nova tentativa (usado em testes de unidade). */
     public LoteOperacoes(JdbcTemplate jdbc, TransactionOperations txNova, Clock clock) {
+        this(jdbc, txNova, clock, null);
+    }
+
+    public LoteOperacoes(JdbcTemplate jdbc, TransactionOperations txNova, Clock clock, LotePendencias pendencias) {
         this.jdbc = jdbc;
         this.txNova = txNova;
         this.clock = clock;
+        this.pendencias = pendencias;
     }
 
     private static TransactionTemplate criarRequiresNew(PlatformTransactionManager tm) {
@@ -313,6 +324,126 @@ public class LoteOperacoes {
         }
     }
 
+
+    /** Item de venda para a baixa FEFO por lote. */
+    public record ItemVenda(String productCode, BigDecimal quantity) {}
+
+    /**
+     * Baixa FEFO de uma venda (porta de {@code ConsumirVendaSeguroAsync}): roda DEPOIS do commit da venda, em
+     * transacao propria (REQUIRES_NEW), e NUNCA lanca excecao. Diferenca consciente (D13): alem do log, a falha fica
+     * numa pendencia que {@link RetentativaBaixaLotes} tenta de novo; o consumo e idempotente por venda e produto.
+     */
+    public void consumirVendaSeguro(String companyId, String vendaId, List<ItemVenda> itens) {
+        try {
+            consumirVenda(companyId, vendaId, itens);
+        } catch (Exception ex) {
+            LOG.error("Falha na baixa FEFO por lote da venda {}. A venda nao foi afetada.", vendaId, ex);
+            registrarPendencia(companyId, vendaId, LotePendencias.TIPO_CONSUMO,
+                    pendencias == null ? null : pendencias.itensParaJson(itens), ex);
+        }
+    }
+
+    /**
+     * Mesma baixa do {@link #consumirVendaSeguro}, mas deixando a excecao subir (usada pela nova tentativa). Nao ha
+     * efeito parcial: todos os produtos entram numa unica transacao REQUIRES_NEW.
+     */
+    public void consumirVenda(String companyId, String vendaId, List<ItemVenda> itens) {
+        if (MODO_DESLIGADO.equals(obterModo(companyId))) {
+            return;
+        }
+        Map<String, BigDecimal> agrupados = new java.util.LinkedHashMap<>();
+        Map<String, String> chaveParaCodigo = new java.util.HashMap<>();
+        for (ItemVenda item : itens) {
+            if (item.productCode() == null || item.productCode().isBlank()
+                    || item.quantity() == null || item.quantity().compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+            String codigo = item.productCode().trim();
+            String chave = codigo.toLowerCase(Locale.ROOT);
+            String primeiro = chaveParaCodigo.computeIfAbsent(chave, k -> codigo);
+            agrupados.merge(primeiro, item.quantity(), BigDecimal::add);
+        }
+        if (agrupados.isEmpty()) {
+            return;
+        }
+
+        List<String> afetados = txNova.execute(s -> {
+            List<String> ids = new ArrayList<>();
+            for (Map.Entry<String, BigDecimal> e : agrupados.entrySet()) {
+                List<String> produto = jdbc.query(
+                        "SELECT Id FROM Produtos WHERE CompanyId = ? AND ProductCode = ?;",
+                        (rs, i) -> rs.getString(1), companyId, e.getKey());
+                if (produto.isEmpty()) {
+                    continue;
+                }
+                if (consumirNosLotes(companyId, produto.getFirst(), e.getValue(), "venda", vendaId)) {
+                    ids.add(produto.getFirst());
+                }
+            }
+            return ids;
+        });
+        sincronizarAfetados(companyId, afetados);
+    }
+
+    /**
+     * Devolve aos lotes de origem o que uma venda cancelada tirou deles (porta de {@code EstornarVendaSeguroAsync}).
+     * Idempotente (cada consumo e marcado como estornado), REQUIRES_NEW e nunca lanca excecao; a falha vira pendencia
+     * para nova tentativa (D13).
+     */
+    public void estornarVendaSeguro(String companyId, String vendaId) {
+        try {
+            estornarVenda(companyId, vendaId);
+        } catch (Exception ex) {
+            LOG.error("Falha ao estornar a baixa por lote da venda {}.", vendaId, ex);
+            registrarPendencia(companyId, vendaId, LotePendencias.TIPO_ESTORNO, null, ex);
+        }
+    }
+
+    /** Estorno de lotes deixando a excecao subir (usado pela nova tentativa). */
+    public void estornarVenda(String companyId, String vendaId) {
+        record Consumo(String id, String produtoId, String loteId, BigDecimal quantidade) {}
+        List<String> afetados = txNova.execute(s -> {
+            List<Consumo> consumos = jdbc.query("""
+                    SELECT Id, ProdutoId, LoteId, Quantidade
+                    FROM LoteConsumos WITH (UPDLOCK, ROWLOCK)
+                    WHERE CompanyId = ? AND RefId = ? AND Origem = N'venda' AND Estornado = 0;
+                    """, (rs, i) -> new Consumo(rs.getString("Id"), rs.getString("ProdutoId"),
+                    rs.getString("LoteId"), rs.getBigDecimal("Quantidade")), companyId, vendaId);
+            List<String> ids = new ArrayList<>();
+            for (Consumo c : consumos) {
+                if (c.loteId() != null) {
+                    jdbc.update("UPDATE ProdutoLotes SET QtdAtual = ISNULL(QtdAtual, 0) + ? WHERE Id = ? AND CompanyId = ?;",
+                            c.quantidade(), c.loteId(), companyId);
+                    ids.add(c.produtoId());
+                }
+                jdbc.update("UPDATE LoteConsumos SET Estornado = 1 WHERE Id = ?;", c.id());
+            }
+            return ids;
+        });
+        sincronizarAfetados(companyId, afetados);
+    }
+
+    /** Sincroniza Produtos.DataValidade depois do commit; falha aqui so e registrada (como no .NET). */
+    private void sincronizarAfetados(String companyId, List<String> afetados) {
+        if (afetados == null) return;
+        for (String produtoId : afetados.stream().distinct().toList()) {
+            try {
+                txNova.executeWithoutResult(s -> sincronizarValidadeProduto(companyId, produtoId));
+            } catch (Exception ex) {
+                LOG.error("Falha ao sincronizar a validade do produto {} apos a baixa por lote.", produtoId, ex);
+            }
+        }
+    }
+
+    private void registrarPendencia(String companyId, String vendaId, String tipo, String itensJson, Exception causa) {
+        if (pendencias == null) return;
+        try {
+            txNova.executeWithoutResult(s -> pendencias.registrar(companyId, vendaId, tipo, itensJson,
+                    causa.getClass().getSimpleName() + ": " + causa.getMessage()));
+        } catch (Exception ex) {
+            LOG.error("Nao foi possivel registrar a pendencia de lote da venda {}.", vendaId, ex);
+        }
+    }
     /**
      * Porta literal de ConsumirNosLotesAsync: consome em ordem FEFO (DataValidade ASC, CriadoEm ASC)
      * e grava em LoteConsumos. Deve rodar dentro de uma transacao ativa.

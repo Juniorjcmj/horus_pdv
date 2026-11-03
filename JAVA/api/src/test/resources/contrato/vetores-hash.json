@@ -1,0 +1,536 @@
+{
+  "casos": [
+    {
+      "nome": "simples-ascii",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "Consumidor",
+        "customerCpf": "",
+        "paymentType": "Dinheiro",
+        "totalAmount": "10,00",
+        "operatorName": "Caixa 1",
+        "items": [
+          {
+            "productCode": "7891000100103",
+            "quantity": 1,
+            "unitPrice": 10.00,
+            "desconto": 0,
+            "promocaoId": null
+          }
+        ],
+        "payments": [
+          {
+            "paymentType": "Dinheiro",
+            "amount": 10.00,
+            "cashGiven": 10.00,
+            "changeAmount": 0.00
+          }
+        ],
+        "xmlNfceContingencia": null
+      },
+      "hash": "bfc05ba3413d62eae9b6c3ebbb3ffcc2da21d7d5c0bc9c379e4004fbb6fcb863"
+    },
+    {
+      "nome": "acentos-e-simbolos",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "  José da Conceição & Filhos <ltda> + \"Café\" 'Açaí' `x` \\ / ✓ \uD83D\uDE00  ",
+        "customerCpf": " 123.456.789-09 ",
+        "paymentType": "Cartão de Crédito",
+        "totalAmount": "R$ 1.234,56",
+        "operatorName": "Maria\tÂngela\nLinha",
+        "items": [
+          {
+            "productCode": "PÃO-01",
+            "quantity": 2,
+            "unitPrice": 617.28,
+            "desconto": 0,
+            "promocaoId": "promo-ç"
+          }
+        ],
+        "payments": [
+          {
+            "paymentType": "Cartão de Crédito",
+            "amount": 1234.56,
+            "cashGiven": null,
+            "changeAmount": null
+          }
+        ],
+        "xmlNfceContingencia": null
+      },
+      "hash": "aac7093c7d1ffbe1039ed8bb095175cc5143a2b666eefd3aab6ee8d648777850"
+    },
+    {
+      "nome": "com-desconto-e-promocao",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "Ana",
+        "customerCpf": "52998224725",
+        "paymentType": "Pix",
+        "totalAmount": "89,90",
+        "operatorName": "Caixa 2",
+        "items": [
+          {
+            "productCode": "A1",
+            "quantity": 3,
+            "unitPrice": 33.30,
+            "desconto": 10.00,
+            "promocaoId": "promo-1"
+          },
+          {
+            "productCode": "B2",
+            "quantity": 1,
+            "unitPrice": 0.00,
+            "desconto": 0,
+            "promocaoId": null
+          }
+        ],
+        "payments": [
+          {
+            "paymentType": "Pix",
+            "amount": 89.90,
+            "cashGiven": null,
+            "changeAmount": null
+          }
+        ],
+        "xmlNfceContingencia": null
+      },
+      "hash": "8a624d5b5f85c3b3dc403749bff1fd99af9522160941dee0b8e94607a659c42e"
+    },
+    {
+      "nome": "varios-pagamentos-ordem-e-caixa-mista",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "Cliente",
+        "customerCpf": "",
+        "paymentType": "Múltiplo",
+        "totalAmount": "150,00",
+        "operatorName": "Caixa 1",
+        "items": [
+          {
+            "productCode": "zz",
+            "quantity": 1,
+            "unitPrice": 100,
+            "desconto": 0,
+            "promocaoId": null
+          },
+          {
+            "productCode": "AA",
+            "quantity": 1,
+            "unitPrice": 50,
+            "desconto": 0,
+            "promocaoId": null
+          },
+          {
+            "productCode": "aa",
+            "quantity": 2,
+            "unitPrice": 25,
+            "desconto": 0,
+            "promocaoId": null
+          },
+          {
+            "productCode": "Mm",
+            "quantity": 1,
+            "unitPrice": 5,
+            "desconto": 0,
+            "promocaoId": null
+          }
+        ],
+        "payments": [
+          {
+            "paymentType": "pix",
+            "amount": 50,
+            "cashGiven": null,
+            "changeAmount": null
+          },
+          {
+            "paymentType": "Dinheiro",
+            "amount": 100,
+            "cashGiven": 120,
+            "changeAmount": 20
+          },
+          {
+            "paymentType": "Cartão",
+            "amount": 0.5,
+            "cashGiven": null,
+            "changeAmount": null
+          },
+          {
+            "paymentType": "DINHEIRO",
+            "amount": 1,
+            "cashGiven": null,
+            "changeAmount": null
+          }
+        ],
+        "xmlNfceContingencia": null
+      },
+      "hash": "87a1a32e1e54803828c98d24d893384435a5c4ad4a2483c8dc9588cdfb51d68e"
+    },
+    {
+      "nome": "decimais-zeros-a-direita",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "Zeros",
+        "customerCpf": "",
+        "paymentType": "Dinheiro",
+        "totalAmount": "10,50",
+        "operatorName": "Caixa",
+        "items": [
+          {
+            "productCode": "P1",
+            "quantity": 2.500,
+            "unitPrice": 3.0,
+            "desconto": 0.10,
+            "promocaoId": null
+          },
+          {
+            "productCode": "P2",
+            "quantity": 1.00000,
+            "unitPrice": 2.50,
+            "desconto": 0.000,
+            "promocaoId": null
+          },
+          {
+            "productCode": "P3",
+            "quantity": 10,
+            "unitPrice": 1,
+            "desconto": 0,
+            "promocaoId": null
+          }
+        ],
+        "payments": [
+          {
+            "paymentType": "Dinheiro",
+            "amount": 10.50,
+            "cashGiven": 20.00,
+            "changeAmount": 9.50
+          }
+        ],
+        "xmlNfceContingencia": null
+      },
+      "hash": "3f51bce4bf9f4abc59118890a1558c6d12caae427d2312ef14b22f84dc0d2952"
+    },
+    {
+      "nome": "arredondamento-para-par",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "Banqueiro",
+        "customerCpf": "",
+        "paymentType": "Dinheiro",
+        "totalAmount": "1.000,500",
+        "operatorName": "Caixa",
+        "items": [
+          {
+            "productCode": "R1",
+            "quantity": 1.00005,
+            "unitPrice": 2.505,
+            "desconto": 0.125,
+            "promocaoId": null
+          },
+          {
+            "productCode": "R2",
+            "quantity": 1.00015,
+            "unitPrice": 2.515,
+            "desconto": 0.135,
+            "promocaoId": null
+          },
+          {
+            "productCode": "R3",
+            "quantity": 0.45249,
+            "unitPrice": 2.525,
+            "desconto": 0.145,
+            "promocaoId": null
+          },
+          {
+            "productCode": "R4",
+            "quantity": 12.3456789,
+            "unitPrice": 0.005,
+            "desconto": 0.015,
+            "promocaoId": null
+          }
+        ],
+        "payments": [
+          {
+            "paymentType": "Dinheiro",
+            "amount": 0.125,
+            "cashGiven": 0.135,
+            "changeAmount": 0.145
+          },
+          {
+            "paymentType": "Pix",
+            "amount": 2.675,
+            "cashGiven": 3.0,
+            "changeAmount": 0.325
+          }
+        ],
+        "xmlNfceContingencia": null
+      },
+      "hash": "03538bb6bc83930d8dea3be9f82e3ca3759d1da49aa16b91c5a73a83bedfcccb"
+    },
+    {
+      "nome": "total-invalido-e-sem-itens",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "",
+        "customerCpf": "",
+        "paymentType": "",
+        "totalAmount": "abc",
+        "operatorName": "",
+        "items": [],
+        "payments": [],
+        "xmlNfceContingencia": null
+      },
+      "hash": "05263b86babd823c003b80d071c30ff268e19f1f503318dffa6e17d55cc988a0"
+    },
+    {
+      "nome": "total-formatos",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "T",
+        "customerCpf": "",
+        "paymentType": "Dinheiro",
+        "totalAmount": " 1.234.567,8 ",
+        "operatorName": "T",
+        "items": [
+          {
+            "productCode": "X",
+            "quantity": 1,
+            "unitPrice": 1,
+            "desconto": 0,
+            "promocaoId": null
+          }
+        ],
+        "payments": [
+          {
+            "paymentType": "Dinheiro",
+            "amount": 1,
+            "cashGiven": null,
+            "changeAmount": null
+          }
+        ],
+        "xmlNfceContingencia": null
+      },
+      "hash": "9f11626e4b4924aa2d247cda13a25217116f8eddcdf7db8c32b1ff38413e4bfb"
+    },
+    {
+      "nome": "xml-nfce-contingencia",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "Contingência",
+        "customerCpf": "",
+        "paymentType": "Dinheiro",
+        "totalAmount": "10,00",
+        "operatorName": "Caixa",
+        "items": [
+          {
+            "productCode": "7891000100103",
+            "quantity": 1,
+            "unitPrice": 10.00,
+            "desconto": 0,
+            "promocaoId": null
+          }
+        ],
+        "payments": [
+          {
+            "paymentType": "Dinheiro",
+            "amount": 10.00,
+            "cashGiven": 10.00,
+            "changeAmount": 0.00
+          }
+        ],
+        "xmlNfceContingencia": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><NFe><infNFe Id=\"NFe35\">Açaí</infNFe></NFe>"
+      },
+      "hash": "55b3ced74dbece3e273e5967d127f5f26d5ba2229ae2731d46cfd97468c8e216"
+    },
+    {
+      "nome": "abertura-simples",
+      "tipo": "abertura",
+      "entrada": {
+        "openingAmount": "100,00"
+      },
+      "hash": "4e2b1bd80139ae81cf5591717f25a0a9cc1f247e449ec1b9963efe70b24b629a"
+    },
+    {
+      "nome": "abertura-zero",
+      "tipo": "abertura",
+      "entrada": {
+        "openingAmount": "0,00"
+      },
+      "hash": "1420e85af89c6951cdac728cf9349fc339578285a315c2248a9b4fc2b4c9c568"
+    },
+    {
+      "nome": "abertura-milhar",
+      "tipo": "abertura",
+      "entrada": {
+        "openingAmount": "R$ 1.500,5"
+      },
+      "hash": "35bb6129e92b832497bb81e443fe21699d4bc606df7dcc505bc6796914802d85"
+    },
+    {
+      "nome": "abertura-invalida",
+      "tipo": "abertura",
+      "entrada": {
+        "openingAmount": "xyz"
+      },
+      "hash": "ea248352597e25d223218787cb45b931412ec18d098171d4e7153d63e707feeb"
+    },
+    {
+      "nome": "fechamento-sem-motivo",
+      "tipo": "fechamento",
+      "entrada": {
+        "closingAmount": "250,00",
+        "note": "",
+        "differenceReason": null
+      },
+      "hash": "d3083b41b81afce284c7d0dcb91f0bc2e0e4d7678cd831a822b3d651ec4a0630"
+    },
+    {
+      "nome": "fechamento-com-diferenca-acentuada",
+      "tipo": "fechamento",
+      "entrada": {
+        "closingAmount": "249,90",
+        "note": "  Conferência feita às 18h  ",
+        "differenceReason": " Troco errado: R$0,10 + \"cliente\" "
+      },
+      "hash": "14caaa571af41df5de34ddd4aa1aa5020b4eae167fbf22b61f9e06f1991b4fe0"
+    },
+    {
+      "nome": "sangria",
+      "tipo": "movimento",
+      "entrada": {
+        "tipo": "Sangria",
+        "valor": "50,00",
+        "motivo": "Pagamento fornecedor"
+      },
+      "hash": "492040877eff52c747aa1644c1583919f8721bcbc90764122bf3ce891badaa37"
+    },
+    {
+      "nome": "reforco-acentuado",
+      "tipo": "movimento",
+      "entrada": {
+        "tipo": " REFORÇO ",
+        "valor": "1.000,5",
+        "motivo": "Troco p/ o dia & café"
+      },
+      "hash": "25bc235da9da5c5e77023e63b0dd5d7c806282456b2bd5a40ab8d4514c9ca1a3"
+    },
+    {
+      "nome": "reforco-ascii-maiusculo",
+      "tipo": "movimento",
+      "entrada": {
+        "tipo": "REFORCO",
+        "valor": "20",
+        "motivo": ""
+      },
+      "hash": "aaa7fb22d4713b0bfa947efde86812a4fc2dcdde49c4ab22b445a55ce51812e0"
+    },
+    {
+      "nome": "caixa-compat-dinheiro",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "Consumidor",
+        "customerCpf": "",
+        "paymentType": "Dinheiro",
+        "totalAmount": "25",
+        "operatorName": "Caixa 1",
+        "items": [
+          {
+            "productCode": "7891",
+            "quantity": 2,
+            "unitPrice": 12.5,
+            "desconto": 0,
+            "promocaoId": null
+          },
+          {
+            "productCode": "7892",
+            "quantity": 1,
+            "unitPrice": 0,
+            "desconto": 0,
+            "promocaoId": null
+          }
+        ],
+        "payments": [
+          {
+            "paymentType": "Dinheiro",
+            "amount": 25,
+            "cashGiven": 30,
+            "changeAmount": 5
+          }
+        ],
+        "xmlNfceContingencia": null
+      },
+      "hash": "3e717e1f934dcb3d4ac07dbcc3e52701e0cb9994e886508252267010cc3dbd67"
+    },
+    {
+      "nome": "caixa-compat-multiplo",
+      "tipo": "venda",
+      "entrada": {
+        "customerName": "Ana Souza",
+        "customerCpf": "52998224725",
+        "paymentType": "Multiplo",
+        "totalAmount": "40.5",
+        "operatorName": "Caixa 2",
+        "items": [
+          {
+            "productCode": "B2",
+            "quantity": 3,
+            "unitPrice": 10,
+            "desconto": 1.5,
+            "promocaoId": "promo-1"
+          },
+          {
+            "productCode": "a1",
+            "quantity": 0.452,
+            "unitPrice": 20,
+            "desconto": 0,
+            "promocaoId": null
+          }
+        ],
+        "payments": [
+          {
+            "paymentType": "Pix",
+            "amount": 20,
+            "cashGiven": null,
+            "changeAmount": null
+          },
+          {
+            "paymentType": "Dinheiro",
+            "amount": 20.5,
+            "cashGiven": 20.5,
+            "changeAmount": 0
+          }
+        ],
+        "xmlNfceContingencia": null
+      },
+      "hash": "8a609e26dc07067d6afaf6e302acac1eb1d83a25175dec7026c0647296ec5924"
+    },
+    {
+      "nome": "caixa-compat-abertura",
+      "tipo": "abertura",
+      "entrada": {
+        "openingAmount": "100"
+      },
+      "hash": "50ab7718bbcdd6fa9c7c22898704041819f38e1ab9432ebf000cd3b6db26fcf1"
+    },
+    {
+      "nome": "caixa-compat-fechamento",
+      "tipo": "fechamento",
+      "entrada": {
+        "closingAmount": "250.5",
+        "note": "Conferido",
+        "differenceReason": "Troco"
+      },
+      "hash": "fbac70d386b974d6b46e400b15bf0a3a037116a7b56531ca6ac1dfc2f2395ef5"
+    },
+    {
+      "nome": "caixa-compat-movimento",
+      "tipo": "movimento",
+      "entrada": {
+        "tipo": "Sangria",
+        "valor": "50",
+        "motivo": "Fornecedor"
+      },
+      "hash": "627f16f9b29be190fb78c8ceee052d7a09edbb70650b881c941e559383ca1ffd"
+    }
+  ]
+}

@@ -136,6 +136,22 @@ public class RegistradorEstoque {
         return aplicar(companyId, ids.getFirst(), delta, tipo, custoUnitario, origem, "loja");
     }
 
+    /** Identificador provisorio das movimentacoes de uma venda ainda sem numero: {@code pend-<uuid sem hifens>}. */
+    public static String novaOrigemProvisoria() {
+        return "pend-" + UUID.randomUUID().toString().replace("-", "");
+    }
+
+    /**
+     * Troca o identificador provisorio das movimentacoes de uma venda pelo numero definitivo, na mesma transacao
+     * (porta de {@code VincularOrigemAsync}).
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public int vincularOrigem(String companyId, String origemProvisoria, String origemDefinitiva, String motivo) {
+        return jdbc.update(
+                "UPDATE EstoqueMovimentacoes SET OrigemId = ?, Motivo = ? WHERE CompanyId = ? AND OrigemId = ?;",
+                origemDefinitiva, motivo, companyId, origemProvisoria);
+    }
+
     static String truncar(String valor, int max) {
         if (valor == null) return null;
         return valor.length() <= max ? valor : valor.substring(0, max);
