@@ -1,0 +1,15 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/problem+json;charset=utf-8"
+  },
+  "corpo" : {
+    "type" : "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title" : "One or more validation errors occurred.",
+    "status" : 400,
+    "errors" : {
+      "OpeningAmount" : [ "The OpeningAmount field is required." ]
+    },
+    "traceId" : "00-4e379c99402973d177c72658326c239d-39907b0ba81f31a6-00"
+  }
+}

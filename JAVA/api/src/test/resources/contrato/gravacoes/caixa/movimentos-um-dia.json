@@ -1,0 +1,19 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimentos de caixa obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "cm-ct-3",
+      "tipo" : "Reforco",
+      "valor" : "30,00",
+      "motivo" : "Reforço da manhã",
+      "createdAt" : "2026-01-16T06:00:00.0000000-03:00",
+      "operatorName" : "Gil Gerente"
+    } ]
+  }
+}

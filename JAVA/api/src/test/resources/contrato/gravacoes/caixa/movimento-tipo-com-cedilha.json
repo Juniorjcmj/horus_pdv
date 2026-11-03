@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Tipo de movimento inválido — use \"Reforco\" ou \"Sangria\".",
+    "details" : null,
+    "data" : null
+  }
+}

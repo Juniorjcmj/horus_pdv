@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Esse caixa foi aberto por Ari Atendente — só ela ou um gerente/administrador podem mexer nele.",
+    "details" : null,
+    "data" : null
+  }
+}

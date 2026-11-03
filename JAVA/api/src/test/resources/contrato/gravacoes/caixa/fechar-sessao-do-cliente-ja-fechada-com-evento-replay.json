@@ -1,0 +1,89 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Fechamento de caixa já processado anteriormente (idempotente).",
+    "details" : null,
+    "data" : {
+      "state" : "fechado",
+      "canSell" : false,
+      "blockReason" : "Abra o caixa do dia antes de iniciar vendas.",
+      "serverNow" : "2026-11-03T19:09:43.0100681-03:00",
+      "currentSession" : null,
+      "lastSession" : {
+        "id" : "cx-ct-aberto",
+        "status" : "Fechado",
+        "openedAt" : "2026-01-16T05:00:00.0000000-03:00",
+        "closedAt" : "2026-11-03T19:09:42.9672430-03:00",
+        "openingAmount" : "200,00",
+        "closingAmount" : "236,00",
+        "operatorId" : "usr-ct-gerente",
+        "operatorName" : "Gil Gerente",
+        "closedById" : "usr-ct-gerente",
+        "closedByName" : "Gil Gerente",
+        "note" : "",
+        "elapsedMinutes" : 419889,
+        "expectedCashAmount" : "236,00",
+        "differenceAmount" : "0,00",
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cm-ct-3",
+          "tipo" : "Reforco",
+          "valor" : "30,00",
+          "motivo" : "Reforço da manhã",
+          "createdAt" : "2026-01-16T06:00:00.0000000-03:00",
+          "operatorName" : "Gil Gerente"
+        } ],
+        "paymentBreakdown" : [ {
+          "paymentType" : "Dinheiro",
+          "total" : "6,00"
+        }, {
+          "paymentType" : "Pix",
+          "total" : "3,00"
+        } ]
+      },
+      "history" : [ {
+        "id" : "cx-ct-aberto",
+        "status" : "Fechado",
+        "openedAt" : "2026-01-16T05:00:00.0000000-03:00",
+        "closedAt" : "2026-11-03T19:09:42.9672430-03:00",
+        "openingAmount" : "200,00",
+        "closingAmount" : "236,00",
+        "operatorId" : "usr-ct-gerente",
+        "operatorName" : "Gil Gerente",
+        "closedById" : "usr-ct-gerente",
+        "closedByName" : "Gil Gerente",
+        "note" : "",
+        "elapsedMinutes" : 419889,
+        "expectedCashAmount" : "236,00",
+        "differenceAmount" : "0,00",
+        "differenceReason" : null,
+        "movimentos" : [ ],
+        "paymentBreakdown" : null
+      }, {
+        "id" : "cx-ct-fechado",
+        "status" : "Fechado",
+        "openedAt" : "2026-01-15T05:00:00.0000000-03:00",
+        "closedAt" : "2026-01-15T15:00:00.0000000-03:00",
+        "openingAmount" : "100,00",
+        "closingAmount" : "145,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "usr-ct-caixa",
+        "closedByName" : "Cai Caixa",
+        "note" : "",
+        "elapsedMinutes" : 600,
+        "expectedCashAmount" : "150,00",
+        "differenceAmount" : "-5,00",
+        "differenceReason" : "Troco errado",
+        "movimentos" : [ ],
+        "paymentBreakdown" : null
+      } ],
+      "openSessions" : [ ],
+      "isReplay" : true
+    }
+  }
+}

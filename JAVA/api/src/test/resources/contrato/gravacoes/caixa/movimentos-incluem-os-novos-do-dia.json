@@ -1,0 +1,26 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimentos de caixa obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "cxm-1793743700752",
+      "tipo" : "Reforco",
+      "valor" : "20,00",
+      "motivo" : "Motivo valido",
+      "createdAt" : "2026-11-03T19:08:20.7508403-03:00",
+      "operatorName" : "Cai Caixa"
+    }, {
+      "id" : "cxm-1793743700779",
+      "tipo" : "Sangria",
+      "valor" : "5,00",
+      "motivo" : "Motivo valido",
+      "createdAt" : "2026-11-03T19:08:20.7764006-03:00",
+      "operatorName" : "Cai Caixa"
+    } ]
+  }
+}

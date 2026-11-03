@@ -44,11 +44,11 @@
 
 ## 2. Caixa (`api/Caixa`)
 
-- [ ] 2.1 Escrever e gravar `cenarios/caixa.json`: status sem turno e com turno, sessão (dono, outro operador,
+- [x] 2.1 Escrever e gravar `cenarios/caixa.json`: status sem turno e com turno, sessão (dono, outro operador,
   gerente), movimentos por período, abrir (normal, já aberto, com `eventId`, replay, conflito), fechar (com e sem
   diferença, replay), sangria e reforço (replay, conflito), 401 e isolamento entre empresas; verificar que a gravação
   existe para todos os cenários
-- [ ] 2.2 Implementar o módulo `venda/caixa` (D7 e D3: status, `CanSell`/`BlockReason`, multi-caixa, esperado em
+- [x] 2.2 Implementar o módulo `venda/caixa` (D7 e D3: status, `CanSell`/`BlockReason`, multi-caixa, esperado em
   dinheiro, idempotência com placeholder em `ProcessedEvents`, auditoria, `EnsureVendaPermitida`); testes: web
   (perfis e mensagens), IT (dois operadores com turnos abertos, fechamento com esperado igual ao da .NET para fundo +
   vendas em dinheiro + reforço − sangria, replay sem segundo turno, conflito 409) e o grupo `caixa` do comparador verde

@@ -1,0 +1,3354 @@
+[
+  {
+    "nome": "status-caixa-sem-turno",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "status-atendente-sem-turno",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    },
+    "volateis": {
+      "data.serverNow": "iso"
+    }
+  },
+  {
+    "nome": "status-gerente-turno-expirado",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "status-admin-sem-turno-ve-o-ultimo",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "status-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    },
+    "volateis": {
+      "data.serverNow": "iso"
+    }
+  },
+  {
+    "nome": "status-sem-token",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    }
+  },
+  {
+    "nome": "status-token-invalido",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status",
+      "auth": "invalido"
+    }
+  },
+  {
+    "nome": "status-caixa-com-turno-aberto-hoje",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "150,00"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso"
+    }
+  },
+  {
+    "nome": "status-caixa-apos-fechar",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "150,00"
+        },
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "150,00"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[0].closedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "status-gerente-com-tres-turnos-abertos",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "50,00"
+        },
+        "usuario": "atendente@contrato.quack",
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "80,00"
+        },
+        "usuario": "caixa@contrato.quack",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].id": "id",
+      "data.history[1].openedAt": "iso",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.history[3].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].id": "id",
+      "data.openSessions[1].openedAt": "iso",
+      "data.openSessions[2].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "status-atendente-com-tres-turnos-abertos",
+    "usuario": "atendente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "50,00"
+        },
+        "usuario": "atendente@contrato.quack",
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "80,00"
+        },
+        "usuario": "caixa@contrato.quack",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso"
+    }
+  },
+  {
+    "nome": "status-com-sangria-e-reforco-no-turno",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00"
+        },
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Reforco",
+          "valor": "25,50",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "10,25",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/status"
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.currentSession.movimentos[0].id": "id",
+      "data.currentSession.movimentos[0].createdAt": "iso",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.lastSession.movimentos[0].id": "id",
+      "data.lastSession.movimentos[0].createdAt": "iso",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[0].movimentos[0].id": "id",
+      "data.history[0].movimentos[0].createdAt": "iso",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[0].movimentos[0].id": "id",
+      "data.openSessions[0].movimentos[0].createdAt": "iso",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "sessao-dono-turno-fechado",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/sessao/cx-ct-fechado"
+    },
+    "volateis": {
+      "data.elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "sessao-outro-operador-nao-ve",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/sessao/cx-ct-fechado"
+    }
+  },
+  {
+    "nome": "sessao-gerente-ve-turno-fechado-de-outro",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/sessao/cx-ct-fechado"
+    },
+    "volateis": {
+      "data.elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "sessao-gerente-turno-aberto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/sessao/cx-ct-aberto"
+    },
+    "volateis": {
+      "data.elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "sessao-admin-ve-qualquer",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/sessao/cx-ct-aberto"
+    },
+    "volateis": {
+      "data.elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "sessao-caixa-nao-ve-turno-do-gerente",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/sessao/cx-ct-aberto"
+    }
+  },
+  {
+    "nome": "sessao-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/sessao/cx-nao-existe"
+    }
+  },
+  {
+    "nome": "sessao-outra-empresa-nao-ve",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/sessao/cx-ct-fechado"
+    }
+  },
+  {
+    "nome": "sessao-sem-token",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/sessao/cx-ct-fechado"
+    }
+  },
+  {
+    "nome": "sessao-fechada-por-outro-operador",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "40,00",
+          "clientSessionId": "cx-abertura-atendente"
+        },
+        "usuario": "atendente@contrato.quack",
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "40,00",
+          "clientSessionId": "cx-abertura-atendente"
+        },
+        "usuario": "gerente@contrato.quack",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/sessao/cx-abertura-atendente"
+    }
+  },
+  {
+    "nome": "movimentos-gerente-periodo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=2026-01-15&ate=2026-01-16"
+    }
+  },
+  {
+    "nome": "movimentos-caixa-so-os-proprios",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=2026-01-15&ate=2026-01-16"
+    }
+  },
+  {
+    "nome": "movimentos-atendente-vazio",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=2026-01-15&ate=2026-01-16"
+    }
+  },
+  {
+    "nome": "movimentos-um-dia",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=2026-01-16&ate=2026-01-16"
+    }
+  },
+  {
+    "nome": "movimentos-so-data-inicial-usa-hoje-como-fim",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=2026-01-15"
+    }
+  },
+  {
+    "nome": "movimentos-periodo-invertido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=2026-02-01&ate=2026-01-01"
+    }
+  },
+  {
+    "nome": "movimentos-datas-invalidas-usam-o-padrao",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=abc&ate=xyz"
+    }
+  },
+  {
+    "nome": "movimentos-sem-parametros",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos"
+    }
+  },
+  {
+    "nome": "movimentos-data-com-hora",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=2026-01-15T23:00:00&ate=2026-01-15T23:30:00"
+    }
+  },
+  {
+    "nome": "movimentos-data-no-formato-americano",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=01/15/2026&ate=01/16/2026"
+    }
+  },
+  {
+    "nome": "movimentos-data-no-formato-brasileiro",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=15/01/2026&ate=16/01/2026"
+    }
+  },
+  {
+    "nome": "movimentos-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=2026-01-15&ate=2026-01-16"
+    }
+  },
+  {
+    "nome": "movimentos-sem-token",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos?de=2026-01-15&ate=2026-01-16"
+    }
+  },
+  {
+    "nome": "movimentos-incluem-os-novos-do-dia",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00"
+        },
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Reforco",
+          "valor": "20,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "5,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].createdAt": "iso",
+      "data[1].id": "id",
+      "data[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimentos-gerente-ve-os-de-todos-hoje",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00"
+        },
+        "usuario": "caixa@contrato.quack",
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Reforco",
+          "valor": "20,00",
+          "motivo": "Motivo valido"
+        },
+        "usuario": "caixa@contrato.quack",
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Caixa/movimentos"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "abrir-normal",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "100,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-ja-possui-caixa-aberto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "100,00"
+      }
+    }
+  },
+  {
+    "nome": "abrir-ja-aberto-no-mesmo-dia",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "50,00"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "100,00"
+      }
+    }
+  },
+  {
+    "nome": "abrir-valor-no-formato-brasileiro",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "R$ 1.234,50"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-valor-invalido-vira-zero",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "abc"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-valor-negativo",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "-10,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-valor-com-ponto-decimal",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "12.5"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-corpo-vazio-usa-padrao",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {}
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-com-event-id",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "eventId": "evt-abrir-1",
+        "openingAmount": "100,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-replay-mesmo-event-id",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00",
+          "eventId": "evt-abrir-1"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "eventId": "evt-abrir-1",
+        "openingAmount": "100,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-replay-com-escala-diferente-do-valor",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00",
+          "eventId": "evt-abrir-1"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "eventId": "evt-abrir-1",
+        "openingAmount": "100"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-conflito-mesmo-event-id-outro-valor",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00",
+          "eventId": "evt-abrir-1"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "eventId": "evt-abrir-1",
+        "openingAmount": "200,00"
+      }
+    }
+  },
+  {
+    "nome": "abrir-com-payload-hash-enviado",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "eventId": "evt-abrir-2",
+        "payloadHash": "ABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABAB",
+        "openingAmount": "100,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-replay-payload-hash-em-caixa-alta-e-baixa",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00",
+          "eventId": "evt-abrir-2",
+          "payloadHash": "ABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABABAB"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "eventId": "evt-abrir-2",
+        "payloadHash": "  abababababababababababababababababababababababababababababababab  ",
+        "openingAmount": "999,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-conflito-payload-hash-diferente",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00",
+          "eventId": "evt-abrir-2",
+          "payloadHash": "abababababababababababababababababababababababababababababababab"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "eventId": "evt-abrir-2",
+        "payloadHash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+        "openingAmount": "100,00"
+      }
+    }
+  },
+  {
+    "nome": "abrir-event-id-com-espacos-e-replay",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00",
+          "eventId": "  evt-abrir-3  "
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "eventId": "evt-abrir-3",
+        "openingAmount": "100,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-mesmo-event-id-em-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00",
+          "eventId": "evt-abrir-1"
+        },
+        "usuario": "caixa@contrato.quack",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "eventId": "evt-abrir-1",
+        "openingAmount": "100,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso"
+    }
+  },
+  {
+    "nome": "abrir-event-id-sem-turno-novo-replay-apos-fechar",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00",
+          "eventId": "evt-abrir-1"
+        },
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "100,00"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "eventId": "evt-abrir-1",
+        "openingAmount": "100,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-sessao-do-cliente",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "70,00",
+        "clientSessionId": "cx-offline-1"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-sessao-do-cliente-formato-invalido",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "70,00",
+        "clientSessionId": "xx-1"
+      }
+    }
+  },
+  {
+    "nome": "abrir-sessao-do-cliente-com-horario-fora-da-janela",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "70,00",
+        "clientSessionId": "cx-offline-2",
+        "openedAt": "2020-01-01T00:00:00Z"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-sessao-do-cliente-com-horario-invalido",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "70,00",
+        "clientSessionId": "cx-offline-3",
+        "openedAt": "ontem"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-sessao-do-cliente-reenvio-sem-event-id",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "70,00",
+          "clientSessionId": "cx-offline-1"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "70,00",
+        "clientSessionId": "cx-offline-1"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-sessao-do-cliente-com-turno-ja-aberto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "70,00",
+        "clientSessionId": "cx-offline-4"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-dois-operadores-ao-mesmo-tempo",
+    "usuario": "atendente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00"
+        },
+        "usuario": "caixa@contrato.quack",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "30,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[1].id": "id",
+      "data.history[1].openedAt": "iso",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.history[3].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[1].id": "id",
+      "data.openSessions[1].openedAt": "iso",
+      "data.openSessions[2].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "abrir-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "100,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso"
+    }
+  },
+  {
+    "nome": "abrir-sem-token",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": "100,00"
+      }
+    }
+  },
+  {
+    "nome": "abrir-valor-nulo",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/abrir",
+      "corpo": {
+        "openingAmount": null
+      }
+    },
+    "volateis": {
+      "traceId": "texto"
+    }
+  },
+  {
+    "nome": "fechar-sem-turno",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "100,00"
+      }
+    }
+  },
+  {
+    "nome": "fechar-gerente-sem-diferenca",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "236,00",
+        "note": "  Fim do dia  "
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-gerente-com-falta-sem-justificativa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "230,00"
+      }
+    }
+  },
+  {
+    "nome": "fechar-gerente-com-sobra-sem-justificativa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "240,50"
+      }
+    }
+  },
+  {
+    "nome": "fechar-gerente-com-falta-e-justificativa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "230,00",
+        "differenceReason": "  Troco errado ao cliente  ",
+        "note": "Fim do dia"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-gerente-com-sobra-e-justificativa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "240,00",
+        "differenceReason": "Sobrou moeda"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-sem-diferenca-ignora-justificativa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "236,00",
+        "differenceReason": "Nao precisa"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-justificativa-so-espacos",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "230,00",
+        "differenceReason": "   "
+      }
+    }
+  },
+  {
+    "nome": "fechar-valor-invalido-vira-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "abc"
+      }
+    }
+  },
+  {
+    "nome": "fechar-valor-no-formato-brasileiro",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "R$ 236,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-apos-sangria-e-reforco",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Reforco",
+          "valor": "10,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "50,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "196,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.movimentos[2].id": "id",
+      "data.lastSession.movimentos[2].createdAt": "iso",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-esperado-muda-com-a-sangria",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "50,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "236,00"
+      }
+    }
+  },
+  {
+    "nome": "fechar-turno-novo-do-caixa",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00"
+        },
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Reforco",
+          "valor": "50,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "20,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "100,00"
+      }
+    }
+  },
+  {
+    "nome": "fechar-turno-novo-do-caixa-com-falta",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00"
+        },
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Reforco",
+          "valor": "50,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "20,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "120,00",
+        "differenceReason": "Faltou"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.movimentos[0].id": "id",
+      "data.lastSession.movimentos[0].createdAt": "iso",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[0].closedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-com-event-id",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "eventId": "evt-fechar-1",
+        "closingAmount": "236,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-replay-mesmo-event-id",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "236,00",
+          "eventId": "evt-fechar-1"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "eventId": "evt-fechar-1",
+        "closingAmount": "236,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-conflito-mesmo-event-id-outro-valor",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "236,00",
+          "eventId": "evt-fechar-1"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "eventId": "evt-fechar-1",
+        "closingAmount": "100,00",
+        "differenceReason": "x"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-com-payload-hash-enviado",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "eventId": "evt-fechar-2",
+        "payloadHash": "abababababababababababababababababababababababababababababababab",
+        "closingAmount": "236,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-replay-payload-hash-enviado-outro-valor",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "236,00",
+          "eventId": "evt-fechar-2",
+          "payloadHash": "abababababababababababababababababababababababababababababababab"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "eventId": "evt-fechar-2",
+        "payloadHash": "abababababababababababababababababababababababababababababababab",
+        "closingAmount": "1,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-sessao-do-cliente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "236,00",
+        "clientSessionId": "cx-ct-aberto"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-sessao-do-cliente-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "10,00",
+        "clientSessionId": "cx-nao-existe"
+      }
+    }
+  },
+  {
+    "nome": "fechar-sessao-do-cliente-formato-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "10,00",
+        "clientSessionId": "abc"
+      }
+    }
+  },
+  {
+    "nome": "fechar-sessao-do-cliente-ja-fechada",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "10,00",
+        "clientSessionId": "cx-ct-fechado"
+      }
+    }
+  },
+  {
+    "nome": "fechar-sessao-do-cliente-ja-fechada-com-evento-replay",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "236,00",
+          "eventId": "evt-fechar-3",
+          "clientSessionId": "cx-ct-aberto"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "eventId": "evt-fechar-3",
+        "closingAmount": "236,00",
+        "clientSessionId": "cx-ct-aberto"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-sessao-do-cliente-ja-fechada-com-evento-novo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "eventId": "evt-fechar-novo",
+        "closingAmount": "236,00",
+        "clientSessionId": "cx-ct-fechado"
+      }
+    }
+  },
+  {
+    "nome": "fechar-sem-turno-com-evento-replay",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "236,00",
+          "eventId": "evt-fechar-4"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "eventId": "evt-fechar-4",
+        "closingAmount": "236,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-sem-turno-com-evento-em-conflito",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "236,00",
+          "eventId": "evt-fechar-4"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "eventId": "evt-fechar-4",
+        "closingAmount": "5,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-sem-turno-com-evento-desconhecido",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "eventId": "evt-fechar-9",
+        "closingAmount": "5,00"
+      }
+    }
+  },
+  {
+    "nome": "fechar-sessao-do-cliente-com-horario",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "236,00",
+        "clientSessionId": "cx-ct-aberto",
+        "closedAt": "2020-01-01T00:00:00Z"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-turno-de-outro-sem-permissao",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "40,00",
+          "clientSessionId": "cx-fecha-atendente"
+        },
+        "usuario": "atendente@contrato.quack",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "40,00",
+        "clientSessionId": "cx-fecha-atendente"
+      }
+    }
+  },
+  {
+    "nome": "fechar-gerente-fecha-turno-de-outro",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "40,00",
+          "clientSessionId": "cx-fecha-atendente"
+        },
+        "usuario": "atendente@contrato.quack",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "40,00",
+        "clientSessionId": "cx-fecha-atendente"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].openedAt": "iso",
+      "data.history[0].closedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-atendente-fecha-o-proprio",
+    "usuario": "atendente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "40,00"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "40,00"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[0].closedAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-outra-empresa-sem-turno",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "10,00"
+      }
+    }
+  },
+  {
+    "nome": "fechar-sem-token",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "10,00"
+      }
+    }
+  },
+  {
+    "nome": "fechar-nota-longa-e-acentos",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "236,00",
+        "note": "Conferência do caixa — OK ✓",
+        "eventId": "evt-fechar-5"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.lastSession.closedAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.history[0].closedAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "fechar-valor-nulo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": null
+      }
+    },
+    "volateis": {
+      "traceId": "texto"
+    }
+  },
+  {
+    "nome": "fechar-nota-nula",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/fechar",
+      "corpo": {
+        "closingAmount": "236,00",
+        "note": null
+      }
+    },
+    "volateis": {
+      "traceId": "texto"
+    }
+  },
+  {
+    "nome": "movimento-sangria",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "50,00",
+        "motivo": "Levar ao cofre"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-reforco",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Reforco",
+        "valor": "20,00",
+        "motivo": "Troco para a manha"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-tipo-em-minusculas",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "reforco",
+        "valor": "20,00",
+        "motivo": "Troco"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-tipo-com-espacos",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": " Sangria ",
+        "valor": "20,00",
+        "motivo": "Troco"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-tipo-numerico-um",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "1",
+        "valor": "20,00",
+        "motivo": "Troco"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-tipo-numerico-dois",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "2",
+        "valor": "20,00",
+        "motivo": "Troco"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-tipo-numerico-indefinido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "5",
+        "valor": "20,00",
+        "motivo": "Troco"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-tipo-numerico-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "0",
+        "valor": "20,00",
+        "motivo": "Troco"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-tipo-lista-de-nomes",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Reforco, Sangria",
+        "valor": "20,00",
+        "motivo": "Troco"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-tipo-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Doacao",
+        "valor": "20,00",
+        "motivo": "Troco"
+      }
+    }
+  },
+  {
+    "nome": "movimento-tipo-vazio",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "",
+        "valor": "20,00",
+        "motivo": "Troco"
+      }
+    }
+  },
+  {
+    "nome": "movimento-tipo-com-cedilha",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Reforço",
+        "valor": "20,00",
+        "motivo": "Troco"
+      }
+    }
+  },
+  {
+    "nome": "movimento-sem-turno",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "5,00",
+        "motivo": "Teste"
+      }
+    }
+  },
+  {
+    "nome": "movimento-admin-sem-turno",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Reforco",
+        "valor": "5,00",
+        "motivo": "Teste"
+      }
+    }
+  },
+  {
+    "nome": "movimento-valor-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "0,00",
+        "motivo": "Teste"
+      }
+    }
+  },
+  {
+    "nome": "movimento-valor-negativo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "-5,00",
+        "motivo": "Teste"
+      }
+    }
+  },
+  {
+    "nome": "movimento-valor-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "abc",
+        "motivo": "Teste"
+      }
+    }
+  },
+  {
+    "nome": "movimento-valor-no-formato-brasileiro",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Reforco",
+        "valor": "R$ 1.234,56",
+        "motivo": "Teste"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-motivo-curto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "5,00",
+        "motivo": "ab"
+      }
+    }
+  },
+  {
+    "nome": "movimento-motivo-so-espacos",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "5,00",
+        "motivo": "    "
+      }
+    }
+  },
+  {
+    "nome": "movimento-motivo-com-espacos-nas-pontas",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "5,00",
+        "motivo": "  abc  "
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-sangria-maior-que-o-caixa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "500,00",
+        "motivo": "Muito"
+      }
+    }
+  },
+  {
+    "nome": "movimento-sangria-igual-ao-caixa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "236,00",
+        "motivo": "Tudo"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-sangria-um-centavo-acima",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "236,01",
+        "motivo": "Tudo"
+      }
+    }
+  },
+  {
+    "nome": "movimento-sangria-apos-reforco-cobre",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Reforco",
+          "valor": "20,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "250,00",
+        "motivo": "Tudo"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.currentSession.movimentos[2].id": "id",
+      "data.currentSession.movimentos[2].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.movimentos[2].id": "id",
+      "data.lastSession.movimentos[2].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[0].movimentos[2].id": "id",
+      "data.history[0].movimentos[2].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso",
+      "data.openSessions[0].movimentos[2].id": "id",
+      "data.openSessions[0].movimentos[2].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-reforco-nao-checa-saldo",
+    "usuario": "caixa@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "1,00"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Reforco",
+        "valor": "9999999,00",
+        "motivo": "Muito"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.currentSession.movimentos[0].id": "id",
+      "data.currentSession.movimentos[0].createdAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.lastSession.movimentos[0].id": "id",
+      "data.lastSession.movimentos[0].createdAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[0].movimentos[0].id": "id",
+      "data.history[0].movimentos[0].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[0].movimentos[0].id": "id",
+      "data.openSessions[0].movimentos[0].createdAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "movimento-com-event-id",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "eventId": "evt-mov-1",
+        "tipo": "Sangria",
+        "valor": "50,00",
+        "motivo": "Levar ao cofre"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-replay-mesmo-event-id",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "50,00",
+          "motivo": "Levar ao cofre",
+          "eventId": "evt-mov-1"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "eventId": "evt-mov-1",
+        "tipo": "Sangria",
+        "valor": "50,00",
+        "motivo": "Levar ao cofre"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-replay-com-tipo-em-minusculas-e-espacos",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "50,00",
+          "motivo": "Levar ao cofre",
+          "eventId": "evt-mov-1"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "eventId": "evt-mov-1",
+        "tipo": "sangria",
+        "valor": "50,00",
+        "motivo": "  Levar ao cofre  "
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-conflito-mesmo-event-id-outro-valor",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "50,00",
+          "motivo": "Levar ao cofre",
+          "eventId": "evt-mov-1"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "eventId": "evt-mov-1",
+        "tipo": "Sangria",
+        "valor": "60,00",
+        "motivo": "Levar ao cofre"
+      }
+    }
+  },
+  {
+    "nome": "movimento-conflito-mesmo-event-id-outro-motivo",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "50,00",
+          "motivo": "Levar ao cofre",
+          "eventId": "evt-mov-1"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "eventId": "evt-mov-1",
+        "tipo": "Sangria",
+        "valor": "50,00",
+        "motivo": "Outro motivo"
+      }
+    }
+  },
+  {
+    "nome": "movimento-conflito-valor-com-escala-diferente",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "50,00",
+          "motivo": "Levar ao cofre",
+          "eventId": "evt-mov-1"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "eventId": "evt-mov-1",
+        "tipo": "Sangria",
+        "valor": "50",
+        "motivo": "Levar ao cofre"
+      }
+    }
+  },
+  {
+    "nome": "movimento-replay-mesmo-hash-outro-valor",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "50,00",
+          "motivo": "Levar ao cofre",
+          "eventId": "evt-mov-2",
+          "payloadHash": "abababababababababababababababababababababababababababababababab"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "eventId": "evt-mov-2",
+        "payloadHash": "abababababababababababababababababababababababababababababababab",
+        "tipo": "Sangria",
+        "valor": "1,00",
+        "motivo": "Outro"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-replay-sem-turno-aberto",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "50,00",
+          "motivo": "Levar ao cofre",
+          "eventId": "evt-mov-3"
+        },
+        "status": 201
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "186,00"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "eventId": "evt-mov-3",
+        "tipo": "Sangria",
+        "valor": "50,00",
+        "motivo": "Levar ao cofre"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-event-id-novo-sem-turno-aberto",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/fechar",
+        "auth": "bearer",
+        "corpo": {
+          "closingAmount": "236,00"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "eventId": "evt-mov-4",
+        "tipo": "Sangria",
+        "valor": "50,00",
+        "motivo": "Levar ao cofre"
+      }
+    }
+  },
+  {
+    "nome": "movimento-mesmo-event-id-em-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "10,00"
+        },
+        "usuario": "adm.aprovada@contrato.quack",
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Reforco",
+          "valor": "50,00",
+          "motivo": "Troco",
+          "eventId": "evt-mov-1"
+        },
+        "usuario": "gerente@contrato.quack",
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "eventId": "evt-mov-1",
+        "tipo": "Reforco",
+        "valor": "50,00",
+        "motivo": "Troco"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.currentSession.movimentos[0].id": "id",
+      "data.currentSession.movimentos[0].createdAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.lastSession.movimentos[0].id": "id",
+      "data.lastSession.movimentos[0].createdAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[0].movimentos[0].id": "id",
+      "data.history[0].movimentos[0].createdAt": "iso",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[0].movimentos[0].id": "id",
+      "data.openSessions[0].movimentos[0].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-outro-operador-so-mexe-no-proprio-turno",
+    "usuario": "atendente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00"
+        },
+        "usuario": "caixa@contrato.quack",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Reforco",
+        "valor": "5,00",
+        "motivo": "Troco"
+      }
+    }
+  },
+  {
+    "nome": "movimento-atendente-no-proprio-turno",
+    "usuario": "atendente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/abrir",
+        "auth": "bearer",
+        "corpo": {
+          "openingAmount": "100,00"
+        },
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Reforco",
+        "valor": "5,00",
+        "motivo": "Troco"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.id": "id",
+      "data.currentSession.openedAt": "iso",
+      "data.currentSession.movimentos[0].id": "id",
+      "data.currentSession.movimentos[0].createdAt": "iso",
+      "data.lastSession.id": "id",
+      "data.lastSession.openedAt": "iso",
+      "data.lastSession.movimentos[0].id": "id",
+      "data.lastSession.movimentos[0].createdAt": "iso",
+      "data.history[0].id": "id",
+      "data.history[0].openedAt": "iso",
+      "data.history[0].movimentos[0].id": "id",
+      "data.history[0].movimentos[0].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.history[2].elapsedMinutes": "tipo",
+      "data.openSessions[0].id": "id",
+      "data.openSessions[0].openedAt": "iso",
+      "data.openSessions[0].movimentos[0].id": "id",
+      "data.openSessions[0].movimentos[0].createdAt": "iso",
+      "data.openSessions[1].elapsedMinutes": "tipo"
+    }
+  },
+  {
+    "nome": "movimento-sangria-depois-de-outra-sangria",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Caixa/movimento",
+        "auth": "bearer",
+        "corpo": {
+          "tipo": "Sangria",
+          "valor": "50,00",
+          "motivo": "Motivo valido"
+        },
+        "status": 201
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "190,00",
+        "motivo": "Mais uma"
+      }
+    }
+  },
+  {
+    "nome": "movimento-outra-empresa-sem-turno",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "5,00",
+        "motivo": "Teste"
+      }
+    }
+  },
+  {
+    "nome": "movimento-sem-token",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Sangria",
+        "valor": "5,00",
+        "motivo": "Teste"
+      }
+    }
+  },
+  {
+    "nome": "movimento-tipo-nulo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": null,
+        "valor": "5,00",
+        "motivo": "Teste"
+      }
+    },
+    "volateis": {
+      "traceId": "texto"
+    }
+  },
+  {
+    "nome": "movimento-motivo-longo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Reforco",
+        "valor": "5,00",
+        "motivo": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    "volateis": {
+      "data.serverNow": "iso",
+      "data.currentSession.elapsedMinutes": "tipo",
+      "data.currentSession.movimentos[1].id": "id",
+      "data.currentSession.movimentos[1].createdAt": "iso",
+      "data.lastSession.elapsedMinutes": "tipo",
+      "data.lastSession.movimentos[1].id": "id",
+      "data.lastSession.movimentos[1].createdAt": "iso",
+      "data.history[0].elapsedMinutes": "tipo",
+      "data.history[0].movimentos[1].id": "id",
+      "data.history[0].movimentos[1].createdAt": "iso",
+      "data.history[1].elapsedMinutes": "tipo",
+      "data.openSessions[0].elapsedMinutes": "tipo",
+      "data.openSessions[0].movimentos[1].id": "id",
+      "data.openSessions[0].movimentos[1].createdAt": "iso"
+    }
+  },
+  {
+    "nome": "movimento-motivo-maior-que-a-coluna",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Caixa/movimento",
+      "corpo": {
+        "tipo": "Reforco",
+        "valor": "5,00",
+        "motivo": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    }
+  }
+]

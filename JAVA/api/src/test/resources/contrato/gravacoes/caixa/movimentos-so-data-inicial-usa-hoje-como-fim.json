@@ -1,0 +1,33 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimentos de caixa obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "cm-ct-1",
+      "tipo" : "Reforco",
+      "valor" : "50,00",
+      "motivo" : "Reforço de troco",
+      "createdAt" : "2026-01-15T07:00:00.0000000-03:00",
+      "operatorName" : "Cai Caixa"
+    }, {
+      "id" : "cm-ct-2",
+      "tipo" : "Sangria",
+      "valor" : "20,00",
+      "motivo" : "Sangria para o cofre",
+      "createdAt" : "2026-01-15T11:00:00.0000000-03:00",
+      "operatorName" : "Cai Caixa"
+    }, {
+      "id" : "cm-ct-3",
+      "tipo" : "Reforco",
+      "valor" : "30,00",
+      "motivo" : "Reforço da manhã",
+      "createdAt" : "2026-01-16T06:00:00.0000000-03:00",
+      "operatorName" : "Gil Gerente"
+    } ]
+  }
+}

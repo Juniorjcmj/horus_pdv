@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Há uma diferença de 4,50 (sobra) em relação ao esperado (236,00). Informe uma justificativa antes de fechar o caixa.",
+    "details" : null,
+    "data" : null
+  }
+}

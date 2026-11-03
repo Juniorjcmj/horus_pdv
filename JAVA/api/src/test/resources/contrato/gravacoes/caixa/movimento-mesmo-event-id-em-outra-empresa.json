@@ -1,0 +1,122 @@
+{
+  "status" : 201,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimento de caixa registrado com sucesso.",
+    "details" : null,
+    "data" : {
+      "state" : "aberto",
+      "canSell" : true,
+      "blockReason" : "",
+      "serverNow" : "2026-11-03T19:10:43.2850854-03:00",
+      "currentSession" : {
+        "id" : "cx-1793743843066",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:10:43.0668693-03:00",
+        "closedAt" : null,
+        "openingAmount" : "10,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-apr-adm",
+        "operatorName" : "Ada Aprovada",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "60,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743843289",
+          "tipo" : "Reforco",
+          "valor" : "50,00",
+          "motivo" : "Troco",
+          "createdAt" : "2026-11-03T19:10:43.2850854-03:00",
+          "operatorName" : "Ada Aprovada"
+        } ],
+        "paymentBreakdown" : [ ]
+      },
+      "lastSession" : {
+        "id" : "cx-1793743843066",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:10:43.0668693-03:00",
+        "closedAt" : null,
+        "openingAmount" : "10,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-apr-adm",
+        "operatorName" : "Ada Aprovada",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "60,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743843289",
+          "tipo" : "Reforco",
+          "valor" : "50,00",
+          "motivo" : "Troco",
+          "createdAt" : "2026-11-03T19:10:43.2850854-03:00",
+          "operatorName" : "Ada Aprovada"
+        } ],
+        "paymentBreakdown" : [ ]
+      },
+      "history" : [ {
+        "id" : "cx-1793743843066",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:10:43.0668693-03:00",
+        "closedAt" : null,
+        "openingAmount" : "10,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-apr-adm",
+        "operatorName" : "Ada Aprovada",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "60,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743843289",
+          "tipo" : "Reforco",
+          "valor" : "50,00",
+          "motivo" : "Troco",
+          "createdAt" : "2026-11-03T19:10:43.2850854-03:00",
+          "operatorName" : "Ada Aprovada"
+        } ],
+        "paymentBreakdown" : [ ]
+      } ],
+      "openSessions" : [ {
+        "id" : "cx-1793743843066",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:10:43.0668693-03:00",
+        "closedAt" : null,
+        "openingAmount" : "10,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-apr-adm",
+        "operatorName" : "Ada Aprovada",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "60,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743843289",
+          "tipo" : "Reforco",
+          "valor" : "50,00",
+          "motivo" : "Troco",
+          "createdAt" : "2026-11-03T19:10:43.2850854-03:00",
+          "operatorName" : "Ada Aprovada"
+        } ],
+        "paymentBreakdown" : [ ]
+      } ],
+      "isReplay" : false
+    }
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "status" : 201,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimento de caixa registrado com sucesso.",
+    "details" : null,
+    "data" : {
+      "state" : "aberto",
+      "canSell" : true,
+      "blockReason" : "",
+      "serverNow" : "2026-11-03T19:10:31.2237486-03:00",
+      "currentSession" : {
+        "id" : "cx-1793743831186",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:10:31.1861310-03:00",
+        "closedAt" : null,
+        "openingAmount" : "1,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "10.000.000,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743831225",
+          "tipo" : "Reforco",
+          "valor" : "9.999.999,00",
+          "motivo" : "Muito",
+          "createdAt" : "2026-11-03T19:10:31.2237486-03:00",
+          "operatorName" : "Cai Caixa"
+        } ],
+        "paymentBreakdown" : [ ]
+      },
+      "lastSession" : {
+        "id" : "cx-1793743831186",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:10:31.1861310-03:00",
+        "closedAt" : null,
+        "openingAmount" : "1,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "10.000.000,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743831225",
+          "tipo" : "Reforco",
+          "valor" : "9.999.999,00",
+          "motivo" : "Muito",
+          "createdAt" : "2026-11-03T19:10:31.2237486-03:00",
+          "operatorName" : "Cai Caixa"
+        } ],
+        "paymentBreakdown" : [ ]
+      },
+      "history" : [ {
+        "id" : "cx-1793743831186",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:10:31.1861310-03:00",
+        "closedAt" : null,
+        "openingAmount" : "1,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "10.000.000,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743831225",
+          "tipo" : "Reforco",
+          "valor" : "9.999.999,00",
+          "motivo" : "Muito",
+          "createdAt" : "2026-11-03T19:10:31.2237486-03:00",
+          "operatorName" : "Cai Caixa"
+        } ],
+        "paymentBreakdown" : [ ]
+      }, {
+        "id" : "cx-ct-aberto",
+        "status" : "Aberto",
+        "openedAt" : "2026-01-16T05:00:00.0000000-03:00",
+        "closedAt" : null,
+        "openingAmount" : "200,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-gerente",
+        "operatorName" : "Gil Gerente",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 419890,
+        "expectedCashAmount" : null,
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ ],
+        "paymentBreakdown" : null
+      }, {
+        "id" : "cx-ct-fechado",
+        "status" : "Fechado",
+        "openedAt" : "2026-01-15T05:00:00.0000000-03:00",
+        "closedAt" : "2026-01-15T15:00:00.0000000-03:00",
+        "openingAmount" : "100,00",
+        "closingAmount" : "145,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "usr-ct-caixa",
+        "closedByName" : "Cai Caixa",
+        "note" : "",
+        "elapsedMinutes" : 600,
+        "expectedCashAmount" : "150,00",
+        "differenceAmount" : "-5,00",
+        "differenceReason" : "Troco errado",
+        "movimentos" : [ ],
+        "paymentBreakdown" : null
+      } ],
+      "openSessions" : [ {
+        "id" : "cx-1793743831186",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:10:31.1861310-03:00",
+        "closedAt" : null,
+        "openingAmount" : "1,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "10.000.000,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743831225",
+          "tipo" : "Reforco",
+          "valor" : "9.999.999,00",
+          "motivo" : "Muito",
+          "createdAt" : "2026-11-03T19:10:31.2237486-03:00",
+          "operatorName" : "Cai Caixa"
+        } ],
+        "paymentBreakdown" : [ ]
+      }, {
+        "id" : "cx-ct-aberto",
+        "status" : "Aberto",
+        "openedAt" : "2026-01-16T05:00:00.0000000-03:00",
+        "closedAt" : null,
+        "openingAmount" : "200,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-gerente",
+        "operatorName" : "Gil Gerente",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 419890,
+        "expectedCashAmount" : "236,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cm-ct-3",
+          "tipo" : "Reforco",
+          "valor" : "30,00",
+          "motivo" : "Reforço da manhã",
+          "createdAt" : "2026-01-16T06:00:00.0000000-03:00",
+          "operatorName" : "Gil Gerente"
+        } ],
+        "paymentBreakdown" : [ {
+          "paymentType" : "Dinheiro",
+          "total" : "6,00"
+        }, {
+          "paymentType" : "Pix",
+          "total" : "3,00"
+        } ]
+      } ],
+      "isReplay" : false
+    }
+  }
+}

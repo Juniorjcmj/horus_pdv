@@ -1,0 +1,22 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Status do caixa obtido com sucesso.",
+    "details" : null,
+    "data" : {
+      "state" : "fechado",
+      "canSell" : false,
+      "blockReason" : "Abra o caixa do dia antes de iniciar vendas.",
+      "serverNow" : "2026-11-03T19:07:21.9584371-03:00",
+      "currentSession" : null,
+      "lastSession" : null,
+      "history" : [ ],
+      "openSessions" : [ ],
+      "isReplay" : false
+    }
+  }
+}

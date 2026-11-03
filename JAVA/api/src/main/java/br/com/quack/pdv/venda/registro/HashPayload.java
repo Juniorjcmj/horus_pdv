@@ -118,10 +118,34 @@ public final class HashPayload {
         return sha256Hex(json.toString());
     }
 
+    /**
+     * Hash que o {@code CaixaAB} calcula quando o cliente nao envia {@code payloadHash}: objeto anonimo com o valor ja
+     * formatado em pt-BR (texto, nao numero): {@code { openingAmount = Format(openingAmount) }}.
+     */
+    public static String calcularAberturaSemHashDoCliente(String openingAmountFormatado) {
+        StringBuilder json = new StringBuilder("{");
+        propString(json, "openingAmount", openingAmountFormatado).append('}');
+        return sha256Hex(json.toString());
+    }
+
+    /**
+     * Hash do fechamento sem {@code payloadHash} do cliente: {@code { closingAmount = Format(...), note, differenceReason }}
+     * com a justificativa nula serializada como {@code null}.
+     */
+    public static String calcularFechamentoSemHashDoCliente(String closingAmountFormatado, String note,
+                                                            String differenceReason) {
+        StringBuilder json = new StringBuilder("{");
+        propString(json, "closingAmount", closingAmountFormatado).append(',');
+        propString(json, "note", note == null ? "" : note).append(',');
+        json.append("\"differenceReason\":").append(differenceReason == null ? "null" : string(differenceReason))
+                .append('}');
+        return sha256Hex(json.toString());
+    }
+
     // ---------------------------------------------------------------- equivalentes do .NET
 
     /** {@code HorusMoneyFormat.ParseDecimal(valor)}: pt-BR ou invariante, escala preservada, 0 quando invalido. */
-    static BigDecimal parseDecimal(String valor) {
+    public static BigDecimal parseDecimal(String valor) {
         if (valor == null || isBlank(valor)) return BigDecimal.ZERO;
         String normalizado = trim(valor).replaceAll("(?i)R\\$", "").replace(" ", "");
         if (normalizado.isEmpty() || normalizado.equals("-")) return BigDecimal.ZERO;
@@ -145,7 +169,7 @@ public final class HashPayload {
     }
 
     /** {@code string.Trim()} do .NET: espacos Unicode (Zs, Zl, Zp), U+0009 a U+000D e U+0085. */
-    static String trim(String s) {
+    public static String trim(String s) {
         if (s == null) return "";
         int ini = 0;
         int fim = s.length();
@@ -156,6 +180,11 @@ public final class HashPayload {
 
     private static boolean isBlank(String s) {
         return trim(s).isEmpty();
+    }
+
+    /** {@code string.IsNullOrWhiteSpace}. */
+    public static boolean emBranco(String s) {
+        return s == null || isBlank(s);
     }
 
     private static boolean espacoDotNet(char c) {

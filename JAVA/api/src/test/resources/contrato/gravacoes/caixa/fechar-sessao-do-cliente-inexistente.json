@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Sessão de caixa cx-nao-existe não encontrada na nuvem.",
+    "details" : null,
+    "data" : null
+  }
+}

@@ -10,6 +10,8 @@ import java.util.function.Supplier;
 /** Restaura o banco do contrato (reset + seed) por uma conexao propria, nos dois lados da comparacao. */
 public final class EstadoDoBanco {
 
+    private static final int TENTATIVAS = 5;
+
     private final Supplier<Connection> conexoes;
     private final String reset;
     private final String seed;
@@ -30,13 +32,22 @@ public final class EstadoDoBanco {
         });
     }
 
+    /**
+     * Reset + seed. No ambiente .NET o NfceOutboxWorker cria DocumentosFiscais para as vendas do seed a cada segundo e
+     * pode atravessar o reset (FK com Vendas): nesse caso o reset e repetido, pois e idempotente.
+     */
     public void restaurar() {
-        try (Connection c = conexoes.get(); Statement s = c.createStatement()) {
-            s.execute(reset);
-            s.execute(seed);
-        } catch (SQLException e) {
-            throw new IllegalStateException("Falha ao restaurar o estado do banco do contrato", e);
+        SQLException ultima = null;
+        for (int tentativa = 1; tentativa <= TENTATIVAS; tentativa++) {
+            try (Connection c = conexoes.get(); Statement s = c.createStatement()) {
+                s.execute(reset);
+                s.execute(seed);
+                return;
+            } catch (SQLException e) {
+                ultima = e;
+            }
         }
+        throw new IllegalStateException("Falha ao restaurar o estado do banco do contrato", ultima);
     }
 
     private static String ler(String recurso) {

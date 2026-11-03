@@ -60,6 +60,10 @@ public abstract class WebTestBase {
     @MockitoBean protected br.com.quack.pdv.plataforma.numeracao.NumeradorDocumentos numeradorDocumentos;
     @MockitoBean protected br.com.quack.pdv.produto.lote.app.LotePendencias lotePendencias;
     @MockitoBean protected br.com.quack.pdv.produto.lote.app.RetentativaBaixaLotes retentativaBaixaLotes;
+    @MockitoBean protected br.com.quack.pdv.venda.caixa.app.CaixaService caixaService;
+    @MockitoBean protected br.com.quack.pdv.venda.caixa.app.CaixaStatusService caixaStatusService;
+    @MockitoBean protected br.com.quack.pdv.venda.caixa.app.CaixaOperacoes caixaOperacoes;
+    @MockitoBean protected br.com.quack.pdv.venda.caixa.repo.CaixaRepository caixaRepository;
     @MockitoBean protected ValidadorSessao validador;
     @MockitoBean protected AutenticacaoService autenticacao;
     @MockitoBean protected CadastroPublicoService cadastro;

@@ -1,0 +1,168 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Status do caixa obtido com sucesso.",
+    "details" : null,
+    "data" : {
+      "state" : "aberto",
+      "canSell" : true,
+      "blockReason" : "",
+      "serverNow" : "2026-11-03T19:07:39.5779304-03:00",
+      "currentSession" : {
+        "id" : "cx-1793743659499",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:07:39.4995656-03:00",
+        "closedAt" : null,
+        "openingAmount" : "100,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "115,25",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743659528",
+          "tipo" : "Reforco",
+          "valor" : "25,50",
+          "motivo" : "Motivo valido",
+          "createdAt" : "2026-11-03T19:07:39.5259114-03:00",
+          "operatorName" : "Cai Caixa"
+        }, {
+          "id" : "cxm-1793743659556",
+          "tipo" : "Sangria",
+          "valor" : "10,25",
+          "motivo" : "Motivo valido",
+          "createdAt" : "2026-11-03T19:07:39.5529372-03:00",
+          "operatorName" : "Cai Caixa"
+        } ],
+        "paymentBreakdown" : [ ]
+      },
+      "lastSession" : {
+        "id" : "cx-1793743659499",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:07:39.4995656-03:00",
+        "closedAt" : null,
+        "openingAmount" : "100,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "115,25",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743659528",
+          "tipo" : "Reforco",
+          "valor" : "25,50",
+          "motivo" : "Motivo valido",
+          "createdAt" : "2026-11-03T19:07:39.5259114-03:00",
+          "operatorName" : "Cai Caixa"
+        }, {
+          "id" : "cxm-1793743659556",
+          "tipo" : "Sangria",
+          "valor" : "10,25",
+          "motivo" : "Motivo valido",
+          "createdAt" : "2026-11-03T19:07:39.5529372-03:00",
+          "operatorName" : "Cai Caixa"
+        } ],
+        "paymentBreakdown" : [ ]
+      },
+      "history" : [ {
+        "id" : "cx-1793743659499",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:07:39.4995656-03:00",
+        "closedAt" : null,
+        "openingAmount" : "100,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "115,25",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743659528",
+          "tipo" : "Reforco",
+          "valor" : "25,50",
+          "motivo" : "Motivo valido",
+          "createdAt" : "2026-11-03T19:07:39.5259114-03:00",
+          "operatorName" : "Cai Caixa"
+        }, {
+          "id" : "cxm-1793743659556",
+          "tipo" : "Sangria",
+          "valor" : "10,25",
+          "motivo" : "Motivo valido",
+          "createdAt" : "2026-11-03T19:07:39.5529372-03:00",
+          "operatorName" : "Cai Caixa"
+        } ],
+        "paymentBreakdown" : [ ]
+      }, {
+        "id" : "cx-ct-fechado",
+        "status" : "Fechado",
+        "openedAt" : "2026-01-15T05:00:00.0000000-03:00",
+        "closedAt" : "2026-01-15T15:00:00.0000000-03:00",
+        "openingAmount" : "100,00",
+        "closingAmount" : "145,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "usr-ct-caixa",
+        "closedByName" : "Cai Caixa",
+        "note" : "",
+        "elapsedMinutes" : 600,
+        "expectedCashAmount" : "150,00",
+        "differenceAmount" : "-5,00",
+        "differenceReason" : "Troco errado",
+        "movimentos" : [ ],
+        "paymentBreakdown" : null
+      } ],
+      "openSessions" : [ {
+        "id" : "cx-1793743659499",
+        "status" : "Aberto",
+        "openedAt" : "2026-11-03T19:07:39.4995656-03:00",
+        "closedAt" : null,
+        "openingAmount" : "100,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 0,
+        "expectedCashAmount" : "115,25",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cxm-1793743659528",
+          "tipo" : "Reforco",
+          "valor" : "25,50",
+          "motivo" : "Motivo valido",
+          "createdAt" : "2026-11-03T19:07:39.5259114-03:00",
+          "operatorName" : "Cai Caixa"
+        }, {
+          "id" : "cxm-1793743659556",
+          "tipo" : "Sangria",
+          "valor" : "10,25",
+          "motivo" : "Motivo valido",
+          "createdAt" : "2026-11-03T19:07:39.5529372-03:00",
+          "operatorName" : "Cai Caixa"
+        } ],
+        "paymentBreakdown" : [ ]
+      } ],
+      "isReplay" : false
+    }
+  }
+}

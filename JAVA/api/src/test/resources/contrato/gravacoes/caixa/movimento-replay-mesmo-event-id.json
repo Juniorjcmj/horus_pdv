@@ -1,0 +1,192 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimento de caixa já processado anteriormente (idempotente).",
+    "details" : null,
+    "data" : {
+      "state" : "expirado",
+      "canSell" : false,
+      "blockReason" : "O caixa aberto pertence a outro dia. Feche o caixa atual e abra o caixa do dia.",
+      "serverNow" : "2026-11-03T19:10:32.9834172-03:00",
+      "currentSession" : {
+        "id" : "cx-ct-aberto",
+        "status" : "Aberto",
+        "openedAt" : "2026-01-16T05:00:00.0000000-03:00",
+        "closedAt" : null,
+        "openingAmount" : "200,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-gerente",
+        "operatorName" : "Gil Gerente",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 419890,
+        "expectedCashAmount" : "186,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cm-ct-3",
+          "tipo" : "Reforco",
+          "valor" : "30,00",
+          "motivo" : "Reforço da manhã",
+          "createdAt" : "2026-01-16T06:00:00.0000000-03:00",
+          "operatorName" : "Gil Gerente"
+        }, {
+          "id" : "cxm-1793743832991",
+          "tipo" : "Sangria",
+          "valor" : "50,00",
+          "motivo" : "Levar ao cofre",
+          "createdAt" : "2026-11-03T19:10:32.9834172-03:00",
+          "operatorName" : "Gil Gerente"
+        } ],
+        "paymentBreakdown" : [ {
+          "paymentType" : "Dinheiro",
+          "total" : "6,00"
+        }, {
+          "paymentType" : "Pix",
+          "total" : "3,00"
+        } ]
+      },
+      "lastSession" : {
+        "id" : "cx-ct-aberto",
+        "status" : "Aberto",
+        "openedAt" : "2026-01-16T05:00:00.0000000-03:00",
+        "closedAt" : null,
+        "openingAmount" : "200,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-gerente",
+        "operatorName" : "Gil Gerente",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 419890,
+        "expectedCashAmount" : "186,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cm-ct-3",
+          "tipo" : "Reforco",
+          "valor" : "30,00",
+          "motivo" : "Reforço da manhã",
+          "createdAt" : "2026-01-16T06:00:00.0000000-03:00",
+          "operatorName" : "Gil Gerente"
+        }, {
+          "id" : "cxm-1793743832991",
+          "tipo" : "Sangria",
+          "valor" : "50,00",
+          "motivo" : "Levar ao cofre",
+          "createdAt" : "2026-11-03T19:10:32.9834172-03:00",
+          "operatorName" : "Gil Gerente"
+        } ],
+        "paymentBreakdown" : [ {
+          "paymentType" : "Dinheiro",
+          "total" : "6,00"
+        }, {
+          "paymentType" : "Pix",
+          "total" : "3,00"
+        } ]
+      },
+      "history" : [ {
+        "id" : "cx-ct-aberto",
+        "status" : "Aberto",
+        "openedAt" : "2026-01-16T05:00:00.0000000-03:00",
+        "closedAt" : null,
+        "openingAmount" : "200,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-gerente",
+        "operatorName" : "Gil Gerente",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 419890,
+        "expectedCashAmount" : "186,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cm-ct-3",
+          "tipo" : "Reforco",
+          "valor" : "30,00",
+          "motivo" : "Reforço da manhã",
+          "createdAt" : "2026-01-16T06:00:00.0000000-03:00",
+          "operatorName" : "Gil Gerente"
+        }, {
+          "id" : "cxm-1793743832991",
+          "tipo" : "Sangria",
+          "valor" : "50,00",
+          "motivo" : "Levar ao cofre",
+          "createdAt" : "2026-11-03T19:10:32.9834172-03:00",
+          "operatorName" : "Gil Gerente"
+        } ],
+        "paymentBreakdown" : [ {
+          "paymentType" : "Dinheiro",
+          "total" : "6,00"
+        }, {
+          "paymentType" : "Pix",
+          "total" : "3,00"
+        } ]
+      }, {
+        "id" : "cx-ct-fechado",
+        "status" : "Fechado",
+        "openedAt" : "2026-01-15T05:00:00.0000000-03:00",
+        "closedAt" : "2026-01-15T15:00:00.0000000-03:00",
+        "openingAmount" : "100,00",
+        "closingAmount" : "145,00",
+        "operatorId" : "usr-ct-caixa",
+        "operatorName" : "Cai Caixa",
+        "closedById" : "usr-ct-caixa",
+        "closedByName" : "Cai Caixa",
+        "note" : "",
+        "elapsedMinutes" : 600,
+        "expectedCashAmount" : "150,00",
+        "differenceAmount" : "-5,00",
+        "differenceReason" : "Troco errado",
+        "movimentos" : [ ],
+        "paymentBreakdown" : null
+      } ],
+      "openSessions" : [ {
+        "id" : "cx-ct-aberto",
+        "status" : "Aberto",
+        "openedAt" : "2026-01-16T05:00:00.0000000-03:00",
+        "closedAt" : null,
+        "openingAmount" : "200,00",
+        "closingAmount" : "0,00",
+        "operatorId" : "usr-ct-gerente",
+        "operatorName" : "Gil Gerente",
+        "closedById" : "",
+        "closedByName" : "",
+        "note" : "",
+        "elapsedMinutes" : 419890,
+        "expectedCashAmount" : "186,00",
+        "differenceAmount" : null,
+        "differenceReason" : null,
+        "movimentos" : [ {
+          "id" : "cm-ct-3",
+          "tipo" : "Reforco",
+          "valor" : "30,00",
+          "motivo" : "Reforço da manhã",
+          "createdAt" : "2026-01-16T06:00:00.0000000-03:00",
+          "operatorName" : "Gil Gerente"
+        }, {
+          "id" : "cxm-1793743832991",
+          "tipo" : "Sangria",
+          "valor" : "50,00",
+          "motivo" : "Levar ao cofre",
+          "createdAt" : "2026-11-03T19:10:32.9834172-03:00",
+          "operatorName" : "Gil Gerente"
+        } ],
+        "paymentBreakdown" : [ {
+          "paymentType" : "Dinheiro",
+          "total" : "6,00"
+        }, {
+          "paymentType" : "Pix",
+          "total" : "3,00"
+        } ]
+      } ],
+      "isReplay" : true
+    }
+  }
+}

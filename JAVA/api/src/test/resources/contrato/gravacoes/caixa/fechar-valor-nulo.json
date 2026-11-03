@@ -1,0 +1,15 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/problem+json;charset=utf-8"
+  },
+  "corpo" : {
+    "type" : "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title" : "One or more validation errors occurred.",
+    "status" : 400,
+    "errors" : {
+      "ClosingAmount" : [ "The ClosingAmount field is required." ]
+    },
+    "traceId" : "00-e16ecce07fdb4edca5a659841682b96c-fc57a7755077ad49-00"
+  }
+}
