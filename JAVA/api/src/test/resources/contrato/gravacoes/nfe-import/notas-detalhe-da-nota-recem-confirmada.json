@@ -1,0 +1,85 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "",
+    "details" : null,
+    "data" : {
+      "nota" : {
+        "id" : "ne-fce75e2058774e5490f53a42f2efb085",
+        "chaveAcesso" : "33260111222333000181550010000001011100001010",
+        "modelo" : 55,
+        "numeroNota" : "101",
+        "serie" : "1",
+        "fornecedorNome" : "Distribuidora Sol SA",
+        "fornecedorCnpj" : "11222333000181",
+        "dataEmissao" : "2026-01-20T10:30:00-03:00",
+        "valorNota" : 43.0,
+        "valorEntrada" : 43.0,
+        "quantidadeItens" : 2,
+        "origem" : "xml",
+        "temXml" : true,
+        "criadaEm" : "2026-11-02T16:58:35.7956637Z",
+        "usuarioNome" : "Gil Gerente",
+        "temComprovante" : false,
+        "comprovanteNome" : null,
+        "estornada" : false,
+        "estornadaEm" : null,
+        "estornadaPorUsuarioNome" : null,
+        "estornoJustificativa" : null
+      },
+      "entrada" : {
+        "fornecedor" : {
+          "cnpj" : "11222333000181",
+          "companyName" : "Distribuidora Sol SA",
+          "fantasyName" : "Distribuidora Sol",
+          "cep" : "20010000",
+          "city" : "Rio de Janeiro",
+          "state" : "RJ",
+          "address" : "Rua do Sol",
+          "neighborhood" : "Centro",
+          "number" : "50",
+          "telephone" : "2133334444"
+        },
+        "itens" : [ {
+          "numeroItem" : 1,
+          "produtoExistenteId" : "pr-ct-val",
+          "produtoExistenteNome" : null,
+          "codigoFornecedor" : "FORN-IOG",
+          "productCode" : "CT003",
+          "productName" : "Iogurte Grego Acai 170g",
+          "gtin" : "7891000100103",
+          "ncm" : "04031000",
+          "cest" : null,
+          "unidadeComercial" : "UN",
+          "quantidade" : "6,0000",
+          "precoCusto" : "3,5000",
+          "precoVenda" : "5,9000",
+          "dataValidade" : "2027-03-01",
+          "numeroLote" : "L-NFE-1",
+          "margemPercentual" : null
+        }, {
+          "numeroItem" : 2,
+          "produtoExistenteId" : "pr-1793638715788-2",
+          "produtoExistenteNome" : null,
+          "codigoFornecedor" : "SOL-99",
+          "productCode" : "SOL-99",
+          "productName" : "Biscoito Recheado 140g",
+          "gtin" : "SEM GTIN",
+          "ncm" : "19053100",
+          "cest" : "1705300",
+          "unidadeComercial" : "UN",
+          "quantidade" : "10,0000",
+          "precoCusto" : "2,2000",
+          "precoVenda" : "3,9000",
+          "dataValidade" : null,
+          "numeroLote" : null,
+          "margemPercentual" : "40"
+        } ]
+      }
+    }
+  }
+}

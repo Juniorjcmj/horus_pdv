@@ -1,0 +1,15 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Inventário cancelado.",
+    "details" : null,
+    "data" : {
+      "id" : "inv-ct-aberto",
+      "numero" : 1
+    }
+  }
+}

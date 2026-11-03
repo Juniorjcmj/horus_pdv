@@ -1,0 +1,9 @@
+{
+  "status" : 404,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "message" : "Comprovante não disponível para esta entrada."
+  }
+}

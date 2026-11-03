@@ -1,0 +1,57 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Trilha do inventário.",
+    "details" : null,
+    "data" : {
+      "inventario" : {
+        "inventario" : {
+          "id" : "inv-ct-aberto",
+          "numero" : 1,
+          "descricao" : "Inventário Aberto Contrato",
+          "escopo" : "produtos",
+          "escopoJson" : "[\"pr-ct-inv\"]",
+          "status" : "em_contagem",
+          "abertoPor" : "Gil Gerente",
+          "abertoEm" : "2026-01-15T12:00:00+00:00",
+          "aplicadoPor" : null,
+          "aplicadoEm" : null,
+          "supervisor" : null,
+          "justificativa" : null,
+          "zerarNaoContados" : false,
+          "canceladoPor" : null,
+          "canceladoEm" : null,
+          "motivoCancelamento" : null,
+          "totalSobra" : null,
+          "totalFalta" : null,
+          "totalLiquido" : null
+        },
+        "resumo" : {
+          "itens" : 1,
+          "contados" : 0,
+          "naoContados" : 1,
+          "recontar" : 0,
+          "divergentes" : 0,
+          "sobra" : 0,
+          "falta" : 0,
+          "liquido" : 0
+        }
+      },
+      "eventos" : [ {
+        "tipo" : "abertura",
+        "ocorridoEm" : "2026-01-15T12:00:00+00:00",
+        "usuario" : "Gil Gerente",
+        "gerente" : null,
+        "ip" : "127.0.0.1",
+        "terminal" : "WEB",
+        "descricao" : "Inventário #1 aberto (escopo: produtos, 1 itens)."
+      } ],
+      "contagens" : [ ],
+      "itens" : [ ]
+    }
+  }
+}

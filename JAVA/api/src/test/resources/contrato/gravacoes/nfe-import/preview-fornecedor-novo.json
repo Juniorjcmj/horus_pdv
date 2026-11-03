@@ -1,0 +1,51 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "XML lido com sucesso.",
+    "details" : null,
+    "data" : {
+      "documento" : {
+        "xmlBase64" : "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPG5mZVByb2MgeG1sbnM9Imh0dHA6Ly93d3cucG9ydGFsZmlzY2FsLmluZi5ici9uZmUiIHZlcnNhbz0iNC4wMCI+CiAgPE5GZT4KICAgIDxpbmZORmUgSWQ9Ik5GZTMzMjYwMTU1NDQ0MzMzMDAwMTIyNTUwMDEwMDAwMDA0MDQxMTAwMDAwNDAwIiB2ZXJzYW89IjQuMDAiPgogICAgICA8aWRlPgogICAgICAgIDxjVUY+MzM8L2NVRj48bW9kPjU1PC9tb2Q+PHNlcmllPjE8L3NlcmllPjxuTkY+NDA0PC9uTkY+CiAgICAgICAgPGRoRW1pPjIwMjYtMDEtMjNUMDg6MDA6MDAtMDM6MDA8L2RoRW1pPjx0cEVtaXM+MTwvdHBFbWlzPjx0cEFtYj4yPC90cEFtYj4KICAgICAgPC9pZGU+CiAgICAgIDxlbWl0PgogICAgICAgIDxDTlBKPjU1NDQ0MzMzMDAwMTIyPC9DTlBKPjx4Tm9tZT5QYXBlbGFyaWEgTm92YSBMdGRhPC94Tm9tZT48eEZhbnQ+UGFwZWxhcmlhIE5vdmE8L3hGYW50PgogICAgICAgIDxlbmRlckVtaXQ+PHhMZ3I+UnVhIGRhcyBMZXRyYXM8L3hMZ3I+PG5ybz4xMjwvbnJvPjx4QmFpcnJvPkNlbnRybzwveEJhaXJybz48eE11bj5SaW8gZGUgSmFuZWlybzwveE11bj48VUY+Uko8L1VGPjxDRVA+MjAwMjAwMDA8L0NFUD48Zm9uZT4yMTExMTEyMjIyPC9mb25lPjwvZW5kZXJFbWl0PgogICAgICA8L2VtaXQ+CiAgICAgIDxkZXQgbkl0ZW09IjEiPgogICAgICAgIDxwcm9kPjxjUHJvZD5QQVAtMDE8L2NQcm9kPjxjRUFOPlNFTSBHVElOPC9jRUFOPjx4UHJvZD5DYWRlcm5vIDk2IGZvbGhhczwveFByb2Q+PE5DTT40ODIwMjAwMDwvTkNNPjx1Q29tPlVOPC91Q29tPjxxQ29tPjQuMDAwMDwvcUNvbT48dlVuQ29tPjcuNTAwMDwvdlVuQ29tPjx2UHJvZD4zMC4wMDwvdlByb2Q+PC9wcm9kPgogICAgICA8L2RldD4KICAgICAgPHRvdGFsPjxJQ01TVG90Pjx2TkY+MzAuMDA8L3ZORj48L0lDTVNUb3Q+PC90b3RhbD4KICAgIDwvaW5mTkZlPgogIDwvTkZlPgogIDxwcm90TkZlIHZlcnNhbz0iNC4wMCI+CiAgICA8aW5mUHJvdD48Y2hORmU+MzMyNjAxNTU0NDQzMzMwMDAxMjI1NTAwMTAwMDAwMDQwNDExMDAwMDA0MDA8L2NoTkZlPjwvaW5mUHJvdD4KICA8L3Byb3RORmU+CjwvbmZlUHJvYz4K",
+        "chaveAcesso" : "33260155444333000122550010000004041100000400",
+        "modelo" : 55,
+        "numeroNota" : "404",
+        "serie" : "1"
+      },
+      "modelo" : 55,
+      "numeroNota" : "404",
+      "serie" : "1",
+      "fornecedor" : {
+        "jaExiste" : false,
+        "cnpj" : "55444333000122",
+        "companyName" : "Papelaria Nova Ltda",
+        "fantasyName" : "Papelaria Nova",
+        "cep" : "20020000",
+        "city" : "Rio de Janeiro",
+        "state" : "RJ",
+        "address" : "Rua das Letras",
+        "neighborhood" : "Centro",
+        "number" : "12",
+        "telephone" : "2111112222"
+      },
+      "itens" : [ {
+        "numeroItem" : 1,
+        "produtoExistenteId" : null,
+        "produtoExistenteNome" : null,
+        "codigoFornecedor" : "PAP-01",
+        "productCode" : "PAP-01",
+        "productName" : "Caderno 96 folhas",
+        "gtin" : "SEM GTIN",
+        "ncm" : "48202000",
+        "cest" : null,
+        "unidadeComercial" : "UN",
+        "quantidade" : "4",
+        "precoCusto" : "7,50",
+        "precoVendaSugerido" : "7,50"
+      } ]
+    }
+  }
+}

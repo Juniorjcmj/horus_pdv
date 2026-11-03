@@ -1,0 +1,14 @@
+{
+  "status" : 403,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Identificação e senha do gerente/supervisor são obrigatórias.",
+    "details" : null,
+    "data" : {
+      "codigo" : "SENHA_INVALIDA"
+    }
+  }
+}

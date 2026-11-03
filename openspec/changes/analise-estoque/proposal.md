@@ -57,7 +57,7 @@ alteram o saldo sem deixar rastro, e não existe fotografia diária do estoque. 
   `EntradaManualService`, `OrdemCompraAB`, `ProdutoService`; job `EstoqueSnapshotWorker`; `EstoqueIndicadoresAB`/
   `EstoqueIndicadoresService` + `EstoqueAnaliseController` (`api/Estoque/analise/*`); projeto de testes
   `API/tests/EstoqueIndicadoresChecks`.
-- **App `ESTOQUE_JAVAFX`**: novo item de menu "Análise" com 8 telas, cliente `AnaliseApi`, componentes de gráfico
+- **App `JAVA/estoque`**: novo item de menu "Análise" com 8 telas, cliente `AnaliseApi`, componentes de gráfico
   (Pareto, linha com faixas de referência, histograma) sobre `javafx.scene.chart`.
 - **Web**: sem telas novas (decisão do usuário).
 - **Desempenho**: venda grava uma linha a mais por item (mesma transação); índices novos nas tabelas de análise.

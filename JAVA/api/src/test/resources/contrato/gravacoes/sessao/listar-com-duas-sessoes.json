@@ -1,0 +1,28 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Sessoes obtidas com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "sess-d37f649128c242e0a7f652ec9bd238fd",
+      "device" : "Navegador - Chrome",
+      "location" : "Localização indisponível",
+      "ip" : "::ffff:172.19.0.1",
+      "lastActive" : "Agora mesmo",
+      "current" : false,
+      "platform" : "desktop"
+    }, {
+      "id" : "sess-36a834245d0141f39398d55ca602b4b1",
+      "device" : "Navegador - Chrome",
+      "location" : "Localização indisponível",
+      "ip" : "::ffff:172.19.0.1",
+      "lastActive" : "Agora mesmo",
+      "current" : true,
+      "platform" : "desktop"
+    } ]
+  }
+}

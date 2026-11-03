@@ -1,0 +1,17 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "",
+    "details" : null,
+    "data" : {
+      "notas" : [ ],
+      "total" : 0,
+      "pagina" : 1,
+      "tamanhoPagina" : 20
+    }
+  }
+}

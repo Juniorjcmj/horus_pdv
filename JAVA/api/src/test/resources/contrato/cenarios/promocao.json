@@ -1,0 +1,950 @@
+[
+  {
+    "nome": "listar",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "ativas",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao/ativas"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "caixa-le-ativas",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao/ativas"
+    },
+    "usuario": "caixa@contrato.quack"
+  },
+  {
+    "nome": "consultar",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao/prm-ct-perc"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "resultado-seed",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao/prm-ct-perc/resultado"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "consultar-inexistente",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao/prm-inexistente"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "consultar-outra-empresa",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao/prm-ct-perc"
+    },
+    "usuario": "adm.aprovada@contrato.quack"
+  },
+  {
+    "nome": "criar-desconto_percentual",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "criar-desconto_valor",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_valor",
+        "valorDesconto": 2,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "criar-preco_fixo",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "preco_fixo",
+        "valorDesconto": null,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "precoFixo": 4.99
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "criar-leve_x_pague_y",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "leve_x_pague_y",
+        "valorDesconto": null,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "quantidadeLeva": 3,
+        "quantidadePaga": 2
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "criar-combo_quantidade",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "combo_quantidade",
+        "valorDesconto": null,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "quantidadeMinima": 3,
+        "precoFixo": 10
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "criar-preco_atacado",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "preco_atacado",
+        "valorDesconto": null,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "quantidadeMinima": 5,
+        "precoFixo": 1.5
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "validar-nome-vazio",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": " ",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-tipo-invalido",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconhecido",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-fim-igual-inicio",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2025-01-01T00:00:00-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-fim-anterior-inicio",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2024-01-01T00:00:00-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-percentual-nulo",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": null,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-percentual-zero",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 0,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-percentual-acima100",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 101,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-valor-zero",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_valor",
+        "valorDesconto": 0,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-preco-fixo-zero",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "preco_fixo",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "precoFixo": 0
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-leva-zero",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "leve_x_pague_y",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "quantidadeLeva": 0,
+        "quantidadePaga": 2
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-paga-zero",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "leve_x_pague_y",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "quantidadeLeva": 3,
+        "quantidadePaga": 0
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-leva-igual-paga",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "leve_x_pague_y",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "quantidadeLeva": 2,
+        "quantidadePaga": 2
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-combo-minima1",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "combo_quantidade",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "quantidadeMinima": 1,
+        "precoFixo": 5
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-atacado-minima-nula",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "preco_atacado",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-combo-sem-preco-desconto",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "combo_quantidade",
+        "valorDesconto": null,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "quantidadeMinima": 3
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-atacado-sem-preco-desconto",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "preco_atacado",
+        "valorDesconto": null,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "quantidadeMinima": 3
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-sem-produtos-categoria",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": []
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-categoria-inexistente",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "categoriaId": "cat-inexistente"
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "validar-categoria-outra-empresa",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ],
+        "categoriaId": "cat-ct-sub-outra"
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "criar-por-categoria",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [],
+        "categoriaId": "cat-ct-sub"
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "criar-produtos-repetidos",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1",
+          "pr-ct-1",
+          "  pr-ct-2 ",
+          ""
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "criar-percentual100",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 100,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "criar-tipo-maiusculo",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": " DESCONTO_VALOR ",
+        "valorDesconto": 2,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "editar",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Promocao/prm-ct-perc",
+      "corpo": {
+        "nome": "Nome editado",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 15,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "editar-inexistente",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Promocao/prm-inexistente",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "editar-validacao",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Promocao/prm-ct-perc",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 0,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "desativar",
+    "requisicao": {
+      "metodo": "PATCH",
+      "caminho": "/api/Promocao/prm-ct-perc/status",
+      "corpo": {
+        "ativa": false
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "ativar",
+    "requisicao": {
+      "metodo": "PATCH",
+      "caminho": "/api/Promocao/prm-ct-perc/status",
+      "corpo": {
+        "ativa": true
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "status-inexistente",
+    "requisicao": {
+      "metodo": "PATCH",
+      "caminho": "/api/Promocao/prm-inexistente/status",
+      "corpo": {
+        "ativa": true
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "desativar-e-ativas",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao/ativas"
+    },
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "PATCH",
+        "caminho": "/api/Promocao/prm-ct-perc/status",
+        "corpo": {
+          "ativa": false
+        },
+        "auth": "bearer",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "nome": "excluir",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Promocao/prm-ct-perc"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "excluir-inexistente",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Promocao/prm-inexistente"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "excluir-e-consultar",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao/prm-ct-perc"
+    },
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "DELETE",
+        "caminho": "/api/Promocao/prm-ct-perc",
+        "auth": "bearer",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "nome": "atendente-criando",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "atendente@contrato.quack"
+  },
+  {
+    "nome": "estoquista-editando",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Promocao/prm-ct-perc",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "estoquista@contrato.quack"
+  },
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao"
+    }
+  },
+  {
+    "nome": "criar-produtoids-null",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": null
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "traceId": "texto"
+    }
+  },
+  {
+    "nome": "criar-inicio-null",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": null,
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "traceId": "texto"
+    }
+  },
+  {
+    "nome": "criar-fim-null",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": null,
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "traceId": "texto"
+    }
+  },
+  {
+    "nome": "criar-produto-outra-empresa",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Promocao",
+      "corpo": {
+        "nome": "Promo contrato",
+        "tipo": "desconto_percentual",
+        "valorDesconto": 10,
+        "inicioVigencia": "2025-01-01T00:00:00-03:00",
+        "fimVigencia": "2030-12-31T23:59:59-03:00",
+        "ativa": true,
+        "produtoIds": [
+          "pr-ct-1-outra"
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "data.id": "id",
+      "data.criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "resultado-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Promocao/prm-inexistente/resultado"
+    }
+  }
+]

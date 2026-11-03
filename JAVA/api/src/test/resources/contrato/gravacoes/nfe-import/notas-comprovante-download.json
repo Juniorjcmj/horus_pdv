@@ -1,0 +1,8 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/pdf",
+    "content-disposition" : "attachment; filename=recibo.pdf; filename*=UTF-8''recibo.pdf"
+  },
+  "corpo" : "%PDF-1.4\n"
+}

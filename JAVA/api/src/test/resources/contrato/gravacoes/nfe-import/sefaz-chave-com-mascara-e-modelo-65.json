@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Esta chave é de uma NFC-e (modelo 65). Para dar entrada no estoque, envie o XML do cupom ou use 'Digitar itens do cupom'. A consulta de NF-e no Ambiente Nacional não baixa este modelo.",
+    "details" : null,
+    "data" : null
+  }
+}

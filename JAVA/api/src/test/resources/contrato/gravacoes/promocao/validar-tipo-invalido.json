@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Tipo de promoção 'desconhecido' é inválido. Tipos suportados: desconto_percentual, desconto_valor, preco_fixo, leve_x_pague_y, combo_quantidade, preco_atacado.",
+    "details" : null,
+    "data" : null
+  }
+}

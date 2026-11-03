@@ -1,0 +1,17 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Importação concluída com sucesso.",
+    "details" : null,
+    "data" : {
+      "notaEntradaId" : "ne-1510e53d82824b9e9585e78f15b32c6d",
+      "fornecedorCriado" : false,
+      "produtosCriados" : 1,
+      "produtosAtualizados" : 0
+    }
+  }
+}

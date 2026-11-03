@@ -1,0 +1,2775 @@
+[
+  {
+    "nome": "listar-gerente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario"
+    }
+  },
+  {
+    "nome": "listar-estoquista",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario"
+    }
+  },
+  {
+    "nome": "listar-filtro-aplicado",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario?status=aplicado"
+    }
+  },
+  {
+    "nome": "listar-filtro-em-contagem",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario?status=em_contagem"
+    }
+  },
+  {
+    "nome": "listar-atendente-403",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario"
+    }
+  },
+  {
+    "nome": "listar-sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario"
+    }
+  },
+  {
+    "nome": "listar-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario"
+    }
+  },
+  {
+    "nome": "consultar-gerente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto"
+    }
+  },
+  {
+    "nome": "consultar-estoquista-cego",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto"
+    }
+  },
+  {
+    "nome": "consultar-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-nao-existe"
+    }
+  },
+  {
+    "nome": "consultar-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto"
+    }
+  },
+  {
+    "nome": "consultar-com-contagem",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto"
+    }
+  },
+  {
+    "nome": "consultar-com-contagem-estoquista",
+    "usuario": "estoquista@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto"
+    }
+  },
+  {
+    "nome": "itens-gerente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens"
+    }
+  },
+  {
+    "nome": "itens-estoquista-cego",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens"
+    }
+  },
+  {
+    "nome": "itens-estoquista-contado-cego",
+    "usuario": "estoquista@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens"
+    },
+    "volateis": {
+      "data[0].primeiraContagemEm": "iso-json",
+      "data[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "itens-gerente-contado",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens"
+    },
+    "volateis": {
+      "data[0].primeiraContagemEm": "iso-json",
+      "data[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "itens-filtro-nao-contados",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens?filtro=nao_contados"
+    }
+  },
+  {
+    "nome": "itens-filtro-divergentes",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens?filtro=divergentes"
+    },
+    "volateis": {
+      "data[0].primeiraContagemEm": "iso-json",
+      "data[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "itens-filtro-contados",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 10,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens?filtro=contados"
+    },
+    "volateis": {
+      "data[0].primeiraContagemEm": "iso-json",
+      "data[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "itens-filtro-divergentes-sem-diferenca",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 10,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens?filtro=divergentes"
+    }
+  },
+  {
+    "nome": "itens-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-nao-existe/itens"
+    }
+  },
+  {
+    "nome": "itens-atendente-403",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens"
+    }
+  },
+  {
+    "nome": "contagens-vazio",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens"
+    }
+  },
+  {
+    "nome": "contagens-proprias",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 2,
+          "produtoId": "pr-ct-inv",
+          "local": "Gôndola A"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-inv"
+        },
+        "usuario": "estoquista@contrato.quack"
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "contagens-todas-gerente",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 2,
+          "produtoId": "pr-ct-inv",
+          "local": "Gôndola A"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-inv"
+        },
+        "usuario": "estoquista@contrato.quack"
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens?todas=true"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "iso-json",
+      "data[1].id": "id",
+      "data[1].criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "contagens-todas-estoquista-ignora",
+    "usuario": "estoquista@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 2,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-inv"
+        },
+        "usuario": "estoquista@contrato.quack"
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens?todas=true"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "iso-json",
+      "data[1].id": "id",
+      "data[1].criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "contagens-filtro-produto-limite",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 2,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens?produtoId=pr-ct-inv&limite=1"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "abrir-produtos-ok",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "produtos",
+        "descricao": "Contagem de cozinha",
+        "produtoIds": [
+          "pr-ct-kg",
+          "pr-ct-minimo"
+        ]
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "abrir-produtos-sem-descricao",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "produtos",
+        "produtoIds": [
+          "pr-ct-kg"
+        ]
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "abrir-categorias-ok",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "categorias",
+        "categoriaIds": [
+          "cat-ct-inv"
+        ]
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "abrir-categoria-pai-inclui-filhas",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "categorias",
+        "categoriaIds": [
+          "cat-ct-pereciveis"
+        ]
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "abrir-categoria-sem-produtos",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "categorias",
+        "categoriaIds": [
+          "cat-ct-livre"
+        ]
+      }
+    }
+  },
+  {
+    "nome": "abrir-loja-sobreposto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "loja"
+      }
+    }
+  },
+  {
+    "nome": "abrir-sem-escopo-vira-loja-sobreposto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {}
+    }
+  },
+  {
+    "nome": "abrir-loja-apos-cancelar",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Reiniciar contagem"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "loja",
+        "descricao": "Geral"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "abrir-produto-sobreposto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "produtos",
+        "produtoIds": [
+          "pr-ct-inv"
+        ]
+      }
+    }
+  },
+  {
+    "nome": "abrir-escopo-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "deposito"
+      }
+    }
+  },
+  {
+    "nome": "abrir-escopo-maiusculas",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": " PRODUTOS ",
+        "produtoIds": [
+          "pr-ct-kg"
+        ]
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "abrir-categorias-vazio",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "categorias",
+        "categoriaIds": []
+      }
+    }
+  },
+  {
+    "nome": "abrir-produtos-vazio",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "produtos"
+      }
+    }
+  },
+  {
+    "nome": "abrir-produtos-inexistentes",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "produtos",
+        "produtoIds": [
+          "pr-nao-existe"
+        ]
+      }
+    }
+  },
+  {
+    "nome": "abrir-descricao-longa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "produtos",
+        "descricao": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "produtoIds": [
+          "pr-ct-kg"
+        ]
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "abrir-estoquista",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "produtos",
+        "produtoIds": [
+          "pr-ct-kg"
+        ]
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "abrir-atendente-403",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "produtos",
+        "produtoIds": [
+          "pr-ct-kg"
+        ]
+      }
+    }
+  },
+  {
+    "nome": "abrir-com-terminal",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario",
+      "corpo": {
+        "escopo": "produtos",
+        "produtoIds": [
+          "pr-ct-kg"
+        ],
+        "terminal": "PDV-02"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "contar-por-id",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv",
+        "quantidade": 7
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "contar-por-codigo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "codigo": " CT007 ",
+        "quantidade": 7,
+        "local": "Depósito",
+        "terminal": "T1"
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "contar-por-gtin",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "codigo": "7891000100707",
+        "quantidade": 4
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "contar-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv",
+        "quantidade": 0
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "contar-soma-duas-contagens",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv",
+        "quantidade": 4
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "contar-estoquista",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv",
+        "quantidade": 9
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "contar-atendente-403",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv",
+        "quantidade": 9
+      }
+    }
+  },
+  {
+    "nome": "contar-codigo-desconhecido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "codigo": "NAO-EXISTE",
+        "quantidade": 1
+      }
+    }
+  },
+  {
+    "nome": "contar-sem-produto-nem-codigo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "quantidade": 1
+      }
+    }
+  },
+  {
+    "nome": "contar-negativa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv",
+        "quantidade": -1
+      }
+    }
+  },
+  {
+    "nome": "contar-fracao-em-un",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv",
+        "quantidade": 1.5
+      }
+    }
+  },
+  {
+    "nome": "contar-fora-do-escopo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-1",
+        "quantidade": 1
+      }
+    }
+  },
+  {
+    "nome": "contar-codigo-fora-do-escopo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "codigo": "CT001",
+        "quantidade": 1
+      }
+    }
+  },
+  {
+    "nome": "contar-fracao-em-kg",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "escopo": "produtos",
+          "produtoIds": [
+            "pr-ct-kg"
+          ]
+        },
+        "capturar": {
+          "inv": "data.id"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/{inv}/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-kg",
+        "quantidade": 1.5
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "contar-inventario-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-nao-existe/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv",
+        "quantidade": 1
+      }
+    }
+  },
+  {
+    "nome": "contar-inventario-cancelado",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Cancelado no teste"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv",
+        "quantidade": 1
+      }
+    }
+  },
+  {
+    "nome": "contar-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv",
+        "quantidade": 1
+      }
+    }
+  },
+  {
+    "nome": "contar-quantidade-ausente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+      "corpo": {
+        "produtoId": "pr-ct-inv"
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "anular-ok",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        },
+        "capturar": {
+          "c": "data.contagemId"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens/{c}/anular",
+      "corpo": {
+        "motivo": "Contei o produto errado"
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "anular-sem-motivo",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        },
+        "capturar": {
+          "c": "data.contagemId"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens/{c}/anular",
+      "corpo": {
+        "motivo": "  "
+      }
+    }
+  },
+  {
+    "nome": "anular-de-novo",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        },
+        "capturar": {
+          "c": "data.contagemId"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens/{c}/anular",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Primeira"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens/{c}/anular",
+      "corpo": {
+        "motivo": "De novo"
+      }
+    }
+  },
+  {
+    "nome": "anular-propria-estoquista",
+    "usuario": "estoquista@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        },
+        "usuario": "estoquista@contrato.quack",
+        "capturar": {
+          "c": "data.contagemId"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens/{c}/anular",
+      "corpo": {
+        "motivo": "Digitei errado"
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "anular-de-outro-estoquista-403",
+    "usuario": "estoquista@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        },
+        "usuario": "gerente@contrato.quack",
+        "capturar": {
+          "c": "data.contagemId"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens/{c}/anular",
+      "corpo": {
+        "motivo": "Não é minha"
+      }
+    }
+  },
+  {
+    "nome": "anular-do-estoquista-pelo-gerente",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        },
+        "usuario": "estoquista@contrato.quack",
+        "capturar": {
+          "c": "data.contagemId"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens/{c}/anular",
+      "corpo": {
+        "motivo": "Revisão do gerente"
+      }
+    },
+    "volateis": {
+      "data.contagemId": "id"
+    }
+  },
+  {
+    "nome": "anular-contagem-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens/ic-nao-existe/anular",
+      "corpo": {
+        "motivo": "x"
+      }
+    }
+  },
+  {
+    "nome": "anular-inventario-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-nao-existe/contagens/ic-x/anular",
+      "corpo": {
+        "motivo": "x"
+      }
+    }
+  },
+  {
+    "nome": "anular-inventario-cancelado",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        },
+        "capturar": {
+          "c": "data.contagemId"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Encerrado"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens/{c}/anular",
+      "corpo": {
+        "motivo": "Tarde"
+      }
+    }
+  },
+  {
+    "nome": "anular-atendente-403",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/contagens/ic-x/anular",
+      "corpo": {
+        "motivo": "x"
+      }
+    }
+  },
+  {
+    "nome": "anular-recalcula-itens",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-inv"
+        },
+        "capturar": {
+          "c": "data.contagemId"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 4,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens/{c}/anular",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Primeira errada"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens"
+    },
+    "volateis": {
+      "data[0].primeiraContagemEm": "iso-json",
+      "data[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "recontar-ok",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/recontar",
+      "corpo": {
+        "produtoIds": [
+          "pr-ct-inv"
+        ]
+      }
+    }
+  },
+  {
+    "nome": "recontar-itens-ficam-recontar",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/recontar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "produtoIds": [
+            "pr-ct-inv"
+          ]
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens?filtro=recontar"
+    }
+  },
+  {
+    "nome": "recontar-fora-do-escopo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/recontar",
+      "corpo": {
+        "produtoIds": [
+          "pr-ct-1"
+        ]
+      }
+    }
+  },
+  {
+    "nome": "recontar-vazio",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/recontar",
+      "corpo": {
+        "produtoIds": []
+      }
+    }
+  },
+  {
+    "nome": "recontar-estoquista-403",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/recontar",
+      "corpo": {
+        "produtoIds": [
+          "pr-ct-inv"
+        ]
+      }
+    }
+  },
+  {
+    "nome": "recontar-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-nao-existe/recontar",
+      "corpo": {
+        "produtoIds": [
+          "pr-ct-inv"
+        ]
+      }
+    }
+  },
+  {
+    "nome": "recontar-cancelado",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Encerrado"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/recontar",
+      "corpo": {
+        "produtoIds": [
+          "pr-ct-inv"
+        ]
+      }
+    }
+  },
+  {
+    "nome": "recontar-depois-contar-de-novo",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/recontar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "produtoIds": [
+            "pr-ct-inv"
+          ]
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 8,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens"
+    },
+    "volateis": {
+      "data[0].primeiraContagemEm": "iso-json",
+      "data[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "aplicar-ok-diferenca",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-ok-saldo-final",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-inv/movimentacoes"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto"
+    }
+  },
+  {
+    "nome": "aplicar-ok-itens-depois",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 12,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens"
+    },
+    "volateis": {
+      "data[0].primeiraContagemEm": "iso-json",
+      "data[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "aplicar-ok-consulta-depois",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 12,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto"
+    },
+    "volateis": {
+      "data.inventario.aplicadoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "aplicar-sem-contagem",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-admin-supervisor",
+    "usuario": "admin@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-admin",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-movimento-posterior",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/pr-ct-inv/ajuste-estoque",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "tipo": "saida",
+          "quantidade": 2,
+          "motivo": "Venda no balcão"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-inv/movimentacoes"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto",
+      "data[1].id": "id",
+      "data[1].criadoEm": "texto"
+    }
+  },
+  {
+    "nome": "aplicar-movimento-posterior-resposta",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/pr-ct-inv/ajuste-estoque",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "tipo": "saida",
+          "quantidade": 2,
+          "motivo": "Venda no balcão"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-piso-zero",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/pr-ct-inv/ajuste-estoque",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "tipo": "saida",
+          "quantidade": 9,
+          "motivo": "Saída grande"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-piso-zero-itens",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/pr-ct-inv/ajuste-estoque",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "tipo": "saida",
+          "quantidade": 9,
+          "motivo": "Saída grande"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/itens"
+    },
+    "volateis": {
+      "data[0].primeiraContagemEm": "iso-json",
+      "data[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "aplicar-sobra",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 15,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-zerar-nao-contados",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "escopo": "produtos",
+          "produtoIds": [
+            "pr-ct-kg",
+            "pr-ct-minimo",
+            "pr-ct-1"
+          ]
+        },
+        "capturar": {
+          "inv": "data.id"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/{inv}/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-kg"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/{inv}/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida",
+        "zerarNaoContados": true
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "aplicar-zerar-nao-contados-itens",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "escopo": "produtos",
+          "produtoIds": [
+            "pr-ct-kg",
+            "pr-ct-minimo",
+            "pr-ct-1"
+          ]
+        },
+        "capturar": {
+          "inv": "data.id"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/{inv}/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-kg"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/{inv}/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida",
+          "zerarNaoContados": true
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/{inv}/itens"
+    },
+    "volateis": {
+      "data[2].primeiraContagemEm": "iso-json",
+      "data[2].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "aplicar-sem-zerar-nao-contados",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "escopo": "produtos",
+          "produtoIds": [
+            "pr-ct-kg",
+            "pr-ct-1"
+          ]
+        },
+        "capturar": {
+          "inv": "data.id"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/{inv}/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-kg"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/{inv}/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "aplicar-recontar-pendente-nao-ajusta",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/recontar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "produtoIds": [
+            "pr-ct-inv"
+          ]
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida",
+        "zerarNaoContados": true
+      }
+    }
+  },
+  {
+    "nome": "aplicar-justificativa-curta",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "ok"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-justificativa-curta-trilha",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 400,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "ok"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/trilha"
+    },
+    "volateis": {
+      "data.eventos[0].ip": "texto",
+      "data.eventos[1].ocorridoEm": "iso-json",
+      "data.eventos[1].ip": "texto"
+    }
+  },
+  {
+    "nome": "aplicar-senha-errada",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Errada#123",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-senha-errada-trilha",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 403,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Errada#123",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/trilha"
+    },
+    "volateis": {
+      "data.eventos[0].ip": "texto",
+      "data.eventos[1].ocorridoEm": "iso-json",
+      "data.eventos[1].ip": "texto",
+      "data.contagens[0].id": "id",
+      "data.contagens[0].criadoEm": "iso-json",
+      "data.itens[0].primeiraContagemEm": "iso-json",
+      "data.itens[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "aplicar-senha-errada-saldo-intacto",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 403,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Errada#123",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-inv/movimentacoes"
+    }
+  },
+  {
+    "nome": "aplicar-supervisor-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-nao-existe",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-supervisor-atendente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-atend",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-supervisor-vazio",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "",
+        "supervisorPassword": "",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-supervisor-de-outra-empresa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-apr-adm",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-de-novo",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-de-novo-estoque-nao-muda",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 409,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-inv/movimentacoes"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto"
+    }
+  },
+  {
+    "nome": "aplicar-cancelado",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Encerrado"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-nao-existe/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-estoquista-403",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-atendente-403",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-gerente",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+      "corpo": {
+        "supervisorId": "usr-ct-apr-adm",
+        "supervisorPassword": "Senha#Quack2026",
+        "justificativa": "Contagem geral conferida"
+      }
+    }
+  },
+  {
+    "nome": "aplicar-terminal",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida",
+          "terminal": "PDV-09"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/trilha"
+    },
+    "volateis": {
+      "data.inventario.inventario.aplicadoEm": "iso-json",
+      "data.eventos[0].ip": "texto",
+      "data.eventos[1].ocorridoEm": "iso-json",
+      "data.eventos[1].ip": "texto",
+      "data.contagens[0].id": "id",
+      "data.contagens[0].criadoEm": "iso-json",
+      "data.itens[0].primeiraContagemEm": "iso-json",
+      "data.itens[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "cancelar-ok",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+      "corpo": {
+        "motivo": "Contagem refeita"
+      }
+    }
+  },
+  {
+    "nome": "cancelar-consulta-depois",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Contagem refeita"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto"
+    },
+    "volateis": {
+      "data.inventario.canceladoEm": "iso-json"
+    }
+  },
+  {
+    "nome": "cancelar-nao-mexe-no-estoque",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Contagem refeita"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-inv/movimentacoes"
+    }
+  },
+  {
+    "nome": "cancelar-sem-motivo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+      "corpo": {
+        "motivo": ""
+      }
+    }
+  },
+  {
+    "nome": "cancelar-motivo-curto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+      "corpo": {
+        "motivo": "ab"
+      }
+    }
+  },
+  {
+    "nome": "cancelar-motivo-tres-letras",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+      "corpo": {
+        "motivo": " abc ",
+        "terminal": "T3"
+      }
+    }
+  },
+  {
+    "nome": "cancelar-de-novo",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Contagem refeita"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+      "corpo": {
+        "motivo": "Outra vez"
+      }
+    }
+  },
+  {
+    "nome": "cancelar-aplicado",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 7,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+      "corpo": {
+        "motivo": "Tarde demais"
+      }
+    }
+  },
+  {
+    "nome": "cancelar-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-nao-existe/cancelar",
+      "corpo": {
+        "motivo": "Teste"
+      }
+    }
+  },
+  {
+    "nome": "cancelar-estoquista-403",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+      "corpo": {
+        "motivo": "Teste"
+      }
+    }
+  },
+  {
+    "nome": "cancelar-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+      "corpo": {
+        "motivo": "Teste"
+      }
+    }
+  },
+  {
+    "nome": "trilha-inicial",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/trilha"
+    },
+    "volateis": {
+      "data.eventos[0].ip": "texto"
+    }
+  },
+  {
+    "nome": "trilha-completa",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-inv"
+        },
+        "capturar": {
+          "c": "data.contagemId"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 4,
+          "produtoId": "pr-ct-inv"
+        },
+        "usuario": "estoquista@contrato.quack"
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens/{c}/anular",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Primeira errada"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 400,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "ok"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/aplicar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "supervisorId": "usr-ct-gerente",
+          "supervisorPassword": "Senha#Quack2026",
+          "justificativa": "Contagem geral conferida"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/trilha"
+    },
+    "volateis": {
+      "data.inventario.inventario.aplicadoEm": "iso-json",
+      "data.eventos[0].ip": "texto",
+      "data.eventos[1].ocorridoEm": "iso-json",
+      "data.eventos[1].ip": "texto",
+      "data.eventos[2].ocorridoEm": "iso-json",
+      "data.eventos[2].ip": "texto",
+      "data.contagens[0].id": "id",
+      "data.contagens[0].criadoEm": "iso-json",
+      "data.contagens[1].id": "id",
+      "data.contagens[1].criadoEm": "iso-json",
+      "data.contagens[1].anuladaEm": "iso-json",
+      "data.itens[0].primeiraContagemEm": "iso-json",
+      "data.itens[0].ultimaContagemEm": "iso-json"
+    }
+  },
+  {
+    "nome": "trilha-recontagem-e-cancelamento",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/contagens",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "quantidade": 3,
+          "produtoId": "pr-ct-inv"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/recontar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "produtoIds": [
+            "pr-ct-inv"
+          ]
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario/inv-ct-aberto/cancelar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "motivo": "Encerrado"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/trilha"
+    },
+    "volateis": {
+      "data.inventario.inventario.canceladoEm": "iso-json",
+      "data.eventos[0].ip": "texto",
+      "data.eventos[1].ocorridoEm": "iso-json",
+      "data.eventos[1].ip": "texto",
+      "data.eventos[2].ocorridoEm": "iso-json",
+      "data.eventos[2].ip": "texto",
+      "data.contagens[0].id": "id",
+      "data.contagens[0].criadoEm": "iso-json",
+      "data.contagens[0].anuladaEm": "iso-json"
+    }
+  },
+  {
+    "nome": "trilha-inventario-aberto-pelo-teste",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Inventario",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "escopo": "produtos",
+          "produtoIds": [
+            "pr-ct-kg"
+          ],
+          "descricao": "Teste trilha"
+        },
+        "capturar": {
+          "inv": "data.id"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/{inv}/trilha"
+    },
+    "volateis": {
+      "data.inventario.inventario.id": "id",
+      "data.inventario.inventario.abertoEm": "iso-json",
+      "data.eventos[0].ocorridoEm": "iso-json",
+      "data.eventos[0].ip": "texto"
+    }
+  },
+  {
+    "nome": "trilha-estoquista-403",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/trilha"
+    }
+  },
+  {
+    "nome": "trilha-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-nao-existe/trilha"
+    }
+  },
+  {
+    "nome": "trilha-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/trilha"
+    }
+  },
+  {
+    "nome": "trilha-sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Inventario/inv-ct-aberto/trilha"
+    }
+  }
+]

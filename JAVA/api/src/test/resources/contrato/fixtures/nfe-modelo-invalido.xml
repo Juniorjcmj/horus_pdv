@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe33260111222333000181570010000005011100005015" versao="4.00">
+      <ide>
+        <cUF>33</cUF><mod>57</mod><serie>1</serie><nNF>501</nNF>
+      </ide>
+      <emit>
+        <CNPJ>11222333000181</CNPJ><xNome>Distribuidora Sol SA</xNome>
+        <enderEmit><xLgr>Rua do Sol</xLgr><nro>50</nro><xBairro>Centro</xBairro><xMun>Rio de Janeiro</xMun><UF>RJ</UF><CEP>20010000</CEP></enderEmit>
+      </emit>
+      <det nItem="1">
+        <prod><cProd>SOL-99</cProd><xProd>Frete</xProd><uCom>UN</uCom><qCom>1.0000</qCom><vUnCom>10.0000</vUnCom><vProd>10.00</vProd></prod>
+      </det>
+    </infNFe>
+  </NFe>
+</nfeProc>
+

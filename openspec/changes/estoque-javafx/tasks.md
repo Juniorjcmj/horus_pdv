@@ -16,7 +16,7 @@ testar mudanças da API, reconstruir a imagem `horus-pdv-api:teste` de contexto 
 - [x] 2.3 `InventarioAB`: divergências (sistema na contagem, contado, diferença, valor pelo custo, não contados, recontar, totais sobra/falta/líquido). Verificar: E2E 2.6 cenário "Produto com falta" (-4 un, -R$ 16,00).
 - [x] 2.4 `InventarioAB`: aplicar (D3) numa transação — `delta = contado − SaldoNa1aContagem`, novo = atual + delta com piso 0, `EstoqueMovimentacoes` tipo `inventario`, lotes (delta + cria lote, delta − consome FEFO pelo serviço de lotes existente), opção zerar não contados, totais, evento + AuditLog; tentativas negadas em conexão própria. Cancelar com motivo. Verificar: E2E 2.6 cenários "Venda durante a contagem" (saldo 25), "Senha errada" (403, estoque intacto, evento negado), "Aplicação dupla" (409).
 - [x] 2.5 `Controllers/Estoque/InventarioController.cs` com as rotas e roles de D5, IP via `HorusClientIpResolver`, recusas com `data.codigo`; registrar `InventarioAB` no `Program.cs`. Verificar: `dotnet build` sem erros e `curl` com perfil caixa → 403.
-- [x] 2.6 Teste E2E da API do inventário (Java, gated por `-Dquack.e2e.url`, dentro de `ESTOQUE_JAVAFX` depois do grupo 4, ou script `curl` em `ESTOQUE_JAVAFX/e2e/`) cobrindo todos os cenários de `specs/estoque/inventario/spec.md` que envolvem a API, incluindo venda feita durante a contagem. Verificar: execução contra o Docker passa e imprime a trilha.
+- [x] 2.6 Teste E2E da API do inventário (Java, gated por `-Dquack.e2e.url`, dentro de `JAVA/estoque` depois do grupo 4, ou script `curl` em `JAVA/estoque/e2e/`) cobrindo todos os cenários de `specs/estoque/inventario/spec.md` que envolvem a API, incluindo venda feita durante a contagem. Verificar: execução contra o Docker passa e imprime a trilha.
 
 ## 3. API — relatórios de compra
 
@@ -26,9 +26,9 @@ testar mudanças da API, reconstruir a imagem `horus-pdv-api:teste` de contexto 
 
 ## 4. App — esqueleto e infraestrutura (cópia do caixa, D1)
 
-- [x] 4.1 Criar `ESTOQUE_JAVAFX/` (pom igual ao do caixa sem sqlite/jna; artifact `quack-estoque`, Main-Class `br.com.quack.estoque.Launcher`), copiar e renomear pacote das classes de infraestrutura listadas em D1 (ApiClient, ApiException, AuthApi, AppConfig/AppPaths → `%APPDATA%\QuackEstoque`, Session, Fx, Toasts, LoginView, CSS, fontes, ícone, extensão de testes se usada) e `PrintService` (impressão assíncrona com `fitScale`/`pageRanges`/`showPage` de `ReceiptPrinter`). Verificar: `mvn -o -q -f ESTOQUE_JAVAFX/pom.xml package` gera `target/quack-estoque.jar` e os testes copiados passam.
+- [x] 4.1 Criar `JAVA/estoque/` (pom igual ao do caixa sem sqlite/jna; artifact `quack-estoque`, Main-Class `br.com.quack.estoque.Launcher`), copiar e renomear pacote das classes de infraestrutura listadas em D1 (ApiClient, ApiException, AuthApi, AppConfig/AppPaths → `%APPDATA%\QuackEstoque`, Session, Fx, Toasts, LoginView, CSS, fontes, ícone, extensão de testes se usada) e `PrintService` (impressão assíncrona com `fitScale`/`pageRanges`/`showPage` de `ReceiptPrinter`). Verificar: `mvn -o -q -f JAVA/estoque/pom.xml package` gera `target/quack-estoque.jar` e os testes copiados passam.
 - [x] 4.2 `App` com login → janela principal com menu lateral e Início (D2); acesso por perfil (D9) — perfil caixa/atendente recusado com mensagem; 401 volta ao login. Verificar: `PerfilAcessoTest` (regras de D9 puras) e execução manual/E2E de login com `caixa@teste.com` (entra) e `operadora@teste.com` (recusado).
-- [x] 4.3 `build-exe.ps1` (cópia do caixa: nome QuackEstoque, ícone, guarda de .exe aberto, `-Dest`), `run.bat`, `.gitignore`, `README.md` (build, execução, perfis, pasta de dados, atalhos, classes copiadas do caixa). Verificar: `powershell -File ESTOQUE_JAVAFX/build-exe.ps1 -Dest <scratch>` gera `QuackEstoque.exe`.
+- [x] 4.3 `build-exe.ps1` (cópia do caixa: nome QuackEstoque, ícone, guarda de .exe aberto, `-Dest`), `run.bat`, `.gitignore`, `README.md` (build, execução, perfis, pasta de dados, atalhos, classes copiadas do caixa). Verificar: `powershell -File JAVA/estoque/build-exe.ps1 -Dest <scratch>` gera `QuackEstoque.exe`.
 
 ## 5. App — produtos e cadastros
 
@@ -64,7 +64,7 @@ testar mudanças da API, reconstruir a imagem `horus-pdv-api:teste` de contexto 
 
 ## 10. Integração e entrega
 
-- [x] 10.1 Rodar toda a suíte `mvn -o -f ESTOQUE_JAVAFX/pom.xml test` + E2E contra o Docker (`-Dquack.e2e.url=http://localhost:5260`) e o build da API; corrigir falhas. Verificar: tudo verde, saída anexada ao resumo.
+- [x] 10.1 Rodar toda a suíte `mvn -o -f JAVA/estoque/pom.xml test` + E2E contra o Docker (`-Dquack.e2e.url=http://localhost:5260`) e o build da API; corrigir falhas. Verificar: tudo verde, saída anexada ao resumo.
 - [x] 10.2 Gerar `QuackEstoque.exe` e o zip com `build-exe.ps1`; abrir offscreen (snapshot das telas principais como o `UiSnapshotTool` do caixa) para conferir layout. Verificar: zip gerado e PNGs das telas revisados.
 - [x] 10.3 Atualizar `graphify update .` e a memória do projeto (`caixa-javafx.md` ou nova `estoque-javafx.md`). Verificar: comando executado (se recusar por contagem de nós, registrar).
 

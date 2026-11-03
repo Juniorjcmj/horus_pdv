@@ -1,7 +1,7 @@
 # Tasks
 
 Referência obrigatória: `design.md` (D1–D9) e `specs/estoque/*`. API: `cd API/NETCORE && dotnet build -c Release`.
-App: `mvn -o -f ESTOQUE_JAVAFX/pom.xml test`. Ambiente Docker conforme `design.md` (Context). **Ao fim de cada etapa
+App: `mvn -o -f JAVA/estoque/pom.xml test`. Ambiente Docker conforme `design.md` (Context). **Ao fim de cada etapa
 (grupos 1–6): rodar os testes da etapa, fazer commit na `main` com mensagem descritiva e resumir o que mudou e como
 acessar a tela.**
 
@@ -12,8 +12,8 @@ acessar a tela.**
 - [x] 1.3 Passar pelo helper: venda (`HistoricoVendasAB.BaixarEstoqueAsync`, `BaixarEstoqueComPrecoFixoAsync`), cancelamento de venda, correção de venda, cancelamento NFC-e/NF-e (`MarcarCanceladoComAuditoriaAsync`), devolução NF-e (`GravarDevolucaoNfeComAuditoriaAsync`), entrada (`EntradaEstoqueAsync` — NF-e, manual, pedido de compra), estorno de nota (`EstornarEstoqueAsync`), baixa avulsa (`ProdutoAB.BaixarEstoqueAsync`), inventário (`InventarioAB`) e cadastro/edição (`SalvarAsync`) com tipos/origens de D2. Verificar: `grep -rn "ProductQnt = \|ProductQnt=" API/NETCORE --include=*.cs` só mostra o helper e leituras.
 - [x] 1.4 `API/tests/EstoqueIndicadoresChecks` (console, padrão dos `*Checks`, conexão por `--connection`/env, padrão o `pdv-teste-sql`) com o check de conciliação: executa cada fluxo de 1.3 e confere `Σ movimentações = saldo final − inicial` por produto e os tipos/origens. Verificar: `dotnet run --project API/tests/EstoqueIndicadoresChecks` passa.
 - [x] 1.5 `EstoqueSnapshotWorker` + `POST api/Estoque/analise/snapshot` (gerente/admin) com MERGE idempotente e reconstrução (D3), registrado no `Program.cs`. Verificar: check grava duas vezes o mesmo dia sem duplicar e reconstrói dia passado conferindo com saldo esperado.
-- [x] 1.6 Seed `API/tests/EstoqueAnaliseSeed` (D8) e documentação de uso em `ESTOQUE_JAVAFX/README.md` (seção Análise). Verificar: roda contra o Docker, cria a empresa demo com ~200 SKUs, 12 meses e snapshots; recusa conexão que não seja localhost.
-- [x] 1.7 Rodar os testes existentes do caixa (`mvn -o -f CAIXA_JAVAFX/pom.xml test` com E2E `-Dquack.e2e.url`) e do estoque para garantir que venda/cancelamento/inventário continuam iguais; commit da etapa 1.
+- [x] 1.6 Seed `API/tests/EstoqueAnaliseSeed` (D8) e documentação de uso em `JAVA/estoque/README.md` (seção Análise). Verificar: roda contra o Docker, cria a empresa demo com ~200 SKUs, 12 meses e snapshots; recusa conexão que não seja localhost.
+- [x] 1.7 Rodar os testes existentes do caixa (`mvn -o -f JAVA/caixa/pom.xml test` com E2E `-Dquack.e2e.url`) e do estoque para garantir que venda/cancelamento/inventário continuam iguais; commit da etapa 1.
 
 ## 2. Etapa 2 — Serviço de cálculos e testes
 

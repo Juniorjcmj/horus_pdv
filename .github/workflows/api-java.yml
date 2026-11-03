@@ -8,7 +8,7 @@ on:
   push:
     branches: [spring-api]
     paths:
-      - "API/JAVA/**"
+      - "JAVA/api/**"
       - ".github/workflows/api-java.yml"
   workflow_dispatch:
 
@@ -37,7 +37,7 @@ jobs:
 
       # O runner do GitHub ja traz Docker, que o Testcontainers usa para o SQL Server 2022.
       - name: mvn verify (unidade, web, IT e comparador de contrato)
-        working-directory: API/JAVA
+        working-directory: JAVA/api
         run: mvn -B verify
 
       - name: Relatorios de teste
@@ -46,8 +46,8 @@ jobs:
         with:
           name: relatorios-api-java
           path: |
-            API/JAVA/target/surefire-reports
-            API/JAVA/target/failsafe-reports
+            JAVA/api/target/surefire-reports
+            JAVA/api/target/failsafe-reports
 
   imagem:
     needs: testes
@@ -75,8 +75,8 @@ jobs:
       - name: Build e push da imagem da API Java
         uses: docker/build-push-action@v6
         with:
-          context: API/JAVA
-          file: API/JAVA/Dockerfile
+          context: JAVA/api
+          file: JAVA/api/Dockerfile
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/quack-pdv-api-java:spring-api

@@ -1,0 +1,378 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Prazos de validade por categoria obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "categoriaId" : "cat-mercearia-graos",
+      "nome" : "Arroz e Grãos",
+      "categoriaPaiId" : "cat-mercearia",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-acougue-bovinos",
+      "nome" : "Bovinos",
+      "categoriaPaiId" : "cat-acougue",
+      "prazoPadraoDias" : 5,
+      "diasAlerta" : 2
+    }, {
+      "categoriaId" : "cat-bomboniere-chocolates",
+      "nome" : "Chocolates",
+      "categoriaPaiId" : "cat-bomboniere",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-tabacaria-cigarros",
+      "nome" : "Cigarros e Isqueiros",
+      "categoriaPaiId" : "cat-tabacaria",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-hortifruti-frutas",
+      "nome" : "Frutas",
+      "categoriaPaiId" : "cat-hortifruti",
+      "prazoPadraoDias" : 7,
+      "diasAlerta" : 2
+    }, {
+      "categoriaId" : "cat-limpeza-lavanderia",
+      "nome" : "Lavanderia",
+      "categoriaPaiId" : "cat-limpeza",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-laticinios-leite",
+      "nome" : "Leites e Derivados",
+      "categoriaPaiId" : "cat-laticinios",
+      "prazoPadraoDias" : 120,
+      "diasAlerta" : 15
+    }, {
+      "categoriaId" : "cat-mercearia",
+      "nome" : "Mercearia",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : 365,
+      "diasAlerta" : 60
+    }, {
+      "categoriaId" : "cat-padaria-paes",
+      "nome" : "Pães",
+      "categoriaPaiId" : "cat-padaria",
+      "prazoPadraoDias" : 3,
+      "diasAlerta" : 1
+    }, {
+      "categoriaId" : "cat-congelados-pratos",
+      "nome" : "Pratos Prontos e Pizzas",
+      "categoriaPaiId" : "cat-congelados",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-frios-queijos",
+      "nome" : "Queijos",
+      "categoriaPaiId" : "cat-frios",
+      "prazoPadraoDias" : 30,
+      "diasAlerta" : 7
+    }, {
+      "categoriaId" : "cat-pet-caes",
+      "nome" : "Ração Cães",
+      "categoriaPaiId" : "cat-pet",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-bebidas-refrigerantes",
+      "nome" : "Refrigerantes",
+      "categoriaPaiId" : "cat-bebidas",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-higiene-banho",
+      "nome" : "Sabonetes e Banhos",
+      "categoriaPaiId" : "cat-higiene",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-bazar-utilidades",
+      "nome" : "Utilidades Domésticas",
+      "categoriaPaiId" : "cat-bazar",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-acougue-aves",
+      "nome" : "Aves",
+      "categoriaPaiId" : "cat-acougue",
+      "prazoPadraoDias" : 5,
+      "diasAlerta" : 2
+    }, {
+      "categoriaId" : "cat-bomboniere-balas",
+      "nome" : "Balas e Chicletes",
+      "categoriaPaiId" : "cat-bomboniere",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-bebidas",
+      "nome" : "Bebidas",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : 180,
+      "diasAlerta" : 30
+    }, {
+      "categoriaId" : "cat-padaria-bolos",
+      "nome" : "Bolos e Tortas",
+      "categoriaPaiId" : "cat-padaria",
+      "prazoPadraoDias" : 5,
+      "diasAlerta" : 2
+    }, {
+      "categoriaId" : "cat-higiene-cabelo",
+      "nome" : "Cabelos",
+      "categoriaPaiId" : "cat-higiene",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-bebidas-cervejas",
+      "nome" : "Cervejas",
+      "categoriaPaiId" : "cat-bebidas",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-limpeza-desinfetantes",
+      "nome" : "Desinfetantes e Multiuso",
+      "categoriaPaiId" : "cat-limpeza",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-frios-embutidos",
+      "nome" : "Embutidos e Presuntos",
+      "categoriaPaiId" : "cat-frios",
+      "prazoPadraoDias" : 20,
+      "diasAlerta" : 5
+    }, {
+      "categoriaId" : "cat-congelados-hamburguer",
+      "nome" : "Hambúrgueres e Empanados",
+      "categoriaPaiId" : "cat-congelados",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-laticinios-iogurtes",
+      "nome" : "Iogurtes e Sobremesas",
+      "categoriaPaiId" : "cat-laticinios",
+      "prazoPadraoDias" : 30,
+      "diasAlerta" : 7
+    }, {
+      "categoriaId" : "cat-hortifruti-legumes",
+      "nome" : "Legumes",
+      "categoriaPaiId" : "cat-hortifruti",
+      "prazoPadraoDias" : 7,
+      "diasAlerta" : 2
+    }, {
+      "categoriaId" : "cat-mercearia-oleos",
+      "nome" : "Óleos e Temperos",
+      "categoriaPaiId" : "cat-mercearia",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-bazar-acessorios",
+      "nome" : "Pilhas e Acessórios",
+      "categoriaPaiId" : "cat-bazar",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-pet-gatos",
+      "nome" : "Ração Gatos",
+      "categoriaPaiId" : "cat-pet",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-padaria-biscoitos",
+      "nome" : "Biscoitos e Torradas",
+      "categoriaPaiId" : "cat-padaria",
+      "prazoPadraoDias" : 180,
+      "diasAlerta" : 30
+    }, {
+      "categoriaId" : "cat-higiene-bucal",
+      "nome" : "Higiene Bucal",
+      "categoriaPaiId" : "cat-higiene",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-laticinios",
+      "nome" : "Laticínios",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : 30,
+      "diasAlerta" : 7
+    }, {
+      "categoriaId" : "cat-laticinios-manteigas",
+      "nome" : "Manteigas e Requeijão",
+      "categoriaPaiId" : "cat-laticinios",
+      "prazoPadraoDias" : 60,
+      "diasAlerta" : 10
+    }, {
+      "categoriaId" : "cat-mercearia-massas",
+      "nome" : "Massas e Molhos",
+      "categoriaPaiId" : "cat-mercearia",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-bomboniere-snacks",
+      "nome" : "Salgadinhos e Snacks",
+      "categoriaPaiId" : "cat-bomboniere",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-congelados-sorvetes",
+      "nome" : "Sorvetes",
+      "categoriaPaiId" : "cat-congelados",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-bebidas-sucos-aguas",
+      "nome" : "Sucos e Águas",
+      "categoriaPaiId" : "cat-bebidas",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-acougue-suinos",
+      "nome" : "Suínos",
+      "categoriaPaiId" : "cat-acougue",
+      "prazoPadraoDias" : 5,
+      "diasAlerta" : 2
+    }, {
+      "categoriaId" : "cat-limpeza-utensilios",
+      "nome" : "Utensílios de Limpeza",
+      "categoriaPaiId" : "cat-limpeza",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-hortifruti-verduras",
+      "nome" : "Verduras e Temperos",
+      "categoriaPaiId" : "cat-hortifruti",
+      "prazoPadraoDias" : 5,
+      "diasAlerta" : 2
+    }, {
+      "categoriaId" : "cat-mercearia-enlatados",
+      "nome" : "Conservas e Enlatados",
+      "categoriaPaiId" : "cat-mercearia",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-bebidas-destilados",
+      "nome" : "Destilados e Vinhos",
+      "categoriaPaiId" : "cat-bebidas",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-padaria",
+      "nome" : "Padaria",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : 5,
+      "diasAlerta" : 2
+    }, {
+      "categoriaId" : "cat-higiene-papeis",
+      "nome" : "Papéis e Descartáveis",
+      "categoriaPaiId" : "cat-higiene",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-acougue",
+      "nome" : "Açougue",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : 5,
+      "diasAlerta" : 2
+    }, {
+      "categoriaId" : "cat-mercearia-farinhas",
+      "nome" : "Farinhas e Açúcares",
+      "categoriaPaiId" : "cat-mercearia",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-hortifruti",
+      "nome" : "Hortifruti",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : 7,
+      "diasAlerta" : 2
+    }, {
+      "categoriaId" : "cat-frios",
+      "nome" : "Frios",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : 20,
+      "diasAlerta" : 5
+    }, {
+      "categoriaId" : "cat-limpeza",
+      "nome" : "Limpeza",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-higiene",
+      "nome" : "Higiene",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-congelados",
+      "nome" : "Congelados",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : 180,
+      "diasAlerta" : 15
+    }, {
+      "categoriaId" : "cat-bomboniere",
+      "nome" : "Bomboniere",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : 180,
+      "diasAlerta" : 30
+    }, {
+      "categoriaId" : "cat-bazar",
+      "nome" : "Bazar",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-pet",
+      "nome" : "Pet",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-tabacaria",
+      "nome" : "Tabacaria",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-ct-livre",
+      "nome" : "Categoria Livre",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-ct-dep",
+      "nome" : "Departamento Contrato",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-ct-sub",
+      "nome" : "Subcategoria Contrato",
+      "categoriaPaiId" : "cat-ct-dep",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-ct-pereciveis",
+      "nome" : "Perecíveis Contrato",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : 30,
+      "diasAlerta" : 10
+    }, {
+      "categoriaId" : "cat-ct-laticinios",
+      "nome" : "Laticínios Contrato",
+      "categoriaPaiId" : "cat-ct-pereciveis",
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    }, {
+      "categoriaId" : "cat-ct-inv",
+      "nome" : "Categoria Inventário",
+      "categoriaPaiId" : null,
+      "prazoPadraoDias" : null,
+      "diasAlerta" : null
+    } ]
+  }
+}

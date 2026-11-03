@@ -1,0 +1,121 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Trilha do inventário.",
+    "details" : null,
+    "data" : {
+      "inventario" : {
+        "inventario" : {
+          "id" : "inv-ct-aberto",
+          "numero" : 1,
+          "descricao" : "Inventário Aberto Contrato",
+          "escopo" : "produtos",
+          "escopoJson" : "[\"pr-ct-inv\"]",
+          "status" : "aplicado",
+          "abertoPor" : "Gil Gerente",
+          "abertoEm" : "2026-01-15T12:00:00+00:00",
+          "aplicadoPor" : "Gil Gerente",
+          "aplicadoEm" : "2026-11-03T16:55:46.2653372+00:00",
+          "supervisor" : "Gil Gerente",
+          "justificativa" : "Contagem geral conferida",
+          "zerarNaoContados" : false,
+          "canceladoPor" : null,
+          "canceladoEm" : null,
+          "motivoCancelamento" : null,
+          "totalSobra" : 0.0,
+          "totalFalta" : -15.0,
+          "totalLiquido" : -15.0
+        },
+        "resumo" : {
+          "itens" : 1,
+          "contados" : 1,
+          "naoContados" : 0,
+          "recontar" : 0,
+          "divergentes" : 1,
+          "sobra" : 0,
+          "falta" : -15.0,
+          "liquido" : -15.0
+        }
+      },
+      "eventos" : [ {
+        "tipo" : "abertura",
+        "ocorridoEm" : "2026-01-15T12:00:00+00:00",
+        "usuario" : "Gil Gerente",
+        "gerente" : null,
+        "ip" : "127.0.0.1",
+        "terminal" : "WEB",
+        "descricao" : "Inventário #1 aberto (escopo: produtos, 1 itens)."
+      }, {
+        "tipo" : "aplicacao_negada",
+        "ocorridoEm" : "2026-11-03T16:55:46.1654409+00:00",
+        "usuario" : "Gil Gerente",
+        "gerente" : "Gil Gerente",
+        "ip" : "::ffff:172.19.0.1",
+        "terminal" : null,
+        "descricao" : "Aplicação do inventário #1 negada: Informe uma justificativa de no mínimo 5 caracteres. Gerente informado: Gil Gerente."
+      }, {
+        "tipo" : "aplicado",
+        "ocorridoEm" : "2026-11-03T16:55:46.2694922+00:00",
+        "usuario" : "Gil Gerente",
+        "gerente" : "Gil Gerente",
+        "ip" : "::ffff:172.19.0.1",
+        "terminal" : null,
+        "descricao" : "Inventário #1 aplicado por Gil Gerente: 1 produto(s) ajustado(s), sobra 0.00, falta -15.00, líquido -15.00. Contagem geral conferida"
+      } ],
+      "contagens" : [ {
+        "id" : "ic-71724bd98a6347968d48522b642094d2",
+        "produtoId" : "pr-ct-inv",
+        "codigo" : "CT007",
+        "nome" : "Biscoito Água e Sal",
+        "quantidade" : 4.0,
+        "local" : null,
+        "usuario" : "Edu Estoquista",
+        "terminal" : null,
+        "saldoSistema" : 10.0,
+        "criadoEm" : "2026-11-03T16:55:46.1365351+00:00",
+        "anuladaPor" : null,
+        "anuladaEm" : null,
+        "anuladaMotivo" : null,
+        "usuarioId" : "usr-ct-estoq"
+      }, {
+        "id" : "ic-d5282455da13481a840a27bc29da6746",
+        "produtoId" : "pr-ct-inv",
+        "codigo" : "CT007",
+        "nome" : "Biscoito Água e Sal",
+        "quantidade" : 3.0,
+        "local" : null,
+        "usuario" : "Gil Gerente",
+        "terminal" : null,
+        "saldoSistema" : 10.0,
+        "criadoEm" : "2026-11-03T16:55:46.0438349+00:00",
+        "anuladaPor" : "Gil Gerente",
+        "anuladaEm" : "2026-11-03T16:55:46.153065+00:00",
+        "anuladaMotivo" : "Primeira errada",
+        "usuarioId" : "usr-ct-gerente"
+      } ],
+      "itens" : [ {
+        "produtoId" : "pr-ct-inv",
+        "codigo" : "CT007",
+        "nome" : "Biscoito Água e Sal",
+        "unidade" : "UN",
+        "custo" : 2.5,
+        "saldoNa1aContagem" : 10.0,
+        "contado" : 4.0,
+        "diferenca" : -6.0,
+        "valorDiferenca" : -15.0,
+        "recontar" : false,
+        "primeiraContagemEm" : "2026-11-03T16:55:46.1365351+00:00",
+        "ultimaContagemEm" : "2026-11-03T16:55:46.1365351+00:00",
+        "saldoAntes" : 10.0,
+        "delta" : -6.0,
+        "saldoDepois" : 4.0,
+        "valorDelta" : -15.0,
+        "pisoAplicado" : null
+      } ]
+    }
+  }
+}

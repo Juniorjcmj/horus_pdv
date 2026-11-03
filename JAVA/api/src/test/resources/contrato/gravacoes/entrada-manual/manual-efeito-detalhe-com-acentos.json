@@ -1,0 +1,86 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "",
+    "details" : null,
+    "data" : {
+      "nota" : {
+        "id" : "ne-0fde03c313214d1a9906fb9484fbdb13",
+        "chaveAcesso" : null,
+        "modelo" : 0,
+        "numeroNota" : "CP-1001",
+        "serie" : "",
+        "fornecedorNome" : "Distribuidora Sol SA",
+        "fornecedorCnpj" : "11222333000181",
+        "dataEmissao" : "2026-11-02",
+        "valorNota" : 7.5,
+        "valorEntrada" : 7.5,
+        "quantidadeItens" : 1,
+        "origem" : "manual",
+        "temXml" : false,
+        "criadaEm" : "2026-11-02T17:01:01.9534699Z",
+        "usuarioNome" : "Gil Gerente",
+        "temComprovante" : false,
+        "comprovanteNome" : null,
+        "estornada" : false,
+        "estornadaEm" : null,
+        "estornadaPorUsuarioNome" : null,
+        "estornoJustificativa" : null
+      },
+      "entrada" : {
+        "operacaoId" : "aaaaaaaabbbbccccdddd000000000001",
+        "fingerprint" : "955353C457DC680367AC5406DCE4A228F012FB084378D0CDD21E15201CC0F948",
+        "dataCompra" : "2026-11-02",
+        "tipoDocumento" : "cupom",
+        "observacao" : "Obs: ação & \"aspas\"",
+        "fornecedor" : {
+          "cnpj" : "11222333000181",
+          "companyName" : "Distribuidora Sol SA",
+          "fantasyName" : "Distribuidora Sol",
+          "cep" : "",
+          "city" : "",
+          "state" : "",
+          "address" : "",
+          "neighborhood" : "",
+          "number" : "",
+          "telephone" : ""
+        },
+        "itens" : [ {
+          "quantidadeCompra" : "5",
+          "unidadeCompra" : "UN",
+          "fatorConversao" : "1",
+          "custoCompra" : "1,5000",
+          "alterarPrecoVenda" : false,
+          "estoqueAntes" : "0",
+          "estoqueDepois" : "5",
+          "numeroItem" : 0,
+          "produtoExistenteId" : "pr-33641249ddfa44b995eb1eb971c39bbb",
+          "produtoExistenteNome" : null,
+          "codigoFornecedor" : null,
+          "productCode" : "ACENTO-1",
+          "productName" : "Pão <Açaí> & 'Café' +50%",
+          "gtin" : "SEM GTIN",
+          "ncm" : "00000000",
+          "cest" : null,
+          "unidadeComercial" : "UN",
+          "quantidade" : "5",
+          "precoCusto" : "1,5",
+          "precoVenda" : "2,99",
+          "dataValidade" : null,
+          "numeroLote" : null,
+          "margemPercentual" : null
+        } ],
+        "resultado" : {
+          "notaEntradaId" : "",
+          "fornecedorCriado" : false,
+          "produtosCriados" : 1,
+          "produtosAtualizados" : 0
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Ordens de compra listadas.",
+    "details" : null,
+    "data" : [ {
+      "id" : "oc-ct-recebida",
+      "companyId" : "empresa-principal",
+      "orderNumber" : "41",
+      "supplierId" : "fr-ct-exclusivo",
+      "supplierName" : "Distribuidora Exclusiva",
+      "supplierCnpj" : "99888777000166",
+      "status" : 1,
+      "createdBy" : "usr-ct-gerente",
+      "createdByName" : "Gil Gerente",
+      "createdAt" : "2026-01-16T12:00:00+00:00",
+      "receivedAt" : "2026-01-17T12:00:00+00:00",
+      "canceledAt" : null,
+      "previsaoEntrega" : null,
+      "condicaoPagamento" : null,
+      "formaPagamento" : null,
+      "valorFrete" : 0.0,
+      "valorDesconto" : 0.0,
+      "motivoCancelamento" : null,
+      "receivedBy" : "usr-ct-gerente",
+      "receivedByName" : "Gil Gerente",
+      "note" : "Pedido já recebido",
+      "totalEstimado" : 17.0,
+      "itens" : [ ]
+    }, {
+      "id" : "oc-ct-pendente",
+      "companyId" : "empresa-principal",
+      "orderNumber" : "40",
+      "supplierId" : "fr-ct-sol",
+      "supplierName" : "Distribuidora Sol",
+      "supplierCnpj" : "11222333000181",
+      "status" : 0,
+      "createdBy" : "usr-ct-gerente",
+      "createdByName" : "Gil Gerente",
+      "createdAt" : "2026-01-15T12:00:00+00:00",
+      "receivedAt" : null,
+      "canceledAt" : null,
+      "previsaoEntrega" : null,
+      "condicaoPagamento" : null,
+      "formaPagamento" : null,
+      "valorFrete" : 0.0,
+      "valorDesconto" : 0.0,
+      "motivoCancelamento" : null,
+      "receivedBy" : null,
+      "receivedByName" : null,
+      "note" : "Pedido pendente do seed",
+      "totalEstimado" : 20.0,
+      "itens" : [ ]
+    } ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Seu aplicativo está desatualizado e não enviou os dados da nota. Recarregue a página (Ctrl+F5) ou reinicie o Quack PDV e confirme a entrada de novo.",
+    "details" : null,
+    "data" : null
+  }
+}

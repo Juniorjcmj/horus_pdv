@@ -1,0 +1,29 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Situação da baixa por lote obtida com sucesso.",
+    "details" : null,
+    "data" : {
+      "modo" : "sombra",
+      "lotesComSaldo" : 5,
+      "lotesComDivergencia" : 1,
+      "produtosComDivergencia" : 1,
+      "produtosComEstoqueSemLote" : 0,
+      "itens" : [ {
+        "produtoId" : "pr-ct-val2",
+        "productCode" : "CT004",
+        "productName" : "Pão de Forma Integral",
+        "loteId" : "lt-1793637489344-9b9c0350",
+        "numeroLote" : "L-DIV",
+        "dataValidade" : "2026-10-01",
+        "qtdEstimada" : 0,
+        "qtdReal" : 2.0,
+        "diferenca" : 2.0
+      } ]
+    }
+  }
+}

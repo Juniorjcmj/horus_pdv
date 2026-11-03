@@ -1,0 +1,17 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Inventário aberto.",
+    "details" : null,
+    "data" : {
+      "id" : "inv-45d19a24e9d546dea823db538aebf071",
+      "numero" : 2,
+      "status" : "em_contagem",
+      "itens" : 1
+    }
+  }
+}

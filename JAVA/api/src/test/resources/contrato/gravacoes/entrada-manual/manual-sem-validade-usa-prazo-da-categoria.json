@@ -1,0 +1,34 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Lotes do produto obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "lote-ct-pao1",
+      "produtoId" : "pr-ct-val2",
+      "numeroLote" : "L-PAO-1",
+      "dataValidade" : "2026-11-08",
+      "diasParaVencer" : 6,
+      "qtdInicial" : 8.0,
+      "qtdEstimada" : 8.0,
+      "origem" : "manual",
+      "validadePadrao" : true,
+      "criadoEm" : "2026-01-15T09:00:00.0000000-03:00"
+    }, {
+      "id" : "lt-1793638832689-b94c9b5f",
+      "produtoId" : "pr-ct-val2",
+      "numeroLote" : "LM-1",
+      "dataValidade" : "2026-12-02",
+      "diasParaVencer" : 30,
+      "qtdInicial" : 1.0,
+      "qtdEstimada" : 1.0,
+      "origem" : "manual",
+      "validadePadrao" : true,
+      "criadoEm" : "2026-11-02T14:00:32.7163482-03:00"
+    } ]
+  }
+}

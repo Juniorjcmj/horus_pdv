@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "A promoção deve estar vinculada a pelo menos um produto ou a uma categoria.",
+    "details" : null,
+    "data" : null
+  }
+}

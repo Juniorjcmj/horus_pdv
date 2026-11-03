@@ -6,7 +6,7 @@ A frente de caixa hoje é uma página React de ~3.700 linhas ([SalesStartPage.ts
 
 ## What Changes
 
-- Novo módulo `CAIXA_JAVAFX/` (Java 21 + JavaFX 21, Maven) com um executável desktop "Quack Caixa".
+- Novo módulo `JAVA/caixa/` (Java 21 + JavaFX 21, Maven) com um executável desktop "Quack Caixa".
 - Login com e-mail e senha na mesma rota `POST /api/Auth/login` (sessão pelo cookie `horuspdv.auth`).
 - Abertura, fechamento, sangria e reforço de caixa pelas rotas existentes `/api/Caixa/*`, com bloqueio de venda quando o caixa não está aberto.
 - Venda completa: busca por nome/código/código de barras, quantidade fracionada para itens por peso, etiqueta de balança EAN-13 (prefixo `2`), promoções ativas, remoção de item, cancelamento da venda.
@@ -27,7 +27,7 @@ A frente de caixa hoje é uma página React de ~3.700 linhas ([SalesStartPage.ts
 
 ## Impact
 
-- Código novo: `CAIXA_JAVAFX/` (pom.xml, código Java, CSS, testes, README, script de build).
+- Código novo: `JAVA/caixa/` (pom.xml, código Java, CSS, testes, README, script de build).
 - APIs consumidas (sem alteração): `/api/Auth/login|logout|me`, `/api/Caixa/status|abrir|fechar|movimento`, `/api/Produto`, `/api/Cliente`, `/api/Promocao/ativas`, `/api/Empresa`, `/api/HistoricoVendas`.
 - Dependências novas (só no módulo Java): OpenJFX 21.0.8, Jackson 2.17.2, JUnit 5.10.2.
 - Dados locais: pasta `%APPDATA%\QuackCaixa\` (config, cache, fila offline).

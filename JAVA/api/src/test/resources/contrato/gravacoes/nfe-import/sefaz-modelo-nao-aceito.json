@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "A entrada aceita somente notas dos modelos 55 e 65.",
+    "details" : null,
+    "data" : null
+  }
+}

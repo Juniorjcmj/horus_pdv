@@ -35,9 +35,9 @@ DESKTOP/frontend-bin/
 /FRONTEND/test-results-integrity/
 
 # API Java (Spring Boot)
-API/JAVA/target/
-API/JAVA/.env.homologacao
-API/JAVA/backups/
-API/JAVA/contrato/vetores-dotnet/bin/
-API/JAVA/contrato/vetores-dotnet/obj/
-API/JAVA/poc-fiscal/target/
+JAVA/api/target/
+JAVA/api/.env.homologacao
+JAVA/api/backups/
+JAVA/api/contrato/vetores-dotnet/bin/
+JAVA/api/contrato/vetores-dotnet/obj/
+JAVA/api/poc-fiscal/target/

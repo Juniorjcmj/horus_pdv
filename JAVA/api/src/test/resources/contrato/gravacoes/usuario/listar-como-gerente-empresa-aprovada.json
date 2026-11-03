@@ -1,0 +1,38 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Usuarios obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "usr-ct-apr-adm",
+      "companyId" : "emp-contrato-aprovada",
+      "cpf" : "11222333000181",
+      "name" : "Ada Aprovada",
+      "email" : "adm.aprovada@contrato.quack",
+      "phone" : "11999990010",
+      "role" : "administrador",
+      "status" : "ativo",
+      "createdAt" : "2026-01-15",
+      "lastLoginAt" : "2026-11-02T12:09:25.8558273Z",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    }, {
+      "id" : "usr-ct-apr-estoq",
+      "companyId" : "emp-contrato-aprovada",
+      "cpf" : "20202020202",
+      "name" : "Eva Estoquista",
+      "email" : "estoquista.aprovada@contrato.quack",
+      "phone" : "11999990014",
+      "role" : "estoquista",
+      "status" : "ativo",
+      "createdAt" : "2026-01-16",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : false,
+      "perfisAdicionais" : [ ]
+    } ]
+  }
+}

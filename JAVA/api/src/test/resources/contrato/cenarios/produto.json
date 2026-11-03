@@ -1,0 +1,418 @@
+[
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto"
+    }
+  },
+  {
+    "nome": "listar-caixa",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto"
+    }
+  },
+  {
+    "nome": "listar-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto"
+    }
+  },
+  {
+    "nome": "estoquista-nao-cria",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto",
+      "corpo": {
+        "productName": "Produto Estoquista",
+        "productCode": "EST001",
+        "productQnt": "5",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "4,00"
+      }
+    }
+  },
+  {
+    "nome": "caixa-nao-edita",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/pr-ct-1",
+      "corpo": {
+        "productName": "Produto Contrato 1",
+        "productCode": "CT001",
+        "productQnt": "10",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "3,00"
+      }
+    }
+  },
+  {
+    "nome": "criar-ok",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto",
+      "corpo": {
+        "productName": "Arroz Tipo 1 5kg",
+        "productCode": "ARR001",
+        "productSupplier": "Distribuidora Sol",
+        "productDescription": "Arroz agulhinha tipo 1",
+        "productQnt": "20",
+        "estoqueMinimo": "5",
+        "productUnitPrice": "18,50",
+        "productSalePrice": "25,90",
+        "margemDesejadaPercentual": "40",
+        "categoriaId": "cat-ct-sub",
+        "controlaValidade": true,
+        "dataValidade": "2027-08-15",
+        "diasAlertaValidade": 20,
+        "numeroLote": "L-ARR-01",
+        "unidadeComercial": "UN",
+        "unidadeTributavel": "UN",
+        "gtin": "7891000999001",
+        "ncm": "10063021",
+        "cfop": "5102"
+      }
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  },
+  {
+    "nome": "criar-codigo-vazio",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto",
+      "corpo": {
+        "productDescription": "Produto Só Pela Descrição",
+        "productCode": "",
+        "productQnt": "3",
+        "productUnitPrice": "1,50",
+        "productSalePrice": "2,99"
+      }
+    },
+    "volateis": {
+      "data.id": "id",
+      "data.productCode": "id"
+    }
+  },
+  {
+    "nome": "sem-descricao",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto",
+      "corpo": {
+        "productName": "   ",
+        "productDescription": "",
+        "productCode": "SEM001",
+        "productQnt": "1",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "4,00"
+      }
+    }
+  },
+  {
+    "nome": "custo-zero",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto",
+      "corpo": {
+        "productName": "Produto Custo Zero",
+        "productCode": "CZ001",
+        "productQnt": "1",
+        "productUnitPrice": "0",
+        "productSalePrice": "4,00"
+      }
+    }
+  },
+  {
+    "nome": "preco-venda-zero",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto",
+      "corpo": {
+        "productName": "Produto Venda Zero",
+        "productCode": "VZ001",
+        "productQnt": "1",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "0"
+      }
+    }
+  },
+  {
+    "nome": "quantidade-negativa",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto",
+      "corpo": {
+        "productName": "Produto Qtd Negativa",
+        "productCode": "QN001",
+        "productQnt": "-2",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "4,00"
+      }
+    }
+  },
+  {
+    "nome": "codigo-repetido",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto",
+      "corpo": {
+        "productName": "Outro Produto",
+        "productCode": "ct001",
+        "productQnt": "1",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "4,00"
+      }
+    }
+  },
+  {
+    "nome": "gtin-repetido",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto",
+      "corpo": {
+        "productName": "Outro Produto GTIN",
+        "productCode": "GTIN999",
+        "gtin": "7891000100103",
+        "productQnt": "1",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "4,00"
+      }
+    }
+  },
+  {
+    "nome": "fornecedor-desconhecido",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto",
+      "corpo": {
+        "productName": "Produto Fornecedor Fantasma",
+        "productCode": "FORN999",
+        "productSupplier": "Fornecedor Inexistente XYZ",
+        "productQnt": "1",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "4,00"
+      }
+    }
+  },
+  {
+    "nome": "editar-estoque-relativo-apos-saida",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/pr-ct-1/ajuste-estoque",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "tipo": "saida",
+          "quantidade": 2,
+          "motivo": "Saída entre consulta e gravação"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/pr-ct-1",
+      "corpo": {
+        "productName": "Produto Contrato 1 Atualizado",
+        "productCode": "CT001",
+        "productSupplier": "DISTRIBUIDORA SOL",
+        "productDescription": "Editado com estoque relativo",
+        "productQnt": "15",
+        "estoqueConsultado": "10",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "3,50",
+        "categoriaId": "cat-ct-sub"
+      }
+    }
+  },
+  {
+    "nome": "editar-sem-mudar-quantidade",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/pr-ct-2",
+      "corpo": {
+        "productName": "Produto Contrato 2 Renomeado",
+        "productCode": "CT002",
+        "productQnt": "10",
+        "estoqueConsultado": "10",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "3,20"
+      }
+    }
+  },
+  {
+    "nome": "editar-outra-empresa-404",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/pr-ct-1-outra",
+      "corpo": {
+        "productName": "Tentativa Outra Empresa",
+        "productCode": "CT001",
+        "productQnt": "10",
+        "productUnitPrice": "2,00",
+        "productSalePrice": "3,00"
+      }
+    }
+  },
+  {
+    "nome": "preco-venda-ok",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "PATCH",
+      "caminho": "/api/Produto/pr-ct-1/preco-venda",
+      "corpo": {
+        "precoVenda": "6,90",
+        "versaoConsultada": "2|3"
+      }
+    }
+  },
+  {
+    "nome": "preco-venda-sem-versao",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PATCH",
+      "caminho": "/api/Produto/pr-ct-1/preco-venda",
+      "corpo": {
+        "precoVenda": "6,90",
+        "versaoConsultada": ""
+      }
+    }
+  },
+  {
+    "nome": "preco-venda-versao-velha-409",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PATCH",
+      "caminho": "/api/Produto/pr-ct-1/preco-venda",
+      "corpo": {
+        "precoVenda": "6,90",
+        "versaoConsultada": "2|2.50"
+      }
+    }
+  },
+  {
+    "nome": "preco-venda-tres-casas",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PATCH",
+      "caminho": "/api/Produto/pr-ct-1/preco-venda",
+      "corpo": {
+        "precoVenda": "6,905",
+        "versaoConsultada": "2|3"
+      }
+    }
+  },
+  {
+    "nome": "preco-venda-outra-empresa-404",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PATCH",
+      "caminho": "/api/Produto/pr-ct-1-outra/preco-venda",
+      "corpo": {
+        "precoVenda": "6,90",
+        "versaoConsultada": "2|3"
+      }
+    }
+  },
+  {
+    "nome": "excluir-ok",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Produto/pr-ct-excluir"
+    }
+  },
+  {
+    "nome": "excluir-outra-empresa-404",
+    "usuario": "admin@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/Produto/pr-ct-1-outra"
+    }
+  },
+  {
+    "nome": "vencimentos-lista",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/vencimentos?dias=30"
+    }
+  },
+  {
+    "nome": "vencimentos-resumo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/vencimentos/resumo"
+    }
+  },
+  {
+    "nome": "validade-ok-estoquista",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/pr-ct-val/validade",
+      "corpo": {
+        "dataValidade": "2027-03-10"
+      }
+    }
+  },
+  {
+    "nome": "validade-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/pr-ct-val/validade",
+      "corpo": {
+        "dataValidade": "data-invalida"
+      }
+    }
+  },
+  {
+    "nome": "validade-outra-empresa-404",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/pr-ct-1-outra/validade",
+      "corpo": {
+        "dataValidade": "2027-03-10"
+      }
+    }
+  },
+  {
+    "nome": "importar-legado-atendente-403",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/importar-legado"
+    }
+  },
+  {
+    "nome": "importar-legado-estoquista-403",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/importar-legado"
+    }
+  }
+]

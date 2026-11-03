@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Adicione entre 1 e 200 produtos à entrada.",
+    "details" : null,
+    "data" : null
+  }
+}

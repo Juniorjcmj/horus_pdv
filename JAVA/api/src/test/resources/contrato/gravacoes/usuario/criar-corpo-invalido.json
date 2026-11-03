@@ -1,0 +1,16 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/problem+json;charset=utf-8"
+  },
+  "corpo" : {
+    "type" : "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title" : "One or more validation errors occurred.",
+    "status" : 400,
+    "errors" : {
+      "$" : [ "The JSON value could not be converted to HORUSPDV_API.Models.Requests.UsuarioRequest. Path: $ | LineNumber: 0 | BytePositionInLine: 1." ],
+      "request" : [ "The request field is required." ]
+    },
+    "traceId" : "00-53dbd22f4b25615629e4e49c4450e18d-e0518581a487e28d-00"
+  }
+}

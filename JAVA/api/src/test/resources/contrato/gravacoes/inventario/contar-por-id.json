@@ -1,0 +1,21 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Contagem registrada.",
+    "details" : null,
+    "data" : {
+      "contagemId" : "ic-fdec0e20f27c40ae923fa219c541f87b",
+      "produtoId" : "pr-ct-inv",
+      "codigo" : "CT007",
+      "nome" : "Biscoito Água e Sal",
+      "unidade" : "UN",
+      "quantidade" : 7,
+      "totalContado" : 7.0,
+      "local" : null
+    }
+  }
+}

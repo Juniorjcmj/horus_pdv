@@ -1,0 +1,38 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimentações obtidas com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "mov-314dd781854e424d97e90b220c2871dd",
+      "produtoId" : "pr-ct-val",
+      "produtoNome" : "Produto perecível com acentuação",
+      "produtoCodigo" : "CT003",
+      "tipo" : "entrada",
+      "quantidade" : 6.0,
+      "estoqueAnterior" : 12.0,
+      "estoqueNovo" : 18.0,
+      "motivo" : "Entrada por NF-e 101",
+      "usuarioId" : "usr-ct-gerente",
+      "usuarioNome" : "Gil Gerente",
+      "criadoEm" : "2026-11-02 16:58:16"
+    }, {
+      "id" : "mov-ct-seed2",
+      "produtoId" : "pr-ct-val",
+      "produtoNome" : "Produto perecível com acentuação",
+      "produtoCodigo" : "CT003",
+      "tipo" : "perda",
+      "quantidade" : 1.0,
+      "estoqueAnterior" : 13.0,
+      "estoqueNovo" : 12.0,
+      "motivo" : "Avaria transporte",
+      "usuarioId" : "usr-ct-gerente",
+      "usuarioNome" : "Gil Gerente",
+      "criadoEm" : "2026-01-16 12:00:00"
+    } ]
+  }
+}

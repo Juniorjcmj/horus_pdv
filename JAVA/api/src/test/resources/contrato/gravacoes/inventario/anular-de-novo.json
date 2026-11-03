@@ -1,0 +1,14 @@
+{
+  "status" : 409,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Esta contagem já foi anulada.",
+    "details" : null,
+    "data" : {
+      "codigo" : "JA_ANULADA"
+    }
+  }
+}

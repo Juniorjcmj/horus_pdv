@@ -1,0 +1,15 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/problem+json;charset=utf-8"
+  },
+  "corpo" : {
+    "type" : "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title" : "One or more validation errors occurred.",
+    "status" : 400,
+    "errors" : {
+      "justificativa" : [ "The justificativa field is required." ]
+    },
+    "traceId" : "00-85120fdf9af37c96da1ac75ec5640e48-784da53d79438ba5-00"
+  }
+}

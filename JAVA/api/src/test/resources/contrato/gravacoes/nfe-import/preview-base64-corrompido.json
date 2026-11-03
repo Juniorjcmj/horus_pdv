@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Arquivo XML inválido (base64 corrompido).",
+    "details" : null,
+    "data" : null
+  }
+}

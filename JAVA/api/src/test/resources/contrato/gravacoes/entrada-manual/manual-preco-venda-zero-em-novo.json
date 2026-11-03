@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Preço de venda deve ser maior que zero, com até quatro casas decimais e dentro do limite permitido.",
+    "details" : null,
+    "data" : null
+  }
+}

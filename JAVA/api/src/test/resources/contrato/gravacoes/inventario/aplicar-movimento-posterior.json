@@ -1,0 +1,38 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimentações obtidas com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "mov-d6ec344d46be4ad19c619bcd98b11df3",
+      "produtoId" : "pr-ct-inv",
+      "produtoNome" : "",
+      "produtoCodigo" : "CT007",
+      "tipo" : "inventario",
+      "quantidade" : 3.0,
+      "estoqueAnterior" : 8.0,
+      "estoqueNovo" : 5.0,
+      "motivo" : "Inventário #1: Contagem geral conferida",
+      "usuarioId" : "usr-ct-gerente",
+      "usuarioNome" : "Gil Gerente (inventário)",
+      "criadoEm" : "2026-11-03 16:54:54"
+    }, {
+      "id" : "mov-4dffd82307f0439794130a6845ab1b81",
+      "produtoId" : "pr-ct-inv",
+      "produtoNome" : "",
+      "produtoCodigo" : "CT007",
+      "tipo" : "saida",
+      "quantidade" : 2.0,
+      "estoqueAnterior" : 10.0,
+      "estoqueNovo" : 8.0,
+      "motivo" : "Venda no balcão",
+      "usuarioId" : "usr-ct-gerente",
+      "usuarioNome" : "Gil Gerente",
+      "criadoEm" : "2026-11-03 16:54:54"
+    } ]
+  }
+}

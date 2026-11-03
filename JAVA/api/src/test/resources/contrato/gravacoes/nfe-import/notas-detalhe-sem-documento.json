@@ -1,0 +1,44 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "",
+    "details" : null,
+    "data" : {
+      "nota" : {
+        "id" : "ne-ct-semdoc",
+        "chaveAcesso" : null,
+        "modelo" : 0,
+        "numeroNota" : "",
+        "serie" : "",
+        "fornecedorNome" : "Distribuidora Sol SA",
+        "fornecedorCnpj" : "11222333000181",
+        "dataEmissao" : null,
+        "valorNota" : null,
+        "valorEntrada" : 10.0,
+        "quantidadeItens" : 1,
+        "origem" : "sem-documento",
+        "temXml" : false,
+        "criadaEm" : "2026-01-15T15:00:00Z",
+        "usuarioNome" : "Gil Gerente",
+        "temComprovante" : false,
+        "comprovanteNome" : null,
+        "estornada" : false,
+        "estornadaEm" : null,
+        "estornadaPorUsuarioNome" : null,
+        "estornoJustificativa" : null
+      },
+      "entrada" : {
+        "fornecedor" : {
+          "cnpj" : "11222333000181",
+          "companyName" : "Distribuidora Sol SA",
+          "fantasyName" : "Distribuidora Sol"
+        },
+        "itens" : [ ]
+      }
+    }
+  }
+}

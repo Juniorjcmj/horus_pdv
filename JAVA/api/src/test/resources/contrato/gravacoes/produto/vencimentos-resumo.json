@@ -1,0 +1,19 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Resumo de vencimentos obtido com sucesso.",
+    "details" : null,
+    "data" : {
+      "vencidos" : 1,
+      "venceEm7Dias" : 1,
+      "venceEm15Dias" : 1,
+      "venceEm30Dias" : 1,
+      "totalControlados" : 2,
+      "semDataInformada" : 0
+    }
+  }
+}

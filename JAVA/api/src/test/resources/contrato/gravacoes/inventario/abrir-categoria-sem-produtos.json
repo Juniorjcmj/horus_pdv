@@ -1,0 +1,14 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Nenhum produto encontrado no escopo informado.",
+    "details" : null,
+    "data" : {
+      "codigo" : "ESCOPO_VAZIO"
+    }
+  }
+}

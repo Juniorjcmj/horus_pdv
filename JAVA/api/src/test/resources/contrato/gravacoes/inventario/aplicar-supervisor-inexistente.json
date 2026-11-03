@@ -1,0 +1,14 @@
+{
+  "status" : 403,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Gerente não encontrado ou com cadastro inativo.",
+    "details" : null,
+    "data" : {
+      "codigo" : "SENHA_INVALIDA"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Código ct001 já cadastrado ou repetido. Selecione o produto existente.",
+    "details" : null,
+    "data" : null
+  }
+}

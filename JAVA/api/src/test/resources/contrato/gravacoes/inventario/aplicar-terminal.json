@@ -1,0 +1,98 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Trilha do inventário.",
+    "details" : null,
+    "data" : {
+      "inventario" : {
+        "inventario" : {
+          "id" : "inv-ct-aberto",
+          "numero" : 1,
+          "descricao" : "Inventário Aberto Contrato",
+          "escopo" : "produtos",
+          "escopoJson" : "[\"pr-ct-inv\"]",
+          "status" : "aplicado",
+          "abertoPor" : "Gil Gerente",
+          "abertoEm" : "2026-01-15T12:00:00+00:00",
+          "aplicadoPor" : "Gil Gerente",
+          "aplicadoEm" : "2026-11-03T16:55:28.8524398+00:00",
+          "supervisor" : "Gil Gerente",
+          "justificativa" : "Contagem geral conferida",
+          "zerarNaoContados" : false,
+          "canceladoPor" : null,
+          "canceladoEm" : null,
+          "motivoCancelamento" : null,
+          "totalSobra" : 0.0,
+          "totalFalta" : -7.5,
+          "totalLiquido" : -7.5
+        },
+        "resumo" : {
+          "itens" : 1,
+          "contados" : 1,
+          "naoContados" : 0,
+          "recontar" : 0,
+          "divergentes" : 1,
+          "sobra" : 0,
+          "falta" : -7.5,
+          "liquido" : -7.5
+        }
+      },
+      "eventos" : [ {
+        "tipo" : "abertura",
+        "ocorridoEm" : "2026-01-15T12:00:00+00:00",
+        "usuario" : "Gil Gerente",
+        "gerente" : null,
+        "ip" : "127.0.0.1",
+        "terminal" : "WEB",
+        "descricao" : "Inventário #1 aberto (escopo: produtos, 1 itens)."
+      }, {
+        "tipo" : "aplicado",
+        "ocorridoEm" : "2026-11-03T16:55:28.8524398+00:00",
+        "usuario" : "Gil Gerente",
+        "gerente" : "Gil Gerente",
+        "ip" : "::ffff:172.19.0.1",
+        "terminal" : "PDV-09",
+        "descricao" : "Inventário #1 aplicado por Gil Gerente: 1 produto(s) ajustado(s), sobra 0.00, falta -7.50, líquido -7.50. Contagem geral conferida"
+      } ],
+      "contagens" : [ {
+        "id" : "ic-d9bb5b6ffa5445c5b3221a1ec2029bcf",
+        "produtoId" : "pr-ct-inv",
+        "codigo" : "CT007",
+        "nome" : "Biscoito Água e Sal",
+        "quantidade" : 7.0,
+        "local" : null,
+        "usuario" : "Gil Gerente",
+        "terminal" : null,
+        "saldoSistema" : 10.0,
+        "criadoEm" : "2026-11-03T16:55:28.7694343+00:00",
+        "anuladaPor" : null,
+        "anuladaEm" : null,
+        "anuladaMotivo" : null,
+        "usuarioId" : "usr-ct-gerente"
+      } ],
+      "itens" : [ {
+        "produtoId" : "pr-ct-inv",
+        "codigo" : "CT007",
+        "nome" : "Biscoito Água e Sal",
+        "unidade" : "UN",
+        "custo" : 2.5,
+        "saldoNa1aContagem" : 10.0,
+        "contado" : 7.0,
+        "diferenca" : -3.0,
+        "valorDiferenca" : -7.5,
+        "recontar" : false,
+        "primeiraContagemEm" : "2026-11-03T16:55:28.7694343+00:00",
+        "ultimaContagemEm" : "2026-11-03T16:55:28.7694343+00:00",
+        "saldoAntes" : 10.0,
+        "delta" : -3.0,
+        "saldoDepois" : 7.0,
+        "valorDelta" : -7.5,
+        "pisoAplicado" : null
+      } ]
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Envie o XML de uma NF-e (modelo 55) ou NFC-e (modelo 65).",
+    "details" : null,
+    "data" : null
+  }
+}

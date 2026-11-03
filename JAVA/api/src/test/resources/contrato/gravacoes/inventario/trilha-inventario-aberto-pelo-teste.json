@@ -1,0 +1,57 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Trilha do inventário.",
+    "details" : null,
+    "data" : {
+      "inventario" : {
+        "inventario" : {
+          "id" : "inv-022802d1ee9a440283ceeba4ca9a8928",
+          "numero" : 2,
+          "descricao" : "Teste trilha",
+          "escopo" : "produtos",
+          "escopoJson" : "[\"pr-ct-kg\"]",
+          "status" : "em_contagem",
+          "abertoPor" : "Gil Gerente",
+          "abertoEm" : "2026-11-03T16:55:48.7260001+00:00",
+          "aplicadoPor" : null,
+          "aplicadoEm" : null,
+          "supervisor" : null,
+          "justificativa" : null,
+          "zerarNaoContados" : false,
+          "canceladoPor" : null,
+          "canceladoEm" : null,
+          "motivoCancelamento" : null,
+          "totalSobra" : null,
+          "totalFalta" : null,
+          "totalLiquido" : null
+        },
+        "resumo" : {
+          "itens" : 1,
+          "contados" : 0,
+          "naoContados" : 1,
+          "recontar" : 0,
+          "divergentes" : 0,
+          "sobra" : 0,
+          "falta" : 0,
+          "liquido" : 0
+        }
+      },
+      "eventos" : [ {
+        "tipo" : "aberto",
+        "ocorridoEm" : "2026-11-03T16:55:48.7342394+00:00",
+        "usuario" : "Gil Gerente",
+        "gerente" : null,
+        "ip" : "::ffff:172.19.0.1",
+        "terminal" : null,
+        "descricao" : "Inventário #2 aberto (produtos, 1 produtos): Teste trilha"
+      } ],
+      "contagens" : [ ],
+      "itens" : [ ]
+    }
+  }
+}

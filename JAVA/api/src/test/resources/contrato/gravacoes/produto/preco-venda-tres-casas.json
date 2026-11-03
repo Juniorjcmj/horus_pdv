@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Informe um preço de venda maior que zero, com até duas casas decimais e até R$ 1 bilhão.",
+    "details" : null,
+    "data" : null
+  }
+}

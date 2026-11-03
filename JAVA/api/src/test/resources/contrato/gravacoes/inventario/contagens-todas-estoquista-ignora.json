@@ -1,0 +1,42 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Contagens.",
+    "details" : null,
+    "data" : [ {
+      "id" : "ic-0b7e5820ff89423bba23441441b30d5a",
+      "produtoId" : "pr-ct-inv",
+      "codigo" : "CT007",
+      "nome" : "Biscoito Água e Sal",
+      "quantidade" : 3.0,
+      "local" : null,
+      "usuario" : "Edu Estoquista",
+      "terminal" : null,
+      "saldoSistema" : 10.0,
+      "criadoEm" : "2026-11-03T16:53:29.5903646+00:00",
+      "anuladaPor" : null,
+      "anuladaEm" : null,
+      "anuladaMotivo" : null,
+      "usuarioId" : "usr-ct-estoq"
+    }, {
+      "id" : "ic-54ac89f2e61f4f67a68f28c26ac11d6a",
+      "produtoId" : "pr-ct-inv",
+      "codigo" : "CT007",
+      "nome" : "Biscoito Água e Sal",
+      "quantidade" : 2.0,
+      "local" : null,
+      "usuario" : "Edu Estoquista",
+      "terminal" : null,
+      "saldoSistema" : 10.0,
+      "criadoEm" : "2026-11-03T16:53:29.4907099+00:00",
+      "anuladaPor" : null,
+      "anuladaEm" : null,
+      "anuladaMotivo" : null,
+      "usuarioId" : "usr-ct-estoq"
+    } ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Entrada registrada no estoque.",
+    "details" : null,
+    "data" : {
+      "notaEntradaId" : "ne-f76432c148ac45f484d0d32313fcb4fe",
+      "fornecedorCriado" : false,
+      "produtosCriados" : 1,
+      "produtosAtualizados" : 0
+    }
+  }
+}

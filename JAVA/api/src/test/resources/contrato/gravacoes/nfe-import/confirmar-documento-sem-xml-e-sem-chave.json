@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Informe o XML ou a chave do cupom antes de confirmar a entrada.",
+    "details" : null,
+    "data" : null
+  }
+}

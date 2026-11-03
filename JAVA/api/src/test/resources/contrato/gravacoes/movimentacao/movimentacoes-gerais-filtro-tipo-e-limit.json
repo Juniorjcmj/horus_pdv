@@ -1,0 +1,25 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimentações obtidas com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "mov-5421f2b0430f4687a3abf25790c2849f",
+      "produtoId" : "pr-ct-1",
+      "produtoNome" : "",
+      "produtoCodigo" : "CT001",
+      "tipo" : "perda",
+      "quantidade" : 1.0,
+      "estoqueAnterior" : 10.0,
+      "estoqueNovo" : 9.0,
+      "motivo" : "Quebra na prateleira",
+      "usuarioId" : "usr-ct-estoq",
+      "usuarioNome" : "Edu Estoquista",
+      "criadoEm" : "2026-11-02 15:05:51"
+    } ]
+  }
+}

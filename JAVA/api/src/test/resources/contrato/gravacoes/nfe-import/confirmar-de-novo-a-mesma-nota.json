@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Esta nota já deu entrada no sistema. Consulte Notas de entrada para ver os itens; o estoque não foi alterado.",
+    "details" : null,
+    "data" : null
+  }
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe33260155444333000122550010000004041100000400" versao="4.00">
+      <ide>
+        <cUF>33</cUF><mod>55</mod><serie>1</serie><nNF>404</nNF>
+        <dhEmi>2026-01-23T08:00:00-03:00</dhEmi><tpEmis>1</tpEmis><tpAmb>2</tpAmb>
+      </ide>
+      <emit>
+        <CNPJ>55444333000122</CNPJ><xNome>Papelaria Nova Ltda</xNome><xFant>Papelaria Nova</xFant>
+        <enderEmit><xLgr>Rua das Letras</xLgr><nro>12</nro><xBairro>Centro</xBairro><xMun>Rio de Janeiro</xMun><UF>RJ</UF><CEP>20020000</CEP><fone>2111112222</fone></enderEmit>
+      </emit>
+      <det nItem="1">
+        <prod><cProd>PAP-01</cProd><cEAN>SEM GTIN</cEAN><xProd>Caderno 96 folhas</xProd><NCM>48202000</NCM><uCom>UN</uCom><qCom>4.0000</qCom><vUnCom>7.5000</vUnCom><vProd>30.00</vProd></prod>
+      </det>
+      <total><ICMSTot><vNF>30.00</vNF></ICMSTot></total>
+    </infNFe>
+  </NFe>
+  <protNFe versao="4.00">
+    <infProt><chNFe>33260155444333000122550010000004041100000400</chNFe></infProt>
+  </protNFe>
+</nfeProc>

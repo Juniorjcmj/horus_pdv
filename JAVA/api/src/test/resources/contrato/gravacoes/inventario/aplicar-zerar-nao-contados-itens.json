@@ -1,0 +1,66 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Itens do inventário.",
+    "details" : null,
+    "data" : [ {
+      "produtoId" : "pr-ct-minimo",
+      "codigo" : "CT005",
+      "nome" : "Café Torrado Especial 500g",
+      "unidade" : "UN",
+      "custo" : 12.5,
+      "saldoNa1aContagem" : null,
+      "contado" : 0.0,
+      "diferenca" : 0.0,
+      "valorDiferenca" : 0.0,
+      "recontar" : false,
+      "primeiraContagemEm" : null,
+      "ultimaContagemEm" : null,
+      "saldoAntes" : 0.0,
+      "delta" : 0.0,
+      "saldoDepois" : 0.0,
+      "valorDelta" : 0.0,
+      "pisoAplicado" : null
+    }, {
+      "produtoId" : "pr-ct-1",
+      "codigo" : "CT001",
+      "nome" : "Produto Contrato 1",
+      "unidade" : "UN",
+      "custo" : 2.0,
+      "saldoNa1aContagem" : null,
+      "contado" : 0.0,
+      "diferenca" : 0.0,
+      "valorDiferenca" : 0.0,
+      "recontar" : false,
+      "primeiraContagemEm" : null,
+      "ultimaContagemEm" : null,
+      "saldoAntes" : 10.0,
+      "delta" : -10.0,
+      "saldoDepois" : 0.0,
+      "valorDelta" : -20.0,
+      "pisoAplicado" : null
+    }, {
+      "produtoId" : "pr-ct-kg",
+      "codigo" : "CT006",
+      "nome" : "Queijo Minas Frescal KG",
+      "unidade" : "KG",
+      "custo" : 28.125,
+      "saldoNa1aContagem" : 5.5,
+      "contado" : 3.0,
+      "diferenca" : -2.5,
+      "valorDiferenca" : -70.31,
+      "recontar" : false,
+      "primeiraContagemEm" : "2026-11-03T16:55:02.9982899+00:00",
+      "ultimaContagemEm" : "2026-11-03T16:55:02.9982899+00:00",
+      "saldoAntes" : 5.5,
+      "delta" : -2.5,
+      "saldoDepois" : 3.0,
+      "valorDelta" : -70.31,
+      "pisoAplicado" : null
+    } ]
+  }
+}

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Gera e verifica vetores de compatibilidade (PBKDF2, AES-GCM enc:v1:, JWT, hash de token)
+       usando o CODIGO REAL da API .NET (referencia ao projeto), nao uma copia. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RollForward>Major</RollForward>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);1591;1573;1587</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../../../API/NETCORE/HORUSPDV-API.csproj" />
+  </ItemGroup>
+
+</Project>

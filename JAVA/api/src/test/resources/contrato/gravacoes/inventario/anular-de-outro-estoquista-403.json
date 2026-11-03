@@ -1,0 +1,14 @@
+{
+  "status" : 403,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Você só pode anular os seus próprios lançamentos.",
+    "details" : null,
+    "data" : {
+      "codigo" : "SEM_PERMISSAO"
+    }
+  }
+}

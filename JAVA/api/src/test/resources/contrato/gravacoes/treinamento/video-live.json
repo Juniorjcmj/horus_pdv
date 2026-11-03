@@ -1,0 +1,14 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Vídeo salvo com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "trv-c00c338ea1c64b39aaad67ffd4e1da91"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "XML não parece ser uma NF-e (elemento infNFe não encontrado). Envie o XML autorizado da nota de compra.",
+    "details" : null,
+    "data" : null
+  }
+}

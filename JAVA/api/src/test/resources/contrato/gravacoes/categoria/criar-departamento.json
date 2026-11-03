@@ -1,0 +1,21 @@
+{
+  "status" : 201,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Categoria criada com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "97f877a7-f953-45ed-af5f-3355ac43afd8",
+      "nome" : "Departamento",
+      "categoriaPaiId" : null,
+      "categoriaPaiNome" : null,
+      "ordem" : 0,
+      "ativa" : true,
+      "quantidadeProdutos" : 0,
+      "subcategorias" : [ ]
+    }
+  }
+}

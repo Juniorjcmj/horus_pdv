@@ -3,7 +3,7 @@
 ## Context
 
 - Motivação e escopo: ver `proposal.md`. Requisitos: `specs/estoque/{inventario,estoque-desktop,etiquetas-gondola,relatorios-compra}/spec.md`.
-- O `CAIXA_JAVAFX/` (Java 21, JavaFX 21.0.8 sem FXML e sem module-info, Maven **offline** `mvn -o`, Jackson 2.17.2,
+- O `JAVA/caixa/` (Java 21, JavaFX 21.0.8 sem FXML e sem module-info, Maven **offline** `mvn -o`, Jackson 2.17.2,
   ZXing core 3.5.3, JUnit 5.10.2, maven-shade 3.6.0, `jpackage` app-image) já resolveu: cliente HTTP com cookie
   `horuspdv.auth` + Bearer (`ApiClient`, envelope `{success,message,data}`), login web-like (`LoginView`), modais em
   cartão centralizados (`Fx.card`, escurece a janela dona), tokens visuais (`quack.css`, `glass.css`), fontes
@@ -38,7 +38,7 @@
 ## Goals / Non-Goals
 
 **Goals:**
-- Um aplicativo separado (`ESTOQUE_JAVAFX/`, `QuackEstoque.exe`) que reaproveita o máximo do caixa por cópia.
+- Um aplicativo separado (`JAVA/estoque/`, `QuackEstoque.exe`) que reaproveita o máximo do caixa por cópia.
 - Inventário confiável com vendas acontecendo durante a contagem e trilha que não se altera.
 - Etiquetas legíveis pelo leitor do caixa em qualquer térmica com driver Windows.
 - Relatórios de compra calculados no servidor (mesmos números para web e desktop).
@@ -52,7 +52,7 @@
 ## Decisions
 
 ### D1. App separado por cópia do caixa, não biblioteca compartilhada
-`ESTOQUE_JAVAFX/` com pacote `br.com.quack.estoque`, copiando de `CAIXA_JAVAFX` as classes de infraestrutura
+`JAVA/estoque/` com pacote `br.com.quack.estoque`, copiando de `JAVA/caixa` as classes de infraestrutura
 (`ApiClient`, `ApiException`, `AuthApi`, `AppConfig`/`AppPaths` com pasta `%APPDATA%\QuackEstoque`, `Session`, `Fx`,
 `Toasts`, `LoginView`, CSS, fontes, ícone, `Launcher`, `ReceiptPrinter` → parte de impressão vira `PrintService`).
 **Por quê:** os dois apps evoluem e são distribuídos separadamente; um módulo Maven comum exigiria reorganizar o

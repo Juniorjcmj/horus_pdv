@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "A unidade de venda do produto mudou. Atualize o produto selecionado antes de confirmar.",
+    "details" : null,
+    "data" : null
+  }
+}

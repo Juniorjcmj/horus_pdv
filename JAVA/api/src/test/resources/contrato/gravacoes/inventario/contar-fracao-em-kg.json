@@ -1,0 +1,21 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Contagem registrada.",
+    "details" : null,
+    "data" : {
+      "contagemId" : "ic-d57511962b4344ffa68737e88e686432",
+      "produtoId" : "pr-ct-kg",
+      "codigo" : "CT006",
+      "nome" : "Queijo Minas Frescal KG",
+      "unidade" : "KG",
+      "quantidade" : 1.5,
+      "totalContado" : 1.5,
+      "local" : null
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Inventário.",
+    "details" : null,
+    "data" : {
+      "inventario" : {
+        "id" : "inv-ct-aberto",
+        "numero" : 1,
+        "descricao" : "Inventário Aberto Contrato",
+        "escopo" : "produtos",
+        "escopoJson" : "[\"pr-ct-inv\"]",
+        "status" : "em_contagem",
+        "abertoPor" : "Gil Gerente",
+        "abertoEm" : "2026-01-15T12:00:00+00:00",
+        "aplicadoPor" : null,
+        "aplicadoEm" : null,
+        "supervisor" : null,
+        "justificativa" : null,
+        "zerarNaoContados" : false,
+        "canceladoPor" : null,
+        "canceladoEm" : null,
+        "motivoCancelamento" : null,
+        "totalSobra" : null,
+        "totalFalta" : null,
+        "totalLiquido" : null
+      },
+      "resumo" : {
+        "itens" : 1,
+        "contados" : 0,
+        "naoContados" : 1,
+        "recontar" : 0,
+        "divergentes" : 0,
+        "sobra" : 0,
+        "falta" : 0,
+        "liquido" : 0
+      }
+    }
+  }
+}

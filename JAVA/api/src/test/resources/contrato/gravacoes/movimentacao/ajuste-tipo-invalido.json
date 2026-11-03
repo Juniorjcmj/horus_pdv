@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Tipo deve ser 'entrada', 'saida', 'uso_interno' ou 'perda'.",
+    "details" : null,
+    "data" : null
+  }
+}

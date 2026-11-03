@@ -1,0 +1,338 @@
+[
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/alertas"
+    }
+  },
+  {
+    "nome": "alertas-caixa",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/alertas"
+    }
+  },
+  {
+    "nome": "alertas-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/alertas"
+    }
+  },
+  {
+    "nome": "consulta-padrao",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/consulta"
+    }
+  },
+  {
+    "nome": "consulta-filtro-busca",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/consulta?busca=L-ALERTA"
+    }
+  },
+  {
+    "nome": "consulta-filtro-periodo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/consulta?de=2026-11-01&ate=2026-11-30"
+    }
+  },
+  {
+    "nome": "consulta-filtro-categoria-departamento",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/consulta?categoriaId=cat-ct-pereciveis"
+    }
+  },
+  {
+    "nome": "consulta-filtro-faixa-vencido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/consulta?faixa=vencido"
+    }
+  },
+  {
+    "nome": "consulta-filtro-com-saldo-e-origem",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/consulta?comSaldo=true&origem=nfe&pagina=1&tamanhoPagina=10"
+    }
+  },
+  {
+    "nome": "consulta-periodo-invertido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/consulta?de=2026-12-10&ate=2026-12-01"
+    }
+  },
+  {
+    "nome": "consulta-data-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/consulta?de=data-ruim"
+    }
+  },
+  {
+    "nome": "lotes-do-produto",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/produto/pr-ct-val"
+    }
+  },
+  {
+    "nome": "registrar-lote-estoquista",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/lotes/registrar",
+      "corpo": {
+        "produtoId": "pr-ct-val",
+        "dataValidade": "2027-02-15",
+        "quantidade": 6,
+        "numeroLote": "L-MANUAL-01"
+      }
+    }
+  },
+  {
+    "nome": "registrar-lote-caixa-403",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/lotes/registrar",
+      "corpo": {
+        "produtoId": "pr-ct-val",
+        "dataValidade": "2027-02-15",
+        "quantidade": 2
+      }
+    }
+  },
+  {
+    "nome": "registrar-lote-sem-produto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/lotes/registrar",
+      "corpo": {
+        "produtoId": "   ",
+        "dataValidade": "2027-02-15",
+        "quantidade": 2
+      }
+    }
+  },
+  {
+    "nome": "registrar-lote-quantidade-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/lotes/registrar",
+      "corpo": {
+        "produtoId": "pr-ct-val",
+        "dataValidade": "2027-02-15",
+        "quantidade": 0
+      }
+    }
+  },
+  {
+    "nome": "registrar-lote-validade-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/lotes/registrar",
+      "corpo": {
+        "produtoId": "pr-ct-val",
+        "dataValidade": "15/02/2027",
+        "quantidade": 2
+      }
+    }
+  },
+  {
+    "nome": "fefo-situacao",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/fefo"
+    }
+  },
+  {
+    "nome": "fefo-divergencia-apos-registro-manual",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/lotes/registrar",
+        "auth": "bearer",
+        "status": 201,
+        "corpo": {
+          "produtoId": "pr-ct-val2",
+          "dataValidade": "2026-10-01",
+          "quantidade": 2,
+          "numeroLote": "L-DIV"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/fefo"
+    },
+    "volateis": {
+      "data.itens[0].loteId": "id"
+    }
+  },
+  {
+    "nome": "fefo-mudar-modo-gerente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/lotes/fefo/modo",
+      "corpo": {
+        "modo": "ativo"
+      }
+    }
+  },
+  {
+    "nome": "fefo-modo-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/lotes/fefo/modo",
+      "corpo": {
+        "modo": "ligado"
+      }
+    }
+  },
+  {
+    "nome": "fefo-mudar-modo-atendente-403",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/lotes/fefo/modo",
+      "corpo": {
+        "modo": "ativo"
+      }
+    }
+  },
+  {
+    "nome": "fefo-mudar-modo-estoquista-403",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/lotes/fefo/modo",
+      "corpo": {
+        "modo": "ativo"
+      }
+    }
+  },
+  {
+    "nome": "categorias-listar",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/categorias"
+    }
+  },
+  {
+    "nome": "categorias-salvar-ok",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/lotes/categorias/cat-ct-laticinios",
+      "corpo": {
+        "prazoPadraoDias": 20,
+        "diasAlerta": 5
+      }
+    }
+  },
+  {
+    "nome": "categorias-prazo-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/lotes/categorias/cat-ct-laticinios",
+      "corpo": {
+        "prazoPadraoDias": 0,
+        "diasAlerta": 5
+      }
+    }
+  },
+  {
+    "nome": "categorias-janela-4000",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/lotes/categorias/cat-ct-laticinios",
+      "corpo": {
+        "prazoPadraoDias": 30,
+        "diasAlerta": 4000
+      }
+    }
+  },
+  {
+    "nome": "categorias-outra-empresa-404",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/lotes/categorias/cat-ct-dep-outra",
+      "corpo": {
+        "prazoPadraoDias": 30,
+        "diasAlerta": 5
+      }
+    }
+  },
+  {
+    "nome": "categorias-atendente-403",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/Produto/lotes/categorias/cat-ct-laticinios",
+      "corpo": {
+        "prazoPadraoDias": 30,
+        "diasAlerta": 5
+      }
+    }
+  },
+  {
+    "nome": "perda-em-modo-ativo-consome-lote-mais-antigo",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "PUT",
+        "caminho": "/api/Produto/lotes/fefo/modo",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "modo": "ativo"
+        }
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/pr-ct-val/ajuste-estoque",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "tipo": "perda",
+          "quantidade": 4,
+          "motivo": "Perda FEFO contrato"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/produto/pr-ct-val"
+    }
+  }
+]

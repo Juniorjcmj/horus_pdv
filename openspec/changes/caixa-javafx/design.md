@@ -32,7 +32,7 @@ Fatos da API que moldam o desenho (verificados no código):
 ## Goals / Non-Goals
 
 **Goals:**
-- Executável desktop independente do navegador, compilando com `mvn -f CAIXA_JAVAFX/pom.xml package` usando só o cache Maven local já presente (JavaFX 21.0.8, Jackson 2.17.2, JUnit 5.10.2).
+- Executável desktop independente do navegador, compilando com `mvn -f JAVA/caixa/pom.xml package` usando só o cache Maven local já presente (JavaFX 21.0.8, Jackson 2.17.2, JUnit 5.10.2).
 - Paridade exata de centavos com o caixa web (mesmo total, descontos e parcelas para o mesmo carrinho).
 - Toda regra pura (dinheiro, promoções, balança, validação, hash) isolada da UI e coberta por testes JUnit.
 - Nenhuma venda perdida: gravação em disco antes de qualquer tentativa que possa falhar no meio.
@@ -46,10 +46,10 @@ Fatos da API que moldam o desenho (verificados no código):
 ## Decisions
 
 ### D1. Estrutura do módulo
-`CAIXA_JAVAFX/` na raiz, Maven, `groupId=br.com.quack`, `artifactId=quack-caixa`, Java 21, pacote raiz `br.com.quack.caixa`:
+`JAVA/caixa/` na raiz, Maven, `groupId=br.com.quack`, `artifactId=quack-caixa`, Java 21, pacote raiz `br.com.quack.caixa`:
 
 ```
-CAIXA_JAVAFX/
+JAVA/caixa/
   pom.xml
   README.md
   run.bat                       # java -jar target/quack-caixa.jar
@@ -92,7 +92,7 @@ UI montada em código Java (sem FXML) para reduzir dependências e manter o buil
 - Dependências: `org.openjfx:javafx-controls:21.0.8` (traz base/graphics; classificador `win` resolvido pelo próprio pom do OpenJFX), `com.fasterxml.jackson.core:jackson-databind:2.17.2`, `com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2`, `org.junit.jupiter:junit-jupiter:5.10.2` (test).
 - Plugins: `maven-compiler-plugin 3.13.0` (`<release>21</release>`), `maven-surefire-plugin 3.2.5`, `maven-shade-plugin 3.5.3` com `ManifestResourceTransformer` `Main-Class=br.com.quack.caixa.Launcher`, `finalName=quack-caixa`.
 - Sem `module-info.java` (classpath). O `Launcher` evita o erro "JavaFX runtime components are missing".
-- Rodar: `java -jar CAIXA_JAVAFX/target/quack-caixa.jar` (ou `run.bat`). Testes: `mvn -o -f CAIXA_JAVAFX/pom.xml test`.
+- Rodar: `java -jar JAVA/caixa/target/quack-caixa.jar` (ou `run.bat`). Testes: `mvn -o -f JAVA/caixa/pom.xml test`.
 
 ### D3. HTTP e sessão
 - Um único `HttpClient` (`connectTimeout` 5 s, `HttpClient.Redirect.NORMAL`) com `CookieManager(null, CookiePolicy.ACCEPT_ALL)`; o cookie `horuspdv.auth` segue automaticamente nas chamadas seguintes ao mesmo host.

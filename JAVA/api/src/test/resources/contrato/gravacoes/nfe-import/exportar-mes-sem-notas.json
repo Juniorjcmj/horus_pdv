@@ -1,0 +1,14 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/zip",
+    "content-disposition" : "attachment; filename=notas-entrada-2026-03.zip; filename*=UTF-8''notas-entrada-2026-03.zip"
+  },
+  "corpo" : {
+    "arquivos" : [ {
+      "nome" : "resumo.csv",
+      "tamanho" : 129,
+      "texto" : "﻿Data entrada;Tipo;Numero;Serie;Chave de acesso;Fornecedor;CNPJ;Emissao;Valor da nota;Custo da entrada;Situacao;XML no pacote\r\n"
+    } ]
+  }
+}

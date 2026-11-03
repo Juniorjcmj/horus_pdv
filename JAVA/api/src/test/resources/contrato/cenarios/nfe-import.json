@@ -1,0 +1,2648 @@
+[
+  {
+    "nome": "preview-nfe-modelo55-fornecedor-existente-e-gtin-vinculado",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-modelo55.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-nfce-novo-fornecedor-sem-gtin",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfce-exemplo.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-nfce-quack-exemplo-estoquista",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-exemplo.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-outro-emitente-fornecedor-existente",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-outro-emitente.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-fornecedor-novo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-fornecedor-novo.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-modelo-nao-aceito",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-modelo-invalido.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-sem-itens",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-sem-det.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-chave-divergente-do-protocolo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-chave-divergente.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-xml-vazio",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": ""
+      }
+    }
+  },
+  {
+    "nome": "preview-base64-corrompido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@@@@"
+      }
+    }
+  },
+  {
+    "nome": "preview-nao-e-xml",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "aXN0byBuYW8gZSB4bWw="
+      }
+    }
+  },
+  {
+    "nome": "preview-sem-infnfe",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "PGEvPg=="
+      }
+    }
+  },
+  {
+    "nome": "preview-custo-com-4-casas-e-quantidade-fracionada",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-custo-4-casas.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-com-doctype",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "PD94bWwgdmVyc2lvbj0iMS4wIj8+PCFET0NUWVBFIGEgWzwhRU5USVRZIHggInkiPl0+PGE+Jng7PC9hPg=="
+      }
+    },
+    "divergencia": {
+      "status": 400,
+      "mensagem": "Arquivo enviado não é um XML válido.",
+      "motivo": "Seguranca (D5): a Java recusa XML com DOCTYPE (XXE); a API .NET aceita a DTD e responde que o XML nao e uma NF-e."
+    }
+  },
+  {
+    "nome": "preview-caixa-403",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-modelo55.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-sem-sessao",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-modelo55.xml"
+      }
+    }
+  },
+  {
+    "nome": "preview-corpo-vazio-caixa-ok-validacao",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/preview",
+      "corpo": {}
+    }
+  },
+  {
+    "nome": "confirmar-cria-produto-e-vincula-existente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "confirmar-estoquista-ok",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "confirmar-caixa-403",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-sem-itens",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-cnpj-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "123",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-razao-social-vazia",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "  ",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-sem-documento",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "confirmar-documento-sem-xml-e-sem-chave",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-de-novo-a-mesma-nota",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/NfeImport/confirmar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "fornecedor": {
+            "cnpj": "11222333000181",
+            "companyName": "Distribuidora Sol SA",
+            "fantasyName": "Distribuidora Sol",
+            "cep": "20010000",
+            "city": "Rio de Janeiro",
+            "state": "RJ",
+            "address": "Rua do Sol",
+            "neighborhood": "Centro",
+            "number": "50",
+            "telephone": "2133334444"
+          },
+          "itens": [
+            {
+              "numeroItem": 1,
+              "produtoExistenteId": "pr-ct-val",
+              "codigoFornecedor": "FORN-IOG",
+              "productCode": "CT003",
+              "productName": "Iogurte Grego Acai 170g",
+              "gtin": "7891000100103",
+              "ncm": "04031000",
+              "unidadeComercial": "UN",
+              "quantidade": "6,0000",
+              "precoCusto": "3,5000",
+              "precoVenda": "5,9000",
+              "dataValidade": "2027-03-01",
+              "numeroLote": "L-NFE-1"
+            },
+            {
+              "numeroItem": 2,
+              "codigoFornecedor": "SOL-99",
+              "productCode": "SOL-99",
+              "productName": "Biscoito Recheado 140g",
+              "gtin": "SEM GTIN",
+              "ncm": "19053100",
+              "cest": "1705300",
+              "unidadeComercial": "UN",
+              "quantidade": "10,0000",
+              "precoCusto": "2,2000",
+              "precoVenda": "3,9000",
+              "margemPercentual": "40"
+            }
+          ],
+          "documento": {
+            "xmlBase64": "@fixture:nfe-modelo55.xml",
+            "chaveAcesso": "33260111222333000181550010000001011100001010",
+            "modelo": 55,
+            "numeroNota": "101",
+            "serie": "1"
+          }
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-emitente-diferente-do-fornecedor",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-outro-emitente.xml",
+          "modelo": 55,
+          "numeroNota": "303",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-chave-com-digito-errado",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-chave-adulterada.xml",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-chave-informada-diverge-do-xml",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001021100001026",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-chave-so-digitada-sem-xml",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          }
+        ],
+        "documento": {
+          "chaveAcesso": "33260111222333000181650010000002021100002020",
+          "modelo": 65,
+          "numeroNota": "202",
+          "serie": "1"
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "confirmar-chave-digitada-de-outro-cnpj",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          }
+        ],
+        "documento": {
+          "chaveAcesso": "33260199888777000166550010000003031100003031",
+          "modelo": 55,
+          "numeroNota": "303",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-xml-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          },
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@@@@",
+          "modelo": 55
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-codigo-repetido-entre-itens-novos",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          },
+          {
+            "numeroItem": 3,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-vincula-por-codigo-do-produto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "ct001",
+            "productName": "Produto Contrato 1",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "3",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "confirmar-quantidade-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "0",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-custo-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "abc",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-validade-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "01/03/2027",
+            "numeroLote": "L-NFE-1"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-produto-vinculado-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-nao-existe",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-produto-vinculado-de-outra-empresa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-1-outra",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-novo-sem-codigo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": " ",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-novo-nome-curto",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "ab",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-novo-preco-venda-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "10,0000",
+            "precoCusto": "2,2000",
+            "precoVenda": "0",
+            "margemPercentual": "40"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "chaveAcesso": "33260111222333000181550010000001011100001010",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    }
+  },
+  {
+    "nome": "confirmar-novo-sem-margem-cnpj-com-mascara",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "99.888.777/0001-66",
+          "companyName": "Distribuidora Exclusiva SA",
+          "fantasyName": "",
+          "cep": "",
+          "city": "",
+          "state": "",
+          "address": "",
+          "neighborhood": "",
+          "number": "",
+          "telephone": ""
+        },
+        "itens": [
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "SOL-99",
+            "productCode": "SOL-99",
+            "productName": "Biscoito Recheado 140g",
+            "gtin": "SEM GTIN",
+            "ncm": "19053100",
+            "cest": "1705300",
+            "unidadeComercial": "UN",
+            "quantidade": "2,5",
+            "precoCusto": "2,2000",
+            "precoVenda": "3,9000",
+            "margemPercentual": null
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-outro-emitente.xml",
+          "modelo": 55,
+          "numeroNota": "303",
+          "serie": "1"
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "confirmar-cria-fornecedor-novo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "55.444.333/0001-22",
+          "companyName": "Papelaria Nova Ltda",
+          "fantasyName": "Papelaria Nova",
+          "cep": "20020000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua das Letras",
+          "neighborhood": "Centro",
+          "number": "12",
+          "telephone": "2111112222"
+        },
+        "itens": [
+          {
+            "numeroItem": 2,
+            "codigoFornecedor": "PAP-01",
+            "productCode": "PAP-01",
+            "productName": "Caderno 96 folhas",
+            "gtin": "SEM GTIN",
+            "ncm": "48202000",
+            "cest": null,
+            "unidadeComercial": "UN",
+            "quantidade": "4",
+            "precoCusto": "7,5",
+            "precoVenda": "12,9",
+            "margemPercentual": null
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-fornecedor-novo.xml",
+          "chaveAcesso": "33260155444333000122550010000004041100000400",
+          "modelo": 55,
+          "numeroNota": "404",
+          "serie": "1"
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "confirmar-fornecedor-novo-e-lista-fornecedores",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/NfeImport/confirmar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "fornecedor": {
+            "cnpj": "55.444.333/0001-22",
+            "companyName": "Papelaria Nova Ltda",
+            "fantasyName": "Papelaria Nova",
+            "cep": "20020000",
+            "city": "Rio de Janeiro",
+            "state": "RJ",
+            "address": "Rua das Letras",
+            "neighborhood": "Centro",
+            "number": "12",
+            "telephone": "2111112222"
+          },
+          "itens": [
+            {
+              "numeroItem": 2,
+              "codigoFornecedor": "PAP-01",
+              "productCode": "PAP-01",
+              "productName": "Caderno 96 folhas",
+              "gtin": "SEM GTIN",
+              "ncm": "48202000",
+              "cest": null,
+              "unidadeComercial": "UN",
+              "quantidade": "4",
+              "precoCusto": "7,5",
+              "precoVenda": "12,9",
+              "margemPercentual": null
+            }
+          ],
+          "documento": {
+            "xmlBase64": "@fixture:nfe-fornecedor-novo.xml",
+            "chaveAcesso": "33260155444333000122550010000004041100000400",
+            "modelo": 55,
+            "numeroNota": "404",
+            "serie": "1"
+          }
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Fornecedor"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[1].id": "id",
+      "data[2].id": "id",
+      "data[3].id": "id",
+      "data[4].id": "id",
+      "data[5].id": "id",
+      "data[6].id": "id",
+      "data[7].id": "id"
+    }
+  },
+  {
+    "nome": "confirmar-efeito-produto-e-lotes-e-movimentacao",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/NfeImport/confirmar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "fornecedor": {
+            "cnpj": "11222333000181",
+            "companyName": "Distribuidora Sol SA",
+            "fantasyName": "Distribuidora Sol",
+            "cep": "20010000",
+            "city": "Rio de Janeiro",
+            "state": "RJ",
+            "address": "Rua do Sol",
+            "neighborhood": "Centro",
+            "number": "50",
+            "telephone": "2133334444"
+          },
+          "itens": [
+            {
+              "numeroItem": 1,
+              "produtoExistenteId": "pr-ct-val",
+              "codigoFornecedor": "FORN-IOG",
+              "productCode": "CT003",
+              "productName": "Iogurte Grego Acai 170g",
+              "gtin": "7891000100103",
+              "ncm": "04031000",
+              "unidadeComercial": "UN",
+              "quantidade": "6,0000",
+              "precoCusto": "3,5000",
+              "precoVenda": "5,9000",
+              "dataValidade": "2027-03-01",
+              "numeroLote": "L-NFE-1"
+            }
+          ],
+          "documento": {
+            "xmlBase64": "@fixture:nfe-modelo55.xml",
+            "chaveAcesso": "33260111222333000181550010000001011100001010",
+            "modelo": 55,
+            "numeroNota": "101",
+            "serie": "1"
+          }
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-val/movimentacoes"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto"
+    }
+  },
+  {
+    "nome": "confirmar-efeito-lotes-do-produto",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/NfeImport/confirmar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "fornecedor": {
+            "cnpj": "11222333000181",
+            "companyName": "Distribuidora Sol SA",
+            "fantasyName": "Distribuidora Sol",
+            "cep": "20010000",
+            "city": "Rio de Janeiro",
+            "state": "RJ",
+            "address": "Rua do Sol",
+            "neighborhood": "Centro",
+            "number": "50",
+            "telephone": "2133334444"
+          },
+          "itens": [
+            {
+              "numeroItem": 1,
+              "produtoExistenteId": "pr-ct-val",
+              "codigoFornecedor": "FORN-IOG",
+              "productCode": "CT003",
+              "productName": "Iogurte Grego Acai 170g",
+              "gtin": "7891000100103",
+              "ncm": "04031000",
+              "unidadeComercial": "UN",
+              "quantidade": "6,0000",
+              "precoCusto": "3,5000",
+              "precoVenda": "5,9000",
+              "dataValidade": "2027-03-01",
+              "numeroLote": "L-NFE-1"
+            }
+          ],
+          "documento": {
+            "xmlBase64": "@fixture:nfe-modelo55.xml",
+            "chaveAcesso": "33260111222333000181550010000001011100001010",
+            "modelo": 55,
+            "numeroNota": "101",
+            "serie": "1"
+          }
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/produto/pr-ct-val"
+    },
+    "volateis": {
+      "data[3].id": "id",
+      "data[3].criadoEm": "iso",
+      "data[2].id": "id",
+      "data[2].criadoEm": "iso"
+    }
+  },
+  {
+    "nome": "confirmar-efeito-preco-do-produto-existente",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/NfeImport/confirmar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "fornecedor": {
+            "cnpj": "11222333000181",
+            "companyName": "Distribuidora Sol SA",
+            "fantasyName": "Distribuidora Sol",
+            "cep": "20010000",
+            "city": "Rio de Janeiro",
+            "state": "RJ",
+            "address": "Rua do Sol",
+            "neighborhood": "Centro",
+            "number": "50",
+            "telephone": "2133334444"
+          },
+          "itens": [
+            {
+              "numeroItem": 1,
+              "produtoExistenteId": "pr-ct-val",
+              "codigoFornecedor": "FORN-IOG",
+              "productCode": "CT003",
+              "productName": "Iogurte Grego Acai 170g",
+              "gtin": "7891000100103",
+              "ncm": "04031000",
+              "unidadeComercial": "UN",
+              "quantidade": "6,0000",
+              "precoCusto": "4,1000",
+              "precoVenda": "5,9000",
+              "dataValidade": "2027-03-01",
+              "numeroLote": "L-NFE-1"
+            }
+          ],
+          "documento": {
+            "xmlBase64": "@fixture:nfe-modelo55.xml",
+            "chaveAcesso": "33260111222333000181550010000001011100001010",
+            "modelo": 55,
+            "numeroNota": "101",
+            "serie": "1"
+          }
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[1].id": "id",
+      "data[2].id": "id",
+      "data[3].id": "id"
+    }
+  },
+  {
+    "nome": "notas-lista",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada"
+    }
+  },
+  {
+    "nome": "notas-lista-busca-e-pagina",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada?busca=Sol&pagina=2&tamanhoPagina=1"
+    }
+  },
+  {
+    "nome": "notas-lista-busca-por-chave",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada?busca=1001100001005"
+    }
+  },
+  {
+    "nome": "notas-lista-tamanho-extremo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada?pagina=0&tamanhoPagina=5000"
+    }
+  },
+  {
+    "nome": "notas-lista-caixa-403",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada"
+    }
+  },
+  {
+    "nome": "notas-lista-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada"
+    }
+  },
+  {
+    "nome": "notas-lista-sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada"
+    }
+  },
+  {
+    "nome": "notas-detalhe-xml",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml"
+    }
+  },
+  {
+    "nome": "notas-detalhe-manual",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-manual"
+    }
+  },
+  {
+    "nome": "notas-detalhe-sem-documento",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc"
+    }
+  },
+  {
+    "nome": "notas-detalhe-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/ne-nao-existe"
+    },
+    "volateis": {
+      "traceId": "texto"
+    }
+  },
+  {
+    "nome": "notas-detalhe-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml"
+    },
+    "volateis": {
+      "traceId": "texto"
+    }
+  },
+  {
+    "nome": "notas-detalhe-da-nota-recem-confirmada",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/NfeImport/confirmar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "fornecedor": {
+            "cnpj": "11222333000181",
+            "companyName": "Distribuidora Sol SA",
+            "fantasyName": "Distribuidora Sol",
+            "cep": "20010000",
+            "city": "Rio de Janeiro",
+            "state": "RJ",
+            "address": "Rua do Sol",
+            "neighborhood": "Centro",
+            "number": "50",
+            "telephone": "2133334444"
+          },
+          "itens": [
+            {
+              "numeroItem": 1,
+              "produtoExistenteId": "pr-ct-val",
+              "codigoFornecedor": "FORN-IOG",
+              "productCode": "CT003",
+              "productName": "Iogurte Grego Acai 170g",
+              "gtin": "7891000100103",
+              "ncm": "04031000",
+              "unidadeComercial": "UN",
+              "quantidade": "6,0000",
+              "precoCusto": "3,5000",
+              "precoVenda": "5,9000",
+              "dataValidade": "2027-03-01",
+              "numeroLote": "L-NFE-1"
+            },
+            {
+              "numeroItem": 2,
+              "codigoFornecedor": "SOL-99",
+              "productCode": "SOL-99",
+              "productName": "Biscoito Recheado 140g",
+              "gtin": "SEM GTIN",
+              "ncm": "19053100",
+              "cest": "1705300",
+              "unidadeComercial": "UN",
+              "quantidade": "10,0000",
+              "precoCusto": "2,2000",
+              "precoVenda": "3,9000",
+              "margemPercentual": "40"
+            }
+          ],
+          "documento": {
+            "xmlBase64": "@fixture:nfe-modelo55.xml",
+            "chaveAcesso": "33260111222333000181550010000001011100001010",
+            "modelo": 55,
+            "numeroNota": "101",
+            "serie": "1"
+          }
+        },
+        "capturar": {
+          "nota": "data.notaEntradaId"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/{nota}"
+    },
+    "volateis": {
+      "data.nota.id": "id",
+      "data.nota.criadaEm": "iso",
+      "data.entrada.itens[1].produtoExistenteId": "id"
+    }
+  },
+  {
+    "nome": "notas-xml-download",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml/xml"
+    }
+  },
+  {
+    "nome": "notas-xml-indisponivel",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-manual/xml"
+    }
+  },
+  {
+    "nome": "notas-xml-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml/xml"
+    }
+  },
+  {
+    "nome": "notas-comprovante-download",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml/comprovante"
+    }
+  },
+  {
+    "nome": "notas-comprovante-indisponivel",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-manual/comprovante"
+    }
+  },
+  {
+    "nome": "estornar-justificativa-curta",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml?justificativa=abc"
+    }
+  },
+  {
+    "nome": "estornar-sem-justificativa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml"
+    },
+    "volateis": {
+      "traceId": "texto"
+    }
+  },
+  {
+    "nome": "estornar-ok",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml?justificativa=Erro%20de%20digitacao"
+    }
+  },
+  {
+    "nome": "estornar-repetido",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "DELETE",
+        "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml?justificativa=Erro%20de%20digitacao",
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml?justificativa=Erro%20de%20digitacao"
+    }
+  },
+  {
+    "nome": "estornar-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/NfeImport/notas-entrada/ne-nao-existe?justificativa=Erro%20de%20digitacao"
+    }
+  },
+  {
+    "nome": "estornar-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml?justificativa=Erro%20de%20digitacao"
+    }
+  },
+  {
+    "nome": "estornar-estoquista-403",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml?justificativa=Erro%20de%20digitacao"
+    }
+  },
+  {
+    "nome": "estornar-atendente-403",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml?justificativa=Erro%20de%20digitacao"
+    }
+  },
+  {
+    "nome": "estornar-sem-documento-sem-itens",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "DELETE",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc?justificativa=Conferencia%20interna"
+    }
+  },
+  {
+    "nome": "estornar-manual-e-confere-estoque",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "DELETE",
+        "caminho": "/api/NfeImport/notas-entrada/ne-ct-manual?justificativa=Lancamento%20em%20duplicidade",
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-2/movimentacoes"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto"
+    }
+  },
+  {
+    "nome": "estornar-e-confere-movimentacao-do-produto",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "DELETE",
+        "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml?justificativa=Erro%20de%20digitacao",
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-1/movimentacoes"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto"
+    }
+  },
+  {
+    "nome": "estornar-e-lista-a-nota-estornada",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "DELETE",
+        "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml?justificativa=Erro%20de%20digitacao",
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada"
+    },
+    "volateis": {
+      "data.notas[0].estornadaEm": "iso",
+      "data.notas[1].estornadaEm": "iso",
+      "data.notas[2].estornadaEm": "iso"
+    }
+  },
+  {
+    "nome": "confirmar-de-novo-depois-do-estorno",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/NfeImport/confirmar",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "fornecedor": {
+            "cnpj": "11222333000181",
+            "companyName": "Distribuidora Sol SA",
+            "fantasyName": "Distribuidora Sol",
+            "cep": "20010000",
+            "city": "Rio de Janeiro",
+            "state": "RJ",
+            "address": "Rua do Sol",
+            "neighborhood": "Centro",
+            "number": "50",
+            "telephone": "2133334444"
+          },
+          "itens": [
+            {
+              "numeroItem": 1,
+              "produtoExistenteId": "pr-ct-val",
+              "codigoFornecedor": "FORN-IOG",
+              "productCode": "CT003",
+              "productName": "Iogurte Grego Acai 170g",
+              "gtin": "7891000100103",
+              "ncm": "04031000",
+              "unidadeComercial": "UN",
+              "quantidade": "6,0000",
+              "precoCusto": "3,5000",
+              "precoVenda": "5,9000",
+              "dataValidade": "2027-03-01",
+              "numeroLote": "L-NFE-1"
+            }
+          ],
+          "documento": {
+            "xmlBase64": "@fixture:nfe-modelo55.xml",
+            "chaveAcesso": "33260111222333000181550010000001011100001010",
+            "modelo": 55,
+            "numeroNota": "101",
+            "serie": "1"
+          }
+        },
+        "capturar": {
+          "nota": "data.notaEntradaId"
+        }
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/api/NfeImport/notas-entrada/{nota}?justificativa=Nota%20lancada%20errada",
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/confirmar",
+      "corpo": {
+        "fornecedor": {
+          "cnpj": "11222333000181",
+          "companyName": "Distribuidora Sol SA",
+          "fantasyName": "Distribuidora Sol",
+          "cep": "20010000",
+          "city": "Rio de Janeiro",
+          "state": "RJ",
+          "address": "Rua do Sol",
+          "neighborhood": "Centro",
+          "number": "50",
+          "telephone": "2133334444"
+        },
+        "itens": [
+          {
+            "numeroItem": 1,
+            "produtoExistenteId": "pr-ct-val",
+            "codigoFornecedor": "FORN-IOG",
+            "productCode": "CT003",
+            "productName": "Iogurte Grego Acai 170g",
+            "gtin": "7891000100103",
+            "ncm": "04031000",
+            "unidadeComercial": "UN",
+            "quantidade": "6,0000",
+            "precoCusto": "3,5000",
+            "precoVenda": "5,9000",
+            "dataValidade": "2027-03-01",
+            "numeroLote": "L-NFE-1"
+          }
+        ],
+        "documento": {
+          "xmlBase64": "@fixture:nfe-modelo55.xml",
+          "modelo": 55,
+          "numeroNota": "101",
+          "serie": "1"
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "exportar-mes-com-notas",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/exportar?ano=2026&mes=1"
+    }
+  },
+  {
+    "nome": "exportar-mes-sem-notas",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/exportar?ano=2026&mes=3"
+    }
+  },
+  {
+    "nome": "exportar-mes-13",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/exportar?ano=2026&mes=13"
+    }
+  },
+  {
+    "nome": "exportar-ano-1999",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/exportar?ano=1999&mes=1"
+    }
+  },
+  {
+    "nome": "exportar-sem-parametros",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/exportar"
+    }
+  },
+  {
+    "nome": "exportar-estoquista-403",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/exportar?ano=2026&mes=1"
+    }
+  },
+  {
+    "nome": "exportar-mes-com-nota-estornada",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "DELETE",
+        "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml?justificativa=Erro%20de%20digitacao",
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/exportar?ano=2026&mes=1"
+    }
+  },
+  {
+    "nome": "vincular-xml-emitente-diferente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc/xml",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-outro-emitente.xml"
+      }
+    },
+    "divergencia": {
+      "status": 400,
+      "mensagem": "O emitente do XML não é o fornecedor desta entrada.",
+      "motivo": "A API .NET devolve 500 (SqlException 134: variavel @cnpj declarada duas vezes em AnexarXmlAsync) em todo vinculo que passa da leitura do XML; a Java implementa o comportamento pretendido do codigo."
+    }
+  },
+  {
+    "nome": "vincular-xml-ok",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc/xml",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-anexar-sol.xml"
+      }
+    },
+    "divergencia": {
+      "status": 200,
+      "mensagem": "XML vinculado à entrada. O estoque não foi alterado.",
+      "motivo": "A API .NET devolve 500 (SqlException 134: variavel @cnpj declarada duas vezes em AnexarXmlAsync) em todo vinculo que passa da leitura do XML; a Java implementa o comportamento pretendido do codigo."
+    }
+  },
+  {
+    "nome": "vincular-xml-ja-possui-documento",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-xml/xml",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-anexar-sol.xml"
+      }
+    },
+    "divergencia": {
+      "status": 400,
+      "mensagem": "Esta entrada já possui documento fiscal vinculado.",
+      "motivo": "A API .NET devolve 500 (SqlException 134: variavel @cnpj declarada duas vezes em AnexarXmlAsync) em todo vinculo que passa da leitura do XML; a Java implementa o comportamento pretendido do codigo."
+    }
+  },
+  {
+    "nome": "vincular-xml-entrada-estornada",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "DELETE",
+        "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc?justificativa=Conferencia%20interna",
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc/xml",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-anexar-sol.xml"
+      }
+    },
+    "divergencia": {
+      "status": 400,
+      "mensagem": "Esta entrada foi estornada; não é possível anexar o XML.",
+      "motivo": "A API .NET devolve 500 (SqlException 134: variavel @cnpj declarada duas vezes em AnexarXmlAsync) em todo vinculo que passa da leitura do XML; a Java implementa o comportamento pretendido do codigo."
+    }
+  },
+  {
+    "nome": "vincular-xml-entrada-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/notas-entrada/ne-nao-existe/xml",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-anexar-sol.xml"
+      }
+    },
+    "divergencia": {
+      "status": 400,
+      "mensagem": "Entrada não encontrada.",
+      "motivo": "A API .NET devolve 500 (SqlException 134: variavel @cnpj declarada duas vezes em AnexarXmlAsync) em todo vinculo que passa da leitura do XML; a Java implementa o comportamento pretendido do codigo."
+    }
+  },
+  {
+    "nome": "vincular-xml-outra-empresa",
+    "usuario": "adm.aprovada@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc/xml",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-anexar-sol.xml"
+      }
+    },
+    "divergencia": {
+      "status": 400,
+      "mensagem": "Entrada não encontrada.",
+      "motivo": "A API .NET devolve 500 (SqlException 134: variavel @cnpj declarada duas vezes em AnexarXmlAsync) em todo vinculo que passa da leitura do XML; a Java implementa o comportamento pretendido do codigo."
+    }
+  },
+  {
+    "nome": "vincular-xml-vazio",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc/xml",
+      "corpo": {
+        "xmlBase64": ""
+      }
+    }
+  },
+  {
+    "nome": "vincular-xml-base64-corrompido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc/xml",
+      "corpo": {
+        "xmlBase64": "@@@@"
+      }
+    }
+  },
+  {
+    "nome": "vincular-xml-chave-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc/xml",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-chave-adulterada.xml"
+      }
+    }
+  },
+  {
+    "nome": "vincular-xml-estoquista-403",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/notas-entrada/ne-ct-semdoc/xml",
+      "corpo": {
+        "xmlBase64": "@fixture:nfe-anexar-sol.xml"
+      }
+    }
+  },
+  {
+    "nome": "sefaz-chave-curta",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/buscar-sefaz",
+      "corpo": {
+        "chaveAcesso": "123"
+      }
+    }
+  },
+  {
+    "nome": "sefaz-chave-vazia",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/buscar-sefaz",
+      "corpo": {
+        "chaveAcesso": ""
+      }
+    }
+  },
+  {
+    "nome": "sefaz-digito-verificador-errado",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/buscar-sefaz",
+      "corpo": {
+        "chaveAcesso": "33261011222333000181650020000000081000000089"
+      }
+    }
+  },
+  {
+    "nome": "sefaz-chave-com-mascara-e-modelo-65",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/buscar-sefaz",
+      "corpo": {
+        "chaveAcesso": "3326 0111 2223 3300 0181 6500 1000 0002 0211 0000 2020"
+      }
+    }
+  },
+  {
+    "nome": "sefaz-modelo-nao-aceito",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/buscar-sefaz",
+      "corpo": {
+        "chaveAcesso": "33260111222333000181570010000005011100005015"
+      }
+    }
+  },
+  {
+    "nome": "sefaz-chave-valida-nfe",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/buscar-sefaz",
+      "corpo": {
+        "chaveAcesso": "33260111222333000181550010000001011100001010"
+      }
+    },
+    "divergencia": {
+      "status": 400,
+      "mensagem": "A busca da nota na SEFAZ ainda não está disponível nesta versão. Importe a nota pelo arquivo XML.",
+      "motivo": "Fase 7 (java-nfe): a API .NET baixa a nota da SEFAZ com o certificado da empresa; a Java recusa com mensagem própria até lá."
+    }
+  },
+  {
+    "nome": "sefaz-caixa-403",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/buscar-sefaz",
+      "corpo": {
+        "chaveAcesso": "33260111222333000181550010000001011100001010"
+      }
+    }
+  },
+  {
+    "nome": "sefaz-sem-sessao",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/NfeImport/buscar-sefaz",
+      "corpo": {
+        "chaveAcesso": "33260111222333000181550010000001011100001010"
+      }
+    }
+  }
+]

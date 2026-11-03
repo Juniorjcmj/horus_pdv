@@ -1,0 +1,44 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Ordem de compra encontrada.",
+    "details" : null,
+    "data" : {
+      "id" : "oc-1793659972468",
+      "companyId" : "empresa-principal",
+      "orderNumber" : "42",
+      "supplierId" : "fr-ct-sol",
+      "supplierName" : "Distribuidora Sol",
+      "supplierCnpj" : "11222333000181",
+      "status" : 0,
+      "createdBy" : "usr-ct-gerente",
+      "createdByName" : "Gil Gerente",
+      "createdAt" : "2026-11-02T19:52:52.4682358-03:00",
+      "receivedAt" : null,
+      "canceledAt" : null,
+      "previsaoEntrega" : "2027-01-15T12:00:00-03:00",
+      "condicaoPagamento" : "30 dias",
+      "formaPagamento" : "boleto",
+      "valorFrete" : 3.5,
+      "valorDesconto" : 1.25,
+      "motivoCancelamento" : null,
+      "receivedBy" : null,
+      "receivedByName" : null,
+      "note" : "Pedido contrato",
+      "totalEstimado" : 22.25,
+      "itens" : [ {
+        "productCode" : "CT001",
+        "productName" : "Produto Contrato 1",
+        "quantity" : 10.0,
+        "unitCost" : 2.0,
+        "itemTotal" : 20.0,
+        "quantityReceived" : 0.0,
+        "dataValidade" : null
+      } ]
+    }
+  }
+}

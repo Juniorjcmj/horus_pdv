@@ -1,0 +1,65 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "XML lido com sucesso.",
+    "details" : null,
+    "data" : {
+      "documento" : {
+        "xmlBase64" : "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPG5mZVByb2MgeG1sbnM9Imh0dHA6Ly93d3cucG9ydGFsZmlzY2FsLmluZi5ici9uZmUiIHZlcnNhbz0iNC4wMCI+CiAgPE5GZT4KICAgIDxpbmZORmUgSWQ9Ik5GZTMzMjYxMDExMjIyMzMzMDAwMTgxNjUwMDIwMDAwMDAwMDgxMDAwMDAwMDg5IiB2ZXJzYW89IjQuMDAiPgogICAgICA8aWRlPgogICAgICAgIDxjVUY+MzM8L2NVRj48bW9kPjY1PC9tb2Q+PHNlcmllPjI8L3NlcmllPjxuTkY+ODwvbk5GPgogICAgICAgIDxkaEVtaT4yMDI2LTEwLTMxVDAyOjA1OjEyLTAzOjAwPC9kaEVtaT48dHBFbWlzPjE8L3RwRW1pcz48dHBBbWI+MjwvdHBBbWI+CiAgICAgIDwvaWRlPgogICAgICA8ZW1pdD4KICAgICAgICA8Q05QSj4xMTIyMjMzMzAwMDE4MTwvQ05QSj48eE5vbWU+T3BlcmFkb3IgVGVzdGU8L3hOb21lPjx4RmFudD5NZXJjYWRvIFRlc3RlIFF1YWNrPC94RmFudD4KICAgICAgICA8ZW5kZXJFbWl0PgogICAgICAgICAgPHhMZ3I+UnVhIGRhcyBGbG9yZXM8L3hMZ3I+PG5ybz4xMDA8L25ybz48eEJhaXJybz5DZW50cm88L3hCYWlycm8+PHhNdW4+UmlvIGRlIEphbmVpcm88L3hNdW4+CiAgICAgICAgICA8VUY+Uko8L1VGPjxDRVA+MjAwMDAwMDA8L0NFUD4KICAgICAgICA8L2VuZGVyRW1pdD4KICAgICAgPC9lbWl0PgogICAgICA8ZGVzdD48Q1BGPjUyOTk4MjI0NzI1PC9DUEY+PHhOb21lPk1hcmlhIEZpYWRvPC94Tm9tZT48L2Rlc3Q+CiAgICAgIDxkZXQgbkl0ZW09IjEiPgogICAgICAgIDxwcm9kPjxjUHJvZD4yMDAyPC9jUHJvZD48eFByb2Q+UmVmcmlnZXJhbnRlIExhdGE8L3hQcm9kPjx1Q29tPlVOPC91Q29tPjxxQ29tPjMuMDAwMDwvcUNvbT4KICAgICAgICAgIDx2VW5Db20+NS4wMDAwMDAwMDAwPC92VW5Db20+PHZQcm9kPjE1LjAwPC92UHJvZD48dkRlc2M+NS4wMDwvdkRlc2M+PC9wcm9kPgogICAgICA8L2RldD4KICAgICAgPGRldCBuSXRlbT0iMiI+CiAgICAgICAgPHByb2Q+PGNQcm9kPjEwMDE8L2NQcm9kPjx4UHJvZD5DYWZlIFBpbGFvIDUwMGc8L3hQcm9kPjx1Q29tPlVOPC91Q29tPjxxQ29tPjEuMDAwMDwvcUNvbT4KICAgICAgICAgIDx2VW5Db20+MTguOTAwMDAwMDAwMDwvdlVuQ29tPjx2UHJvZD4xOC45MDwvdlByb2Q+PC9wcm9kPgogICAgICA8L2RldD4KICAgICAgPHRvdGFsPgogICAgICAgIDxJQ01TVG90Pjx2UHJvZD4zMy45MDwvdlByb2Q+PHZEZXNjPjUuMDA8L3ZEZXNjPjx2RnJldGU+MC4wMDwvdkZyZXRlPjx2U2VnPjAuMDA8L3ZTZWc+CiAgICAgICAgICA8dk91dHJvPjAuMDA8L3ZPdXRybz48dk5GPjI4LjkwPC92TkY+PHZUb3RUcmliPjQuMTI8L3ZUb3RUcmliPjwvSUNNU1RvdD4KICAgICAgPC90b3RhbD4KICAgICAgPHBhZz4KICAgICAgICA8ZGV0UGFnPjx0UGFnPjAxPC90UGFnPjx2UGFnPjUwLjAwPC92UGFnPjwvZGV0UGFnPgogICAgICAgIDx2VHJvY28+MjEuMTA8L3ZUcm9jbz4KICAgICAgPC9wYWc+CiAgICAgIDxpbmZBZGljPjxpbmZDcGw+VHJpYiBhcHJveCBSJCA0LDEyIEZvbnRlIElCUFQ8L2luZkNwbD48L2luZkFkaWM+CiAgICA8L2luZk5GZT4KICAgIDxpbmZORmVTdXBsPgogICAgICA8cXJDb2RlPmh0dHBzOi8vY29uc3VsdGFkZmUuZmF6ZW5kYS5yai5nb3YuYnIvY29uc3VsdGFORkNlL1FSQ29kZT9wPTMzMjYxMDExMjIyMzMzMDAwMTgxNjUwMDIwMDAwMDAwMDgxMDAwMDAwMDg5fDJ8MnwxfEFCQ0RFRjwvcXJDb2RlPgogICAgICA8dXJsQ2hhdmU+aHR0cDovL3d3dy5mYXplbmRhLnJqLmdvdi5ici9uZmNlL2NvbnN1bHRhPC91cmxDaGF2ZT4KICAgIDwvaW5mTkZlU3VwbD4KICA8L05GZT4KICA8cHJvdE5GZSB2ZXJzYW89IjQuMDAiPgogICAgPGluZlByb3Q+CiAgICAgIDx0cEFtYj4yPC90cEFtYj48Y2hORmU+MzMyNjEwMTEyMjIzMzMwMDAxODE2NTAwMjAwMDAwMDAwODEwMDAwMDAwODk8L2NoTkZlPgogICAgICA8ZGhSZWNidG8+MjAyNi0xMC0zMVQwMjowNToxNS0wMzowMDwvZGhSZWNidG8+PG5Qcm90PjMzMzI2MDAwMDEyMzQ1NjwvblByb3Q+PGNTdGF0PjEwMDwvY1N0YXQ+CiAgICAgIDx4TW90aXZvPkF1dG9yaXphZG8gbyB1c28gZGEgTkYtZTwveE1vdGl2bz4KICAgIDwvaW5mUHJvdD4KICA8L3Byb3RORmU+CjwvbmZlUHJvYz4KCg==",
+        "chaveAcesso" : "33261011222333000181650020000000081000000089",
+        "modelo" : 65,
+        "numeroNota" : "8",
+        "serie" : "2"
+      },
+      "modelo" : 65,
+      "numeroNota" : "8",
+      "serie" : "2",
+      "fornecedor" : {
+        "jaExiste" : true,
+        "cnpj" : "11222333000181",
+        "companyName" : "Distribuidora Sol SA",
+        "fantasyName" : "Distribuidora Sol",
+        "cep" : "",
+        "city" : "",
+        "state" : "",
+        "address" : "",
+        "neighborhood" : "",
+        "number" : "",
+        "telephone" : ""
+      },
+      "itens" : [ {
+        "numeroItem" : 1,
+        "produtoExistenteId" : null,
+        "produtoExistenteNome" : null,
+        "codigoFornecedor" : "2002",
+        "productCode" : "2002",
+        "productName" : "Refrigerante Lata",
+        "gtin" : "SEM GTIN",
+        "ncm" : "00000000",
+        "cest" : null,
+        "unidadeComercial" : "UN",
+        "quantidade" : "3",
+        "precoCusto" : "5,00",
+        "precoVendaSugerido" : "5,00"
+      }, {
+        "numeroItem" : 2,
+        "produtoExistenteId" : null,
+        "produtoExistenteNome" : null,
+        "codigoFornecedor" : "1001",
+        "productCode" : "1001",
+        "productName" : "Cafe Pilao 500g",
+        "gtin" : "SEM GTIN",
+        "ncm" : "00000000",
+        "cest" : null,
+        "unidadeComercial" : "UN",
+        "quantidade" : "1",
+        "precoCusto" : "18,90",
+        "precoVendaSugerido" : "18,90"
+      } ]
+    }
+  }
+}

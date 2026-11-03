@@ -1,0 +1,15 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/problem+json;charset=utf-8"
+  },
+  "corpo" : {
+    "type" : "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title" : "One or more validation errors occurred.",
+    "status" : 400,
+    "errors" : {
+      "ProdutoIds" : [ "The ProdutoIds field is required." ]
+    },
+    "traceId" : "00-63fd7d0a7a4fa29d344f4dcf8047f47b-0b4af0de02dcc4aa-00"
+  }
+}

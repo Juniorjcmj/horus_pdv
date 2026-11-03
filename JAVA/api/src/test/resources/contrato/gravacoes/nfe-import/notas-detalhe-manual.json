@@ -1,0 +1,86 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "",
+    "details" : null,
+    "data" : {
+      "nota" : {
+        "id" : "ne-ct-manual",
+        "chaveAcesso" : null,
+        "modelo" : 0,
+        "numeroNota" : "REC-SEED-01",
+        "serie" : "",
+        "fornecedorNome" : "Distribuidora Sol SA",
+        "fornecedorCnpj" : "11222333000181",
+        "dataEmissao" : "2026-01-15",
+        "valorNota" : 4.0,
+        "valorEntrada" : 4.0,
+        "quantidadeItens" : 1,
+        "origem" : "manual",
+        "temXml" : false,
+        "criadaEm" : "2026-01-15T14:00:00Z",
+        "usuarioNome" : "Gil Gerente",
+        "temComprovante" : false,
+        "comprovanteNome" : null,
+        "estornada" : false,
+        "estornadaEm" : null,
+        "estornadaPorUsuarioNome" : null,
+        "estornoJustificativa" : null
+      },
+      "entrada" : {
+        "operacaoId" : "11111111222233334444555555555555",
+        "fingerprint" : "5787435820AB52D17F90C87E5FFD9D14F5CDE4706366DBB4102E4D02F19DBD42",
+        "dataCompra" : "2026-01-15",
+        "tipoDocumento" : "recibo",
+        "observacao" : "Entrada manual do seed",
+        "fornecedor" : {
+          "cnpj" : "11222333000181",
+          "companyName" : "Distribuidora Sol SA",
+          "fantasyName" : "Distribuidora Sol",
+          "cep" : "",
+          "city" : "",
+          "state" : "",
+          "address" : "",
+          "neighborhood" : "",
+          "number" : "",
+          "telephone" : ""
+        },
+        "itens" : [ {
+          "quantidadeCompra" : "2",
+          "unidadeCompra" : "UN",
+          "fatorConversao" : "1",
+          "custoCompra" : "2,00",
+          "alterarPrecoVenda" : false,
+          "estoqueAntes" : "10",
+          "estoqueDepois" : "12",
+          "numeroItem" : 0,
+          "produtoExistenteId" : "pr-ct-2",
+          "produtoExistenteNome" : null,
+          "codigoFornecedor" : null,
+          "productCode" : "CT002",
+          "productName" : "Produto Contrato 2",
+          "gtin" : "SEM GTIN",
+          "ncm" : "00000000",
+          "cest" : null,
+          "unidadeComercial" : "UN",
+          "quantidade" : "2",
+          "precoCusto" : "2",
+          "precoVenda" : "3",
+          "dataValidade" : null,
+          "numeroLote" : null,
+          "margemPercentual" : null
+        } ],
+        "resultado" : {
+          "notaEntradaId" : "",
+          "fornecedorCriado" : false,
+          "produtosCriados" : 0,
+          "produtosAtualizados" : 1
+        }
+      }
+    }
+  }
+}

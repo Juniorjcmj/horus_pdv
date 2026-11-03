@@ -1,0 +1,12 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Entrada de 5 registrada com sucesso.",
+    "details" : null,
+    "data" : null
+  }
+}

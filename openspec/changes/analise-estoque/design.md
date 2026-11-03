@@ -4,7 +4,7 @@
 
 - Motivação e escopo: `proposal.md`. Requisitos: `specs/estoque/{movimentacao-estoque,indicadores-estoque,analise-estoque-desktop}/spec.md`.
 - Decisões do usuário: depósito único implícito; registrar movimentação em **toda** mudança de saldo; telas **só** no
-  app `ESTOQUE_JAVAFX` (não na web); entrega em 6 etapas, com commit e testes ao fim de cada uma.
+  app `JAVA/estoque` (não na web); entrega em 6 etapas, com commit e testes ao fim de cada uma.
 - API .NET 8, SQL Server, SQL escrito à mão (`Connection.OpenConnectionAsync` / `OpenLeaseAsync`, `SqlCommand`), envelope
   `ApiResponse{success,message,data}`, roles por `[HorusAuthorizeRoles]` (`HorusRoles.Estoquista` existe), IP via
   `HorusClientIpResolver`. Migrações `.sql` idempotentes **registradas** em `Repositories/HorusDatabaseInitializer.cs`
@@ -25,7 +25,7 @@
   ProductSalePrice, CustoMedio, EstoqueMinimo, EstoqueMaximo, CategoriaId, SupplierId); `OrdemCompra` (CreatedAt,
   ReceivedAt, PrevisaoEntrega, Status, SupplierId) + `OrdemCompraItens`; `Fornecedores`; `Vendas`/`VendaItens`;
   `Inventarios`/`InventarioItens`/`InventarioContagens` (migração 56).
-- App `ESTOQUE_JAVAFX`: `MainView` com menu lateral e `Tela`; helpers `Ui` (tabelas com colunas responsivas, barras que
+- App `JAVA/estoque`: `MainView` com menu lateral e `Tela`; helpers `Ui` (tabelas com colunas responsivas, barras que
   quebram linha), `Zoom`, `Fx.async`, `Toasts`, `Csv`, `PrintService`, `Perfil` (verCustos, relatoriosDeValor), APIs em
   `api/*Api.java` sobre `ApiClient`. Testes JUnit + E2E contra Docker (`-Dquack.e2e.url`), print de telas com
   `UiSnapshotTool`/`TelasE2ETest` (`-Dquack.test.size`, `-Dquack.test.zoom`).

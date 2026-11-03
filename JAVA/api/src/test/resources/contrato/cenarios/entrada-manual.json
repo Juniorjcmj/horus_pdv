@@ -1,0 +1,2976 @@
+[
+  {
+    "nome": "manual-existente-e-novo-sem-codigo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-sem-fornecedor",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": null,
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-estoquista-ok",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-atendente-ok",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-caixa-403",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-sem-sessao",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-fornecedor-sem-cnpj",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-livre",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-fornecedor-outra-empresa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-outra",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-fornecedor-inexistente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-nao-existe",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-com-chave-do-fornecedor",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "101",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ],
+        "chaveAcesso": "33260111222333000181550010000001011100001010"
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-chave-de-outro-fornecedor",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-exclusivo",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ],
+        "chaveAcesso": "33260111222333000181550010000001011100001010"
+      }
+    }
+  },
+  {
+    "nome": "manual-chave-sem-fornecedor",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": null,
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ],
+        "chaveAcesso": "33260111222333000181550010000001011100001010"
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-chave-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ],
+        "chaveAcesso": "123"
+      }
+    }
+  },
+  {
+    "nome": "manual-mesma-chave-outra-operacao",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "CX",
+              "fatorConversao": "6",
+              "custoCompra": "12,00",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-2",
+              "productCode": "CT002",
+              "productName": "Produto Contrato 2",
+              "unidadeComercial": "UN",
+              "dataValidade": "2027-01-10",
+              "numeroLote": "LM-1"
+            },
+            {
+              "quantidadeCompra": "5",
+              "unidadeCompra": "UN",
+              "fatorConversao": "1",
+              "custoCompra": "1,5000",
+              "alterarPrecoVenda": false,
+              "productCode": "",
+              "productName": "Chiclete Menta",
+              "unidadeComercial": "UN",
+              "precoVenda": "2,99"
+            }
+          ],
+          "chaveAcesso": "33260111222333000181550010000001011100001010"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000002",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ],
+        "chaveAcesso": "33260111222333000181550010000001011100001010"
+      }
+    }
+  },
+  {
+    "nome": "manual-reenvio-identico",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "CX",
+              "fatorConversao": "6",
+              "custoCompra": "12,00",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-2",
+              "productCode": "CT002",
+              "productName": "Produto Contrato 2",
+              "unidadeComercial": "UN",
+              "dataValidade": "2027-01-10",
+              "numeroLote": "LM-1"
+            },
+            {
+              "quantidadeCompra": "5",
+              "unidadeCompra": "UN",
+              "fatorConversao": "1",
+              "custoCompra": "1,5000",
+              "alterarPrecoVenda": false,
+              "productCode": "",
+              "productName": "Chiclete Menta",
+              "unidadeComercial": "UN",
+              "precoVenda": "2,99"
+            }
+          ]
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-reenvio-com-outros-dados",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "CX",
+              "fatorConversao": "6",
+              "custoCompra": "12,00",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-2",
+              "productCode": "CT002",
+              "productName": "Produto Contrato 2",
+              "unidadeComercial": "UN",
+              "dataValidade": "2027-01-10",
+              "numeroLote": "LM-1"
+            },
+            {
+              "quantidadeCompra": "5",
+              "unidadeCompra": "UN",
+              "fatorConversao": "1",
+              "custoCompra": "1,5000",
+              "alterarPrecoVenda": false,
+              "productCode": "",
+              "productName": "Chiclete Menta",
+              "unidadeComercial": "UN",
+              "precoVenda": "2,99"
+            }
+          ]
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Outra observacao",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-reenvio-com-outro-item",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "CX",
+              "fatorConversao": "6",
+              "custoCompra": "12,00",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-2",
+              "productCode": "CT002",
+              "productName": "Produto Contrato 2",
+              "unidadeComercial": "UN",
+              "dataValidade": "2027-01-10",
+              "numeroLote": "LM-1"
+            },
+            {
+              "quantidadeCompra": "5",
+              "unidadeCompra": "UN",
+              "fatorConversao": "1",
+              "custoCompra": "1,5000",
+              "alterarPrecoVenda": false,
+              "productCode": "",
+              "productName": "Chiclete Menta",
+              "unidadeComercial": "UN",
+              "precoVenda": "2,99"
+            }
+          ]
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "3",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-nova-operacao-mesmos-itens",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "CX",
+              "fatorConversao": "6",
+              "custoCompra": "12,00",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-2",
+              "productCode": "CT002",
+              "productName": "Produto Contrato 2",
+              "unidadeComercial": "UN",
+              "dataValidade": "2027-01-10",
+              "numeroLote": "LM-1"
+            },
+            {
+              "quantidadeCompra": "5",
+              "unidadeCompra": "UN",
+              "fatorConversao": "1",
+              "custoCompra": "1,5000",
+              "alterarPrecoVenda": false,
+              "productCode": "",
+              "productName": "Chiclete Menta",
+              "unidadeComercial": "UN",
+              "precoVenda": "2,99"
+            }
+          ]
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000002",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-operacao-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "abc",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-operacao-sem-hifens",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaabbbbccccdddd000000000009",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-data-compra-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "02/11/2026",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-sem-itens",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": []
+      }
+    }
+  },
+  {
+    "nome": "manual-201-itens",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": {
+          "repetir": 201,
+          "item": {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        }
+      }
+    }
+  },
+  {
+    "nome": "manual-tipo-documento-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "nota",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-tipo-documento-recibo-e-outro",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "recibo",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-numero-documento-longo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-observacao-longa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-quantidade-compra-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "0",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-quantidade-compra-5-casas",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "1,00001",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-quantidade-compra-vazia",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-fator-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "0",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-custo-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "0",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-custo-convertido-arredonda-4-casas",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "1",
+            "unidadeCompra": "CX",
+            "fatorConversao": "3",
+            "custoCompra": "10,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-custo-convertido-vira-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "1",
+            "unidadeCompra": "CX",
+            "fatorConversao": "1000000",
+            "custoCompra": "0,0001",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-quantidade-convertida-acima-do-limite",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "1000000",
+            "unidadeCompra": "CX",
+            "fatorConversao": "1000000",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-preco-venda-3-casas",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,999"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-preco-venda-zero-em-novo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "0"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-altera-preco-de-venda-do-existente",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": true,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1",
+            "precoVenda": "4,50"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-altera-preco-sem-informar-preco",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": true,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-unidade-de-compra-longa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "ABCDEFG",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-unidade-comercial-vazia",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-lote-longo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-validade-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027/01/10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-sem-validade-usa-prazo-da-categoria",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "1",
+              "unidadeCompra": "CX",
+              "fatorConversao": "1",
+              "custoCompra": "4,25",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-val2",
+              "productCode": "CT004",
+              "productName": "Pao de Forma Integral",
+              "unidadeComercial": "UN",
+              "dataValidade": null,
+              "numeroLote": "LM-1"
+            }
+          ]
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/produto/pr-ct-val2"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[1].id": "id",
+      "data[2].id": "id",
+      "data[0].criadoEm": "iso",
+      "data[1].criadoEm": "iso",
+      "data[2].criadoEm": "iso"
+    }
+  },
+  {
+    "nome": "manual-codigo-novo-repetido-na-entrada",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "NOVO-1",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          },
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "novo-1",
+            "productName": "Outro Chiclete",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-codigo-novo-ja-cadastrado",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "ct001",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-codigo-novo-longo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-descricao-nova-vazia",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": " ",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-descricao-nova-longa",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-ncm-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "",
+            "productName": "Chiclete Menta",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99",
+            "ncm": "1234"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-ncm-valido-e-codigo-informado",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "BISC-77",
+            "productName": "Biscoito Maisena",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99",
+            "ncm": "19053100"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-unidade-do-produto-mudou",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "KG",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-mesmo-produto-duas-vezes",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          },
+          {
+            "quantidadeCompra": "1",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-nome-com-acento-e-caracteres-especiais",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "5",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "1,5000",
+            "alterarPrecoVenda": false,
+            "productCode": "ACENTO-1",
+            "productName": "Pão <Açaí> & 'Café' +50%",
+            "unidadeComercial": "UN",
+            "precoVenda": "2,99"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-comprovante-pdf",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ],
+        "comprovante": {
+          "nome": "recibo.pdf",
+          "base64": "JVBERi0xLjQKMSAwIG9iago8PD4+CmVuZG9iago="
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-comprovante-png-com-caminho-no-nome",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ],
+        "comprovante": {
+          "nome": "C:\\fotos\\cupom.PNG",
+          "base64": "iVBORw0KGgoAAA=="
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-comprovante-jpg",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ],
+        "comprovante": {
+          "nome": "cupom.jpeg",
+          "base64": "/9j/4AAQ"
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-comprovante-xml",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ],
+        "comprovante": {
+          "nome": "cupom.xml",
+          "base64": "PGEvPg=="
+        }
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-comprovante-pdf-falso",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ],
+        "comprovante": {
+          "nome": "recibo.pdf",
+          "base64": "bmFvIGUgcGRm"
+        }
+      }
+    }
+  },
+  {
+    "nome": "manual-comprovante-extensao-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ],
+        "comprovante": {
+          "nome": "recibo.exe",
+          "base64": "JVBERi0xLjQKMSAwIG9iago8PD4+CmVuZG9iago="
+        }
+      }
+    }
+  },
+  {
+    "nome": "manual-comprovante-base64-corrompido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ],
+        "comprovante": {
+          "nome": "recibo.pdf",
+          "base64": "@@@@"
+        }
+      }
+    }
+  },
+  {
+    "nome": "manual-comprovante-vazio",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ],
+        "comprovante": {
+          "nome": "recibo.pdf",
+          "base64": ""
+        }
+      }
+    }
+  },
+  {
+    "nome": "manual-comprovante-nome-longo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+        "dataCompra": "2026-11-02",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "cupom",
+        "numeroDocumento": "CP-1001",
+        "observacao": "Compra de teste",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "CX",
+            "fatorConversao": "6",
+            "custoCompra": "12,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN",
+            "dataValidade": "2027-01-10",
+            "numeroLote": "LM-1"
+          }
+        ],
+        "comprovante": {
+          "nome": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.pdf",
+          "base64": "JVBERi0xLjQKMSAwIG9iago8PD4+CmVuZG9iago="
+        }
+      }
+    }
+  },
+  {
+    "nome": "manual-comprovante-baixado",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "CX",
+              "fatorConversao": "6",
+              "custoCompra": "12,00",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-2",
+              "productCode": "CT002",
+              "productName": "Produto Contrato 2",
+              "unidadeComercial": "UN",
+              "dataValidade": "2027-01-10",
+              "numeroLote": "LM-1"
+            }
+          ],
+          "comprovante": {
+            "nome": "recibo.pdf",
+            "base64": "JVBERi0xLjQKMSAwIG9iago8PD4+CmVuZG9iago="
+          }
+        },
+        "capturar": {
+          "nota": "data.notaEntradaId"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/{nota}/comprovante"
+    }
+  },
+  {
+    "nome": "manual-efeito-detalhe-da-entrada-guardada",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "CX",
+              "fatorConversao": "6",
+              "custoCompra": "12,00",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-2",
+              "productCode": "CT002",
+              "productName": "Produto Contrato 2",
+              "unidadeComercial": "UN",
+              "dataValidade": "2027-01-10",
+              "numeroLote": "LM-1"
+            },
+            {
+              "quantidadeCompra": "5",
+              "unidadeCompra": "UN",
+              "fatorConversao": "1",
+              "custoCompra": "1,5000",
+              "alterarPrecoVenda": false,
+              "productCode": "",
+              "productName": "Chiclete Menta",
+              "unidadeComercial": "UN",
+              "precoVenda": "2,99"
+            }
+          ]
+        },
+        "capturar": {
+          "nota": "data.notaEntradaId"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/{nota}"
+    },
+    "volateis": {
+      "data.nota.id": "id",
+      "data.nota.criadaEm": "iso",
+      "data.entrada.itens[1].produtoExistenteId": "id",
+      "data.entrada.resultado.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-efeito-detalhe-com-acentos",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Obs: ação & \"aspas\"",
+          "itens": [
+            {
+              "quantidadeCompra": "5",
+              "unidadeCompra": "UN",
+              "fatorConversao": "1",
+              "custoCompra": "1,5000",
+              "alterarPrecoVenda": false,
+              "productCode": "ACENTO-1",
+              "productName": "Pão <Açaí> & 'Café' +50%",
+              "unidadeComercial": "UN",
+              "precoVenda": "2,99"
+            }
+          ]
+        },
+        "capturar": {
+          "nota": "data.notaEntradaId"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/NfeImport/notas-entrada/{nota}"
+    },
+    "volateis": {
+      "data.nota.id": "id",
+      "data.nota.criadaEm": "iso",
+      "data.entrada.itens[0].produtoExistenteId": "id",
+      "data.entrada.resultado.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-efeito-movimentacoes-do-produto",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "CX",
+              "fatorConversao": "6",
+              "custoCompra": "12,00",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-2",
+              "productCode": "CT002",
+              "productName": "Produto Contrato 2",
+              "unidadeComercial": "UN",
+              "dataValidade": "2027-01-10",
+              "numeroLote": "LM-1"
+            }
+          ]
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-2/movimentacoes"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto"
+    }
+  },
+  {
+    "nome": "manual-efeito-produto-novo-na-lista",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "5",
+              "unidadeCompra": "UN",
+              "fatorConversao": "1",
+              "custoCompra": "1,5000",
+              "alterarPrecoVenda": false,
+              "productCode": "",
+              "productName": "Chiclete Menta",
+              "unidadeComercial": "UN",
+              "precoVenda": "2,99"
+            }
+          ]
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[1].id": "id",
+      "data[2].id": "id",
+      "data[3].id": "id",
+      "data[4].id": "id",
+      "data[5].id": "id",
+      "data[6].id": "id",
+      "data[7].id": "id",
+      "data[8].id": "id",
+      "data[9].id": "id",
+      "data[0].productCode": "texto",
+      "data[1].productCode": "texto",
+      "data[2].productCode": "texto",
+      "data[3].productCode": "texto",
+      "data[4].productCode": "texto",
+      "data[5].productCode": "texto",
+      "data[6].productCode": "texto",
+      "data[7].productCode": "texto",
+      "data[8].productCode": "texto",
+      "data[9].productCode": "texto"
+    }
+  },
+  {
+    "nome": "manual-efeito-lotes-do-produto",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "CX",
+              "fatorConversao": "6",
+              "custoCompra": "12,00",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-2",
+              "productCode": "CT002",
+              "productName": "Produto Contrato 2",
+              "unidadeComercial": "UN",
+              "dataValidade": "2027-01-10",
+              "numeroLote": "LM-1"
+            }
+          ]
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/lotes/produto/pr-ct-2"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "iso"
+    }
+  },
+  {
+    "nome": "manual-efeito-estorno-da-entrada",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "aaaaaaaa-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "fornecedorId": "fr-ct-sol",
+          "tipoDocumento": "cupom",
+          "numeroDocumento": "CP-1001",
+          "observacao": "Compra de teste",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "CX",
+              "fatorConversao": "6",
+              "custoCompra": "12,00",
+              "alterarPrecoVenda": false,
+              "produtoExistenteId": "pr-ct-2",
+              "productCode": "CT002",
+              "productName": "Produto Contrato 2",
+              "unidadeComercial": "UN",
+              "dataValidade": "2027-01-10",
+              "numeroLote": "LM-1"
+            }
+          ]
+        },
+        "capturar": {
+          "nota": "data.notaEntradaId"
+        }
+      },
+      {
+        "metodo": "DELETE",
+        "caminho": "/api/NfeImport/notas-entrada/{nota}?justificativa=Lancamento%20errado",
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-2/movimentacoes"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto",
+      "data[1].id": "id",
+      "data[1].criadoEm": "texto"
+    }
+  },
+  {
+    "nome": "manual-reenvio-da-operacao-do-seed",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "11111111-2222-3333-4444-555555555555",
+        "dataCompra": "2026-01-15",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "recibo",
+        "numeroDocumento": "REC-SEED-01",
+        "observacao": "Entrada manual do seed",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "2,00",
+            "alterarPrecoVenda": false,
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN"
+          }
+        ]
+      }
+    },
+    "volateis": {
+      "data.notaEntradaId": "id"
+    }
+  },
+  {
+    "nome": "manual-reenvio-da-operacao-do-seed-com-outros-dados",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/entrada-manual",
+      "corpo": {
+        "operacaoId": "11111111-2222-3333-4444-555555555555",
+        "dataCompra": "2026-01-16",
+        "fornecedorId": "fr-ct-sol",
+        "tipoDocumento": "recibo",
+        "numeroDocumento": "REC-SEED-01",
+        "observacao": "Entrada manual do seed",
+        "itens": [
+          {
+            "quantidadeCompra": "2",
+            "unidadeCompra": "UN",
+            "fatorConversao": "1",
+            "custoCompra": "2,00",
+            "produtoExistenteId": "pr-ct-2",
+            "productCode": "CT002",
+            "productName": "Produto Contrato 2",
+            "unidadeComercial": "UN"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "nome": "manual-produto-novo-com-fator-fracionario",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/entrada-manual",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "operacaoId": "cccccccc-bbbb-cccc-dddd-000000000001",
+          "dataCompra": "2026-11-02",
+          "tipoDocumento": "recibo",
+          "itens": [
+            {
+              "quantidadeCompra": "2",
+              "unidadeCompra": "PC",
+              "fatorConversao": "0,5",
+              "custoCompra": "2,00",
+              "productCode": "FRAC-1",
+              "productName": "Produto Fracionario",
+              "unidadeComercial": "KG",
+              "precoVenda": "5,99"
+            }
+          ]
+        },
+        "capturar": {
+          "nota": "data.notaEntradaId"
+        }
+      },
+      {
+        "metodo": "GET",
+        "caminho": "/api/NfeImport/notas-entrada/{nota}",
+        "auth": "bearer",
+        "status": 200,
+        "capturar": {
+          "produto": "data.entrada.itens[0].produtoExistenteId"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/{produto}"
+    },
+    "volateis": {
+      "data.id": "id"
+    }
+  }
+]

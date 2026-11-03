@@ -1,0 +1,31 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8",
+    "set-cookie" : [ "horuspdv.auth=<valor>; path=/; secure; samesite=strict; httponly" ]
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Login realizado com sucesso.",
+    "details" : null,
+    "data" : {
+      "tokenType" : "Bearer",
+      "expiresInSeconds" : 28800,
+      "sessionId" : "sess-7a1318eba8bb45c1b3ca19ee23d1dfb2",
+      "user" : {
+        "id" : "usr-ct-bloq2",
+        "companyId" : "empresa-principal",
+        "cpf" : "88888888888",
+        "name" : "Beto Bloqueio",
+        "email" : "bloqueio2@contrato.quack",
+        "phone" : "11999990008",
+        "role" : "atendente",
+        "status" : "ativo",
+        "createdAt" : "2026-01-15",
+        "lastLoginAt" : "2026-11-02T12:08:29.3278736Z",
+        "mustChangePassword" : false,
+        "perfisAdicionais" : [ ]
+      }
+    }
+  }
+}

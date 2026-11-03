@@ -1,0 +1,15 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Contagem anulada.",
+    "details" : null,
+    "data" : {
+      "contagemId" : "ic-d52e392a813d4dd08576e4e0789879b0",
+      "produtoId" : "pr-ct-inv"
+    }
+  }
+}

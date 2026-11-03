@@ -1,0 +1,25 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimentações obtidas com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "mov-4cdaf0a8673240f9b99f267abff38555",
+      "produtoId" : "pr-ct-2",
+      "produtoNome" : "",
+      "produtoCodigo" : "CT002",
+      "tipo" : "entrada",
+      "quantidade" : 12.0,
+      "estoqueAnterior" : 10.0,
+      "estoqueNovo" : 22.0,
+      "motivo" : "Entrada manual",
+      "usuarioId" : "usr-ct-gerente",
+      "usuarioNome" : "Gil Gerente",
+      "criadoEm" : "2026-11-02 17:01:03"
+    } ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "XML lido com sucesso.",
+    "details" : null,
+    "data" : {
+      "documento" : {
+        "xmlBase64" : "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPG5mZVByb2MgeG1sbnM9Imh0dHA6Ly93d3cucG9ydGFsZmlzY2FsLmluZi5ici9uZmUiIHZlcnNhbz0iNC4wMCI+CiAgPE5GZT4KICAgIDxpbmZORmUgSWQ9Ik5GZTMzMjYwMTk5ODg4Nzc3MDAwMTY2NTUwMDEwMDAwMDAzMDMxMTAwMDAzMDMxIiB2ZXJzYW89IjQuMDAiPgogICAgICA8aWRlPgogICAgICAgIDxjVUY+MzM8L2NVRj48bW9kPjU1PC9tb2Q+PHNlcmllPjE8L3NlcmllPjxuTkY+MzAzPC9uTkY+CiAgICAgICAgPGRoRW1pPjIwMjYtMDEtMjJUMDk6MDA6MDAtMDM6MDA8L2RoRW1pPjx0cEVtaXM+MTwvdHBFbWlzPjx0cEFtYj4yPC90cEFtYj4KICAgICAgPC9pZGU+CiAgICAgIDxlbWl0PgogICAgICAgIDxDTlBKPjk5ODg4Nzc3MDAwMTY2PC9DTlBKPjx4Tm9tZT5EaXN0cmlidWlkb3JhIEV4Y2x1c2l2YSBTQTwveE5vbWU+PHhGYW50PkRpc3RyaWJ1aWRvcmEgRXhjbHVzaXZhPC94RmFudD4KICAgICAgICA8ZW5kZXJFbWl0Pjx4TGdyPkF2IEJyYXNpbDwveExncj48bnJvPjEwMDA8L25ybz48eEJhaXJybz5QZW5oYTwveEJhaXJybz48eE11bj5SaW8gZGUgSmFuZWlybzwveE11bj48VUY+Uko8L1VGPjxDRVA+MjEwMTAwMDA8L0NFUD48L2VuZGVyRW1pdD4KICAgICAgPC9lbWl0PgogICAgICA8ZGV0IG5JdGVtPSIxIj4KICAgICAgICA8cHJvZD48Y1Byb2Q+RVgtMDE8L2NQcm9kPjx4UHJvZD5JdGVtIEV4Y2x1c2l2bzwveFByb2Q+PE5DTT4xOTA1MzEwMDwvTkNNPjx1Q29tPlVOPC91Q29tPjxxQ29tPjIuMDAwMDwvcUNvbT48dlVuQ29tPjUuMDAwMDwvdlVuQ29tPjx2UHJvZD4xMC4wMDwvdlByb2Q+PC9wcm9kPgogICAgICA8L2RldD4KICAgICAgPHRvdGFsPjxJQ01TVG90Pjx2TkY+MTAuMDA8L3ZORj48L0lDTVNUb3Q+PC90b3RhbD4KICAgIDwvaW5mTkZlPgogIDwvTkZlPgogIDxwcm90TkZlIHZlcnNhbz0iNC4wMCI+CiAgICA8aW5mUHJvdD48Y2hORmU+MzMyNjAxOTk4ODg3NzcwMDAxNjY1NTAwMTAwMDAwMDMwMzExMDAwMDMwMzE8L2NoTkZlPjwvaW5mUHJvdD4KICA8L3Byb3RORmU+CjwvbmZlUHJvYz4KCg==",
+        "chaveAcesso" : "33260199888777000166550010000003031100003031",
+        "modelo" : 55,
+        "numeroNota" : "303",
+        "serie" : "1"
+      },
+      "modelo" : 55,
+      "numeroNota" : "303",
+      "serie" : "1",
+      "fornecedor" : {
+        "jaExiste" : true,
+        "cnpj" : "99888777000166",
+        "companyName" : "Distribuidora Exclusiva SA",
+        "fantasyName" : "Distribuidora Exclusiva",
+        "cep" : "",
+        "city" : "",
+        "state" : "",
+        "address" : "",
+        "neighborhood" : "",
+        "number" : "",
+        "telephone" : ""
+      },
+      "itens" : [ {
+        "numeroItem" : 1,
+        "produtoExistenteId" : null,
+        "produtoExistenteNome" : null,
+        "codigoFornecedor" : "EX-01",
+        "productCode" : "EX-01",
+        "productName" : "Item Exclusivo",
+        "gtin" : "SEM GTIN",
+        "ncm" : "19053100",
+        "cest" : null,
+        "unidadeComercial" : "UN",
+        "quantidade" : "2",
+        "precoCusto" : "5,00",
+        "precoVendaSugerido" : "5,00"
+      } ]
+    }
+  }
+}

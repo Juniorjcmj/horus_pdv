@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Nota de entrada não encontrada ou já foi estornada.",
+    "details" : null,
+    "data" : null
+  }
+}

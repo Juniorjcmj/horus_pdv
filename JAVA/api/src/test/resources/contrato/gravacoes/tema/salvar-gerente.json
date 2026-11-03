@@ -1,0 +1,16 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Tema salvo.",
+    "details" : null,
+    "data" : {
+      "systemAccent" : "#0369a1",
+      "pdvAccent" : "#ABCDEF",
+      "updatedAt" : "2026-11-02T12:10:40.7499201"
+    }
+  }
+}

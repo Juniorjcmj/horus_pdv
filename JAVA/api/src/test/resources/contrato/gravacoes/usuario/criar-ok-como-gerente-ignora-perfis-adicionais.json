@@ -1,0 +1,25 @@
+{
+  "status" : 201,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Usuario criado com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "usr-1793621373761",
+      "companyId" : "empresa-principal",
+      "cpf" : "52998224725",
+      "name" : "Novo Usuário",
+      "email" : "novo@contrato.quack",
+      "phone" : "11911112222",
+      "role" : "caixa",
+      "status" : "ativo",
+      "createdAt" : "2026-11-02",
+      "lastLoginAt" : "-",
+      "mustChangePassword" : true,
+      "perfisAdicionais" : [ ]
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Sessao encerrada com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "sess-be53ded6629845c288e36345b90d0ef1",
+      "device" : "Navegador - Chrome",
+      "location" : "Localização indisponível",
+      "ip" : "::ffff:172.19.0.1",
+      "lastActive" : "Agora mesmo",
+      "current" : true,
+      "platform" : "desktop"
+    } ]
+  }
+}

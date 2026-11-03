@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Atualize a consulta do produto antes de salvar o preço.",
+    "details" : null,
+    "data" : null
+  }
+}

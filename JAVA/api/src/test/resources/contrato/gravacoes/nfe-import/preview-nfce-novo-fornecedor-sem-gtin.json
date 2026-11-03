@@ -1,0 +1,51 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "XML lido com sucesso.",
+    "details" : null,
+    "data" : {
+      "documento" : {
+        "xmlBase64" : "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPG5mZVByb2MgeG1sbnM9Imh0dHA6Ly93d3cucG9ydGFsZmlzY2FsLmluZi5ici9uZmUiIHZlcnNhbz0iNC4wMCI+CiAgPE5GZT4KICAgIDxpbmZORmUgSWQ9Ik5GZTMzMjYwMTExMjIyMzMzMDAwMTgxNjUwMDEwMDAwMDAyMDIxMTAwMDAyMDIwIiB2ZXJzYW89IjQuMDAiPgogICAgICA8aWRlPgogICAgICAgIDxjVUY+MzM8L2NVRj48bW9kPjY1PC9tb2Q+PHNlcmllPjE8L3NlcmllPjxuTkY+MjAyPC9uTkY+CiAgICAgICAgPGRoRW1pPjIwMjYtMDEtMjFUMTU6MDA6MDAtMDM6MDA8L2RoRW1pPjx0cEVtaXM+MTwvdHBFbWlzPjx0cEFtYj4yPC90cEFtYj4KICAgICAgPC9pZGU+CiAgICAgIDxlbWl0PgogICAgICAgIDxDTlBKPjExMjIyMzMzMDAwMTgxPC9DTlBKPjx4Tm9tZT5EaXN0cmlidWlkb3JhIFNvbCBTQTwveE5vbWU+PHhGYW50PkRpc3RyaWJ1aWRvcmEgU29sPC94RmFudD4KICAgICAgICA8ZW5kZXJFbWl0PgogICAgICAgICAgPHhMZ3I+UnVhIGRvIFNvbDwveExncj48bnJvPjUwPC9ucm8+PHhCYWlycm8+Q2VudHJvPC94QmFpcnJvPjx4TXVuPlJpbyBkZSBKYW5laXJvPC94TXVuPgogICAgICAgICAgPFVGPlJKPC9VRj48Q0VQPjIwMDEwMDAwPC9DRVA+CiAgICAgICAgPC9lbmRlckVtaXQ+CiAgICAgIDwvZW1pdD4KICAgICAgPGRldCBuSXRlbT0iMSI+CiAgICAgICAgPHByb2Q+CiAgICAgICAgICA8Y1Byb2Q+Q1VQLTAxPC9jUHJvZD48Y0VBTj5TRU0gR1RJTjwvY0VBTj48eFByb2Q+QWd1YSBNaW5lcmFsIDUwMG1sPC94UHJvZD4KICAgICAgICAgIDxOQ00+MjIwMTEwMDA8L05DTT48dUNvbT5VTjwvdUNvbT48cUNvbT4xMi4wMDAwPC9xQ29tPgogICAgICAgICAgPHZVbkNvbT4xLjI1MDA8L3ZVbkNvbT48dlByb2Q+MTUuMDA8L3ZQcm9kPgogICAgICAgIDwvcHJvZD4KICAgICAgPC9kZXQ+CiAgICAgIDx0b3RhbD4KICAgICAgICA8SUNNU1RvdD48dlByb2Q+MTUuMDA8L3ZQcm9kPjx2TkY+MTUuMDA8L3ZORj48L0lDTVNUb3Q+CiAgICAgIDwvdG90YWw+CiAgICA8L2luZk5GZT4KICA8L05GZT4KICA8cHJvdE5GZSB2ZXJzYW89IjQuMDAiPgogICAgPGluZlByb3Q+CiAgICAgIDx0cEFtYj4yPC90cEFtYj48Y2hORmU+MzMyNjAxMTEyMjIzMzMwMDAxODE2NTAwMTAwMDAwMDIwMjExMDAwMDIwMjA8L2NoTkZlPgogICAgICA8Y1N0YXQ+MTAwPC9jU3RhdD48eE1vdGl2bz5BdXRvcml6YWRvIG8gdXNvIGRhIE5GLWU8L3hNb3Rpdm8+CiAgICA8L2luZlByb3Q+CiAgPC9wcm90TkZlPgo8L25mZVByb2M+Cgo=",
+        "chaveAcesso" : "33260111222333000181650010000002021100002020",
+        "modelo" : 65,
+        "numeroNota" : "202",
+        "serie" : "1"
+      },
+      "modelo" : 65,
+      "numeroNota" : "202",
+      "serie" : "1",
+      "fornecedor" : {
+        "jaExiste" : true,
+        "cnpj" : "11222333000181",
+        "companyName" : "Distribuidora Sol SA",
+        "fantasyName" : "Distribuidora Sol",
+        "cep" : "",
+        "city" : "",
+        "state" : "",
+        "address" : "",
+        "neighborhood" : "",
+        "number" : "",
+        "telephone" : ""
+      },
+      "itens" : [ {
+        "numeroItem" : 1,
+        "produtoExistenteId" : null,
+        "produtoExistenteNome" : null,
+        "codigoFornecedor" : "CUP-01",
+        "productCode" : "CUP-01",
+        "productName" : "Agua Mineral 500ml",
+        "gtin" : "SEM GTIN",
+        "ncm" : "22011000",
+        "cest" : null,
+        "unidadeComercial" : "UN",
+        "quantidade" : "12",
+        "precoCusto" : "1,25",
+        "precoVendaSugerido" : "1,25"
+      } ]
+    }
+  }
+}

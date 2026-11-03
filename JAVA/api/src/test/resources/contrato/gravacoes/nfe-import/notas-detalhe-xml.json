@@ -1,0 +1,68 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "",
+    "details" : null,
+    "data" : {
+      "nota" : {
+        "id" : "ne-ct-xml",
+        "chaveAcesso" : "33260111222333000181550010000001001100001005",
+        "modelo" : 55,
+        "numeroNota" : "100",
+        "serie" : "1",
+        "fornecedorNome" : "Distribuidora Sol SA",
+        "fornecedorCnpj" : "11222333000181",
+        "dataEmissao" : "2026-01-10T10:00:00-03:00",
+        "valorNota" : 4.0,
+        "valorEntrada" : 4.0,
+        "quantidadeItens" : 1,
+        "origem" : "xml",
+        "temXml" : true,
+        "criadaEm" : "2026-01-15T13:00:00Z",
+        "usuarioNome" : "Gil Gerente",
+        "temComprovante" : true,
+        "comprovanteNome" : "recibo.pdf",
+        "estornada" : false,
+        "estornadaEm" : null,
+        "estornadaPorUsuarioNome" : null,
+        "estornoJustificativa" : null
+      },
+      "entrada" : {
+        "fornecedor" : {
+          "cnpj" : "11222333000181",
+          "companyName" : "Distribuidora Sol SA",
+          "fantasyName" : "Distribuidora Sol",
+          "cep" : "",
+          "city" : "",
+          "state" : "",
+          "address" : "",
+          "neighborhood" : "",
+          "number" : "",
+          "telephone" : ""
+        },
+        "itens" : [ {
+          "numeroItem" : 1,
+          "produtoExistenteId" : "pr-ct-1",
+          "produtoExistenteNome" : "Produto Contrato 1",
+          "codigoFornecedor" : "SOL-01",
+          "productCode" : "CT001",
+          "productName" : "Produto Contrato 1",
+          "gtin" : "SEM GTIN",
+          "ncm" : "22021000",
+          "cest" : null,
+          "unidadeComercial" : "UN",
+          "quantidade" : "2",
+          "precoCusto" : "2,0000",
+          "precoVenda" : "3,0000",
+          "dataValidade" : null,
+          "numeroLote" : null,
+          "margemPercentual" : null
+        } ]
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "",
+    "details" : null,
+    "data" : {
+      "notas" : [ {
+        "id" : "ne-ct-manual",
+        "chaveAcesso" : null,
+        "modelo" : 0,
+        "numeroNota" : "REC-SEED-01",
+        "serie" : "",
+        "fornecedorNome" : "Distribuidora Sol SA",
+        "fornecedorCnpj" : "11222333000181",
+        "dataEmissao" : "2026-01-15",
+        "valorNota" : 4.0,
+        "valorEntrada" : 4.0,
+        "quantidadeItens" : 1,
+        "origem" : "manual",
+        "temXml" : false,
+        "criadaEm" : "2026-01-15T14:00:00Z",
+        "usuarioNome" : "Gil Gerente",
+        "temComprovante" : false,
+        "comprovanteNome" : null,
+        "estornada" : false,
+        "estornadaEm" : null,
+        "estornadaPorUsuarioNome" : null,
+        "estornoJustificativa" : null
+      } ],
+      "total" : 3,
+      "pagina" : 2,
+      "tamanhoPagina" : 1
+    }
+  }
+}

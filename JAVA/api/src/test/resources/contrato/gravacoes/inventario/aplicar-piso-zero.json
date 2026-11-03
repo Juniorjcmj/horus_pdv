@@ -1,0 +1,19 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Inventário aplicado.",
+    "details" : null,
+    "data" : {
+      "id" : "inv-ct-aberto",
+      "numero" : 1,
+      "ajustados" : 1,
+      "totalSobra" : 0,
+      "totalFalta" : -2.5,
+      "totalLiquido" : -2.5
+    }
+  }
+}

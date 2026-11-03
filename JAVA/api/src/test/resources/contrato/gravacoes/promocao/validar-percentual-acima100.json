@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Desconto percentual deve ser maior que 0 e no máximo 100%.",
+    "details" : null,
+    "data" : null
+  }
+}

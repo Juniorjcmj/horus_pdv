@@ -1,0 +1,27 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Contagens.",
+    "details" : null,
+    "data" : [ {
+      "id" : "ic-fd34316ae1a14ccc876abbd6bed1028f",
+      "produtoId" : "pr-ct-inv",
+      "codigo" : "CT007",
+      "nome" : "Biscoito Água e Sal",
+      "quantidade" : 3.0,
+      "local" : null,
+      "usuario" : "Gil Gerente",
+      "terminal" : null,
+      "saldoSistema" : 10.0,
+      "criadoEm" : "2026-11-03T16:53:31.013749+00:00",
+      "anuladaPor" : null,
+      "anuladaEm" : null,
+      "anuladaMotivo" : null,
+      "usuarioId" : "usr-ct-gerente"
+    } ]
+  }
+}

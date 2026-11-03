@@ -1,0 +1,17 @@
+{
+  "status" : 409,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Já existe o inventário #1 em contagem que se sobrepõe a este escopo.",
+    "details" : null,
+    "data" : {
+      "codigo" : "ESCOPO_SOBREPOSTO",
+      "detalhe" : {
+        "numeroAberto" : 1
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Situação da baixa por lote obtida com sucesso.",
+    "details" : null,
+    "data" : {
+      "modo" : "sombra",
+      "lotesComSaldo" : 4,
+      "lotesComDivergencia" : 0,
+      "produtosComDivergencia" : 0,
+      "produtosComEstoqueSemLote" : 0,
+      "itens" : [ ]
+    }
+  }
+}

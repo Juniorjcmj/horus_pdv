@@ -1,0 +1,21 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Sugestões de reposição.",
+    "details" : null,
+    "data" : [ {
+      "productCode" : "CT005",
+      "productName" : "Café Torrado Especial 500g",
+      "currentStock" : 0.0,
+      "minStock" : 15.0,
+      "maxStock" : 50.0,
+      "supplierId" : "fr-ct-exclusivo",
+      "supplierName" : "Distribuidora Exclusiva",
+      "unitCost" : 125000.0
+    } ]
+  }
+}

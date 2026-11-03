@@ -1,0 +1,14 @@
+{
+  "status" : 422,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "O produto está fora do escopo deste inventário.",
+    "details" : null,
+    "data" : {
+      "codigo" : "FORA_DO_ESCOPO"
+    }
+  }
+}

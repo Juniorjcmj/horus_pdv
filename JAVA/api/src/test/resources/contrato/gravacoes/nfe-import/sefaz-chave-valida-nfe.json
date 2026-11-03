@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "A empresa não possui Certificado Digital A1 configurado no sistema. Cadastre o certificado A1 em 'Minha Empresa' para realizar a consulta e download direto na SEFAZ.",
+    "details" : null,
+    "data" : null
+  }
+}

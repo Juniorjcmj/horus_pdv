@@ -9,7 +9,7 @@ estoque: o **inventário** (contar a prateleira e o sistema corrigir a diferenç
 
 ## What Changes
 
-- **Novo aplicativo desktop `ESTOQUE_JAVAFX/`** (Java 21 + JavaFX 21, mesma base do `CAIXA_JAVAFX`: login, tokens
+- **Novo aplicativo desktop `JAVA/estoque/`** (Java 21 + JavaFX 21, mesma base do `JAVA/caixa`: login, tokens
   visuais Quack, fontes embutidas, modais centralizados, executável Windows com Java embutido). Online (sem modo
   offline). Perfis: administrador, gerente e estoquista (o estoquista não vê custo/margem nem cadastra fornecedor).
 - **Entrada de mercadorias**: importação de NF-e por XML ou pela chave de acesso (SEFAZ), com conferência item a
@@ -53,7 +53,7 @@ estoque: o **inventário** (contar a prateleira e o sistema corrigir a diferenç
 
 ## Impact
 
-- **Novo módulo** `ESTOQUE_JAVAFX/` (Maven, offline como o caixa; reaproveita por cópia as peças do `CAIXA_JAVAFX`:
+- **Novo módulo** `JAVA/estoque/` (Maven, offline como o caixa; reaproveita por cópia as peças do `JAVA/caixa`:
   `ApiClient`, login, `Fx`, CSS, fontes, `ReceiptPrinter` para impressão ajustada à térmica, ZXing). Executável
   `QuackEstoque.exe` via `build-exe.ps1`.
 - **API (.NET)**: novo `InventarioController` + `InventarioAB` + migração `56_inventario.sql` (tabelas

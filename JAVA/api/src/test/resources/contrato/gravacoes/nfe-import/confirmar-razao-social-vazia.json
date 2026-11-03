@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Razão social do fornecedor é obrigatória.",
+    "details" : null,
+    "data" : null
+  }
+}

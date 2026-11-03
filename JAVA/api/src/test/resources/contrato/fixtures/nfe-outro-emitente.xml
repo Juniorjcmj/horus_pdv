@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe33260199888777000166550010000003031100003031" versao="4.00">
+      <ide>
+        <cUF>33</cUF><mod>55</mod><serie>1</serie><nNF>303</nNF>
+        <dhEmi>2026-01-22T09:00:00-03:00</dhEmi><tpEmis>1</tpEmis><tpAmb>2</tpAmb>
+      </ide>
+      <emit>
+        <CNPJ>99888777000166</CNPJ><xNome>Distribuidora Exclusiva SA</xNome><xFant>Distribuidora Exclusiva</xFant>
+        <enderEmit><xLgr>Av Brasil</xLgr><nro>1000</nro><xBairro>Penha</xBairro><xMun>Rio de Janeiro</xMun><UF>RJ</UF><CEP>21010000</CEP></enderEmit>
+      </emit>
+      <det nItem="1">
+        <prod><cProd>EX-01</cProd><xProd>Item Exclusivo</xProd><NCM>19053100</NCM><uCom>UN</uCom><qCom>2.0000</qCom><vUnCom>5.0000</vUnCom><vProd>10.00</vProd></prod>
+      </det>
+      <total><ICMSTot><vNF>10.00</vNF></ICMSTot></total>
+    </infNFe>
+  </NFe>
+  <protNFe versao="4.00">
+    <infProt><chNFe>33260199888777000166550010000003031100003031</chNFe></infProt>
+  </protNFe>
+</nfeProc>
+

@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Informe uma descrição de até 250 caracteres e código de até 50 caracteres.",
+    "details" : null,
+    "data" : null
+  }
+}

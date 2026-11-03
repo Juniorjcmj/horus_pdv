@@ -1,0 +1,65 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "XML lido com sucesso.",
+    "details" : null,
+    "data" : {
+      "documento" : {
+        "xmlBase64" : "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPG5mZVByb2MgeG1sbnM9Imh0dHA6Ly93d3cucG9ydGFsZmlzY2FsLmluZi5ici9uZmUiIHZlcnNhbz0iNC4wMCI+CiAgPE5GZT4KICAgIDxpbmZORmUgSWQ9Ik5GZTMzMjYwMTExMjIyMzMzMDAwMTgxNTUwMDEwMDAwMDAxMDExMTAwMDAxMDEwIiB2ZXJzYW89IjQuMDAiPgogICAgICA8aWRlPgogICAgICAgIDxjVUY+MzM8L2NVRj48bW9kPjU1PC9tb2Q+PHNlcmllPjE8L3NlcmllPjxuTkY+MTAxPC9uTkY+CiAgICAgICAgPGRoRW1pPjIwMjYtMDEtMjBUMTA6MzA6MDAtMDM6MDA8L2RoRW1pPjx0cEVtaXM+MTwvdHBFbWlzPjx0cEFtYj4yPC90cEFtYj4KICAgICAgPC9pZGU+CiAgICAgIDxlbWl0PgogICAgICAgIDxDTlBKPjExMjIyMzMzMDAwMTgxPC9DTlBKPjx4Tm9tZT5EaXN0cmlidWlkb3JhIFNvbCBTQTwveE5vbWU+PHhGYW50PkRpc3RyaWJ1aWRvcmEgU29sPC94RmFudD4KICAgICAgICA8ZW5kZXJFbWl0PgogICAgICAgICAgPHhMZ3I+UnVhIGRvIFNvbDwveExncj48bnJvPjUwPC9ucm8+PHhCYWlycm8+Q2VudHJvPC94QmFpcnJvPjx4TXVuPlJpbyBkZSBKYW5laXJvPC94TXVuPgogICAgICAgICAgPFVGPlJKPC9VRj48Q0VQPjIwMDEwMDAwPC9DRVA+PGZvbmU+MjEzMzMzNDQ0NDwvZm9uZT4KICAgICAgICA8L2VuZGVyRW1pdD4KICAgICAgPC9lbWl0PgogICAgICA8ZGV0IG5JdGVtPSIxIj4KICAgICAgICA8cHJvZD4KICAgICAgICAgIDxjUHJvZD5GT1JOLUlPRzwvY1Byb2Q+PGNFQU4+Nzg5MTAwMDEwMDEwMzwvY0VBTj48eFByb2Q+SW9ndXJ0ZSBHcmVnbyBBY2FpIDE3MGc8L3hQcm9kPgogICAgICAgICAgPE5DTT4wNDAzMTAwMDwvTkNNPjxDRk9QPjUxMDI8L0NGT1A+PHVDb20+VU48L3VDb20+PHFDb20+Ni4wMDAwPC9xQ29tPgogICAgICAgICAgPHZVbkNvbT4zLjUwMDA8L3ZVbkNvbT48dlByb2Q+MjEuMDA8L3ZQcm9kPgogICAgICAgIDwvcHJvZD4KICAgICAgPC9kZXQ+CiAgICAgIDxkZXQgbkl0ZW09IjIiPgogICAgICAgIDxwcm9kPgogICAgICAgICAgPGNQcm9kPlNPTC05OTwvY1Byb2Q+PGNFQU4+U0VNIEdUSU48L2NFQU4+PHhQcm9kPkJpc2NvaXRvIFJlY2hlYWRvIDE0MGc8L3hQcm9kPgogICAgICAgICAgPE5DTT4xOTA1MzEwMDwvTkNNPjxDRVNUPjE3MDUzMDA8L0NFU1Q+PENGT1A+NTEwMjwvQ0ZPUD48dUNvbT5VTjwvdUNvbT48cUNvbT4xMC4wMDAwPC9xQ29tPgogICAgICAgICAgPHZVbkNvbT4yLjIwMDA8L3ZVbkNvbT48dlByb2Q+MjIuMDA8L3ZQcm9kPgogICAgICAgIDwvcHJvZD4KICAgICAgPC9kZXQ+CiAgICAgIDx0b3RhbD4KICAgICAgICA8SUNNU1RvdD48dlByb2Q+NDMuMDA8L3ZQcm9kPjx2TkY+NDMuMDA8L3ZORj48L0lDTVNUb3Q+CiAgICAgIDwvdG90YWw+CiAgICA8L2luZk5GZT4KICA8L05GZT4KICA8cHJvdE5GZSB2ZXJzYW89IjQuMDAiPgogICAgPGluZlByb3Q+CiAgICAgIDx0cEFtYj4yPC90cEFtYj48Y2hORmU+MzMyNjAxMTEyMjIzMzMwMDAxODE1NTAwMTAwMDAwMDEwMTExMDAwMDEwMTA8L2NoTkZlPgogICAgICA8ZGhSZWNidG8+MjAyNi0wMS0yMFQxMDozMTowMC0wMzowMDwvZGhSZWNidG8+PG5Qcm90PjMzMzI2MDAwMDk5OTEwMTwvblByb3Q+PGNTdGF0PjEwMDwvY1N0YXQ+CiAgICAgIDx4TW90aXZvPkF1dG9yaXphZG8gbyB1c28gZGEgTkYtZTwveE1vdGl2bz4KICAgIDwvaW5mUHJvdD4KICA8L3Byb3RORmU+CjwvbmZlUHJvYz4KCg==",
+        "chaveAcesso" : "33260111222333000181550010000001011100001010",
+        "modelo" : 55,
+        "numeroNota" : "101",
+        "serie" : "1"
+      },
+      "modelo" : 55,
+      "numeroNota" : "101",
+      "serie" : "1",
+      "fornecedor" : {
+        "jaExiste" : true,
+        "cnpj" : "11222333000181",
+        "companyName" : "Distribuidora Sol SA",
+        "fantasyName" : "Distribuidora Sol",
+        "cep" : "",
+        "city" : "",
+        "state" : "",
+        "address" : "",
+        "neighborhood" : "",
+        "number" : "",
+        "telephone" : ""
+      },
+      "itens" : [ {
+        "numeroItem" : 1,
+        "produtoExistenteId" : "pr-ct-val",
+        "produtoExistenteNome" : "Iogurte Grego Açaí 170g",
+        "codigoFornecedor" : "FORN-IOG",
+        "productCode" : "CT003",
+        "productName" : "Iogurte Grego Acai 170g",
+        "gtin" : "7891000100103",
+        "ncm" : "04031000",
+        "cest" : null,
+        "unidadeComercial" : "UN",
+        "quantidade" : "6",
+        "precoCusto" : "3,50",
+        "precoVendaSugerido" : "5,90"
+      }, {
+        "numeroItem" : 2,
+        "produtoExistenteId" : null,
+        "produtoExistenteNome" : null,
+        "codigoFornecedor" : "SOL-99",
+        "productCode" : "SOL-99",
+        "productName" : "Biscoito Recheado 140g",
+        "gtin" : "SEM GTIN",
+        "ncm" : "19053100",
+        "cest" : "1705300",
+        "unidadeComercial" : "UN",
+        "quantidade" : "10",
+        "precoCusto" : "2,20",
+        "precoVendaSugerido" : "2,20"
+      } ]
+    }
+  }
+}

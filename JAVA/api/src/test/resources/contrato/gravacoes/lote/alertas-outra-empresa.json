@@ -1,0 +1,20 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Alertas de validade por lote obtidos com sucesso.",
+    "details" : null,
+    "data" : {
+      "vencidos" : 0,
+      "criticos" : 0,
+      "atencao" : 0,
+      "valorEmRisco" : 0,
+      "produtosSemLote" : 0,
+      "modo" : "sombra",
+      "itens" : [ ]
+    }
+  }
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe33261011222333000181650020000000081000000089" versao="4.00">
+      <ide>
+        <cUF>33</cUF><mod>65</mod><serie>2</serie><nNF>8</nNF>
+        <dhEmi>2026-10-31T02:05:12-03:00</dhEmi><tpEmis>1</tpEmis><tpAmb>2</tpAmb>
+      </ide>
+      <emit>
+        <CNPJ>11222333000181</CNPJ><xNome>Operador Teste</xNome><xFant>Mercado Teste Quack</xFant>
+        <enderEmit>
+          <xLgr>Rua das Flores</xLgr><nro>100</nro><xBairro>Centro</xBairro><xMun>Rio de Janeiro</xMun>
+          <UF>RJ</UF><CEP>20000000</CEP>
+        </enderEmit>
+      </emit>
+      <dest><CPF>52998224725</CPF><xNome>Maria Fiado</xNome></dest>
+      <det nItem="1">
+        <prod><cProd>2002</cProd><xProd>Refrigerante Lata</xProd><uCom>UN</uCom><qCom>3.0000</qCom>
+          <vUnCom>5.0000000000</vUnCom><vProd>15.00</vProd><vDesc>5.00</vDesc></prod>
+      </det>
+      <det nItem="2">
+        <prod><cProd>1001</cProd><xProd>Cafe Pilao 500g</xProd><uCom>UN</uCom><qCom>1.0000</qCom>
+          <vUnCom>18.9000000000</vUnCom><vProd>18.90</vProd></prod>
+      </det>
+      <total>
+        <ICMSTot><vProd>33.90</vProd><vDesc>5.00</vDesc><vFrete>0.00</vFrete><vSeg>0.00</vSeg>
+          <vOutro>0.00</vOutro><vNF>28.90</vNF><vTotTrib>4.12</vTotTrib></ICMSTot>
+      </total>
+      <pag>
+        <detPag><tPag>01</tPag><vPag>50.00</vPag></detPag>
+        <vTroco>21.10</vTroco>
+      </pag>
+      <infAdic><infCpl>Trib aprox R$ 4,12 Fonte IBPT</infCpl></infAdic>
+    </infNFe>
+    <infNFeSupl>
+      <qrCode>https://consultadfe.fazenda.rj.gov.br/consultaNFCe/QRCode?p=33261011222333000181650020000000081000000089|2|2|1|ABCDEF</qrCode>
+      <urlChave>http://www.fazenda.rj.gov.br/nfce/consulta</urlChave>
+    </infNFeSupl>
+  </NFe>
+  <protNFe versao="4.00">
+    <infProt>
+      <tpAmb>2</tpAmb><chNFe>33261011222333000181650020000000081000000089</chNFe>
+      <dhRecbto>2026-10-31T02:05:15-03:00</dhRecbto><nProt>333260000123456</nProt><cStat>100</cStat>
+      <xMotivo>Autorizado o uso da NF-e</xMotivo>
+    </infProt>
+  </protNFe>
+</nfeProc>
+

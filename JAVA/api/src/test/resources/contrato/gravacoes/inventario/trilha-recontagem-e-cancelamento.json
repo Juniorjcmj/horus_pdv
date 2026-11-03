@@ -1,0 +1,88 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Trilha do inventário.",
+    "details" : null,
+    "data" : {
+      "inventario" : {
+        "inventario" : {
+          "id" : "inv-ct-aberto",
+          "numero" : 1,
+          "descricao" : "Inventário Aberto Contrato",
+          "escopo" : "produtos",
+          "escopoJson" : "[\"pr-ct-inv\"]",
+          "status" : "cancelado",
+          "abertoPor" : "Gil Gerente",
+          "abertoEm" : "2026-01-15T12:00:00+00:00",
+          "aplicadoPor" : null,
+          "aplicadoEm" : null,
+          "supervisor" : null,
+          "justificativa" : null,
+          "zerarNaoContados" : false,
+          "canceladoPor" : "Gil Gerente",
+          "canceladoEm" : "2026-11-03T16:55:47.5450409+00:00",
+          "motivoCancelamento" : "Encerrado",
+          "totalSobra" : null,
+          "totalFalta" : null,
+          "totalLiquido" : null
+        },
+        "resumo" : {
+          "itens" : 1,
+          "contados" : 0,
+          "naoContados" : 0,
+          "recontar" : 1,
+          "divergentes" : 0,
+          "sobra" : 0,
+          "falta" : 0,
+          "liquido" : 0
+        }
+      },
+      "eventos" : [ {
+        "tipo" : "abertura",
+        "ocorridoEm" : "2026-01-15T12:00:00+00:00",
+        "usuario" : "Gil Gerente",
+        "gerente" : null,
+        "ip" : "127.0.0.1",
+        "terminal" : "WEB",
+        "descricao" : "Inventário #1 aberto (escopo: produtos, 1 itens)."
+      }, {
+        "tipo" : "recontagem",
+        "ocorridoEm" : "2026-11-03T16:55:47.5327364+00:00",
+        "usuario" : "Gil Gerente",
+        "gerente" : null,
+        "ip" : "::ffff:172.19.0.1",
+        "terminal" : null,
+        "descricao" : "Recontagem pedida para 1 produto(s): pr-ct-inv"
+      }, {
+        "tipo" : "cancelado",
+        "ocorridoEm" : "2026-11-03T16:55:47.5491368+00:00",
+        "usuario" : "Gil Gerente",
+        "gerente" : null,
+        "ip" : "::ffff:172.19.0.1",
+        "terminal" : null,
+        "descricao" : "Inventário #1 cancelado: Encerrado"
+      } ],
+      "contagens" : [ {
+        "id" : "ic-a7ebed38749b4dc8bf2382cb32502dd1",
+        "produtoId" : "pr-ct-inv",
+        "codigo" : "CT007",
+        "nome" : "Biscoito Água e Sal",
+        "quantidade" : 3.0,
+        "local" : null,
+        "usuario" : "Gil Gerente",
+        "terminal" : null,
+        "saldoSistema" : 10.0,
+        "criadoEm" : "2026-11-03T16:55:47.5036491+00:00",
+        "anuladaPor" : "Gil Gerente",
+        "anuladaEm" : "2026-11-03T16:55:47.5201183+00:00",
+        "anuladaMotivo" : "Recontagem solicitada",
+        "usuarioId" : "usr-ct-gerente"
+      } ],
+      "itens" : [ ]
+    }
+  }
+}

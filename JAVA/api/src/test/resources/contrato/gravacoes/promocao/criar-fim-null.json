@@ -1,0 +1,16 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/problem+json;charset=utf-8"
+  },
+  "corpo" : {
+    "type" : "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title" : "One or more validation errors occurred.",
+    "status" : 400,
+    "errors" : {
+      "request" : [ "The request field is required." ],
+      "$.fimVigencia" : [ "The JSON value could not be converted to System.DateTimeOffset. Path: $.fimVigencia | LineNumber: 0 | BytePositionInLine: 136." ]
+    },
+    "traceId" : "00-889b7baeffd634243e58c60d731d4b40-a2335d40cf269ddb-00"
+  }
+}

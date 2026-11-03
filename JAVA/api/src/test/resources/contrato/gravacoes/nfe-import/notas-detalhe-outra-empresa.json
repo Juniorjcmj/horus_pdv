@@ -1,0 +1,12 @@
+{
+  "status" : 404,
+  "cabecalhos" : {
+    "content-type" : "application/problem+json;charset=utf-8"
+  },
+  "corpo" : {
+    "type" : "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+    "title" : "Not Found",
+    "status" : 404,
+    "traceId" : "00-cefc29e500a8863906e392740fc78bf6-9a217480a27755c6-00"
+  }
+}

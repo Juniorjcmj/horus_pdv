@@ -1,0 +1,30 @@
+{
+  "status" : 201,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Promoção criada com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "f99443ae-e4f7-4c13-b1d9-cb8e95695bae",
+      "companyId" : "empresa-principal",
+      "nome" : "Promo contrato",
+      "tipo" : "preco_fixo",
+      "valorDesconto" : null,
+      "precoFixo" : 4.99,
+      "quantidadeLeva" : null,
+      "quantidadePaga" : null,
+      "quantidadeMinima" : null,
+      "inicioVigencia" : "2025-01-01T00:00:00-03:00",
+      "fimVigencia" : "2030-12-31T23:59:59-03:00",
+      "ativa" : true,
+      "categoriaId" : null,
+      "categoriaNome" : null,
+      "criadoPor" : "Gil Gerente",
+      "criadoEm" : "2026-11-03T10:03:42.1091758-03:00",
+      "produtoIds" : [ "pr-ct-1" ]
+    }
+  }
+}

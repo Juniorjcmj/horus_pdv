@@ -1,0 +1,23 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Lotes do produto obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "lt-1793638865932-4ede83cd",
+      "produtoId" : "pr-ct-2",
+      "numeroLote" : "LM-1",
+      "dataValidade" : "2027-01-10",
+      "diasParaVencer" : 69,
+      "qtdInicial" : 12.0,
+      "qtdEstimada" : 12.0,
+      "origem" : "manual",
+      "validadePadrao" : false,
+      "criadoEm" : "2026-11-02T14:01:05.9306870-03:00"
+    } ]
+  }
+}

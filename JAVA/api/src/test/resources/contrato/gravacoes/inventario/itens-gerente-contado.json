@@ -1,0 +1,30 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Itens do inventário.",
+    "details" : null,
+    "data" : [ {
+      "produtoId" : "pr-ct-inv",
+      "codigo" : "CT007",
+      "nome" : "Biscoito Água e Sal",
+      "unidade" : "UN",
+      "custo" : 2.5,
+      "saldoNa1aContagem" : 10.0,
+      "contado" : 7.0,
+      "diferenca" : -3.0,
+      "valorDiferenca" : -7.5,
+      "recontar" : false,
+      "primeiraContagemEm" : "2026-11-03T16:53:16.3100333+00:00",
+      "ultimaContagemEm" : "2026-11-03T16:53:16.3100333+00:00",
+      "saldoAntes" : null,
+      "delta" : null,
+      "saldoDepois" : null,
+      "valorDelta" : null,
+      "pisoAplicado" : null
+    } ]
+  }
+}

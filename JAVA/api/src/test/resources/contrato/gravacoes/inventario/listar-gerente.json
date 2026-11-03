@@ -1,0 +1,24 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Inventários.",
+    "details" : null,
+    "data" : [ {
+      "id" : "inv-ct-aberto",
+      "numero" : 1,
+      "descricao" : "Inventário Aberto Contrato",
+      "escopo" : "produtos",
+      "status" : "em_contagem",
+      "abertoPor" : "Gil Gerente",
+      "abertoEm" : "2026-01-15T12:00:00+00:00",
+      "aplicadoEm" : null,
+      "canceladoEm" : null,
+      "itens" : 1,
+      "contados" : 0
+    } ]
+  }
+}

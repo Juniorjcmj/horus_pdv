@@ -1,0 +1,40 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Lotes obtidos com sucesso.",
+    "details" : null,
+    "data" : {
+      "total" : 1,
+      "pagina" : 1,
+      "tamanhoPagina" : 25,
+      "valorEmRisco" : 13.83,
+      "modo" : "sombra",
+      "itens" : [ {
+        "productCode" : "CT003",
+        "productName" : "Iogurte Grego Açaí 170g",
+        "categoriaNome" : "Laticínios Contrato",
+        "categoriaId" : "cat-ct-laticinios",
+        "categoriaPaiId" : "cat-ct-pereciveis",
+        "janelaAlertaDias" : 10,
+        "faixa" : "atencao",
+        "custoUnitario" : 3.4567,
+        "precoVenda" : 5.9,
+        "valorEmRisco" : 13.83,
+        "id" : "lote-ct-alerta",
+        "produtoId" : "pr-ct-val",
+        "numeroLote" : "L-ALERTA",
+        "dataValidade" : "2026-11-06",
+        "diasParaVencer" : 4,
+        "qtdInicial" : 4.0,
+        "qtdEstimada" : 4.0,
+        "origem" : "nfe",
+        "validadePadrao" : false,
+        "criadoEm" : "2026-01-16T09:00:00.0000000-03:00"
+      } ]
+    }
+  }
+}

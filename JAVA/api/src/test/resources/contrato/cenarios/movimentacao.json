@@ -1,0 +1,266 @@
+[
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/movimentacoes"
+    }
+  },
+  {
+    "nome": "caixa-ajuste-403",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-1/ajuste-estoque",
+      "corpo": {
+        "tipo": "entrada",
+        "quantidade": 2,
+        "motivo": "Tentativa caixa"
+      }
+    }
+  },
+  {
+    "nome": "caixa-movimentacoes-403",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/movimentacoes"
+    }
+  },
+  {
+    "nome": "caixa-movimentacoes-produto-403",
+    "usuario": "caixa@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-1/movimentacoes"
+    }
+  },
+  {
+    "nome": "ajuste-entrada-estoquista",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-1/ajuste-estoque",
+      "corpo": {
+        "tipo": "entrada",
+        "quantidade": 5,
+        "motivo": "Reposição de gôndola"
+      }
+    }
+  },
+  {
+    "nome": "ajuste-entrada-com-lote-e-validade",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-val/ajuste-estoque",
+      "corpo": {
+        "tipo": "entrada",
+        "quantidade": 6,
+        "motivo": "Recebimento avulso",
+        "dataValidade": "2026-12-10",
+        "numeroLote": "L-77"
+      }
+    }
+  },
+  {
+    "nome": "ajuste-entrada-validade-invalida",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-val/ajuste-estoque",
+      "corpo": {
+        "tipo": "entrada",
+        "quantidade": 2,
+        "motivo": "Validade ruim",
+        "dataValidade": "31/12/2026"
+      }
+    }
+  },
+  {
+    "nome": "ajuste-saida",
+    "usuario": "atendente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-1/ajuste-estoque",
+      "corpo": {
+        "tipo": "saida",
+        "quantidade": 3,
+        "motivo": "Acerto manual de saída"
+      }
+    }
+  },
+  {
+    "nome": "ajuste-uso-interno",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-kg/ajuste-estoque",
+      "corpo": {
+        "tipo": "uso_interno",
+        "quantidade": 1.25,
+        "motivo": "Degustação loja"
+      }
+    }
+  },
+  {
+    "nome": "ajuste-perda",
+    "usuario": "estoquista@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-val/ajuste-estoque",
+      "corpo": {
+        "tipo": "perda",
+        "quantidade": 2,
+        "motivo": "Embalagem rasgada"
+      }
+    }
+  },
+  {
+    "nome": "ajuste-sem-motivo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-1/ajuste-estoque",
+      "corpo": {
+        "tipo": "entrada",
+        "quantidade": 2,
+        "motivo": "   "
+      }
+    }
+  },
+  {
+    "nome": "ajuste-tipo-invalido",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-1/ajuste-estoque",
+      "corpo": {
+        "tipo": "roubo",
+        "quantidade": 1,
+        "motivo": "Motivo qualquer"
+      }
+    }
+  },
+  {
+    "nome": "ajuste-quantidade-zero",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-1/ajuste-estoque",
+      "corpo": {
+        "tipo": "entrada",
+        "quantidade": 0,
+        "motivo": "Quantidade zerada"
+      }
+    }
+  },
+  {
+    "nome": "ajuste-saida-maior-que-saldo",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-excluir/ajuste-estoque",
+      "corpo": {
+        "tipo": "saida",
+        "quantidade": 5,
+        "motivo": "Acima do saldo 3"
+      }
+    }
+  },
+  {
+    "nome": "ajuste-produto-outra-empresa-404",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/Produto/pr-ct-1-outra/ajuste-estoque",
+      "corpo": {
+        "tipo": "entrada",
+        "quantidade": 1,
+        "motivo": "Outra empresa"
+      }
+    }
+  },
+  {
+    "nome": "movimentacoes-do-produto",
+    "usuario": "estoquista@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/pr-ct-val/ajuste-estoque",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "tipo": "perda",
+          "quantidade": 2,
+          "motivo": "Embalagem rasgada"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-val/movimentacoes"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto"
+    }
+  },
+  {
+    "nome": "movimentacoes-edicao-sem-mudar-qtd-nao-grava",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "PUT",
+        "caminho": "/api/Produto/pr-ct-2",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "productName": "Produto Contrato 2 Editado",
+          "productCode": "CT002",
+          "productQnt": "10",
+          "estoqueConsultado": "10",
+          "productUnitPrice": "2,00",
+          "productSalePrice": "3,00"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-2/movimentacoes"
+    }
+  },
+  {
+    "nome": "movimentacoes-gerais",
+    "usuario": "gerente@contrato.quack",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/movimentacoes"
+    }
+  },
+  {
+    "nome": "movimentacoes-gerais-filtro-tipo-e-limit",
+    "usuario": "estoquista@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/Produto/pr-ct-1/ajuste-estoque",
+        "auth": "bearer",
+        "status": 200,
+        "corpo": {
+          "tipo": "perda",
+          "quantidade": 1,
+          "motivo": "Quebra na prateleira"
+        }
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/movimentacoes?tipo=perda&limit=1"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto"
+    }
+  }
+]

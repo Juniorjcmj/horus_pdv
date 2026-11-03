@@ -1,0 +1,20 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Resultado da promoção obtido com sucesso.",
+    "details" : null,
+    "data" : {
+      "promocaoId" : "prm-ct-perc",
+      "nome" : "Promo Percentual 10%",
+      "quantidadeVendas" : 1,
+      "receitaBruta" : 6.0,
+      "receitaLiquida" : 5.4,
+      "descontoTotal" : 0.6,
+      "margemLiquida" : 1.4
+    }
+  }
+}

@@ -1,0 +1,838 @@
+[
+  {
+    "nome": "listar",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "listar-pendentes",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra?status=0"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "listar-recebidas",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra?status=1"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "consultar-pendente",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra/40"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "consultar-recebida",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra/41"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "consultar-outra-empresa",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra/900"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "consultar-inexistente",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra/99999"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "criar-com-fornecedor-proximo-numero",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": 10,
+            "unitCost": 2
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "criar-sem-fornecedor",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra",
+      "corpo": {
+        "supplierId": "",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": 10,
+            "unitCost": 2
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "criar-fornecedor-desconhecido",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra",
+      "corpo": {
+        "supplierId": "fr-desconhecido",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": 10,
+            "unitCost": 2
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "volateis": {
+      "message": "banco-sql"
+    }
+  },
+  {
+    "nome": "criar-sem-itens",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": []
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "criar-quantidade-zero",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": 0,
+            "unitCost": 2
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "criar-quantidade-negativa",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": -1,
+            "unitCost": 2
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "criar-produto-sem-cadastro",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "NAO-CADASTRADO",
+            "quantity": 2,
+            "unitCost": 1.5
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "criar-e-consultar-dados",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra/42"
+    },
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/OrdemCompra",
+        "corpo": {
+          "supplierId": "fr-ct-sol",
+          "note": "Pedido contrato",
+          "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+          "condicaoPagamento": "30 dias",
+          "formaPagamento": "boleto",
+          "valorFrete": 3.5,
+          "valorDesconto": 1.25,
+          "items": [
+            {
+              "productCode": "CT001",
+              "quantity": 10,
+              "unitCost": 2
+            }
+          ]
+        },
+        "auth": "bearer",
+        "status": 201
+      }
+    ],
+    "volateis": {
+      "data.id": "id",
+      "data.createdAt": "iso-json"
+    }
+  },
+  {
+    "nome": "editar-pendente",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/OrdemCompra/40",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": 3,
+            "unitCost": 2.335
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "editar-sem-fornecedor",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/OrdemCompra/40",
+      "corpo": {
+        "supplierId": "",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": 10,
+            "unitCost": 2
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "editar-recebida",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/OrdemCompra/41",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": 10,
+            "unitCost": 2
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "editar-inexistente",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/OrdemCompra/99999",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": 10,
+            "unitCost": 2
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "editar-sem-itens",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/OrdemCompra/40",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": []
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "editar-quantidade-zero",
+    "requisicao": {
+      "metodo": "PUT",
+      "caminho": "/api/OrdemCompra/40",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": 0,
+            "unitCost": 2
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "receber-parcial",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/40/receber",
+      "corpo": {
+        "itens": [
+          {
+            "productCode": "CT001",
+            "quantityReceived": 4
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "completar-recebimento",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/40/receber",
+      "corpo": {
+        "itens": [
+          {
+            "productCode": "CT001",
+            "quantityReceived": 6
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/OrdemCompra/40/receber",
+        "corpo": {
+          "itens": [
+            {
+              "productCode": "CT001",
+              "quantityReceived": 4
+            }
+          ]
+        },
+        "auth": "bearer",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "nome": "receber-total",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/40/receber",
+      "corpo": {
+        "itens": [
+          {
+            "productCode": "CT001",
+            "quantityReceived": 10
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "receber-acima-pedido",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/40/receber",
+      "corpo": {
+        "itens": [
+          {
+            "productCode": "CT001",
+            "quantityReceived": 12
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "receber-com-validade-e-consultar",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra/40"
+    },
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/OrdemCompra/40/receber",
+        "corpo": {
+          "itens": [
+            {
+              "productCode": "CT001",
+              "quantityReceived": 4,
+              "dataValidade": "2027-06-01T00:00:00-03:00",
+              "numeroLote": "OC-LOTE-1"
+            }
+          ]
+        },
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "volateis": {
+      "data.receivedAt": "iso"
+    }
+  },
+  {
+    "nome": "receber-e-conferir-estoque",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra/40"
+    },
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/OrdemCompra/40/receber",
+        "corpo": {
+          "itens": [
+            {
+              "productCode": "CT001",
+              "quantityReceived": 4
+            }
+          ]
+        },
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "volateis": {
+      "data.receivedAt": "iso"
+    }
+  },
+  {
+    "nome": "receber-nada",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/40/receber",
+      "corpo": {
+        "itens": []
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "receber-quantidade-zero",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/40/receber",
+      "corpo": {
+        "itens": [
+          {
+            "productCode": "CT001",
+            "quantityReceived": 0
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "receber-codigo-fora-pedido",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/40/receber",
+      "corpo": {
+        "itens": [
+          {
+            "productCode": "CT002",
+            "quantityReceived": 2
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "receber-recebida",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/41/receber",
+      "corpo": {
+        "itens": [
+          {
+            "productCode": "CT001",
+            "quantityReceived": 4
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "receber-inexistente",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/99999/receber",
+      "corpo": {
+        "itens": [
+          {
+            "productCode": "CT001",
+            "quantityReceived": 4
+          }
+        ]
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "cancelar-pendente",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/40/cancelar",
+      "corpo": {
+        "motivoCancelamento": "Cotacao substituida"
+      }
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "cancelar-sem-motivo",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/40/cancelar",
+      "corpo": {}
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "cancelar-recebida",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/41/cancelar",
+      "corpo": {}
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "cancelar-inexistente",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/99999/cancelar",
+      "corpo": {}
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "cancelar-parcial",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra/40/cancelar",
+      "corpo": {}
+    },
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/OrdemCompra/40/receber",
+        "corpo": {
+          "itens": [
+            {
+              "productCode": "CT001",
+              "quantityReceived": 4
+            }
+          ]
+        },
+        "auth": "bearer",
+        "status": 200
+      }
+    ]
+  },
+  {
+    "nome": "consultar-cancelada",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra/40"
+    },
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/OrdemCompra/40/cancelar",
+        "corpo": {
+          "motivoCancelamento": "Cotacao substituida"
+        },
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "volateis": {
+      "data.canceledAt": "iso"
+    }
+  },
+  {
+    "nome": "sugestoes-reposicao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra/sugestoes-reposicao"
+    },
+    "usuario": "gerente@contrato.quack"
+  },
+  {
+    "nome": "atendente-sem-acesso",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra"
+    },
+    "usuario": "atendente@contrato.quack"
+  },
+  {
+    "nome": "estoquista-sem-acesso",
+    "requisicao": {
+      "metodo": "POST",
+      "caminho": "/api/OrdemCompra",
+      "corpo": {
+        "supplierId": "fr-ct-sol",
+        "note": "Pedido contrato",
+        "previsaoEntrega": "2027-01-15T12:00:00-03:00",
+        "condicaoPagamento": "30 dias",
+        "formaPagamento": "boleto",
+        "valorFrete": 3.5,
+        "valorDesconto": 1.25,
+        "items": [
+          {
+            "productCode": "CT001",
+            "quantity": 10,
+            "unitCost": 2
+          }
+        ]
+      }
+    },
+    "usuario": "estoquista@contrato.quack"
+  },
+  {
+    "nome": "sem-sessao",
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/OrdemCompra"
+    }
+  },
+  {
+    "nome": "receber-e-conferir-saldo-produto",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/OrdemCompra/40/receber",
+        "corpo": {
+          "itens": [
+            {
+              "productCode": "CT001",
+              "quantityReceived": 4,
+              "dataValidade": "2027-06-01T00:00:00-03:00",
+              "numeroLote": "OC-LOTE-1"
+            }
+          ]
+        },
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-1"
+    }
+  },
+  {
+    "nome": "receber-e-conferir-movimentacao",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/OrdemCompra/40/receber",
+        "corpo": {
+          "itens": [
+            {
+              "productCode": "CT001",
+              "quantityReceived": 4,
+              "dataValidade": "2027-06-01T00:00:00-03:00",
+              "numeroLote": "OC-LOTE-1"
+            }
+          ]
+        },
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-1/movimentacoes"
+    },
+    "volateis": {
+      "data[0].id": "id",
+      "data[0].criadoEm": "texto"
+    }
+  },
+  {
+    "nome": "receber-parcial-repetido-soma-estoque",
+    "usuario": "gerente@contrato.quack",
+    "antes": [
+      {
+        "metodo": "POST",
+        "caminho": "/api/OrdemCompra/40/receber",
+        "corpo": {
+          "itens": [
+            {
+              "productCode": "CT001",
+              "quantityReceived": 4,
+              "dataValidade": "2027-06-01T00:00:00-03:00",
+              "numeroLote": "OC-LOTE-1"
+            }
+          ]
+        },
+        "auth": "bearer",
+        "status": 200
+      },
+      {
+        "metodo": "POST",
+        "caminho": "/api/OrdemCompra/40/receber",
+        "corpo": {
+          "itens": [
+            {
+              "productCode": "CT001",
+              "quantityReceived": 4,
+              "dataValidade": "2027-06-01T00:00:00-03:00",
+              "numeroLote": "OC-LOTE-1"
+            }
+          ]
+        },
+        "auth": "bearer",
+        "status": 200
+      }
+    ],
+    "requisicao": {
+      "metodo": "GET",
+      "caminho": "/api/Produto/pr-ct-1"
+    }
+  }
+]

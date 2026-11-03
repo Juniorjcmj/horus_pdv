@@ -1,0 +1,45 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Lotes do produto obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "lote-ct-vencido",
+      "produtoId" : "pr-ct-val",
+      "numeroLote" : "L-VENC",
+      "dataValidade" : "2026-10-15",
+      "diasParaVencer" : -18,
+      "qtdInicial" : 3.0,
+      "qtdEstimada" : 3.0,
+      "origem" : "manual",
+      "validadePadrao" : false,
+      "criadoEm" : "2026-01-15T09:00:00.0000000-03:00"
+    }, {
+      "id" : "lote-ct-alerta",
+      "produtoId" : "pr-ct-val",
+      "numeroLote" : "L-ALERTA",
+      "dataValidade" : "2026-11-06",
+      "diasParaVencer" : 4,
+      "qtdInicial" : 4.0,
+      "qtdEstimada" : 4.0,
+      "origem" : "nfe",
+      "validadePadrao" : false,
+      "criadoEm" : "2026-01-16T09:00:00.0000000-03:00"
+    }, {
+      "id" : "lote-ct-ok",
+      "produtoId" : "pr-ct-val",
+      "numeroLote" : "L-FUTURO",
+      "dataValidade" : "2027-06-01",
+      "diasParaVencer" : 211,
+      "qtdInicial" : 5.0,
+      "qtdEstimada" : 5.0,
+      "origem" : "manual",
+      "validadePadrao" : false,
+      "criadoEm" : "2026-01-17T09:00:00.0000000-03:00"
+    } ]
+  }
+}

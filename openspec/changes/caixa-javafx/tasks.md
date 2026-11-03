@@ -4,8 +4,8 @@ Referência obrigatória: `design.md` (D1–D15). Todos os comandos Maven rodam 
 
 ## 1. Esqueleto do módulo
 
-- [x] 1.1 Criar `CAIXA_JAVAFX/pom.xml` conforme D2 (Java 21, javafx-controls 21.0.8, jackson-databind + jsr310 2.17.2, junit-jupiter 5.10.2, compiler 3.13.0, surefire 3.2.5, shade 3.5.3 com Main-Class `br.com.quack.caixa.Launcher`, finalName `quack-caixa`). Verificar: `mvn -o -q -f CAIXA_JAVAFX/pom.xml validate` sem erro.
-- [x] 1.2 Criar `Launcher`, `App` (janela "Quack Caixa" maximizada, mínimo 1024×700), `config/AppPaths`, `config/AppConfig` (D11) e `quack.css` (D15). Verificar: `mvn -o -q -f CAIXA_JAVAFX/pom.xml compile`.
+- [x] 1.1 Criar `JAVA/caixa/pom.xml` conforme D2 (Java 21, javafx-controls 21.0.8, jackson-databind + jsr310 2.17.2, junit-jupiter 5.10.2, compiler 3.13.0, surefire 3.2.5, shade 3.5.3 com Main-Class `br.com.quack.caixa.Launcher`, finalName `quack-caixa`). Verificar: `mvn -o -q -f JAVA/caixa/pom.xml validate` sem erro.
+- [x] 1.2 Criar `Launcher`, `App` (janela "Quack Caixa" maximizada, mínimo 1024×700), `config/AppPaths`, `config/AppConfig` (D11) e `quack.css` (D15). Verificar: `mvn -o -q -f JAVA/caixa/pom.xml compile`.
 - [x] 1.3 Criar `README.md` (requisitos, build, execução, pasta de dados, atalhos, limitações) e `run.bat`. Verificar: arquivos presentes.
 
 ## 2. Domínio puro (com testes)
@@ -39,15 +39,15 @@ Referência obrigatória: `design.md` (D1–D15). Todos os comandos Maven rodam 
 - [x] 6.1 `ui/LoginView` (URL da API, e-mail, senha, Entrar; erro da API; Enter envia). Verificar: compila.
 - [x] 6.2 `ui/PdvView` com topo, busca + sugestões, quantidade, carrinho, painel de total e botões (D13). Verificar: compila.
 - [x] 6.3 `ui/PaymentDialog`, `ui/CustomerPickerDialog`, `ui/CashPanelDialog`, `ui/CashMovementDialog`, `ui/Toasts`, `ui/Fx` e atalhos de teclado de D13. Verificar: compila.
-- [x] 6.4 Ligar tudo em `App` (login → carregar catálogo/caixa → PdvView; 401 → login; iniciar/parar SyncWorker; fechar janela encerra executores). Verificar: `mvn -o -f CAIXA_JAVAFX/pom.xml package` gera `target/quack-caixa.jar` e todos os testes passam.
+- [x] 6.4 Ligar tudo em `App` (login → carregar catálogo/caixa → PdvView; 401 → login; iniciar/parar SyncWorker; fechar janela encerra executores). Verificar: `mvn -o -f JAVA/caixa/pom.xml package` gera `target/quack-caixa.jar` e todos os testes passam.
 
 ## 7. Verificação final
 
-- [x] 7.1 Rodar `java -jar CAIXA_JAVAFX/target/quack-caixa.jar` e confirmar que a tela de login abre sem exceção no console (encerrar após alguns segundos). Verificar: processo sobe e janela é criada.
+- [x] 7.1 Rodar `java -jar JAVA/caixa/target/quack-caixa.jar` e confirmar que a tela de login abre sem exceção no console (encerrar após alguns segundos). Verificar: processo sobe e janela é criada.
 - [x] 7.2 Revisar paridade com o caixa web: atalhos, mensagens de erro e regras de D7/D8 conferidas contra `SalesStartPage.tsx`. Verificar: checklist no README atualizado.
 
 ## Workflow follow-up
 
 - Rodar `graphify update .` após a implementação.
-- Commit do módulo `CAIXA_JAVAFX/` e da change `openspec/changes/caixa-javafx/`.
+- Commit do módulo `JAVA/caixa/` e da change `openspec/changes/caixa-javafx/`.
 - Arquivar a change com `/opsx:archive` depois de testada numa loja.

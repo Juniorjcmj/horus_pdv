@@ -1,0 +1,14 @@
+{
+  "status" : 404,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Nenhum produto com o código 'NAO-EXISTE'.",
+    "details" : null,
+    "data" : {
+      "codigo" : "CODIGO_DESCONHECIDO"
+    }
+  }
+}

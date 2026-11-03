@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Quantidade mínima deve ser maior que 1.",
+    "details" : null,
+    "data" : null
+  }
+}

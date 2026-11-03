@@ -1,0 +1,110 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "",
+    "details" : null,
+    "data" : {
+      "nota" : {
+        "id" : "ne-5857538ff2fc4bdca57a5d71a02f6502",
+        "chaveAcesso" : null,
+        "modelo" : 0,
+        "numeroNota" : "CP-1001",
+        "serie" : "",
+        "fornecedorNome" : "Distribuidora Sol SA",
+        "fornecedorCnpj" : "11222333000181",
+        "dataEmissao" : "2026-11-02",
+        "valorNota" : 31.5,
+        "valorEntrada" : 31.5,
+        "quantidadeItens" : 2,
+        "origem" : "manual",
+        "temXml" : false,
+        "criadaEm" : "2026-11-02T17:01:00.4897349Z",
+        "usuarioNome" : "Gil Gerente",
+        "temComprovante" : false,
+        "comprovanteNome" : null,
+        "estornada" : false,
+        "estornadaEm" : null,
+        "estornadaPorUsuarioNome" : null,
+        "estornoJustificativa" : null
+      },
+      "entrada" : {
+        "operacaoId" : "aaaaaaaabbbbccccdddd000000000001",
+        "fingerprint" : "9E2ED7FAC73545F899D579EC85D735CC69541CADEA57451AA4D1730F39F4AB59",
+        "dataCompra" : "2026-11-02",
+        "tipoDocumento" : "cupom",
+        "observacao" : "Compra de teste",
+        "fornecedor" : {
+          "cnpj" : "11222333000181",
+          "companyName" : "Distribuidora Sol SA",
+          "fantasyName" : "Distribuidora Sol",
+          "cep" : "",
+          "city" : "",
+          "state" : "",
+          "address" : "",
+          "neighborhood" : "",
+          "number" : "",
+          "telephone" : ""
+        },
+        "itens" : [ {
+          "quantidadeCompra" : "2",
+          "unidadeCompra" : "CX",
+          "fatorConversao" : "6",
+          "custoCompra" : "12,00",
+          "alterarPrecoVenda" : false,
+          "estoqueAntes" : "10",
+          "estoqueDepois" : "22",
+          "numeroItem" : 0,
+          "produtoExistenteId" : "pr-ct-2",
+          "produtoExistenteNome" : null,
+          "codigoFornecedor" : null,
+          "productCode" : "CT002",
+          "productName" : "Produto Contrato 2",
+          "gtin" : "SEM GTIN",
+          "ncm" : "00000000",
+          "cest" : null,
+          "unidadeComercial" : "UN",
+          "quantidade" : "12",
+          "precoCusto" : "2",
+          "precoVenda" : "3",
+          "dataValidade" : "2027-01-10",
+          "numeroLote" : "LM-1",
+          "margemPercentual" : null
+        }, {
+          "quantidadeCompra" : "5",
+          "unidadeCompra" : "UN",
+          "fatorConversao" : "1",
+          "custoCompra" : "1,5000",
+          "alterarPrecoVenda" : false,
+          "estoqueAntes" : "0",
+          "estoqueDepois" : "5",
+          "numeroItem" : 0,
+          "produtoExistenteId" : "pr-d3bd2c7e31324d84963d499b20505900",
+          "produtoExistenteNome" : null,
+          "codigoFornecedor" : null,
+          "productCode" : "EM-aaaaaaaabbbb-2",
+          "productName" : "Chiclete Menta",
+          "gtin" : "SEM GTIN",
+          "ncm" : "00000000",
+          "cest" : null,
+          "unidadeComercial" : "UN",
+          "quantidade" : "5",
+          "precoCusto" : "1,5",
+          "precoVenda" : "2,99",
+          "dataValidade" : null,
+          "numeroLote" : null,
+          "margemPercentual" : null
+        } ],
+        "resultado" : {
+          "notaEntradaId" : "",
+          "fornecedorCriado" : false,
+          "produtosCriados" : 1,
+          "produtosAtualizados" : 1
+        }
+      }
+    }
+  }
+}
