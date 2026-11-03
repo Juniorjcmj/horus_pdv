@@ -1,0 +1,476 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: venda-local-fiado.spec.ts >> Venda sempre no IndexedDB e saldo do fiado protegido >> Sync de clientes mantém o fiado offline pendente somado ao saldo do servidor
+- Location: tests\architecture\venda-local-fiado.spec.ts:108:3
+
+# Error details
+
+```
+Error: page.evaluate: ApiError: Não foi possível conectar ao servidor. Verifique a conexão e tente novamente.
+    at apiRequest (http://localhost:5173/src/services/api/apiClient.ts:55:10)
+    at async Object.creditSnapshot (http://localhost:5173/src/services/api/customerService.ts:10:20)
+    at async readCreditSnapshotOnce (http://localhost:5173/src/application/customers/CustomerSyncAdapter.ts:106:19)
+    at async Module.syncCustomersFromApi (http://localhost:5173/src/application/customers/CustomerSyncAdapter.ts:83:11)
+    at async eval (eval at evaluate (:302:30), <anonymous>:21:9)
+    at async <anonymous>:328:30
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - img [ref=e5]
+    - generic [ref=e8]:
+      - strong [ref=e9]: "Novo Modelo Multi-Segmento:"
+      - text: Suporte completo a fardos, balanças, validades e NFC-e rápida!
+    - button "Experimente Grátis →" [ref=e10] [cursor=pointer]
+  - banner [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - img "Quack Sistemas" [ref=e14]
+        - generic [ref=e15]:
+          - generic [ref=e16]:
+            - text: Quack
+            - generic [ref=e17]: Sistemas
+          - generic [ref=e18]: Soluções para seu negócio
+      - navigation [ref=e19]:
+        - link "Telas do Sistema" [ref=e20] [cursor=pointer]:
+          - /url: "#demonstracao"
+        - link "Funcionalidades" [ref=e21] [cursor=pointer]:
+          - /url: "#funcionalidades"
+        - link "Segmentos" [ref=e22] [cursor=pointer]:
+          - /url: "#segmentos"
+        - link "Calculadora ROI" [ref=e23] [cursor=pointer]:
+          - /url: "#calculadora"
+        - link "Depoimentos" [ref=e24] [cursor=pointer]:
+          - /url: "#depoimentos"
+        - link "Dúvidas" [ref=e25] [cursor=pointer]:
+          - /url: "#faq"
+      - generic [ref=e26]:
+        - button "Entrar" [ref=e27] [cursor=pointer]
+        - button "Testar Grátis" [ref=e28] [cursor=pointer]:
+          - generic [ref=e29]: Testar Grátis
+          - img [ref=e30]
+  - generic [ref=e33]:
+    - generic [ref=e34]:
+      - generic [ref=e37]: O Sistema Comercial Mais Ágil e Completo do Varejo
+      - heading "Venda mais rápido no caixa. Tenha o controle total da sua loja." [level=1] [ref=e38]
+      - paragraph [ref=e39]:
+        - text: Frente de caixa relâmpago sem travamento, emissão fiscal
+        - strong [ref=e40]: NFC-e/NF-e em 1 clique
+        - text: ", gestão de validade de mercadorias, fiado com limite e controle de estoque com suporte a balança."
+      - generic [ref=e41]:
+        - button "Criar Conta Gratuita" [ref=e42] [cursor=pointer]:
+          - generic [ref=e43]: Criar Conta Gratuita
+          - img [ref=e44]
+        - link "Explorar Telas do Sistema" [ref=e46] [cursor=pointer]:
+          - /url: "#demonstracao"
+          - img [ref=e47]
+          - generic [ref=e49]: Explorar Telas do Sistema
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - img [ref=e52]
+          - text: Sem necessidade de cartão
+        - generic [ref=e55]:
+          - img [ref=e56]
+          - text: Homologado SEFAZ em todo o Brasil
+        - generic [ref=e59]:
+          - img [ref=e60]
+          - text: Pronto para uso em 3 minutos
+    - generic [ref=e64]:
+      - img "Quack PDV - Ponto de Venda e Gestão Completa" [ref=e65]
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - img [ref=e69]
+          - generic [ref=e71]:
+            - paragraph [ref=e72]: Frente de Caixa Ágil
+            - paragraph [ref=e73]: "Tempo médio por cupom: < 1.2 segundos"
+        - generic [ref=e74]:
+          - img [ref=e76]
+          - generic [ref=e79]:
+            - paragraph [ref=e80]: Segurança Fiscal
+            - paragraph [ref=e81]: NFC-e / NF-e com contingência offline
+        - button "Experimentar Agora" [ref=e82] [cursor=pointer]
+  - generic [ref=e85]:
+    - generic [ref=e86]:
+      - paragraph [ref=e87]: < 1.2s
+      - paragraph [ref=e88]: Para passar o item e emitir cupom
+    - generic [ref=e89]:
+      - paragraph [ref=e90]: 100%
+      - paragraph [ref=e91]: SEFAZ com contingência offline
+    - generic [ref=e92]:
+      - paragraph [ref=e93]: 0%
+      - paragraph [ref=e94]: Perdas de mercadorias por validade vencida
+    - generic [ref=e95]:
+      - paragraph [ref=e96]: +40%
+      - paragraph [ref=e97]: Recuperação de fiado com conta digital
+  - generic [ref=e99]:
+    - generic [ref=e100]:
+      - text: Imagens Reais do Sistema
+      - heading "Veja o Quack PDV funcionando na prática." [level=2] [ref=e101]
+      - paragraph [ref=e102]: Explore abaixo as telas reais do sistema. Uma interface moderna, limpa e projetada para produtividade máxima.
+    - generic [ref=e103]:
+      - button "Frente de Caixa (PDV)" [ref=e104] [cursor=pointer]:
+        - img [ref=e105]
+        - generic [ref=e108]: Frente de Caixa (PDV)
+      - button "Dashboard Executivo" [ref=e109] [cursor=pointer]:
+        - img [ref=e110]
+        - generic [ref=e113]: Dashboard Executivo
+      - button "Estoque & Validades" [ref=e114] [cursor=pointer]:
+        - img [ref=e115]
+        - generic [ref=e119]: Estoque & Validades
+      - button "Fiscal NFC-e" [ref=e120] [cursor=pointer]:
+        - img [ref=e121]
+        - generic [ref=e125]: Fiscal NFC-e
+      - button "Fiado / Clientes" [ref=e126] [cursor=pointer]:
+        - img [ref=e127]
+        - generic [ref=e132]: Fiado / Clientes
+      - button "PIX & Pagamentos" [ref=e133] [cursor=pointer]:
+        - img [ref=e134]
+        - generic [ref=e140]: PIX & Pagamentos
+      - button "Relatórios DRE" [ref=e141] [cursor=pointer]:
+        - img [ref=e142]
+        - generic [ref=e145]: Relatórios DRE
+    - generic [ref=e147]:
+      - generic [ref=e148]:
+        - generic [ref=e149]:
+          - generic [ref=e150]: Tela Real do Sistema
+          - heading "Frente de Caixa (PDV) Ultrarrápido e Sem Mouse" [level=3] [ref=e151]
+          - paragraph [ref=e152]: "Projetado para operadores experientes ou novatos: 100% operável via atalhos de teclado (F8, F12, Enter), eliminando filas no checkout."
+          - generic [ref=e153]:
+            - generic [ref=e154]: ✓ Atalho F12 para Pagamento Imediato
+            - generic [ref=e155]: ✓ Atalho F8 para Cancelamento Rápido
+            - generic [ref=e156]: ✓ Integração com Balanças e Leitores
+            - generic [ref=e157]: ✓ Modo Tela Cheia Imersivo (F11)
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - img [ref=e161]
+              - generic [ref=e163]:
+                - heading "Venda por Peso e Unidade Fracionada" [level=4] [ref=e164]
+                - paragraph [ref=e165]: Digite gramas, quilos ou metros sem complicações. O subtotal é recalculado em tempo real.
+            - generic [ref=e166]:
+              - img [ref=e168]
+              - generic [ref=e170]:
+                - heading "Busca Inteligente por Código ou Nome" [level=4] [ref=e171]
+                - paragraph [ref=e172]: Passe o código de barras ou digite parte do nome do produto para inclusão instantânea no cupom.
+            - generic [ref=e173]:
+              - img [ref=e175]
+              - generic [ref=e177]:
+                - heading "Prevenção de Erros de Operador" [level=4] [ref=e178]
+                - paragraph [ref=e179]: Alerta visual de caixa aberto, cálculo de troco automático e cupom auditável a cada transação.
+        - generic [ref=e180]:
+          - button "Começar com este Módulo" [ref=e181] [cursor=pointer]:
+            - generic [ref=e182]: Começar com este Módulo
+            - img [ref=e183]
+          - button "Já tenho conta" [ref=e185] [cursor=pointer]
+      - generic [ref=e187]:
+        - generic [ref=e188]:
+          - generic [ref=e193]: quack-pdv://sistema/pdv
+          - generic [ref=e194]: Screenshot Real
+        - img "Frente de Caixa (PDV) Ultrarrápido e Sem Mouse" [ref=e195]
+  - generic [ref=e197]:
+    - generic [ref=e198]:
+      - text: Poder Operacional Completo
+      - heading "Tudo o que seu comércio precisa em um único lugar." [level=2] [ref=e199]
+      - paragraph [ref=e200]: "Desenvolvido ouvindo quem está no balcão todos os dias: sem telas poluídas, sem botões inúteis e sem complicação fiscal."
+    - generic [ref=e201]:
+      - generic [ref=e202]:
+        - generic [ref=e203]:
+          - generic [ref=e204]:
+            - img "Estoque e Validade" [ref=e205]
+            - generic [ref=e207]: Adeus Perdas
+          - generic [ref=e208]:
+            - img [ref=e210]
+            - heading "Estoque Inteligente & Validades" [level=3] [ref=e214]
+            - paragraph [ref=e215]: Alerta automático de mercadorias próximas do vencimento. Cadastre múltiplos lotes e programe promoções antes de perder produto.
+        - generic [ref=e216]:
+          - generic [ref=e217]: Fator de conversão fardo/unidade
+          - generic [ref=e218]: 100% Automático
+      - generic [ref=e219]:
+        - generic [ref=e220]:
+          - generic [ref=e221]:
+            - img "Emissão Fiscal NFC-e" [ref=e222]
+            - generic [ref=e224]: 100% SEFAZ
+          - generic [ref=e225]:
+            - img [ref=e227]
+            - heading "NFC-e & NF-e Descomplicadas" [level=3] [ref=e231]
+            - paragraph [ref=e232]: Emissão rápida com contingência offline. Se a internet oscilar, sua loja não para e as notas são autorizadas quando a rede voltar.
+        - generic [ref=e233]:
+          - generic [ref=e234]: Importação XML Fornecedor
+          - generic [ref=e235]: Entrada em 1 clique
+      - generic [ref=e236]:
+        - generic [ref=e237]:
+          - generic [ref=e238]:
+            - img "Gestão de Fiado" [ref=e239]
+            - generic [ref=e241]: Fim do Caderninho
+          - generic [ref=e242]:
+            - img [ref=e244]
+            - heading "Fiado Seguro & Limite de Crédito" [level=3] [ref=e249]
+            - paragraph [ref=e250]: Controle o saldo devedor de cada cliente, estabeleça teto de compras a prazo e emita extratos impressos na hora do pagamento.
+        - generic [ref=e251]:
+          - generic [ref=e252]: Trava automática de limite
+          - generic [ref=e253]: Zero Inadimplência
+      - generic [ref=e254]:
+        - generic [ref=e255]:
+          - generic [ref=e256]:
+            - img "PIX e Multi-Pagamentos" [ref=e257]
+            - generic [ref=e259]: Instantâneo
+          - generic [ref=e260]:
+            - img [ref=e262]
+            - heading "PIX Dinâmico & Múltiplas Formas" [level=3] [ref=e268]
+            - paragraph [ref=e269]: Gere o QR Code do PIX na tela do caixa com o valor exato da venda. Divida pagamentos em dinheiro, cartão e fiado sem erros.
+        - generic [ref=e270]:
+          - generic [ref=e271]: Cálculo de Troco Integrado
+          - generic [ref=e272]: Caixa 100% Batido
+      - generic [ref=e273]:
+        - generic [ref=e274]:
+          - generic [ref=e275]:
+            - img "Relatórios e DRE" [ref=e276]
+            - generic [ref=e278]: Gestão Baseada em Dados
+          - generic [ref=e279]:
+            - img [ref=e281]
+            - heading "Curva ABC & Margem Real" [level=3] [ref=e284]
+            - paragraph [ref=e285]: Acompanhe o markup cadastrado versus o markup realmente praticado no balcão. Saiba quais itens pagam as contas da sua empresa.
+        - generic [ref=e286]:
+          - generic [ref=e287]: Fechamento por Operador
+          - generic [ref=e288]: Auditoria Total
+      - generic [ref=e289]:
+        - generic [ref=e290]:
+          - generic [ref=e291]:
+            - generic [ref=e292]:
+              - generic [ref=e293]: Leve 3 Pague 2
+              - paragraph [ref=e294]: Promoção Ativa
+              - paragraph [ref=e295]: Desconto automático aplicado no caixa
+            - generic [ref=e297]: Mais Vendas
+          - generic [ref=e298]:
+            - img [ref=e300]
+            - heading "Promoções & Preços de Atacado" [level=3] [ref=e303]
+            - paragraph [ref=e304]: Configure preços progressivos ("a partir de 3 unidades sai a R$ X"), descontos por período e fidelize clientes com ofertas dinâmicas.
+        - generic [ref=e305]:
+          - generic [ref=e306]: Preço no atacarejo
+          - generic [ref=e307]: Sem intervenção
+  - generic [ref=e309]:
+    - generic [ref=e310]:
+      - text: Feito para o Seu Negócio
+      - heading "Adaptado sob medida para o seu segmento." [level=2] [ref=e311]
+      - paragraph [ref=e312]: "Não importa o tamanho da sua loja: o Quack PDV tem os recursos específicos que o seu ramo de atuação exige."
+    - generic [ref=e313]:
+      - generic [ref=e314] [cursor=pointer]:
+        - generic [ref=e315]:
+          - img [ref=e317]
+          - generic [ref=e321]: Segmento Líder
+        - heading "Mercados & Mercearias" [level=4] [ref=e322]
+        - paragraph [ref=e323]: Pesagem de hortifrúti na balança, controle de validade de laticínios e venda ultrarrápida com leitor de código de barras.
+      - generic [ref=e324] [cursor=pointer]:
+        - generic [ref=e325]:
+          - img [ref=e327]
+          - generic [ref=e329]: Alta Rotatividade
+        - heading "Lojas de Conveniência" [level=4] [ref=e330]
+        - paragraph [ref=e331]: Operação rápida 24/7, recebimento com PIX instantâneo no balcão e conferência de caixa rigorosa por turno de operador.
+      - generic [ref=e332] [cursor=pointer]:
+        - generic [ref=e333]:
+          - img [ref=e335]
+          - generic [ref=e339]: Pesagem Precisa
+        - heading "Hortifrutis & Açougues" [level=4] [ref=e340]
+        - paragraph [ref=e341]: Pesagem fracionada direta em kg, integração com balanças checkout Toledo e Filizola e precificação dinâmica.
+      - generic [ref=e342] [cursor=pointer]:
+        - generic [ref=e343]:
+          - img [ref=e345]
+          - generic [ref=e349]: Multi-Unidade
+        - heading "Materiais de Construção" [level=4] [ref=e350]
+        - paragraph [ref=e351]: Venda por metro quadrado (m²), fração ou fardo, controle de estoque em depósito e gestão de fiado para pedreiros e construtores.
+      - generic [ref=e352] [cursor=pointer]:
+        - generic [ref=e353]:
+          - img [ref=e355]
+          - generic [ref=e359]: Fluxo Contínuo
+        - heading "Padarias & Lanchonetes" [level=4] [ref=e360]
+        - paragraph [ref=e361]: Comanda ágil, múltiplos operadores de caixa sem travamento e emissão de cupom fiscal NFC-e em menos de 1 segundo.
+  - generic [ref=e363]:
+    - generic [ref=e364]:
+      - text: Simule Seus Ganhos
+      - heading "Quanto o Quack PDV economiza para você?" [level=2] [ref=e365]
+      - paragraph [ref=e366]: Ajuste os valores abaixo com base na sua operação atual e veja o impacto na sua lucratividade mensal.
+    - generic [ref=e368]:
+      - generic [ref=e369]:
+        - generic [ref=e370]:
+          - generic [ref=e371]:
+            - generic [ref=e372]: "Vendas registradas por dia:"
+            - generic [ref=e373]: 180 vendas/dia
+          - slider [ref=e374] [cursor=pointer]: "180"
+          - generic [ref=e375]:
+            - generic [ref=e376]: 30 (bairro)
+            - generic [ref=e377]: 400 (movimentado)
+            - generic [ref=e378]: 800+ (mercado grande)
+        - generic [ref=e379]:
+          - generic [ref=e380]:
+            - generic [ref=e381]: "Ticket médio por venda:"
+            - generic [ref=e382]: R$ 38,00
+          - slider [ref=e383] [cursor=pointer]: "40"
+          - generic [ref=e384]:
+            - generic [ref=e385]: R$ 10,00
+            - generic [ref=e386]: R$ 120,00
+            - generic [ref=e387]: R$ 250,00+
+        - paragraph [ref=e389]:
+          - img [ref=e390]
+          - text: Estimativa calculada com base na redução de perdas de validade, eliminação de furos no fiado e economia de tempo por fila no balcão.
+      - generic [ref=e393]:
+        - generic [ref=e394]:
+          - text: Economia Estimada para o seu Negócio
+          - generic [ref=e395]:
+            - paragraph [ref=e396]: "Recuperação estimada de perdas / mês:"
+            - paragraph [ref=e397]: + R$ 9.234,00
+          - generic [ref=e398]:
+            - generic [ref=e399]:
+              - paragraph [ref=e400]: "Faturamento Mensal:"
+              - paragraph [ref=e401]: R$ 205.200,00
+            - generic [ref=e402]:
+              - paragraph [ref=e403]: "Horas Salvas no Caixa:"
+              - paragraph [ref=e404]: ~135 horas/mês
+        - button "Garantir Essa Economia Agora" [ref=e405] [cursor=pointer]:
+          - generic [ref=e406]: Garantir Essa Economia Agora
+          - img [ref=e407]
+  - generic [ref=e410]:
+    - generic [ref=e411]:
+      - text: Comparativo de Valor
+      - heading "Por que trocar para o Quack PDV?" [level=2] [ref=e412]
+      - paragraph [ref=e413]: Veja a diferença entre um sistema ultrapassado e uma plataforma moderna.
+    - table [ref=e415]:
+      - rowgroup [ref=e416]:
+        - row "Funcionalidade / Benefício Sistemas Antigos / Cadernos Quack PDV" [ref=e417]:
+          - columnheader "Funcionalidade / Benefício" [ref=e418]
+          - columnheader "Sistemas Antigos / Cadernos" [ref=e419]
+          - columnheader "Quack PDV" [ref=e420]
+      - rowgroup [ref=e421]:
+        - row "Velocidade do Checkout no Caixa Lento, exige cliques constantes de mouse ⚡ 100% no teclado (F8, F12, Enter) em 1s" [ref=e422]:
+          - cell "Velocidade do Checkout no Caixa" [ref=e423]
+          - cell "Lento, exige cliques constantes de mouse" [ref=e424]
+          - cell "⚡ 100% no teclado (F8, F12, Enter) em 1s" [ref=e425]
+        - row "Se a internet cair durante a venda Trava a fila e impede conclusão da venda 🛡️ Contingência offline automática sem parar" [ref=e426]:
+          - cell "Se a internet cair durante a venda" [ref=e427]
+          - cell "Trava a fila e impede conclusão da venda" [ref=e428]
+          - cell "🛡️ Contingência offline automática sem parar" [ref=e429]
+        - row "Controle de Fiado Caderninho de papel sujeito a sumiço e calote 🔒 Limite de crédito e extrato com assinatura" [ref=e430]:
+          - cell "Controle de Fiado" [ref=e431]
+          - cell "Caderninho de papel sujeito a sumiço e calote" [ref=e432]
+          - cell "🔒 Limite de crédito e extrato com assinatura" [ref=e433]
+        - row "Controle de Validades de Mercadorias Visual manual, perda de produtos na prateleira 📦 Alerta antecipado para queima planejada" [ref=e434]:
+          - cell "Controle de Validades de Mercadorias" [ref=e435]
+          - cell "Visual manual, perda de produtos na prateleira" [ref=e436]
+          - cell "📦 Alerta antecipado para queima planejada" [ref=e437]
+        - row "PIX com QR Code Dinâmico Chave manual ou plaquinha com risco de golpe 📱 QR Code na tela com valor exato da compra" [ref=e438]:
+          - cell "PIX com QR Code Dinâmico" [ref=e439]
+          - cell "Chave manual ou plaquinha com risco de golpe" [ref=e440]
+          - cell "📱 QR Code na tela com valor exato da compra" [ref=e441]
+        - row "Cálculo Real de Markup e Margem \"No olho\" ou planilhas desatualizadas 📈 Comparativo de markup cadastrado vs praticado" [ref=e442]:
+          - cell "Cálculo Real de Markup e Margem" [ref=e443]
+          - cell "\"No olho\" ou planilhas desatualizadas" [ref=e444]
+          - cell "📈 Comparativo de markup cadastrado vs praticado" [ref=e445]
+  - generic [ref=e447]:
+    - generic [ref=e448]:
+      - text: Lojistas que Confiam
+      - heading "Quem usa o Quack PDV recomenda." [level=2] [ref=e449]
+      - paragraph [ref=e450]: Veja a opinião de comerciantes reais que transformaram sua rotina.
+    - generic [ref=e451]:
+      - generic [ref=e452]:
+        - generic [ref=e453]:
+          - generic [ref=e454]:
+            - img [ref=e455]
+            - img [ref=e457]
+            - img [ref=e459]
+            - img [ref=e461]
+            - img [ref=e463]
+          - paragraph [ref=e465]: "\"O Quack PDV zerou as filas no horário de pico. Os caixas usam só o teclado, e o F12 para fechar com PIX é surreal de rápido. Nunca mais tive problema com nota fiscal na SEFAZ.\""
+        - generic [ref=e466]:
+          - generic [ref=e467]: RC
+          - generic [ref=e468]:
+            - heading "Rodrigo Carvalho" [level=4] [ref=e469]
+            - paragraph [ref=e470]: Mercado & Conveniência Pop - São Paulo/SP
+      - generic [ref=e471]:
+        - generic [ref=e472]:
+          - generic [ref=e473]:
+            - img [ref=e474]
+            - img [ref=e476]
+            - img [ref=e478]
+            - img [ref=e480]
+            - img [ref=e482]
+          - paragraph [ref=e484]: "\"O controle de fiado com limite de crédito salvou minha vida. Eu tinha quase R$ 15 mil parados em caderninho que os clientes esqueciam. Hoje o sistema avisa quem deve e emite o comprovante na hora.\""
+        - generic [ref=e485]:
+          - generic [ref=e486]: MS
+          - generic [ref=e487]:
+            - heading "Marcos Silva" [level=4] [ref=e488]
+            - paragraph [ref=e489]: Depósito & Materiais União - Goiânia/GO
+      - generic [ref=e490]:
+        - generic [ref=e491]:
+          - generic [ref=e492]:
+            - img [ref=e493]
+            - img [ref=e495]
+            - img [ref=e497]
+            - img [ref=e499]
+            - img [ref=e501]
+          - paragraph [ref=e503]: "\"O alerta de validade nos iogurtes e laticínios me fez parar de jogar produto no lixo. Coloco em promoção 5 dias antes de vencer e vendo tudo com lucro. Recomendo de olhos fechados!\""
+        - generic [ref=e504]:
+          - generic [ref=e505]: AL
+          - generic [ref=e506]:
+            - heading "Ana Lúcia Ramos" [level=4] [ref=e507]
+            - paragraph [ref=e508]: Hortifrúti e Mercearia Ramos - Curitiba/PR
+  - generic [ref=e510]:
+    - generic [ref=e511]:
+      - text: Tire Suas Dúvidas
+      - heading "Perguntas Frequentes" [level=2] [ref=e512]
+      - paragraph [ref=e513]: Respostas diretas e transparentes sobre o funcionamento do Quack PDV.
+    - generic [ref=e514]:
+      - generic [ref=e515]:
+        - button "O Quack PDV funciona mesmo se a internet cair?" [ref=e516] [cursor=pointer]:
+          - generic [ref=e517]: O Quack PDV funciona mesmo se a internet cair?
+          - img [ref=e518]
+        - generic [ref=e520]: Sim! O Quack PDV conta com contingência offline inteligente. Quando a conexão oscila ou cai, o caixa continua registrando as vendas e gerando o cupom normalmente. Assim que a internet se restabelece, as notas fiscais são transmitidas automaticamente para a SEFAZ em segundo plano.
+      - button "Consigo usar minhas balanças e leitor de código de barras?" [ref=e522] [cursor=pointer]:
+        - generic [ref=e523]: Consigo usar minhas balanças e leitor de código de barras?
+        - img [ref=e524]
+      - button "Como funciona a emissão de nota fiscal NFC-e e NF-e?" [ref=e527] [cursor=pointer]:
+        - generic [ref=e528]: Como funciona a emissão de nota fiscal NFC-e e NF-e?
+        - img [ref=e529]
+      - button "O módulo de fiado / conta corrente é seguro contra perdas?" [ref=e532] [cursor=pointer]:
+        - generic [ref=e533]: O módulo de fiado / conta corrente é seguro contra perdas?
+        - img [ref=e534]
+      - button "Preciso de um computador caro para rodar o Quack PDV?" [ref=e537] [cursor=pointer]:
+        - generic [ref=e538]: Preciso de um computador caro para rodar o Quack PDV?
+        - img [ref=e539]
+      - button "Como começo a usar e fazer o teste gratuito?" [ref=e542] [cursor=pointer]:
+        - generic [ref=e543]: Como começo a usar e fazer o teste gratuito?
+        - img [ref=e544]
+  - generic [ref=e548]:
+    - heading "Pronto para transformar as vendas do seu negócio?" [level=2] [ref=e549]
+    - paragraph [ref=e550]: Junte-se aos lojistas que aceleraram o atendimento no caixa, acabaram com as perdas e colocaram a gestão no piloto automático.
+    - generic [ref=e551]:
+      - button "Criar Minha Conta Grátis" [ref=e552] [cursor=pointer]:
+        - generic [ref=e553]: Criar Minha Conta Grátis
+        - img [ref=e554]
+      - button "Já Tenho Acesso" [ref=e556] [cursor=pointer]
+    - paragraph [ref=e557]: Sem taxa de adesão • Sem cartão de crédito • Suporte dedicado
+  - contentinfo [ref=e558]:
+    - generic [ref=e559]:
+      - generic [ref=e560]:
+        - img "Quack Sistemas" [ref=e561]
+        - generic [ref=e562]:
+          - paragraph [ref=e563]: Quack Sistemas
+          - paragraph [ref=e564]: Soluções para seu negócio
+      - generic [ref=e565]:
+        - link "Funcionalidades" [ref=e566] [cursor=pointer]:
+          - /url: "#funcionalidades"
+        - link "Telas" [ref=e567] [cursor=pointer]:
+          - /url: "#demonstracao"
+        - link "ROI" [ref=e568] [cursor=pointer]:
+          - /url: "#calculadora"
+        - link "FAQ" [ref=e569] [cursor=pointer]:
+          - /url: "#faq"
+        - button "Área do Cliente" [ref=e570] [cursor=pointer]
+      - paragraph [ref=e571]: © 2026 Quack Sistemas. Todos os direitos reservados.
+```

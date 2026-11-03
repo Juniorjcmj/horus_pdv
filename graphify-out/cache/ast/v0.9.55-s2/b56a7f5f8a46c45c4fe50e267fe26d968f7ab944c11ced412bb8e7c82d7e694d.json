@@ -1,1 +1,0 @@
-{"nodes": [{"id": "$graphify-root$_api_netcore_database_migrations_25_loja_gateway_config_sql", "label": "25_loja_gateway_config.sql", "file_type": "code", "source_file": "API/NETCORE/DataBase/Migrations/25_loja_gateway_config.sql", "source_location": null}], "edges": []}

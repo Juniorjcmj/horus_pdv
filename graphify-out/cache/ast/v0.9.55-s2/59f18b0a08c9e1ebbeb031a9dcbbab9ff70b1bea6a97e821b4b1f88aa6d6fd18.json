@@ -1,1 +1,0 @@
-{"nodes": [{"id": "$graphify-root$_api_netcore_database_migrations_07_estoque_minimo_sql", "label": "07_estoque_minimo.sql", "file_type": "code", "source_file": "API/NETCORE/DataBase/Migrations/07_estoque_minimo.sql", "source_location": null}], "edges": []}

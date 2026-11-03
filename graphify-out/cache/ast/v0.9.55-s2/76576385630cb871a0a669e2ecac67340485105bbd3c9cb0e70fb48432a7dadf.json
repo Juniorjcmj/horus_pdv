@@ -1,1 +1,0 @@
-{"nodes": [{"id": "$graphify-root$_api_netcore_database_migrations_37_regras_emissao_sempre_sql", "label": "37_regras_emissao_sempre.sql", "file_type": "code", "source_file": "API/NETCORE/DataBase/Migrations/37_regras_emissao_sempre.sql", "source_location": null}], "edges": []}

@@ -1,1 +1,0 @@
-{"nodes": [{"id": "$graphify-root$_api_netcore_database_migrations_44_fiscal_qrcode_sql", "label": "44_fiscal_qrcode.sql", "file_type": "code", "source_file": "API/NETCORE/DataBase/Migrations/44_fiscal_qrcode.sql", "source_location": null}], "edges": []}

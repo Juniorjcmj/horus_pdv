@@ -1,1 +1,0 @@
-{"nodes": [{"id": "$graphify-root$_api_netcore_database_migrations_32_cancelamento_venda_auditoria_sql", "label": "32_cancelamento_venda_auditoria.sql", "file_type": "code", "source_file": "API/NETCORE/DataBase/Migrations/32_cancelamento_venda_auditoria.sql", "source_location": null}], "edges": []}

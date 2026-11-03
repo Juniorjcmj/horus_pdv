@@ -1,1 +1,0 @@
-{"nodes": [{"id": "$graphify-root$_api_netcore_database_migrations_22_cancelamento_nfce_caixa_sql", "label": "22_cancelamento_nfce_caixa.sql", "file_type": "code", "source_file": "API/NETCORE/DataBase/Migrations/22_cancelamento_nfce_caixa.sql", "source_location": null}], "edges": []}
