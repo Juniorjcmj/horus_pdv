@@ -29,6 +29,10 @@ public final class GuardaCatalogo {
             }
             for (String c : t.excecoes().keySet()) exigirColuna(problemas, t, cols, c);
             for (var r : t.regras()) exigirColuna(problemas, t, cols, r.coluna());
+            for (var a : t.aceites()) {
+                exigirColuna(problemas, t, cols, a.colunaGatilho());
+                for (String c : a.colunas()) exigirColuna(problemas, t, cols, c);
+            }
             if (!t.sincroniza()) continue;
             if (pks.getOrDefault(t.nome(), List.of()).isEmpty()) {
                 problemas.add("Tabela sincronizada sem chave primaria: " + t.nome());

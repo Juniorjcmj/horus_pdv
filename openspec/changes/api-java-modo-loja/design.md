@@ -240,6 +240,45 @@ existe, ou tabela `EDITAVEL`/`LOJA` sem chave primária. A ordem de aplicação 
   Uma consulta das chaves estrangeiras do `V1` confirma que e a unica `FORA` referenciada por tabela sincronizada.
 - Reuso: `LeitorLinhas` (protocolo) e `ConversorValor.bind` saíram do `LeitorMudancas`/`AplicadorLotes`.
 
+**Ajustes da implementacao (grupo 4, tarefas 4.1 a 4.4):**
+- **Espelho (`SyncEspelho`):** guarda, por linha, o valor das colunas `EDITAVEL`, `LOJA`, `NUVEM` e `CIFRADA` (esta com o texto
+  cifrado da nuvem; `LOCAL` e chave ficam fora). Existe para tabelas `EDITAVEL` e para as que tem coluna ou linha de autoria da
+  nuvem (`DocumentosFiscais`, `FiscalSequencias`): nestas ultimas guarda so a chave (`{}`), que diz "esta linha veio da loja" (sem
+  isso, uma nota inserida pelo lote e alterada pelo worker na mesma janela do detector pareceria criada na nuvem). Quem mantem:
+  o aplicador (`depois`, relendo a linha da nuvem; coluna `EDITAVEL` bloqueada por comando pendente guarda o valor da loja), a
+  ativacao (`AtivacaoNuvem.ativar` recria o espelho no MESMO retrato SNAPSHOT em que confere o delta e le a versao do detector, sem
+  janela perdida) e o resultado `aplicado` de `alterar`/`forcar` (o espelho passa a refletir a loja). A pagina da carga registra so
+  as chaves, para o delta saber de que empresa e uma exclusao.
+- **Detector:** `DetectorNuvem` (2 s, `quack.sync.detector-ativo`) por empresa em modo loja, transacao SNAPSHOT, trava de aplicacao
+  `quack:sync-nuvem:<empresa>` (sessao no detector, transacao no `ReceptorLotes.aplicar`) para nao correr com o aplicador.
+  `MotorDeteccao` e o nucleo (comparacao com o espelho) e e o mesmo na deteccao inline (`DeteccaoInline` agora devolve as colunas
+  bloqueadas por comando pendente; o aplicador nao as escreve). Dedupe: comando pendente identico nao se repete; quarentena aberta
+  identica tambem nao. Deteccao completa (alem da retencao) compara so as tabelas `EDITAVEL` com o espelho.
+- **Regra por tipo de linha mudada na nuvem:** `EDITAVEL` ou linha de autoria da nuvem (modelo 55): insercao -> `inserir`; exclusao
+  (empresa pelo espelho) -> `excluir`; coluna `EDITAVEL` -> `alterar` com base do espelho; `NUVEM`/`CIFRADA` -> `forcar`; coluna `LOJA`
+  -> quarentena + `reenviar`. Tabela `LOJA`: linha criada na nuvem -> quarentena (nao exclui, sem `reenviar`); alterada -> `forcar`
+  das colunas `NUVEM` se a tabela as tem (resultado fiscal, D8) ou das colunas de um aceite (abaixo) ou, senao, quarentena +
+  `reenviar`. Exclusao em tabela `LOJA` nao tem empresa conhecida: nenhum comando, fica para a conferencia (grupo 6).
+- **`Vendas.Status` vindo da nuvem (regra escolhida):** o catalogo ganhou `AceiteDaNuvem` por tabela: `Vendas` aceita da nuvem
+  `Status` quando a linha ja esta `cancelada` ou `estornada` (mais `CanceladoEm` e `Cancelado*`, que o worker .NET grava junto).
+  A mudanca desce por `forcar` (sem quarentena e sem alerta) e a coluna fica bloqueada para o aplicador ate o comando terminar, entao
+  um lote antigo da loja nao a desfaz. Mais simples que coluna `NUVEM` condicional (que impediria o cancelamento feito na loja de subir).
+  Limite: os efeitos de estoque/fiado que a .NET grava na nuvem ao cancelar a nota (`EstoqueMovimentacoes`, `Produtos.ProductQnt`)
+  sao tabelas/colunas `LOJA` e vao para a quarentena e sao revertidos; o estorno de estoque na loja e da Fase 7.
+- **Comandos:** `GET /api/loja-sync/comandos?apos=` (long-poll, `quack.sync.comandos-espera-ms`, 25 s) entrega os pendentes com
+  `seq > apos` mais os que ja falharam (reentrega); `CIFRADA` sai decifrada e a loja recifra. `POST .../resultados`:
+  `aplicado`, `conflito` (alerta `comando-conflito`) e `falhou` (5a falha -> `parado` + alerta `comando-parado`; os seguintes seguem).
+  Na loja `ExecutorComandos` (thread propria, perfil `loja`) chama `AplicadorComandos.ciclo()`: cursor `ComandosApos` so avanca depois
+  de os resultados chegarem; `SyncComandosAplicados` torna a reentrega idempotente (resultado `falhou` e reaplicado). Conflito de
+  `alterar` e de `excluir` poe a linha em `SyncReenvios`, para a nuvem voltar ao valor da loja no proximo lote. `forcar` e `inserir`
+  em linha inexistente/ja existente terminam `conflito` (nao `falhou`).
+- **Pendencias do grupo 3 resolvidas:** (a) o delta so devolve exclusao cuja chave esta no espelho da empresa (tabelas sem espelho
+  ficam para a conferencia); (b) `ativar` usa o mesmo filtro, entao exclusao desconhecida nao gera 409; (c) na ressincronizacao
+  completa, sobra em tabela `EDITAVEL` so e excluida na nuvem se tem espelho (a loja a excluiu); sem espelho e linha criada na nuvem
+  aguardando comando e fica.
+- **Fora desta entrega (anotado):** a entrada "linha da nuvem sobrescrita na ressincronizacao completa" da quarentena (D7) nao foi
+  implementada; a rota de situacao e o e-mail dos alertas sao do grupo 6.
+
 ### D4. Envio loja → nuvem
 
 - **Rotina:** `EnvioSincronizacao`, a cada 2 s quando ociosa.

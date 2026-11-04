@@ -79,6 +79,7 @@ public class LojaSyncCargaController {
                     : JSON.readValue(depois, new TypeReference<List<String>>() {});
             long versao = ativacao.abrirCarga(servidor);
             CargaPagina p = leitor.pagina(servidor.companyId(), tabela, cursor, limite == null ? LIMITE_PADRAO : limite);
+            ativacao.registrarPagina(servidor, p);
             return ResponseEntity.ok(ApiResponse.ok("Pagina da carga.", new CargaPagina(p.tabela(), versao, p.colunas(), p.linhas(),
                     p.ultimaChave(), p.fim())));
         } catch (IllegalArgumentException | com.fasterxml.jackson.core.JsonProcessingException e) {

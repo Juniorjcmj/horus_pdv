@@ -26,7 +26,11 @@ public class AtivacaoNuvem {
     private final JdbcTemplate jdbc;
     private final TransactionOperations tx;
 
-    public AtivacaoNuvem(LeitorCargaNuvem leitor, JdbcTemplate jdbc, TransactionOperations tx) {
+    private final br.com.quack.pdv.plataforma.sincronizacao.nuvem.MotorDeteccao motor;
+
+    public AtivacaoNuvem(LeitorCargaNuvem leitor, JdbcTemplate jdbc, TransactionOperations tx,
+                         br.com.quack.pdv.plataforma.sincronizacao.nuvem.MotorDeteccao motor) {
+        this.motor = motor;
         this.leitor = leitor;
         this.jdbc = jdbc;
         this.tx = tx;
@@ -36,12 +40,12 @@ public class AtivacaoNuvem {
         if (versaoLoja < 0) {
             throw new NegocioException(HttpStatus.BAD_REQUEST, "Versao da loja invalida.");
         }
-        CargaDelta delta = leitor.delta(servidor.companyId(), desde);
-        if (!delta.vazio()) {
+        LeitorCargaNuvem.RetratoAtivacao retrato = leitor.retratoDeAtivacao(servidor.companyId(), desde);
+        if (!retrato.vazio()) {
             throw new NegocioException(HttpStatus.CONFLICT,
                     "A nuvem mudou depois do ultimo delta aplicado; repita o delta antes de ativar.");
         }
-        long detectorDesde = delta.ate();
+        long detectorDesde = retrato.ate();
         tx.executeWithoutResult(s -> {
             int n = jdbc.update("UPDATE dbo.SyncEstadoNuvem SET ServidorId = ?, AplicadoAte = ?, DetectorDesde = ?, "
                     + "UltimoLoteId = NULL, AtualizadoEm = SYSDATETIMEOFFSET() WHERE CompanyId = ?",
@@ -50,12 +54,63 @@ public class AtivacaoNuvem {
                 jdbc.update("INSERT INTO dbo.SyncEstadoNuvem (CompanyId, ServidorId, AplicadoAte, DetectorDesde) "
                         + "VALUES (?, ?, ?, ?)", servidor.companyId(), servidor.id(), versaoLoja, detectorDesde);
             }
+            gravarEspelho(servidor.companyId(), retrato.espelho());
             jdbc.update("UPDATE dbo.SyncServidores SET Status = N'ativo', AtivadoEm = SYSDATETIMEOFFSET() "
                     + "WHERE Id = ? AND Status = N'pendente'", servidor.id());
             jdbc.update("UPDATE dbo.SyncCargas SET Status = N'ativada', AtualizadoEm = SYSDATETIMEOFFSET() "
                     + "WHERE ServidorId = ? AND Status = N'aberta'", servidor.id());
         });
         return new Ativacao(versaoLoja, detectorDesde);
+    }
+
+    /**
+     * Recria o espelho da empresa a partir da nuvem agora (a loja acabou de receber exatamente isso) e devolve a
+     * versao em que o detector deve comecar. Usado na ativacao e pelos testes que ativam a loja sem carga.
+     */
+    public long reconstruirEspelho(String companyId) {
+        LeitorCargaNuvem.RetratoAtivacao r = leitor.retratoDeAtivacao(companyId, leitor.versaoAtual());
+        tx.executeWithoutResult(s -> gravarEspelho(companyId, r.espelho()));
+        return r.ate();
+    }
+
+    private void gravarEspelho(String companyId, java.util.List<LeitorCargaNuvem.EspelhoLinha> linhas) {
+        jdbc.update("DELETE FROM dbo.SyncEspelho WHERE CompanyId = ?", companyId);
+        com.fasterxml.jackson.databind.ObjectMapper json = new com.fasterxml.jackson.databind.ObjectMapper();
+        jdbc.batchUpdate("INSERT INTO dbo.SyncEspelho (Tabela, Chave, CompanyId, ColunasJson) VALUES (?, ?, ?, ?)", linhas, 500,
+                (ps, l) -> {
+                    ps.setString(1, l.tabela().nome());
+                    ps.setString(2, l.chave());
+                    ps.setString(3, companyId);
+                    try {
+                        ps.setString(4, json.writeValueAsString(l.colunas()));
+                    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                        throw new IllegalStateException(e);
+                    }
+                });
+    }
+
+    /** Pagina da carga servida: guarda so as chaves das linhas (espelho minimo) para o delta saber de que empresa e. */
+    public void registrarPagina(ServidorLoja servidor, CargaPagina p) {
+        var t = br.com.quack.pdv.plataforma.sincronizacao.catalogo.CatalogoSincronizacao.tabela(p.tabela())
+                .filter(br.com.quack.pdv.plataforma.sincronizacao.catalogo.TabelaSincronizada::usaEspelho);
+        if (t.isEmpty() || p.linhas().isEmpty()) return;
+        java.util.List<String> pk = motor.chavePrimaria(t.get());
+        int[] pos = pk.stream().mapToInt(c -> {
+            for (int i = 0; i < p.colunas().size(); i++) if (p.colunas().get(i).nome().equals(c)) return i;
+            return -1;
+        }).toArray();
+        jdbc.batchUpdate("""
+                IF NOT EXISTS (SELECT 1 FROM dbo.SyncEspelho WHERE Tabela = ? AND Chave = ?)
+                    INSERT INTO dbo.SyncEspelho (Tabela, Chave, CompanyId, ColunasJson) VALUES (?, ?, ?, N'{}')
+                """, p.linhas(), 500, (ps, linha) -> {
+            StringBuilder chave = new StringBuilder();
+            for (int i = 0; i < pos.length; i++) chave.append(i == 0 ? "" : "|").append(linha.get(pos[i]));
+            ps.setString(1, t.get().nome());
+            ps.setString(2, chave.toString());
+            ps.setString(3, t.get().nome());
+            ps.setString(4, chave.toString());
+            ps.setString(5, servidor.companyId());
+        });
     }
 
     /** Abre a carga do servidor (uma aberta por vez) guardando a versao do retrato; devolve a versao. */

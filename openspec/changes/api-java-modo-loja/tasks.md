@@ -88,13 +88,13 @@
 
 ## 4. Comandos nuvem → loja
 
-- [ ] 4.1 `SyncEspelho` mantido pelo aplicador e `DetectorNuvem` (D6), periódico e inline.
+- [x] 4.1 `SyncEspelho` mantido pelo aplicador e `DetectorNuvem` (D6), periódico e inline.
   - Ignora o contexto `sync-loja`.
   - Cria `alterar`, `inserir`, `excluir` e `forcar`; em tabela `LOJA` grava a quarentena e cria `reenviar`.
   - Detecção completa quando o detector passa da retenção.
   - Verificação: unitário da comparação com o espelho, e IT em que um `UPDATE` por SQL sem contexto no banco da nuvem
     gera o comando certo, enquanto um lote aplicado não gera nenhum.
-- [ ] 4.2 Entrega (`GET /comandos` com long-poll, `POST /comandos/resultados`), tentativas e parada na 5ª falha.
+- [x] 4.2 Entrega (`GET /comandos` com long-poll, `POST /comandos/resultados`), tentativas e parada na 5ª falha.
   - Lado da loja: `AplicadorComandos` com conferência de base coluna a coluna, contexto `comando-nuvem`, idempotência
     por `SyncComandosAplicados` e `AuditLog`.
   - Verificação: `ComandosIT` com os cenários da spec `plataforma/comandos-nuvem-loja`:
@@ -105,13 +105,13 @@
     - a venda logo depois da edição de preço não apaga o preço;
     - comandos guardados sem internet são aplicados em ordem;
     - comando que falha 5 vezes para sem travar os seguintes.
-- [ ] 4.3 Quarentena e reversão (D7).
+- [x] 4.3 Quarentena e reversão (D7).
   - Venda criada na nuvem vai para a quarentena e não é excluída.
   - Saldo alterado na nuvem volta ao da loja, com alerta.
   - Exclusão em tabela `LOJA` é corrigida pela conferência.
   - Rota de resolver.
   - Verificação: IT de cada caso.
-- [ ] 4.4 Resultado fiscal (D8): colunas `NUVEM` de `DocumentosFiscais` descem por `forcar`; modelo 55 é autoria da
+- [x] 4.4 Resultado fiscal (D8): colunas `NUVEM` de `DocumentosFiscais` descem por `forcar`; modelo 55 é autoria da
   nuvem.
   - Verificação: IT em que um `UPDATE` "da .NET" na nota (status 100, protocolo, XML) chega à loja mantendo número e
     chave, e uma NF-e modelo 55 criada na nuvem desce para a loja.

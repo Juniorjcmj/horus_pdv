@@ -70,7 +70,8 @@ public final class AmbienteSync implements AutoCloseable {
         criarBancoNuvem(bancoNuvem);
         prepararEsquemaDotNet();
 
-        nuvem = subir("nuvem", urlNuvem(), SQL_NUVEM.getUsername(), SQL_NUVEM.getPassword(), 2000);
+        nuvem = subir("nuvem", urlNuvem(), SQL_NUVEM.getUsername(), SQL_NUVEM.getPassword(), 2000,
+                "--quack.sync.comandos-espera-ms=1500");
         loja = paraCarga
                 ? subir("loja", BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword(), 300,
                         "--quack.auth.jwt-secret=" + JWT_LOJA, "--quack.security.encryption-key=" + CIFRA_LOJA)
@@ -174,7 +175,9 @@ public final class AmbienteSync implements AutoCloseable {
                        AtivadaEm = SYSDATETIMEOFFSET(), VersaoDe = ?, AplicadoAteNuvem = ? WHERE Id = 1
                 """, EMPRESA, urlBaseNuvem(), cifrado, versao, versao);
         registrarServidor("srv-it", EMPRESA, token, "ativo");
-        jdbcNuvem.update("INSERT INTO SyncEstadoNuvem (CompanyId, ServidorId, AplicadoAte) VALUES (?, 'srv-it', ?)", EMPRESA, versao);
+        long detector = nuvem.getBean(br.com.quack.pdv.plataforma.sincronizacao.carga.AtivacaoNuvem.class).reconstruirEspelho(EMPRESA);
+        jdbcNuvem.update("INSERT INTO SyncEstadoNuvem (CompanyId, ServidorId, AplicadoAte, DetectorDesde) VALUES (?, 'srv-it', ?, ?)",
+                EMPRESA, versao, detector);
     }
 
     public void registrarServidor(String id, String empresa, String tokenClaro, String status) {

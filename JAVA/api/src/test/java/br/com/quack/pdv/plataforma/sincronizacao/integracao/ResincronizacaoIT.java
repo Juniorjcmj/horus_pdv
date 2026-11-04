@@ -45,6 +45,9 @@ class ResincronizacaoIT {
         esperar("venda antiga na nuvem", 60_000, () -> contar(nuvem, "SELECT COUNT(*) FROM Vendas WHERE Id = ?", antiga.vendaId()) == 1);
         amb.esperarConvergencia(30_000);
         assertThat(contar(nuvem, "SELECT COUNT(*) FROM VendaPagamentos WHERE VendaId = ?", antiga.vendaId())).isEqualTo(1);
+        loja.update("INSERT INTO Categorias (Id, CompanyId, Nome, CategoriaPaiId, Ordem, Ativa) VALUES ('cat-ret-del', ?, 'RetDel', NULL, 96, 1)", EMPRESA);
+        esperar("categoria conhecida na nuvem", 30_000, () -> contar(nuvem, "SELECT COUNT(*) FROM Categorias WHERE Id = 'cat-ret-del'") == 1);
+        amb.esperarConvergencia(30_000);
         long versaoDe = loja.queryForObject("SELECT VersaoDe FROM SyncEstado WHERE Id = 1", Long.class);
 
         // loja sem internet; muda coisas que so o retrato completo consegue levar (a exclusao inclusive)
@@ -53,6 +56,10 @@ class ResincronizacaoIT {
         loja.update("DELETE FROM VendaPagamentos WHERE VendaId = ?", antiga.vendaId());
         loja.update("UPDATE Produtos SET ProductQnt = ProductQnt + 5 WHERE CompanyId = ? AND ProductCode = 'CT001'", EMPRESA);
         loja.update("INSERT INTO Categorias (Id, CompanyId, Nome, CategoriaPaiId, Ordem, Ativa) VALUES ('cat-ret', ?, 'Ret', NULL, 97, 1)", EMPRESA);
+        loja.update("DELETE FROM Categorias WHERE Id = 'cat-ret-del'"); // EDITAVEL conhecida pelo espelho: sai na nuvem
+        var detector = amb.nuvem.getBean(br.com.quack.pdv.plataforma.sincronizacao.nuvem.DetectorNuvem.class);
+        detector.setPausado(true); // criada so na nuvem, aguardando comando: tem de sobreviver ao retrato
+        nuvem.update("INSERT INTO Categorias (Id, CompanyId, Nome, CategoriaPaiId, Ordem, Ativa) VALUES ('cat-ret-nuv', ?, 'RetNuv', NULL, 95, 1)", EMPRESA);
 
         // limpeza manual do tracking: desligar e religar zera o historico e leva a versao minima valida para a frente
         var admin = amb.loja.getBean(br.com.quack.pdv.plataforma.sincronizacao.tracking.ChangeTrackingAdmin.class);
@@ -74,6 +81,13 @@ class ResincronizacaoIT {
 
         assertThat(contar(nuvem, "SELECT COUNT(*) FROM VendaPagamentos WHERE VendaId = ?", antiga.vendaId()))
                 .as("excluida na loja durante a janela perdida").isZero();
+        // EDITAVEL: a que a loja excluiu (conhecida pelo espelho) sai; a criada so na nuvem fica
+        assertThat(contar(nuvem, "SELECT COUNT(*) FROM Categorias WHERE Id = 'cat-ret-del'")).as("excluida na loja").isZero();
+        assertThat(contar(nuvem, "SELECT COUNT(*) FROM Categorias WHERE Id = 'cat-ret-nuv'")).as("criada na nuvem sobrevive").isEqualTo(1);
+        amb.nuvem.getBean(br.com.quack.pdv.plataforma.sincronizacao.nuvem.DetectorNuvem.class).setPausado(false);
+        esperar("comando inserir levou a categoria da nuvem a loja", 40_000, () ->
+                contar(loja, "SELECT COUNT(*) FROM Categorias WHERE Id = 'cat-ret-nuv'") == 1);
+        amb.esperarConvergencia(60_000);
         assertThat(amb.diferencas()).isEmpty();
         assertThat(loja.queryForObject("SELECT PausadaMotivo FROM SyncEstado WHERE Id = 1", String.class)).isNull();
     }

@@ -91,6 +91,15 @@ public class QuackProperties {
         public void setNuvemUrl(String nuvemUrl) { this.nuvemUrl = nuvemUrl == null ? "" : nuvemUrl; }
         public boolean isEnvioAtivo() { return envioAtivo; }
         public void setEnvioAtivo(boolean envioAtivo) { this.envioAtivo = envioAtivo; }
+        private boolean detectorAtivo = true;
+        private long comandosEsperaMs = 25_000L;
+
+        /** Nuvem: liga o detector periodico de edicoes (D6). */
+        public boolean isDetectorAtivo() { return detectorAtivo; }
+        public void setDetectorAtivo(boolean detectorAtivo) { this.detectorAtivo = detectorAtivo; }
+        /** Nuvem: tempo maximo do long-poll de {@code GET comandos} (25 s; os testes encurtam). */
+        public long getComandosEsperaMs() { return clamp(comandosEsperaMs, 0L, 60_000L); }
+        public void setComandosEsperaMs(long comandosEsperaMs) { this.comandosEsperaMs = comandosEsperaMs; }
         public long getMaxLoteBytes() { return clamp(maxLoteBytes, 32_768L, 64_000_000L); }
         public void setMaxLoteBytes(long maxLoteBytes) { this.maxLoteBytes = maxLoteBytes; }
     }

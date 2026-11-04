@@ -49,7 +49,11 @@ public class LeitorCargaNuvem {
     private volatile Map<String, Set<String>> colunasPorTabela;
     private volatile Map<String, List<String>> chavesPorTabela;
 
-    public LeitorCargaNuvem(DataSource dataSource, JdbcTemplate jdbc, SecretProtector segredos) {
+    private final br.com.quack.pdv.plataforma.sincronizacao.nuvem.MotorDeteccao motor;
+
+    public LeitorCargaNuvem(DataSource dataSource, JdbcTemplate jdbc, SecretProtector segredos,
+                            br.com.quack.pdv.plataforma.sincronizacao.nuvem.MotorDeteccao motor) {
+        this.motor = motor;
         this.dataSource = dataSource;
         this.jdbc = jdbc;
         this.segredos = segredos;
@@ -147,6 +151,45 @@ public class LeitorCargaNuvem {
         }
     }
 
+    /** Uma linha do espelho (D6): tabela, chave serializada e as colunas guardadas. */
+    public record EspelhoLinha(TabelaSincronizada tabela, String chave, Map<String, String> colunas) {}
+
+    /** Resultado de {@link #retratoDeAtivacao}: versao lida, se o delta desde {@code desde} esta vazio e o espelho. */
+    public record RetratoAtivacao(long ate, boolean vazio, List<EspelhoLinha> espelho) {}
+
+    /**
+     * Na mesma transacao SNAPSHOT: confere que nada mudou desde {@code desde} e le o que a loja tem (linhas das
+     * tabelas com espelho), para o espelho nascer exatamente na versao {@code ate} em que o detector passa a olhar.
+     */
+    public RetratoAtivacao retratoDeAtivacao(String companyId, long desde) {
+        carregarEsquema();
+        try (Connection con = dataSource.getConnection()) {
+            con.setAutoCommit(false);
+            con.setTransactionIsolation(SNAPSHOT);
+            try {
+                long ate = versao(con);
+                for (TabelaSincronizada t : CatalogoSincronizacao.ordemDeAplicacao()) {
+                    conferirMinima(con, t, desde);
+                    BlocoTabela b = deltaDaTabela(con, t, companyId, desde);
+                    if (!b.linhas().isEmpty() || !b.exclusoes().isEmpty()) return new RetratoAtivacao(ate, false, List.of());
+                }
+                JdbcTemplate j = new JdbcTemplate(new org.springframework.jdbc.datasource.SingleConnectionDataSource(con, true));
+                List<EspelhoLinha> espelho = new ArrayList<>();
+                for (TabelaSincronizada t : CatalogoSincronizacao.ordemDeAplicacao()) {
+                    if (!t.usaEspelho()) continue;
+                    for (var m : motor.lerTodas(j, t, companyId)) {
+                        espelho.add(new EspelhoLinha(t, String.join("|", m.pk()), motor.espelhoDe(t, m.linha())));
+                    }
+                }
+                return new RetratoAtivacao(ate, true, espelho);
+            } finally {
+                con.rollback();
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Falha ao ler o retrato da ativacao: " + e.getMessage(), e);
+        }
+    }
+
     private BlocoTabela deltaDaTabela(Connection con, TabelaSincronizada t, String companyId, long desde) throws SQLException {
         List<String> pk = chavesPorTabela.get(t.nome());
         List<String> cols = List.copyOf(colunasPorTabela.get(t.nome()));
@@ -181,7 +224,12 @@ public class LeitorCargaNuvem {
                 int posPk = cols.indexOf(pk.getFirst());
                 while (rs.next()) {
                     if (rs.getObject(pk.size() + posPk + 1) == null) {
-                        exclusoes.add(LeitorLinhas.valores(rs, colunasChave, 1));
+                        // so se a nuvem sabe de que empresa era (espelho); senao fica para a conferencia (grupo 6) e
+                        // nao vaza a chave de linha de outra empresa
+                        List<String> chave = LeitorLinhas.valores(rs, colunasChave, 1);
+                        if (t.usaEspelho() && motor.lerEspelho(jdbc, t, String.join("|", chave), companyId).isPresent()) {
+                            exclusoes.add(chave);
+                        }
                     } else {
                         linhas.add(decifrar(t, colunas, LeitorLinhas.valores(rs, colunas, pk.size() + 1)));
                     }

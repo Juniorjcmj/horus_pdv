@@ -37,7 +37,7 @@ public class AplicadorLotes {
 
     public record Resumo(int upserts, int exclusoes, int sobrasRemovidas) {}
 
-    private record Linha(List<ColunaSync> colunas, Map<String, Object> valores) {}
+    private record Linha(List<ColunaSync> colunas, Map<String, Object> valores, Map<String, String> textos) {}
 
     private record Chave(List<String> colunas, List<Object> valores, List<TipoColuna> tipos) {
         String texto() {
@@ -102,14 +102,16 @@ public class AplicadorLotes {
     private Linha linha(TabelaSincronizada t, List<ColunaSync> colunas, List<String> valores) {
         Set<String> validas = colunasPorTabela.get(t.nome());
         Map<String, Object> mapa = new LinkedHashMap<>();
+        Map<String, String> textos = new LinkedHashMap<>();
         for (int i = 0; i < colunas.size(); i++) {
             ColunaSync c = colunas.get(i);
             if (!validas.contains(c.nome())) {
                 throw new LoteRecusadoException("Coluna inexistente: " + t.nome() + "." + c.nome());
             }
             mapa.put(c.nome(), ConversorValor.decodificar(valores.get(i), c.tipo()));
+            textos.put(c.nome(), valores.get(i));
         }
-        return new Linha(colunas, mapa);
+        return new Linha(colunas, mapa, textos);
     }
 
     private boolean upsert(String companyId, TabelaSincronizada t, Linha l) {
@@ -125,9 +127,10 @@ public class AplicadorLotes {
         if (existe && !companyId.equals(existente.getFirst())) {
             throw new LoteRecusadoException("Linha existente de outra empresa em " + t.nome() + " (" + chave.texto() + ").");
         }
-        deteccao.forEach(d -> d.antes(companyId, t, l.valores(), existe));
-        if (existe) atualizar(t, l, pk, chave); else inserir(t, l);
-        deteccao.forEach(d -> d.depois(companyId, t, l.valores()));
+        Set<String> bloqueadas = new HashSet<>();
+        for (DeteccaoInline d : deteccao) bloqueadas.addAll(d.antes(companyId, t, chave.texto(), existe));
+        if (existe) atualizar(t, l, pk, chave, bloqueadas); else inserir(t, l);
+        for (DeteccaoInline d : deteccao) d.depois(companyId, t, chave.texto(), l.textos(), bloqueadas);
         return true;
     }
 
@@ -142,10 +145,10 @@ public class AplicadorLotes {
         executar(sql, cols, l.valores());
     }
 
-    private void atualizar(TabelaSincronizada t, Linha l, List<String> pk, Chave chave) {
+    private void atualizar(TabelaSincronizada t, Linha l, List<String> pk, Chave chave, Set<String> bloqueadas) {
         List<ColunaSync> sets = new ArrayList<>();
         for (ColunaSync c : l.colunas()) {
-            if (pk.contains(c.nome())) continue;
+            if (pk.contains(c.nome()) || bloqueadas.contains(c.nome())) continue; // comando pendente: vale a nuvem
             ClasseColuna cl = t.classeDaColuna(c.nome(), l.valores());
             if (cl == ClasseColuna.LOJA || cl == ClasseColuna.EDITAVEL) sets.add(c); // NUVEM, CIFRADA e LOCAL so no INSERT
         }
@@ -172,6 +175,7 @@ public class AplicadorLotes {
         String sql = COM_CONTEXTO + "DELETE FROM dbo.[" + t.nome() + "] WHERE "
                 + String.join(" AND ", pk.stream().map(c -> "[" + c + "] = ?").toList());
         executarArgs(sql, chave.valores(), chave.tipos());
+        for (DeteccaoInline d : deteccao) d.depoisDeExcluir(companyId, t, chave.texto());
         return true;
     }
 
@@ -241,7 +245,10 @@ public class AplicadorLotes {
 
     /** Exclui da empresa, em tabela LOJA, o que o retrato nao trouxe. Linhas de autoria da nuvem (regra) ficam. */
     private int removerSobras(String companyId, TabelaSincronizada t, List<Linha> recebidas) {
-        if (t.classe() != ClasseTabela.LOJA) return 0; // EDITAVEL: linha so da nuvem pode ser comando pendente (grupo 4/6)
+        // EDITAVEL: so sai a sobra que a nuvem ja viu vindo da loja (tem espelho): foi excluida na loja. Sem espelho e
+        // linha criada na nuvem, aguardando comando (grupo 4).
+        boolean editavel = t.classe() == ClasseTabela.EDITAVEL;
+        if (t.classe() != ClasseTabela.LOJA && !editavel) return 0;
         List<String> pk = chavesPorTabela.get(t.nome());
         Set<String> trazidas = new HashSet<>();
         for (Linha l : recebidas) trazidas.add(chaveDaLinha(t, pk, l).texto());
@@ -271,9 +278,12 @@ public class AplicadorLotes {
             boolean autoriaDaNuvem = t.regras().stream().anyMatch(r -> e.get(r.coluna()) != null
                     && r.valor().toString().equals(e.get(r.coluna()).toString()));
             if (autoriaDaNuvem) continue;
+            String chaveTexto = String.join("|", partes);
+            if (editavel && deteccao.stream().noneMatch(d -> d.conhecida(companyId, t, chaveTexto))) continue;
             String del = COM_CONTEXTO + "DELETE FROM dbo.[" + t.nome() + "] WHERE "
                     + String.join(" AND ", pk.stream().map(c -> "[" + c + "] = ?").toList());
             jdbc.update(del, valores.toArray());
+            for (DeteccaoInline d : deteccao) d.depoisDeExcluir(companyId, t, chaveTexto);
             removidas++;
         }
         return removidas;

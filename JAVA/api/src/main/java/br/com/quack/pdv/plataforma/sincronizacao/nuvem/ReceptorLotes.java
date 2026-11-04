@@ -98,6 +98,16 @@ public class ReceptorLotes {
 
     private Resposta aplicar(ServidorLoja servidor, ParteLote parte, List<BlocoTabela> blocos) {
         String empresa = servidor.companyId();
+        // serializa com o detector periodico (mesma trava); dono Transaction exige que a transacao ja tenha aberto
+        jdbc.execute("SELECT TOP 0 1 FROM Empresas");
+        Integer codigo = jdbc.queryForObject("""
+                DECLARE @r INT;
+                EXEC @r = sp_getapplock @Resource = ?, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 30000;
+                SELECT @r;
+                """, Integer.class, DetectorNuvem.recurso(empresa));
+        if (codigo == null || codigo < 0) {
+            throw new org.springframework.dao.CannotAcquireLockException("Trava da sincronizacao da empresa indisponivel (" + codigo + ").");
+        }
         // trava a linha de estado da empresa e confere de novo (duas requisicoes em paralelo)
         List<Long> atual = jdbc.query(
                 "SELECT AplicadoAte FROM dbo.SyncEstadoNuvem WITH (UPDLOCK, HOLDLOCK) WHERE CompanyId = ?",

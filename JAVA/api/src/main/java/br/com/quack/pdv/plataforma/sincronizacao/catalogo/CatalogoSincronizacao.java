@@ -111,7 +111,12 @@ public final class CatalogoSincronizacao {
         filha("OrdemCompraItens", ClasseTabela.LOJA, "OrdemCompra", "OrdemCompraId");
         loja("Pedidos");
         filha("PedidoItens", ClasseTabela.LOJA, "Pedidos", "PedidoId");
-        loja("Vendas");
+        // O worker fiscal da .NET (NfceOutboxWorker/DocumentoFiscalAB) grava Status e Cancelado* ao cancelar ou devolver a
+        // nota na nuvem: transicao aceita, desce por forcar em vez de ir para a quarentena (grupo 4).
+        put(new TabelaSincronizada("Vendas", ClasseTabela.LOJA, "CompanyId", null, null, Map.of(), List.of(),
+                List.of(new TabelaSincronizada.AceiteDaNuvem("Status", java.util.Set.of("cancelada", "estornada"),
+                        List.of("Status", "CanceladoEm", "CanceladoPorOperadorId", "CanceladoPorOperadorNome",
+                                "CanceladoPorSupervisorId", "CanceladoPorSupervisorNome", "CanceladoJustificativa")))));
         filha("VendaItens", ClasseTabela.LOJA, "Vendas", "VendaId");
         loja("VendaPagamentos");
         loja("VendaCancelamentos");
