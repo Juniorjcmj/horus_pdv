@@ -231,3 +231,66 @@ Publique a API e o frontend juntos. A API deve incluir `DataBase/FiscalTables/nc
 A consulta de referências tenta as fontes públicas Siscomex e SVRS, com limite de tempo e cache; sem internet, retorna a referência datada e indica a limitação. Nenhum dado da loja é enviado. O cálculo do emissor usa uma referência versionada e cobre os casos comuns documentados de 2026; códigos especiais não suportados exigem revisão, sem substituição silenciosa. Alterações de lei, opções tributárias para 2027, FECP/ST/benefícios e classificações por composição precisam de revisão contábil e técnica específica.
 
 Não é necessária migração para recuperar as notas antigas: os downloads compõem `nfeProc` usando `XmlAssinado` e o protocolo anteriormente salvo em `XmlProtocolado`, validando chave/digest e preservando a assinatura. O banco original não é regravado. Se um dos registros necessários não existir, a exportação informa a pendência. Reexportar o mês após publicar para fornecer XMLs completos à contabilidade; o ZIP antigo de protocolos não contém NCM ou tributos.
+
+## Servidor da loja: `pdv-api-sync` (sync-pdv)
+
+Receptor da sincronização das lojas com servidor local (change `api-java-modo-loja`). É a **API Java** em perfil
+`nuvem`: responde só `/api/loja-sync/**` e `/actuator/health` (o resto devolve 404). A API .NET (`pdv-api`) e o
+frontend **não mudam**. O serviço está no `docker-compose.yml` com `profiles: ["nuvem"]`: **sem o perfil ligado, nada
+muda no stack**.
+
+### Subida
+
+1. DNS: `sync-pdv.quacksistemas.com.br` → A/AAAA para o servidor Docker (igual ao `api-pdv`).
+2. Imagem: o workflow `api-java-publish.yml` publica `ghcr.io/<dono>/horus-pdv-api-java` (`latest` e o SHA) a cada push
+   em `main` que mude `JAVA/api/**`, ou por *Run workflow*. Opcional: `IMAGE_TAG_JAVA` fixa a tag no stack.
+3. Ligue o perfil: `docker compose --profile nuvem up -d` (ou `COMPOSE_PROFILES=nuvem` nas variáveis do stack).
+   O serviço reutiliza `MSSQL_SA_PASSWORD`, `JWT_SECRET` e `ENCRYPTION_KEY` do stack: **precisam ser os mesmos da
+   `pdv-api`** (o receptor valida o administrador pelo JWT da .NET e decifra segredos com a mesma chave).
+   > Portainer em modo Swarm (`docker stack deploy`) não entende `profiles`. Use um stack em modo Standalone/Compose
+   > ou copie o serviço para um stack à parte.
+4. A **primeira subida** aplica `db/nuvem/V1` (histórico próprio `flyway_quack_sync`): cria as tabelas `Sync*` e liga o
+   **Change Tracking** (retenção de 3 dias, `AUTO_CLEANUP`) e o `ALLOW_SNAPSHOT_ISOLATION` no banco `HorusPdv`, em 38
+   tabelas. Nenhuma tabela da .NET é alterada além de ligar o rastreamento.
+5. Confira: `https://sync-pdv.quacksistemas.com.br/actuator/health` → `{"status":"UP"}`; e no banco
+   `SELECT COUNT(*) FROM sys.change_tracking_tables` (38) e `SELECT snapshot_isolation_state_desc FROM sys.databases
+   WHERE name = 'HorusPdv'` (`ON`).
+
+### Cuidado: chave primária e recriação de tabela
+
+Com o Change Tracking ligado, o SQL Server **não permite** alterar a chave primária de uma tabela rastreada, nem
+recriar a tabela (`DROP`/`SELECT INTO`/troca de nome) sem antes desligar o rastreamento nela. Se uma versão futura da
+API .NET (ou um script manual) precisar disso: desligue o tracking da tabela
+(`ALTER TABLE dbo.[Tabela] DISABLE CHANGE_TRACKING`), faça a mudança e religue com
+`ALTER TABLE dbo.[Tabela] ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = OFF)` (ou reaplique o
+`db/nuvem/V1__sync_nuvem.sql` com `sqlcmd`: ele é idempotente e religa o que faltar). Religar zera o histórico da
+tabela: as lojas fazem a ressincronização completa. **Ainda não existe verificador automático** que religue tabela
+esquecida na subida do serviço (previsto no design, pendência do grupo 8): confira com
+`SELECT COUNT(*) FROM sys.change_tracking_tables` (38). Avise quem mantém a .NET.
+
+### Reverter (rollback da nuvem)
+
+1. Pare o serviço: `docker compose --profile nuvem stop pdv-api-sync` (sem tracking ele só acumularia erros).
+2. Rode `JAVA/api/db/nuvem/desligar.sql` no banco `HorusPdv` (`sqlcmd -S <servidor> -d HorusPdv -i desligar.sql`):
+   desliga o tracking das tabelas e do banco e o snapshot, e **mantém** as tabelas `Sync*`. É idempotente.
+3. As lojas continuam vendendo. Para voltar: reaplique o `db/nuvem/V1__sync_nuvem.sql` com `sqlcmd` (idempotente: religa
+   o snapshot, o banco e as tabelas) e suba o `pdv-api-sync`; cada loja faz a ressincronização completa.
+
+### Custo medido (Change Tracking + snapshot)
+
+Método: `JAVA/api/contrato/medicao-tracking/medir.sh` (SQL Server 2022 em container descartável, nunca no banco real;
+dois bancos com o esquema da API: sem e com o `db/nuvem/V1`). Carga: 10 000 vendas por rodada, 3 rodadas alternadas, cada
+venda uma transação com 11 linhas (1 `Vendas`, 3 `VendaItens`, 1 `VendaPagamentos`, 3 `EstoqueMovimentacoes`, 3 `UPDATE`
+em `Produtos`). Máquina de desenvolvimento (Docker Desktop), então vale a proporção, não o valor absoluto.
+
+| Medida | Sem tracking | Com tracking + snapshot |
+|--------|-------------|-------------------------|
+| Tempo de 10 000 vendas (mediana de 3) | 107,8 s (93 vendas/s) | 112,2 s (89 vendas/s), **+4,0%** |
+| Espaço usado após 30 000 vendas | 121,7 MB | 169,0 MB (+47,3 MB; tabelas internas do tracking: 21,8 MB, 0,73 KB por venda) |
+| Version store (tempdb) após a carga, sem leitor | n/d (snapshot desligado) | 14,7 MB, voltou a 0 MB na limpeza |
+| Version store com um leitor `SNAPSHOT` aberto durante 10 000 vendas | n/d | pico 23 MB; 0 MB depois que o leitor fechou |
+
+Leitura: o custo de escrita é pequeno (~4%) e o `tempdb` quase não cresce, porque as transações de leitura do
+receptor são curtas (uma página). O histórico do tracking é limitado pela retenção de 3 dias: uma loja com 1 000 vendas
+por dia guarda ~2 MB. Vigie `sys.dm_db_file_space_usage.version_store_reserved_page_count` se algum dia houver leitor
+longo. Suíte de contrato da .NET (`contrato/medicao-tracking/suite-dotnet.sh`, 1 152 gravações contra a API .NET real): 1 896 s sem o `db/nuvem/V1` e 1 784 s com ele aplicado; mesmos status em todas as respostas (a .NET sobe e grava normalmente com o tracking ligado). Método e detalhes no `design.md` (Notas do grupo 7).

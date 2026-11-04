@@ -1,0 +1,28 @@
+<!--
+  Configuracao do WinSW (v2) para a API da loja. O instalar.ps1 troca @DESTINO@, @SERVICO_SQL@ e @PORTA@ e grava como
+  <destino>\servico\QuackLojaApi.xml, ao lado de QuackLojaApi.exe (copia do WinSW-x64.exe; o nome do .exe e do .xml
+  precisam ser iguais).
+  Os segredos NAO ficam aqui: o Spring le <destino>\config\loja.env (spring.config.import), que tem ACL so para
+  Administradores e SYSTEM. O arquivo e obrigatorio (sem "optional:"): se sumir, a API nao sobe.
+-->
+<service>
+  <id>QuackLojaApi</id>
+  <name>Quack PDV - API da loja</name>
+  <description>API Spring Boot em modo loja (banco local, sincronizacao com a nuvem).</description>
+  <executable>@DESTINO@\jre\bin\java.exe</executable>
+  <arguments>-Xmx768m -Dfile.encoding=UTF-8 -jar "@DESTINO@\app\quack-pdv-api.jar" --spring.profiles.active=loja "--spring.config.import=file:./config/loja.env[.properties]"</arguments>
+  <workingdirectory>@DESTINO@</workingdirectory>
+  <env name="PORT" value="@PORTA@"/>
+  <depend>@SERVICO_SQL@</depend>
+  <startmode>Automatic</startmode>
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+  <onfailure action="restart" delay="60 sec"/>
+  <resetfailure>1 hour</resetfailure>
+  <stoptimeout>30 sec</stoptimeout>
+  <logpath>@DESTINO@\logs</logpath>
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>8</keepFiles>
+  </log>
+</service>

@@ -5,3 +5,5 @@ poc-fiscal/
 *.md
 Dockerfile
 docker-compose*.yml
+instalador-loja/
+db/

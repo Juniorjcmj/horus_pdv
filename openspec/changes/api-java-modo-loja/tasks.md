@@ -143,22 +143,31 @@
 
 ## 7. Instalador e nuvem
 
-- [ ] 7.1 `JAVA/api/instalador-loja/` (D12): `instalar.ps1`, `backup.ps1`, `restaurar.ps1`, `desinstalar.ps1`, a
+- [x] 7.1 `JAVA/api/instalador-loja/` (D12): `instalar.ps1`, `backup.ps1`, `restaurar.ps1`, `desinstalar.ps1`, a
   configuração do WinSW, `CHECKLIST.md` e `build-instalador.sh` (zip com jar, JRE de `jlink`, WinSW e scripts).
   - Verificação:
     - `build-instalador.sh` gera o zip;
     - `instalar.ps1 -SomenteValidar` roda sem erro numa máquina Windows;
     - o backup e a restauração são testados contra um SQL Server local (Docker serve);
     - registre a saída no `tasks.md`.
-- [ ] 7.2 Serviço `pdv-api-sync` no `docker-compose.yml` da raiz (perfil `nuvem`, Traefik `sync-pdv`), publicação da
+  - Resultado (04/11/2026; detalhes em "Notas do grupo 7" no `design.md`):
+    - `build-instalador.sh --sem-maven` gerou `target/quack-servidor-loja.zip` (112 MB, 204 arquivos);
+    - `instalar.ps1 -SomenteValidar` a partir do zip extraído: todas as linhas OK (avisos: IP dinâmico e nuvem sem DNS), "nada foi alterado", código 0; `-WhatIf` lista os passos sem executar;
+    - `testes/Testar-Logica.ps1`: sintaxe e lógica pura (segredos, `loja.env`, `backup-estado.json`, retenção de 7, sub-rede, `-WhatIf`) OK;
+    - `testes/Testar-BackupDocker.ps1` (SQL Server 2022 em container): 9 backups com retenção 7 deixam 7; falha dá código 1, `sucesso:false` e nada apagado; a restauração devolve os dados; conferência fica desligada;
+    - `testes/Testar-ApiPacote.ps1`: jar + JRE do `jlink` + `loja.env` do instalador sobem em `UP` no perfil `loja`;
+    - não validado sem máquina Windows dedicada (vai para 8.4): ver o fim das notas.
+- [x] 7.2 Serviço `pdv-api-sync` no `docker-compose.yml` da raiz (perfil `nuvem`, Traefik `sync-pdv`), publicação da
   imagem Java no workflow do GitHub Actions e seção no `DEPLOY.md` (subida, `desligar.sql`, alerta sobre chave
   primária).
   - Verificação: `docker compose config` válido e a imagem buildando no Actions (ou `docker build` local); a API .NET
     e o frontend sem nenhuma linha alterada no compose.
-- [ ] 7.3 Medir o custo do Change Tracking e do snapshot.
+  - Resultado: `docker compose config` (com e sem `--profile nuvem`) válido, saída sem o perfil idêntica à anterior; `docker build` local da imagem OK; workflow `api-java-publish.yml` criado (não executado: depende do GitHub); `DEPLOY.md` com subida, `desligar.sql` (criado e provado em container) e alerta sobre chave primária.
+- [x] 7.3 Medir o custo do Change Tracking e do snapshot.
   - Rodar a suíte de contrato da .NET (`contrato/ambiente-dotnet`) com e sem o `db/nuvem/V1` aplicado e comparar o
     tempo.
   - Verificação: os números ficam registrados no `DEPLOY.md`, e a suíte da .NET passa igual com o tracking ligado.
+  - Resultado: +4,0% de tempo de escrita (10 000 vendas, 3 rodadas), +47 MB por 30 000 vendas, version store 23 MB de pico com leitor aberto; suíte da .NET (1 152 gravações) 1 896 s sem e 1 784 s com o tracking, mesmos status em todas. Números no `DEPLOY.md`, método em `design.md`.
 
 ## 8. Aceite e integração
 

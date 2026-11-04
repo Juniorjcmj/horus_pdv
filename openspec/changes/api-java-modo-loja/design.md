@@ -630,3 +630,73 @@ existe, ou tabela `EDITAVEL`/`LOJA` sem chave primária. A ordem de aplicação 
   `{"ultimoBackupEm": "<ISO>", "sucesso": true|false, "erro": "<texto>|null"}`. Vazio = sem backup monitorado.
 - **Testes:** `ConferenciaIT`, `SituacaoAlertasIT` (SMTP GreenMail; "relógio fixo" = o `agora` passado às rotinas) e
   `ResincronizacaoQuarentenaIT`; `AmbienteSync.iniciarComExtras` e `tokenLoja`.
+
+### Notas do grupo 7 (instalador e nuvem)
+
+- **Pacote (`JAVA/api/instalador-loja/`).** `instalar.ps1`, `backup.ps1`, `restaurar.ps1`, `desinstalar.ps1`, `lib/comum.ps1`
+  (funções puras, testáveis), `winsw/QuackLojaApi.xml.modelo`, `CHECKLIST.md`, `build-instalador.sh` e `testes/`. O zip
+  (`target/quack-servidor-loja.zip`, ~112 MB) não é versionado, como manda o D12. JRE por `jlink` (`java.se` +
+  `jdk.unsupported`, `jdk.crypto.ec`, `jdk.localedata`, `jdk.charsets`, `jdk.zipfs`, `jdk.management`, `jdk.naming.dns`,
+  `jdk.httpserver`; 61 MB). O `jlink` gera o JRE do sistema do JDK usado: o pacote de Windows sai de um Windows ou de
+  `JDK_WIN_HOME`. WinSW v2.12.0 baixado uma vez, com SHA-256 fixado no script.
+- **Segredos e configuração.** O WinSW v2 não lê arquivo de variáveis; por isso o serviço roda com
+  `--spring.config.import=file:./config/loja.env[.properties]` (diretório de trabalho = pasta da instalação; sem
+  `optional:`, então a API não sobe sem o arquivo). O `loja.env` é `.properties`: tem as chaves de placeholder do
+  `application.yml` (`SPRING_DATASOURCE_*`, `QUACK_AUTH_JWT_SECRET`, `QUACK_SECURITY_ENCRYPTION_KEY`) e as propriedades
+  `quack.sync.nuvem-url` e `quack.sync.backup-estado`. Segredos de 48 bytes (base64url, 64 caracteres), ACL só
+  Administradores e SYSTEM. Reexecutar o instalador **reaproveita** os segredos existentes (trocar a chave de cifra
+  invalidaria os dados cifrados). Gravado em UTF-8 **sem BOM** (o Jackson do `EstadoBackup` e o Spring não toleram BOM; o
+  `Set-Content -Encoding UTF8` do PowerShell 5.1 grava BOM).
+- **Banco.** A API não usa o `sa`: o instalador cria o login `quack_app` (senha aleatória, só no `loja.env`) como
+  `db_owner` do banco `QuackLoja` (o Flyway cria o esquema). A senha do `sa` do SQL Express é aleatória e não é guardada
+  (o acesso de manutenção é pelo Windows: Administradores e SYSTEM são `sysadmin`). Recuperação `SIMPLE`: há backup
+  completo diário e nenhum de log, então o log não cresce sem limite; perda máxima de até 24 h num disco perdido (a
+  nuvem guarda o que já subiu). O acesso do instalador/backup ao SQL é por `System.Data.SqlClient` (já no Windows),
+  sem depender do `sqlcmd`.
+- **Rede.** SQL escuta só em `127.0.0.1:1433` (registro: `ListenOnAllIPs=0`, só o IP de loopback ativo) e há ainda uma regra
+  de firewall de **bloqueio** da porta; a API tem regra de permissão só para a sub-rede (detectada pela rota padrão com
+  IPv4 de prefixo até /30, ou `-Subrede`). VPN e adaptadores virtuais costumam ter /32: a primeira versão pegava esse e
+  falhava, a validação na máquina de desenvolvimento achou.
+- **Backup.** `BACKUP DATABASE ... WITH COMPRESSION, CHECKSUM, INIT`, depois `RESTORE VERIFYONLY ... WITH CHECKSUM`, e
+  só então a retenção apaga os mais antigos (7 mantidos). Falha: nada é apagado, `backup-estado.json` fica com
+  `sucesso:false`, `erro` com a causa-raiz do SQL e `ultimoBackupEm` do último sucesso preservado, e o script sai com 1
+  (a tarefa agendada mostra a falha). A tarefa roda como SYSTEM com `StartWhenAvailable` (máquina desligada às 02:00
+  faz o backup ao ligar). Horário e retenção são parâmetros do instalador (`-HoraBackup`, `-RetencaoBackups`); o
+  horário real fica para combinar com o dono (Open Question do D12).
+- **Restauração e conferência (achado importante).** O backup é mais antigo que a nuvem. A conferência (D10) trata a nuvem
+  como reflexo da loja nas tabelas `LOJA` e exclui o que sobra lá: depois de uma restauração ela **apagaria da nuvem** as
+  vendas posteriores ao backup. Por isso o `restaurar.ps1` desliga `quack.sync.conferencia-ativa` no `loja.env` (religa
+  com `-ReativarConferencia`) e o `CHECKLIST.md` descreve os dois caminhos (restaurar um backup recente, ou reinstalar e
+  fazer a carga inicial a partir da nuvem quando o que importa é não perder o que já subiu). Decisão de produto para o
+  grupo 8 / dono: uma restauração deveria forçar uma ressincronização completa *da nuvem para a loja*, hoje inexistente.
+- **Nuvem (7.2).** `pdv-api-sync` acrescentado ao `docker-compose.yml` (só linhas novas; a saída de `docker compose
+  config` sem perfil é idêntica à anterior), com `profiles: ["nuvem"]`, imagem `horus-pdv-api-java`, mesmo banco e segredos
+  da `pdv-api` e Traefik `sync-pdv`. Desvio: a publicação da imagem foi para um **workflow próprio**
+  (`api-java-publish.yml`, push em `main` com `JAVA/api/**`), e não para o `docker-publish.yml`, para um push da Java não
+  reconstruir a .NET e o frontend nem disparar o webhook de redeploy deles. `profiles` não é aceito por
+  `docker stack deploy` (Portainer em Swarm): está no `DEPLOY.md`. `.dockerignore` da Java ganhou `instalador-loja/` e
+  `db/`. O `docker build` local da imagem passou.
+- **`desligar.sql` não existia.** O D12 e o `DEPLOY.md` o citam; foi criado em `JAVA/api/db/nuvem/desligar.sql`, **fora**
+  do classpath (em `resources/db/nuvem` o Flyway o tomaria por migração). Provado em container: 38 tabelas, banco e snapshot
+  desligados; repetir não falha; reaplicar o `V1__sync_nuvem.sql` (idempotente) religa tudo. Pendência: o **verificador de
+  subida** que "religa o tracking em tabela que o perdeu e alerta" (Risks do design) **não existe** (o `ChangeTrackingAdmin`
+  é só do perfil `loja`); o `DEPLOY.md` manda conferir `sys.change_tracking_tables` à mão. Fica para o grupo 8.
+- **7.3, custo medido** (`contrato/medicao-tracking/`; números no `DEPLOY.md`). SQL Server 2022 (RTM-CU27) em container, dois
+  bancos com o esquema `db/migration` V1..V4, 2 000 produtos. `medir.sh`: 10 000 vendas por rodada, 3 rodadas alternadas,
+  cada venda uma transação de 11 linhas (`vendas.sql`). Resultado: mediana **107,8 s sem** e **112,2 s com** tracking
+  + snapshot (**+4,0%**; as rodadas com tracking foram 110,4 / 126,9 / 112,2 s, e sem 107,0 / 107,8 / 112,3 s: ruído de
+  uma máquina de desenvolvimento). Espaço após 30 000 vendas: 121,7 MB sem e 169,0 MB com (+47,3 MB; as tabelas internas do
+  tracking respondem por 21,8 MB, ~0,73 KB por venda; o resto é o acréscimo de 14 bytes por versão de linha e as tabelas
+  `Sync*`). Version store do `tempdb`: 14,7 MB logo após a carga sem leitor, voltando a 0; com um leitor `SNAPSHOT` aberto
+  durante 10 000 vendas, pico amostrado de 23 MB e 0 MB depois que o leitor fechou (`tempdb` 80 MB). Conclusão: custo de
+  escrita de poucos por cento e `tempdb` quase sem efeito, porque as leituras do receptor são curtas. Limites: um só
+  cliente, sem contenção; valores absolutos de laptop.
+- **7.3, suíte de contrato da .NET** (`contrato/medicao-tracking/suite-dotnet.sh`): a suíte inteira (`GravadorDoContrato`, todos os grupos, 1 152 gravações) rodou contra a API .NET real (imagem `quack-api-dotnet:contrato`, SQL próprio e descartável) **sem** o `db/nuvem/V1`: **1 896 s**, e **com** ele aplicado (38 tabelas com tracking + snapshot; a .NET reiniciada sobre o banco já rastreado, sem erro de inicialização): **1 784 s** (diferença dentro do ruído, a execução com tracking até foi mais curta). As 1 152 respostas têm o mesmo status HTTP nas duas rodadas e os mesmos arquivos; o corpo só difere em campos de relógio e de id gerado (`serverNow`, `openedAt`, `sessionId`, `elapsedMinutes`...), que mudam entre quaisquer duas execuções. Ou seja: a suíte da .NET passa igual com o tracking ligado. `comparar-gravacoes.py` faz a comparação; as gravações do repositório não foram alteradas (a suíte grava numa cópia de `JAVA/api`).
+- **O que não foi validado sem máquina Windows dedicada** (vai para o checklist 8.4): a instalação real do SQL Server
+  Express (download, `SQLEXPR` silencioso, serviço `MSSQL$QUACK`), o ajuste de TCP no registro, o `WinSW install/start` e o
+  início automático depois de reiniciar a máquina, a regra de firewall e a recusa vinda de outra sub-rede, a tarefa
+  agendada às 02:00 rodando como SYSTEM, a ACL do `loja.env`, o registro e a carga inicial contra a nuvem real com
+  acompanhamento pela situação (login local por cookie/Bearer), a desinstalação, e a troca do endereço nos caixas. Foram
+  provados à parte: sintaxe e lógica dos `.ps1` (parser e `testes/Testar-Logica.ps1`), `instalar.ps1 -SomenteValidar`
+  (código 0) e `-WhatIf`, backup/retenção/estado/restauração contra SQL Server em container, e o jar com o JRE do `jlink` e um
+  `loja.env` gerado pelo instalador subindo em `UP` no perfil `loja` (`testes/Testar-ApiPacote.ps1`).

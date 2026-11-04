@@ -114,3 +114,42 @@ services:
       - "traefik.http.services.pdv.loadbalancer.server.port=8080"
       - "traefik.http.middlewares.pdv-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.pdv.middlewares=pdv-headers"
+
+  # Receptor da sincronizacao das lojas (API Java em modo "nuvem": so /api/loja-sync/** e /actuator/health).
+  # Fica FORA da subida normal: so sobe com o perfil "nuvem" (docker compose --profile nuvem up -d, ou
+  # COMPOSE_PROFILES=nuvem no ambiente do stack). Usa o MESMO banco e os MESMOS segredos da pdv-api: valida o
+  # administrador pelo JWT da .NET e decifra com a mesma chave. Ver DEPLOY.md, secao "Servidor da loja (sync-pdv)".
+  # A primeira subida liga o Change Tracking e o isolamento snapshot no banco (db/nuvem/V1); reverter: desligar.sql.
+  pdv-api-sync:
+    profiles: ["nuvem"]
+    image: "ghcr.io/${GHCR_NAMESPACE:?defina GHCR_NAMESPACE no ambiente do stack, ex. seu-usuario-do-github}/horus-pdv-api-java:${IMAGE_TAG_JAVA:-latest}"
+    restart: unless-stopped
+    depends_on:
+      - pdv-sqlserver
+      - pdv-api
+    environment:
+      SPRING_PROFILES_ACTIVE: "nuvem"
+      SPRING_DATASOURCE_URL: "jdbc:sqlserver://pdv-sqlserver:1433;databaseName=HorusPdv;encrypt=true;trustServerCertificate=true"
+      SPRING_DATASOURCE_USERNAME: "sa"
+      SPRING_DATASOURCE_PASSWORD: "${MSSQL_SA_PASSWORD:?defina MSSQL_SA_PASSWORD no ambiente do stack}"
+      QUACK_AUTH_JWT_SECRET: "${JWT_SECRET:?defina JWT_SECRET no ambiente do stack (o mesmo da pdv-api)}"
+      QUACK_SECURITY_ENCRYPTION_KEY: "${ENCRYPTION_KEY:?defina ENCRYPTION_KEY no ambiente do stack (a mesma da pdv-api)}"
+      QUACK_SECURITY_TRUST_FORWARDED_HEADERS: "true"
+      QUACK_EMAIL_ENABLED: "${EMAIL_ENABLED:-false}"
+      QUACK_EMAIL_HOST: "${EMAIL_HOST:-smtp-mail.outlook.com}"
+      QUACK_EMAIL_PORT: "${EMAIL_PORT:-587}"
+      QUACK_EMAIL_ENABLE_SSL: "${EMAIL_ENABLE_SSL:-true}"
+      QUACK_EMAIL_USER: "${EMAIL_USER:-}"
+      QUACK_EMAIL_PASSWORD: "${EMAIL_PASSWORD:-}"
+      QUACK_EMAIL_FROM_EMAIL: "${EMAIL_FROM:-}"
+      TZ: "America/Sao_Paulo"
+    networks:
+      - OrionNet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sync-pdv.rule=Host(`sync-pdv.quacksistemas.com.br`)"
+      - "traefik.http.routers.sync-pdv.entrypoints=websecure"
+      - "traefik.http.routers.sync-pdv.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sync-pdv.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.sync-pdv-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.sync-pdv.middlewares=sync-pdv-headers"
