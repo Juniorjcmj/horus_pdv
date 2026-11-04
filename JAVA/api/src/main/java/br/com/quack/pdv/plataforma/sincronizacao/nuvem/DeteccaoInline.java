@@ -17,6 +17,14 @@ public interface DeteccaoInline {
     Set<String> antes(String companyId, TabelaSincronizada tabela, String chave, boolean existe);
 
     /**
+     * Como {@link #antes}, num lote de retrato completo (D5): a linha da nuvem que sera sobrescrita e guardada na
+     * quarentena com origem {@code ressincronizacao} (D7).
+     */
+    default Set<String> antesDaRessincronizacao(String companyId, TabelaSincronizada tabela, String chave, boolean existe) {
+        return antes(companyId, tabela, chave, existe);
+    }
+
+    /**
      * Depois de escrever a linha: atualiza o espelho. {@code textosDoLote} sao os valores da loja (usados nas colunas
      * bloqueadas, que a nuvem nao escreveu).
      */

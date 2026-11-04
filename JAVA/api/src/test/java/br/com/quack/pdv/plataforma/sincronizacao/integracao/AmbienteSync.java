@@ -63,15 +63,16 @@ public final class AmbienteSync implements AutoCloseable {
     public static final String JWT_LOJA = "segredo-jwt-proprio-da-loja-com-mais-de-32-caracteres";
     public static final String CIFRA_LOJA = "chave-de-cifra-propria-da-loja-com-mais-de-32-caracteres";
 
-    private AmbienteSync(String sufixo, boolean paraCarga, String... extrasLoja) {
+    private AmbienteSync(String sufixo, boolean paraCarga, String[] extrasNuvem, String[] extrasLoja) {
         bancoLoja = "loja_" + sufixo;
         bancoNuvem = "nuvem_" + sufixo;
         BancoIT.criarBanco(bancoLoja);
         criarBancoNuvem(bancoNuvem);
         prepararEsquemaDotNet();
 
-        nuvem = subir("nuvem", urlNuvem(), SQL_NUVEM.getUsername(), SQL_NUVEM.getPassword(), 2000,
-                "--quack.sync.comandos-espera-ms=1500");
+        List<String> argsNuvem = new ArrayList<>(List.of("--quack.sync.comandos-espera-ms=1500"));
+        argsNuvem.addAll(Arrays.asList(extrasNuvem));
+        nuvem = subir("nuvem", urlNuvem(), SQL_NUVEM.getUsername(), SQL_NUVEM.getPassword(), 2000, argsNuvem.toArray(String[]::new));
         loja = paraCarga
                 ? subir("loja", BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword(), 300,
                         "--quack.auth.jwt-secret=" + JWT_LOJA, "--quack.security.encryption-key=" + CIFRA_LOJA)
@@ -90,12 +91,17 @@ public final class AmbienteSync implements AutoCloseable {
 
     /** Loja ja ativada, mesmo seed nas duas pontas (grupo 2). */
     public static AmbienteSync iniciar(String sufixo) {
-        return new AmbienteSync(sufixo, false);
+        return new AmbienteSync(sufixo, false, new String[0], new String[0]);
     }
 
     /** Como {@link #iniciar(String)}, com argumentos extras de linha de comando para o contexto da loja. */
     public static AmbienteSync iniciarComExtrasNaLoja(String sufixo, String... extrasLoja) {
-        return new AmbienteSync(sufixo, false, extrasLoja);
+        return new AmbienteSync(sufixo, false, new String[0], extrasLoja);
+    }
+
+    /** Como {@link #iniciar(String)}, com argumentos extras para os dois contextos (ex.: SMTP falso e alertas manuais). */
+    public static AmbienteSync iniciarComExtras(String sufixo, String[] extrasNuvem, String[] extrasLoja) {
+        return new AmbienteSync(sufixo, false, extrasNuvem, extrasLoja);
     }
 
     /**
@@ -103,7 +109,7 @@ public final class AmbienteSync implements AutoCloseable {
      * registrado e sem tracking. A carga inicial e o que a liga.
      */
     public static AmbienteSync iniciarParaCarga(String sufixo) {
-        return new AmbienteSync(sufixo, true);
+        return new AmbienteSync(sufixo, true, new String[0], new String[0]);
     }
 
     /** Token de administrador valido na nuvem (sessao gravada no banco dela, JWT com o segredo dela). */
@@ -112,6 +118,15 @@ public final class AmbienteSync implements AutoCloseable {
         jdbcNuvem.update("INSERT INTO Sessoes (Id, UserId, Device, Location, Ip, LastActive, Platform, CreatedAt) "
                 + "VALUES (?, ?, 'IT', 'IT', '127.0.0.1', 'agora', 'desktop', SYSDATETIMEOFFSET())", sessao, userId);
         return nuvem.getBean(br.com.quack.pdv.security.JwtService.class).criarToken(userId, companyId, nome, email, role,
+                sessao, "127.0.0.1");
+    }
+
+    /** Token de usuario valido na loja (sessao gravada no banco dela, JWT com o segredo dela). */
+    public String tokenLoja(String userId, String companyId, String nome, String email, String role) {
+        String sessao = "sess-it-" + UUID.randomUUID();
+        jdbcLoja.update("INSERT INTO Sessoes (Id, UserId, Device, Location, Ip, LastActive, Platform, CreatedAt) "
+                + "VALUES (?, ?, 'IT', 'IT', '127.0.0.1', 'agora', 'desktop', SYSDATETIMEOFFSET())", sessao, userId);
+        return loja.getBean(br.com.quack.pdv.security.JwtService.class).criarToken(userId, companyId, nome, email, role,
                 sessao, "127.0.0.1");
     }
 

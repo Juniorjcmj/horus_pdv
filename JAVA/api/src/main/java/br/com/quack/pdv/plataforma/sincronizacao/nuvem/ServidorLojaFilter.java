@@ -42,7 +42,8 @@ public class ServidorLojaFilter extends OncePerRequestFilter {
         String cabecalho = request.getHeader("Authorization");
         boolean temToken = cabecalho != null && cabecalho.startsWith(ESQUEMA + " ");
         boolean lotes = caminho.equals("/api/loja-sync/lotes") || caminho.equals("/api/loja-sync/comandos")
-                || caminho.equals("/api/loja-sync/comandos/resultados"); // so servidor ativo
+                || caminho.equals("/api/loja-sync/comandos/resultados")
+                || caminho.startsWith("/api/loja-sync/conferencia/"); // so servidor ativo
         // carga e ativacao rodam com o servidor ainda "pendente"; lotes so com o servidor "ativo"
         boolean exige = lotes || caminho.equals("/api/loja-sync/carga") || caminho.equals("/api/loja-sync/carga/delta")
                 || caminho.equals("/api/loja-sync/ativar");

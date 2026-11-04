@@ -584,3 +584,49 @@ existe, ou tabela `EDITAVEL`/`LOJA` sem chave primária. A ordem de aplicação 
 - Limite conhecido: a venda gravada entre a retomada e a leitura SNAPSHOT do lote ainda pode subir sem nota, se nao
   nasceu com a pendencia na mesma transacao; o proximo ciclo a retoma, e a nuvem so cria nota de venda sem nota depois
   de seu proprio atraso do worker.
+
+### Notas do grupo 6 (conferência, situação e alertas)
+
+- **Conferência (D10).** `conferencia/SqlConferencia` é o SQL único das duas pontas: por tabela não `FORA` e não
+  `ACRESCIMO`, `COUNT_BIG`, `CHECKSUM_AGG(BINARY_CHECKSUM(...))` e, além do pedido, a soma dos checksums em `BIGINT`
+  (o XOR sozinho anula duas linhas iguais que mudam juntas). Colunas: chave + `LOJA`/`EDITAVEL`. Linhas de autoria da
+  nuvem (`Modelo = 55`) ficam fora. Faixa = `CHECKSUM(chave) & 63` (o `ABS(CHECKSUM) % 64` do design estoura em
+  `-2^31`). Fluxo da loja: `resumo` (1 chamada) -> `faixas` -> `linhas` (chave + checksum por linha) -> reenvio via
+  `SyncReenvios` (`Motivo = conferencia`) + `EnvioSincronizacao.ciclo()`; sobras na nuvem saem por
+  `conferencia/excluir`. Até 3 voltas e uma comparação final; sobrando diferença: resultado `divergente` e alerta.
+  Antes de começar a loja roda um ciclo de envio, para não confundir atraso com divergência.
+- **Linhas que a conferência não toca** (contam em `pendencias`, não em divergência): comando `pendente`, quarentena
+  aberta (a spec manda manter a linha criada na nuvem até um administrador resolver; resolvida, a conferência seguinte a
+  exclui) e, em tabela `EDITAVEL`, linha que a nuvem nunca viu vir da loja (criada na nuvem, aguardando comando). A
+  nuvem repete essas regras ao excluir.
+- **Pendências do grupo 4 fechadas.** Exclusão na nuvem em tabela `LOJA` (sem empresa conhecida) e divergência de
+  coluna `LOJA` sem espelho/sem rastro são achadas pelo resumo e corrigidas por reenvio (`ConferenciaIT`). A entrada de
+  quarentena "linha da nuvem sobrescrita na ressincronização completa" (D7) existe: no lote `completo`, a deteccão inline
+  grava `Origem = ressincronizacao` e motivo "Linha da nuvem sobrescrita na ressincronizacao completa. ...". Limite: só
+  pega a edição ainda não vista pelo detector (versão > `DetectorDesde`); uma já vista tem a entrada `edicao-nuvem` e o
+  `reenviar` do detector.
+- **`AuditLog` fora da conferência** (desvio do D10 "pela contagem do mapa"): as duas pontas inserem nele, a carga copia as
+  linhas antigas sem passar pelo mapa e os Ids são próprios, então não há contagem comparável sem uma linha de base.
+- **Saldos (só loja, sem corrigir).** Semântica conferida na .NET e na Java: `EstoqueNovo` é o saldo do produto depois do
+  movimento e `SaldoAtual` é o saldo do cliente depois do movimento. `ProductQnt` deve ser igual ao `EstoqueNovo` de
+  algum dos movimentos com o `CriadoEm` máximo (empate de hora aceito); `SaldoDevedor` idem com `FiadoMovimentos`. Produto
+  sem movimento não é conferido. Divergência vira `resultado = divergente`, lista (até 50) em `detalhe.saldos` e alerta.
+- **Resultado:** `SyncConferencias` na loja e, por `conferencia/resultado`, na nuvem (tabela já tinha `CompanyId`).
+  Agendada às 03:00 (`quack.sync.conferencia-cron`, `quack.sync.conferencia-ativa`) em thread própria (o agendador da
+  API é de uma thread só); pedido: `POST /api/loja-sync/conferencia` (administrador local).
+- **Situação (D11).** `GET /api/loja-sync/situacao` nas duas pontas (`situacao/SituacaoSync`). Nuvem: administrador (JWT
+  da .NET) ou token do servidor; caixa 403, sem credencial 401. Loja: só administrador (JWT local) — desvio: a loja é
+  quem *tem* o token do servidor, não há o que aceitar; a loja lê da nuvem, com o token, comandos pendentes/parados e
+  quarentena (`nuvemAcessivel = false` sem internet). Atraso = segundos desde a última sincronização se a versão local
+  passou da confirmada, senão 0. NFC-e = modelo 65, `Status IN (1,2,8)`, `CriadoEm` há mais de 10 min.
+- **Alertas (D11).** `alertas/AlertasSync.registrar` (log `ERROR` + `SyncAlertas`) substitui os dois `MERGE` soltos.
+  `EnviadorAlertas` (a cada minuto, nas duas pontas) manda e-mail aos usuários `administrador` ativos da empresa pelo
+  `EmailService` **já existente** (SMTP da empresa ou `quack.email.*`; ganhou `enviarAlerta`), nada de interface nova.
+  Regra: sai se nunca saiu, ou se houve ocorrência depois do último envio e o último envio tem mais de 1 h. Sem SMTP
+  ou sem internet o alerta fica guardado e é tentado no ciclo seguinte. `VerificadorAlertasLoja` (minuto) re-registra
+  enquanto a condição durar: pausa, atraso > 15 min (só sem falhas de rede seguidas), NFC-e > 30 min e falha de backup.
+  Alertas de evento (quarentena, comando parado/conflito, conferência) são registrados onde acontecem.
+- **Backup:** `quack.sync.backup-estado` aponta o `backup-estado.json` do script (grupo 7), formato
+  `{"ultimoBackupEm": "<ISO>", "sucesso": true|false, "erro": "<texto>|null"}`. Vazio = sem backup monitorado.
+- **Testes:** `ConferenciaIT`, `SituacaoAlertasIT` (SMTP GreenMail; "relógio fixo" = o `agora` passado às rotinas) e
+  `ResincronizacaoQuarentenaIT`; `AmbienteSync.iniciarComExtras` e `tokenLoja`.

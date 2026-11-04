@@ -154,12 +154,8 @@ public class EnvioSincronizacao {
         LOG.error("Sincronizacao PAUSADA: {}", motivo);
         jdbc.update("UPDATE SyncEstado SET PausadaEm = ?, PausadaMotivo = ?, UltimoErro = ?, AtualizadoEm = ? WHERE Id = 1",
                 agora, motivo, motivo, agora);
-        jdbc.update("""
-                MERGE dbo.SyncAlertas AS a USING (SELECT ? AS Motivo, ? AS CompanyId) AS s
-                  ON a.Motivo = s.Motivo AND a.CompanyId = s.CompanyId
-                WHEN MATCHED THEN UPDATE SET Detalhe = ?, UltimaEm = SYSDATETIMEOFFSET(), Contagem = a.Contagem + 1
-                WHEN NOT MATCHED THEN INSERT (Motivo, CompanyId, Detalhe) VALUES (s.Motivo, s.CompanyId, ?);
-                """, "sincronizacao-pausada", e.companyId() == null ? "" : e.companyId(), motivo, motivo);
+        br.com.quack.pdv.plataforma.sincronizacao.alertas.AlertasSync.registrar(jdbc, agora,
+                br.com.quack.pdv.plataforma.sincronizacao.alertas.AlertasSync.PAUSADA, e.companyId(), motivo);
         return Resultado.FALHA_DEFINITIVA;
     }
 

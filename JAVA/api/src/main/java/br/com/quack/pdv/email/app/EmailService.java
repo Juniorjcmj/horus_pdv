@@ -73,6 +73,13 @@ public class EmailService {
                 EmailTemplate.boasVindasTexto(companyName, loginUrl), null);
     }
 
+    /** Alerta operacional em texto simples (sincronizacao loja/nuvem, D11). Lanca se o SMTP nao estiver configurado. */
+    public void enviarAlerta(String toEmail, String assunto, String texto, String companyId) {
+        String html = "<pre style=\"font-family:Consolas,monospace\">"
+                + texto.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;") + "</pre>";
+        enviar(toEmail, assunto, html, texto, companyId);
+    }
+
     public String montarUrlRedefinicao(String token) {
         return urlBaseFrontend() + "/?resetToken=" + escaparDado(token.trim());
     }

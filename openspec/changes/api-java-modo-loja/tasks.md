@@ -127,14 +127,14 @@
 
 ## 6. Conferência, situação e alertas
 
-- [ ] 6.1 `ConferenciaSincronizacao` (D10): contagem e soma por tabela, faixas, reenvio e exclusão do que sobra; saldos
+- [x] 6.1 `ConferenciaSincronizacao` (D10): contagem e soma por tabela, faixas, reenvio e exclusão do que sobra; saldos
   de estoque e de fiado (confira antes a semântica de `EstoqueNovo` e `SaldoAtual` na .NET); agendamento às 03:00 e
   rota de pedido.
   - Verificação: `ConferenciaIT`:
     - linha mudada no banco da nuvem com o tracking desligado temporariamente é acusada, reenviada e fecha;
     - saldo de produto divergente é listado sem correção;
     - resultado gravado.
-- [ ] 6.2 `GET /api/loja-sync/situacao` nas duas pontas (D11) e alertas com limite de um por motivo por hora, por log
+- [x] 6.2 `GET /api/loja-sync/situacao` nas duas pontas (D11) e alertas com limite de um por motivo por hora, por log
   e e-mail.
   - Verificação:
     - teste web: administrador 200, caixa 403, token do servidor 200;

@@ -48,6 +48,8 @@ public class MotorDeteccao {
     static final ObjectMapper JSON = new ObjectMapper();
     /** "SQ" 0001 = {@code sync-loja}; mesmo valor de {@link AplicadorLotes#CONTEXTO_SYNC_LOJA}. */
     private static final byte[] CONTEXTO_SYNC_LOJA = {0x53, 0x51, 0x00, 0x01};
+    public static final String ORIGEM_EDICAO = "edicao-nuvem";
+    public static final String ORIGEM_RESSINCRONIZACAO = "ressincronizacao";
     private static final TypeReference<LinkedHashMap<String, String>> MAPA = new TypeReference<>() {};
 
     /** Uma linha mudada: chave (texto de cada coluna), operacao do tracking e a linha viva (nulo = excluida). */
@@ -256,6 +258,16 @@ public class MotorDeteccao {
 
     /** Deteccao inline de uma linha que o lote vai escrever; devolve as colunas com comando pendente. */
     public Set<String> inline(JdbcTemplate j, String company, TabelaSincronizada t, String chave, boolean existe) {
+        return inline(j, company, t, chave, existe, false);
+    }
+
+    /**
+     * Como {@link #inline(JdbcTemplate, String, TabelaSincronizada, String, boolean)}; em {@code ressincronizacao} (retrato
+     * completo, D5) a linha da nuvem que o retrato vai sobrescrever e guardada na quarentena com origem
+     * {@code ressincronizacao} (D7), nao {@code edicao-nuvem}.
+     */
+    public Set<String> inline(JdbcTemplate j, String company, TabelaSincronizada t, String chave, boolean existe,
+                              boolean ressincronizacao) {
         if (!existe || t.classe() == ClasseTabela.ACRESCIMO) return Set.of();
         List<Long> det = j.query("SELECT DetectorDesde FROM dbo.SyncEstadoNuvem WHERE CompanyId = ?",
                 (rs, i) -> { long v = rs.getLong(1); return rs.wasNull() ? null : v; }, company);
@@ -263,7 +275,8 @@ public class MotorDeteccao {
         if (!det.isEmpty() && det.getFirst() != null) {
             UltimaMudanca u = ultimaMudanca(j, t, pk);
             if (u != null && u.versao() != null && u.versao() > det.getFirst() && !ehContextoSyncLoja(u.contexto())) {
-                lerLinha(j, t, pk).ifPresent(live -> processarLinha(j, company, t, "U", pk, live, true));
+                lerLinha(j, t, pk).ifPresent(live -> processarLinha(j, company, t, "U", pk, live, true,
+                        ressincronizacao ? ORIGEM_RESSINCRONIZACAO : ORIGEM_EDICAO));
             }
         }
         return colunasPendentes(j, company, t, chave);
@@ -294,6 +307,11 @@ public class MotorDeteccao {
      */
     public void processarLinha(JdbcTemplate j, String company, TabelaSincronizada t, String operacao, List<String> pk,
                                Map<String, String> live, boolean inline) {
+        processarLinha(j, company, t, operacao, pk, live, inline, ORIGEM_EDICAO);
+    }
+
+    void processarLinha(JdbcTemplate j, String company, TabelaSincronizada t, String operacao, List<String> pk,
+                        Map<String, String> live, boolean inline, String origem) {
         String chave = String.join("|", pk);
         Optional<Map<String, String>> esp = t.usaEspelho() ? lerEspelho(j, t, chave, company) : Optional.empty();
         if (live == null) {
@@ -302,9 +320,9 @@ public class MotorDeteccao {
         }
         Map<String, Object> obj = new LinkedHashMap<>(live);
         if (t.classe() == ClasseTabela.EDITAVEL || t.autoriaDaNuvem(obj)) {
-            editavel(j, company, t, chave, live, obj, esp.orElse(null), inline);
+            editavel(j, company, t, chave, live, obj, esp.orElse(null), inline, origem);
         } else {
-            tabelaDaLoja(j, company, t, chave, operacao, live, obj, esp.isPresent(), inline);
+            tabelaDaLoja(j, company, t, chave, operacao, live, obj, esp.isPresent(), inline, origem);
         }
     }
 
@@ -324,7 +342,7 @@ public class MotorDeteccao {
     }
 
     private void editavel(JdbcTemplate j, String company, TabelaSincronizada t, String chave, Map<String, String> live,
-                          Map<String, Object> obj, Map<String, String> esp, boolean inline) {
+                          Map<String, Object> obj, Map<String, String> esp, boolean inline, String origem) {
         if (esp == null) { // linha criada na nuvem
             ObjectNode p = JSON.createObjectNode();
             ArrayNode cols = p.putArray("colunas");
@@ -364,13 +382,14 @@ public class MotorDeteccao {
             gravarEspelho(j, t, chave, company, novoEsp);
         }
         if (!lojaMudadas.isEmpty()) {
-            quarentenar(j, company, t, chave, live, "Coluna da loja alterada na nuvem: " + String.join(", ", lojaMudadas));
+            quarentenar(j, company, t, chave, live, origem, "Coluna da loja alterada na nuvem: " + String.join(", ", lojaMudadas));
             if (!inline) criarComando(j, company, "reenviar", t, chave, JSON.createObjectNode());
         }
     }
 
     private void tabelaDaLoja(JdbcTemplate j, String company, TabelaSincronizada t, String chave, String operacao,
-                              Map<String, String> live, Map<String, Object> obj, boolean origemConhecida, boolean inline) {
+                              Map<String, String> live, Map<String, Object> obj, boolean origemConhecida, boolean inline,
+                              String origem) {
         Optional<TabelaSincronizada.AceiteDaNuvem> aceite = t.aceiteDaNuvem(obj);
         boolean criadaNaNuvem = "I".equals(operacao) && !origemConhecida;
         if (aceite.isPresent()) {
@@ -382,7 +401,7 @@ public class MotorDeteccao {
             return;
         }
         if (criadaNaNuvem) {
-            quarentenar(j, company, t, chave, live, "Linha criada na nuvem em tabela que so a loja grava.");
+            quarentenar(j, company, t, chave, live, origem, "Linha criada na nuvem em tabela que so a loja grava.");
             return; // MUST NOT excluir: a spec manda manter; a loja nem tem a linha
         }
         List<String> nuvemCols = new ArrayList<>();
@@ -396,7 +415,7 @@ public class MotorDeteccao {
             criarComando(j, company, "forcar", t, chave, p);
             return;
         }
-        quarentenar(j, company, t, chave, live, "Linha alterada na nuvem em tabela que so a loja grava.");
+        quarentenar(j, company, t, chave, live, origem, "Linha alterada na nuvem em tabela que so a loja grava.");
         if (!inline) criarComando(j, company, "reenviar", t, chave, JSON.createObjectNode());
     }
 
@@ -443,7 +462,9 @@ public class MotorDeteccao {
     }
 
     private void quarentenar(JdbcTemplate j, String company, TabelaSincronizada t, String chave, Map<String, String> linha,
-                             String motivo) {
+                             String origem, String motivo0) {
+        String motivo = ORIGEM_RESSINCRONIZACAO.equals(origem)
+                ? "Linha da nuvem sobrescrita na ressincronizacao completa. " + motivo0 : motivo0;
         String json = escrever(linha);
         Integer igual = j.queryForObject("""
                 SELECT COUNT(*) FROM dbo.SyncQuarentena
@@ -452,19 +473,13 @@ public class MotorDeteccao {
                 """, Integer.class, company, t.nome(), chave, motivo, json);
         if (igual != null && igual > 0) return;
         j.update("INSERT INTO dbo.SyncQuarentena (CompanyId, Tabela, Chave, Origem, LinhaJson, Motivo) "
-                + "VALUES (?, ?, ?, N'edicao-nuvem', ?, ?)", company, t.nome(), chave, json, truncar(motivo, 500));
+                + "VALUES (?, ?, ?, ?, ?, ?)", company, t.nome(), chave, origem, json, truncar(motivo, 500));
         alertar(j, "quarentena", company, t.nome() + " " + chave + ": " + motivo);
     }
 
     static void alertar(JdbcTemplate j, String motivo, String company, String detalhe) {
-        LOG.error("ALERTA {} (empresa {}): {}", motivo, company, detalhe);
-        String d = truncar(detalhe, 1000);
-        j.update("""
-                MERGE dbo.SyncAlertas AS a USING (SELECT ? AS Motivo, ? AS CompanyId) AS s
-                  ON a.Motivo = s.Motivo AND a.CompanyId = s.CompanyId
-                WHEN MATCHED THEN UPDATE SET Detalhe = ?, UltimaEm = SYSDATETIMEOFFSET(), Contagem = a.Contagem + 1
-                WHEN NOT MATCHED THEN INSERT (Motivo, CompanyId, Detalhe) VALUES (s.Motivo, s.CompanyId, ?);
-                """, motivo, company, d, d);
+        br.com.quack.pdv.plataforma.sincronizacao.alertas.AlertasSync.registrar(j, java.time.OffsetDateTime.now(), motivo,
+                company, detalhe);
     }
 
     private static String escrever(Object o) {

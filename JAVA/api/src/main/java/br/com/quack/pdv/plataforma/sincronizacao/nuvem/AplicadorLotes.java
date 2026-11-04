@@ -79,7 +79,7 @@ public class AplicadorLotes {
         int nExclusoes = 0;
         for (TabelaSincronizada t : CatalogoSincronizacao.ordemDeAplicacao()) {
             for (Linha l : upserts.getOrDefault(t.nome(), List.of())) {
-                if (upsert(companyId, t, l)) nUpserts++;
+                if (upsert(companyId, t, l, completo)) nUpserts++;
             }
         }
         for (TabelaSincronizada t : CatalogoSincronizacao.ordemDeExclusao()) {
@@ -114,7 +114,7 @@ public class AplicadorLotes {
         return new Linha(colunas, mapa, textos);
     }
 
-    private boolean upsert(String companyId, TabelaSincronizada t, Linha l) {
+    private boolean upsert(String companyId, TabelaSincronizada t, Linha l, boolean completo) {
         if (t.classe() == ClasseTabela.ACRESCIMO) return inserirAuditoria(companyId, t, l);
         List<String> pk = chavesPorTabela.get(t.nome());
         Chave chave = chaveDaLinha(t, pk, l);
@@ -128,7 +128,10 @@ public class AplicadorLotes {
             throw new LoteRecusadoException("Linha existente de outra empresa em " + t.nome() + " (" + chave.texto() + ").");
         }
         Set<String> bloqueadas = new HashSet<>();
-        for (DeteccaoInline d : deteccao) bloqueadas.addAll(d.antes(companyId, t, chave.texto(), existe));
+        for (DeteccaoInline d : deteccao) {
+            bloqueadas.addAll(completo ? d.antesDaRessincronizacao(companyId, t, chave.texto(), existe)
+                    : d.antes(companyId, t, chave.texto(), existe));
+        }
         if (existe) atualizar(t, l, pk, chave, bloqueadas); else inserir(t, l);
         for (DeteccaoInline d : deteccao) d.depois(companyId, t, chave.texto(), l.textos(), bloqueadas);
         return true;

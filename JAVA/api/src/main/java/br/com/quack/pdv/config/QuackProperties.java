@@ -102,6 +102,20 @@ public class QuackProperties {
         public void setComandosEsperaMs(long comandosEsperaMs) { this.comandosEsperaMs = comandosEsperaMs; }
         public long getMaxLoteBytes() { return clamp(maxLoteBytes, 32_768L, 64_000_000L); }
         public void setMaxLoteBytes(long maxLoteBytes) { this.maxLoteBytes = maxLoteBytes; }
+
+        private boolean alertasAtivo = true;
+        private boolean conferenciaAtiva = true;
+        private String backupEstado = "";
+
+        /** Liga as rotinas periodicas de alerta (verificacao e envio de e-mail, D11); os testes as desligam. */
+        public boolean isAlertasAtivo() { return alertasAtivo; }
+        public void setAlertasAtivo(boolean alertasAtivo) { this.alertasAtivo = alertasAtivo; }
+        /** Liga a conferencia diaria agendada (D10; o horario e {@code quack.sync.conferencia-cron}). */
+        public boolean isConferenciaAtiva() { return conferenciaAtiva; }
+        public void setConferenciaAtiva(boolean conferenciaAtiva) { this.conferenciaAtiva = conferenciaAtiva; }
+        /** Arquivo {@code backup-estado.json} escrito pelo script de backup do instalador (D12); vazio = sem backup. */
+        public String getBackupEstado() { return backupEstado; }
+        public void setBackupEstado(String backupEstado) { this.backupEstado = backupEstado == null ? "" : backupEstado; }
     }
 
     public static class Recaptcha {

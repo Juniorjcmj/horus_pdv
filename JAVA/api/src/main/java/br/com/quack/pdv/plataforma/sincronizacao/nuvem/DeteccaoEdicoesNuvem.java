@@ -31,6 +31,11 @@ public class DeteccaoEdicoesNuvem implements DeteccaoInline {
     }
 
     @Override
+    public Set<String> antesDaRessincronizacao(String companyId, TabelaSincronizada t, String chave, boolean existe) {
+        return motor.inline(jdbc, companyId, t, chave, existe, true);
+    }
+
+    @Override
     public void depois(String companyId, TabelaSincronizada t, String chave, Map<String, String> textosDoLote,
                        Set<String> bloqueadas) {
         if (!t.usaEspelho()) return;
