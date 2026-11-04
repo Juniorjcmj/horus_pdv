@@ -47,13 +47,13 @@
 
 ## 2. Envio loja → nuvem
 
-- [ ] 2.1 Serialização tipada das linhas e dos lotes (D4): decimal com escala, data/hora, binário, nulo; partes e gzip.
+- [x] 2.1 Serialização tipada das linhas e dos lotes (D4): decimal com escala, data/hora, binário, nulo; partes e gzip.
   - Verificação: testes unitários de ida e volta com cada tipo do `V1` e um lote dividido em 3 partes.
-- [ ] 2.2 `EnvioSincronizacao` na loja (D4).
+- [x] 2.2 `EnvioSincronizacao` na loja (D4).
   - Leitura em `SNAPSHOT`, `CHANGETABLE` por tabela na ordem do catálogo, partes, `SyncEstado` e backoff com jitter.
   - Pausa em erro definitivo, retomada por rota, reenvios de `SyncReenvios`.
   - Verificação: unitário do backoff e da classificação dos erros (408/429/5xx/rede contra 4xx/409).
-- [ ] 2.3 Rota `POST /api/loja-sync/lotes` e `AplicadorLotes` na nuvem (D4), com o filtro do token do servidor (D9).
+- [x] 2.3 Rota `POST /api/loja-sync/lotes` e `AplicadorLotes` na nuvem (D4), com o filtro do token do servidor (D9).
   - Escopo por `CompanyId` e pela mãe, contexto `sync-loja`, classes de coluna e `SyncAuditoriaMapa`.
   - Idempotência por `aplicadoAte`, 409 de versão, partes, limite de 16 MB só nessa rota.
   - Verificação: `SincronizacaoIT` (dois bancos, dois contextos) com os cenários da spec
@@ -65,7 +65,7 @@
     - item de outra empresa recusa o lote e pausa;
     - `AuditLog` duas vezes vira uma linha;
     - uma hora de vendas offline em 7 "caixas" (threads), que convergem ao religar.
-- [ ] 2.4 Ressincronização completa (D5) quando a versão passou da retenção.
+- [x] 2.4 Ressincronização completa (D5) quando a versão passou da retenção.
   - Verificação: IT que força `MIN_VALID_VERSION` (retenção mínima e limpeza manual do tracking) e termina com a
     conferência do grupo 6 sem diferença. Se o grupo 6 ainda não existir, comparar contagens e somas por SQL no teste.
 

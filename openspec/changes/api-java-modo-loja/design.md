@@ -169,6 +169,27 @@ existe, ou tabela `EDITAVEL`/`LOJA` sem chave primária. A ordem de aplicação 
   `baseline-on-migrate` e `baseline-version=0` para o V1 rodar num banco que já tem o esquema da .NET.
 - **Ordem (D2):** lista fixa no catálogo, conferida contra `sys.foreign_keys` pelo `CatalogoSchemaIT` (e pela guarda).
 
+**Ajustes da implementação (grupo 2, tarefas 2.1–2.4):**
+- **Fio (D4):** a parte é `{loteId, companyId, de, ate, completo, parte, ultima, blocos}`; cada bloco traz colunas tipadas
+  (`TipoColuna`), linhas como listas de texto/nulo e chaves de exclusão. O corpo é JSON gzip (`Content-Encoding: gzip`,
+  lido por `@RequestBody byte[]`). Como o total de partes só se sabe no fim (a loja envia enquanto lê, no retrato
+  SNAPSHOT aberto), a parte final leva `ultima = true`; `SyncLotePartes.TotalPartes` guarda 0 nas demais e o número da
+  parte na última. `companyId` no corpo é conferido contra o token (403 se diferente). Colunas `CIFRADA` nem sobem.
+- **Idempotência:** `ate < aplicadoAte`, ou `ate == aplicadoAte` com `de < ate`, confirma sem aplicar; `de != aplicadoAte` é
+  409 com o esperado. Exceção: lote de reenvio (`de == ate`, de `SyncReenvios`) é aplicado mesmo com `ate == aplicadoAte`.
+  Sem linha em `SyncEstadoNuvem` (antes da ativação do grupo 3) qualquer `de` é aceito; a ativação deve criar a linha.
+- **Erros da nuvem:** recusa de escopo/tabela/coluna e erro SQL ao aplicar = 422 (a loja pausa); falha transitória do
+  banco = 503 (a loja tenta de novo). A loja registra o alerta `sincronizacao-pausada` em `SyncAlertas` (e-mail: 6.2).
+- **Ressincronização (D5):** retrato completo substitui; exclui sobras só em tabelas `LOJA` (regra por linha, como
+  `Modelo = 55`, preserva a autoria da nuvem). Em `EDITAVEL` a nuvem **não** exclui sobras no grupo 2: sem o espelho (grupo 4)
+  não dá para separar "excluída na loja" de "criada na nuvem aguardando comando". Fica para os grupos 4/6.
+- **Retrato completo:** a loja lê só as linhas da empresa de `SyncEstado.CompanyId` (filhas pela mãe). A limpeza manual do tracking no teste é desligar e religar (`ChangeTrackingAdmin`); `sp_flush_*` com retenção de 1 minuto não avançou a versão mínima em 4 minutos.
+- **Pontos de extensão deixados:** `AntesDoEnvio` (loja, retomada fiscal da 5.1) e `DeteccaoInline` (nuvem, antes/depois de
+  cada linha, grupo 4). Contexto do tracking do aplicador: `0x53510001` (`sync-loja`).
+- **Teste:** `ClienteNuvemHttp` tem o interruptor `setSemInternet` e o gancho `perderProximasRespostas` (resposta perdida).
+  A venda sob 7 threads reprocessa em deadlock/timeout de lock no numerador (`TransientDataAccessException`); o teste repete
+  como o Caixa faz.
+
 ### D4. Envio loja → nuvem
 
 - **Rotina:** `EnvioSincronizacao`, a cada 2 s quando ociosa.

@@ -57,7 +57,8 @@ public class SegurancaConfig implements WebMvcConfigurer {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, QuackProperties props, ClienteIpResolver ipResolver,
-                                           JwtService jwt, ValidadorSessao validador, Clock clock) throws Exception {
+                                           JwtService jwt, ValidadorSessao validador, Clock clock,
+                                           org.springframework.beans.factory.ObjectProvider<org.springframework.jdbc.core.JdbcTemplate> jdbc) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(AbstractHttpConfigurer::disable)
@@ -73,7 +74,13 @@ public class SegurancaConfig implements WebMvcConfigurer {
         http.addFilterAfter(new TelemetriaFilter(ipResolver), CabecalhosSegurancaFilter.class);
         http.addFilterAfter(new LimiteCorpoFilter(props, resposta), TelemetriaFilter.class);
         http.addFilterAfter(new LimiteRequisicoesFilter(props, ipResolver, resposta, clock), LimiteCorpoFilter.class);
-        http.addFilterAfter(new AutenticacaoFilter(props, jwt, validador, resposta), LimiteRequisicoesFilter.class);
+        Class<? extends jakarta.servlet.Filter> antesDaAutenticacao = LimiteRequisicoesFilter.class;
+        if ("nuvem".equals(props.getModo()) && jdbc.getIfAvailable() != null) { // token do servidor da loja (D9) so existe no receptor
+            http.addFilterAfter(new br.com.quack.pdv.plataforma.sincronizacao.nuvem.ServidorLojaFilter(jdbc.getIfAvailable(), resposta),
+                    LimiteRequisicoesFilter.class);
+            antesDaAutenticacao = br.com.quack.pdv.plataforma.sincronizacao.nuvem.ServidorLojaFilter.class;
+        }
+        http.addFilterAfter(new AutenticacaoFilter(props, jwt, validador, resposta), antesDaAutenticacao);
         return http.build();
     }
 

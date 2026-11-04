@@ -91,6 +91,8 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
 
     private boolean pular(HttpServletRequest request) {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
+        // servidor da loja ja autenticado pelo ServidorLojaFilter (token proprio, D9)
+        if (request.getAttribute(br.com.quack.pdv.plataforma.sincronizacao.nuvem.ServidorLoja.ATRIBUTO) != null) return true;
         String caminho = request.getRequestURI();
         String c = caminho.toLowerCase(Locale.ROOT);
         if (c.startsWith("/api/auth/login") || c.startsWith("/api/auth/forgot-password")

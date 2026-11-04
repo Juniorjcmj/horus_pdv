@@ -17,6 +17,9 @@ public class QuackProperties {
     private final Security security = new Security();
     private final Recaptcha recaptcha = new Recaptcha();
     private final Email email = new Email();
+    private final Sync sync = new Sync();
+
+    public Sync getSync() { return sync; }
 
     public String getModo() { return modo; }
     public void setModo(String modo) { this.modo = modo == null || modo.isBlank() ? "padrao" : modo; }
@@ -76,6 +79,20 @@ public class QuackProperties {
         public void setWindowSeconds(int windowSeconds) { this.windowSeconds = windowSeconds; }
         public int getMaxRequests() { return clamp(maxRequests, 10, 5000); }
         public void setMaxRequests(int maxRequests) { this.maxRequests = maxRequests; }
+    }
+
+    /** Sincronizacao loja/nuvem (modo loja). */
+    public static class Sync {
+        private String nuvemUrl = "";
+        private boolean envioAtivo = true;
+        private long maxLoteBytes = 16L * 1024 * 1024;
+
+        public String getNuvemUrl() { return nuvemUrl; }
+        public void setNuvemUrl(String nuvemUrl) { this.nuvemUrl = nuvemUrl == null ? "" : nuvemUrl; }
+        public boolean isEnvioAtivo() { return envioAtivo; }
+        public void setEnvioAtivo(boolean envioAtivo) { this.envioAtivo = envioAtivo; }
+        public long getMaxLoteBytes() { return clamp(maxLoteBytes, 32_768L, 64_000_000L); }
+        public void setMaxLoteBytes(long maxLoteBytes) { this.maxLoteBytes = maxLoteBytes; }
     }
 
     public static class Recaptcha {
