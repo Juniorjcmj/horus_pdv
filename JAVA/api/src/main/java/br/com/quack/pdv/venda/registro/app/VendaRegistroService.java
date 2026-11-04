@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -51,8 +52,7 @@ public class VendaRegistroService {
     private static final Logger LOG = LoggerFactory.getLogger(VendaRegistroService.class);
     private static final ZoneId BRASILIA = ZoneId.of("America/Sao_Paulo");
 
-    /** Esquisitice da .NET (D12): venda comum com orderNumber de pedido existente responde 500. */
-    static final boolean BUG_STATUS_PEDIDO_DOTNET = true;
+    static final String MSG_BUG_STATUS = "Unable to cast object of type System.Byte to type System.Int32.";
 
     /** Saida da transacao: o resultado e o que fazer depois do commit. */
     private record Saida(VendaRegistroResultado resultado, List<ItemRegistrado> itens, List<RupturaAviso> rupturas,
@@ -69,11 +69,13 @@ public class VendaRegistroService {
     private final AuditoriaService auditoria;
     private final Clock clock;
     private final TransactionTemplate tx;
+    private final boolean reproduzirBugStatusPedido;
 
     public VendaRegistroService(VendaRepository repo, AutorizacaoPrecoService precos, BaixaEstoqueVenda baixa,
                                 RegistradorEstoque registrador, NumeradorDocumentos numerador, FiadoDebitos fiado,
                                 CreditoGateway credito, LoteOperacoes lotes, AuditoriaService auditoria, Clock clock,
-                                PlatformTransactionManager transactionManager) {
+                                PlatformTransactionManager transactionManager,
+                                @Value("${quack.vendas.pedido.reproduzir-erro-dotnet:true}") boolean reproduzirBugStatusPedido) {
         this.repo = repo;
         this.precos = precos;
         this.baixa = baixa;
@@ -85,6 +87,7 @@ public class VendaRegistroService {
         this.auditoria = auditoria;
         this.clock = clock;
         this.tx = new TransactionTemplate(transactionManager);
+        this.reproduzirBugStatusPedido = reproduzirBugStatusPedido;
     }
 
     /** Registra a venda. Erros de regra do .NET (ArgumentException/InvalidOperationException) viram 400. */
@@ -237,6 +240,96 @@ public class VendaRegistroService {
         return new Saida(resultado, saidaEstoque.itens(), saidaEstoque.rupturas(), operatorName);
     }
 
+    // ---------------------------------------------------------------- pedido com precos fixos
+
+    /** Finalizacao de pedido (RegistrarComPrecosFixosAsync): sem ProcessedEvents, replay pelo status do pedido. */
+    public VendaRegistroResultado registrarComPrecosFixos(String companyId, String customerName, String customerCpf,
+                                                          String paymentType, String operatorName,
+                                                          List<PedidoItem> itens, List<SaleMoney.Entrada> pagamentos,
+                                                          String caixaSessaoId, String pedidoId) {
+        Saida saida;
+        try {
+            saida = tx.execute(s -> executarPrecosFixos(companyId, customerName, customerCpf, paymentType,
+                    operatorName, itens, pagamentos, caixaSessaoId, pedidoId));
+        } catch (IllegalArgumentException e) {
+            throw new NegocioException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        if (!saida.resultado().isReplay()) {
+            lotes.consumirVendaSeguro(companyId, saida.resultado().vendaId(), saida.itens().stream()
+                    .map(i -> new LoteOperacoes.ItemVenda(i.productCode(), i.quantity())).toList());
+        }
+        return saida.resultado();
+    }
+
+    private Saida executarPrecosFixos(String companyId, String customerName, String customerCpf, String paymentType,
+                                      String operatorName, List<PedidoItem> itens,
+                                      List<SaleMoney.Entrada> entradas, String caixaSessaoId, String pedidoId) {
+        var linha = repo.travarPedidoPorId(companyId, pedidoId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado."));
+        if (reproduzirBugStatusPedido) {
+            throw new IllegalStateException(MSG_BUG_STATUS);
+        }
+        if (linha.status() == 2) {
+            throw new IllegalArgumentException("Pedido cancelado.");
+        }
+        if (linha.status() == 1) {
+            if (linha.vendaId() == null) {
+                throw new IllegalArgumentException("Pedido pago sem venda vinculada.");
+            }
+            List<VendaHistoricoDto> rows = repo.porVendaId(companyId, linha.vendaId());
+            VendaRegistroResultado replay = new VendaRegistroResultado(rows.getFirst().saleNumber(), linha.vendaId(),
+                    null, true, rows, repo.pagamentos(companyId, linha.vendaId()), List.of(), null, null);
+            return new Saida(replay, List.of(), List.of(), operatorName);
+        }
+
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        for (PedidoItem i : itens) {
+            totalAmount = totalAmount.add(SaleMoney.itemNet(i.quantity(), i.unitPrice(), BigDecimal.ZERO));
+        }
+        List<PagamentoNormalizado> pagamentos = SaleMoney.payments(totalAmount, paymentType, entradas);
+        String tipo = pagamentos.size() == 1 ? pagamentos.getFirst().paymentType() : "Múltiplo";
+        BigDecimal fiadoAmount = SaleMoney.fiado(pagamentos);
+
+        String nome = customerName;
+        String fiadoClienteId = null;
+        if (fiadoAmount.signum() > 0) {
+            if (HashPayload.emBranco(customerCpf) || customerCpf.equals("-")) {
+                throw new IllegalArgumentException(
+                        "Para compras a prazo / fiado, é obrigatório vincular um cliente cadastrado.");
+            }
+            ClienteFiado cliente = repo.travarClientePorDocumento(companyId, somenteDigitos(customerCpf))
+                    .orElseThrow(() -> new IllegalArgumentException("Cliente com CPF/CNPJ " + customerCpf
+                            + " não encontrado no cadastro."));
+            fiadoClienteId = cliente.id();
+            nome = cliente.customerName();
+            credito.exigirFiadoLegado(companyId, null);
+            SaleMoney.credit(cliente.limiteCredito(),
+                    cliente.saldoDevedor().add(credito.delegado(companyId, fiadoClienteId)), fiadoAmount);
+        }
+
+        String origem = RegistradorEstoque.novaOrigemProvisoria();
+        Baixa saidaEstoque = baixa.baixarComPrecoFixo(companyId, itens, origem);
+        VendaRegistroResultado resultado = inserirVenda(companyId, nome, customerCpf, tipo, totalAmount,
+                operatorName, saidaEstoque.itens(), pagamentos, null, null, null, caixaSessaoId, origem);
+
+        FiadoDebitos.Movimento debito = null;
+        if (fiadoAmount.signum() > 0 && fiadoClienteId != null) {
+            debito = fiado.registrarDebito(companyId, fiadoClienteId, fiadoAmount, resultado.vendaId(), operatorName,
+                    false);
+            resultado = resultado.comFiado(debito.saldoAtual(), fiadoClienteId);
+        }
+        if (repo.finalizarPedido(companyId, pedidoId, resultado.vendaId()) != 1) {
+            throw new IllegalArgumentException("Pedido alterado durante finalização.");
+        }
+        if (debito != null) {
+            repo.inserirAuditoria(companyId, operatorName, "FiadoDebito", "Venda fiado "
+                    + Dinheiro.formatarSemSimbolo(debito.valor()) + " para " + debito.clienteNome()
+                    + ". Saldo devedor: " + Dinheiro.formatarSemSimbolo(debito.saldoAtual()) + ".", "Cliente",
+                    debito.clienteId());
+        }
+        return new Saida(resultado, saidaEstoque.itens(), List.of(), operatorName);
+    }
+
     private String hashDeIdentidade(VendaRequests.Venda r) {
         if (!HashPayload.emBranco(r.payloadHash)) {
             return HashPayload.trim(r.payloadHash).toLowerCase(Locale.ROOT);
@@ -251,10 +344,10 @@ public class VendaRegistroService {
 
     private PedidoTravado conferirPedido(String companyId, VendaRequests.Venda r) {
         PedidoTravado pedido = repo.travarPedido(companyId, r.orderNumber).orElse(null);
-        if (pedido != null && BUG_STATUS_PEDIDO_DOTNET) {
+        if (pedido != null && reproduzirBugStatusPedido) {
             // D12: a .NET le Pedidos.Status (TINYINT) com GetInt32 e falha com InvalidCastException (500) sempre
-            // que o pedido existe. Copiado ate a .NET corrigir; a conferencia abaixo ja esta pronta para o dia.
-            throw new IllegalStateException("Unable to cast object of type System.Byte to type System.Int32.");
+            // que o pedido existe. Copiado ate a .NET corrigir (quack.vendas.pedido.reproduzir-erro-dotnet=false).
+            throw new IllegalStateException(MSG_BUG_STATUS);
         }
         if (pedido == null || pedido.status() != 0
                 || !somenteDigitos(pedido.customerCpf()).equals(somenteDigitos(r.customerCpf))) {

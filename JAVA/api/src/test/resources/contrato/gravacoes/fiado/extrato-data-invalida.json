@@ -1,0 +1,15 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/problem+json;charset=utf-8"
+  },
+  "corpo" : {
+    "type" : "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title" : "One or more validation errors occurred.",
+    "status" : 400,
+    "errors" : {
+      "dataInicio" : [ "The value 'abc' is not valid." ]
+    },
+    "traceId" : "00-1c6198c0d6685b9ca9f3ba6947a0e294-f24f9caae28ee65a-00"
+  }
+}

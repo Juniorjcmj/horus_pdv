@@ -1,0 +1,39 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Pedidos obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "orderNumber" : "3",
+      "customerName" : "Joao",
+      "customerCpf" : "-",
+      "sellerName" : "Ari Atendente",
+      "status" : "aberto",
+      "createdAt" : "03/11/2026 21:57:05",
+      "totalAmount" : "0,00",
+      "itens" : [ ]
+    }, {
+      "orderNumber" : "2",
+      "customerName" : "Maria Cliente",
+      "customerCpf" : "123.456.789-09",
+      "sellerName" : "Ari Atendente",
+      "status" : "aberto",
+      "createdAt" : "03/11/2026 21:57:05",
+      "totalAmount" : "0,00",
+      "itens" : [ ]
+    }, {
+      "orderNumber" : "1",
+      "customerName" : "Consumidor",
+      "customerCpf" : "-",
+      "sellerName" : "Ari Atendente",
+      "status" : "aberto",
+      "createdAt" : "16/01/2026 06:30:00",
+      "totalAmount" : "0,00",
+      "itens" : [ ]
+    } ]
+  }
+}

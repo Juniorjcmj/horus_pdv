@@ -1,0 +1,994 @@
+[
+ {
+  "nome": "receber-parcial",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data.id": "id",
+   "data.criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 20,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-total-pelo-administrador",
+  "usuario": "admin@contrato.quack",
+  "volateis": {
+   "data.id": "id",
+   "data.criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 50,
+    "formaPagamento": "dinheiro",
+    "observacao": null
+   }
+  }
+ },
+ {
+  "nome": "receber-forma-em-branco-vira-dinheiro",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data.id": "id",
+   "data.criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 10,
+    "formaPagamento": "  ",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-forma-ausente",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data.id": "id",
+   "data.criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 10
+   }
+  }
+ },
+ {
+  "nome": "receber-observacao-com-espacos",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data.id": "id",
+   "data.criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 10,
+    "formaPagamento": " Cartão ",
+    "observacao": "  pago  "
+   }
+  }
+ },
+ {
+  "nome": "receber-cliente-com-espacos",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data.id": "id",
+   "data.criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "  cl-ct-devedor  ",
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-centavo-a-mais-na-tolerancia",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data.id": "id",
+   "data.criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 50.005,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-valor-fracionado",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data.id": "id",
+   "data.criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 10.555,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-duas-vezes",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Fiado/receber",
+    "auth": "bearer",
+    "corpo": {
+     "clienteId": "cl-ct-devedor",
+     "valor": 20,
+     "formaPagamento": "pix",
+     "observacao": "Pagou metade"
+    },
+    "status": 200
+   }
+  ],
+  "volateis": {
+   "data.id": "id",
+   "data.criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 20,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-maior-que-o-saldo",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 200,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-maior-que-o-saldo-com-milhar",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 1234567.891,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-cliente-sem-saldo",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-ana",
+    "valor": 1,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-valor-zero",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 0,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-valor-negativo",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": -5,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-valor-ausente",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor"
+   }
+  }
+ },
+ {
+  "nome": "receber-cliente-vazio",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "",
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-cliente-so-espacos",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "   ",
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-cliente-vazio-e-valor-zero",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "",
+    "valor": 0
+   }
+  }
+ },
+ {
+  "nome": "receber-cliente-inexistente",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-nao-existe",
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-cliente-de-outra-empresa",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor-outra",
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-cliente-nulo",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "traceId": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": null,
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-forma-nula",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "traceId": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 10,
+    "formaPagamento": null,
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-valor-em-texto",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data.id": "id",
+   "data.criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": "10",
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-corpo-vazio",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {}
+  }
+ },
+ {
+  "nome": "receber-perfil-gerente-so-consulta",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-perfil-atendente-nao-pode",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-perfil-estoquista-nao-pode",
+  "usuario": "estoquista@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-sem-token",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   }
+  }
+ },
+ {
+  "nome": "receber-token-invalido",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Fiado/receber",
+   "corpo": {
+    "clienteId": "cl-ct-devedor",
+    "valor": 10,
+    "formaPagamento": "pix",
+    "observacao": "Pagou metade"
+   },
+   "auth": "invalido"
+  }
+ },
+ {
+  "nome": "receber-atualiza-saldo-visto-nos-devedores",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Fiado/receber",
+    "auth": "bearer",
+    "corpo": {
+     "clienteId": "cl-ct-devedor",
+     "valor": 20,
+     "formaPagamento": "pix",
+     "observacao": "Pagou metade"
+    },
+    "status": 200
+   }
+  ],
+  "volateis": {
+   "data[0].diasSemPagamento": "tipo"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores"
+  }
+ },
+ {
+  "nome": "receber-total-tira-da-lista-de-devedores",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Fiado/receber",
+    "auth": "bearer",
+    "corpo": {
+     "clienteId": "cl-ct-devedor",
+     "valor": 50,
+     "formaPagamento": "pix",
+     "observacao": "Pagou metade"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores"
+  }
+ },
+ {
+  "nome": "receber-aparece-no-extrato",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Fiado/receber",
+    "auth": "bearer",
+    "corpo": {
+     "clienteId": "cl-ct-devedor",
+     "valor": 20,
+     "formaPagamento": "pix",
+     "observacao": "Pagou metade"
+    },
+    "status": 200
+   }
+  ],
+  "volateis": {
+   "data[0].id": "id",
+   "data[0].criadoEm": "iso-json"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor"
+  }
+ },
+ {
+  "nome": "receber-auditoria-nao-aparece-no-resumo",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Fiado/receber",
+    "auth": "bearer",
+    "corpo": {
+     "clienteId": "cl-ct-devedor",
+     "valor": 20,
+     "formaPagamento": "pix",
+     "observacao": "Pagou metade"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/resumo"
+  }
+ },
+ {
+  "nome": "extrato-sem-periodo",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor"
+  }
+ },
+ {
+  "nome": "extrato-pelo-administrador",
+  "usuario": "admin@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor"
+  }
+ },
+ {
+  "nome": "extrato-pelo-gerente",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor"
+  }
+ },
+ {
+  "nome": "extrato-so-data-inicio",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataInicio=2026-01-11"
+  }
+ },
+ {
+  "nome": "extrato-so-data-fim",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataFim=2026-01-11"
+  }
+ },
+ {
+  "nome": "extrato-periodo-que-cobre-tudo",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataInicio=2026-01-01&dataFim=2026-01-31"
+  }
+ },
+ {
+  "nome": "extrato-limites-inclusivos",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataInicio=2026-01-10T12:00:00%2B00:00&dataFim=2026-01-12T12:00:00%2B00:00"
+  }
+ },
+ {
+  "nome": "extrato-limite-inicial-um-segundo-depois",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataInicio=2026-01-10T12:00:01%2B00:00"
+  }
+ },
+ {
+  "nome": "extrato-com-offset-negativo",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataInicio=2026-01-12T09:00:00-03:00&dataFim=2026-01-12T09:00:00-03:00"
+  }
+ },
+ {
+  "nome": "extrato-com-z",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataInicio=2026-01-12T12:00:00Z"
+  }
+ },
+ {
+  "nome": "extrato-periodo-sem-movimentos",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataInicio=2025-01-01&dataFim=2025-02-01"
+  }
+ },
+ {
+  "nome": "extrato-inicio-maior-que-fim",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataInicio=2026-02-01&dataFim=2026-01-01"
+  }
+ },
+ {
+  "nome": "extrato-data-invalida",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "traceId": "texto"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataInicio=abc"
+  }
+ },
+ {
+  "nome": "extrato-data-fim-invalida",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "traceId": "texto"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataFim=31/12/2026"
+  }
+ },
+ {
+  "nome": "extrato-data-vazia",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor?dataInicio="
+  }
+ },
+ {
+  "nome": "extrato-cliente-sem-movimentos",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-ana"
+  }
+ },
+ {
+  "nome": "extrato-cliente-inexistente",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-nao-existe"
+  }
+ },
+ {
+  "nome": "extrato-cliente-de-outra-empresa",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor-outra"
+  }
+ },
+ {
+  "nome": "extrato-com-venda-fiado-e-estorno",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "sql": "INSERT INTO FiadoMovimentos (Id, CompanyId, ClienteId, Tipo, Valor, SaldoAnterior, SaldoAtual, VendaId, FormaPagamento, Observacao, OperadorNome, CriadoEm) VALUES (N'fm-ct-3', N'empresa-principal', N'cl-ct-devedor', 1, 10.00, 50.00, 60.00, N'vd-ct-fin', NULL, N'Compra a prazo (fiado)', N'Cai Caixa', '2026-01-13T12:00:00+00:00')"
+   },
+   {
+    "sql": "INSERT INTO FiadoMovimentos (Id, CompanyId, ClienteId, Tipo, Valor, SaldoAnterior, SaldoAtual, VendaId, FormaPagamento, Observacao, OperadorNome, CriadoEm) VALUES (N'fm-ct-4', N'empresa-principal', N'cl-ct-devedor', 2, 10.00, 60.00, 50.00, N'vd-ct-fin', N'Estorno', N'Estorno vinculado ao débito original', N'Cai Caixa', '2026-01-14T12:00:00-03:00')"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor"
+  }
+ },
+ {
+  "nome": "extrato-perfil-atendente-nao-pode",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor"
+  }
+ },
+ {
+  "nome": "extrato-perfil-estoquista-nao-pode",
+  "usuario": "estoquista@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor"
+  }
+ },
+ {
+  "nome": "extrato-sem-token",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/extrato/cl-ct-devedor"
+  }
+ },
+ {
+  "nome": "devedores-lista-do-seed",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data[0].diasSemPagamento": "tipo"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores"
+  }
+ },
+ {
+  "nome": "devedores-pelo-gerente",
+  "usuario": "gerente@contrato.quack",
+  "volateis": {
+   "data[0].diasSemPagamento": "tipo"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores"
+  }
+ },
+ {
+  "nome": "devedores-ordenados-por-saldo-e-sem-compra",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "sql": "UPDATE Clientes SET SaldoDevedor = 80 WHERE Id = N'cl-ct-folgado'"
+   },
+   {
+    "sql": "UPDATE Clientes SET SaldoDevedor = 10 WHERE Id = N'cl-ct-ana'"
+   },
+   {
+    "sql": "INSERT INTO FiadoMovimentos (Id, CompanyId, ClienteId, Tipo, Valor, SaldoAnterior, SaldoAtual, VendaId, FormaPagamento, Observacao, OperadorNome, CriadoEm) VALUES (N'fm-ct-5', N'empresa-principal', N'cl-ct-ana', 1, 10.00, 0, 10.00, NULL, NULL, N'Compra a prazo (fiado)', N'Cai Caixa', DATEADD(day, -5, SYSDATETIMEOFFSET()))"
+   }
+  ],
+  "volateis": {
+   "data[0].diasSemPagamento": "tipo",
+   "data[1].diasSemPagamento": "tipo",
+   "data[2].diasSemPagamento": "tipo",
+   "data[0].ultimaCompra": "tipo",
+   "data[1].ultimaCompra": "tipo",
+   "data[2].ultimaCompra": "tipo"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores"
+  }
+ },
+ {
+  "nome": "devedores-busca-por-nome",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data[0].diasSemPagamento": "tipo"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores?busca=zel"
+  }
+ },
+ {
+  "nome": "devedores-busca-maiusculas",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data[0].diasSemPagamento": "tipo"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores?busca=ZELIA"
+  }
+ },
+ {
+  "nome": "devedores-busca-por-documento",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data[0].diasSemPagamento": "tipo"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores?busca=9876"
+  }
+ },
+ {
+  "nome": "devedores-busca-com-espacos-nas-pontas",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data[0].diasSemPagamento": "tipo"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores?busca=%20%20zel%20"
+  }
+ },
+ {
+  "nome": "devedores-busca-so-espacos-lista-tudo",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data[0].diasSemPagamento": "tipo"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores?busca=%20%20"
+  }
+ },
+ {
+  "nome": "devedores-busca-sem-resultado",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores?busca=nao-existe"
+  }
+ },
+ {
+  "nome": "devedores-busca-curinga",
+  "usuario": "caixa@contrato.quack",
+  "volateis": {
+   "data[0].diasSemPagamento": "tipo"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores?busca=%25"
+  }
+ },
+ {
+  "nome": "devedores-cliente-sem-saldo-nao-aparece",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores?busca=Ana"
+  }
+ },
+ {
+  "nome": "devedores-outra-empresa",
+  "usuario": "adm.aprovada@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores"
+  }
+ },
+ {
+  "nome": "devedores-perfil-atendente-nao-pode",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores"
+  }
+ },
+ {
+  "nome": "devedores-sem-token",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/devedores"
+  }
+ },
+ {
+  "nome": "resumo-do-seed",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/resumo"
+  }
+ },
+ {
+  "nome": "resumo-pelo-gerente",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/resumo"
+  }
+ },
+ {
+  "nome": "resumo-faixas-de-30-e-60-dias",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "sql": "UPDATE Clientes SET SaldoDevedor = 100 WHERE Id = N'cl-ct-folgado'"
+   },
+   {
+    "sql": "UPDATE Clientes SET SaldoDevedor = 30 WHERE Id = N'cl-ct-ana'"
+   },
+   {
+    "sql": "UPDATE Clientes SET SaldoDevedor = 20 WHERE Id = N'cl-ct-limite'"
+   },
+   {
+    "sql": "INSERT INTO FiadoMovimentos (Id, CompanyId, ClienteId, Tipo, Valor, SaldoAnterior, SaldoAtual, VendaId, FormaPagamento, Observacao, OperadorNome, CriadoEm) VALUES (N'fm-ct-5', N'empresa-principal', N'cl-ct-folgado', 1, 100.00, 0, 100.00, NULL, NULL, N'x', N'Cai Caixa', DATEADD(day, -45, SYSDATETIMEOFFSET()))"
+   },
+   {
+    "sql": "INSERT INTO FiadoMovimentos (Id, CompanyId, ClienteId, Tipo, Valor, SaldoAnterior, SaldoAtual, VendaId, FormaPagamento, Observacao, OperadorNome, CriadoEm) VALUES (N'fm-ct-6', N'empresa-principal', N'cl-ct-ana', 1, 30.00, 0, 30.00, NULL, NULL, N'x', N'Cai Caixa', DATEADD(day, -10, SYSDATETIMEOFFSET()))"
+   },
+   {
+    "sql": "INSERT INTO FiadoMovimentos (Id, CompanyId, ClienteId, Tipo, Valor, SaldoAnterior, SaldoAtual, VendaId, FormaPagamento, Observacao, OperadorNome, CriadoEm) VALUES (N'fm-ct-7', N'empresa-principal', N'cl-ct-limite', 1, 20.00, 0, 20.00, NULL, NULL, N'x', N'Cai Caixa', DATEADD(day, -70, SYSDATETIMEOFFSET()))"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/resumo"
+  }
+ },
+ {
+  "nome": "resumo-devedor-sem-compra-nao-entra-nas-faixas",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "sql": "UPDATE Clientes SET SaldoDevedor = 500 WHERE Id = N'cl-ct-folgado'"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/resumo"
+  }
+ },
+ {
+  "nome": "resumo-sem-devedores",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "sql": "UPDATE Clientes SET SaldoDevedor = 0"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/resumo"
+  }
+ },
+ {
+  "nome": "resumo-outra-empresa",
+  "usuario": "adm.aprovada@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/resumo"
+  }
+ },
+ {
+  "nome": "resumo-perfil-atendente-nao-pode",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/resumo"
+  }
+ },
+ {
+  "nome": "resumo-perfil-estoquista-nao-pode",
+  "usuario": "estoquista@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/resumo"
+  }
+ },
+ {
+  "nome": "resumo-sem-token",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Fiado/resumo"
+  }
+ }
+]

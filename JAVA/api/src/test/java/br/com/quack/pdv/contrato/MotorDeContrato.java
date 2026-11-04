@@ -36,7 +36,7 @@ public final class MotorDeContrato {
 
     public static final ObjectMapper JSON = new ObjectMapper();
     public static final String SENHA = "Senha#Quack2026";
-    public static final String[] GRUPOS = {"auth", "sessao", "usuario", "empresa", "tema", "categoria", "fornecedor", "cliente", "modulo-mercado", "treinamento", "admin-empresas", "produto", "movimentacao", "lote", "nfe-import", "entrada-manual", "ordem-compra", "promocao", "inventario", "caixa", "vendas", "cancelamento"};
+    public static final String[] GRUPOS = {"auth", "sessao", "usuario", "empresa", "tema", "categoria", "fornecedor", "cliente", "modulo-mercado", "treinamento", "admin-empresas", "produto", "movimentacao", "lote", "nfe-import", "entrada-manual", "ordem-compra", "promocao", "inventario", "caixa", "vendas", "cancelamento", "pedido", "fiado"};
 
     private static final Pattern ISO = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$");
     private static final Pattern DATA = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");

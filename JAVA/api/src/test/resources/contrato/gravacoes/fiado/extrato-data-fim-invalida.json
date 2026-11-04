@@ -1,0 +1,15 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/problem+json;charset=utf-8"
+  },
+  "corpo" : {
+    "type" : "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title" : "One or more validation errors occurred.",
+    "status" : 400,
+    "errors" : {
+      "dataFim" : [ "The value '31/12/2026' is not valid." ]
+    },
+    "traceId" : "00-2c37800deba5087e7e20cd92edbf5baf-0c0092688e0148d5-00"
+  }
+}

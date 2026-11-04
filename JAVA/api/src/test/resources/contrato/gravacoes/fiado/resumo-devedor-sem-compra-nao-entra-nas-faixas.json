@@ -1,0 +1,18 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Resumo financeiro de fiado obtido com sucesso.",
+    "details" : null,
+    "data" : {
+      "totalAReceber" : 550.0,
+      "quantidadeDevedores" : 2,
+      "inadimplencia30Dias" : 50.0,
+      "inadimplencia60Dias" : 50.0,
+      "maiorDebito" : 500.0
+    }
+  }
+}

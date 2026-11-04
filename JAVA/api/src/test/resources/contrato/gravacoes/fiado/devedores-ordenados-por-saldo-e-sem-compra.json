@@ -1,0 +1,42 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Lista de devedores obtida com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "clienteId" : "cl-ct-folgado",
+      "clienteNome" : "Fabio Folgado",
+      "document" : "11144477735",
+      "telephone" : "11999990000",
+      "cellphone" : "",
+      "limiteCredito" : 1000.0,
+      "saldoDevedor" : 80.0,
+      "ultimaCompra" : null,
+      "diasSemPagamento" : null
+    }, {
+      "clienteId" : "cl-ct-devedor",
+      "clienteNome" : "Zelia Devedora",
+      "document" : "98765432100",
+      "telephone" : "11999990000",
+      "cellphone" : "",
+      "limiteCredito" : 100.0,
+      "saldoDevedor" : 50.0,
+      "ultimaCompra" : "2026-01-10T12:00:00+00:00",
+      "diasSemPagamento" : 297
+    }, {
+      "clienteId" : "cl-ct-ana",
+      "clienteNome" : "Ana Cliente",
+      "document" : "12345678901",
+      "telephone" : "11999990000",
+      "cellphone" : "",
+      "limiteCredito" : 100.0,
+      "saldoDevedor" : 10.0,
+      "ultimaCompra" : "2026-10-30T01:07:21.9754112+00:00",
+      "diasSemPagamento" : 5
+    } ]
+  }
+}

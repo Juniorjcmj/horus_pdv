@@ -1,0 +1,1521 @@
+[
+ {
+  "nome": "criar-ok",
+  "usuario": "atendente@contrato.quack",
+  "volateis": {
+   "data.createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "customerName": "Maria Cliente",
+    "customerCpf": "123.456.789-09",
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 2,
+      "unitPrice": 0,
+      "desconto": 0
+     },
+     {
+      "productCode": "CT002",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-por-administrador-sem-cliente",
+  "usuario": "admin@contrato.quack",
+  "volateis": {
+   "data.createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-por-gerente-nome-em-branco",
+  "usuario": "gerente@contrato.quack",
+  "volateis": {
+   "data.createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "customerName": "   ",
+    "customerCpf": "  ",
+    "items": [
+     {
+      "productCode": "CT002",
+      "productName": "",
+      "quantity": 3,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-agrupa-itens-repetidos",
+  "usuario": "atendente@contrato.quack",
+  "volateis": {
+   "data.createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     },
+     {
+      "productCode": "ct001",
+      "productName": "",
+      "quantity": 2,
+      "unitPrice": 0,
+      "desconto": 0
+     },
+     {
+      "productCode": "CT002",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-quantidade-fracionada-arredonda",
+  "usuario": "atendente@contrato.quack",
+  "volateis": {
+   "data.createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 0.333,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-preco-de-venda-zero-usa-custo",
+  "usuario": "atendente@contrato.quack",
+  "antes": [
+   {
+    "sql": "UPDATE Produtos SET ProductSalePrice = 0 WHERE CompanyId = N'empresa-principal' AND ProductCode = N'CT002'"
+   }
+  ],
+  "volateis": {
+   "data.createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "items": [
+     {
+      "productCode": "CT002",
+      "productName": "",
+      "quantity": 2,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-numero-sequencial",
+  "usuario": "atendente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido",
+    "auth": "bearer",
+    "status": 201,
+    "corpo": {
+     "customerName": "Maria Cliente",
+     "customerCpf": "123.456.789-09",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "",
+       "quantity": 2,
+       "unitPrice": 0,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "",
+       "quantity": 1,
+       "unitPrice": 0,
+       "desconto": 0
+      }
+     ]
+    }
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido",
+    "auth": "bearer",
+    "status": 201,
+    "corpo": {
+     "customerName": "Maria Cliente",
+     "customerCpf": "123.456.789-09",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "",
+       "quantity": 2,
+       "unitPrice": 0,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "",
+       "quantity": 1,
+       "unitPrice": 0,
+       "desconto": 0
+      }
+     ]
+    }
+   }
+  ],
+  "volateis": {
+   "data.createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "customerName": "Maria Cliente",
+    "customerCpf": "123.456.789-09",
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 2,
+      "unitPrice": 0,
+      "desconto": 0
+     },
+     {
+      "productCode": "CT002",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-sem-itens",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "customerName": "X",
+    "items": []
+   }
+  }
+ },
+ {
+  "nome": "criar-corpo-vazio",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {}
+  }
+ },
+ {
+  "nome": "criar-produto-inexistente",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "items": [
+     {
+      "productCode": "NAO-EXISTE",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-quantidade-zero",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 0,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-quantidades-somam-zero",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 2,
+      "unitPrice": 0,
+      "desconto": 0
+     },
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": -2,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-segundo-item-invalido",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     },
+     {
+      "productCode": "NAO-EXISTE",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-nome-nulo",
+  "usuario": "atendente@contrato.quack",
+  "volateis": {
+   "traceId": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "customerName": null,
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-itens-nulo",
+  "usuario": "atendente@contrato.quack",
+  "volateis": {
+   "traceId": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "customerName": "X",
+    "items": null
+   }
+  }
+ },
+ {
+  "nome": "criar-perfil-caixa-nao-pode",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "customerName": "Maria Cliente",
+    "customerCpf": "123.456.789-09",
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 2,
+      "unitPrice": 0,
+      "desconto": 0
+     },
+     {
+      "productCode": "CT002",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-perfil-estoquista-nao-pode",
+  "usuario": "estoquista@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "customerName": "Maria Cliente",
+    "customerCpf": "123.456.789-09",
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 2,
+      "unitPrice": 0,
+      "desconto": 0
+     },
+     {
+      "productCode": "CT002",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-sem-token",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "customerName": "Maria Cliente",
+    "customerCpf": "123.456.789-09",
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 2,
+      "unitPrice": 0,
+      "desconto": 0
+     },
+     {
+      "productCode": "CT002",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "criar-token-invalido",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "customerName": "Maria Cliente",
+    "customerCpf": "123.456.789-09",
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 2,
+      "unitPrice": 0,
+      "desconto": 0
+     },
+     {
+      "productCode": "CT002",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   },
+   "auth": "invalido"
+  }
+ },
+ {
+  "nome": "criar-nao-gera-movimentacao-de-estoque",
+  "usuario": "atendente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido",
+    "auth": "bearer",
+    "status": 201,
+    "corpo": {
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "",
+       "quantity": 3,
+       "unitPrice": 0,
+       "desconto": 0
+      }
+     ]
+    }
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Produto/pr-ct-1/movimentacoes"
+  }
+ },
+ {
+  "nome": "criar-outra-empresa-nao-ve-produto",
+  "usuario": "adm.aprovada@contrato.quack",
+  "volateis": {
+   "data.createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido",
+   "corpo": {
+    "items": [
+     {
+      "productCode": "CT001",
+      "productName": "",
+      "quantity": 1,
+      "unitPrice": 0,
+      "desconto": 0
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "listar-abertos",
+  "usuario": "atendente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido",
+    "auth": "bearer",
+    "status": 201,
+    "corpo": {
+     "customerName": "Maria Cliente",
+     "customerCpf": "123.456.789-09",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "",
+       "quantity": 2,
+       "unitPrice": 0,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "",
+       "quantity": 1,
+       "unitPrice": 0,
+       "desconto": 0
+      }
+     ]
+    }
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido",
+    "auth": "bearer",
+    "status": 201,
+    "corpo": {
+     "customerName": "Joao",
+     "items": [
+      {
+       "productCode": "CT002",
+       "productName": "",
+       "quantity": 5,
+       "unitPrice": 0,
+       "desconto": 0
+      }
+     ]
+    }
+   }
+  ],
+  "volateis": {
+   "data[0].createdAt": "texto",
+   "data[1].createdAt": "texto",
+   "data[2].createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido"
+  }
+ },
+ {
+  "nome": "listar-so-abertos",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido",
+    "auth": "bearer",
+    "usuario": "atendente@contrato.quack",
+    "status": 201,
+    "capturar": {
+     "n": "data.orderNumber"
+    },
+    "corpo": {
+     "customerName": "Maria Cliente",
+     "customerCpf": "123.456.789-09",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "",
+       "quantity": 2,
+       "unitPrice": 0,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "",
+       "quantity": 1,
+       "unitPrice": 0,
+       "desconto": 0
+      }
+     ]
+    }
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido/{n}/cancelar",
+    "auth": "bearer",
+    "usuario": "atendente@contrato.quack",
+    "status": 200
+   }
+  ],
+  "volateis": {
+   "data[0].createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido"
+  }
+ },
+ {
+  "nome": "listar-seed",
+  "usuario": "admin@contrato.quack",
+  "volateis": {
+   "data[0].createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido"
+  }
+ },
+ {
+  "nome": "listar-finalizado-nao-aparece",
+  "usuario": "admin@contrato.quack",
+  "antes": [
+   {
+    "sql": "UPDATE Pedidos SET Status = 1, VendaId = N'vd-ct-fin' WHERE OrderNumber = N'1'"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido"
+  }
+ },
+ {
+  "nome": "listar-outra-empresa-vazio",
+  "usuario": "adm.aprovada@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido"
+  }
+ },
+ {
+  "nome": "listar-perfil-caixa-nao-pode",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido"
+  }
+ },
+ {
+  "nome": "listar-perfil-estoquista-nao-pode",
+  "usuario": "estoquista@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido"
+  }
+ },
+ {
+  "nome": "listar-sem-token",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido"
+  }
+ },
+ {
+  "nome": "consultar-ok",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido/1"
+  }
+ },
+ {
+  "nome": "consultar-pelo-atendente",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido/1"
+  }
+ },
+ {
+  "nome": "consultar-inexistente",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido/999"
+  }
+ },
+ {
+  "nome": "consultar-numero-nao-numerico",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido/abc"
+  }
+ },
+ {
+  "nome": "consultar-outra-empresa",
+  "usuario": "adm.aprovada@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido/1"
+  }
+ },
+ {
+  "nome": "consultar-perfil-estoquista",
+  "usuario": "estoquista@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido/1"
+  }
+ },
+ {
+  "nome": "consultar-finalizado",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "sql": "UPDATE Pedidos SET Status = 1, VendaId = N'vd-ct-fin' WHERE OrderNumber = N'1'"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido/1"
+  }
+ },
+ {
+  "nome": "consultar-cancelado",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido/1/cancelar",
+    "auth": "bearer",
+    "usuario": "atendente@contrato.quack",
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido/1"
+  }
+ },
+ {
+  "nome": "consultar-criado-agora",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido",
+    "auth": "bearer",
+    "usuario": "atendente@contrato.quack",
+    "status": 201,
+    "capturar": {
+     "n": "data.orderNumber"
+    },
+    "corpo": {
+     "customerName": "Maria Cliente",
+     "customerCpf": "123.456.789-09",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "",
+       "quantity": 2,
+       "unitPrice": 0,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "",
+       "quantity": 1,
+       "unitPrice": 0,
+       "desconto": 0
+      }
+     ]
+    }
+   }
+  ],
+  "volateis": {
+   "data.createdAt": "texto"
+  },
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido/{n}"
+  }
+ },
+ {
+  "nome": "consultar-sem-token",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Pedido/1"
+  }
+ },
+ {
+  "nome": "finalizar-ok-dinheiro",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-pelo-gerente-com-caixa-aberto-no-seed",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-preco-congelado-apos-mudanca-de-preco",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "sql": "UPDATE Produtos SET ProductSalePrice = 5 WHERE CompanyId = N'empresa-principal' AND ProductCode = N'CT001'"
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-duas-vezes",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido/1/finalizar",
+    "auth": "bearer",
+    "corpo": {
+     "paymentType": "dinheiro",
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9
+      }
+     ]
+    }
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-pedido-ja-finalizado",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "sql": "UPDATE Pedidos SET Status = 1, VendaId = N'vd-ct-fin' WHERE OrderNumber = N'1'"
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-estoque-insuficiente",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "sql": "UPDATE Produtos SET ProductQnt = 1 WHERE CompanyId = N'empresa-principal' AND ProductCode = N'CT001'"
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-pix-decide-nfce",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "pix",
+    "payments": [
+     {
+      "paymentType": "pix",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-fiado-cliente-do-pedido",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido",
+    "auth": "bearer",
+    "usuario": "atendente@contrato.quack",
+    "status": 201,
+    "capturar": {
+     "n": "data.orderNumber"
+    },
+    "corpo": {
+     "customerName": "Fabio",
+     "customerCpf": "111.444.777-35",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "",
+       "quantity": 2,
+       "unitPrice": 0,
+       "desconto": 0
+      }
+     ]
+    }
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/{n}/finalizar",
+   "corpo": {
+    "paymentType": "fiado",
+    "payments": [
+     {
+      "paymentType": "fiado",
+      "amount": 6
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-fiado-sem-cliente",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "fiado",
+    "payments": [
+     {
+      "paymentType": "fiado",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-pagamento-diferente-do-total",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 5
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-sem-pagamentos-usa-forma",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro"
+   }
+  }
+ },
+ {
+  "nome": "finalizar-corpo-vazio",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {}
+  }
+ },
+ {
+  "nome": "finalizar-caixa-fechado",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-caixa-fechado-pedido-inexistente",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/999/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-inexistente",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/999/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-outra-empresa",
+  "usuario": "adm.aprovada@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-cancelado",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido/1/cancelar",
+    "auth": "bearer",
+    "usuario": "atendente@contrato.quack",
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-perfil-atendente-sem-caixa",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-sem-token",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   }
+  }
+ },
+ {
+  "nome": "finalizar-token-invalido",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/finalizar",
+   "corpo": {
+    "paymentType": "dinheiro",
+    "payments": [
+     {
+      "paymentType": "dinheiro",
+      "amount": 9
+     }
+    ]
+   },
+   "auth": "invalido"
+  }
+ },
+ {
+  "nome": "cancelar-ok",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/cancelar"
+  }
+ },
+ {
+  "nome": "cancelar-pelo-gerente",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/cancelar"
+  }
+ },
+ {
+  "nome": "cancelar-pedido-criado-agora",
+  "usuario": "atendente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido",
+    "auth": "bearer",
+    "status": 201,
+    "capturar": {
+     "n": "data.orderNumber"
+    },
+    "corpo": {
+     "customerName": "Maria Cliente",
+     "customerCpf": "123.456.789-09",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "",
+       "quantity": 2,
+       "unitPrice": 0,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "",
+       "quantity": 1,
+       "unitPrice": 0,
+       "desconto": 0
+      }
+     ]
+    }
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/{n}/cancelar"
+  }
+ },
+ {
+  "nome": "cancelar-inexistente",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/999/cancelar"
+  }
+ },
+ {
+  "nome": "cancelar-ja-cancelado",
+  "usuario": "atendente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido/1/cancelar",
+    "auth": "bearer",
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/cancelar"
+  }
+ },
+ {
+  "nome": "cancelar-ja-finalizado",
+  "usuario": "atendente@contrato.quack",
+  "antes": [
+   {
+    "sql": "UPDATE Pedidos SET Status = 1, VendaId = N'vd-ct-fin' WHERE OrderNumber = N'1'"
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/cancelar"
+  }
+ },
+ {
+  "nome": "cancelar-outra-empresa",
+  "usuario": "adm.aprovada@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/cancelar"
+  }
+ },
+ {
+  "nome": "cancelar-perfil-caixa-nao-pode",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/cancelar"
+  }
+ },
+ {
+  "nome": "cancelar-perfil-estoquista-nao-pode",
+  "usuario": "estoquista@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/cancelar"
+  }
+ },
+ {
+  "nome": "cancelar-sem-token",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/Pedido/1/cancelar"
+  }
+ },
+ {
+  "nome": "cancelar-nao-mexe-no-estoque",
+  "usuario": "atendente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Pedido/1/cancelar",
+    "auth": "bearer",
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Produto/pr-ct-1/movimentacoes"
+  }
+ }
+]

@@ -1,0 +1,15 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/problem+json;charset=utf-8"
+  },
+  "corpo" : {
+    "type" : "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+    "title" : "One or more validation errors occurred.",
+    "status" : 400,
+    "errors" : {
+      "FormaPagamento" : [ "The FormaPagamento field is required." ]
+    },
+    "traceId" : "00-1dc9e1190f6ea2e619c4aa7b33938fa7-205dc3f24d6f4262-00"
+  }
+}

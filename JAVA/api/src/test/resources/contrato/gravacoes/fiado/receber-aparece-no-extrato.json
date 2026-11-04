@@ -1,0 +1,57 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Extrato obtido com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "fm-1680c5ab679d4ef5949c2990d51ef53e",
+      "companyId" : "empresa-principal",
+      "clienteId" : "cl-ct-devedor",
+      "clienteNome" : "Zelia Devedora",
+      "clienteDocument" : "98765432100",
+      "tipo" : 2,
+      "valor" : 20.0,
+      "saldoAnterior" : 50.0,
+      "saldoAtual" : 30.0,
+      "vendaId" : null,
+      "formaPagamento" : "pix",
+      "observacao" : "Pagou metade",
+      "operadorNome" : "Cai Caixa",
+      "criadoEm" : "2026-11-03T22:06:37.1061727-03:00"
+    }, {
+      "id" : "fm-ct-2",
+      "companyId" : "empresa-principal",
+      "clienteId" : "cl-ct-devedor",
+      "clienteNome" : "Zelia Devedora",
+      "clienteDocument" : "98765432100",
+      "tipo" : 2,
+      "valor" : 30.0,
+      "saldoAnterior" : 80.0,
+      "saldoAtual" : 50.0,
+      "vendaId" : null,
+      "formaPagamento" : "Dinheiro",
+      "observacao" : "Pagamento parcial",
+      "operadorNome" : "Contrato",
+      "criadoEm" : "2026-01-12T12:00:00+00:00"
+    }, {
+      "id" : "fm-ct-1",
+      "companyId" : "empresa-principal",
+      "clienteId" : "cl-ct-devedor",
+      "clienteNome" : "Zelia Devedora",
+      "clienteDocument" : "98765432100",
+      "tipo" : 1,
+      "valor" : 80.0,
+      "saldoAnterior" : 0.0,
+      "saldoAtual" : 80.0,
+      "vendaId" : null,
+      "formaPagamento" : null,
+      "observacao" : "Compra a prazo",
+      "operadorNome" : "Contrato",
+      "criadoEm" : "2026-01-10T12:00:00+00:00"
+    } ]
+  }
+}

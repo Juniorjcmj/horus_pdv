@@ -1,0 +1,27 @@
+{
+  "status" : 201,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Pedido criado com sucesso.",
+    "details" : null,
+    "data" : {
+      "orderNumber" : "2",
+      "customerName" : "Consumidor",
+      "customerCpf" : "-",
+      "sellerName" : "Ari Atendente",
+      "status" : "aberto",
+      "createdAt" : "03/11/2026 21:56:45",
+      "totalAmount" : "1,00",
+      "itens" : [ {
+        "productCode" : "CT001",
+        "productName" : "Produto Contrato 1",
+        "quantity" : 0.333,
+        "unitPrice" : "3,00",
+        "itemTotal" : "1,00"
+      } ]
+    }
+  }
+}

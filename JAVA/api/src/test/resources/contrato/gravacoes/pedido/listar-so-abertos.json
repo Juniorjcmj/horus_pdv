@@ -1,0 +1,21 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Pedidos obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "orderNumber" : "1",
+      "customerName" : "Consumidor",
+      "customerCpf" : "-",
+      "sellerName" : "Ari Atendente",
+      "status" : "aberto",
+      "createdAt" : "16/01/2026 06:30:00",
+      "totalAmount" : "0,00",
+      "itens" : [ ]
+    } ]
+  }
+}

@@ -55,6 +55,31 @@ public class FiscalDaVenda {
         }
     }
 
+    /**
+     * Passo fiscal da finalizacao de pedido (PedidoController.Finalizar): decide a emissao como numa venda comum, mas
+     * so enfileira a nota se a venda e nova (replay nao enfileira) e uma falha na pendencia nunca derruba a resposta:
+     * so deixa {@code fiscalQueued=false} (a fila retoma a venda sem documento).
+     */
+    public Resultado aposPedido(String companyId, String vendaId, boolean replay, String paymentType,
+                                List<String> formas, String customerCpf) {
+        boolean emitir;
+        try {
+            emitir = decisao.avaliarEmissaoParaVenda(companyId, vendaId, paymentType, formas, customerCpf);
+        } catch (IllegalArgumentException e) {
+            throw new NegocioException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+        if (!emitir || replay) {
+            return new Resultado(emitir, false);
+        }
+        try {
+            pendencia.enfileirar(companyId, vendaId);
+            return new Resultado(true, true);
+        } catch (RuntimeException e) {
+            LOG.error("Falha ao enfileirar NFC-e do pedido (venda {}).", vendaId, e);
+            return new Resultado(true, false);
+        }
+    }
+
     public Resultado aposVenda(String companyId, String vendaId, String saleNumber, String paymentType,
                                List<String> formas, String customerCpf) {
         boolean emitir;

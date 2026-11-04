@@ -1,0 +1,33 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Pedido obtido com sucesso.",
+    "details" : null,
+    "data" : {
+      "orderNumber" : "1",
+      "customerName" : "Consumidor",
+      "customerCpf" : "-",
+      "sellerName" : "Ari Atendente",
+      "status" : "cancelado",
+      "createdAt" : "16/01/2026 06:30:00",
+      "totalAmount" : "9,00",
+      "itens" : [ {
+        "productCode" : "CT001",
+        "productName" : "Produto Contrato 1",
+        "quantity" : 2.0,
+        "unitPrice" : "3,00",
+        "itemTotal" : "6,00"
+      }, {
+        "productCode" : "CT002",
+        "productName" : "Produto Contrato 2",
+        "quantity" : 1.0,
+        "unitPrice" : "3,00",
+        "itemTotal" : "3,00"
+      } ]
+    }
+  }
+}

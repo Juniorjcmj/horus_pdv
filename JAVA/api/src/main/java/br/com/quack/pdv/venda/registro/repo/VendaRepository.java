@@ -35,6 +35,9 @@ public class VendaRepository {
     public record PedidoItem(String productCode, String productName, BigDecimal quantity, BigDecimal unitPrice,
                              BigDecimal itemTotal) {}
 
+    /** Pedido travado pelo Id para a finalizacao com precos fixos. */
+    public record PedidoPorId(int status, String vendaId) {}
+
     /** Cliente travado para o fiado. */
     public record ClienteFiado(String id, BigDecimal limiteCredito, BigDecimal saldoDevedor, String customerName) {}
 
@@ -238,6 +241,11 @@ public class VendaRepository {
                 WHERE CompanyId = ? AND OrderNumber = ?
                 """, (rs, n) -> new PedidoTravado(rs.getString(1), rs.getString(2), rs.getInt(3)),
                 companyId, orderNumber).stream().findFirst();
+    }
+
+    public Optional<PedidoPorId> travarPedidoPorId(String companyId, String pedidoId) {
+        return jdbc.query("SELECT Status, VendaId FROM Pedidos WITH (UPDLOCK, HOLDLOCK) WHERE CompanyId = ? AND Id = ?",
+                (rs, n) -> new PedidoPorId(rs.getInt(1), rs.getString(2)), companyId, pedidoId).stream().findFirst();
     }
 
     public List<PedidoItem> itensDoPedido(String pedidoId) {

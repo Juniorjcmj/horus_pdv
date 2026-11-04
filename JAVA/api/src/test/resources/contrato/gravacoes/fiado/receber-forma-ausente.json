@@ -1,0 +1,27 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Recebimento registrado com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "fm-2457ef0a55414b0298377778bd6d5c4b",
+      "companyId" : "empresa-principal",
+      "clienteId" : "cl-ct-devedor",
+      "clienteNome" : "Zelia Devedora",
+      "clienteDocument" : "98765432100",
+      "tipo" : 2,
+      "valor" : 10,
+      "saldoAnterior" : 50.0,
+      "saldoAtual" : 40.0,
+      "vendaId" : null,
+      "formaPagamento" : "dinheiro",
+      "observacao" : null,
+      "operadorNome" : "Cai Caixa",
+      "criadoEm" : "2026-11-03T22:05:47.5154223-03:00"
+    }
+  }
+}

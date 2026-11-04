@@ -1,0 +1,27 @@
+{
+  "status" : 201,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Pedido criado com sucesso.",
+    "details" : null,
+    "data" : {
+      "orderNumber" : "2",
+      "customerName" : "Consumidor",
+      "customerCpf" : "-",
+      "sellerName" : "Gil Gerente",
+      "status" : "aberto",
+      "createdAt" : "03/11/2026 21:56:43",
+      "totalAmount" : "9,00",
+      "itens" : [ {
+        "productCode" : "CT002",
+        "productName" : "Produto Contrato 2",
+        "quantity" : 3,
+        "unitPrice" : "3,00",
+        "itemTotal" : "9,00"
+      } ]
+    }
+  }
+}

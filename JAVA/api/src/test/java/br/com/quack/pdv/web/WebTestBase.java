@@ -71,6 +71,10 @@ public abstract class WebTestBase {
     @MockitoBean protected br.com.quack.pdv.venda.registro.app.VendaConsultaService vendaConsulta;
     @MockitoBean protected br.com.quack.pdv.venda.fiado.app.FiadoDebitos fiadoDebitos;
     @MockitoBean protected br.com.quack.pdv.venda.fiado.app.CreditoGateway creditoGateway;
+    @MockitoBean protected br.com.quack.pdv.venda.fiado.app.FiadoService fiadoService;
+    @MockitoBean protected br.com.quack.pdv.venda.fiado.repo.FiadoRepository fiadoRepository;
+    @MockitoBean protected br.com.quack.pdv.venda.pedido.app.PedidoService pedidoService;
+    @MockitoBean protected br.com.quack.pdv.venda.pedido.repo.PedidoRepository pedidoRepository;
     @MockitoBean protected br.com.quack.pdv.fiscal.fila.repo.DocumentoFiscalConsulta documentoFiscalConsulta;
     @MockitoBean protected br.com.quack.pdv.fiscal.fila.app.DecisaoEmissaoNfce decisaoEmissao;
     @MockitoBean protected br.com.quack.pdv.fiscal.fila.app.PendenciaFiscal pendenciaFiscal;

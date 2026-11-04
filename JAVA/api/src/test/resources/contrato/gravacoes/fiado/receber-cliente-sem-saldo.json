@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Valor do recebimento (R$ 1.00) não pode ser maior que o saldo devedor (R$ 0.00).",
+    "details" : null,
+    "data" : null
+  }
+}

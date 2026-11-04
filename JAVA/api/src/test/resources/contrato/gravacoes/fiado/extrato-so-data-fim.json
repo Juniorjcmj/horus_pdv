@@ -1,0 +1,27 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Extrato obtido com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "fm-ct-1",
+      "companyId" : "empresa-principal",
+      "clienteId" : "cl-ct-devedor",
+      "clienteNome" : "Zelia Devedora",
+      "clienteDocument" : "98765432100",
+      "tipo" : 1,
+      "valor" : 80.0,
+      "saldoAnterior" : 0.0,
+      "saldoAtual" : 80.0,
+      "vendaId" : null,
+      "formaPagamento" : null,
+      "observacao" : "Compra a prazo",
+      "operadorNome" : "Contrato",
+      "criadoEm" : "2026-01-10T12:00:00+00:00"
+    } ]
+  }
+}

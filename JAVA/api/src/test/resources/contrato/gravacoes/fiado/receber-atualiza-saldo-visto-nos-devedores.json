@@ -1,0 +1,22 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Lista de devedores obtida com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "clienteId" : "cl-ct-devedor",
+      "clienteNome" : "Zelia Devedora",
+      "document" : "98765432100",
+      "telephone" : "11999990000",
+      "cellphone" : "",
+      "limiteCredito" : 100.0,
+      "saldoDevedor" : 30.0,
+      "ultimaCompra" : "2026-01-10T12:00:00+00:00",
+      "diasSemPagamento" : 297
+    } ]
+  }
+}

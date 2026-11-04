@@ -1,0 +1,27 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Recebimento registrado com sucesso.",
+    "details" : null,
+    "data" : {
+      "id" : "fm-8518f9bbc1694fe281416f6359483573",
+      "companyId" : "empresa-principal",
+      "clienteId" : "cl-ct-devedor",
+      "clienteNome" : "Zelia Devedora",
+      "clienteDocument" : "98765432100",
+      "tipo" : 2,
+      "valor" : 50,
+      "saldoAnterior" : 50.0,
+      "saldoAtual" : 0,
+      "vendaId" : null,
+      "formaPagamento" : "dinheiro",
+      "observacao" : null,
+      "operadorNome" : "Ana Administradora",
+      "criadoEm" : "2026-11-03T22:05:43.8541846-03:00"
+    }
+  }
+}

@@ -98,11 +98,11 @@
 
 ## 6. Pedidos e fiado
 
-- [ ] 6.1 Escrever e gravar `cenarios/pedido.json` (criar, perfis, listar abertos, consultar, inexistente, finalizar
+- [x] 6.1 Escrever e gravar `cenarios/pedido.json` (criar, perfis, listar abertos, consultar, inexistente, finalizar
   com preço congelado após mudança de preço, finalizar cancelado, finalizar duas vezes, cancelar) e implementar
   `venda/pedido` (D8, `RegistrarComPrecosFixos`); verificar com IT (criar não muda estoque; finalizar baixa e cobra o
   preço do pedido; segunda finalização devolve a mesma venda) e o grupo `pedido` do comparador verde
-- [ ] 6.2 Escrever e gravar `cenarios/fiado.json` (receber com perfis e valores inválidos, extrato com período,
+- [x] 6.2 Escrever e gravar `cenarios/fiado.json` (receber com perfis e valores inválidos, extrato com período,
   devedores com busca, resumo) e implementar `venda/fiado` (D8, spec `vendas/fiado-conta-corrente`); verificar com IT
   (recebimento atualiza o saldo de forma atômica e gera auditoria) e o grupo `fiado` do comparador verde
 
