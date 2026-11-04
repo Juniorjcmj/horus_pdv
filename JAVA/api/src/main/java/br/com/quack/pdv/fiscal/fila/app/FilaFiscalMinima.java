@@ -24,6 +24,10 @@ import org.springframework.stereotype.Component;
  * </ol>
  * Nao assina, nao transmite e nao inutiliza nada: nenhuma classe desta fila usa provedor fiscal ou rede. Desligavel
  * com {@code quack.fiscal.fila-minima.ativa=false} (a .NET e a Java nao devem processar a mesma fila).
+ * <p>
+ * Modo da API ({@code quack.modo}, D8 do modo loja): em {@code nuvem} a rotina nunca roda; em {@code loja} roda so o
+ * passo 1 (retomada das vendas sem nota, com o proximo numero da sequencia fiscal da loja), porque os demais ramos
+ * ficam com a .NET da nuvem (dois donos das colunas de resultado, nao). Nota de venda cancelada na loja nao muda.
  */
 @Component
 public class FilaFiscalMinima {
@@ -41,20 +45,28 @@ public class FilaFiscalMinima {
     private final EmitenteConfigurado emitente;
     private final Clock clock;
     private final boolean ativa;
+    private final String modo;
 
     public FilaFiscalMinima(FilaFiscalRepository repo, PendenciaFiscal pendencia, EmitenteConfigurado emitente,
-                            Clock clock, @Value("${quack.fiscal.fila-minima.ativa:true}") boolean ativa) {
+                            Clock clock, @Value("${quack.fiscal.fila-minima.ativa:true}") boolean ativa,
+                            @Value("${quack.modo:padrao}") String modo) {
         this.repo = repo;
         this.pendencia = pendencia;
         this.emitente = emitente;
         this.clock = clock;
         this.ativa = ativa;
+        this.modo = modo;
+    }
+
+    /** No modo nuvem a fila nunca roda, qualquer que seja a configuracao. */
+    private boolean desligada() {
+        return !ativa || "nuvem".equals(modo);
     }
 
     @Scheduled(initialDelayString = "${quack.fiscal.fila-minima.intervalo-ms:1000}",
             fixedDelayString = "${quack.fiscal.fila-minima.intervalo-ms:1000}")
     public void executarAgendado() {
-        if (!ativa) return;
+        if (desligada()) return;
         try {
             processarLote();
         } catch (RuntimeException ex) {
@@ -65,13 +77,8 @@ public class FilaFiscalMinima {
 
     /** Um ciclo da fila (ProcessarLoteAsync sem transmissao). Usado pela rotina agendada e pelos testes. */
     public void processarLote() {
-        for (VendaSemDocumento venda : repo.vendasSemDocumento(LOTE_MAXIMO)) {
-            try {
-                pendencia.enfileirar(venda.companyId(), venda.vendaId());
-            } catch (RuntimeException ex) {
-                LOG.error("Falha ao retomar fila fiscal da venda {}.", venda.vendaId(), ex);
-            }
-        }
+        retomarVendasSemNota();
+        if ("loja".equals(modo)) return; // na loja so a retomada; o resto fica com a .NET da nuvem (D8)
         for (Pendente doc : repo.pendentes(LOTE_MAXIMO, OffsetDateTime.now(clock))) {
             try {
                 processar(doc);
@@ -82,6 +89,38 @@ public class FilaFiscalMinima {
                 repo.marcarErro(doc.id(), ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage(),
                         agora.plusSeconds(ATRASO_ERRO_INESPERADO_SEGUNDOS), agora);
             }
+        }
+    }
+
+    /**
+     * Passo 1 do ciclo: grava a pendencia (numero da sequencia fiscal local) das vendas que decidiram emitir e ficaram
+     * sem nota. Repete em lotes enquanto houver progresso. Devolve quantas vendas continuam sem nota por falha.
+     */
+    public int retomarVendasSemNota() {
+        java.util.Set<String> falhou = new java.util.HashSet<>();
+        while (true) {
+            // pede a mais as que ja falharam, para sempre ver as ainda nao tentadas
+            java.util.List<VendaSemDocumento> candidatas = repo.vendasSemDocumento(LOTE_MAXIMO + falhou.size()).stream()
+                    .filter(v -> !falhou.contains(v.vendaId())).toList();
+            if (candidatas.isEmpty()) return falhou.size();
+            for (VendaSemDocumento venda : candidatas) {
+                try {
+                    pendencia.enfileirar(venda.companyId(), venda.vendaId());
+                } catch (RuntimeException ex) {
+                    falhou.add(venda.vendaId());
+                    LOG.error("Falha ao retomar fila fiscal da venda {}.", venda.vendaId(), ex);
+                }
+            }
+        }
+    }
+
+    /** Retomada exigida antes do envio da loja: so roda no modo loja com a fila ligada. Falha se sobrar venda sem nota. */
+    public void retomarAntesDoEnvio() {
+        if (desligada() || !"loja".equals(modo)) return;
+        int falhas = retomarVendasSemNota();
+        if (falhas > 0) {
+            throw new IllegalStateException(falhas + " venda(s) sem nota pendente: o envio espera para nao subir sem o "
+                    + "numero reservado (D8).");
         }
     }
 

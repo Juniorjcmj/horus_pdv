@@ -570,3 +570,17 @@ existe, ou tabela `EDITAVEL`/`LOJA` sem chave primária. A ordem de aplicação 
 
 - Horário do backup e da conferência na loja real (padrões 02:00 e 03:00), a combinar com o dono.
 - Tamanho exato de partes e intervalos: os valores do D4 e do D6 são iniciais, ajustados pela medição da tarefa 7.3.
+
+### Notas do grupo 5 (implementacao da fila fiscal no modo loja)
+
+- `FilaFiscalMinima` le `quack.modo`: `nuvem` nunca roda (independe de `ativa`); `loja` roda so `retomarVendasSemNota()`
+  (tanto no agendamento quanto em `processarLote()`); `padrao` mantem o ciclo completo. `ativa=false` desliga tambem a
+  retomada na loja.
+- `RetomadaFiscalAntesDoEnvio` (`@Profile("loja")`, via `ObjectProvider`) implementa `AntesDoEnvio` e chama
+  `retomarAntesDoEnvio()`. Desvio: se alguma venda nao puder ganhar a nota, a retomada lanca excecao e o ciclo de envio
+  e abortado e repetido no proximo intervalo (em vez de subir a venda sem nota e deixar o worker da nuvem reservar um
+  numero da sequencia dela). Custo: uma venda permanentemente quebrada trava o envio ate ser resolvida; o erro vai ao log.
+- A retomada repete em lotes de 20 ate nao sobrar venda sem nota (antes era um lote por ciclo).
+- Limite conhecido: a venda gravada entre a retomada e a leitura SNAPSHOT do lote ainda pode subir sem nota, se nao
+  nasceu com a pendencia na mesma transacao; o proximo ciclo a retoma, e a nuvem so cria nota de venda sem nota depois
+  de seu proprio atraso do worker.

@@ -63,7 +63,7 @@ public final class AmbienteSync implements AutoCloseable {
     public static final String JWT_LOJA = "segredo-jwt-proprio-da-loja-com-mais-de-32-caracteres";
     public static final String CIFRA_LOJA = "chave-de-cifra-propria-da-loja-com-mais-de-32-caracteres";
 
-    private AmbienteSync(String sufixo, boolean paraCarga) {
+    private AmbienteSync(String sufixo, boolean paraCarga, String... extrasLoja) {
         bancoLoja = "loja_" + sufixo;
         bancoNuvem = "nuvem_" + sufixo;
         BancoIT.criarBanco(bancoLoja);
@@ -75,7 +75,7 @@ public final class AmbienteSync implements AutoCloseable {
         loja = paraCarga
                 ? subir("loja", BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword(), 300,
                         "--quack.auth.jwt-secret=" + JWT_LOJA, "--quack.security.encryption-key=" + CIFRA_LOJA)
-                : subir("loja", BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword(), 300);
+                : subir("loja", BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword(), 300, extrasLoja);
         portaNuvem = porta(nuvem);
         portaLoja = porta(loja);
         jdbcLoja = loja.getBean(JdbcTemplate.class);
@@ -91,6 +91,11 @@ public final class AmbienteSync implements AutoCloseable {
     /** Loja ja ativada, mesmo seed nas duas pontas (grupo 2). */
     public static AmbienteSync iniciar(String sufixo) {
         return new AmbienteSync(sufixo, false);
+    }
+
+    /** Como {@link #iniciar(String)}, com argumentos extras de linha de comando para o contexto da loja. */
+    public static AmbienteSync iniciarComExtrasNaLoja(String sufixo, String... extrasLoja) {
+        return new AmbienteSync(sufixo, false, extrasLoja);
     }
 
     /**

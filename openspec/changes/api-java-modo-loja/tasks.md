@@ -118,7 +118,7 @@
 
 ## 5. Fila fiscal no modo loja
 
-- [ ] 5.1 No perfil `loja`, a `FilaFiscalMinima` roda só a retomada das vendas sem nota. O envio chama a retomada
+- [x] 5.1 No perfil `loja`, a `FilaFiscalMinima` roda só a retomada das vendas sem nota. O envio chama a retomada
   antes de montar o lote (D4 e D8). No `nuvem`, nunca roda.
   - Verificação:
     - IT: venda cancelada com nota pendente no perfil `loja` não muda a nota;
