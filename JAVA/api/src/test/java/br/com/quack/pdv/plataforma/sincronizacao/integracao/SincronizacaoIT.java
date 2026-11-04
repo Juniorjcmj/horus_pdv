@@ -91,18 +91,6 @@ class SincronizacaoIT {
         return vendas.registrar(EMPRESA, v, null);
     }
 
-    /** O Caixa real repete a venda quando o banco devolve deadlock/timeout de lock (7 caixas na mesma numeracao). */
-    static void venderComRetentativa(String produto) {
-        for (int tentativa = 1; ; tentativa++) {
-            try {
-                vender(produto, "1", "3", "3,00");
-                return;
-            } catch (org.springframework.dao.TransientDataAccessException e) {
-                if (tentativa >= 8) throw e;
-            }
-        }
-    }
-
     static int contar(JdbcTemplate j, String sql, Object... args) {
         Integer n = j.queryForObject(sql, Integer.class, args);
         return n == null ? 0 : n;
@@ -364,7 +352,7 @@ class SincronizacaoIT {
             futuros.add(pool.submit(() -> {
                 largada.await();
                 for (int i = 0; i < vendasPorCaixa; i++) {
-                    venderComRetentativa(produto);
+                    vender(produto, "1", "3", "3,00");
                     feitas.incrementAndGet();
                 }
                 return null;

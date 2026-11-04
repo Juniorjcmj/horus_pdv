@@ -104,6 +104,7 @@ public class CorrecaoVendaService {
 
     private Saida executar(String companyId, String saleNumber, List<String> produtosParaRemover,
                            String responsavelId, String responsavelNome, String justificativa) {
+        numerador.serializarVendas(companyId);
         OffsetDateTime agoraUtc = OffsetDateTime.now(clock);
         String just = justificativa.strip();
 

@@ -121,6 +121,7 @@ public class VendaRegistroService {
     // ---------------------------------------------------------------- transacao
 
     private Saida executar(String companyId, VendaRequests.Venda r, String caixaSessaoId) {
+        numerador.serializarVendas(companyId);
         String eventId = r.eventId == null ? null : HashPayload.trim(r.eventId);
         boolean comEvento = !HashPayload.emBranco(eventId);
         String identityHash = comEvento ? hashDeIdentidade(r) : null;
@@ -258,6 +259,7 @@ public class VendaRegistroService {
     private Saida executarPrecosFixos(String companyId, String customerName, String customerCpf, String paymentType,
                                       String operatorName, List<PedidoItem> itens,
                                       List<SaleMoney.Entrada> entradas, String caixaSessaoId, String pedidoId) {
+        numerador.serializarVendas(companyId);
         var linha = repo.travarPedidoPorId(companyId, pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado."));
         if (linha.status() == 2) {

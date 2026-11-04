@@ -43,10 +43,37 @@ public class NumeradorDocumentos {
     private static final String SQL_PROXIMO_INVENTARIO =
             "SELECT ISNULL(MAX(Numero), 0) + 1 FROM Inventarios WHERE CompanyId = ?";
 
+    /** Trava de aplicacao por empresa, presa a transacao (liberada no commit/rollback). Espera ate 30 s. */
+    private static final String SQL_TRAVA_VENDAS = """
+            DECLARE @r INT;
+            EXEC @r = sp_getapplock @Resource = ?, @LockMode = 'Exclusive', @LockOwner = 'Transaction',
+                 @LockTimeout = 30000;
+            SELECT @r;
+            """;
+
     private final JdbcTemplate jdbc;
 
     public NumeradorDocumentos(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
+    }
+
+    /**
+     * Primeiro passo de toda transacao que numera venda: serializa as vendas da empresa ANTES de qualquer trava de
+     * produto, movimento de estoque ou do proprio numerador. Sem isso, a ordem das travas era baixa (produtos e
+     * movimentos) -> MAX(SaleNumber) UPDLOCK/HOLDLOCK -> UPDATE de vinculo que varre EstoqueMovimentacoes da empresa:
+     * quem segurava o numerador esperava as linhas ainda nao confirmadas de quem esperava o numerador (deadlock com 7
+     * caixas). A .NET tem a mesma ordem e a mesma corrida; aqui a ordem global passa a ser trava da empresa primeiro.
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void serializarVendas(String companyId) {
+        // sp_getapplock com dono Transaction exige transacao aberta; com IMPLICIT_TRANSACTIONS (autocommit off do
+        // driver) so uma instrucao sobre tabela abre a transacao, e um EXEC sozinho devolve -999.
+        jdbc.execute("SELECT TOP 0 1 FROM Empresas");
+        Integer codigo = jdbc.queryForObject(SQL_TRAVA_VENDAS, Integer.class, "quack:vendas:" + companyId);
+        if (codigo == null || codigo < 0) {
+            throw new org.springframework.dao.CannotAcquireLockException(
+                    "Nao foi possivel obter a trava de numeracao de vendas da empresa (codigo " + codigo + ").");
+        }
     }
 
     /** Proximo numero de venda da empresa, como texto (o .NET guarda SaleNumber em NVARCHAR). */
