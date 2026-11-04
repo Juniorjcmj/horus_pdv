@@ -237,15 +237,35 @@ public class VendaRegistroIT {
     }
 
     @Test
-    void precoAbaixoSemAutorizacaoERecusadoEPedidoExistenteReproduzOBugDaDotNet() {
+    void precoAbaixoSemAutorizacaoERecusado() {
         assertThatThrownBy(() -> vendas.registrar(EMPRESA,
                 venda("2,00", List.of(item("CT001", "1", "2")), pag("dinheiro", "2")), null))
                 .hasMessageContaining("sem autorização de gerente");
+    }
 
+    @Test
+    void vendaComumComPedidoExistenteEItensIguaisFinalizaOPedido() {
         VendaRequests.Venda comPedido = venda("9,00", List.of(item("CT001", "2", "3"), item("CT002", "1", "3")),
                 pag("dinheiro", "9"));
         comPedido.orderNumber = "1";
-        assertThatThrownBy(() -> vendas.registrar(EMPRESA, comPedido, null)).isInstanceOf(IllegalStateException.class);
+
+        VendaRegistroResultado r = vendas.registrar(EMPRESA, comPedido, null);
+
+        assertThat(contar("SELECT Status FROM Pedidos WHERE OrderNumber = '1'")).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT VendaId FROM Pedidos WHERE OrderNumber = '1'", String.class))
+                .isEqualTo(r.vendaId());
+        assertThat(estoque("CT001")).isEqualByComparingTo("8");
+    }
+
+    @Test
+    void vendaComumComPedidoExistenteEItensDivergentesERecusada() {
+        VendaRequests.Venda comPedido = venda("12,00", List.of(item("CT001", "3", "3"), item("CT002", "1", "3")),
+                pag("dinheiro", "12"));
+        comPedido.orderNumber = "1";
+
+        assertThatThrownBy(() -> vendas.registrar(EMPRESA, comPedido, null))
+                .isInstanceOf(NegocioException.class)
+                .hasMessage("Itens divergem dos preços congelados no pedido.");
         assertThat(contar("SELECT Status FROM Pedidos WHERE OrderNumber = '1'")).isZero();
         assertThat(estoque("CT001")).isEqualByComparingTo("10");
     }

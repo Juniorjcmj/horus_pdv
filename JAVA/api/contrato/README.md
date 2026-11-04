@@ -107,6 +107,15 @@ fim do bloqueio, e a API Java segue o spec. O cenário `auth/login-bloqueado-com
 `divergencia` (o comparador confere o 429 da Java em vez de comparar com a gravação). Quando a API .NET for corrigida,
 regrave o cenário e remova a `divergencia`.
 
+## Divergência conhecida: status do pedido na finalização
+
+A API .NET lê `Pedidos.Status` (TINYINT) com `GetInt32` (`HistoricoVendasAB.cs`, ~linha 213) e responde 500
+("Erro interno no servidor.") ao finalizar um pedido existente (`POST /api/Pedido/{n}/finalizar`) e ao registrar uma
+venda comum com `orderNumber` de pedido existente. Por decisão do dono do produto (03/11/2026) a Java **não** reproduz o
+erro: executa a finalização e a conferência reais. Os 13 cenários gravados com 500 (`pedido/finalizar-*` e
+`vendas/venda-pedido-ok`/`venda-pedido-itens-divergentes`) têm `divergencia` com `status`, `mensagem` e `campos`
+(ponteiro JSON em `corpo` -> valor). Quando a .NET for corrigida, regrave e remova a `divergencia`.
+
 ## Vetores de compatibilidade criptográfica
 
 `vetores-dotnet` referencia o projeto da API .NET e usa o código real (`HorusSecretProtector`, `HorusJwtService`,

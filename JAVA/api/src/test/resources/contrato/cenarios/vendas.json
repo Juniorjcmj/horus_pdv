@@ -206,6 +206,7 @@
   },
   {
     "nome": "venda-pedido-ok",
+    "divergencia": {"status": 201, "mensagem": "Venda registrada com sucesso.", "campos": {"/data/rows/0/totalAmount": "9,00", "/data/rows/0/paymentType": "dinheiro", "/data/rows/1/productCode": "CT002"}, "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
     "usuario": "caixa@contrato.quack",
     "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
     "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"9,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":2,"unitPrice":3,"desconto":0},{"productCode":"CT002","productName":"Produto Contrato 2","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":9}],"orderNumber":"1"}},
@@ -213,6 +214,7 @@
   },
   {
     "nome": "venda-pedido-itens-divergentes",
+    "divergencia": {"status": 400, "mensagem": "Itens divergem dos preços congelados no pedido.", "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
     "usuario": "caixa@contrato.quack",
     "antes": [{"metodo":"POST","caminho":"/api/Caixa/abrir","auth":"bearer","corpo":{"openingAmount":"100,00"},"status":200,"capturar":{"sessao":"data.currentSession.id"}}],
     "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas", "corpo": {"customerName":"Consumidor","customerCpf":"","paymentType":"dinheiro","totalAmount":"12,00","operatorName":"Cai Caixa","items":[{"productCode":"CT001","productName":"Produto Contrato 1","quantity":3,"unitPrice":3,"desconto":0},{"productCode":"CT002","productName":"Produto Contrato 2","quantity":1,"unitPrice":3,"desconto":0}],"payments":[{"paymentType":"dinheiro","amount":12}],"orderNumber":"1"}}

@@ -849,6 +849,7 @@
  },
  {
   "nome": "finalizar-ok-dinheiro",
+  "divergencia": {"status": 200, "mensagem": "Pedido finalizado com sucesso.", "campos": {"/data/fiscalQueued": false, "/data/emitirFiscal": false, "/data/rows/0/paymentType": "dinheiro", "/data/rows/0/totalAmount": "9,00", "/data/rows/0/unitPrice": "3,00", "/data/rows/1/productCode": "CT002"}, "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {
@@ -894,6 +895,7 @@
  },
  {
   "nome": "finalizar-preco-congelado-apos-mudanca-de-preco",
+  "divergencia": {"status": 200, "mensagem": "Pedido finalizado com sucesso.", "campos": {"/data/fiscalQueued": false, "/data/emitirFiscal": false, "/data/rows/0/paymentType": "dinheiro", "/data/rows/0/totalAmount": "9,00", "/data/rows/0/unitPrice": "3,00", "/data/rows/1/productCode": "CT002"}, "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {
@@ -925,6 +927,7 @@
  },
  {
   "nome": "finalizar-duas-vezes",
+  "divergencia": {"status": 200, "mensagem": "Pedido finalizado com sucesso.", "campos": {"/data/fiscalQueued": false, "/data/emitirFiscal": false, "/data/rows/0/paymentType": "dinheiro", "/data/rows/0/totalAmount": "9,00", "/data/rows/0/unitPrice": "3,00", "/data/rows/1/productCode": "CT002", "/data/saleNumber": "15043"}, "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {
@@ -967,6 +970,7 @@
  },
  {
   "nome": "finalizar-pedido-ja-finalizado",
+  "divergencia": {"status": 200, "mensagem": "Pedido finalizado com sucesso.", "campos": {"/data/fiscalQueued": false, "/data/emitirFiscal": false, "/data/saleNumber": "15040", "/data/rows/0/paymentType": "Dinheiro", "/data/rows/0/status": "finalizada"}, "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {
@@ -998,6 +1002,7 @@
  },
  {
   "nome": "finalizar-estoque-insuficiente",
+  "divergencia": {"status": 400, "mensagem": "Estoque insuficiente para Produto Contrato 1. Disponível: 1.", "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {
@@ -1029,6 +1034,7 @@
  },
  {
   "nome": "finalizar-pix-decide-nfce",
+  "divergencia": {"status": 200, "mensagem": "Pedido finalizado com sucesso.", "campos": {"/data/fiscalQueued": true, "/data/emitirFiscal": true, "/data/rows/0/paymentType": "pix", "/data/rows/0/totalAmount": "9,00", "/data/rows/0/unitPrice": "3,00", "/data/rows/1/productCode": "CT002"}, "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {
@@ -1057,6 +1063,7 @@
  },
  {
   "nome": "finalizar-fiado-cliente-do-pedido",
+  "divergencia": {"status": 200, "mensagem": "Pedido finalizado com sucesso.", "campos": {"/data/fiscalQueued": true, "/data/emitirFiscal": true, "/data/rows/0/paymentType": "fiado", "/data/rows/0/customerName": "Fabio Folgado", "/data/rows/0/totalAmount": "6,00"}, "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {
@@ -1108,6 +1115,7 @@
  },
  {
   "nome": "finalizar-fiado-sem-cliente",
+  "divergencia": {"status": 400, "mensagem": "Para compras a prazo / fiado, é obrigatório vincular um cliente cadastrado.", "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {
@@ -1136,6 +1144,7 @@
  },
  {
   "nome": "finalizar-pagamento-diferente-do-total",
+  "divergencia": {"status": 400, "mensagem": "Soma dos pagamentos difere do total R$ 9.00.", "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {
@@ -1164,6 +1173,7 @@
  },
  {
   "nome": "finalizar-sem-pagamentos-usa-forma",
+  "divergencia": {"status": 200, "mensagem": "Pedido finalizado com sucesso.", "campos": {"/data/fiscalQueued": false, "/data/emitirFiscal": false, "/data/rows/0/paymentType": "dinheiro", "/data/rows/0/totalAmount": "9,00", "/data/rows/0/unitPrice": "3,00", "/data/rows/1/productCode": "CT002"}, "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {
@@ -1186,6 +1196,7 @@
  },
  {
   "nome": "finalizar-corpo-vazio",
+  "divergencia": {"status": 200, "mensagem": "Pedido finalizado com sucesso.", "campos": {"/data/fiscalQueued": false, "/data/emitirFiscal": false, "/data/rows/0/paymentType": "dinheiro", "/data/rows/0/totalAmount": "9,00", "/data/rows/0/unitPrice": "3,00", "/data/rows/1/productCode": "CT002"}, "motivo": "Decisao do dono do produto (03/11/2026): a .NET le Pedidos.Status (TINYINT) com GetInt32 (HistoricoVendasAB.cs ~linha 213) e responde 500 'Erro interno no servidor.' sempre que o pedido existe; a Java nao reproduz o erro e executa a finalizacao/conferencia real."},
   "usuario": "caixa@contrato.quack",
   "antes": [
    {

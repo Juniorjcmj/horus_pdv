@@ -87,6 +87,19 @@ class ApiJavaContratoTest extends BancoIT {
                                                 .isEqualTo(d.get("status").asInt());
                                         assertThat(atual.path("corpo").path("message").asText())
                                                 .isEqualTo(d.get("mensagem").asText());
+                                        // "campos" (opcional): ponteiro JSON dentro de "corpo" -> valor esperado.
+                                        d.path("campos")
+                                                .fields()
+                                                .forEachRemaining(
+                                                        e ->
+                                                                assertThat(
+                                                                                atual.path("corpo")
+                                                                                        .at(e.getKey())
+                                                                                        .asText())
+                                                                        .as("campo " + e.getKey())
+                                                                        .isEqualTo(
+                                                                                e.getValue()
+                                                                                        .asText()));
                                         return;
                                     }
                                     List<String> difs =

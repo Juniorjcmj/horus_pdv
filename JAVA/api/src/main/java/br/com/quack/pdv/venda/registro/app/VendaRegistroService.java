@@ -35,7 +35,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -52,8 +51,6 @@ public class VendaRegistroService {
     private static final Logger LOG = LoggerFactory.getLogger(VendaRegistroService.class);
     private static final ZoneId BRASILIA = ZoneId.of("America/Sao_Paulo");
 
-    static final String MSG_BUG_STATUS = "Unable to cast object of type System.Byte to type System.Int32.";
-
     /** Saida da transacao: o resultado e o que fazer depois do commit. */
     private record Saida(VendaRegistroResultado resultado, List<ItemRegistrado> itens, List<RupturaAviso> rupturas,
                          String operatorName) {}
@@ -69,13 +66,11 @@ public class VendaRegistroService {
     private final AuditoriaService auditoria;
     private final Clock clock;
     private final TransactionTemplate tx;
-    private final boolean reproduzirBugStatusPedido;
 
     public VendaRegistroService(VendaRepository repo, AutorizacaoPrecoService precos, BaixaEstoqueVenda baixa,
                                 RegistradorEstoque registrador, NumeradorDocumentos numerador, FiadoDebitos fiado,
                                 CreditoGateway credito, LoteOperacoes lotes, AuditoriaService auditoria, Clock clock,
-                                PlatformTransactionManager transactionManager,
-                                @Value("${quack.vendas.pedido.reproduzir-erro-dotnet:true}") boolean reproduzirBugStatusPedido) {
+                                PlatformTransactionManager transactionManager) {
         this.repo = repo;
         this.precos = precos;
         this.baixa = baixa;
@@ -87,7 +82,6 @@ public class VendaRegistroService {
         this.auditoria = auditoria;
         this.clock = clock;
         this.tx = new TransactionTemplate(transactionManager);
-        this.reproduzirBugStatusPedido = reproduzirBugStatusPedido;
     }
 
     /** Registra a venda. Erros de regra do .NET (ArgumentException/InvalidOperationException) viram 400. */
@@ -266,9 +260,6 @@ public class VendaRegistroService {
                                       List<SaleMoney.Entrada> entradas, String caixaSessaoId, String pedidoId) {
         var linha = repo.travarPedidoPorId(companyId, pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado."));
-        if (reproduzirBugStatusPedido) {
-            throw new IllegalStateException(MSG_BUG_STATUS);
-        }
         if (linha.status() == 2) {
             throw new IllegalArgumentException("Pedido cancelado.");
         }
@@ -344,11 +335,6 @@ public class VendaRegistroService {
 
     private PedidoTravado conferirPedido(String companyId, VendaRequests.Venda r) {
         PedidoTravado pedido = repo.travarPedido(companyId, r.orderNumber).orElse(null);
-        if (pedido != null && reproduzirBugStatusPedido) {
-            // D12: a .NET le Pedidos.Status (TINYINT) com GetInt32 e falha com InvalidCastException (500) sempre
-            // que o pedido existe. Copiado ate a .NET corrigir (quack.vendas.pedido.reproduzir-erro-dotnet=false).
-            throw new IllegalStateException(MSG_BUG_STATUS);
-        }
         if (pedido == null || pedido.status() != 0
                 || !somenteDigitos(pedido.customerCpf()).equals(somenteDigitos(r.customerCpf))) {
             throw new IllegalArgumentException("Pedido indisponível ou cliente divergente.");

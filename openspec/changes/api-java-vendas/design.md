@@ -278,6 +278,15 @@ Depois o controller, como no .NET:
   - a Java recusa com a **mesma** mensagem e status;
   - não é divergência para clientes comuns; registre no cenário.
 - **Rotas `api/Nfce/*` e `api/Nfe/*`:** não mapeadas, 404 (Fase 7).
+- **Status do pedido (finalizar pedido e venda comum com `orderNumber` de pedido existente):**
+  - a .NET lê `Pedidos.Status` (TINYINT) com `GetInt32` em `HistoricoVendasAB.cs` (~linha 213) e responde 500
+    ("Erro interno no servidor.") sempre que o pedido existe, em `RegistrarComPrecosFixosAsync` e na conferência do
+    pedido em `RegistrarAsync`;
+  - decisão do dono do produto em 03/11/2026: a Java **não** reproduz esse erro. Não há flag nem propriedade para
+    ligá-lo; a finalização real e a conferência real ("Itens divergem dos preços congelados no pedido." etc.) são o
+    único comportamento;
+  - os cenários gravados contra a .NET que caem nesse 500 ficam marcados como `divergencia` nos grupos `pedido` e
+    `vendas`, com a resposta esperada da Java; a cobertura do comportamento real está em `PedidoIT` e `VendaRegistroIT`.
 
 ### D11. Contrato e aceite
 
@@ -305,7 +314,7 @@ Depois o controller, como no .NET:
 
 ### D12. Fidelidade a esquisitices do .NET
 
-Copiar, sem corrigir, por exemplo:
+Copiar, sem corrigir, por exemplo (exceção: o status do pedido, ver D10):
 - `saleNumber` texto;
 - base 15039 só para `empresa-principal`;
 - `printedAt` com `DateTime.Now` local formatado `dd/MM/yyyy HH:mm:ss`;

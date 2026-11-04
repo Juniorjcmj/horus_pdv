@@ -25,9 +25,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 /**
- * Pedidos com SQL Server real (6.1). A finalizacao roda com o erro de status da .NET desligado
- * ({@code quack.vendas.pedido.reproduzir-erro-dotnet=false}); com o padrao (ligado) ela responde 500 como a .NET, o que
- * o grupo "pedido" do contrato cobre.
+ * Pedidos com SQL Server real (6.1). A finalizacao e a conferencia do pedido na venda comum rodam de verdade: a Java
+ * nao reproduz o erro de status (TINYINT lido com GetInt32) da .NET, que responde 500 (divergencia no grupo "pedido").
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -48,7 +47,6 @@ class PedidoIT {
         r.add("spring.datasource.password", BancoIT.SQL::getPassword);
         r.add("quack.lote.retentativa.ativa", () -> "false");
         r.add("quack.fiscal.fila-minima.ativa", () -> "false");
-        r.add("quack.vendas.pedido.reproduzir-erro-dotnet", () -> "false");
     }
 
     @Autowired MockMvc mvc;
