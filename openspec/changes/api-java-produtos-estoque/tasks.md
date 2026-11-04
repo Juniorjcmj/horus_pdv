@@ -64,6 +64,11 @@
 > desatualizado (16 telas) e foi corrigido para as 19 telas atuais do app. Log em
 > `JAVA/api/contrato/aceite-estoque/.estado/e2e-opcao2.log`.
 
+> Atualização de 03/11/2026 (Fase 4, change `api-java-vendas`): com `POST /api/HistoricoVendas` portado, os 6 E2E de
+> inventário excluídos acima (`InventarioAppE2ETest` e os métodos de `InventarioE2ETest` que dependem de venda) voltaram
+> ao comando da D10 e passaram. Aceite do Estoque sem as exclusões de inventário: 42 testes, 0 falhas (13 métodos de
+> `InventarioE2ETest`, não 14). Comando em `JAVA/api/README.md`.
+
 ## 9. Integração
 
 > Aceite 03/11/2026: a rodada D10 original executou 43 testes (27 verdes, 9 falhas e 7 erros).

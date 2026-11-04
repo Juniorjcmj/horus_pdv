@@ -131,9 +131,91 @@ Comando E2E da D10 (aceite do Quack Estoque):
 mvn -o -f JAVA/estoque/pom.xml test -Dquack.e2e.url=http://localhost:5261 -Dquack.e2e.sqlContainer=pdv-java-sql -Dtest='*E2ETest,!RelatoriosE2ETest,!ConfigE2ETest,!CurvaReposicaoE2ETest,!DashboardE2ETest,!Etapa5E2ETest,!ComprasE2ETest#geraUmPedidoPorFornecedor' -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
-As exclusões de `ConfigE2ETest`, `CurvaReposicaoE2ETest`, `DashboardE2ETest` e `Etapa5E2ETest` evitam classes que consultam explicitamente análises da Fase 6 fora do escopo; a rodada original comprovou respostas 404 e falha de UI em Etapa5 antes da consulta. Com `POST /api/HistoricoVendas` portado na Fase 4, os E2E de inventário que dependem de venda (`InventarioAppE2ETest` e os métodos de `InventarioE2ETest`) rodam sem exclusão. Aceite da Fase 4 em 03/11/2026: 42 testes verdes (13 métodos de `InventarioE2ETest` e `InventarioAppE2ETest` incluídos). Aceite da Fase 3: 36 testes, todos verdes.
+As exclusões de `ConfigE2ETest`, `CurvaReposicaoE2ETest`, `DashboardE2ETest` e `Etapa5E2ETest` evitam classes que consultam explicitamente análises da Fase 6 fora do escopo; a rodada original comprovou respostas 404 e falha de UI em Etapa5 antes da consulta. Com `POST /api/HistoricoVendas` portado na Fase 4, os E2E de inventário que dependem de venda (`InventarioAppE2ETest` e os métodos de `InventarioE2ETest`) rodam sem exclusão (comando da Fase 4 abaixo). Aceite da Fase 4 em 03/11/2026: 42 testes verdes (13 métodos de `InventarioE2ETest` e `InventarioAppE2ETest` incluídos). Aceite da Fase 3: 36 testes, todos verdes.
 
-As Fases 4 (vendas), 6 (relatórios e análises de estoque) e 7 (busca SEFAZ e funcionalidades fiscais) permanecem planejadas. Nesta fase, `NfeImport/buscar-sefaz` valida a chave e, para chave válida, responde HTTP 400: "A busca da nota na SEFAZ ainda não está disponível nesta versão. Importe a nota pelo arquivo XML." Essa divergência consciente está registrada no cenário de contrato e será removida na Fase 7.
+As Fases 6 (relatórios e análises de estoque) e 7 (busca SEFAZ e funcionalidades fiscais) permanecem planejadas. Nesta fase, `NfeImport/buscar-sefaz` valida a chave e, para chave válida, responde HTTP 400: "A busca da nota na SEFAZ ainda não está disponível nesta versão. Importe a nota pelo arquivo XML." Essa divergência consciente está registrada no cenário de contrato e será removida na Fase 7.
+
+## Migração de vendas (Fase 4)
+
+Rotas portadas, com o comportamento da API .NET:
+
+- **Caixa** (6): status, sessão por id, movimentos por período, abrir turno, fechar turno e sangria/reforço (abrir,
+  fechar e movimentar são idempotentes; o dinheiro esperado do fechamento é fundo + vendas em dinheiro do turno +
+  reforços - sangrias).
+- **HistoricoVendas** (9): registrar venda (`POST`, idempotente por hash do payload, com venda offline, fiado e
+  ruptura), listagens e detalhe, cancelamento (com senha do gerente e trilha) e correção.
+- **Pedido** (5): criar, listar abertos, consultar, finalizar (preço congelado) e cancelar.
+- **Fiado** (4): receber, extrato, devedores e resumo.
+- **Autorização de preço**, usada pela venda com preço autorizado.
+
+Outras peças: numeração centralizada de documentos (`NumeradorDocumentos`), decisão e pendência fiscal da venda e a
+fila fiscal mínima (abaixo). Mudança de esquema: `V4__lote_baixa_pendencias.sql`, tabela só da Java.
+
+Contrato: os grupos `caixa`, `vendas`, `cancelamento`, `pedido` e `fiado` entram em `MotorDeContrato.GRUPOS`, que passa
+a ter 24 grupos (ver `contrato/README.md`).
+
+### Divergências conscientes
+
+- **`xmlNfceContingencia`** na venda: 400 "A importação da NFC-e de contingência do Gateway ainda não está disponível
+  nesta versão.", antes de qualquer gravação. A Fase 7 remove.
+- **`creditAuthorization` e canal do Gateway:** sem canal do Gateway a Java recusa com a mesma mensagem e status da
+  .NET; o canal em si (tokens do Gateway, `gateway-credit`) vem na Fase 5.
+- **Rotas `api/Nfce/*` e `api/Nfe/*`:** não mapeadas (404), Fase 7.
+- **Finalização de pedido e venda com `orderNumber` de pedido existente:** a API .NET responde 500 ("Erro interno no
+  servidor.") porque lê `Pedidos.Status` (TINYINT) com `GetInt32`. Por decisão do dono do produto (03/11/2026) a Java
+  **funciona** (finalização e conferência reais); não há propriedade para reproduzir o erro. Os cenários gravados com
+  500 estão marcados com `divergencia` (ver `contrato/README.md`).
+
+Esquisitices da .NET copiadas de propósito: `saleNumber` em texto, base 15039 só para `empresa-principal`, `printedAt`
+local `dd/MM/yyyy HH:mm:ss`, `ate` + 1 dia nos filtros de cancelamento e auditoria de ruptura fora da transação.
+
+### Fila fiscal mínima
+
+`FilaFiscalMinima` (`@Scheduled`, 1 s) faz só o que a venda precisa antes da Fase 7: retoma vendas sem documento
+fiscal, encerra sem SEFAZ a nota de venda cancelada antes da emissão (status Rejeitado, motivo pedindo a inutilização),
+marca erro ("Empresa sem certificado ou CSC configurado.") na nota de empresa sem emitente e deixa as demais paradas,
+sem transmitir nada. Propriedades:
+
+| Propriedade | Padrão | Para quê |
+| --- | --- | --- |
+| `quack.fiscal.fila-minima.ativa` | `true` | **Desligar (`false`) quando a API .NET usar o mesmo banco**: as duas não devem processar a mesma fila. Pelo ambiente: `QUACK_FISCAL_FILA_MINIMA_ATIVA`. |
+| `quack.fiscal.fila-minima.intervalo-ms` | `1000` | intervalo entre execuções |
+
+### Retentativa da baixa de lotes
+
+Se `ConsumirVendaSeguro` ou `EstornarVendaSeguro` falha depois do commit da venda, a .NET só loga. A Java grava a
+falha em `LoteBaixaPendencias` (migração V4) e uma rotina periódica tenta de novo com backoff até um limite; depois
+dele a pendência fica marcada para revisão e é logada como erro. A rotina é idempotente (não consome a mesma venda
+duas vezes). Os produtos da venda, do pedido, do cancelamento e da correção são travados em ordem de código, para
+evitar deadlock entre vendas simultâneas (sem efeito no contrato).
+
+### Aceite do Caixa JavaFX
+
+Suba o ambiente (`bash JAVA/api/contrato/aceite-estoque/subir.sh`, ver acima), rode o comando e depois `descer.sh`:
+
+```bash
+mvn -o -f JAVA/caixa/pom.xml test -Dquack.e2e.url=http://localhost:5261 -Dquack.e2e.docker=pdv-java-sql -Dtest='*E2ETest,!NfceCancelE2ETest' -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Notas: `SaleCancelE2ETest` e `SaleCorrectionE2ETest` só rodam com `-Dquack.e2e.operador=<e-mail>` (e
+`-Dquack.e2e.operadorSenha=<senha>`) de um operador com perfil de caixa; sem isso ficam ignorados. O banco E2E não pode
+ter turno aberto de outro dia (o status devolve "expirado", comportamento correto): feche-o antes, na cópia descartável
+`pdv-java-sql`. `NfceCancelE2ETest` fica de fora (emissão real, Fase 7). Resultado em 03/11/2026: Caixa 6 testes, 0
+falhas, 2 ignorados (os dois acima, verdes quando rodados à parte com um operador `caixa`), `OfflineE2ETest` verde.
+
+### Aceite do Quack Estoque (com inventário)
+
+É o comando da Fase 3 **sem** as exclusões de inventário (`InventarioAppE2ETest` e `InventarioE2ETest` rodam):
+
+```bash
+mvn -o -f JAVA/estoque/pom.xml test -Dquack.e2e.url=http://localhost:5261 -Dquack.e2e.sqlContainer=pdv-java-sql -Dtest='*E2ETest,!RelatoriosE2ETest,!ConfigE2ETest,!CurvaReposicaoE2ETest,!DashboardE2ETest,!Etapa5E2ETest,!ComprasE2ETest#geraUmPedidoPorFornecedor' -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Resultado em 03/11/2026: 42 testes, 0 falhas.
+
+### Verificação
+
+`mvn -B -o verify` passa (03/11/2026): 592 testes de unidade/web (Surefire) e 1303 de integração/contrato (Failsafe, dos quais 1152 são os cenários do `ApiJavaContratoTest`, nos 24 grupos), sem falhas, erros ou skips.
 
 ## Estrutura
 

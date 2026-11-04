@@ -126,13 +126,14 @@
 
 ## 8. Integração
 
-- [ ] 8.1 Rodar `mvn -B verify` em `JAVA/api` com todos os grupos de contrato (os 19 anteriores e os 4 novos) e toda
+- [x] 8.1 Rodar `mvn -B verify` em `JAVA/api` com todos os grupos de contrato (os 19 anteriores e os 4 novos) e toda
   a suíte verde; verificar pelo relatório do Failsafe/Surefire
-- [ ] 8.2 Atualizar `JAVA/api/README.md` (rotas portadas na Fase 4, divergências do D10, fila fiscal mínima e sua
+- [x] 8.2 Atualizar `JAVA/api/README.md` (rotas portadas na Fase 4, divergências do D10, fila fiscal mínima e sua
   propriedade, comandos de aceite do Caixa e do Estoque) e `contrato/README.md` (grupos novos, empresa sem emitente,
   dados do seed); atualizar a nota do aceite em `openspec/changes/api-java-produtos-estoque/tasks.md` (ou no archive,
   se já arquivada) e a linha da Fase 4 em `docs/migracao-api-springboot.md`; verificar que os comandos documentados
   funcionam
+  - Verificado em 03/11/2026: `mvn -B -o verify` em `JAVA/api` com BUILD SUCCESS: Surefire 592 testes e Failsafe 1303 (1152 cenarios do `ApiJavaContratoTest`, 24 grupos), 0 falhas, 0 erros, 0 skips. Documentacao atualizada no README da API, no do contrato, na change da Fase 3 e em `docs/migracao-api-springboot.md`.
 
 ## Workflow follow-up
 

@@ -43,7 +43,38 @@ A importação de NF-e mantém a divergência de `AnexarXmlAsync` registrada nos
 
 Da raiz, use Git Bash: `bash JAVA/api/contrato/aceite-estoque/subir.sh`. Requer Docker, Maven, JDK 21, curl, Python 3 e Git Bash. O script faz backup `COPY_ONLY` de `HorusPdv` na origem `pdv-teste-sql` e restaura em SQL separado `pdv-java-sql`; a API fica em `http://localhost:5261`. A senha SQL padrão é `Teste#Caixa2026`, ajustável por `QUACK_E2E_SQL_SENHA`; configure a origem com `QUACK_E2E_SQL_ORIGEM`. Para retomar somente a API depois de uma falha: `QUACK_ACEITE_APENAS_API=1 bash JAVA/api/contrato/aceite-estoque/subir.sh`. `descer.sh` remove somente containers/rede com o rótulo do aceite e preserva `.estado/HorusPdv.bak`. O aceite 8.1 foi validado: health check e login passaram, baseline 1 e V2/V3 foram aplicadas, e o script de retomada terminou com código 0; a tarefa 8.2 E2E ainda está pendente.
 
-O comando E2E da D10 (aceite verde em 03/11/2026) está documentado no `JAVA/api/README.md`. As suítes `ConfigE2ETest`, `CurvaReposicaoE2ETest`, `DashboardE2ETest` e `Etapa5E2ETest` ficam excluídas porque consultam explicitamente análises da Fase 6 fora do escopo; a rodada original comprovou 404 e falha de UI em Etapa5 antes da consulta. Os 6 E2E de inventário que dependem de vendas ficam fora até a Fase 4. As Fases 4 (vendas), 6 (relatórios e análises de estoque) e 7 (busca SEFAZ e funcionalidades fiscais) permanecem planejadas.
+O comando E2E da D10 (aceite verde em 03/11/2026) está documentado no `JAVA/api/README.md`. As suítes `ConfigE2ETest`, `CurvaReposicaoE2ETest`, `DashboardE2ETest` e `Etapa5E2ETest` ficam excluídas porque consultam explicitamente análises da Fase 6 fora do escopo; a rodada original comprovou 404 e falha de UI em Etapa5 antes da consulta. Os E2E de inventário que dependem de vendas voltaram na Fase 4 (ver abaixo). As Fases 6 (relatórios e análises de estoque) e 7 (busca SEFAZ e funcionalidades fiscais) permanecem planejadas.
+
+## Fase 4: vendas
+
+Cinco grupos novos em `MotorDeContrato.GRUPOS` (24 no total): `caixa`, `vendas`, `cancelamento`, `pedido` e `fiado`.
+Cobrem sucesso, cada recusa com mensagem, 401, 403 por perfil, isolamento entre empresas, replay e conflito de
+idempotência, venda offline com ruptura, fiado, preço autorizado, cancelamento (cada código e a trilha), correção e
+pedidos.
+
+**Empresa sem emitente.** O `NfceOutboxWorker` da .NET roda a cada 1 s e muda `DocumentosFiscais`. Por isso os
+cenários de venda usam a `empresa-principal` do seed, que **não tem certificado/CSC** (o reset zera os campos): a nota
+vai para erro de forma determinística ("Empresa sem certificado ou CSC configurado."). Não compare status de
+documento fiscal em respostas logo após a venda.
+
+**Dados do seed (Fase 4)** em `seed/seed-contrato.sql` e `seed/reset-contrato.sql`: turnos (um fechado do caixa, com
+movimentos, e um aberto do gerente onde ficam as vendas do seed), clientes com limite e devedores, concessões de
+crédito do Gateway, regras de emissão, pedido aberto, venda finalizada, venda cancelada e venda com nota autorizada
+(`NOTA_AUTORIZADA`). A ordem dos números é fixa no seed; só se declara volátil o que muda de fato (datas, ids de
+autorização, `canceladoEm`).
+
+**Passo `{"sql": "..."}` no `antes`.** Ajuste de estado que não tem rota (por exemplo, dar saldo devedor a um cliente).
+O SQL roda nos **dois lados**: o gravador o executa no SQL Server do ambiente .NET e o comparador, no do Testcontainers
+(`MotorDeContrato.comExecutorSql`). Exemplo:
+`"antes": [ {"sql": "UPDATE Clientes SET SaldoDevedor = 2.00 WHERE Id = N'cl-ct-folgado' AND CompanyId = N'empresa-principal'"} ]`.
+
+**`divergencia` com `campos`.** Além de `status` e `mensagem`, a divergência pode trazer `campos`: mapa de ponteiro JSON
+(ex.: `/data/rows/0/unitPrice`) para o valor esperado na resposta da Java, que o comparador confere no lugar da
+gravação. Usado nos 13 cenários que a .NET responde com 500 (divergência do status do pedido, abaixo).
+
+**Aceite.** Caixa e Estoque rodam contra a API Java com `aceite-estoque/subir.sh`; comandos e resultados estão no
+`JAVA/api/README.md` (seção "Migração de vendas (Fase 4)"). Os E2E de inventário excluídos na Fase 3 voltaram e
+passaram.
 
 ## Rodar o comparador (só precisa de Docker)
 

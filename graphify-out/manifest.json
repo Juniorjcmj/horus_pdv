@@ -5380,8 +5380,8 @@
     "semantic_hash": ""
   },
   "docs/migracao-api-springboot.md": {
-    "mtime": 1793730494.0374467,
-    "ast_hash": "27e99ca5c2f1cbb4c85fa06e9085604d",
+    "mtime": 1793760937.90661,
+    "ast_hash": "785182424bd345aa42df2dc48dde4d03",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-11-02-api-java-fundacao/.openspec.yaml": {
@@ -7440,8 +7440,8 @@
     "semantic_hash": ""
   },
   "openspec/changes/api-java-produtos-estoque/tasks.md": {
-    "mtime": 1793730494.1100075,
-    "ast_hash": "9f416f510d50c6aa374742fdee3660f3",
+    "mtime": 1793760937.9037306,
+    "ast_hash": "3d9b7077078fda0fb6a735dbe34a2b5e",
     "semantic_hash": ""
   },
   "openspec/changes/archive/2026-11-02-api-java-cadastros/.openspec.yaml": {
@@ -7555,8 +7555,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/contrato/esquema/snapshot-esquema.sql": {
-    "mtime": 1793590140.3937442,
-    "ast_hash": "e497a14c5eb65117f43aaccc6e872783",
+    "mtime": 1793740238.6005712,
+    "ast_hash": "017f5a416d59a69ecf2301f9f22fb422",
     "semantic_hash": ""
   },
   "JAVA/api/contrato/openapi-dotnet.json": {
@@ -7565,18 +7565,18 @@
     "semantic_hash": ""
   },
   "JAVA/api/contrato/seed/reset-contrato.sql": {
-    "mtime": 1793621228.9004335,
-    "ast_hash": "90043c9dfbab76d4162230177e7284c2",
+    "mtime": 1793737626.6021132,
+    "ast_hash": "64499ae72550d9a71e5dc372c2c4a437",
     "semantic_hash": ""
   },
   "JAVA/api/contrato/seed/seed-contrato.sql": {
-    "mtime": 1793657692.1857536,
-    "ast_hash": "7bade83017d08dd701d6828bc120fa42",
+    "mtime": 1793737710.133706,
+    "ast_hash": "bab0aed65437d0d7d6c7826420c0a401",
     "semantic_hash": ""
   },
   "JAVA/api/contrato/vetores-dotnet/Program.cs": {
-    "mtime": 1793730493.941642,
-    "ast_hash": "c847c14d3655e28a9c3b17de2d1900c4",
+    "mtime": 1793739881.8958228,
+    "ast_hash": "9b8e4b611f22fb5014e01dc85f0b1496",
     "semantic_hash": ""
   },
   "JAVA/api/contrato/vetores-dotnet/VetoresDotnet.csproj": {
@@ -8025,8 +8025,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/main/java/br/com/quack/pdv/estoque/inventario/app/InventarioService.java": {
-    "mtime": 1793725195.7633595,
-    "ast_hash": "92205417e5f1a8db669e3f4d10c2174a",
+    "mtime": 1793737783.3747468,
+    "ast_hash": "4c289f54664ae31a0d5af34530bd7785",
     "semantic_hash": ""
   },
   "JAVA/api/src/main/java/br/com/quack/pdv/estoque/inventario/app/ItemLinha.java": {
@@ -8120,8 +8120,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/main/java/br/com/quack/pdv/estoque/registrador/RegistradorEstoque.java": {
-    "mtime": 1793628406.765433,
-    "ast_hash": "ac35ea8e84df21dec6365e0cee8f0a19",
+    "mtime": 1793740178.7938788,
+    "ast_hash": "b339a00c5e8c968b15b613bc3078c174",
     "semantic_hash": ""
   },
   "JAVA/api/src/main/java/br/com/quack/pdv/produto/entrada/app/EntradaManualService.java": {
@@ -8210,8 +8210,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/main/java/br/com/quack/pdv/produto/lote/app/LoteOperacoes.java": {
-    "mtime": 1793632387.7739184,
-    "ast_hash": "b0621b85b208b05ea3328558bfd1d5e7",
+    "mtime": 1793740299.892392,
+    "ast_hash": "ec08eeda414cb9eabd48985bf1fa8d25",
     "semantic_hash": ""
   },
   "JAVA/api/src/main/java/br/com/quack/pdv/produto/lote/app/LoteService.java": {
@@ -8630,13 +8630,13 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/test/java/br/com/quack/pdv/banco/BaselineBancoRestauradoIT.java": {
-    "mtime": 1793614008.0100367,
-    "ast_hash": "487e6a7cb2813a7bc305921d65ce0401",
+    "mtime": 1793740465.0924568,
+    "ast_hash": "873b35853f50a29b061a1b9ed903e6a4",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/java/br/com/quack/pdv/banco/CadastrosIT.java": {
-    "mtime": 1793621192.397766,
-    "ast_hash": "2db726180a8e8d75ae9bf8f15245aa34",
+    "mtime": 1793741303.2286592,
+    "ast_hash": "e081e68c57ee2aec2beb29d4ab2d4c6d",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/java/br/com/quack/pdv/banco/EsquemaEquivalenteIT.java": {
@@ -8705,8 +8705,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/test/java/br/com/quack/pdv/contrato/ApiJavaContratoTest.java": {
-    "mtime": 1793721183.8528192,
-    "ast_hash": "c7588ab0915679de16e9b400694366fd",
+    "mtime": 1793758965.0380793,
+    "ast_hash": "e94bd1b524c25c6e8cef453482a3d9a2",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/java/br/com/quack/pdv/contrato/DocumentoContratoTest.java": {
@@ -8715,18 +8715,18 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/test/java/br/com/quack/pdv/contrato/EstadoDoBanco.java": {
-    "mtime": 1793592075.4490376,
-    "ast_hash": "fa899760a47a0eacc604136f28621841",
+    "mtime": 1793749814.5875106,
+    "ast_hash": "1732ac3f62a077872ed3d79499030ed7",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/java/br/com/quack/pdv/contrato/GravadorDoContrato.java": {
-    "mtime": 1793657790.3138347,
-    "ast_hash": "8decd0610701d71647501414f80f5bb9",
+    "mtime": 1793749814.5895653,
+    "ast_hash": "eaabab506df7c65ae4445d439affc905",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/java/br/com/quack/pdv/contrato/MotorDeContrato.java": {
-    "mtime": 1793725236.8578136,
-    "ast_hash": "b9f03bdb5febbbddbcdd29241690e70c",
+    "mtime": 1793753684.6715496,
+    "ast_hash": "c2a880311c5d7058ffbb955756a41548",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/java/br/com/quack/pdv/contrato/MotorDeContratoDataJsonTest.java": {
@@ -9015,8 +9015,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/test/java/br/com/quack/pdv/web/WebTestBase.java": {
-    "mtime": 1793725801.7235556,
-    "ast_hash": "ffa98d20b187eabd33aaa8aedf71e859",
+    "mtime": 1793754675.527329,
+    "ast_hash": "93bf8d93cb07390f1fb2168f31478f00",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/cenarios/admin-empresas.json": {
@@ -9080,8 +9080,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/cenarios/ordem-compra.json": {
-    "mtime": 1793710615.2673347,
-    "ast_hash": "8103cd33b1269b559b2177847b2506c7",
+    "mtime": 1793739604.8424628,
+    "ast_hash": "4cdf47e6e97f0890fcd7769fb5b27c05",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/cenarios/produto.json": {
@@ -9185,8 +9185,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/gravacoes/admin-empresas/listar.json": {
-    "mtime": 1793621570.9609096,
-    "ast_hash": "b3b410f916c003076265348024fec480",
+    "mtime": 1793739675.275769,
+    "ast_hash": "275a8f460e48e25627b06284afcb7640",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/gravacoes/admin-empresas/metricas.json": {
@@ -9200,13 +9200,13 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/gravacoes/admin-empresas/pagina-grande.json": {
-    "mtime": 1793621574.9733987,
-    "ast_hash": "f98a5fc88222d579bfcf3f7d521a0c9b",
+    "mtime": 1793739676.9970787,
+    "ast_hash": "b89f2e3fcd9a04ff1bc4cb41b34e372c",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/gravacoes/admin-empresas/pagina-zero.json": {
-    "mtime": 1793621576.4468994,
-    "ast_hash": "b3b410f916c003076265348024fec480",
+    "mtime": 1793739678.7648742,
+    "ast_hash": "275a8f460e48e25627b06284afcb7640",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/gravacoes/admin-empresas/reativar.json": {
@@ -9625,8 +9625,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/gravacoes/cliente/listar.json": {
-    "mtime": 1793621493.2967772,
-    "ast_hash": "00476554b8eda21b57a59895bc5cf508",
+    "mtime": 1793739661.8451424,
+    "ast_hash": "d17de2fd218eb43b3e8f47ba7e0014c6",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/gravacoes/cliente/nome-curto.json": {
@@ -9660,8 +9660,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/gravacoes/cliente/snapshot.json": {
-    "mtime": 1793621516.3487935,
-    "ast_hash": "152ed1bcb35e5fbbf0dc83b44d17f145",
+    "mtime": 1793739663.8051786,
+    "ast_hash": "fa77adadc3c217e58ba24ddf07f11456",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/contrato/gravacoes/cliente/telefone-invalido.json": {
@@ -13885,17 +13885,17 @@
     "semantic_hash": ""
   },
   "JAVA/api/README.md": {
-    "mtime": 1793730493.90907,
-    "ast_hash": "68f80bcfd0d63babffa6bc2bbed26984",
+    "mtime": 1793763022.083516,
+    "ast_hash": "a6c6725e7699cb3ba066edd7fe992003",
     "semantic_hash": ""
   },
   "JAVA/api/contrato/README.md": {
-    "mtime": 1793730493.9304497,
-    "ast_hash": "f96fe58687630b02706445c59f84bd23",
+    "mtime": 1793763022.101996,
+    "ast_hash": "a8a4639695f208a7cf427e8cae9f4c0f",
     "semantic_hash": ""
   },
   "JAVA/api/contrato/aceite-estoque/.estado/arquivos.txt": {
-    "mtime": 1793728659.647135,
+    "mtime": 1793759458.7885735,
     "ast_hash": "78880c9370db7033ab6a26ddc18e2b77",
     "semantic_hash": ""
   },
@@ -14185,8 +14185,8 @@
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/application-it.yml": {
-    "mtime": 1793590204.9687476,
-    "ast_hash": "0d06ab1816dcd30f57e521288764452c",
+    "mtime": 1793750611.2920344,
+    "ast_hash": "9b566f6c6216ca7711488c8968d726f2",
     "semantic_hash": ""
   },
   "JAVA/api/src/test/resources/application-test.yml": {
@@ -15812,6 +15812,2606 @@
   "JAVA/estoque/src/main/resources/br/com/quack/estoque/ui/quack-logo.png": {
     "mtime": 1793468451.1774216,
     "ast_hash": "99a3b2c5d552d61bd38ac8ba9a1847c6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/contrato/vetores-dotnet/VetoresHash.cs": {
+    "mtime": 1793740009.745517,
+    "ast_hash": "265472f1206a831ab36eaa363df71150",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/config/AgendamentoConfig.java": {
+    "mtime": 1793740299.9983695,
+    "ast_hash": "6033e9fd3fd0d335488a99fc532948e6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/fiscal/fila/app/DecisaoEmissaoNfce.java": {
+    "mtime": 1793746457.9314096,
+    "ast_hash": "a14b4a2cf79fa987b59a0351a227557a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/fiscal/fila/app/EmitenteConfigurado.java": {
+    "mtime": 1793750553.1825964,
+    "ast_hash": "60aa54f787368f7a25ef99e34e772f55",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/fiscal/fila/app/FilaFiscalMinima.java": {
+    "mtime": 1793750555.122848,
+    "ast_hash": "84cc93459e200f1905e1980471634e8c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/fiscal/fila/app/FiscalDaVenda.java": {
+    "mtime": 1793753941.638923,
+    "ast_hash": "a669bf7176d6f2f5ac6b426377ef72a4",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/fiscal/fila/app/PendenciaFiscal.java": {
+    "mtime": 1793746458.8254118,
+    "ast_hash": "202d2dfba2f2ddeb57ef965a1ad52578",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/fiscal/fila/domain/DocumentoFiscalDetalhe.java": {
+    "mtime": 1793746608.9743233,
+    "ast_hash": "860f21fa9c4e532fcc70f9b80e499258",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/fiscal/fila/repo/DocumentoFiscalConsulta.java": {
+    "mtime": 1793750948.7503562,
+    "ast_hash": "60f709c7562dfcc6543c17dd183152e3",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/fiscal/fila/repo/FilaFiscalRepository.java": {
+    "mtime": 1793750554.222972,
+    "ast_hash": "114dc33cceebbfea7c3c537e01168056",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/plataforma/numeracao/NumeradorDocumentos.java": {
+    "mtime": 1793737783.2561128,
+    "ast_hash": "7a9cecad7a7cc3ee88e13da91182e803",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/produto/lote/app/LotePendencias.java": {
+    "mtime": 1793740256.2480052,
+    "ast_hash": "662dee27f54bbc9b31faf76fee01555f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/produto/lote/app/RetentativaBaixaLotes.java": {
+    "mtime": 1793740299.9660172,
+    "ast_hash": "f8cdd9782a60b8a65b960c9dcb0be00c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/shared/ErroDeModelo.java": {
+    "mtime": 1793754054.4535074,
+    "ast_hash": "6d04eb389f6bbc710147d973548296d6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/app/CaixaComandos.java": {
+    "mtime": 1793743094.2079859,
+    "ast_hash": "bf19da8d479c74024dfad733a0a85e31",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/app/CaixaOperacoes.java": {
+    "mtime": 1793743022.018022,
+    "ast_hash": "69094d5ff2645490a88c63e5fdeb10eb",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/app/CaixaPayload.java": {
+    "mtime": 1793743021.9435863,
+    "ast_hash": "bbdc173cc906e899bb7efe2f4f98bc8b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/app/CaixaService.java": {
+    "mtime": 1793743095.0479236,
+    "ast_hash": "8f70b981f24c7e1433e43f5314dbe8e3",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/app/CaixaStatusService.java": {
+    "mtime": 1793742971.3148012,
+    "ast_hash": "745ede58a287550c2b9f91da16d9c422",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/app/CaixaTempo.java": {
+    "mtime": 1793746623.1372426,
+    "ast_hash": "464dde1b0f72732701a6766b4396dd61",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/domain/CaixaMovimento.java": {
+    "mtime": 1793742854.0208216,
+    "ast_hash": "e639101ae47e8348c965e8254b25ecf4",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/domain/CaixaMovimentoDto.java": {
+    "mtime": 1793742866.8921547,
+    "ast_hash": "0f379a9cf6a5d899524518f3711a72a0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/domain/CaixaSessao.java": {
+    "mtime": 1793742853.9529963,
+    "ast_hash": "939fda63027f4adb24f5ee12f95b8e04",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/domain/CaixaSessaoDto.java": {
+    "mtime": 1793742866.8537562,
+    "ast_hash": "b2858cfa4113eb8a294600d52cdb250d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/domain/CaixaStatusDto.java": {
+    "mtime": 1793742866.8164785,
+    "ast_hash": "465d721332c6490fbd9c0bac86dfb9c7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/domain/PagamentoTotalDto.java": {
+    "mtime": 1793742866.9254665,
+    "ast_hash": "0d81f31b71634a112d86ec4ec76db65c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/domain/TipoMovimentoCaixa.java": {
+    "mtime": 1793743189.7171202,
+    "ast_hash": "4e9d446694335ef64d62fe816e55d90a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/repo/CaixaRepository.java": {
+    "mtime": 1793742904.895473,
+    "ast_hash": "a3c9a5207481b6149efb65f00f43508f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/web/CaixaController.java": {
+    "mtime": 1793743148.1749644,
+    "ast_hash": "f2ba2577650cbb28d84b39e3aa2ea478",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/caixa/web/CaixaRequests.java": {
+    "mtime": 1793743147.279903,
+    "ast_hash": "a5dca747a588925c3195e98fb51138cd",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/app/CancelamentoConsultas.java": {
+    "mtime": 1793750566.0739715,
+    "ast_hash": "db3856f385fe025489294fb303b2966d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/app/CancelamentoVendaService.java": {
+    "mtime": 1793750400.6188483,
+    "ast_hash": "52805423fc34fb058d9f09b40c44f819",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/app/CorrecaoVendaService.java": {
+    "mtime": 1793750473.8632584,
+    "ast_hash": "d673c169cf37ee00cf128d5c9757a6d2",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/domain/CancelamentoResultado.java": {
+    "mtime": 1793750295.6069055,
+    "ast_hash": "2c932a21e3d238abcfb6ea30a7c2534a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/domain/CorrecaoResultado.java": {
+    "mtime": 1793750295.646367,
+    "ast_hash": "04b24b023a8f30a38e62b88762489b35",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/domain/TrilhaLinha.java": {
+    "mtime": 1793750295.6896105,
+    "ast_hash": "31f1ccd37d74feae9b8cf7748fc5d4c4",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/domain/TrilhaRegistro.java": {
+    "mtime": 1793750295.7696908,
+    "ast_hash": "b7938c3a0a15c7de243151b2db88951d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/domain/VendaCanceladaResumo.java": {
+    "mtime": 1793750295.7277393,
+    "ast_hash": "b2013a39ac13976912de7ebadf6f3cc6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/domain/VendaSnapshot.java": {
+    "mtime": 1793750337.5788,
+    "ast_hash": "f817d25de87798ea659d474aa1803db8",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/repo/CancelamentoRepository.java": {
+    "mtime": 1793750368.6541126,
+    "ast_hash": "3ca3be4388cae238507824a46eb315f6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/repo/CorrecaoRepository.java": {
+    "mtime": 1793750436.8799572,
+    "ast_hash": "42f87439c040250ca095992b01b62567",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/web/CancelamentoController.java": {
+    "mtime": 1793750599.7187302,
+    "ast_hash": "6e34bc434c615e6e5beb68ea5b714cce",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/cancelamento/web/CancelamentoRequests.java": {
+    "mtime": 1793750566.9409,
+    "ast_hash": "f5eb82cda7e44694a5035befe2e36d75",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/fiado/app/CreditoGateway.java": {
+    "mtime": 1793746428.6482563,
+    "ast_hash": "085887eea001e7bf47e2e0098ad67f7b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/fiado/app/FiadoDebitos.java": {
+    "mtime": 1793746428.6808462,
+    "ast_hash": "caa69a44c8ab920975feb21673e5b627",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/fiado/app/FiadoEstornos.java": {
+    "mtime": 1793750256.1419234,
+    "ast_hash": "0c9b11a24b031552fb1ff1320ce93bfe",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/fiado/app/FiadoService.java": {
+    "mtime": 1793754536.2207735,
+    "ast_hash": "3f047590557eb17908a7a32555643ce5",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/fiado/domain/FiadoDtos.java": {
+    "mtime": 1793754526.0760734,
+    "ast_hash": "4cf843342d88e5cd0c30cfd78570df3a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/fiado/repo/FiadoRepository.java": {
+    "mtime": 1793754526.955455,
+    "ast_hash": "3a72980a096216efd7e6c36d4d4cd00f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/fiado/web/FiadoController.java": {
+    "mtime": 1793754550.4270175,
+    "ast_hash": "50df9dbdb391fe9428ed1ba840925690",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/pedido/app/PedidoService.java": {
+    "mtime": 1793754052.7881649,
+    "ast_hash": "3a8563d77561a5e5bde0f560bc9a994e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/pedido/domain/Pedido.java": {
+    "mtime": 1793754051.009369,
+    "ast_hash": "cb54d7ccfe4b90ed91b3904738ec8575",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/pedido/domain/PedidoModel.java": {
+    "mtime": 1793754050.0850701,
+    "ast_hash": "a92181f77cd173f80487e4d009be6a5b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/pedido/repo/PedidoRepository.java": {
+    "mtime": 1793754051.8804073,
+    "ast_hash": "34aa96577b022eb7a3618b471a0bbed6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/pedido/web/PedidoController.java": {
+    "mtime": 1793754076.0218408,
+    "ast_hash": "ed7be04db34e2a7798dc280ada0af372",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/pedido/web/PedidoRequests.java": {
+    "mtime": 1793754053.629249,
+    "ast_hash": "7a6d8f1f61f429ae30a159b6be9906e4",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/HashPayload.java": {
+    "mtime": 1793742841.8543086,
+    "ast_hash": "2e23fe120bd2c24093cdfac77d266a12",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/app/AutorizacaoPrecoService.java": {
+    "mtime": 1793746636.1391995,
+    "ast_hash": "3bd746f130519fa977fd14dbe5631043",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/app/BaixaEstoqueVenda.java": {
+    "mtime": 1793746522.0244913,
+    "ast_hash": "b96cc8b408440687d492ba31aca211b7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/app/SaleMoney.java": {
+    "mtime": 1793746259.2468028,
+    "ast_hash": "e3bfbb9dd3f46df69e638ed7453cdd92",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/app/VendaConsultaService.java": {
+    "mtime": 1793746648.9796624,
+    "ast_hash": "6924b2004941e6c5ade3b4091bc8288a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/app/VendaPayload.java": {
+    "mtime": 1793746530.4809818,
+    "ast_hash": "10cd5cab36489e7d9bfee8703f5c81b6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/app/VendaRegistroService.java": {
+    "mtime": 1793758536.4646442,
+    "ast_hash": "e5873da560990d7d62ee2d7c9d2346f0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/domain/PagamentoNormalizado.java": {
+    "mtime": 1793746276.6246312,
+    "ast_hash": "512e2fe13c0eb44db5f33a7d195bcbb2",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/domain/RupturaAviso.java": {
+    "mtime": 1793746276.6954343,
+    "ast_hash": "b3d222dd8445f76889fb85d4851d99a0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/domain/VendaDetalheCompleto.java": {
+    "mtime": 1793746276.8219805,
+    "ast_hash": "320c00fd205c2ed38851207d9a788554",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/domain/VendaHistoricoDto.java": {
+    "mtime": 1793746276.7268634,
+    "ast_hash": "4255dc7b17fad4d96be01d74d8cd9c83",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/domain/VendaPagamentoDto.java": {
+    "mtime": 1793746276.6611197,
+    "ast_hash": "b2f0b1613c2cd4963772ef6eb5bb5b2e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/domain/VendaRegistroResultado.java": {
+    "mtime": 1793746276.7885149,
+    "ast_hash": "01bb0e2cca10a0a75a420686fed14ba7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/repo/VendaRepository.java": {
+    "mtime": 1793753982.5059464,
+    "ast_hash": "5fc876e42cb2fada665a1820c5f46ee4",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/web/VendaController.java": {
+    "mtime": 1793746669.6503778,
+    "ast_hash": "70bdc62e49b5ca071ac130c4a4824e91",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/java/br/com/quack/pdv/venda/registro/web/VendaRequests.java": {
+    "mtime": 1793746291.0713084,
+    "ast_hash": "75d0688d3f1edf4e6cbf29da494bf104",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/main/resources/db/migration/V4__lote_baixa_pendencias.sql": {
+    "mtime": 1793740238.5612926,
+    "ast_hash": "2c77d30ac1397b69e9bf3bdbb02744f6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/fiscal/fila/FilaFiscalDesligadaIT.java": {
+    "mtime": 1793751036.06061,
+    "ast_hash": "9defe8520137e3ffda09f79872f3b930",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/fiscal/fila/FilaFiscalMinimaIT.java": {
+    "mtime": 1793751006.9057004,
+    "ast_hash": "b4f73be11430922140a09a425e8b45bf",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/fiscal/fila/FilaSemProvedorFiscalTest.java": {
+    "mtime": 1793751048.7584164,
+    "ast_hash": "24c02f10865e2f26e023f9adf09a8459",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/fiscal/fila/FiscalDaVendaIT.java": {
+    "mtime": 1793747436.6244721,
+    "ast_hash": "0622be706275d53528d02466975f9452",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/fiscal/fila/FiscalDaVendaTest.java": {
+    "mtime": 1793750622.187566,
+    "ast_hash": "3ac2e0c463cdb5d3693f4d19b53b38fb",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/plataforma/numeracao/NumeracaoUnicaTest.java": {
+    "mtime": 1793737856.672593,
+    "ast_hash": "a58952609e985178f01ab8040f6e547d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/plataforma/numeracao/NumeradorDocumentosIT.java": {
+    "mtime": 1793739444.2134502,
+    "ast_hash": "8266ed5895455d46f162a220ad35134b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/produto/lote/BaixaLotesDeVendaIT.java": {
+    "mtime": 1793740354.1489058,
+    "ast_hash": "ffa713e5cf06d002867d8ca7a2921408",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/shared/FormatoDataDotNetTest.java": {
+    "mtime": 1793739611.7520618,
+    "ast_hash": "6e4b3ef8bcef472ab63fd6a5941fa803",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/venda/caixa/CaixaIT.java": {
+    "mtime": 1793743522.4866521,
+    "ast_hash": "3a3d297142f30d451f5f66cbcdeda36b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/venda/cancelamento/CancelamentoIT.java": {
+    "mtime": 1793751337.5726476,
+    "ast_hash": "3dfe5f2e6a5d459b35536467682d5a61",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/venda/cancelamento/CorrecaoIT.java": {
+    "mtime": 1793751188.4817908,
+    "ast_hash": "19a1038110c0aa0cd4fdd28ea2ab384d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/venda/fiado/FiadoIT.java": {
+    "mtime": 1793754643.445085,
+    "ast_hash": "37d3b8e96ac0cfb4a26133a38e8982f4",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/venda/pedido/PedidoIT.java": {
+    "mtime": 1793758536.60568,
+    "ast_hash": "a26456993260a306a9c3ffed3a1a0c0b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/venda/registro/HashPayloadTest.java": {
+    "mtime": 1793740135.7634838,
+    "ast_hash": "cc4d16d3ed79613a4f8c1576747cfb14",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/venda/registro/SaleMoneyTest.java": {
+    "mtime": 1793747354.3601522,
+    "ast_hash": "ab4b906ffa2f9cd22c198a3c3fc62548",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/venda/registro/VendaPayloadTest.java": {
+    "mtime": 1793747355.2209644,
+    "ast_hash": "850b93112fa5415c20ce9ad06c7312fb",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/venda/registro/VendaRegistroIT.java": {
+    "mtime": 1793758553.0173545,
+    "ast_hash": "ceef364babf959f32b25f22a750a4223",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/web/CaixaWebTest.java": {
+    "mtime": 1793743473.0599704,
+    "ast_hash": "38d705e5bafbc84bb48067b94dfe8e8d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/web/CancelamentoWebTest.java": {
+    "mtime": 1793751226.408079,
+    "ast_hash": "01768e33d2ee18520089cb5e4d4a83c2",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/web/PedidoFiadoWebTest.java": {
+    "mtime": 1793754692.4170165,
+    "ast_hash": "70874b8be40a3162c3804aad1f85c084",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/java/br/com/quack/pdv/web/VendaWebTest.java": {
+    "mtime": 1793747381.7865334,
+    "ast_hash": "93724f0a61499acc2b76160520979813",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/cenarios/caixa.json": {
+    "mtime": 1793743858.0017483,
+    "ast_hash": "0f58a5a5240d300a07205159c07112cd",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/cenarios/cancelamento.json": {
+    "mtime": 1793750957.1536126,
+    "ast_hash": "d5dfa6f88dd2ee7dda9fcffff0f3fb74",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/cenarios/fiado.json": {
+    "mtime": 1793755066.5853765,
+    "ast_hash": "84ccdb476c2b9c248231d6493d99215f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/cenarios/pedido.json": {
+    "mtime": 1793758956.8218224,
+    "ast_hash": "530f4763d389aa892634d06d838c5d3a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/cenarios/vendas.json": {
+    "mtime": 1793758956.8218224,
+    "ast_hash": "7a62344a180e575c22f3e7bdaaf994aa",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/fixtures/response-payload-venda-dotnet.json": {
+    "mtime": 1793747267.244128,
+    "ast_hash": "28b1c642145ce803030570738fde3c68",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/fixtures/venda-dotnet-request.json": {
+    "mtime": 1793747267.3139613,
+    "ast_hash": "5e2a078de7141e6fa20964cb54c9dfd9",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-com-event-id.json": {
+    "mtime": 1793743718.8280106,
+    "ast_hash": "fd28ee7bd54a73fdb9a8e06b3beee849",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-com-payload-hash-enviado.json": {
+    "mtime": 1793743722.6481154,
+    "ast_hash": "915d988fbdd415ac1b0cc00f18825438",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-conflito-mesmo-event-id-outro-valor.json": {
+    "mtime": 1793743721.8332398,
+    "ast_hash": "b3277df9c56c9f552f311ce2d1c9723d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-conflito-payload-hash-diferente.json": {
+    "mtime": 1793743724.1183848,
+    "ast_hash": "275f7f71163ed2ea7fdcb5ec3ae1bf24",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-corpo-vazio-usa-padrao.json": {
+    "mtime": 1793743717.2069585,
+    "ast_hash": "3dc53e4ecde232154bfdf935245745b6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-dois-operadores-ao-mesmo-tempo.json": {
+    "mtime": 1793743738.4842455,
+    "ast_hash": "3f8e47138526bbb7db27b14bd898cb3f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-event-id-com-espacos-e-replay.json": {
+    "mtime": 1793743724.847629,
+    "ast_hash": "87a3efb3c031b6ae92e29b436e66812f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-event-id-sem-turno-novo-replay-apos-fechar.json": {
+    "mtime": 1793743726.6136403,
+    "ast_hash": "d172220068d9f1f594fae7b7cfdc82c6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-ja-aberto-no-mesmo-dia.json": {
+    "mtime": 1793743707.7080593,
+    "ast_hash": "03049f945b9135b4b3997513b943308e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-ja-possui-caixa-aberto.json": {
+    "mtime": 1793743706.137538,
+    "ast_hash": "03049f945b9135b4b3997513b943308e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-mesmo-event-id-em-outra-empresa.json": {
+    "mtime": 1793743725.6938784,
+    "ast_hash": "11875ff33b224677c704508f574b54a0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-normal.json": {
+    "mtime": 1793743704.5403483,
+    "ast_hash": "23102ea310f69b21d89c0b6cd5782d42",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-outra-empresa.json": {
+    "mtime": 1793743740.1168885,
+    "ast_hash": "7a882377c1cea66f19374c99a88887e8",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-replay-com-escala-diferente-do-valor.json": {
+    "mtime": 1793743721.08621,
+    "ast_hash": "f1199ed0077863410487968daffad943",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-replay-mesmo-event-id.json": {
+    "mtime": 1793743720.2642393,
+    "ast_hash": "446dd10fc9a0c6794c794ad72d6cd3e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-replay-payload-hash-em-caixa-alta-e-baixa.json": {
+    "mtime": 1793743723.412804,
+    "ast_hash": "544cf40063f661b43225c049a6e1e2e6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-sessao-do-cliente-com-horario-fora-da-janela.json": {
+    "mtime": 1793743731.3378096,
+    "ast_hash": "18681c68ee83b7b3c04e2b313eeec454",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-sessao-do-cliente-com-horario-invalido.json": {
+    "mtime": 1793743732.9847498,
+    "ast_hash": "e7586bdc28338203d6b2a1cef75ef962",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-sessao-do-cliente-com-turno-ja-aberto.json": {
+    "mtime": 1793743736.751255,
+    "ast_hash": "5252357bd6abad55fa9f2011f4b9b66c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-sessao-do-cliente-formato-invalido.json": {
+    "mtime": 1793743729.516905,
+    "ast_hash": "ac73f71a42c7f5414b16afeef553f0a6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-sessao-do-cliente-reenvio-sem-event-id.json": {
+    "mtime": 1793743734.76971,
+    "ast_hash": "84be09e89fb73d76fffc1f00f58df260",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-sessao-do-cliente.json": {
+    "mtime": 1793743727.565479,
+    "ast_hash": "a2a0716e3e4561ee2310c7fc92f8ec8a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-valor-com-ponto-decimal.json": {
+    "mtime": 1793743715.375366,
+    "ast_hash": "cfb6a9f01771c089bd04ee7dff2d05f4",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-valor-invalido-vira-zero.json": {
+    "mtime": 1793743711.5700283,
+    "ast_hash": "6d722f14bcd700921ce9adaeb0635289",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-valor-negativo.json": {
+    "mtime": 1793743713.541706,
+    "ast_hash": "31de1408a425db3719eda87a72dbfd35",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-valor-no-formato-brasileiro.json": {
+    "mtime": 1793743709.4583187,
+    "ast_hash": "f8dab49774edb520e5def2e751286f42",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/abrir-valor-nulo.json": {
+    "mtime": 1793743743.503682,
+    "ast_hash": "674c558fce416b77bee7ff553164e814",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-apos-sangria-e-reforco.json": {
+    "mtime": 1793743760.198426,
+    "ast_hash": "8bf1ae162502fe969ab618fa1cc86dbd",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-atendente-fecha-o-proprio.json": {
+    "mtime": 1793743792.907493,
+    "ast_hash": "8230bfa627934fe3685c70df1622c042",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-com-event-id.json": {
+    "mtime": 1793743766.929121,
+    "ast_hash": "fab70f340481f3890b47b4af0d1afcf0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-com-payload-hash-enviado.json": {
+    "mtime": 1793743772.315045,
+    "ast_hash": "eaef119414dffa52aa062e32fb0c69e6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-conflito-mesmo-event-id-outro-valor.json": {
+    "mtime": 1793743770.4749517,
+    "ast_hash": "0e641b2ee5c76372938768a29cec069b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-esperado-muda-com-a-sangria.json": {
+    "mtime": 1793743761.7668116,
+    "ast_hash": "8c9413e88a0e2e382c9a0bc0a6caf43f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-gerente-com-falta-e-justificativa.json": {
+    "mtime": 1793743751.7941182,
+    "ast_hash": "7e48512ca56aabc955069af8f5829c39",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-gerente-com-falta-sem-justificativa.json": {
+    "mtime": 1793743748.3999734,
+    "ast_hash": "aba014701674942210421d39dd28b777",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-gerente-com-sobra-e-justificativa.json": {
+    "mtime": 1793743753.6250427,
+    "ast_hash": "3e0b4aa2e34d00468f90600747cbb80d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-gerente-com-sobra-sem-justificativa.json": {
+    "mtime": 1793743749.918126,
+    "ast_hash": "6b25c742b1b87907dab980b9e9688894",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-gerente-fecha-turno-de-outro.json": {
+    "mtime": 1793743791.0734143,
+    "ast_hash": "ccd437fe4b9511a2c99a11649fef1ca8",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-gerente-sem-diferenca.json": {
+    "mtime": 1793743746.835276,
+    "ast_hash": "0373d475817ab4d3c6343079597eeffe",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-justificativa-so-espacos.json": {
+    "mtime": 1793743757.3545842,
+    "ast_hash": "aba014701674942210421d39dd28b777",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-nota-longa-e-acentos.json": {
+    "mtime": 1793743798.2191863,
+    "ast_hash": "395e7d73a70fb3eff96bc8dda61db86c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-nota-nula.json": {
+    "mtime": 1793743801.7245312,
+    "ast_hash": "2d4a75583f2999325b5deb64f6aaf588",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-outra-empresa-sem-turno.json": {
+    "mtime": 1793743794.938525,
+    "ast_hash": "c241c03d325fc02c50e655da3c7534fc",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-replay-mesmo-event-id.json": {
+    "mtime": 1793743768.771568,
+    "ast_hash": "18d10d56cd31bf8708286fd90e82f7dd",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-replay-payload-hash-enviado-outro-valor.json": {
+    "mtime": 1793743774.0889082,
+    "ast_hash": "a4ce5ac7d7a296235762a13e3c3275e3",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sem-diferenca-ignora-justificativa.json": {
+    "mtime": 1793743755.3558378,
+    "ast_hash": "fa27672a1761856f8d8d5ec7094975d7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sem-turno-com-evento-desconhecido.json": {
+    "mtime": 1793743786.8223655,
+    "ast_hash": "c241c03d325fc02c50e655da3c7534fc",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sem-turno-com-evento-em-conflito.json": {
+    "mtime": 1793743785.8693705,
+    "ast_hash": "45169d219d86378e0be05f0b9fe6d326",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sem-turno-com-evento-replay.json": {
+    "mtime": 1793743784.994169,
+    "ast_hash": "092ebee2d5d2f34e1df48fab543874d2",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sem-turno.json": {
+    "mtime": 1793743745.135646,
+    "ast_hash": "c241c03d325fc02c50e655da3c7534fc",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sessao-do-cliente-com-horario.json": {
+    "mtime": 1793743787.8466496,
+    "ast_hash": "327a63df7f8133ccc45863a85e3b9c24",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sessao-do-cliente-formato-invalido.json": {
+    "mtime": 1793743779.4386144,
+    "ast_hash": "ac73f71a42c7f5414b16afeef553f0a6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sessao-do-cliente-inexistente.json": {
+    "mtime": 1793743777.5006669,
+    "ast_hash": "fe2eb57ec610f11be218af0887ca73d7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sessao-do-cliente-ja-fechada-com-evento-novo.json": {
+    "mtime": 1793743784.025798,
+    "ast_hash": "b8be9e12ee6a57208b05c20252e4875d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sessao-do-cliente-ja-fechada-com-evento-replay.json": {
+    "mtime": 1793743783.0593166,
+    "ast_hash": "240e16f030c23792cd766e6e9acc8e23",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sessao-do-cliente-ja-fechada.json": {
+    "mtime": 1793743781.1547203,
+    "ast_hash": "b8be9e12ee6a57208b05c20252e4875d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-sessao-do-cliente.json": {
+    "mtime": 1793743775.880976,
+    "ast_hash": "396fae4bb188bd42cf81a8e43e1aa511",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-turno-de-outro-sem-permissao.json": {
+    "mtime": 1793743789.3831272,
+    "ast_hash": "d26aca70ad0186387ca763805fdd9c07",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-turno-novo-do-caixa-com-falta.json": {
+    "mtime": 1793743765.1882613,
+    "ast_hash": "463ccab7391db068ef8bd958cfd11fdc",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-turno-novo-do-caixa.json": {
+    "mtime": 1793743763.3959987,
+    "ast_hash": "b93a0912602a5b07d785845b96bac929",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-valor-invalido-vira-zero.json": {
+    "mtime": 1793743758.5440507,
+    "ast_hash": "204667553578237ff374e71c5a60fa88",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-valor-no-formato-brasileiro.json": {
+    "mtime": 1793743759.335027,
+    "ast_hash": "d22dcc9315e2c7f721dca44502cfa994",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/fechar-valor-nulo.json": {
+    "mtime": 1793743800.023796,
+    "ast_hash": "0c54290f5a7b2b0d810aa4d6049e2e10",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-admin-sem-turno.json": {
+    "mtime": 1793743815.1578531,
+    "ast_hash": "6b79b9dec4949797802d54e4a0ea15ea",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-atendente-no-proprio-turno.json": {
+    "mtime": 1793743847.11121,
+    "ast_hash": "83c1cd31f2293df4756790cf1625de96",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-com-event-id.json": {
+    "mtime": 1793743832.0804565,
+    "ast_hash": "b2529be5884283f50b060bc463d2e373",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-conflito-mesmo-event-id-outro-motivo.json": {
+    "mtime": 1793743835.546828,
+    "ast_hash": "134ffef34c377e4591429676890314b3",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-conflito-mesmo-event-id-outro-valor.json": {
+    "mtime": 1793743834.7622886,
+    "ast_hash": "134ffef34c377e4591429676890314b3",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-conflito-valor-com-escala-diferente.json": {
+    "mtime": 1793743836.37126,
+    "ast_hash": "134ffef34c377e4591429676890314b3",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-event-id-novo-sem-turno-aberto.json": {
+    "mtime": 1793743841.3609889,
+    "ast_hash": "6b79b9dec4949797802d54e4a0ea15ea",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-mesmo-event-id-em-outra-empresa.json": {
+    "mtime": 1793743843.3168921,
+    "ast_hash": "64daaca5e111733b00bd16836d796787",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-motivo-com-espacos-nas-pontas.json": {
+    "mtime": 1793743826.69605,
+    "ast_hash": "b4b737dc8f8d6c57cbf45a9604eafe03",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-motivo-curto.json": {
+    "mtime": 1793743823.2767582,
+    "ast_hash": "8bc8f115be5046c8aa40427d76a2f650",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-motivo-longo.json": {
+    "mtime": 1793743854.6519465,
+    "ast_hash": "a543abbf5fe185da9ece74cecb58d4af",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-motivo-maior-que-a-coluna.json": {
+    "mtime": 1793743855.681272,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-motivo-so-espacos.json": {
+    "mtime": 1793743824.868039,
+    "ast_hash": "8bc8f115be5046c8aa40427d76a2f650",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-outra-empresa-sem-turno.json": {
+    "mtime": 1793743850.7307708,
+    "ast_hash": "6b79b9dec4949797802d54e4a0ea15ea",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-outro-operador-so-mexe-no-proprio-turno.json": {
+    "mtime": 1793743845.2552214,
+    "ast_hash": "6b79b9dec4949797802d54e4a0ea15ea",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-reforco-nao-checa-saldo.json": {
+    "mtime": 1793743831.2393537,
+    "ast_hash": "649033237a8ae185382f351bf3ba2467",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-reforco.json": {
+    "mtime": 1793743804.277276,
+    "ast_hash": "11b39697398cc88ecbfb66e31342fd48",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-replay-com-tipo-em-minusculas-e-espacos.json": {
+    "mtime": 1793743833.8917122,
+    "ast_hash": "7816cc25ac6dbb20c799ea2bcd8686b6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-replay-mesmo-event-id.json": {
+    "mtime": 1793743833.022457,
+    "ast_hash": "2586a24d63867cf7361c56dd030eabca",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-replay-mesmo-hash-outro-valor.json": {
+    "mtime": 1793743837.9805129,
+    "ast_hash": "4dfa73e60835a0fca72b0558d2fc88fa",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-replay-sem-turno-aberto.json": {
+    "mtime": 1793743839.5622375,
+    "ast_hash": "3261cae105de4192a83a6e7f431debf2",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-sangria-apos-reforco-cobre.json": {
+    "mtime": 1793743830.421729,
+    "ast_hash": "4c416372461a73505219c2e81efbee8e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-sangria-depois-de-outra-sangria.json": {
+    "mtime": 1793743848.927107,
+    "ast_hash": "5dd483ca5f68991cb22350549380377d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-sangria-igual-ao-caixa.json": {
+    "mtime": 1793743828.7038906,
+    "ast_hash": "8f56764ae3275c87d962d937acbebddd",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-sangria-maior-que-o-caixa.json": {
+    "mtime": 1793743827.9040227,
+    "ast_hash": "43ea20ee7dc970519dd474a6e4da1f6a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-sangria-um-centavo-acima.json": {
+    "mtime": 1793743829.5873392,
+    "ast_hash": "43ea20ee7dc970519dd474a6e4da1f6a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-sangria.json": {
+    "mtime": 1793743803.3973267,
+    "ast_hash": "f4644b4173c5e2550ff2ca2b7d48e230",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-sem-turno.json": {
+    "mtime": 1793743813.5103886,
+    "ast_hash": "6b79b9dec4949797802d54e4a0ea15ea",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-com-cedilha.json": {
+    "mtime": 1793743812.324402,
+    "ast_hash": "c27c4e00aa0bda7dddceb5a743a7252c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-com-espacos.json": {
+    "mtime": 1793743805.8924277,
+    "ast_hash": "b95c34b45df5bf70898a7737fd76e39e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-em-minusculas.json": {
+    "mtime": 1793743805.0579338,
+    "ast_hash": "c35d28652cda5faf7382803284d0a25b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-invalido.json": {
+    "mtime": 1793743810.7787664,
+    "ast_hash": "c27c4e00aa0bda7dddceb5a743a7252c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-lista-de-nomes.json": {
+    "mtime": 1793743810.0241656,
+    "ast_hash": "668c4f794a5c042a8a87325dfc80f5cc",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-nulo.json": {
+    "mtime": 1793743853.2138662,
+    "ast_hash": "3f111e48d0f65754f1e70f4266b47ca3",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-numerico-dois.json": {
+    "mtime": 1793743807.4444134,
+    "ast_hash": "d3e03eca9e818cab83e7bf08895dcd48",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-numerico-indefinido.json": {
+    "mtime": 1793743808.3318925,
+    "ast_hash": "f0a737304f457a6e93683aa16bfcb548",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-numerico-um.json": {
+    "mtime": 1793743806.7454321,
+    "ast_hash": "8ceb61ae8df9a07cb0985991901f4f75",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-numerico-zero.json": {
+    "mtime": 1793743809.1969085,
+    "ast_hash": "04ff7283737f94c77043f44550514a8c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-tipo-vazio.json": {
+    "mtime": 1793743811.5801268,
+    "ast_hash": "c27c4e00aa0bda7dddceb5a743a7252c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-valor-invalido.json": {
+    "mtime": 1793743820.2624242,
+    "ast_hash": "0c216ab6d828862fbdef16201f9deaee",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-valor-negativo.json": {
+    "mtime": 1793743818.3141904,
+    "ast_hash": "0c216ab6d828862fbdef16201f9deaee",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-valor-no-formato-brasileiro.json": {
+    "mtime": 1793743821.7066133,
+    "ast_hash": "e8c930c8c85377c81086b712b4b9746a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimento-valor-zero.json": {
+    "mtime": 1793743816.6866112,
+    "ast_hash": "0c216ab6d828862fbdef16201f9deaee",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-atendente-vazio.json": {
+    "mtime": 1793743680.219814,
+    "ast_hash": "40bf820a8d7d2854a734a355ceaaa139",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-caixa-so-os-proprios.json": {
+    "mtime": 1793743678.371982,
+    "ast_hash": "134aab703cd7092d9ca2803ba25b331a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-data-com-hora.json": {
+    "mtime": 1793743691.581731,
+    "ast_hash": "134aab703cd7092d9ca2803ba25b331a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-data-no-formato-americano.json": {
+    "mtime": 1793743693.7715971,
+    "ast_hash": "3fecf74a399918b0a2456a0de0333903",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-data-no-formato-brasileiro.json": {
+    "mtime": 1793743695.5703533,
+    "ast_hash": "40bf820a8d7d2854a734a355ceaaa139",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-datas-invalidas-usam-o-padrao.json": {
+    "mtime": 1793743688.0173447,
+    "ast_hash": "40bf820a8d7d2854a734a355ceaaa139",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-gerente-periodo.json": {
+    "mtime": 1793743676.5255015,
+    "ast_hash": "3fecf74a399918b0a2456a0de0333903",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-gerente-ve-os-de-todos-hoje.json": {
+    "mtime": 1793743702.5997422,
+    "ast_hash": "1ee682ca46dc8812378c140eee99d854",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-incluem-os-novos-do-dia.json": {
+    "mtime": 1793743700.8151648,
+    "ast_hash": "5783989d62b3af9c6e21cdb9605b464d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-outra-empresa.json": {
+    "mtime": 1793743697.3525908,
+    "ast_hash": "40bf820a8d7d2854a734a355ceaaa139",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-periodo-invertido.json": {
+    "mtime": 1793743686.1469803,
+    "ast_hash": "a0e272a693aff98cafb824a5184f8997",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-sem-parametros.json": {
+    "mtime": 1793743689.983451,
+    "ast_hash": "40bf820a8d7d2854a734a355ceaaa139",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-so-data-inicial-usa-hoje-como-fim.json": {
+    "mtime": 1793743684.0664487,
+    "ast_hash": "3fecf74a399918b0a2456a0de0333903",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/movimentos-um-dia.json": {
+    "mtime": 1793743682.0099454,
+    "ast_hash": "a8bcae12ba55b2aa49670f5dcda91675",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/sessao-admin-ve-qualquer.json": {
+    "mtime": 1793743667.295519,
+    "ast_hash": "a3908a0c8add258d36656991be76cf2c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/sessao-caixa-nao-ve-turno-do-gerente.json": {
+    "mtime": 1793743668.91303,
+    "ast_hash": "f275c94edfbd3547de45fc1ecd7dbea6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/sessao-dono-turno-fechado.json": {
+    "mtime": 1793743661.2717679,
+    "ast_hash": "f48479e958cef778bef0e0e71fb34f57",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/sessao-fechada-por-outro-operador.json": {
+    "mtime": 1793743675.060142,
+    "ast_hash": "f275c94edfbd3547de45fc1ecd7dbea6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/sessao-gerente-turno-aberto.json": {
+    "mtime": 1793743665.7297933,
+    "ast_hash": "a3908a0c8add258d36656991be76cf2c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/sessao-gerente-ve-turno-fechado-de-outro.json": {
+    "mtime": 1793743664.2317867,
+    "ast_hash": "f48479e958cef778bef0e0e71fb34f57",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/sessao-inexistente.json": {
+    "mtime": 1793743670.2947073,
+    "ast_hash": "f275c94edfbd3547de45fc1ecd7dbea6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/sessao-outra-empresa-nao-ve.json": {
+    "mtime": 1793743671.9373133,
+    "ast_hash": "f275c94edfbd3547de45fc1ecd7dbea6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/sessao-outro-operador-nao-ve.json": {
+    "mtime": 1793743662.6821613,
+    "ast_hash": "f275c94edfbd3547de45fc1ecd7dbea6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-admin-sem-turno-ve-o-ultimo.json": {
+    "mtime": 1793743645.5661933,
+    "ast_hash": "5dc885b663168a8cd9f293c53884dc1f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-atendente-com-tres-turnos-abertos.json": {
+    "mtime": 1793743657.8637064,
+    "ast_hash": "1afc62fc876bae5cbeb3440875a1ef74",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-atendente-sem-turno.json": {
+    "mtime": 1793743642.020016,
+    "ast_hash": "5448e57f5f9c23ba69a6ccab47a10598",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-caixa-apos-fechar.json": {
+    "mtime": 1793743654.0000021,
+    "ast_hash": "215fda26c8bc637473fdd86d346c0eff",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-caixa-com-turno-aberto-hoje.json": {
+    "mtime": 1793743652.4096012,
+    "ast_hash": "d3f0c76a469b446e412038491d94fa73",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-caixa-sem-turno.json": {
+    "mtime": 1793743640.1606376,
+    "ast_hash": "0fe55f744cc1cf5839429be3d7e52c9e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-com-sangria-e-reforco-no-turno.json": {
+    "mtime": 1793743659.589964,
+    "ast_hash": "6bb33878e9c56af2056f23890e59324c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-gerente-com-tres-turnos-abertos.json": {
+    "mtime": 1793743655.8734548,
+    "ast_hash": "a21ffd2483f88d75b5193666cf39cd16",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-gerente-turno-expirado.json": {
+    "mtime": 1793743643.6752005,
+    "ast_hash": "2d5c6d68f0186c977dea17f8c1ac8a03",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-outra-empresa.json": {
+    "mtime": 1793743647.2545772,
+    "ast_hash": "c6a05af6640517e9d0c6e4e97a8236a3",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/caixa/status-token-invalido.json": {
+    "mtime": 1793743650.7130349,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-admin-filtro-venda.json": {
+    "mtime": 1793750025.4952714,
+    "ast_hash": "d6f9119f5c14b550965186bd5a50101e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-ate-mais-um-dia-exclui.json": {
+    "mtime": 1793750036.7406137,
+    "ast_hash": "7375e6be1c6dd41a0c8021f4829ce8af",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-cancelamento-autorizado-na-trilha.json": {
+    "mtime": 1793750029.129484,
+    "ast_hash": "59ec984ec02e2152d92f6d3723828e08",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-data-invalida-ignorada.json": {
+    "mtime": 1793750040.2994065,
+    "ast_hash": "632933ca5b1b2062fda5b04b61afb274",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-de-futuro-vazia.json": {
+    "mtime": 1793750038.4075823,
+    "ast_hash": "7375e6be1c6dd41a0c8021f4829ce8af",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-filtro-de-ate.json": {
+    "mtime": 1793750035.1182785,
+    "ast_hash": "632933ca5b1b2062fda5b04b61afb274",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-gerente-seed.json": {
+    "mtime": 1793750023.8343167,
+    "ast_hash": "632933ca5b1b2062fda5b04b61afb274",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-justificativa-curta-na-trilha.json": {
+    "mtime": 1793750032.0030584,
+    "ast_hash": "5253c7fff6f1e7268eb4d5add8f8699e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-nota-autorizada-na-trilha.json": {
+    "mtime": 1793750033.4374688,
+    "ast_hash": "60ed374e72d12599e275262bf7d56174",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-outra-empresa.json": {
+    "mtime": 1793750047.1103027,
+    "ast_hash": "7375e6be1c6dd41a0c8021f4829ce8af",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-perfil-atendente.json": {
+    "mtime": 1793750043.8388133,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-perfil-caixa.json": {
+    "mtime": 1793750041.9899325,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-tentativa-negada-na-trilha.json": {
+    "mtime": 1793750027.201941,
+    "ast_hash": "9a07589e0d56132a1fc5a461af12b9b4",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/auditoria-venda-inexistente-negada.json": {
+    "mtime": 1793750030.5922925,
+    "ast_hash": "d86577e869cb1970f83b598841b631bc",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-duas-vezes-seguidas.json": {
+    "mtime": 1793750004.3513627,
+    "ast_hash": "2cb4bbd908f95dc3a7cb80463919c10a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-fiado-estornado.json": {
+    "mtime": 1793750013.6505258,
+    "ast_hash": "00569ad786149b6a30a35f5359c165ba",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-fiado-pago-em-parte.json": {
+    "mtime": 1793750015.5498052,
+    "ast_hash": "4cecfab2ec6b892fc990e18ae3c12e15",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-ja-cancelada.json": {
+    "mtime": 1793750002.3438907,
+    "ast_hash": "2cb4bbd908f95dc3a7cb80463919c10a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-justificativa-curta.json": {
+    "mtime": 1793749990.8365972,
+    "ast_hash": "d43b09d57ffba0cedbb1e2898e5b7669",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-justificativa-so-espacos.json": {
+    "mtime": 1793749992.4520328,
+    "ast_hash": "d43b09d57ffba0cedbb1e2898e5b7669",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-nota-autorizada.json": {
+    "mtime": 1793750010.0486157,
+    "ast_hash": "85816b298135a057f69a80bf4360d9aa",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-nota-pendente-com-aviso.json": {
+    "mtime": 1793750011.8139565,
+    "ast_hash": "37de7007f0e9d544ed79fb747b3b3949",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-ok-atendente.json": {
+    "mtime": 1793750022.0510986,
+    "ast_hash": "14541abf1c576132b31ae86b8bad296d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-ok-com-estorno.json": {
+    "mtime": 1793749983.992204,
+    "ast_hash": "515cdb87d9d7fc7b317c1d9a80e941e5",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-ok-movimentacao-devolucao.json": {
+    "mtime": 1793749987.4985385,
+    "ast_hash": "4dcc282bc89902be6aefa2f97315ce5f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-ok-por-gerente-logado.json": {
+    "mtime": 1793749985.7103498,
+    "ast_hash": "1da19913ed7ca94caa8155f2a917d5a6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-ok-venda-nova-dois-itens.json": {
+    "mtime": 1793749989.252292,
+    "ast_hash": "786cc6fbf8a6b11432fa3e9eb4884230",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-outra-empresa.json": {
+    "mtime": 1793750020.2626867,
+    "ast_hash": "7878297b8d675c026540ebdf2a7a9945",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-perfil-estoquista.json": {
+    "mtime": 1793750018.5656357,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-senha-errada.json": {
+    "mtime": 1793749994.1964734,
+    "ast_hash": "c734e4292408abe7d647ee90a9daa1d8",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-supervisor-inexistente.json": {
+    "mtime": 1793749998.95412,
+    "ast_hash": "7878297b8d675c026540ebdf2a7a9945",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-supervisor-sem-perfil.json": {
+    "mtime": 1793749995.8244803,
+    "ast_hash": "f01b727bf9102a2680759081879b38d7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-supervisor-vazio.json": {
+    "mtime": 1793749997.3229864,
+    "ast_hash": "ede9f559390bee142fcff9728bd98e8b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-venda-corrigida.json": {
+    "mtime": 1793750006.3862782,
+    "ast_hash": "8b673499ec838996b4011f7b0e9ff465",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-venda-inexistente.json": {
+    "mtime": 1793750000.6661148,
+    "ast_hash": "2beb670f2e45c6f99c66daf882332e7e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/cancelar-venda-nova-da-correcao.json": {
+    "mtime": 1793750008.4186008,
+    "ast_hash": "c96643d9f07ac4a0c7d520761d6d2465",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-administrador-sem-gerente.json": {
+    "mtime": 1793750078.524207,
+    "ast_hash": "4afcbad7718c95da5c61fbb7eac3b47e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-codigo-minusculo-e-espacos.json": {
+    "mtime": 1793750073.1258018,
+    "ast_hash": "69627fbf299f20aa108bb78703e19cda",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-com-gerente-ok.json": {
+    "mtime": 1793750071.349412,
+    "ast_hash": "4ecaeb0e7fba75ad06c9b4316c60e572",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-detalhe-da-venda-nova.json": {
+    "mtime": 1793750993.335269,
+    "ast_hash": "768b98fdb3df77740225ceef851c50e8",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-detalhe-da-venda-original.json": {
+    "mtime": 1793750995.5722754,
+    "ast_hash": "ec4e11038569479cbf5edcc9a2d77f83",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-detalhe-original-com-nota-pendente-vira-status-3.json": {
+    "mtime": 1793750998.1867342,
+    "ast_hash": "ea09434be62c3358f9bff03e5b39502c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-duas-vezes.json": {
+    "mtime": 1793750093.610335,
+    "ast_hash": "5522892837fc0cececbd7f9aefeb5d2e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-fiado-reajusta-debito.json": {
+    "mtime": 1793750107.6696882,
+    "ast_hash": "a057df661336674c1ec6eab21bd86016",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-item-inexistente.json": {
+    "mtime": 1793750091.4686296,
+    "ast_hash": "991d0ca196bbfd817fec79a79bb7cf16",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-justificativa-curta.json": {
+    "mtime": 1793750080.277187,
+    "ast_hash": "d43b09d57ffba0cedbb1e2898e5b7669",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-movimentacoes-do-produto-removido.json": {
+    "mtime": 1793750105.545359,
+    "ast_hash": "30265208e03065e1a2676d6462294625",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-outra-empresa.json": {
+    "mtime": 1793750098.7663033,
+    "ast_hash": "7878297b8d675c026540ebdf2a7a9945",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-perfil-estoquista.json": {
+    "mtime": 1793750096.9168937,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-remover-todos-os-itens.json": {
+    "mtime": 1793750089.4349754,
+    "ast_hash": "4afcbad7718c95da5c61fbb7eac3b47e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-sem-gerente-com-perfil-financeiro.json": {
+    "mtime": 1793750076.7739625,
+    "ast_hash": "25d4926e02f3c5ea5dbe2b0980e34d87",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-sem-gerente-sem-perfil-financeiro.json": {
+    "mtime": 1793750074.8820686,
+    "ast_hash": "8649c2d12f789e900edb230f0b2a228b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-sem-produtos.json": {
+    "mtime": 1793750082.26149,
+    "ast_hash": "44029d0c33da0dd316e07eb2ea626d4a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-senha-errada.json": {
+    "mtime": 1793750084.3300915,
+    "ast_hash": "c734e4292408abe7d647ee90a9daa1d8",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-venda-cancelada.json": {
+    "mtime": 1793750087.8957684,
+    "ast_hash": "603b51cf3059609696d9f9fd5ce84cef",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/corrigir-venda-inexistente.json": {
+    "mtime": 1793750086.3159752,
+    "ast_hash": "a04bb35fcf83ed220334a31a98d28ee6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-ate-mais-um-dia-exclui.json": {
+    "mtime": 1793750057.4275014,
+    "ast_hash": "ed4a5a1db2587ce6fc1dca98c2513d1b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-atendente.json": {
+    "mtime": 1793750064.3748646,
+    "ast_hash": "9ce65eba60a3710aa8a80498667ee2f9",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-data-invalida-ignorada.json": {
+    "mtime": 1793750062.6477501,
+    "ast_hash": "9ce65eba60a3710aa8a80498667ee2f9",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-de-futuro-vazia.json": {
+    "mtime": 1793750060.984442,
+    "ast_hash": "ed4a5a1db2587ce6fc1dca98c2513d1b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-depois-de-cancelar.json": {
+    "mtime": 1793750052.160483,
+    "ast_hash": "5062e78343b5a2eb2f14584a4fb8a7c7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-filtro-de-ate.json": {
+    "mtime": 1793750055.8781266,
+    "ast_hash": "9ce65eba60a3710aa8a80498667ee2f9",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-gerente.json": {
+    "mtime": 1793750050.433196,
+    "ast_hash": "9ce65eba60a3710aa8a80498667ee2f9",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-outra-empresa.json": {
+    "mtime": 1793750069.2610035,
+    "ast_hash": "ed4a5a1db2587ce6fc1dca98c2513d1b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-perfil-estoquista.json": {
+    "mtime": 1793750066.2408159,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-seed.json": {
+    "mtime": 1793750048.820271,
+    "ast_hash": "9ce65eba60a3710aa8a80498667ee2f9",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/cancelamento/lista-cancelamentos-venda-com-dois-itens.json": {
+    "mtime": 1793750991.0814338,
+    "ast_hash": "296377f516b4642f0d3a71cc931f3fbb",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-busca-com-espacos-nas-pontas.json": {
+    "mtime": 1793754447.4008317,
+    "ast_hash": "36f6bf46387c0be61301a47813c82979",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-busca-curinga.json": {
+    "mtime": 1793754449.6289866,
+    "ast_hash": "36f6bf46387c0be61301a47813c82979",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-busca-maiusculas.json": {
+    "mtime": 1793754445.1644142,
+    "ast_hash": "36f6bf46387c0be61301a47813c82979",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-busca-por-documento.json": {
+    "mtime": 1793754446.6899066,
+    "ast_hash": "36f6bf46387c0be61301a47813c82979",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-busca-por-nome.json": {
+    "mtime": 1793754443.608536,
+    "ast_hash": "36f6bf46387c0be61301a47813c82979",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-busca-sem-resultado.json": {
+    "mtime": 1793754449.015815,
+    "ast_hash": "ce489508acb5ea6f2c1b11d547333b00",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-busca-so-espacos-lista-tudo.json": {
+    "mtime": 1793754448.1450815,
+    "ast_hash": "36f6bf46387c0be61301a47813c82979",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-cliente-sem-saldo-nao-aparece.json": {
+    "mtime": 1793754450.2423663,
+    "ast_hash": "ce489508acb5ea6f2c1b11d547333b00",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-lista-do-seed.json": {
+    "mtime": 1793754438.4654593,
+    "ast_hash": "36f6bf46387c0be61301a47813c82979",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-ordenados-por-saldo-e-sem-compra.json": {
+    "mtime": 1793754441.988408,
+    "ast_hash": "edb9a92c92b6fd109db9d3d32fceec32",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-outra-empresa.json": {
+    "mtime": 1793754450.9294772,
+    "ast_hash": "f97cc1050cf21274ebf3035d977f78b7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-pelo-gerente.json": {
+    "mtime": 1793754440.3571813,
+    "ast_hash": "36f6bf46387c0be61301a47813c82979",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/devedores-perfil-atendente-nao-pode.json": {
+    "mtime": 1793754451.6138308,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-cliente-de-outra-empresa.json": {
+    "mtime": 1793754430.7235825,
+    "ast_hash": "348023b298f573d812e02462f6e84b70",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-cliente-inexistente.json": {
+    "mtime": 1793754428.9423127,
+    "ast_hash": "348023b298f573d812e02462f6e84b70",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-cliente-sem-movimentos.json": {
+    "mtime": 1793754427.3058338,
+    "ast_hash": "348023b298f573d812e02462f6e84b70",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-com-offset-negativo.json": {
+    "mtime": 1793754415.6483986,
+    "ast_hash": "0d59f9c338fedbe0f2b638f6939d40ad",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-com-venda-fiado-e-estorno.json": {
+    "mtime": 1793754432.164924,
+    "ast_hash": "727d354589d6740fe55c5efb0026df71",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-com-z.json": {
+    "mtime": 1793754417.1680968,
+    "ast_hash": "0d59f9c338fedbe0f2b638f6939d40ad",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-data-fim-invalida.json": {
+    "mtime": 1793754423.5637515,
+    "ast_hash": "35c9ab2e9331b123716f78988621cc74",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-data-invalida.json": {
+    "mtime": 1793754422.1275525,
+    "ast_hash": "31817368d3c2a9b50affea7e25dab2f4",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-data-vazia.json": {
+    "mtime": 1793754425.407776,
+    "ast_hash": "4b9f00ce37ab53da6230345f5fcc8cd5",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-inicio-maior-que-fim.json": {
+    "mtime": 1793754420.4979877,
+    "ast_hash": "348023b298f573d812e02462f6e84b70",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-limite-inicial-um-segundo-depois.json": {
+    "mtime": 1793754413.8350937,
+    "ast_hash": "0d59f9c338fedbe0f2b638f6939d40ad",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-limites-inclusivos.json": {
+    "mtime": 1793754412.2533095,
+    "ast_hash": "4b9f00ce37ab53da6230345f5fcc8cd5",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-pelo-administrador.json": {
+    "mtime": 1793754402.2852626,
+    "ast_hash": "4b9f00ce37ab53da6230345f5fcc8cd5",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-pelo-gerente.json": {
+    "mtime": 1793754405.5953693,
+    "ast_hash": "4b9f00ce37ab53da6230345f5fcc8cd5",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-perfil-atendente-nao-pode.json": {
+    "mtime": 1793754433.6382844,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-perfil-estoquista-nao-pode.json": {
+    "mtime": 1793754435.2304845,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-periodo-que-cobre-tudo.json": {
+    "mtime": 1793754410.4476502,
+    "ast_hash": "4b9f00ce37ab53da6230345f5fcc8cd5",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-periodo-sem-movimentos.json": {
+    "mtime": 1793754418.8470783,
+    "ast_hash": "348023b298f573d812e02462f6e84b70",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-sem-periodo.json": {
+    "mtime": 1793754400.661824,
+    "ast_hash": "4b9f00ce37ab53da6230345f5fcc8cd5",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-so-data-fim.json": {
+    "mtime": 1793754408.7663648,
+    "ast_hash": "68c0432ed7a9af799c452d6cfaa6dd3d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/extrato-so-data-inicio.json": {
+    "mtime": 1793754407.3296988,
+    "ast_hash": "0d59f9c338fedbe0f2b638f6939d40ad",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-aparece-no-extrato.json": {
+    "mtime": 1793754397.1623578,
+    "ast_hash": "7b39b09e03bd0751aa56873093d050c2",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-atualiza-saldo-visto-nos-devedores.json": {
+    "mtime": 1793754393.736054,
+    "ast_hash": "fec94eb4b994e85b818986fd3960e13f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-auditoria-nao-aparece-no-resumo.json": {
+    "mtime": 1793754399.0547266,
+    "ast_hash": "7a02e41406bf8dcf648a99a27e2c1176",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-centavo-a-mais-na-tolerancia.json": {
+    "mtime": 1793754352.4732928,
+    "ast_hash": "04f49d7fb2a13d486426bea5fcbb0360",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-cliente-com-espacos.json": {
+    "mtime": 1793754350.9261918,
+    "ast_hash": "a1180cec7384e2312a73c87867ce1758",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-cliente-de-outra-empresa.json": {
+    "mtime": 1793754374.6779046,
+    "ast_hash": "c9d955a1bbcc940b6a8385ad2eb4bf55",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-cliente-inexistente.json": {
+    "mtime": 1793754373.013428,
+    "ast_hash": "dd3df3f30f7a1da4eeaeaaca5463f0f9",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-cliente-nulo.json": {
+    "mtime": 1793754376.3384266,
+    "ast_hash": "01b98fd660fb7d75a2ee20608c63c179",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-cliente-sem-saldo.json": {
+    "mtime": 1793754360.8807874,
+    "ast_hash": "628cc82f914508d80151827021586f01",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-cliente-so-espacos.json": {
+    "mtime": 1793754369.855149,
+    "ast_hash": "cb8d321f0a1866a0207d75c676ed68d0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-cliente-vazio-e-valor-zero.json": {
+    "mtime": 1793754371.3561301,
+    "ast_hash": "cb8d321f0a1866a0207d75c676ed68d0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-cliente-vazio.json": {
+    "mtime": 1793754368.1437223,
+    "ast_hash": "cb8d321f0a1866a0207d75c676ed68d0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-corpo-vazio.json": {
+    "mtime": 1793754383.3171854,
+    "ast_hash": "cb8d321f0a1866a0207d75c676ed68d0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-duas-vezes.json": {
+    "mtime": 1793754355.7530253,
+    "ast_hash": "c1cf28b4db7631b06af98780b4d1e6e9",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-forma-ausente.json": {
+    "mtime": 1793754347.5311587,
+    "ast_hash": "131ad82d90eb9adb856d31181cf79dc9",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-forma-em-branco-vira-dinheiro.json": {
+    "mtime": 1793754345.8306127,
+    "ast_hash": "ff9e9a30a9052055a708072981c33d9d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-forma-nula.json": {
+    "mtime": 1793754378.140606,
+    "ast_hash": "0617c5fe1ae60a84ad6d9f7eaffe3805",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-maior-que-o-saldo-com-milhar.json": {
+    "mtime": 1793754359.1139526,
+    "ast_hash": "3da016a3b037a0bf95485c393605e8da",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-maior-que-o-saldo.json": {
+    "mtime": 1793754357.3652523,
+    "ast_hash": "f5a72fd7bebca1ca50fb07dcd7678b9f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-observacao-com-espacos.json": {
+    "mtime": 1793754349.2532344,
+    "ast_hash": "837f2c292922b450f34b8f71c67e4598",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-parcial.json": {
+    "mtime": 1793754341.8861008,
+    "ast_hash": "85350c47e2d0a323a951ad1cadf81fa8",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-perfil-atendente-nao-pode.json": {
+    "mtime": 1793754386.8604066,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-perfil-estoquista-nao-pode.json": {
+    "mtime": 1793754388.5526574,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-perfil-gerente-so-consulta.json": {
+    "mtime": 1793754385.1036718,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-token-invalido.json": {
+    "mtime": 1793754391.8538153,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-total-pelo-administrador.json": {
+    "mtime": 1793754343.872672,
+    "ast_hash": "10d2c4e06b2fe508d4612756da811abe",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-total-tira-da-lista-de-devedores.json": {
+    "mtime": 1793754395.392485,
+    "ast_hash": "ce489508acb5ea6f2c1b11d547333b00",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-valor-ausente.json": {
+    "mtime": 1793754366.4201555,
+    "ast_hash": "1aa435673bd4d3a6fe73109f2c559568",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-valor-em-texto.json": {
+    "mtime": 1793754381.6790516,
+    "ast_hash": "be6a1948ea0fab77300c620c21e3ca5d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-valor-fracionado.json": {
+    "mtime": 1793754354.0814033,
+    "ast_hash": "5d0137256f04fd02242839effc53ed16",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-valor-negativo.json": {
+    "mtime": 1793754364.5194478,
+    "ast_hash": "1aa435673bd4d3a6fe73109f2c559568",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/receber-valor-zero.json": {
+    "mtime": 1793754362.7871165,
+    "ast_hash": "1aa435673bd4d3a6fe73109f2c559568",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/resumo-devedor-sem-compra-nao-entra-nas-faixas.json": {
+    "mtime": 1793754459.0509975,
+    "ast_hash": "5b354e2d158c1a1cdb666c06b707eeeb",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/resumo-do-seed.json": {
+    "mtime": 1793754453.9235156,
+    "ast_hash": "9540de1ca7be54241a51fd548e8f492e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/resumo-faixas-de-30-e-60-dias.json": {
+    "mtime": 1793754457.2787929,
+    "ast_hash": "1df8ac73115a8dc7f3e6b4beb6d599b1",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/resumo-outra-empresa.json": {
+    "mtime": 1793754462.2123663,
+    "ast_hash": "b35258b13f818f8be563fb67c5dcd37a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/resumo-pelo-gerente.json": {
+    "mtime": 1793754455.4626033,
+    "ast_hash": "9540de1ca7be54241a51fd548e8f492e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/resumo-perfil-atendente-nao-pode.json": {
+    "mtime": 1793754464.0710905,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/resumo-perfil-estoquista-nao-pode.json": {
+    "mtime": 1793754465.7572787,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/fiado/resumo-sem-devedores.json": {
+    "mtime": 1793754460.6610417,
+    "ast_hash": "48d20945999a47fcd49532e4bcc85759",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/cancelar-inexistente.json": {
+    "mtime": 1793753880.5610156,
+    "ast_hash": "e6ab4816c6b6bb28301cb18f2f513f32",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/cancelar-ja-cancelado.json": {
+    "mtime": 1793753882.416725,
+    "ast_hash": "e6ab4816c6b6bb28301cb18f2f513f32",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/cancelar-ja-finalizado.json": {
+    "mtime": 1793753883.9068618,
+    "ast_hash": "e6ab4816c6b6bb28301cb18f2f513f32",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/cancelar-nao-mexe-no-estoque.json": {
+    "mtime": 1793753887.8345642,
+    "ast_hash": "6223e1c664b4d79daac1129e639a8b1c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/cancelar-ok.json": {
+    "mtime": 1793753875.8058197,
+    "ast_hash": "efa25239f0f12993b66f4732f5baa11f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/cancelar-outra-empresa.json": {
+    "mtime": 1793753885.0744994,
+    "ast_hash": "e6ab4816c6b6bb28301cb18f2f513f32",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/cancelar-pedido-criado-agora.json": {
+    "mtime": 1793753879.109154,
+    "ast_hash": "efa25239f0f12993b66f4732f5baa11f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/cancelar-pelo-gerente.json": {
+    "mtime": 1793753877.504933,
+    "ast_hash": "efa25239f0f12993b66f4732f5baa11f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/cancelar-perfil-caixa-nao-pode.json": {
+    "mtime": 1793753885.704682,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/cancelar-perfil-estoquista-nao-pode.json": {
+    "mtime": 1793753886.380295,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/consultar-cancelado.json": {
+    "mtime": 1793753844.6504674,
+    "ast_hash": "e593c25c165da788103314961702bdd0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/consultar-criado-agora.json": {
+    "mtime": 1793753845.443404,
+    "ast_hash": "41508633510aa4b70603035af4c6819a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/consultar-finalizado.json": {
+    "mtime": 1793753843.9043481,
+    "ast_hash": "27a14ed1fe4ec92130f57077104634c8",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/consultar-inexistente.json": {
+    "mtime": 1793753839.2351522,
+    "ast_hash": "b69fdb8d2f708d8a50c22ae5b8ea6638",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/consultar-numero-nao-numerico.json": {
+    "mtime": 1793753840.9360735,
+    "ast_hash": "b69fdb8d2f708d8a50c22ae5b8ea6638",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/consultar-ok.json": {
+    "mtime": 1793753835.9212272,
+    "ast_hash": "66f8e9a737fe66d486541631ab6f320c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/consultar-outra-empresa.json": {
+    "mtime": 1793753842.6277585,
+    "ast_hash": "b69fdb8d2f708d8a50c22ae5b8ea6638",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/consultar-pelo-atendente.json": {
+    "mtime": 1793753837.598773,
+    "ast_hash": "66f8e9a737fe66d486541631ab6f320c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/consultar-perfil-estoquista.json": {
+    "mtime": 1793753843.249146,
+    "ast_hash": "66f8e9a737fe66d486541631ab6f320c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-agrupa-itens-repetidos.json": {
+    "mtime": 1793753804.3956919,
+    "ast_hash": "b86b3d6b2b56575b49f82dfa1a5302ee",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-corpo-vazio.json": {
+    "mtime": 1793753811.659394,
+    "ast_hash": "65a3d7ab3b964ba24c064b06a0241b07",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-itens-nulo.json": {
+    "mtime": 1793753820.3184476,
+    "ast_hash": "774e74e3f6f5b4ddfc771bd9688a0830",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-nao-gera-movimentacao-de-estoque.json": {
+    "mtime": 1793753824.09395,
+    "ast_hash": "6223e1c664b4d79daac1129e639a8b1c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-nome-nulo.json": {
+    "mtime": 1793753819.4936473,
+    "ast_hash": "4bd3c5c7254c1882bb6bc525d805afae",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-numero-sequencial.json": {
+    "mtime": 1793753808.1483881,
+    "ast_hash": "ae6c9db05c75a959cd54fb1c1162e29d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-ok.json": {
+    "mtime": 1793753801.9631486,
+    "ast_hash": "05a438eed83f27cee0d5bb85e2230b50",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-outra-empresa-nao-ve-produto.json": {
+    "mtime": 1793753824.7839246,
+    "ast_hash": "a07dbb356e32affc958532b9f13e1899",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-perfil-caixa-nao-pode.json": {
+    "mtime": 1793753821.6219146,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-perfil-estoquista-nao-pode.json": {
+    "mtime": 1793753822.3017187,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-por-administrador-sem-cliente.json": {
+    "mtime": 1793753803.0954025,
+    "ast_hash": "e5e27e011ecdbc78c47d2a91ec6e12ee",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-por-gerente-nome-em-branco.json": {
+    "mtime": 1793753803.725557,
+    "ast_hash": "a05ab89433bdfdea5877b8e89d623f50",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-preco-de-venda-zero-usa-custo.json": {
+    "mtime": 1793753806.6177974,
+    "ast_hash": "b43e86f69d99a95089cae93c5522662f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-produto-inexistente.json": {
+    "mtime": 1793753813.0549185,
+    "ast_hash": "e325e9aca6da9beaf6c816582788a282",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-quantidade-fracionada-arredonda.json": {
+    "mtime": 1793753805.1574438,
+    "ast_hash": "ec1ac5b9ea349de2322d351e0609fb42",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-quantidade-zero.json": {
+    "mtime": 1793753814.6712756,
+    "ast_hash": "f7f0987c0779cee3165663c40caf9e4d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-quantidades-somam-zero.json": {
+    "mtime": 1793753816.2916362,
+    "ast_hash": "f7f0987c0779cee3165663c40caf9e4d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-segundo-item-invalido.json": {
+    "mtime": 1793753818.1257083,
+    "ast_hash": "e325e9aca6da9beaf6c816582788a282",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-sem-itens.json": {
+    "mtime": 1793753809.7466595,
+    "ast_hash": "65a3d7ab3b964ba24c064b06a0241b07",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/criar-token-invalido.json": {
+    "mtime": 1793753823.4512987,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-caixa-fechado-pedido-inexistente.json": {
+    "mtime": 1793753867.0151124,
+    "ast_hash": "02f448695db80727ec9c6381edcf402b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-caixa-fechado.json": {
+    "mtime": 1793753865.561236,
+    "ast_hash": "02f448695db80727ec9c6381edcf402b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-cancelado.json": {
+    "mtime": 1793753869.4432583,
+    "ast_hash": "3ba33f843391959a255b65c9f86e0854",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-corpo-vazio.json": {
+    "mtime": 1793753863.7094877,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-duas-vezes.json": {
+    "mtime": 1793753849.473964,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-estoque-insuficiente.json": {
+    "mtime": 1793753852.41737,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-fiado-cliente-do-pedido.json": {
+    "mtime": 1793753856.2244375,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-fiado-sem-cliente.json": {
+    "mtime": 1793753858.2314298,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-inexistente.json": {
+    "mtime": 1793753867.7337718,
+    "ast_hash": "b69fdb8d2f708d8a50c22ae5b8ea6638",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-ok-dinheiro.json": {
+    "mtime": 1793753846.7172682,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-outra-empresa.json": {
+    "mtime": 1793753868.5979216,
+    "ast_hash": "b69fdb8d2f708d8a50c22ae5b8ea6638",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-pagamento-diferente-do-total.json": {
+    "mtime": 1793753860.0038247,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-pedido-ja-finalizado.json": {
+    "mtime": 1793753850.7432182,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-pelo-gerente-com-caixa-aberto-no-seed.json": {
+    "mtime": 1793753847.5200937,
+    "ast_hash": "924d6d86043f3b93008d3acb8444cad0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-perfil-atendente-sem-caixa.json": {
+    "mtime": 1793753870.4224534,
+    "ast_hash": "02f448695db80727ec9c6381edcf402b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-pix-decide-nfce.json": {
+    "mtime": 1793753854.32401,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-preco-congelado-apos-mudanca-de-preco.json": {
+    "mtime": 1793753848.618688,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-sem-pagamentos-usa-forma.json": {
+    "mtime": 1793753861.973965,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/finalizar-token-invalido.json": {
+    "mtime": 1793753873.8698537,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/listar-abertos.json": {
+    "mtime": 1793753825.434661,
+    "ast_hash": "c0c7083c59bdc71b86904676e7868ad3",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/listar-finalizado-nao-aparece.json": {
+    "mtime": 1793753827.6881044,
+    "ast_hash": "54d21761996550a4ca7bfc050c0c1295",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/listar-outra-empresa-vazio.json": {
+    "mtime": 1793753829.064734,
+    "ast_hash": "54d21761996550a4ca7bfc050c0c1295",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/listar-perfil-caixa-nao-pode.json": {
+    "mtime": 1793753830.5275633,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/listar-perfil-estoquista-nao-pode.json": {
+    "mtime": 1793753832.2119777,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/listar-seed.json": {
+    "mtime": 1793753827.042901,
+    "ast_hash": "7895221f45d6aea6402443235bef9725",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/pedido/listar-so-abertos.json": {
+    "mtime": 1793753826.3124838,
+    "ast_hash": "7895221f45d6aea6402443235bef9725",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/autorizar-preco-ok.json": {
+    "mtime": 1793746876.8927321,
+    "ast_hash": "26d8eff1af2fd39947034ca00dab824c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/autorizar-preco-perfil-sem-permissao.json": {
+    "mtime": 1793746885.5505426,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/autorizar-preco-produto-inexistente.json": {
+    "mtime": 1793746880.6026428,
+    "ast_hash": "81ce33c7f71d929b61dad7866e130ab0",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/autorizar-preco-sem-produto.json": {
+    "mtime": 1793746884.0446138,
+    "ast_hash": "632397cff666bb5cfd008a5ff9647652",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/autorizar-preco-senha-errada.json": {
+    "mtime": 1793746878.746384,
+    "ast_hash": "c734e4292408abe7d647ee90a9daa1d8",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/autorizar-preco-zero.json": {
+    "mtime": 1793746882.260603,
+    "ast_hash": "f470bca43efd3015f16048921aef6826",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/detalhe-outra-empresa.json": {
+    "mtime": 1793746937.19491,
+    "ast_hash": "3ca4c9191d8ff008e0e80fe84570bea7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/detalhe-perfil-sem-permissao.json": {
+    "mtime": 1793746939.112889,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/detalhe-venda-cancelada.json": {
+    "mtime": 1793746933.7512817,
+    "ast_hash": "8e30e22e8e7eb94a4ea1f7ddb7ddbe05",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/detalhe-venda-com-documento-fiscal.json": {
+    "mtime": 1793746931.886688,
+    "ast_hash": "99f412c9f25bb1e7a176738a877044b6",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/detalhe-venda-finalizada.json": {
+    "mtime": 1793746930.2943206,
+    "ast_hash": "538843b6d9f1d97adee4256d5fddabca",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/detalhe-venda-inexistente.json": {
+    "mtime": 1793746935.4564016,
+    "ast_hash": "3ca4c9191d8ff008e0e80fe84570bea7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/imprimir-venda-inexistente.json": {
+    "mtime": 1793746942.5457077,
+    "ast_hash": "3ca4c9191d8ff008e0e80fe84570bea7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/imprimir-venda.json": {
+    "mtime": 1793746940.9286032,
+    "ast_hash": "f0595f6f2b95d921397b660d7a5613fc",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/lista-desde-invalida-ignorada.json": {
+    "mtime": 1793746916.815654,
+    "ast_hash": "2104f8fa978127cbc04374bd37852d2e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/lista-outra-empresa.json": {
+    "mtime": 1793746928.4637537,
+    "ast_hash": "26298e0ac54f0bd9ea84bdc99a76a4ea",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/lista-perfil-sem-permissao.json": {
+    "mtime": 1793746925.1370544,
+    "ast_hash": "ba0c8e0a236510412ac00f9981a9cd78",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/lista-por-data-desde-seed.json": {
+    "mtime": 1793746914.9440224,
+    "ast_hash": "90dceed8e35532104d009340aeb2d5af",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/lista-por-data-futura.json": {
+    "mtime": 1793746913.2145834,
+    "ast_hash": "8cf6fb7d20df670958d72ba9b101395d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/lista-sem-filtro.json": {
+    "mtime": 1793746911.597345,
+    "ast_hash": "2104f8fa978127cbc04374bd37852d2e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/lista-turno-de-outro-operador-como-caixa.json": {
+    "mtime": 1793746920.0705101,
+    "ast_hash": "03f656a2b101e043ba6d966b2f542545",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/lista-turno-do-gerente-como-gerente.json": {
+    "mtime": 1793746918.4467096,
+    "ast_hash": "b8cdddb7bb814e33fa9a106179d1afd5",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/lista-turno-inexistente.json": {
+    "mtime": 1793746921.7966478,
+    "ast_hash": "03f656a2b101e043ba6d966b2f542545",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/lista-turno-proprio-do-caixa.json": {
+    "mtime": 1793746923.5412173,
+    "ast_hash": "73f4b9565dba2917896ffec60805a035",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-autorizacao-de-outro-produto.json": {
+    "mtime": 1793746871.4446778,
+    "ast_hash": "37211f2073d56f816b3a1f3a8cf0c582",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-autorizacao-inexistente.json": {
+    "mtime": 1793746869.61492,
+    "ast_hash": "f3e8ddec4bc510a782fd91c5297e3037",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-autorizacao-usada-duas-vezes.json": {
+    "mtime": 1793746868.0269554,
+    "ast_hash": "31c2997f998d1f007bda094fe83eb058",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-caixa-fechado-offline.json": {
+    "mtime": 1793746844.0059676,
+    "ast_hash": "b8e6300b6dd774e7a4c7a46d238e2b38",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-caixa-fechado-online.json": {
+    "mtime": 1793746842.2662773,
+    "ast_hash": "02f448695db80727ec9c6381edcf402b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-com-cpf-na-nota-emite.json": {
+    "mtime": 1793746904.7710779,
+    "ast_hash": "0a19d4f70371e2c0e8d92da23f921d65",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-conflito-mesmo-evento-outro-total.json": {
+    "mtime": 1793746890.913332,
+    "ast_hash": "a72cf0a8d071c1579b0cfdc803a01a48",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-estoque-insuficiente-online.json": {
+    "mtime": 1793747059.7753406,
+    "ast_hash": "f06d8208722c3a177b484076789016ca",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-fiado-cliente-inexistente.json": {
+    "mtime": 1793746856.462365,
+    "ast_hash": "132dc8b041ede5c3e7f1188eed73a574",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-fiado-credit-authorization.json": {
+    "mtime": 1793746862.0620804,
+    "ast_hash": "5a5b87b2a099bf193974df4abfd113de",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-fiado-limite-estourado.json": {
+    "mtime": 1793746858.1658492,
+    "ast_hash": "814520ae3e70a9ca63ecae9d3860b779",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-fiado-ok.json": {
+    "mtime": 1793746860.3152652,
+    "ast_hash": "b3fe75d9d5b265161743aa7a70e6557e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-fiado-sem-cliente.json": {
+    "mtime": 1793746854.7759607,
+    "ast_hash": "c53174e1fa9f71118cb421c003d4b09a",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-item-sem-preco.json": {
+    "mtime": 1793746838.9133728,
+    "ast_hash": "bb1f0117bf36b38c5639dd9414fc0a25",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-offline-preco-abaixo-sem-autorizacao.json": {
+    "mtime": 1793746874.9668741,
+    "ast_hash": "0d938249e1b890b291aa55386096ca07",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-pagamento-soma-diferente.json": {
+    "mtime": 1793746849.4849868,
+    "ast_hash": "179456daff4ae31c1b9ae4c48c88cd97",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-pedido-inexistente.json": {
+    "mtime": 1793746897.632843,
+    "ast_hash": "5c4fc1ffcb586627923c99b4d2b29854",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-pedido-itens-divergentes.json": {
+    "mtime": 1793746895.9654224,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-pedido-ok.json": {
+    "mtime": 1793746894.1920426,
+    "ast_hash": "dcb1d6504cdb2fb08f27f6ca69ae16e7",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-pix-sempre-emite.json": {
+    "mtime": 1793746903.1204145,
+    "ast_hash": "a7c7c7420fb837df8d05805e79242cfc",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-preco-maior-aceita.json": {
+    "mtime": 1793746873.259408,
+    "ast_hash": "28e50ed921257c1c0dc0002ebdb3ec40",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-preco-menor-com-autorizacao.json": {
+    "mtime": 1793746865.823032,
+    "ast_hash": "81e4324680f8907c57b322d0bef58f1f",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-preco-menor-sem-autorizacao.json": {
+    "mtime": 1793746863.8890061,
+    "ast_hash": "a6df7bcfb6c4d06305f28487c5e76663",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-produto-inexistente.json": {
+    "mtime": 1793746853.144031,
+    "ast_hash": "9f02450a9e06a4185608e29db4bc6eeb",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-replay-com-payload-hash-enviado.json": {
+    "mtime": 1793746892.6257439,
+    "ast_hash": "65cb57949fc6d2a7ecff3b8419733d3d",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-replay-mesmo-evento.json": {
+    "mtime": 1793746889.1246796,
+    "ast_hash": "021411b81af4b05c5cc86e5edbbca1d5",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-ruptura-offline.json": {
+    "mtime": 1793746847.8037972,
+    "ast_hash": "332c30b4c00d7a92bd35ad1ddeff7dff",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-segunda-em-dinheiro-nao-emite.json": {
+    "mtime": 1793746901.496932,
+    "ast_hash": "468c735345f6a073cf17fb5b4d986e8b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-sem-itens.json": {
+    "mtime": 1793746840.6721554,
+    "ast_hash": "f283fc34d78259c22b704b99ab6a0dbe",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-simples.json": {
+    "mtime": 1793746833.381401,
+    "ast_hash": "b6997edcf109820fb5022407eba7ec02",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-terceira-em-dinheiro-emite-nfce.json": {
+    "mtime": 1793746899.756158,
+    "ast_hash": "b264aae3889cc993730c0237faf1202c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-token-invalido.json": {
+    "mtime": 1793746909.6364899,
+    "ast_hash": "da2443d71d224156fd480616bc57b93b",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-total-divergente.json": {
+    "mtime": 1793746837.1488526,
+    "ast_hash": "9dd0a9b7d74685170cd1d9b343f586e4",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-troco-fora-do-dinheiro.json": {
+    "mtime": 1793746851.3543298,
+    "ast_hash": "297638ba3c5301e7c88909b06e974a3c",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-varios-pagamentos-com-troco.json": {
+    "mtime": 1793746835.3980963,
+    "ast_hash": "b440f99a4e931377fcdd7d9b6b8d05ac",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/gravacoes/vendas/venda-xml-nfce-contingencia.json": {
+    "mtime": 1793746906.5461211,
+    "ast_hash": "1db6e7ce3bc331172cd480a41499b71e",
+    "semantic_hash": ""
+  },
+  "JAVA/api/src/test/resources/contrato/vetores-hash.json": {
+    "mtime": 1793740014.4304626,
+    "ast_hash": "20c4734295d4f87819435972e0ed1d7a",
+    "semantic_hash": ""
+  },
+  "openspec/changes/api-java-vendas/.openspec.yaml": {
+    "mtime": 1793731942.3303218,
+    "ast_hash": "ad717a364eebb20cb0c22bc25fe058ae",
+    "semantic_hash": ""
+  },
+  "openspec/changes/api-java-vendas/design.md": {
+    "mtime": 1793758751.3094895,
+    "ast_hash": "f8cea37e5494d572d13665097484aa01",
+    "semantic_hash": ""
+  },
+  "openspec/changes/api-java-vendas/proposal.md": {
+    "mtime": 1793732471.822976,
+    "ast_hash": "0bf8d0ed35f05b5c6fdf9de22c5d4c0e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/api-java-vendas/specs/fiscal/fila-nfce/spec.md": {
+    "mtime": 1793732375.2599053,
+    "ast_hash": "b018d784c9a2e5b673ba5bf04115103e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/api-java-vendas/specs/plataforma/numeracao/spec.md": {
+    "mtime": 1793732387.6566005,
+    "ast_hash": "1079075b6111f205d45002857fa21ae6",
+    "semantic_hash": ""
+  },
+  "openspec/changes/api-java-vendas/specs/vendas/caixa-turno/spec.md": {
+    "mtime": 1793732288.0647945,
+    "ast_hash": "0f83f17ed90f6c0048e1b2ec6b8af47d",
+    "semantic_hash": ""
+  },
+  "openspec/changes/api-java-vendas/specs/vendas/cancelamento-correcao/spec.md": {
+    "mtime": 1793732343.056528,
+    "ast_hash": "f851bc26fbe7c2c0ef8232c332f86c61",
+    "semantic_hash": ""
+  },
+  "openspec/changes/api-java-vendas/specs/vendas/pedidos/spec.md": {
+    "mtime": 1793732357.609426,
+    "ast_hash": "8f4e124dbe87d58e9aa1960c9fc5326e",
+    "semantic_hash": ""
+  },
+  "openspec/changes/api-java-vendas/specs/vendas/registro-venda/spec.md": {
+    "mtime": 1793732324.202407,
+    "ast_hash": "d7c0161588d1e7f2889049a07d208a6b",
+    "semantic_hash": ""
+  },
+  "openspec/changes/api-java-vendas/tasks.md": {
+    "mtime": 1793763028.102486,
+    "ast_hash": "504aed056cd5b223319c15c62e6275cb",
+    "semantic_hash": ""
+  },
+  "docs/System Design Interview \u2013 An Insiders Guide- Volume 2 -- Alex Xu Sahn Lam -- ( WeLib.org ).pdf": {
+    "mtime": 1793622950.7377815,
+    "ast_hash": "7a1a5477650583f92d38befff232f873",
     "semantic_hash": ""
   }
 }
