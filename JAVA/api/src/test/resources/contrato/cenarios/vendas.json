@@ -153,7 +153,7 @@
     "nome": "autorizar-preco-ok",
     "usuario": "caixa@contrato.quack",
     "requisicao": {"metodo": "POST", "caminho": "/api/HistoricoVendas/autorizar-preco", "corpo": {"supervisorId":"usr-ct-gerente","supervisorPassword":"Senha#Quack2026","productCode":"CT001","precoNovo":2.5,"motivo":"Promocao do dia"}},
-    "volateis": {"data.autorizacaoId":"id","data.expiraEm":"iso"}
+    "volateis": {"data.autorizacaoId":"id","data.expiraEm":"iso-json"}
   },
   {
     "nome": "autorizar-preco-senha-errada",
