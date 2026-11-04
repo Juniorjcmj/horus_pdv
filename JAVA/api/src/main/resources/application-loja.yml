@@ -1,0 +1,4 @@
+# Servidor da loja (D1): API completa + envio, comandos, conferencia e as migracoes db/migration (V5 = tabelas Sync*).
+# Usa segredo de JWT e chave de cifra PROPRIOS (QUACK_AUTH_JWT_SECRET / QUACK_SECURITY_ENCRYPTION_KEY gerados pelo instalador).
+quack:
+  modo: loja

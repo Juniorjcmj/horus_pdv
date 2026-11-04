@@ -11,11 +11,15 @@ public class QuackProperties {
 
     /** Equivale ao ambiente Development do .NET (perfil Spring dev). */
     private boolean dev = false;
+    /** Papel desta instancia: padrao, loja ou nuvem (perfis Spring de mesmo nome definem). */
+    private String modo = "padrao";
     private final Auth auth = new Auth();
     private final Security security = new Security();
     private final Recaptcha recaptcha = new Recaptcha();
     private final Email email = new Email();
 
+    public String getModo() { return modo; }
+    public void setModo(String modo) { this.modo = modo == null || modo.isBlank() ? "padrao" : modo; }
     public boolean isDev() { return dev; }
     public void setDev(boolean dev) { this.dev = dev; }
     public Auth getAuth() { return auth; }

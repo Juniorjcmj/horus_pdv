@@ -19,13 +19,13 @@
 
 ## 1. Base: perfis, catálogo e tabelas
 
-- [ ] 1.1 Criar `plataforma/sincronizacao/catalogo/CatalogoSincronizacao` com a classificação do D2.
+- [x] 1.1 Criar `plataforma/sincronizacao/catalogo/CatalogoSincronizacao` com a classificação do D2.
   - Confira cada tabela e coluna lendo os gravadores na Java e na .NET; registre no próprio catálogo, em comentário
     curto, o motivo de cada coluna `LOJA`, `NUVEM` ou `LOCAL` fora do padrão.
   - Inclua as filhas sem `CompanyId` com a mãe e a ordem pelas chaves estrangeiras.
   - Verificação: teste de guarda que falha com tabela sem classificação, coluna inexistente, ou tabela sincronizada
     sem chave primária (prove com uma tabela fictícia); e teste da ordem contra `sys.foreign_keys` do `V1`.
-- [ ] 1.2 Criar os perfis `loja` e `nuvem` (D1).
+- [x] 1.2 Criar os perfis `loja` e `nuvem` (D1).
   - Propriedade `quack.modo`, `application-loja.yml`, `application-nuvem.yml`.
   - Filtro de 404 do perfil `nuvem`; fila fiscal e retentativa de lotes desligadas no `nuvem`.
   - Flyway do `nuvem` em `db/nuvem` com tabela `flyway_quack_sync`, sem rodar `db/migration`.
@@ -33,7 +33,7 @@
     - teste web: `nuvem` responde 404 em `/api/HistoricoVendas` e 200 em `/actuator/health`;
     - IT: subir o `nuvem` num banco com o esquema da .NET deixa `flyway_schema_history` intocado e cria só as tabelas
       `Sync*`.
-- [ ] 1.3 Criar as migrações das tabelas de sincronização.
+- [x] 1.3 Criar as migrações das tabelas de sincronização.
   - Na loja (`db/migration/V5`): `SyncEstado`, `SyncReenvios`, `SyncAlertas`, `SyncConferencias`, `SyncCarga` e
     `SyncComandosAplicados` (sequência já aplicada, para idempotência).
   - Na nuvem (`db/nuvem/V1`): `SyncServidores`, `SyncEstadoNuvem`, `SyncLotePartes`, `SyncEspelho`, `SyncComandos`,

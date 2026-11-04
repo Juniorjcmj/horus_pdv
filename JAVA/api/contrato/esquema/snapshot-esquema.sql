@@ -1,5 +1,5 @@
 SET NOCOUNT ON;
--- Snapshot do esquema (colunas, indices e chaves estrangeiras) em JSON. Roda igual no banco criado pela API .NET
+-- Snapshot do esquema, sem as tabelas Sync* da Java (colunas, indices e chaves estrangeiras) em JSON. Roda igual no banco criado pela API .NET
 -- (gera contrato/esquema/esquema-dotnet.json) e no banco criado pelo Flyway (EsquemaEquivalenteIT compara os dois).
 SELECT
     (SELECT t.name AS tabela, c.name AS coluna, ty.name AS tipo, c.max_length AS tamanho, c.precision AS precisao,
@@ -8,7 +8,7 @@ SELECT
        FROM sys.tables t
        JOIN sys.columns c ON c.object_id = t.object_id
        JOIN sys.types ty ON ty.user_type_id = c.user_type_id
-      WHERE t.name NOT IN (N'__MigrationHistory', N'flyway_schema_history', N'LoteBaixaPendencias')
+      WHERE t.name NOT IN (N'__MigrationHistory', N'flyway_schema_history', N'LoteBaixaPendencias') AND t.name NOT LIKE N'Sync%'
       ORDER BY t.name, c.name
         FOR JSON PATH) AS colunas,
     (SELECT t.name AS tabela,
@@ -28,7 +28,7 @@ SELECT
                       FOR XML PATH(N''), TYPE).value(N'.', N'nvarchar(max)'), 1, 1, N'') AS colunas
        FROM sys.indexes i
        JOIN sys.tables t ON t.object_id = i.object_id
-      WHERE i.type > 0 AND t.name NOT IN (N'__MigrationHistory', N'flyway_schema_history', N'LoteBaixaPendencias')
+      WHERE i.type > 0 AND t.name NOT IN (N'__MigrationHistory', N'flyway_schema_history', N'LoteBaixaPendencias') AND t.name NOT LIKE N'Sync%'
       ORDER BY t.name, 2
         FOR JSON PATH) AS indices,
     (SELECT fk.name AS chave, pt.name AS tabela, rt.name AS tabelaReferenciada,
@@ -37,7 +37,7 @@ SELECT
        FROM sys.foreign_keys fk
        JOIN sys.tables pt ON pt.object_id = fk.parent_object_id
        JOIN sys.tables rt ON rt.object_id = fk.referenced_object_id
-      WHERE pt.name NOT IN (N'__MigrationHistory', N'flyway_schema_history', N'LoteBaixaPendencias')
+      WHERE pt.name NOT IN (N'__MigrationHistory', N'flyway_schema_history', N'LoteBaixaPendencias') AND pt.name NOT LIKE N'Sync%'
       ORDER BY fk.name
         FOR JSON PATH) AS chaves
 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER;

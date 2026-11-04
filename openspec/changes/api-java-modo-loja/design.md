@@ -147,6 +147,28 @@ existe, ou tabela `EDITAVEL`/`LOJA` sem chave primária. A ordem de aplicação 
 - **Por quê** Change Tracking e não CDC: o CDC exige o SQL Agent, que não existe no Express. Também não uma fila da
   aplicação (D9 da Fase 4).
 
+**Ajustes da implementação (grupo 1, tarefas 1.1–1.3):**
+- **Classificação (D2) conferida nos gravadores:**
+  - `ProdutoClassificacao` e `EstoqueSnapshotDiario` viram `FORA`. O `EstoqueSnapshotWorker` da .NET grava as duas todo
+    dia para todas as empresas (`DELETE`+`INSERT` completo e `MERGE`), então sincronizadas gerariam quarentena e alerta
+    diários. Ambas se reconstroem de `Vendas`/`EstoqueMovimentacoes`; a loja as calcula na Fase 6.
+  - `RegrasEmissaoNfce.UpdatedAt` é `LOJA` (sobe junto com `ContadorVendas`).
+  - `Empresas.RequireApprovalForNewCompanies` é `NUVEM` (decisão de plataforma).
+  - `Produtos.CustoMedio` e `DataValidade` ficam `EDITAVEL` (só o cadastro grava `CustoMedio`; `DataValidade` também é
+    recalculada pelos lotes, e o conflito de base resolve a favor da loja).
+  - Limite conhecido: o worker fiscal da .NET também grava `Vendas.Status` (`cancelada`/`estornada`) quando uma nota
+    é cancelada ou devolvida na nuvem. `Vendas` é `LOJA`, então isso cai na quarentena; tratar nos grupos 4/5.
+- **Change Tracking na loja (D3 × D5):** ligar o tracking na migração `V5` contradiz o D5 (a carga inicial grava num
+  banco vazio com o tracking ainda desligado). Escolha: a `V5` só cria as `Sync*`; o `ChangeTrackingAdmin` (bean só no
+  perfil `loja`) liga snapshot, banco e tabelas, chamado pela ativação (grupo 3); o `ChangeTrackingLoja`
+  (`ApplicationRunner` do perfil `loja`) liga o snapshot na subida e religa o tracking se `SyncEstado.Ativada = 1`.
+  O perfil padrão não tem nenhum desses beans.
+- **Nuvem:** `db/nuvem/V1__sync_nuvem.sql` (com `V1__sync_nuvem.sql.conf`, `executeInTransaction=false`, e todo o
+  script idempotente) cria as `Sync*` e liga snapshot e tracking (retenção 3 dias, `TRACK_COLUMNS_UPDATED = OFF`). A lista
+  de tabelas do script é estática e o `ChangeTrackingNuvemIT` confere que é igual ao catálogo. Flyway com
+  `baseline-on-migrate` e `baseline-version=0` para o V1 rodar num banco que já tem o esquema da .NET.
+- **Ordem (D2):** lista fixa no catálogo, conferida contra `sys.foreign_keys` pelo `CatalogoSchemaIT` (e pela guarda).
+
 ### D4. Envio loja → nuvem
 
 - **Rotina:** `EnvioSincronizacao`, a cada 2 s quando ociosa.

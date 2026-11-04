@@ -1,0 +1,18 @@
+# Receptor da nuvem (D1): so /api/loja-sync/** e /actuator/health; o resto responde 404 (ModoNuvemFilter).
+# Usa os MESMOS QUACK_AUTH_JWT_SECRET e QUACK_SECURITY_ENCRYPTION_KEY da API .NET (valida admin e decifra segredos).
+quack:
+  modo: nuvem
+  fiscal:
+    fila-minima:
+      ativa: false      # a emissao e a fila fiscal ficam com a .NET da nuvem ate a Fase 7
+  lote:
+    retentativa:
+      ativa: false      # nenhum agendamento de negocio no receptor
+
+spring:
+  flyway:
+    # A Java NUNCA migra tabela da .NET em producao: so db/nuvem, com historico proprio.
+    locations: classpath:db/nuvem
+    table: flyway_quack_sync
+    baseline-on-migrate: true   # o banco da .NET nao tem esse historico; baseline em 0 para o V1 rodar
+    baseline-version: "0"
