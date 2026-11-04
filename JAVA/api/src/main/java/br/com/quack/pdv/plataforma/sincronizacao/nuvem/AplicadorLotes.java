@@ -11,7 +11,6 @@ import br.com.quack.pdv.plataforma.sincronizacao.protocolo.ConversorValor;
 import br.com.quack.pdv.plataforma.sincronizacao.protocolo.TipoColuna;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -291,30 +290,11 @@ public class AplicadorLotes {
     }
 
     private static void bindTudo(PreparedStatement ps, List<ColunaSync> cols, Map<String, Object> valores) throws SQLException {
-        for (int i = 0; i < cols.size(); i++) bind(ps, i + 1, valores.get(cols.get(i).nome()), cols.get(i).tipo());
+        for (int i = 0; i < cols.size(); i++) ConversorValor.bind(ps, i + 1, valores.get(cols.get(i).nome()), cols.get(i).tipo());
     }
 
     private static void bindArgs(PreparedStatement ps, List<Object> args, List<TipoColuna> tipos) throws SQLException {
-        for (int i = 0; i < args.size(); i++) bind(ps, i + 1, args.get(i), tipos.get(i));
-    }
-
-    private static void bind(PreparedStatement ps, int i, Object v, TipoColuna tipo) throws SQLException {
-        if (v == null) ps.setNull(i, tipoNulo(tipo)); else ps.setObject(i, v);
-    }
-
-    private static int tipoNulo(TipoColuna t) {
-        return switch (t) {
-            case TEXTO -> Types.NVARCHAR;
-            case INTEIRO -> Types.BIGINT;
-            case DECIMAL -> Types.DECIMAL;
-            case REAL -> Types.DOUBLE;
-            case BOOLEANO -> Types.BIT;
-            case DATA -> Types.DATE;
-            case HORA -> Types.TIME;
-            case DATAHORA -> Types.TIMESTAMP;
-            case DATAHORA_OFFSET -> ConversorValor.SQL_DATETIMEOFFSET;
-            case BINARIO -> Types.VARBINARY;
-        };
+        for (int i = 0; i < args.size(); i++) ConversorValor.bind(ps, i + 1, args.get(i), tipos.get(i));
     }
 
     private static String juntar(List<ColunaSync> cols, String formato, String sep) {

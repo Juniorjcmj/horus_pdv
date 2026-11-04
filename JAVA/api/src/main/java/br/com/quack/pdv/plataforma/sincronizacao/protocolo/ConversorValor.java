@@ -1,6 +1,8 @@
 package br.com.quack.pdv.plataforma.sincronizacao.protocolo;
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -63,6 +65,26 @@ public final class ConversorValor {
             case DATAHORA -> LocalDateTime.parse(s);
             case DATAHORA_OFFSET -> OffsetDateTime.parse(s);
             case BINARIO -> Base64.getDecoder().decode(s);
+        };
+    }
+
+    /** Liga um valor decodificado ao parametro {@code i} (nulo com o tipo SQL certo da coluna). */
+    public static void bind(PreparedStatement ps, int i, Object v, TipoColuna tipo) throws SQLException {
+        if (v == null) ps.setNull(i, tipoNulo(tipo)); else ps.setObject(i, v);
+    }
+
+    public static int tipoNulo(TipoColuna t) {
+        return switch (t) {
+            case TEXTO -> Types.NVARCHAR;
+            case INTEIRO -> Types.BIGINT;
+            case DECIMAL -> Types.DECIMAL;
+            case REAL -> Types.DOUBLE;
+            case BOOLEANO -> Types.BIT;
+            case DATA -> Types.DATE;
+            case HORA -> Types.TIME;
+            case DATAHORA -> Types.TIMESTAMP;
+            case DATAHORA_OFFSET -> SQL_DATETIMEOFFSET;
+            case BINARIO -> Types.VARBINARY;
         };
     }
 }

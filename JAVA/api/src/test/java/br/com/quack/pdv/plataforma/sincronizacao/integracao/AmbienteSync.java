@@ -59,7 +59,11 @@ public final class AmbienteSync implements AutoCloseable {
     public final int portaLoja;
     public final HttpClient http = HttpClient.newHttpClient();
 
-    private AmbienteSync(String sufixo) {
+    /** Chaves proprias da loja no modo carga (D1): segredo de JWT e chave de cifra diferentes dos da nuvem. */
+    public static final String JWT_LOJA = "segredo-jwt-proprio-da-loja-com-mais-de-32-caracteres";
+    public static final String CIFRA_LOJA = "chave-de-cifra-propria-da-loja-com-mais-de-32-caracteres";
+
+    private AmbienteSync(String sufixo, boolean paraCarga) {
         bancoLoja = "loja_" + sufixo;
         bancoNuvem = "nuvem_" + sufixo;
         BancoIT.criarBanco(bancoLoja);
@@ -67,19 +71,42 @@ public final class AmbienteSync implements AutoCloseable {
         prepararEsquemaDotNet();
 
         nuvem = subir("nuvem", urlNuvem(), SQL_NUVEM.getUsername(), SQL_NUVEM.getPassword(), 2000);
-        loja = subir("loja", BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword(), 300);
+        loja = paraCarga
+                ? subir("loja", BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword(), 300,
+                        "--quack.auth.jwt-secret=" + JWT_LOJA, "--quack.security.encryption-key=" + CIFRA_LOJA)
+                : subir("loja", BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword(), 300);
         portaNuvem = porta(nuvem);
         portaLoja = porta(loja);
         jdbcLoja = loja.getBean(JdbcTemplate.class);
         jdbcNuvem = nuvem.getBean(JdbcTemplate.class);
 
-        EstadoDoBanco.por(BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword()).restaurar();
         EstadoDoBanco.por(urlNuvem(), SQL_NUVEM.getUsername(), SQL_NUVEM.getPassword()).restaurar();
-        ativar();
+        if (!paraCarga) {
+            EstadoDoBanco.por(BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword()).restaurar();
+            ativar();
+        }
     }
 
+    /** Loja ja ativada, mesmo seed nas duas pontas (grupo 2). */
     public static AmbienteSync iniciar(String sufixo) {
-        return new AmbienteSync(sufixo);
+        return new AmbienteSync(sufixo, false);
+    }
+
+    /**
+     * Grupo 3: so a nuvem tem o seed; a loja e um banco novo (so as migracoes), com chaves proprias, sem servidor
+     * registrado e sem tracking. A carga inicial e o que a liga.
+     */
+    public static AmbienteSync iniciarParaCarga(String sufixo) {
+        return new AmbienteSync(sufixo, true);
+    }
+
+    /** Token de administrador valido na nuvem (sessao gravada no banco dela, JWT com o segredo dela). */
+    public String tokenNuvem(String userId, String companyId, String nome, String email, String role) {
+        String sessao = "sess-it-" + UUID.randomUUID();
+        jdbcNuvem.update("INSERT INTO Sessoes (Id, UserId, Device, Location, Ip, LastActive, Platform, CreatedAt) "
+                + "VALUES (?, ?, 'IT', 'IT', '127.0.0.1', 'agora', 'desktop', SYSDATETIMEOFFSET())", sessao, userId);
+        return nuvem.getBean(br.com.quack.pdv.security.JwtService.class).criarToken(userId, companyId, nome, email, role,
+                sessao, "127.0.0.1");
     }
 
     public String urlNuvem() {
@@ -122,12 +149,15 @@ public final class AmbienteSync implements AutoCloseable {
         }
     }
 
-    private static ConfigurableApplicationContext subir(String perfil, String url, String usuario, String senha, int intervalo) {
+    private static ConfigurableApplicationContext subir(String perfil, String url, String usuario, String senha, int intervalo,
+                                                        String... extras) {
+        List<String> args = new ArrayList<>(List.of("--server.port=0", "--spring.datasource.url=" + url,
+                "--spring.datasource.username=" + usuario, "--spring.datasource.password=" + senha,
+                "--quack.sync.intervalo-ms=" + intervalo, "--spring.main.banner-mode=off", "--spring.jmx.enabled=false"));
+        args.addAll(Arrays.asList(extras));
         return new SpringApplicationBuilder(QuackPdvApiApplication.class)
                 .profiles("it", perfil)
-                .run("--server.port=0", "--spring.datasource.url=" + url, "--spring.datasource.username=" + usuario,
-                        "--spring.datasource.password=" + senha, "--quack.sync.intervalo-ms=" + intervalo,
-                        "--spring.main.banner-mode=off", "--spring.jmx.enabled=false");
+                .run(args.toArray(String[]::new));
     }
 
     private static int porta(ConfigurableApplicationContext ctx) {
@@ -189,6 +219,14 @@ public final class AmbienteSync implements AutoCloseable {
      * sem colunas CIFRADA/LOCAL; AuditLog so por contagem (os Ids da nuvem sao proprios). Devolve as diferencas.
      */
     public List<String> diferencas() {
+        return diferencas(false);
+    }
+
+    /**
+     * Como {@link #diferencas()}; com {@code soDaEmpresa} a nuvem so entra com as linhas da empresa da loja (a nuvem do
+     * seed tem outras empresas; a loja so tem a dela). Filhas sem empresa, pela mae.
+     */
+    public List<String> diferencas(boolean soDaEmpresa) {
         List<String> dif = new ArrayList<>();
         EsquemaJdbc esquema = new EsquemaJdbc(jdbcLoja);
         Map<String, Set<String>> colunas = esquema.colunas();
@@ -207,12 +245,38 @@ public final class AmbienteSync implements AutoCloseable {
             String sql = "SELECT " + String.join(", ", cols.stream().map(c -> "[" + c + "]").toList()) + " FROM dbo.[" + t.nome()
                     + "] ORDER BY " + String.join(", ", pks.get(t.nome()).stream().map(c -> "[" + c + "]").toList());
             List<String> l = linhas(jdbcLoja, sql, cols);
-            List<String> n = linhas(jdbcNuvem, sql, cols);
+            List<String> n = soDaEmpresa ? linhasDaEmpresa(t, cols, pks) : linhas(jdbcNuvem, sql, cols);
             if (!l.equals(n)) {
                 dif.add(t.nome() + ": loja=" + l.size() + " nuvem=" + n.size() + " " + primeiraDiferenca(l, n));
             }
         }
         return dif;
+    }
+
+    private List<String> linhasDaEmpresa(TabelaSincronizada t, List<String> cols, Map<String, List<String>> pks) {
+        String lista = String.join(", ", cols.stream().map(c -> "T.[" + c + "]").toList());
+        String ordem = String.join(", ", pks.get(t.nome()).stream().map(c -> "T.[" + c + "]").toList());
+        String sql;
+        if (t.filhaSemEmpresa()) {
+            TabelaSincronizada mae = CatalogoSincronizacao.tabela(t.mae()).orElseThrow();
+            sql = "SELECT " + lista + " FROM dbo.[" + t.nome() + "] T JOIN dbo.[" + mae.nome() + "] M ON M.["
+                    + pks.get(mae.nome()).getFirst() + "] = T.[" + t.colunaLigacao() + "] WHERE M.[" + mae.colunaEmpresa()
+                    + "] = ? ORDER BY " + ordem;
+        } else {
+            sql = "SELECT " + lista + " FROM dbo.[" + t.nome() + "] T WHERE T.[" + t.colunaEmpresa() + "] = ? ORDER BY " + ordem;
+        }
+        return jdbcNuvem.query(sql, (rs, i) -> {
+            StringBuilder sb = new StringBuilder();
+            for (int c = 1; c <= cols.size(); c++) {
+                Object v = rs.getObject(c);
+                sb.append(cols.get(c - 1)).append('=');
+                if (v instanceof byte[] b) sb.append(Arrays.toString(b));
+                else if (v instanceof java.math.BigDecimal d) sb.append(d.toPlainString());
+                else sb.append(v);
+                sb.append(';');
+            }
+            return sb.toString();
+        }, EMPRESA);
     }
 
     private static String primeiraDiferenca(List<String> a, List<String> b) {

@@ -187,8 +187,58 @@ existe, ou tabela `EDITAVEL`/`LOJA` sem chave primária. A ordem de aplicação 
 - **Pontos de extensão deixados:** `AntesDoEnvio` (loja, retomada fiscal da 5.1) e `DeteccaoInline` (nuvem, antes/depois de
   cada linha, grupo 4). Contexto do tracking do aplicador: `0x53510001` (`sync-loja`).
 - **Teste:** `ClienteNuvemHttp` tem o interruptor `setSemInternet` e o gancho `perderProximasRespostas` (resposta perdida).
-  A venda sob 7 threads reprocessa em deadlock/timeout de lock no numerador (`TransientDataAccessException`); o teste repete
-  como o Caixa faz.
+  O `SincronizacaoIT` nao repete mais a venda: o deadlock do numerador que exigia isso foi corrigido (ver abaixo).
+
+**Ajuste do deadlock do numerador (vendas simultaneas, pos-grupo 2):**
+- **Causa:** a ordem de travas da venda era produtos (D13 da Fase 4) e `INSERT` de movimentos de estoque -> numerador
+  (`MAX(SaleNumber)` com `UPDLOCK, HOLDLOCK` em `Vendas`) -> `UPDATE EstoqueMovimentacoes ... WHERE OrigemId = 'pend-...'`
+  (vinculo da origem, sem indice em `OrigemId`, varre as movimentacoes da empresa). Quem segura o numerador varre
+  movimentos e espera as linhas ainda nao confirmadas de quem espera o numerador: ciclo. Acontece com varios caixas na
+  mesma empresa, com ou sem Change Tracking/snapshot (reproduzido nos dois: o tracking nao influi). As vitimas eram o
+  `SELECT MAX` e o `UPDATE` de vinculo (erro 1205). A API .NET (`HistoricoVendasAB`) tem a mesma ordem e a mesma corrida.
+- **Correcao:** `NumeradorDocumentos.serializarVendas(companyId)` (`sp_getapplock` exclusivo, dono `Transaction`, espera
+  ate 30 s) e a PRIMEIRA instrucao da transacao de venda, de finalizacao de pedido e de correcao (os tres caminhos que
+  numeram venda). A ordem global passa a ser trava da empresa -> produtos -> movimentos -> numerador. Mantem o contrato
+  (numeros consecutivos, mesmas respostas); as vendas da empresa passam a ser seriadas, o que o numerador
+  `UPDLOCK/HOLDLOCK` ja fazia em boa parte. Nao muda indice nem esquema (o `EsquemaEquivalenteIT` segue valendo).
+- **Prova:** `VendasSimultaneasIT` e `VendasSimultaneasLojaIT` (8 caixas x 20 vendas, produtos sobrepostos em ordens
+  opostas e disjuntos, sem retentativa, 5 repeticoes), antes: 5/5 falham; depois: 5/5 passam.
+
+**Ajustes da implementacao (grupo 3, tarefas 3.1 e 3.2):**
+- **Registro (3.1):** `POST /api/loja-sync/registrar` chama `AutenticacaoService.autenticar` (o miolo do login extraido:
+  mesmo hash, bloqueio, janela de tentativas, mensagens e situacao da empresa, sem criar sessao). Exige
+  `administrador` (403), nome do servidor obrigatorio. A rota entra na lista de rotas sem token do `AutenticacaoFilter`.
+  O servidor nasce `pendente` e vira `ativo` na ativacao. Um `pendente` (carga que nao terminou) e substituido por um novo
+  registro; um `ativo` recusa com 409 citando nome e id. O indice unico (um nao revogado por empresa) cobre a corrida.
+  `ServidorLojaFilter`: `lotes` exige `ativo`; `carga`, `carga/delta` e `ativar` aceitam `pendente` ou `ativo`.
+  Revogacao: `POST servidores/{id}/revogar`, administrador so da propria empresa (403/404).
+- **Carga (3.2) na nuvem:** `LeitorCargaNuvem.pagina` le por chave primaria crescente (cursor = array JSON da chave da
+  ultima linha, `depois`), uma transacao SNAPSHOT por pagina, `CIFRADA` decifrada. `SyncCargas` guarda `V` (versao do
+  retrato, aberta na primeira pagina e reaproveitada); o campo `versao` da pagina e sempre esse `V`. Como a pagina le o
+  estado atual e nao o de `V`, uma linha alterada depois de `V` aparece na pagina e no delta (upsert idempotente).
+  `carga/delta?desde=` usa `CHANGETABLE(CHANGES)` das tabelas nao `FORA`, so da empresa; 410 se `desde` passou da retencao.
+  **Limite conhecido:** uma linha excluida nao tem empresa para filtrar, entao o delta devolve a chave de toda exclusao
+  (so a chave primaria, sem dados) e a loja ignora a que nao tem; o `ativar` tambem trata qualquer exclusao como
+  "mudou" (a loja repete o delta, ate 20 vezes).
+- **Ativacao:** `POST ativar {desde, versaoLoja}`: a nuvem relê o delta desde `desde`; se nao esta vazio, 409 e a loja
+  repete. Vazio: `SyncEstadoNuvem(aplicadoAte = versaoLoja, detectorDesde = versao da nuvem)`, servidor `ativo`, carga
+  `ativada`. Sem a linha de `SyncEstadoNuvem` a nuvem aceitaria qualquer `de` (grupo 2): agora ela existe desde a ativacao.
+  Em vez de uma transacao `SERIALIZABLE`, a conferencia e em SNAPSHOT e o que mudar depois cai no detector (grupo 4).
+- **Lado da loja:** `CargaInicialLoja` (perfil `loja`) e acionada por LINHA DE COMANDO (`CargaInicialRunner`,
+  `--quack.sync.carga.executar=true`, `--quack.sync.carga.nuvem-url/email/nome-servidor`, senha na variavel
+  `QUACK_SYNC_CARGA_SENHA`; encerra com codigo 0/1 e pode ser repetida). Nao ha rota HTTP: o banco novo nao tem
+  administrador para autenticar. Cada pagina e o progresso `SyncCarga(tabela, ultimaChave)` vao na mesma transacao;
+  a gravacao e upsert (UPDATE, senao INSERT; `IDENTITY_INSERT` para `AuditLog`), entao repetir nao duplica. Banco novo
+  (sem `SyncCarga`): as tabelas sincronizadas sao esvaziadas antes (os dados de referencia do Flyway V2/V3 saem e
+  voltam da nuvem). A chave estrangeira de `Categorias` para ela mesma e suspensa durante a carga e revalidada no fim.
+  `CIFRADA` e cifrada com o `SecretProtector` da loja. Depois do delta vazio: liga snapshot, banco e tabelas (tracking),
+  le a versao `v`, chama `ativar(desde, v)` (409 -> aplica o delta e repete; o que o delta grava com o tracking ligado nao
+  sobe porque `v` e relida e a sincronizacao so comeca com `Ativada = 1`), grava `SyncEstado.Ativada = 1`,
+  `VersaoDe = AplicadoAteNuvem = v`. Recusa rodar numa loja ja ativada.
+- **Referencia global:** `ModuloMercadoRegistros` (`LOJA`) tem chave estrangeira para `ModulosMercado` (`FORA`, global). A carga
+  copia antes das demais as tabelas de `ReferenciasGlobais` (hoje so `ModulosMercado`, sem escopo de empresa, sem tracking).
+  Uma consulta das chaves estrangeiras do `V1` confirma que e a unica `FORA` referenciada por tabela sincronizada.
+- Reuso: `LeitorLinhas` (protocolo) e `ConversorValor.bind` saíram do `LeitorMudancas`/`AplicadorLotes`.
 
 ### D4. Envio loja → nuvem
 

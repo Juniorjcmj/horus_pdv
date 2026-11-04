@@ -71,12 +71,12 @@
 
 ## 3. Registro, carga inicial e ativação
 
-- [ ] 3.1 `POST /api/loja-sync/registrar` (D5 e D9).
+- [x] 3.1 `POST /api/loja-sync/registrar` (D5 e D9).
   - Validação de login igual à da .NET, só administrador, um servidor ativo por empresa, token com hash.
   - Revogação por administrador.
   - Verificação: testes web e IT dos cenários da spec `plataforma/modo-loja` (gerente recusado, segundo servidor,
     token de outra empresa 403, revogado 401).
-- [ ] 3.2 Carga e delta (`GET /api/loja-sync/carga`, `/carga/delta`, `POST /ativar`) e o lado da loja.
+- [x] 3.2 Carga e delta (`GET /api/loja-sync/carga`, `/carga/delta`, `POST /ativar`) e o lado da loja.
   - Banco vazio, páginas retomáveis, segredos recifrados, tracking ligado só na ativação.
   - Verificação: `CargaInicialIT`:
     - carga completa com contagens iguais;

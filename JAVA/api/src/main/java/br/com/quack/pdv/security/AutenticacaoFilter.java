@@ -96,7 +96,8 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
         String caminho = request.getRequestURI();
         String c = caminho.toLowerCase(Locale.ROOT);
         if (c.startsWith("/api/auth/login") || c.startsWith("/api/auth/forgot-password")
-                || c.startsWith("/api/auth/reset-password") || c.startsWith("/api/auth/register")) {
+                || c.startsWith("/api/auth/reset-password") || c.startsWith("/api/auth/register")
+                || c.equals("/api/loja-sync/registrar")) { // registro do servidor da loja: credenciais no corpo (D5)
             return true;
         }
         // Saude do servico (healthcheck do Docker) nao carrega token.

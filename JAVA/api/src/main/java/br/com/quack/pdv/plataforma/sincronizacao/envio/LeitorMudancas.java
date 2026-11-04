@@ -5,20 +5,14 @@ import br.com.quack.pdv.plataforma.sincronizacao.catalogo.ClasseColuna;
 import br.com.quack.pdv.plataforma.sincronizacao.catalogo.EsquemaJdbc;
 import br.com.quack.pdv.plataforma.sincronizacao.catalogo.TabelaSincronizada;
 import br.com.quack.pdv.plataforma.sincronizacao.protocolo.ColunaSync;
-import br.com.quack.pdv.plataforma.sincronizacao.protocolo.ConversorValor;
 import br.com.quack.pdv.plataforma.sincronizacao.protocolo.EmpacotadorPartes;
+import br.com.quack.pdv.plataforma.sincronizacao.protocolo.LeitorLinhas;
 import br.com.quack.pdv.plataforma.sincronizacao.protocolo.ParteLote;
-import br.com.quack.pdv.plataforma.sincronizacao.protocolo.TipoColuna;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -159,16 +153,16 @@ public class LeitorMudancas {
             try (ResultSet rs = ps.executeQuery()) {
                 ResultSetMetaData md = rs.getMetaData();
                 int off = completo ? 0 : k;
-                List<ColunaSync> colunas = tipos(md, cols, off);
-                List<ColunaSync> chave = completo ? null : tipos(md, pk, 0);
+                List<ColunaSync> colunas = LeitorLinhas.tipos(md, cols, off);
+                List<ColunaSync> chave = completo ? null : LeitorLinhas.tipos(md, pk, 0);
                 int posPk = cols.indexOf(pk.getFirst());
                 while (rs.next()) {
                     boolean existe = completo || posPk < 0 || rs.getObject(off + posPk + 1) != null;
                     if (!completo && !existe) {
-                        pac.adicionarExclusao(t.nome(), chave, valores(rs, chave, 1));
+                        pac.adicionarExclusao(t.nome(), chave, LeitorLinhas.valores(rs, chave, 1));
                         continue;
                     }
-                    List<String> v = valores(rs, colunas, off + 1);
+                    List<String> v = LeitorLinhas.valores(rs, colunas, off + 1);
                     enviadas.add(chaveDe(cols, pk, v));
                     pac.adicionarLinha(t.nome(), colunas, v);
                 }
@@ -190,9 +184,9 @@ public class LeitorMudancas {
             try (PreparedStatement ps = con.prepareStatement(sql)) {
                 for (int i = 0; i < partes.length; i++) ps.setString(i + 1, partes[i]);
                 try (ResultSet rs = ps.executeQuery()) {
-                    List<ColunaSync> colunas = tipos(rs.getMetaData(), cols, 0);
+                    List<ColunaSync> colunas = LeitorLinhas.tipos(rs.getMetaData(), cols, 0);
                     while (rs.next()) {
-                        List<String> v = valores(rs, colunas, 1);
+                        List<String> v = LeitorLinhas.valores(rs, colunas, 1);
                         if (jaEnviadas.add(chaveDe(cols, pk, v))) pac.adicionarLinha(t.nome(), colunas, v);
                     }
                 }
@@ -204,39 +198,6 @@ public class LeitorMudancas {
         List<String> k = new ArrayList<>();
         for (String p : pk) k.add(valores.get(cols.indexOf(p)));
         return k;
-    }
-
-    private static List<ColunaSync> tipos(ResultSetMetaData md, List<String> nomes, int offset) throws SQLException {
-        List<ColunaSync> lista = new ArrayList<>();
-        for (int i = 0; i < nomes.size(); i++) {
-            int idx = offset + i + 1;
-            lista.add(new ColunaSync(nomes.get(i), ConversorValor.tipoDeJdbc(md.getColumnType(idx), md.getColumnTypeName(idx))));
-        }
-        return List.copyOf(lista);
-    }
-
-    private static List<String> valores(ResultSet rs, List<ColunaSync> colunas, int primeiro) throws SQLException {
-        List<String> v = new ArrayList<>();
-        for (int i = 0; i < colunas.size(); i++) v.add(ler(rs, primeiro + i, colunas.get(i).tipo()));
-        return v;
-    }
-
-    private static String ler(ResultSet rs, int i, TipoColuna tipo) throws SQLException {
-        Object valor = switch (tipo) {
-            case TEXTO -> rs.getString(i);
-            case INTEIRO -> rs.getLong(i);
-            case DECIMAL -> rs.getBigDecimal(i);
-            case REAL -> rs.getDouble(i);
-            case BOOLEANO -> rs.getBoolean(i);
-            case DATA -> rs.getObject(i, LocalDate.class);
-            case HORA -> rs.getObject(i, LocalTime.class);
-            case DATAHORA -> rs.getObject(i, LocalDateTime.class);
-            case DATAHORA_OFFSET -> rs.getObject(i, OffsetDateTime.class);
-            case BINARIO -> rs.getBytes(i);
-        };
-        if (rs.wasNull()) return null;
-        if (valor instanceof BigDecimal bd) return bd.toPlainString();
-        return ConversorValor.codificar(valor, tipo);
     }
 
     private static long escalar(Connection con, String sql) throws SQLException {

@@ -1,0 +1,73 @@
+package br.com.quack.pdv.plataforma.sincronizacao.carga;
+
+import br.com.quack.pdv.plataforma.sincronizacao.nuvem.ServidorLoja;
+import br.com.quack.pdv.shared.NegocioException;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionOperations;
+
+/**
+ * Ativacao do servidor da loja na nuvem (D5, passos 3 e 4). A loja diz ate onde aplicou o delta ({@code desde}) e a
+ * versao do tracking dela ({@code versaoLoja}). A nuvem confere, num retrato SNAPSHOT, que nada mudou desde
+ * {@code desde}; se mudou, responde 409 e a loja repete o delta. Estando limpo, marca o servidor {@code ativo}, a carga
+ * {@code ativada} e grava {@code SyncEstadoNuvem(aplicadoAte = versaoLoja, detectorDesde = versao da nuvem agora)}: a
+ * partir da primeira linha dessa tabela a nuvem passa a aceitar lotes (D4) e o detector (grupo 4) olha so o futuro.
+ */
+@Service
+@Profile("nuvem")
+@org.springframework.context.annotation.Lazy
+public class AtivacaoNuvem {
+
+    public record Ativacao(long aplicadoAte, long detectorDesde) {}
+
+    private final LeitorCargaNuvem leitor;
+    private final JdbcTemplate jdbc;
+    private final TransactionOperations tx;
+
+    public AtivacaoNuvem(LeitorCargaNuvem leitor, JdbcTemplate jdbc, TransactionOperations tx) {
+        this.leitor = leitor;
+        this.jdbc = jdbc;
+        this.tx = tx;
+    }
+
+    public Ativacao ativar(ServidorLoja servidor, long desde, long versaoLoja) {
+        if (versaoLoja < 0) {
+            throw new NegocioException(HttpStatus.BAD_REQUEST, "Versao da loja invalida.");
+        }
+        CargaDelta delta = leitor.delta(servidor.companyId(), desde);
+        if (!delta.vazio()) {
+            throw new NegocioException(HttpStatus.CONFLICT,
+                    "A nuvem mudou depois do ultimo delta aplicado; repita o delta antes de ativar.");
+        }
+        long detectorDesde = delta.ate();
+        tx.executeWithoutResult(s -> {
+            int n = jdbc.update("UPDATE dbo.SyncEstadoNuvem SET ServidorId = ?, AplicadoAte = ?, DetectorDesde = ?, "
+                    + "UltimoLoteId = NULL, AtualizadoEm = SYSDATETIMEOFFSET() WHERE CompanyId = ?",
+                    servidor.id(), versaoLoja, detectorDesde, servidor.companyId());
+            if (n == 0) {
+                jdbc.update("INSERT INTO dbo.SyncEstadoNuvem (CompanyId, ServidorId, AplicadoAte, DetectorDesde) "
+                        + "VALUES (?, ?, ?, ?)", servidor.companyId(), servidor.id(), versaoLoja, detectorDesde);
+            }
+            jdbc.update("UPDATE dbo.SyncServidores SET Status = N'ativo', AtivadoEm = SYSDATETIMEOFFSET() "
+                    + "WHERE Id = ? AND Status = N'pendente'", servidor.id());
+            jdbc.update("UPDATE dbo.SyncCargas SET Status = N'ativada', AtualizadoEm = SYSDATETIMEOFFSET() "
+                    + "WHERE ServidorId = ? AND Status = N'aberta'", servidor.id());
+        });
+        return new Ativacao(versaoLoja, detectorDesde);
+    }
+
+    /** Abre a carga do servidor (uma aberta por vez) guardando a versao do retrato; devolve a versao. */
+    public long abrirCarga(ServidorLoja servidor) {
+        java.util.List<Long> abertas = jdbc.queryForList(
+                "SELECT VersaoRetrato FROM dbo.SyncCargas WHERE ServidorId = ? AND Status = N'aberta'", Long.class,
+                servidor.id());
+        if (!abertas.isEmpty()) return abertas.getFirst();
+        long versao = leitor.versaoAtual();
+        jdbc.update("INSERT INTO dbo.SyncCargas (Id, CompanyId, ServidorId, VersaoRetrato) VALUES (?, ?, ?, ?)",
+                "carga-" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 24), servidor.companyId(),
+                servidor.id(), versao);
+        return versao;
+    }
+}

@@ -56,6 +56,23 @@ public class AutenticacaoService {
      * contagem de tentativas e gravada em transacao propria, entao nao e desfeita pela excecao.
      */
     public LoginSucesso login(String email, String senha, String ip, String userAgent) {
+        Usuario user = autenticar(email, senha);
+        OffsetDateTime agora = OffsetDateTime.now(clock);
+        String ultimoLogin = FormatoO.utcZ(agora.toInstant());
+        user.setLastLoginAt(ultimoLogin);
+        Sessao sessao = criarSessao(user, ip, userAgent, agora);
+        tx.executeWithoutResult(s -> {
+            usuarios.registrarLoginComSucesso(user.getId(), ultimoLogin);
+            sessoes.save(sessao);
+        });
+        return new LoginSucesso(UsuarioDto.de(user), sessao);
+    }
+
+    /**
+     * Confere e-mail e senha com o mesmo hash, a mesma contagem de tentativas, o mesmo bloqueio, as mesmas mensagens e a
+     * mesma checagem da empresa do login, sem criar sessao. Tambem usado pelo registro do servidor da loja (D5).
+     */
+    public Usuario autenticar(String email, String senha) {
         String emailNormalizado = email.trim().toLowerCase(Locale.ROOT);
         OffsetDateTime agora = OffsetDateTime.now(clock);
 
@@ -93,15 +110,7 @@ public class AutenticacaoService {
         }
 
         verificarSituacaoDaEmpresa(user.getCompanyId());
-
-        String ultimoLogin = FormatoO.utcZ(agora.toInstant());
-        user.setLastLoginAt(ultimoLogin);
-        Sessao sessao = criarSessao(user, ip, userAgent, agora);
-        tx.executeWithoutResult(s -> {
-            usuarios.registrarLoginComSucesso(user.getId(), ultimoLogin);
-            sessoes.save(sessao);
-        });
-        return new LoginSucesso(UsuarioDto.de(user), sessao);
+        return user;
     }
 
     private static NegocioException bloqueado(String mensagem, OffsetDateTime ate) {

@@ -17,7 +17,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Token do servidor da loja (D9): {@code Authorization: LojaServidor <token>}. Resolve o servidor pelo SHA-256 em
- * {@code SyncServidores.TokenHash}; inexistente ou revogado e 401. A rota de lotes exige o token; nas demais rotas
+ * {@code SyncServidores.TokenHash}; inexistente ou revogado e 401. As rotas de lotes (servidor ativo), carga e
+ * ativacao (ativo ou pendente) exigem o token; nas demais rotas
  * de /api/loja-sync o cabecalho e opcional (rotas humanas usam o JWT). Registrado so no perfil nuvem.
  */
 public class ServidorLojaFilter extends OncePerRequestFilter {
@@ -40,7 +41,10 @@ public class ServidorLojaFilter extends OncePerRequestFilter {
         boolean sincronizacao = caminho.startsWith("/api/loja-sync/");
         String cabecalho = request.getHeader("Authorization");
         boolean temToken = cabecalho != null && cabecalho.startsWith(ESQUEMA + " ");
-        boolean exige = caminho.equals("/api/loja-sync/lotes");
+        boolean lotes = caminho.equals("/api/loja-sync/lotes");
+        // carga e ativacao rodam com o servidor ainda "pendente"; lotes so com o servidor "ativo"
+        boolean exige = lotes || caminho.equals("/api/loja-sync/carga") || caminho.equals("/api/loja-sync/carga/delta")
+                || caminho.equals("/api/loja-sync/ativar");
         if (!sincronizacao || (!temToken && !exige)) {
             chain.doFilter(request, response);
             return;
@@ -51,7 +55,8 @@ public class ServidorLojaFilter extends OncePerRequestFilter {
         }
         String token = cabecalho.substring(ESQUEMA.length() + 1).trim();
         List<ServidorLoja> achados = token.isEmpty() ? List.of() : jdbc.query(
-                "SELECT Id, CompanyId FROM dbo.SyncServidores WHERE TokenHash = ? AND Status = N'ativo'",
+                "SELECT Id, CompanyId FROM dbo.SyncServidores WHERE TokenHash = ? AND Status IN ("
+                        + (lotes ? "N'ativo'" : "N'ativo', N'pendente'") + ")",
                 (rs, i) -> new ServidorLoja(rs.getString(1), rs.getString(2)), hash(token));
         if (achados.isEmpty()) {
             resposta.erro(response, 401, MSG);
