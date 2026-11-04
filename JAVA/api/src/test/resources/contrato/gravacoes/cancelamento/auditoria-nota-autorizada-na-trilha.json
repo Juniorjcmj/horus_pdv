@@ -1,0 +1,56 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Trilha de cancelamentos.",
+    "details" : null,
+    "data" : [ {
+      "id" : "vc-7911ecabad53409bacf466dbf9f0cc9d",
+      "ocorridoEm" : "2026-11-03T23:53:53.4090373+00:00",
+      "resultado" : "negada",
+      "via" : "venda",
+      "motivoRecusa" : "Esta venda tem NFC-e autorizada (nº 1). O cancelamento precisa ser feito na SEFAZ: cancele a NFC-e, que cancela a venda e estorna o estoque junto.",
+      "saleNumber" : "15042",
+      "operadorId" : "usr-ct-gerente",
+      "operadorNome" : "Gil Gerente",
+      "supervisorId" : "usr-ct-gerente",
+      "supervisorNome" : "Gil Gerente",
+      "justificativa" : "Cliente desistiu da compra.",
+      "terminal" : null,
+      "ip" : "::ffff:172.19.0.1",
+      "caixaSessaoId" : "cx-ct-aberto",
+      "caixaSessaoStatus" : "aberta",
+      "totalVenda" : 3.0,
+      "clienteNome" : "Consumidor",
+      "clienteCpf" : null,
+      "itensEstornados" : null,
+      "fiadoEstornado" : null,
+      "snapshot" : {
+        "itens" : [ {
+          "codigo" : "CT001",
+          "nome" : "Produto Contrato 1",
+          "quantidade" : 1.0,
+          "precoUnitario" : 3.0,
+          "total" : 3.0
+        } ],
+        "pagamentos" : [ {
+          "forma" : "Pix",
+          "valor" : 3.0,
+          "recebido" : null,
+          "troco" : null
+        } ],
+        "notas" : [ {
+          "id" : "df-ct-nota",
+          "modelo" : 65,
+          "numero" : "1",
+          "serie" : "2",
+          "status" : 3,
+          "chave" : "33260106332765000105650020000000011000000019"
+        } ]
+      }
+    } ]
+  }
+}

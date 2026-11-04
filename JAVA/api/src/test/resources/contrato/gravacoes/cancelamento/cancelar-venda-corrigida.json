@@ -1,0 +1,16 @@
+{
+  "status" : 409,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Esta venda foi corrigida e substituída por outra. Cancele a venda nova gerada pela correção.",
+    "details" : null,
+    "data" : {
+      "codigo" : "STATUS_INVALIDO",
+      "documentoFiscalId" : null,
+      "documentoModelo" : null
+    }
+  }
+}

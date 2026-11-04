@@ -1,0 +1,12 @@
+{
+  "status" : 403,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Usuário selecionado não possui perfil de gerente ou administrador.",
+    "details" : null,
+    "data" : null
+  }
+}

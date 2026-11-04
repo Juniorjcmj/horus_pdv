@@ -50,6 +50,15 @@ public final class EstadoDoBanco {
         throw new IllegalStateException("Falha ao restaurar o estado do banco do contrato", ultima);
     }
 
+    /** Executa um comando SQL avulso (passo "sql" de um cenario). */
+    public void executar(String sql) {
+        try (Connection c = conexoes.get(); Statement s = c.createStatement()) {
+            s.execute(sql);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Falha no passo sql do cenario: " + sql, e);
+        }
+    }
+
     private static String ler(String recurso) {
         try (var in = EstadoDoBanco.class.getResourceAsStream(recurso)) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);

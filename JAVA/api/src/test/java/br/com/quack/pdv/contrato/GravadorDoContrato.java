@@ -23,7 +23,7 @@ class GravadorDoContrato {
         String sql = System.getProperty("contrato.sql",
                 "jdbc:sqlserver://localhost:14334;databaseName=HorusPdv;encrypt=true;trustServerCertificate=true");
         EstadoDoBanco estado = EstadoDoBanco.por(sql, "sa", System.getProperty("contrato.sqlsenha", "Contrato#Quack2026"));
-        MotorDeContrato motor = new MotorDeContrato(url, estado::restaurar);
+        MotorDeContrato motor = new MotorDeContrato(url, estado::restaurar).comExecutorSql(estado::executar);
         Path raiz = Path.of("src", "test", "resources", "contrato", "gravacoes");
         String so = System.getProperty("contrato.grupo");
 

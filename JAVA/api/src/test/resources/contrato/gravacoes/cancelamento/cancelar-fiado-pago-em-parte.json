@@ -1,0 +1,16 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "O cliente já pagou parte deste fiado: o saldo devedor é menor que o valor da venda. Faça o estorno pelo financeiro.",
+    "details" : null,
+    "data" : {
+      "codigo" : "ERRO",
+      "documentoFiscalId" : null,
+      "documentoModelo" : null
+    }
+  }
+}

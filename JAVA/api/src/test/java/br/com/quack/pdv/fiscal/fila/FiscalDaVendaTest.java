@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.com.quack.pdv.fiscal.fila.app.DecisaoEmissaoNfce;
+import br.com.quack.pdv.fiscal.fila.app.EmitenteConfigurado;
 import br.com.quack.pdv.fiscal.fila.app.FiscalDaVenda;
 import br.com.quack.pdv.fiscal.fila.app.PendenciaFiscal;
 import br.com.quack.pdv.shared.NegocioException;
@@ -21,7 +22,8 @@ class FiscalDaVendaTest {
 
     private final DecisaoEmissaoNfce decisao = mock(DecisaoEmissaoNfce.class);
     private final PendenciaFiscal pendencia = mock(PendenciaFiscal.class);
-    private final FiscalDaVenda fiscal = new FiscalDaVenda(decisao, pendencia);
+    private final EmitenteConfigurado emitente = mock(EmitenteConfigurado.class);
+    private final FiscalDaVenda fiscal = new FiscalDaVenda(decisao, pendencia, emitente);
 
     @Test
     void falhaNaPendenciaDa503ComAMensagemEOsDadosDaVenda() {
@@ -66,5 +68,44 @@ class FiscalDaVendaTest {
         assertThatThrownBy(() -> fiscal.aposVenda("emp", "v", "1", "x", List.of(), ""))
                 .isInstanceOfSatisfying(NegocioException.class,
                         e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    void correcaoSemEmitenteNaoDecideNemEnfileira() {
+        when(emitente.existe("emp")).thenReturn(false);
+
+        assertThat(fiscal.aposCorrecao("emp", "sale-emp-2")).isFalse();
+
+        verify(decisao, never()).avaliarEmissaoParaVenda(any(), any(), any(), any(), any());
+        verify(pendencia, never()).enfileirar(any(), any());
+    }
+
+    @Test
+    void correcaoComEmitenteEQueDecideEmiteEnfileira() {
+        when(emitente.existe("emp")).thenReturn(true);
+        when(decisao.avaliarEmissaoParaVenda("emp", "sale-emp-2", "", List.of(), "")).thenReturn(true);
+
+        assertThat(fiscal.aposCorrecao("emp", "sale-emp-2")).isTrue();
+
+        verify(pendencia).enfileirar("emp", "sale-emp-2");
+    }
+
+    @Test
+    void correcaoQueDecideNaoEmitirNaoEnfileira() {
+        when(emitente.existe("emp")).thenReturn(true);
+        when(decisao.avaliarEmissaoParaVenda(any(), any(), any(), any(), any())).thenReturn(false);
+
+        assertThat(fiscal.aposCorrecao("emp", "sale-emp-2")).isFalse();
+
+        verify(pendencia, never()).enfileirar(any(), any());
+    }
+
+    @Test
+    void falhaFiscalNaCorrecaoNaoDerrubaACorrecao() {
+        when(emitente.existe("emp")).thenReturn(true);
+        when(decisao.avaliarEmissaoParaVenda(any(), any(), any(), any(), any())).thenReturn(true);
+        when(pendencia.enfileirar("emp", "sale-emp-2")).thenThrow(new IllegalStateException("banco fora"));
+
+        assertThat(fiscal.aposCorrecao("emp", "sale-emp-2")).isFalse();
     }
 }

@@ -72,8 +72,7 @@ public class DocumentoFiscalConsulta {
             return new DocumentoFiscalDetalhe(
                     rs.getString("Id"), nz(rs.getString("SaleNumber")), rs.getInt("Serie"), rs.getInt("NumeroNf"),
                     rs.getInt("Status"), rs.getString("ChaveAcesso"), rs.getString("Protocolo"),
-                    rs.getString("MotivoStatus"), (Integer) (rs.getObject("CodigoStatus") == null ? null
-                            : rs.getInt("CodigoStatus")),
+                    rs.getString("MotivoStatus"), rs.getInt("CodigoStatus"), // .NET ReadInt: NULL vira 0,
                     rs.getObject("DhAutorizacao", OffsetDateTime.class),
                     rs.getObject("CriadoEm", OffsetDateTime.class), rs.getInt("Tentativas"),
                     total == null ? "0,00" : Dinheiro.formatarSemSimbolo(total), rs.getString("CustomerName"),

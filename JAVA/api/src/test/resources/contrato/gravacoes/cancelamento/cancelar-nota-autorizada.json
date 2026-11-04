@@ -1,0 +1,16 @@
+{
+  "status" : 409,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Esta venda tem NFC-e autorizada (nº 1). O cancelamento precisa ser feito na SEFAZ: cancele a NFC-e, que cancela a venda e estorna o estoque junto.",
+    "details" : null,
+    "data" : {
+      "codigo" : "NOTA_AUTORIZADA",
+      "documentoFiscalId" : "df-ct-nota",
+      "documentoModelo" : 65
+    }
+  }
+}

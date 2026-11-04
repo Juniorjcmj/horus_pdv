@@ -36,7 +36,7 @@ public final class MotorDeContrato {
 
     public static final ObjectMapper JSON = new ObjectMapper();
     public static final String SENHA = "Senha#Quack2026";
-    public static final String[] GRUPOS = {"auth", "sessao", "usuario", "empresa", "tema", "categoria", "fornecedor", "cliente", "modulo-mercado", "treinamento", "admin-empresas", "produto", "movimentacao", "lote", "nfe-import", "entrada-manual", "ordem-compra", "promocao", "inventario", "caixa", "vendas"};
+    public static final String[] GRUPOS = {"auth", "sessao", "usuario", "empresa", "tema", "categoria", "fornecedor", "cliente", "modulo-mercado", "treinamento", "admin-empresas", "produto", "movimentacao", "lote", "nfe-import", "entrada-manual", "ordem-compra", "promocao", "inventario", "caixa", "vendas", "cancelamento"};
 
     private static final Pattern ISO = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$");
     private static final Pattern DATA = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
@@ -46,10 +46,19 @@ public final class MotorDeContrato {
             .version(HttpClient.Version.HTTP_1_1).build();
     private final String baseUrl;
     private final Runnable restaurarEstado;
+    private java.util.function.Consumer<String> executorSql = sql -> {
+        throw new IllegalStateException("passo \"sql\" sem executor configurado");
+    };
 
     public MotorDeContrato(String baseUrl, Runnable restaurarEstado) {
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.restaurarEstado = restaurarEstado;
+    }
+
+    /** Executor dos passos {"sql": "..."} do "antes" (ajuste de estado que nao tem rota, rodado nos dois lados). */
+    public MotorDeContrato comExecutorSql(java.util.function.Consumer<String> executor) {
+        this.executorSql = executor;
+        return this;
     }
 
     // ---- cenarios ----
@@ -92,6 +101,10 @@ public final class MotorDeContrato {
 
         Map<String,String> variaveis = new LinkedHashMap<>();
         for (JsonNode passo : cenario.path("antes")) {
+            if (passo.hasNonNull("sql")) {
+                executorSql.accept(passo.get("sql").asText());
+                continue;
+            }
             String tokenPasso = tokenAtual;
             if (passo.hasNonNull("usuario")) {
                 Resposta login = enviar("POST", "/api/Auth/login", JSON.createObjectNode().put("email", passo.get("usuario").asText()).put("password", SENHA).toString(), Map.of(), null);

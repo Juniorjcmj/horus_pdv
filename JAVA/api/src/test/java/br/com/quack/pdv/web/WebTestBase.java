@@ -75,6 +75,15 @@ public abstract class WebTestBase {
     @MockitoBean protected br.com.quack.pdv.fiscal.fila.app.DecisaoEmissaoNfce decisaoEmissao;
     @MockitoBean protected br.com.quack.pdv.fiscal.fila.app.PendenciaFiscal pendenciaFiscal;
     @MockitoBean protected br.com.quack.pdv.fiscal.fila.app.FiscalDaVenda fiscalDaVenda;
+    @MockitoBean protected br.com.quack.pdv.fiscal.fila.app.EmitenteConfigurado emitenteConfigurado;
+    @MockitoBean protected br.com.quack.pdv.fiscal.fila.app.FilaFiscalMinima filaFiscalMinima;
+    @MockitoBean protected br.com.quack.pdv.fiscal.fila.repo.FilaFiscalRepository filaFiscalRepository;
+    @MockitoBean protected br.com.quack.pdv.venda.fiado.app.FiadoEstornos fiadoEstornos;
+    @MockitoBean protected br.com.quack.pdv.venda.cancelamento.repo.CancelamentoRepository cancelamentoRepository;
+    @MockitoBean protected br.com.quack.pdv.venda.cancelamento.repo.CorrecaoRepository correcaoRepository;
+    @MockitoBean protected br.com.quack.pdv.venda.cancelamento.app.CancelamentoVendaService cancelamentoVenda;
+    @MockitoBean protected br.com.quack.pdv.venda.cancelamento.app.CorrecaoVendaService correcaoVenda;
+    @MockitoBean protected br.com.quack.pdv.venda.cancelamento.app.CancelamentoConsultas cancelamentoConsultas;
     @MockitoBean protected ValidadorSessao validador;
     @MockitoBean protected AutenticacaoService autenticacao;
     @MockitoBean protected CadastroPublicoService cadastro;

@@ -61,7 +61,7 @@ class ApiJavaContratoTest extends BancoIT {
     Stream<DynamicTest> cenarios() throws Exception {
         EstadoDoBanco estado =
                 EstadoDoBanco.por(urlDoBanco("quack"), SQL.getUsername(), SQL.getPassword());
-        MotorDeContrato motor = new MotorDeContrato("http://localhost:" + porta, estado::restaurar);
+        MotorDeContrato motor = new MotorDeContrato("http://localhost:" + porta, estado::restaurar).comExecutorSql(estado::executar);
 
         List<DynamicTest> testes = new ArrayList<>();
         String so = System.getProperty("contrato.grupo");

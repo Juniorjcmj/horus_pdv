@@ -26,10 +26,33 @@ public class FiscalDaVenda {
 
     private final DecisaoEmissaoNfce decisao;
     private final PendenciaFiscal pendencia;
+    private final EmitenteConfigurado emitente;
 
-    public FiscalDaVenda(DecisaoEmissaoNfce decisao, PendenciaFiscal pendencia) {
+    public FiscalDaVenda(DecisaoEmissaoNfce decisao, PendenciaFiscal pendencia, EmitenteConfigurado emitente) {
         this.decisao = decisao;
         this.pendencia = pendencia;
+        this.emitente = emitente;
+    }
+
+    /**
+     * Passo fiscal da venda nova gerada por uma correcao (HistoricoVendasController.CorrigirVenda): so com emitente
+     * configurado, decide com forma e CPF vazios e grava a pendencia. Qualquer falha vira aviso no log e nunca derruba
+     * a correcao. Devolve se a nota foi enfileirada.
+     */
+    public boolean aposCorrecao(String companyId, String novaVendaId) {
+        try {
+            if (!emitente.existe(companyId)) {
+                return false;
+            }
+            if (!decisao.avaliarEmissaoParaVenda(companyId, novaVendaId, "", List.of(), "")) {
+                return false;
+            }
+            pendencia.enfileirar(companyId, novaVendaId);
+            return true;
+        } catch (RuntimeException e) {
+            LOG.warn("Falha ao enfileirar NFC-e para venda corrigida {}.", novaVendaId, e);
+            return false;
+        }
     }
 
     public Resultado aposVenda(String companyId, String vendaId, String saleNumber, String paymentType,

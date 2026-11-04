@@ -1,0 +1,38 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimentações obtidas com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "mov-33fdc6ca45e84ee5ab055c0760a699b7",
+      "produtoId" : "pr-ct-2",
+      "produtoNome" : "",
+      "produtoCodigo" : "CT002",
+      "tipo" : "devolucao",
+      "quantidade" : 1.0,
+      "estoqueAnterior" : 9.0,
+      "estoqueNovo" : 10.0,
+      "motivo" : "Correcao da venda #15043 (devolucao da original)",
+      "usuarioId" : "usr-ct-gerente",
+      "usuarioNome" : "Gil Gerente",
+      "criadoEm" : "2026-11-03 23:55:05"
+    }, {
+      "id" : "mov-048970a3836d4def8ec554144b030a85",
+      "produtoId" : "pr-ct-2",
+      "produtoNome" : "",
+      "produtoCodigo" : "CT002",
+      "tipo" : "saida_venda",
+      "quantidade" : 1.0,
+      "estoqueAnterior" : 10.0,
+      "estoqueNovo" : 9.0,
+      "motivo" : "Venda #15043",
+      "usuarioId" : "sistema",
+      "usuarioNome" : "Sistema",
+      "criadoEm" : "2026-11-03 23:55:05"
+    } ]
+  }
+}

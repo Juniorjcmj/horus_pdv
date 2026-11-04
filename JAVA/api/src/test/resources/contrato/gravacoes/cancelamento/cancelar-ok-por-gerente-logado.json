@@ -1,0 +1,18 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Venda cancelada e mercadorias estornadas ao estoque com sucesso.",
+    "details" : null,
+    "data" : {
+      "saleNumber" : "15040",
+      "canceladoEm" : "03/11/2026 20:53:05",
+      "supervisorNome" : "Gil Gerente",
+      "itensEstornados" : 1,
+      "fiadoEstornado" : 0
+    }
+  }
+}

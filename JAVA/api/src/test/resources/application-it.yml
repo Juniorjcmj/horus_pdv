@@ -1,6 +1,9 @@
 # Perfil dos testes de integracao: banco real (Testcontainers) com Flyway; o resto igual a producao.
 quack:
   dev: false
+  fiscal:
+    fila-minima:
+      ativa: false   # os ITs da fila chamam processarLote() direto; nos demais a rotina nao mexe nas notas
   auth:
     jwt-secret: segredo-jwt-de-integracao-com-mais-de-32-caracteres
   security:

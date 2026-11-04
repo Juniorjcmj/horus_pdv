@@ -1,0 +1,12 @@
+{
+  "status" : 400,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : false,
+    "message" : "Não é possível remover todos os itens. Para isso, utilize o cancelamento da venda.",
+    "details" : null,
+    "data" : null
+  }
+}

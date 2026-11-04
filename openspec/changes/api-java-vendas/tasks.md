@@ -76,23 +76,23 @@
   `proximoNumeroFiscal`, 503 na falha) ligadas ao registro e à finalização de pedido; testes: IT do intervalo (3 vendas
   em dinheiro com intervalo 3: só a terceira emite e o contador zera), forma "sempre emitir", CPF na nota, replay sem
   avançar o contador, pendência única por venda, venda cancelada recusada, e unitário do 503 com `data` igual ao .NET
-- [ ] 4.2 Implementar a `FilaFiscalMinima` (D6: retomar vendas sem documento, nota de venda cancelada não emitida com
+- [x] 4.2 Implementar a `FilaFiscalMinima` (D6: retomar vendas sem documento, nota de venda cancelada não emitida com
   o motivo do .NET e auditoria `NfceNaoEmitida`, erro de empresa sem emitente, demais paradas,
   `quack.fiscal.fila-minima.ativa`); testes: IT de cada ramo com `Clock` fixo, IT com a propriedade desligada sem
   mudar nenhuma nota, e verificação de que nenhuma classe da fila chama provedor fiscal ou rede
 
 ## 5. Cancelamento e correção
 
-- [ ] 5.1 Escrever e gravar os cenários de cancelamento (ok com estorno, justificativa curta, senha errada,
+- [x] 5.1 Escrever e gravar os cenários de cancelamento (ok com estorno, justificativa curta, senha errada,
   inexistente, já cancelada, corrigida, nota autorizada, nota pendente com aviso, fiado estornado, fiado já pago em
   parte), lista e auditoria de cancelamentos (perfis, filtros `de`/`ate`/`venda`, tentativa negada na trilha) e
   correção (com gerente, sem gerente com e sem perfil financeiro, justificativa curta, sem produtos); verificar a
   gravação de todos
-- [ ] 5.2 Implementar o cancelamento e a trilha (D5: `Negar`, mapa de código para HTTP, transação na ordem do .NET,
+- [x] 5.2 Implementar o cancelamento e a trilha (D5: `Negar`, mapa de código para HTTP, transação na ordem do .NET,
   estorno de estoque, fiado e lotes); testes: IT (estoque volta pelo registrador com tipo `Devolucao`; fiado
   estornado; lotes de volta; dois cancelamentos simultâneos estornam uma vez só; recusa grava `VendaCancelamentos`
   negada e `AuditLog`) e o comparador verde nos cenários de cancelamento; travas de produto em ordem de código (D13) com IT de vendas cruzadas sem deadlock
-- [ ] 5.3 Implementar a correção (porte literal do `CorrigirVendaAsync`, número pelo `NumeradorDocumentos`, decisão
+- [x] 5.3 Implementar a correção (porte literal do `CorrigirVendaAsync`, número pelo `NumeradorDocumentos`, decisão
   fiscal só com emitente, sem derrubar a correção); testes: IT (venda original "corrigida", nova venda com os itens
   restantes, estoque dos removidos de volta) e o comparador verde nos cenários de correção
 

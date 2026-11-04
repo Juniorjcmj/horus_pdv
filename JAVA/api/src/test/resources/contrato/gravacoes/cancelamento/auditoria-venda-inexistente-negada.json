@@ -1,0 +1,34 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Trilha de cancelamentos.",
+    "details" : null,
+    "data" : [ {
+      "id" : "vc-686a6b6a33eb40e3a85d997302c4b5c8",
+      "ocorridoEm" : "2026-11-03T23:53:50.5721811+00:00",
+      "resultado" : "negada",
+      "via" : "venda",
+      "motivoRecusa" : "Venda não encontrada.",
+      "saleNumber" : "99999",
+      "operadorId" : "usr-ct-gerente",
+      "operadorNome" : "Gil Gerente",
+      "supervisorId" : "usr-ct-gerente",
+      "supervisorNome" : "Gil Gerente",
+      "justificativa" : "Cliente desistiu da compra.",
+      "terminal" : null,
+      "ip" : "::ffff:172.19.0.1",
+      "caixaSessaoId" : null,
+      "caixaSessaoStatus" : null,
+      "totalVenda" : null,
+      "clienteNome" : null,
+      "clienteCpf" : null,
+      "itensEstornados" : null,
+      "fiadoEstornado" : null,
+      "snapshot" : null
+    } ]
+  }
+}

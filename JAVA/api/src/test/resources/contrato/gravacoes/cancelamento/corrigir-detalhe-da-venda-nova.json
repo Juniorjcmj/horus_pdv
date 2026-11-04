@@ -1,0 +1,73 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Detalhes da venda obtidos com sucesso.",
+    "details" : null,
+    "data" : {
+      "vendaId" : "sale-empresa-principal-15044",
+      "saleNumber" : "15044",
+      "customerName" : "Consumidor",
+      "customerCpf" : "-",
+      "paymentType" : "Múltiplo",
+      "totalAmount" : "6,00",
+      "operatorName" : "Cai Caixa",
+      "saleDate" : "03/11/2026 21:09:53",
+      "clientSaleId" : null,
+      "offlineReference" : null,
+      "items" : [ {
+        "saleNumber" : "15044",
+        "status" : "finalizada",
+        "customerName" : "Consumidor",
+        "customerCpf" : "-",
+        "paymentType" : "Múltiplo",
+        "totalAmount" : "6,00",
+        "operatorName" : "Cai Caixa",
+        "productCode" : "CT001",
+        "productName" : "Produto Contrato 1",
+        "quantity" : 2.0,
+        "unitPrice" : "3,00",
+        "desconto" : 0.0,
+        "promocaoId" : null,
+        "itemTotal" : "6,00",
+        "saleDate" : "03/11/2026 21:09:53",
+        "clientSaleId" : null,
+        "offlineReference" : null,
+        "fiscalDocId" : null,
+        "fiscalModelo" : null,
+        "fiscalNumeroNf" : null,
+        "fiscalSerie" : null,
+        "fiscalStatus" : null,
+        "fiscalChaveAcesso" : null,
+        "paymentBreakdown" : "dinheiro=3.33;credito=2.67",
+        "canceladoEm" : null,
+        "canceladoPorOperadorNome" : null,
+        "canceladoPorSupervisorNome" : null,
+        "canceladoJustificativa" : null
+      } ],
+      "payments" : [ {
+        "id" : "sale-empresa-principal-15044-pag-001",
+        "companyId" : "empresa-principal",
+        "vendaId" : "sale-empresa-principal-15044",
+        "paymentType" : "dinheiro",
+        "amount" : 3.33,
+        "cashGiven" : 3.33,
+        "changeAmount" : 0.0,
+        "createdAt" : "2026-11-03T21:09:53.2929919-03:00"
+      }, {
+        "id" : "sale-empresa-principal-15044-pag-002",
+        "companyId" : "empresa-principal",
+        "vendaId" : "sale-empresa-principal-15044",
+        "paymentType" : "credito",
+        "amount" : 2.67,
+        "cashGiven" : null,
+        "changeAmount" : 0.0,
+        "createdAt" : "2026-11-03T21:09:53.2929919-03:00"
+      } ],
+      "documentoFiscal" : null
+    }
+  }
+}

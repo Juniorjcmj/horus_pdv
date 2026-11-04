@@ -1,0 +1,38 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Movimentações obtidas com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "id" : "mov-bf9536f929fb4725af7bfe86e687586c",
+      "produtoId" : "pr-ct-1",
+      "produtoNome" : "",
+      "produtoCodigo" : "CT001",
+      "tipo" : "devolucao",
+      "quantidade" : 2.0,
+      "estoqueAnterior" : 10.0,
+      "estoqueNovo" : 12.0,
+      "motivo" : "Cancelamento da venda #15040",
+      "usuarioId" : "usr-ct-gerente",
+      "usuarioNome" : "Gil Gerente",
+      "criadoEm" : "2026-11-03 23:53:07"
+    }, {
+      "id" : "mov-ct-seed1",
+      "produtoId" : "pr-ct-1",
+      "produtoNome" : "",
+      "produtoCodigo" : "CT001",
+      "tipo" : "entrada",
+      "quantidade" : 10.0,
+      "estoqueAnterior" : 0.0,
+      "estoqueNovo" : 10.0,
+      "motivo" : "Carga inicial contrato",
+      "usuarioId" : "usr-ct-gerente",
+      "usuarioNome" : "Gil Gerente",
+      "criadoEm" : "2026-01-15 12:00:00"
+    } ]
+  }
+}

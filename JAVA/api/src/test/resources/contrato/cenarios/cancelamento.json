@@ -1,0 +1,2189 @@
+[
+ {
+  "nome": "cancelar-ok-com-estorno",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  },
+  "volateis": {
+   "data.canceladoEm": "texto"
+  }
+ },
+ {
+  "nome": "cancelar-ok-por-gerente-logado",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra.",
+    "terminal": "PDV-02"
+   }
+  },
+  "volateis": {
+   "data.canceladoEm": "texto"
+  }
+ },
+ {
+  "nome": "cancelar-ok-movimentacao-devolucao",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15040/cancelar",
+    "auth": "bearer",
+    "corpo": {
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026",
+     "justificativa": "Cliente desistiu da compra."
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Produto/pr-ct-1/movimentacoes"
+  },
+  "volateis": {
+   "data[0].id": "id",
+   "data[0].criadoEm": "texto"
+  }
+ },
+ {
+  "nome": "cancelar-ok-venda-nova-dois-itens",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  },
+  "volateis": {
+   "data.canceladoEm": "texto"
+  }
+ },
+ {
+  "nome": "cancelar-justificativa-curta",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "abc"
+   }
+  }
+ },
+ {
+  "nome": "cancelar-justificativa-so-espacos",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "    "
+   }
+  }
+ },
+ {
+  "nome": "cancelar-senha-errada",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "errada",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-supervisor-sem-perfil",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-caixa",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-supervisor-vazio",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "",
+    "supervisorPassword": "",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-supervisor-inexistente",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-nao-existe",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-venda-inexistente",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/99999/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-ja-cancelada",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15041/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-duas-vezes-seguidas",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15040/cancelar",
+    "auth": "bearer",
+    "corpo": {
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026",
+     "justificativa": "Cliente desistiu da compra."
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-venda-corrigida",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15043/corrigir",
+    "auth": "bearer",
+    "corpo": {
+     "produtosParaRemover": [
+      "CT002"
+     ],
+     "justificativa": "Item lançado por engano.",
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-venda-nova-da-correcao",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15043/corrigir",
+    "auth": "bearer",
+    "corpo": {
+     "produtosParaRemover": [
+      "CT002"
+     ],
+     "justificativa": "Item lançado por engano.",
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15044/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  },
+  "volateis": {
+   "data.canceladoEm": "texto"
+  }
+ },
+ {
+  "nome": "cancelar-nota-autorizada",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15042/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-nota-pendente-com-aviso",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "6,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "pix",
+       "amount": 6
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  },
+  "volateis": {
+   "data.canceladoEm": "texto"
+  }
+ },
+ {
+  "nome": "cancelar-fiado-estornado",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "X",
+     "customerCpf": "111.444.777-35",
+     "paymentType": "fiado",
+     "totalAmount": "6,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "fiado",
+       "amount": 6
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  },
+  "volateis": {
+   "data.canceladoEm": "texto"
+  }
+ },
+ {
+  "nome": "cancelar-fiado-pago-em-parte",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "X",
+     "customerCpf": "111.444.777-35",
+     "paymentType": "fiado",
+     "totalAmount": "6,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "fiado",
+       "amount": 6
+      }
+     ]
+    },
+    "status": 201
+   },
+   {
+    "sql": "UPDATE Clientes SET SaldoDevedor = 2.00 WHERE Id = N'cl-ct-folgado' AND CompanyId = N'empresa-principal';"
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-sem-token",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-perfil-estoquista",
+  "usuario": "estoquista@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-outra-empresa",
+  "usuario": "adm.aprovada@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  }
+ },
+ {
+  "nome": "cancelar-ok-atendente",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/cancelar",
+   "auth": "bearer",
+   "corpo": {
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026",
+    "justificativa": "Cliente desistiu da compra."
+   }
+  },
+  "volateis": {
+   "data.canceladoEm": "texto"
+  }
+ },
+ {
+  "nome": "auditoria-gerente-seed",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria"
+  }
+ },
+ {
+  "nome": "auditoria-admin-filtro-venda",
+  "usuario": "admin@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria?venda=15041"
+  }
+ },
+ {
+  "nome": "auditoria-tentativa-negada-na-trilha",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15040/cancelar",
+    "auth": "bearer",
+    "corpo": {
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "errada",
+     "justificativa": "Cliente desistiu da compra.",
+     "terminal": "PDV-01"
+    },
+    "status": 403
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria?venda=15040"
+  },
+  "volateis": {
+   "data[0].id": "id",
+   "data[0].ocorridoEm": "texto",
+   "data[0].ip": "texto"
+  }
+ },
+ {
+  "nome": "auditoria-cancelamento-autorizado-na-trilha",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15040/cancelar",
+    "auth": "bearer",
+    "corpo": {
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026",
+     "justificativa": "Cliente desistiu da compra.",
+     "terminal": "PDV-01"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria?venda=15040"
+  },
+  "volateis": {
+   "data[0].id": "id",
+   "data[0].ocorridoEm": "texto",
+   "data[0].ip": "texto"
+  }
+ },
+ {
+  "nome": "auditoria-venda-inexistente-negada",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/99999/cancelar",
+    "auth": "bearer",
+    "corpo": {
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026",
+     "justificativa": "Cliente desistiu da compra."
+    },
+    "status": 404
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria?venda=99999"
+  },
+  "volateis": {
+   "data[0].id": "id",
+   "data[0].ocorridoEm": "texto",
+   "data[0].ip": "texto"
+  }
+ },
+ {
+  "nome": "auditoria-justificativa-curta-na-trilha",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15040/cancelar",
+    "auth": "bearer",
+    "corpo": {
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026",
+     "justificativa": "abc"
+    },
+    "status": 400
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria?venda=15040"
+  },
+  "volateis": {
+   "data[0].id": "id",
+   "data[0].ocorridoEm": "texto",
+   "data[0].ip": "texto"
+  }
+ },
+ {
+  "nome": "auditoria-nota-autorizada-na-trilha",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15042/cancelar",
+    "auth": "bearer",
+    "corpo": {
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026",
+     "justificativa": "Cliente desistiu da compra."
+    },
+    "status": 409
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria?venda=15042"
+  },
+  "volateis": {
+   "data[0].id": "id",
+   "data[0].ocorridoEm": "texto",
+   "data[0].ip": "texto"
+  }
+ },
+ {
+  "nome": "auditoria-filtro-de-ate",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria?de=2026-01-16&ate=2026-01-16"
+  }
+ },
+ {
+  "nome": "auditoria-ate-mais-um-dia-exclui",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria?ate=2026-01-15"
+  }
+ },
+ {
+  "nome": "auditoria-de-futuro-vazia",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria?de=2027-01-01"
+  }
+ },
+ {
+  "nome": "auditoria-data-invalida-ignorada",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria?de=xyz&ate=abc"
+  }
+ },
+ {
+  "nome": "auditoria-perfil-caixa",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria"
+  }
+ },
+ {
+  "nome": "auditoria-perfil-atendente",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria"
+  }
+ },
+ {
+  "nome": "auditoria-sem-token",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria"
+  }
+ },
+ {
+  "nome": "auditoria-outra-empresa",
+  "usuario": "adm.aprovada@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos/auditoria"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-seed",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-gerente",
+  "usuario": "gerente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-depois-de-cancelar",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15040/cancelar",
+    "auth": "bearer",
+    "corpo": {
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026",
+     "justificativa": "Cliente desistiu da compra."
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos"
+  },
+  "volateis": {
+   "data[0].canceladoEm": "texto"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-venda-com-dois-itens",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15043/cancelar",
+    "auth": "bearer",
+    "corpo": {
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026",
+     "justificativa": "Cliente desistiu da compra."
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos"
+  },
+  "volateis": {
+   "data[0].canceladoEm": "texto",
+   "data[0].saleDate": "texto"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-filtro-de-ate",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos?de=2026-01-16&ate=2026-01-16"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-ate-mais-um-dia-exclui",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos?ate=2026-01-15"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-de-futuro-vazia",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos?de=2027-01-01"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-data-invalida-ignorada",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos?de=xyz"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-atendente",
+  "usuario": "atendente@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-perfil-estoquista",
+  "usuario": "estoquista@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-sem-token",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos"
+  }
+ },
+ {
+  "nome": "lista-cancelamentos-outra-empresa",
+  "usuario": "adm.aprovada@contrato.quack",
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/cancelamentos"
+  }
+ },
+ {
+  "nome": "corrigir-com-gerente-ok",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT002"
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  },
+  "volateis": {
+   "data.corrigidaEm": "texto"
+  }
+ },
+ {
+  "nome": "corrigir-codigo-minusculo-e-espacos",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     " ct002 "
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  },
+  "volateis": {
+   "data.corrigidaEm": "texto"
+  }
+ },
+ {
+  "nome": "corrigir-sem-gerente-sem-perfil-financeiro",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT002"
+    ],
+    "justificativa": "Item lançado por engano."
+   }
+  }
+ },
+ {
+  "nome": "corrigir-sem-gerente-com-perfil-financeiro",
+  "usuario": "gerfin@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT002"
+    ],
+    "justificativa": "Item lançado por engano."
+   }
+  },
+  "volateis": {
+   "data.corrigidaEm": "texto"
+  }
+ },
+ {
+  "nome": "corrigir-administrador-sem-gerente",
+  "usuario": "admin@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT001"
+    ],
+    "justificativa": "Item lançado por engano."
+   }
+  }
+ },
+ {
+  "nome": "corrigir-justificativa-curta",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT002"
+    ],
+    "justificativa": "abc",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-sem-produtos",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-senha-errada",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT002"
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "errada"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-venda-inexistente",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/99999/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT002"
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-venda-cancelada",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15041/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT001"
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-remover-todos-os-itens",
+  "usuario": "caixa@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT001"
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-item-inexistente",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "ZZZ"
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-duas-vezes",
+  "usuario": "caixa@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15043/corrigir",
+    "auth": "bearer",
+    "corpo": {
+     "produtosParaRemover": [
+      "CT002"
+     ],
+     "justificativa": "Item lançado por engano.",
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026"
+    },
+    "status": 200
+   }
+  ],
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15043/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT001"
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-sem-token",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT001"
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-perfil-estoquista",
+  "usuario": "estoquista@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT001"
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-outra-empresa",
+  "usuario": "adm.aprovada@contrato.quack",
+  "requisicao": {
+   "metodo": "POST",
+   "caminho": "/api/HistoricoVendas/15040/corrigir",
+   "auth": "bearer",
+   "corpo": {
+    "produtosParaRemover": [
+     "CT001"
+    ],
+    "justificativa": "Item lançado por engano.",
+    "supervisorId": "usr-ct-gerente",
+    "supervisorPassword": "Senha#Quack2026"
+   }
+  }
+ },
+ {
+  "nome": "corrigir-detalhe-da-venda-nova",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200,
+    "usuario": "caixa@contrato.quack"
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 5,
+       "cashGiven": 10,
+       "changeAmount": 5
+      },
+      {
+       "paymentType": "credito",
+       "amount": 4
+      }
+     ]
+    },
+    "status": 201,
+    "usuario": "caixa@contrato.quack"
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15043/corrigir",
+    "auth": "bearer",
+    "corpo": {
+     "produtosParaRemover": [
+      "CT002"
+     ],
+     "justificativa": "Item lançado por engano.",
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026"
+    },
+    "status": 200,
+    "usuario": "caixa@contrato.quack"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/15044"
+  },
+  "volateis": {
+   "data.saleDate": "texto",
+   "data.items[0].saleDate": "texto",
+   "data.payments[0].createdAt": "texto",
+   "data.payments[1].createdAt": "texto"
+  }
+ },
+ {
+  "nome": "corrigir-detalhe-da-venda-original",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200,
+    "usuario": "caixa@contrato.quack"
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 5,
+       "cashGiven": 10,
+       "changeAmount": 5
+      },
+      {
+       "paymentType": "credito",
+       "amount": 4
+      }
+     ]
+    },
+    "status": 201,
+    "usuario": "caixa@contrato.quack"
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15043/corrigir",
+    "auth": "bearer",
+    "corpo": {
+     "produtosParaRemover": [
+      "CT002"
+     ],
+     "justificativa": "Item lançado por engano.",
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026"
+    },
+    "status": 200,
+    "usuario": "caixa@contrato.quack"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/15043"
+  },
+  "volateis": {
+   "data.saleDate": "texto",
+   "data.items[0].saleDate": "texto",
+   "data.items[1].saleDate": "texto",
+   "data.items[0].canceladoEm": "texto",
+   "data.items[1].canceladoEm": "texto",
+   "data.payments[0].createdAt": "texto",
+   "data.payments[1].createdAt": "texto"
+  }
+ },
+ {
+  "nome": "corrigir-detalhe-original-com-nota-pendente-vira-status-3",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200,
+    "usuario": "caixa@contrato.quack"
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 5,
+       "cashGiven": 10,
+       "changeAmount": 5
+      },
+      {
+       "paymentType": "pix",
+       "amount": 4
+      }
+     ]
+    },
+    "status": 201,
+    "usuario": "caixa@contrato.quack"
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15043/corrigir",
+    "auth": "bearer",
+    "corpo": {
+     "produtosParaRemover": [
+      "CT002"
+     ],
+     "justificativa": "Item lançado por engano.",
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026"
+    },
+    "status": 200,
+    "usuario": "caixa@contrato.quack"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/HistoricoVendas/15043"
+  },
+  "volateis": {
+   "data.saleDate": "texto",
+   "data.items[0].saleDate": "texto",
+   "data.items[1].saleDate": "texto",
+   "data.items[0].canceladoEm": "texto",
+   "data.items[1].canceladoEm": "texto",
+   "data.payments[0].createdAt": "texto",
+   "data.payments[1].createdAt": "texto",
+   "data.items[0].fiscalDocId": "id",
+   "data.items[1].fiscalDocId": "id",
+   "data.documentoFiscal.id": "id",
+   "data.documentoFiscal.criadoEm": "texto",
+   "data.documentoFiscal.tentativas": "tipo"
+  }
+ },
+ {
+  "nome": "corrigir-movimentacoes-do-produto-removido",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200,
+    "usuario": "caixa@contrato.quack"
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "Consumidor",
+     "customerCpf": "",
+     "paymentType": "dinheiro",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "dinheiro",
+       "amount": 9,
+       "cashGiven": 10,
+       "changeAmount": 1
+      }
+     ]
+    },
+    "status": 201,
+    "usuario": "caixa@contrato.quack"
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15043/corrigir",
+    "auth": "bearer",
+    "corpo": {
+     "produtosParaRemover": [
+      "CT002"
+     ],
+     "justificativa": "Item lançado por engano.",
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026"
+    },
+    "status": 200,
+    "usuario": "caixa@contrato.quack"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Produto/pr-ct-2/movimentacoes"
+  },
+  "volateis": {
+   "data[0].id": "id",
+   "data[0].criadoEm": "texto",
+   "data[1].id": "id",
+   "data[1].criadoEm": "texto",
+   "data[2].id": "id",
+   "data[2].criadoEm": "texto",
+   "data[3].id": "id",
+   "data[3].criadoEm": "texto"
+  }
+ },
+ {
+  "nome": "corrigir-fiado-reajusta-debito",
+  "usuario": "gerente@contrato.quack",
+  "antes": [
+   {
+    "metodo": "POST",
+    "caminho": "/api/Caixa/abrir",
+    "auth": "bearer",
+    "corpo": {
+     "openingAmount": "100,00"
+    },
+    "status": 200,
+    "usuario": "caixa@contrato.quack"
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas",
+    "auth": "bearer",
+    "corpo": {
+     "customerName": "X",
+     "customerCpf": "111.444.777-35",
+     "paymentType": "fiado",
+     "totalAmount": "9,00",
+     "operatorName": "Cai Caixa",
+     "items": [
+      {
+       "productCode": "CT001",
+       "productName": "Produto Contrato 1",
+       "quantity": 2,
+       "unitPrice": 3,
+       "desconto": 0
+      },
+      {
+       "productCode": "CT002",
+       "productName": "Produto Contrato 2",
+       "quantity": 1,
+       "unitPrice": 3,
+       "desconto": 0
+      }
+     ],
+     "payments": [
+      {
+       "paymentType": "fiado",
+       "amount": 9
+      }
+     ]
+    },
+    "status": 201,
+    "usuario": "caixa@contrato.quack"
+   },
+   {
+    "metodo": "POST",
+    "caminho": "/api/HistoricoVendas/15043/corrigir",
+    "auth": "bearer",
+    "corpo": {
+     "produtosParaRemover": [
+      "CT002"
+     ],
+     "justificativa": "Item lançado por engano.",
+     "supervisorId": "usr-ct-gerente",
+     "supervisorPassword": "Senha#Quack2026"
+    },
+    "status": 200,
+    "usuario": "caixa@contrato.quack"
+   }
+  ],
+  "requisicao": {
+   "metodo": "GET",
+   "caminho": "/api/Cliente"
+  }
+ }
+]

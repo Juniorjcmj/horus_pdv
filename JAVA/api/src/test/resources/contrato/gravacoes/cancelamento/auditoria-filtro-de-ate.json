@@ -1,0 +1,60 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Trilha de cancelamentos.",
+    "details" : null,
+    "data" : [ {
+      "id" : "vc-ct-2",
+      "ocorridoEm" : "2026-01-16T12:00:00+00:00",
+      "resultado" : "negada",
+      "via" : "venda",
+      "motivoRecusa" : "Senha do supervisor inválida.",
+      "saleNumber" : "15040",
+      "operadorId" : "usr-ct-caixa",
+      "operadorNome" : "Cai Caixa",
+      "supervisorId" : null,
+      "supervisorNome" : null,
+      "justificativa" : "Tentativa com senha errada",
+      "terminal" : null,
+      "ip" : "127.0.0.1",
+      "caixaSessaoId" : "cx-ct-aberto",
+      "caixaSessaoStatus" : "aberto",
+      "totalVenda" : 6.0,
+      "clienteNome" : "Consumidor",
+      "clienteCpf" : "",
+      "itensEstornados" : null,
+      "fiadoEstornado" : null,
+      "snapshot" : null
+    }, {
+      "id" : "vc-ct-1",
+      "ocorridoEm" : "2026-01-16T11:30:00+00:00",
+      "resultado" : "cancelada",
+      "via" : "venda",
+      "motivoRecusa" : null,
+      "saleNumber" : "15041",
+      "operadorId" : "usr-ct-caixa",
+      "operadorNome" : "Cai Caixa",
+      "supervisorId" : "usr-ct-gerente",
+      "supervisorNome" : "Gil Gerente",
+      "justificativa" : "Cliente desistiu da compra",
+      "terminal" : null,
+      "ip" : "127.0.0.1",
+      "caixaSessaoId" : "cx-ct-aberto",
+      "caixaSessaoStatus" : "aberto",
+      "totalVenda" : 3.0,
+      "clienteNome" : "Consumidor",
+      "clienteCpf" : "",
+      "itensEstornados" : 1,
+      "fiadoEstornado" : 0.0,
+      "snapshot" : {
+        "itens" : [ ],
+        "pagamentos" : [ ],
+        "notas" : [ ]
+      }
+    } ]
+  }
+}

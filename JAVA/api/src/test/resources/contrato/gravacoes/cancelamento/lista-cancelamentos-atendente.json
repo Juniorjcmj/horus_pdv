@@ -1,0 +1,58 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Cancelamentos obtidos com sucesso.",
+    "details" : null,
+    "data" : [ {
+      "vendaId" : "vd-ct-canc",
+      "saleNumber" : "15041",
+      "customerName" : "Consumidor",
+      "customerCpf" : "",
+      "paymentType" : "Dinheiro",
+      "totalAmount" : "3,00",
+      "operatorName" : "Gil Gerente",
+      "saleDate" : "16/01/2026 08:00:00",
+      "canceladoEm" : "16/01/2026 08:30:00",
+      "canceladoPorOperadorNome" : "Cai Caixa",
+      "canceladoPorSupervisorNome" : "Gil Gerente",
+      "canceladoJustificativa" : "Cliente desistiu da compra",
+      "totalItens" : 1,
+      "totalQuantidadeItens" : 1.0,
+      "itensResumo" : "1.0000x Produto Contrato 1",
+      "items" : [ {
+        "saleNumber" : "15041",
+        "status" : "finalizada",
+        "customerName" : "",
+        "customerCpf" : "",
+        "paymentType" : "",
+        "totalAmount" : "",
+        "operatorName" : "",
+        "productCode" : "CT001",
+        "productName" : "Produto Contrato 1",
+        "quantity" : 1.0,
+        "unitPrice" : "3,00",
+        "desconto" : 0,
+        "promocaoId" : null,
+        "itemTotal" : "3,00",
+        "saleDate" : "",
+        "clientSaleId" : null,
+        "offlineReference" : null,
+        "fiscalDocId" : null,
+        "fiscalModelo" : null,
+        "fiscalNumeroNf" : null,
+        "fiscalSerie" : null,
+        "fiscalStatus" : null,
+        "fiscalChaveAcesso" : null,
+        "paymentBreakdown" : null,
+        "canceladoEm" : null,
+        "canceladoPorOperadorNome" : null,
+        "canceladoPorSupervisorNome" : null,
+        "canceladoJustificativa" : null
+      } ]
+    } ]
+  }
+}

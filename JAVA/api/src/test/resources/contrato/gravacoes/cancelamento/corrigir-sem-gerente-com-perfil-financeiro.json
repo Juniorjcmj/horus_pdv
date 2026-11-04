@@ -1,0 +1,20 @@
+{
+  "status" : 200,
+  "cabecalhos" : {
+    "content-type" : "application/json;charset=utf-8"
+  },
+  "corpo" : {
+    "success" : true,
+    "message" : "Venda #15043 corrigida com sucesso. Nova venda: #15044.",
+    "details" : null,
+    "data" : {
+      "vendaOriginalNumber" : "15043",
+      "novaVendaNumber" : "15044",
+      "corrigidaEm" : "03/11/2026 20:54:36",
+      "financeiroNome" : "Gal Gerente Fin",
+      "itensRemovidos" : 1,
+      "novoTotal" : "6,00",
+      "fiscalQueued" : false
+    }
+  }
+}
