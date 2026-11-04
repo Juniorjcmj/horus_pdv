@@ -108,13 +108,21 @@
 
 ## 7. Aceite pelos clientes JavaFX
 
-- [ ] 7.1 Rodar os E2E do Caixa JavaFX contra a API Java com o comando do D11 (`subir.sh` antes, `descer.sh` depois) e
+- [x] 7.1 Rodar os E2E do Caixa JavaFX contra a API Java com o comando do D11 (`subir.sh` antes, `descer.sh` depois) e
   corrigir até ficarem verdes; para cada falha, gravar o cenário de contrato que faltava e corrigir pelo comparador;
   verificar pelo relatório do Surefire do `JAVA/caixa` (todos os E2E menos `NfceCancelE2ETest`, inclusive o
   `OfflineE2ETest`)
-- [ ] 7.2 Rodar o comando D10 do Quack Estoque sem as exclusões de inventário (D11) e corrigir até ficarem verdes;
+- [x] 7.2 Rodar o comando D10 do Quack Estoque sem as exclusões de inventário (D11) e corrigir até ficarem verdes;
   verificar pelo relatório do Surefire do `JAVA/estoque` com `InventarioAppE2ETest` e os 14 métodos de
   `InventarioE2ETest` verdes
+  - Verificado em 03/11/2026 (Surefire): Caixa 6 testes, 0 falhas, 0 erros, 2 ignorados (`SaleCancelE2ETest` e
+    `SaleCorrectionE2ETest` exigem `quack.e2e.operador`; rodados à parte com um operador `caixa` criado pela API: 2
+    verdes); `OfflineE2ETest` verde. Estoque 42 testes, 0 falhas (`InventarioAppE2ETest` e os 13 métodos de
+    `InventarioE2ETest`; o texto original dizia 14, mas a classe tem 13).
+  - Nenhuma falha causada pela API Java. Ambiente: o banco E2E de origem tinha turno aberto de 31/10, e o status
+    devolve "expirado" (comportamento correto); foi fechado na cópia descartável `pdv-java-sql`. Um
+    `FornecedorFichaUiE2ETest` falhou uma vez por temporização da UI (espera fixa de 3,5 s) e passou isolado e na
+    repetição completa.
 
 ## 8. Integração
 
