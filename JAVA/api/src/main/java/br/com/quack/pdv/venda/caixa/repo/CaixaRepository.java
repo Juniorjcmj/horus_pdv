@@ -277,6 +277,11 @@ public class CaixaRepository {
                 differenceAmount, differenceReason, id, companyId);
     }
 
+    public boolean movimentoExiste(String companyId, String id) {
+        return !jdbc.queryForList("SELECT Id FROM CaixaMovimentos WHERE CompanyId = ? AND Id = ?;", String.class,
+                companyId, id).isEmpty();
+    }
+
     public void inserirMovimento(String id, String companyId, String caixaSessaoId, int tipo, BigDecimal valor,
                                  String motivo, OffsetDateTime createdAt, String operatorId, String operatorName) {
         jdbc.update(SQL_INSERIR_MOVIMENTO, id, companyId, caixaSessaoId, tipo, valor, motivo, createdAt, operatorId,

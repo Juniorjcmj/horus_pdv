@@ -160,7 +160,14 @@ public class CaixaOperacoes {
             Efeito repeticao = repeticaoComBloqueio(m.companyId(), m.eventId(), m.hash());
             if (repeticao != null) return repeticao;
         }
-        repo.inserirMovimento("cxm-" + clock.millis(), m.companyId(), m.sessao().id(), m.tipo(), m.valor(),
+        // Com EventId o Id do movimento e derivado dele: se o registro do evento se perdeu (restauracao de backup;
+        // ProcessedEvents nao e sincronizado) mas o movimento voltou da nuvem, o reenvio reconhece a linha.
+        boolean comEvento = !HashPayload.emBranco(m.eventId());
+        String movimentoId = comEvento ? idDeMovimento(m.companyId(), m.eventId()) : "cxm-" + clock.millis();
+        if (comEvento && repo.movimentoExiste(m.companyId(), movimentoId)) {
+            return new Efeito(null, true, inserirEvento(m.companyId(), m.eventId(), "CASH_MOVEMENT", m.hash(), agora));
+        }
+        repo.inserirMovimento(movimentoId, m.companyId(), m.sessao().id(), m.tipo(), m.valor(),
                 m.motivo(), agora, m.operatorId(), m.operatorName());
         boolean reforco = m.tipo() == TipoMovimentoCaixa.REFORCO;
         repo.inserirAuditoria(m.companyId(), m.operatorId(), m.operatorName(),
@@ -170,6 +177,17 @@ public class CaixaOperacoes {
                 m.ip());
         // Placeholder DENTRO da transacao (UPDLOCK + unique); o ResponsePayload real entra depois do commit.
         return Efeito.gravado(inserirEvento(m.companyId(), m.eventId(), "CASH_MOVEMENT", m.hash(), agora));
+    }
+
+    /** "cxm-" + 32 hex do SHA-256 de empresa e evento (cabe nos 40 caracteres da coluna). */
+    static String idDeMovimento(String companyId, String eventId) {
+        try {
+            byte[] h = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest((companyId + "|" + eventId).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return "cxm-" + java.util.HexFormat.of().formatHex(h, 0, 16);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     // ---------------------------------------------------------------- comuns

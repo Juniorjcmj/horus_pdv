@@ -173,6 +173,22 @@ public class VendaRepository {
         return jdbc.query(SQL_LISTAR.replace("%FILTROS%", filtros), MAPA_LINHA, args.toArray());
     }
 
+    /** Venda ja gravada com este ClientSaleId (id gerado no caixa): {vendaId, saleNumber}, ou vazio. */
+    public Optional<String[]> vendaPorClientSaleId(String companyId, String clientSaleId) {
+        return jdbc.query("SELECT Id, SaleNumber FROM Vendas WHERE CompanyId = ? AND ClientSaleId = ?;",
+                (rs, n) -> new String[] {rs.getString(1), rs.getString(2)}, companyId, clientSaleId)
+                .stream().findFirst();
+    }
+
+    /** Saldo do cliente logo depois do primeiro movimento de fiado da venda: {clienteId, saldoAtual}, ou vazio. */
+    public Optional<Object[]> fiadoDaVenda(String companyId, String vendaId) {
+        return jdbc.query("""
+                SELECT TOP 1 ClienteId, SaldoAtual FROM FiadoMovimentos
+                WHERE CompanyId = ? AND VendaId = ? ORDER BY CriadoEm ASC, Id ASC;
+                """, (rs, n) -> new Object[] {rs.getString(1), rs.getBigDecimal(2)}, companyId, vendaId)
+                .stream().findFirst();
+    }
+
     public String vendaIdPorNumero(String companyId, String saleNumber) {
         List<String> ids = jdbc.query("SELECT Id FROM Vendas WHERE CompanyId = ? AND SaleNumber = ?;",
                 (rs, n) -> rs.getString(1), companyId, saleNumber);

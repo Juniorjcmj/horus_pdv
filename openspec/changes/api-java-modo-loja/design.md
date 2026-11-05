@@ -765,7 +765,13 @@ pulando. (c) Os contadores de numeração voltam atrás. Decisão do dono: puxar
 - **Limites aceitos** (todos no `CHECKLIST.md`): (1) exclusão feita depois do backup (na loja ou na nuvem, de cadastro ou
   não) não é refeita: a linha volta à loja e a conferência a devolve à nuvem; só a exclusão feita na nuvem e ainda não vista
   pelo detector (comando `excluir` pendente) é preservada; (2) uma edição da loja não enviada à época do backup, em linha que a
-  nuvem também mudou depois, fica com o valor da nuvem; (3) `ProcessedEvents` não é sincronizado, então um caixa que reenvie
-  evento já processado depois do backup pode duplicar a venda; (4) o `UPDATE` de linhas idênticas gera entradas no Change
+  nuvem também mudou depois, fica com o valor da nuvem; (3) `ProcessedEvents` não é sincronizado (sincronizá-lo dobraria o volume, cada venda
+  tem um evento com JSON de resposta, e a .NET também o grava). Em vez disso a deduplicação usa o próprio dado que voltou da
+  nuvem: a **venda** com o mesmo `ClientSaleId` (índice único já existente) responde como repetição, com a resposta refeita das
+  linhas da venda, e o registro do evento é recriado; o **movimento de caixa** ganhou `Id` derivado do `EventId` (SHA-256 de
+  empresa e evento), então a linha que voltou é reconhecida. Restam sem prova no dado: *abrir* caixa online sem
+  `clientSessionId` e *fechar* caixa (o reenvio é recusado com 400 "já foi fechado", sem duplicar nada), e o reenvio de
+  movimento cujo turno já fechou ou cuja sangria já não cabe no saldo (também 400, sem duplicar). Testes: `RecuperacaoLojaIT`
+  (venda) e `CaixaIT` (movimento); (4) o `UPDATE` de linhas idênticas gera entradas no Change
   Tracking da loja, que a reativação descarta (custo de espaço, não de correção); (5) a restauração fora do script só é
   percebida na próxima verificação de versão.

@@ -137,6 +137,18 @@ public class VendaRegistroService {
                 return new Saida(cached, List.of(), List.of(), "");
             }
         }
+        if (comEvento && !HashPayload.emBranco(r.clientSaleId)) {
+            // Rede de seguranca da restauracao de backup (ProcessedEvents nao e sincronizado): a venda ja voltou da
+            // nuvem, mas o registro do evento se perdeu. A venda e a prova; o registro e a resposta sao refeitos.
+            Optional<VendaRegistroResultado> refeita = reconstruirVendaJaGravada(companyId,
+                    HashPayload.trim(r.clientSaleId));
+            if (refeita.isPresent()) {
+                String tipo = r.eventType == null ? "SALE_CREATED" : HashPayload.trim(r.eventType);
+                repo.inserirEvento("pe-" + UUID.randomUUID().toString().replace("-", ""), companyId, eventId, tipo,
+                        r.clientSaleId, identityHash, agora(), VendaPayload.serializar(refeita.get()));
+                return new Saida(refeita.get().comReplay(true), List.of(), List.of(), "");
+            }
+        }
 
         PedidoTravado pedido = null;
         List<PedidoItem> itensPedido = null;
@@ -391,6 +403,19 @@ public class VendaRegistroService {
     private static String somenteDigitos(String s) {
         return s == null ? "" : s.chars().filter(Character::isDigit)
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append).toString();
+    }
+
+    /** Resultado de uma venda ja gravada, montado das linhas dela (mesma forma da resposta original, sem fiscal). */
+    private Optional<VendaRegistroResultado> reconstruirVendaJaGravada(String companyId, String clientSaleId) {
+        return repo.vendaPorClientSaleId(companyId, clientSaleId).map(v -> {
+            String vendaId = v[0];
+            String saleNumber = v[1];
+            List<VendaHistoricoDto> rows = repo.listar(companyId, saleNumber, null, null);
+            Optional<Object[]> fiado = repo.fiadoDaVenda(companyId, vendaId);
+            return new VendaRegistroResultado(saleNumber, vendaId, clientSaleId, false, rows,
+                    repo.pagamentos(companyId, vendaId), List.of(),
+                    fiado.map(f -> (BigDecimal) f[1]).orElse(null), fiado.map(f -> (String) f[0]).orElse(null));
+        });
     }
 
     // ---------------------------------------------------------------- insercao (InserirVendaAsync)

@@ -103,8 +103,9 @@ Faça um caixa por vez. **Só troque o endereço com a fila offline do caixa vaz
 >
 > Limites conhecidos: linhas **excluídas** depois do backup voltam (a conferência as devolve à nuvem; exclua de novo);
 > uma linha da loja ainda não enviada quando o backup foi feito e alterada na nuvem depois fica com o valor da nuvem;
-> eventos que o caixa já tinha enviado e a loja processou depois do backup (`ProcessedEvents` não é sincronizado) podem
-> ser reprocessados se o caixa os reenviar: **confira os caixas com fila offline** ao final.
+> `ProcessedEvents` não é sincronizado, mas vendas e movimentos de caixa reenviados depois da restauração são reconhecidos
+> pelo dado que voltou da nuvem (`ClientSaleId` da venda, `Id` do movimento) e não duplicam. Só o reenvio de *fechar* caixa
+> (ou de movimento de turno já fechado) é recusado com 400: **confira os caixas com fila offline** ao final.
 > Disco perdido ou instalação nova: `desinstalar.ps1 -RemoverBanco` e `instalar.ps1` (carga inicial) também funciona.
 
 

@@ -184,6 +184,22 @@ class CaixaIT {
         assertThat(contar("SELECT COUNT(*) FROM CaixaSessoes")).isEqualTo(1);
     }
 
+
+    @Test
+    void movimentoJaGravadoMasSemRegistroDoEventoNaoDuplicaDepoisDeRestauracao() {
+        caixa.abrir(abrirCmd("100,00", "evt-it-rest", null), CAIXA, null);
+        caixa.registrarMovimento(movCmd("Reforco", "10,00", "evt-mov-rest"), CAIXA, null);
+        // restauracao de backup: o movimento voltou da nuvem, ProcessedEvents (nao sincronizado) se perdeu
+        jdbc.update("DELETE FROM ProcessedEvents WHERE EventId = N'evt-mov-rest'");
+
+        var repeticao = caixa.registrarMovimento(movCmd("Reforco", "10,00", "evt-mov-rest"), CAIXA, null);
+
+        assertThat(repeticao.isReplay()).isTrue();
+        assertThat(contar("SELECT COUNT(*) FROM CaixaMovimentos")).isEqualTo(1);
+        assertThat(contar("SELECT COUNT(*) FROM ProcessedEvents WHERE EventId = N'evt-mov-rest'")).isEqualTo(1);
+        assertThat(caixa.registrarMovimento(movCmd("Reforco", "10,00", "evt-mov-rest"), CAIXA, null).isReplay()).isTrue();
+        assertThat(contar("SELECT COUNT(*) FROM CaixaMovimentos")).isEqualTo(1);
+    }
     @Test
     void responsePayloadGravadoTemOFormatoDaDotNet() throws Exception {
         caixa.abrir(abrirCmd("100,00", "evt-it-3", null), CAIXA, null);

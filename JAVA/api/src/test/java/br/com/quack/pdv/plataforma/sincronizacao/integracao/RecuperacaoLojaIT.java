@@ -15,6 +15,7 @@ import br.com.quack.pdv.venda.registro.app.VendaRegistroService;
 import br.com.quack.pdv.venda.registro.domain.VendaRegistroResultado;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -329,5 +330,68 @@ class RecuperacaoLojaIT {
         assertThat(contar(amb.jdbcLoja, "SELECT COUNT(*) FROM Vendas WHERE Id = ?", depois.vendaId())).isEqualTo(1);
         amb.esperarConvergencia(60_000);
         assertThat(amb.loja.getBean(ConferenciaSincronizacao.class).executar("manual").resultado()).isEqualTo("ok");
+    }
+
+    @Test
+    @Order(8)
+    void eventoProcessadoDepoisDoBackupEReenviadoAposARecuperacaoNaoDuplicaAVenda() throws Exception {
+        amb.esperarConvergencia(60_000);
+        String backup = amb.backupLoja("rec-6");
+        String clientSaleId = "cli-" + java.util.UUID.randomUUID();
+        String eventId = "ev-" + java.util.UUID.randomUUID();
+        VendaRegistroResultado original = venderComEvento(clientSaleId, eventId);
+        amb.esperarConvergencia(60_000);
+        int vendasNuvem = contar(amb.jdbcNuvem, "SELECT COUNT(*) FROM Vendas WHERE CompanyId = ?", EMPRESA);
+        BigDecimal estoque = amb.jdbcNuvem.queryForObject(
+                "SELECT ProductQnt FROM Produtos WHERE CompanyId = ? AND ProductCode = 'CT001'", BigDecimal.class, EMPRESA);
+
+        Files.writeString(marcador, "restaurado");
+        amb.restaurarLoja(backup, argumentos(true));
+        reatribuirServico();
+        esperar("recuperacao concluida (a venda voltou)", 120_000, () -> "concluida".equals(estadoRecuperacao())
+                && contar(amb.jdbcLoja, "SELECT COUNT(*) FROM Vendas WHERE ClientSaleId = ?", clientSaleId) == 1);
+        assertThat(contar(amb.jdbcLoja, "SELECT COUNT(*) FROM ProcessedEvents WHERE EventId = ?", eventId))
+                .as("o registro do evento nao existe mais na loja restaurada").isZero();
+        assertThat(contar(amb.jdbcLoja, "SELECT COUNT(*) FROM Vendas WHERE ClientSaleId = ?", clientSaleId)).isEqualTo(1);
+
+        // o caixa reenvia o mesmo evento (nao recebeu a resposta)
+        VendaRegistroResultado reenvio = venderComEvento(clientSaleId, eventId);
+
+        assertThat(reenvio.isReplay()).isTrue();
+        assertThat(reenvio.vendaId()).isEqualTo(original.vendaId());
+        assertThat(reenvio.saleNumber()).isEqualTo(original.saleNumber());
+        assertThat(reenvio.payments()).hasSize(1);
+        assertThat(reenvio.rows()).isNotEmpty();
+        assertThat(contar(amb.jdbcLoja, "SELECT COUNT(*) FROM Vendas WHERE ClientSaleId = ?", clientSaleId)).isEqualTo(1);
+        assertThat(contar(amb.jdbcLoja, "SELECT COUNT(*) FROM Vendas WHERE CompanyId = ?", EMPRESA)).isEqualTo(vendasNuvem);
+        assertThat(amb.jdbcLoja.queryForObject("SELECT ProductQnt FROM Produtos WHERE CompanyId = ? AND ProductCode = 'CT001'",
+                BigDecimal.class, EMPRESA)).as("estoque baixado uma vez so").isEqualByComparingTo(estoque);
+        // o registro do evento foi refeito: uma segunda repeticao vem do cache
+        assertThat(contar(amb.jdbcLoja, "SELECT COUNT(*) FROM ProcessedEvents WHERE EventId = ?", eventId)).isEqualTo(1);
+        assertThat(venderComEvento(clientSaleId, eventId).isReplay()).isTrue();
+        amb.esperarConvergencia(60_000);
+        assertThat(amb.loja.getBean(ConferenciaSincronizacao.class).executar("manual").resultado()).isEqualTo("ok");
+        assertThat(contar(amb.jdbcNuvem, "SELECT COUNT(*) FROM Vendas WHERE CompanyId = ?", EMPRESA)).isEqualTo(vendasNuvem);
+    }
+
+    private static VendaRegistroResultado venderComEvento(String clientSaleId, String eventId) {
+        var i = new br.com.quack.pdv.venda.registro.web.VendaRequests.Item();
+        i.productCode = "CT001";
+        i.productName = "";
+        i.quantity = new BigDecimal("1");
+        i.setUnitPrice(new BigDecimal("3"));
+        var p = new br.com.quack.pdv.venda.registro.web.VendaRequests.Pagamento();
+        p.paymentType = "dinheiro";
+        p.amount = new BigDecimal("3.00");
+        var v = new br.com.quack.pdv.venda.registro.web.VendaRequests.Venda();
+        v.customerName = "Consumidor";
+        v.paymentType = "dinheiro";
+        v.totalAmount = "3,00";
+        v.operatorName = "Cai Caixa";
+        v.clientSaleId = clientSaleId;
+        v.eventId = eventId;
+        v.items = new ArrayList<>(List.of(i));
+        v.payments = new ArrayList<>(List.of(p));
+        return amb.loja.getBean(VendaRegistroService.class).registrar(EMPRESA, v, null);
     }
 }
