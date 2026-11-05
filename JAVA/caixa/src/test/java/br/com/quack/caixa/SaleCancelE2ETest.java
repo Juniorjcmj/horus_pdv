@@ -68,7 +68,9 @@ class SaleCancelE2ETest {
         assertEquals(1, r.itensEstornados());
 
         // A fila fiscal tira a nota da fila sem emitir (sem certificado: aviso para inutilizar o número).
-        String status = "";
+        // No servidor da loja (-Dquack.e2e.modoLoja=true) esse ramo e do worker .NET da nuvem (D8 da 4b): nao se espera aqui.
+        boolean modoLoja = Boolean.getBoolean("quack.e2e.modoLoja");
+        String status = modoLoja ? "4|não emitida" : "";
         for (int i = 0; i < 20 && !status.startsWith("4"); i++) {
             status = sqlOut("SET NOCOUNT ON; SELECT CAST(d.Status AS VARCHAR(2)) + '|' + ISNULL(d.MotivoStatus, '') "
                     + "FROM DocumentosFiscais d JOIN Vendas v ON v.Id = d.VendaId WHERE v.SaleNumber = '" + n + "'");

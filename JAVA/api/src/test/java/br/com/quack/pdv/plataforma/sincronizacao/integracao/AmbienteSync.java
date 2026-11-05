@@ -53,6 +53,8 @@ public final class AmbienteSync implements AutoCloseable {
     public final String bancoNuvem;
     public volatile ConfigurableApplicationContext loja;
     public final ConfigurableApplicationContext nuvem;
+    /** API .NET real (so em {@link #iniciarComDotNet}), no mesmo banco da nuvem. */
+    public volatile org.testcontainers.containers.GenericContainer<?> dotnet;
     public volatile JdbcTemplate jdbcLoja;
     public final JdbcTemplate jdbcNuvem;
     public final int portaNuvem;
@@ -63,12 +65,14 @@ public final class AmbienteSync implements AutoCloseable {
     public static final String JWT_LOJA = "segredo-jwt-proprio-da-loja-com-mais-de-32-caracteres";
     public static final String CIFRA_LOJA = "chave-de-cifra-propria-da-loja-com-mais-de-32-caracteres";
 
-    private AmbienteSync(String sufixo, boolean paraCarga, String[] extrasNuvem, String[] extrasLoja) {
+    private AmbienteSync(String sufixo, boolean paraCarga, String[] extrasNuvem, String[] extrasLoja, boolean comDotNet) {
         bancoLoja = "loja_" + sufixo;
-        bancoNuvem = "nuvem_" + sufixo;
+        // a .NET cria o proprio banco, que se chama HorusPdv
+        bancoNuvem = comDotNet ? "HorusPdv" : "nuvem_" + sufixo;
         BancoIT.criarBanco(bancoLoja);
-        criarBancoNuvem(bancoNuvem);
-        prepararEsquemaDotNet();
+        if (!comDotNet) criarBancoNuvem(bancoNuvem);
+        if (comDotNet) subirDotNet();
+        else prepararEsquemaDotNet();
 
         List<String> argsNuvem = new ArrayList<>(List.of("--quack.sync.comandos-espera-ms=1500"));
         argsNuvem.addAll(Arrays.asList(extrasNuvem));
@@ -89,19 +93,27 @@ public final class AmbienteSync implements AutoCloseable {
         }
     }
 
+    /**
+     * Como {@link #iniciar(String)}, mas o esquema da nuvem e criado pela API .NET real (imagem quack-api-dotnet:contrato,
+     * contrato/ambiente-dotnet/subir.sh), que fica no ar apontada para o banco da nuvem do teste (D13, ModoLojaDotnetIT).
+     */
+    public static AmbienteSync iniciarComDotNet(String sufixo) {
+        return new AmbienteSync(sufixo, false, new String[0], new String[0], true);
+    }
+
     /** Loja ja ativada, mesmo seed nas duas pontas (grupo 2). */
     public static AmbienteSync iniciar(String sufixo) {
-        return new AmbienteSync(sufixo, false, new String[0], new String[0]);
+        return new AmbienteSync(sufixo, false, new String[0], new String[0], false);
     }
 
     /** Como {@link #iniciar(String)}, com argumentos extras de linha de comando para o contexto da loja. */
     public static AmbienteSync iniciarComExtrasNaLoja(String sufixo, String... extrasLoja) {
-        return new AmbienteSync(sufixo, false, new String[0], extrasLoja);
+        return new AmbienteSync(sufixo, false, new String[0], extrasLoja, false);
     }
 
     /** Como {@link #iniciar(String)}, com argumentos extras para os dois contextos (ex.: SMTP falso e alertas manuais). */
     public static AmbienteSync iniciarComExtras(String sufixo, String[] extrasNuvem, String[] extrasLoja) {
-        return new AmbienteSync(sufixo, false, extrasNuvem, extrasLoja);
+        return new AmbienteSync(sufixo, false, extrasNuvem, extrasLoja, false);
     }
 
     /**
@@ -109,7 +121,7 @@ public final class AmbienteSync implements AutoCloseable {
      * registrado e sem tracking. A carga inicial e o que a liga.
      */
     public static AmbienteSync iniciarParaCarga(String sufixo) {
-        return new AmbienteSync(sufixo, true, new String[0], new String[0]);
+        return new AmbienteSync(sufixo, true, new String[0], new String[0], false);
     }
 
     /** Token de administrador valido na nuvem (sessao gravada no banco dela, JWT com o segredo dela). */
@@ -179,6 +191,10 @@ public final class AmbienteSync implements AutoCloseable {
         return "http://localhost:" + portaNuvem;
     }
 
+    public String urlBaseDotNet() {
+        return "http://localhost:" + dotnet.getMappedPort(8080);
+    }
+
     public String urlBaseLoja() {
         return "http://localhost:" + portaLoja;
     }
@@ -197,6 +213,46 @@ public final class AmbienteSync implements AutoCloseable {
         } catch (java.sql.SQLException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    /** Sobe a .NET real sobre o banco da nuvem vazio: ela cria o esquema e o seu historico de migracoes. */
+    private void subirDotNet() {
+        String sql = "Server=host.docker.internal," + SQL_NUVEM.getMappedPort(1433) + ";Database=" + bancoNuvem
+                + ";User Id=" + SQL_NUVEM.getUsername() + ";Password=" + SQL_NUVEM.getPassword()
+                + ";TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=True";
+        dotnet = new org.testcontainers.containers.GenericContainer<>("quack-api-dotnet:contrato")
+                .withExposedPorts(8080)
+                .withExtraHost("host.docker.internal", "host-gateway")
+                .withEnv("ASPNETCORE_ENVIRONMENT", "Production")
+                .withEnv("ConnectionStrings__HorusPdv", sql)
+                .withEnv("Auth__JwtSecret", "segredo-jwt-do-contrato-0123456789-abcdefghijkl")
+                .withEnv("Security__EncryptionKey", "chave-de-cifra-do-contrato-0123456789-abcdefgh")
+                .withEnv("Recaptcha__Enabled", "false")
+                .withEnv("Security__RateLimit__MaxRequests", "5000")
+                .withEnv("Email__Enabled", "false")
+                .waitingFor(org.testcontainers.containers.wait.strategy.Wait.forHttp("/api/Auth/me").forStatusCode(401)
+                        .withStartupTimeout(java.time.Duration.ofMinutes(3)));
+        dotnet.start();
+        aguardarEsquemaCriadoPelaDotNet();
+    }
+
+    /** A .NET cria o banco HorusPdv e o esquema depois de abrir a porta: espera a ultima tabela do catalogo aparecer. */
+    private void aguardarEsquemaCriadoPelaDotNet() {
+        long fim = System.currentTimeMillis() + 180_000;
+        List<String> catalogo = CatalogoSincronizacao.ordemDeAplicacao().stream().map(TabelaSincronizada::nome).toList();
+        String nomes = String.join(", ", catalogo.stream().map(n -> "'" + n + "'").toList());
+        int esperadas = catalogo.size();
+        while (System.currentTimeMillis() < fim) {
+            try (Connection c = DriverManager.getConnection(urlNuvem(), SQL_NUVEM.getUsername(), SQL_NUVEM.getPassword());
+                 Statement s = c.createStatement();
+                 java.sql.ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM sys.tables WHERE name IN (" + nomes + ")")) {
+                if (rs.next() && rs.getInt(1) == esperadas) return;
+            } catch (java.sql.SQLException ignorada) {
+                // banco ainda sem as tabelas
+            }
+            try { Thread.sleep(1000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        }
+        throw new IllegalStateException("A .NET nao criou o esquema a tempo. Logs:\n" + dotnet.getLogs());
     }
 
     /** O banco da nuvem ja tem o esquema da .NET (V1 a V4 aplicados sem historico da Java). */
@@ -381,6 +437,7 @@ public final class AmbienteSync implements AutoCloseable {
     public void close() {
         if (loja != null) loja.close();
         if (nuvem != null) nuvem.close();
+        if (dotnet != null) dotnet.stop();
     }
 
     /** Linha de uma tabela como mapa (para os testes). */

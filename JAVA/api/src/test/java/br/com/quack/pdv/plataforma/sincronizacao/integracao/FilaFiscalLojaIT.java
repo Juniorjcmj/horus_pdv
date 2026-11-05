@@ -101,4 +101,26 @@ class FilaFiscalLojaIT {
         assertThat(notas(loja, "vd-ct-fin")).isEqualTo(antes);
         assertThat(contar(loja, "SELECT COUNT(*) FROM DocumentosFiscais WHERE UltimoErro IS NOT NULL")).isZero();
     }
+
+    @Test
+    @Order(4)
+    void lojaAindaNaoAtivadaNaoRetomaVendaSemNota() {
+        // achado do aceite 8.2: durante a carga inicial as vendas chegam antes das notas e a retomada criaria notas
+        // com numeros locais que colidem com os que ainda vao chegar da nuvem
+        SincronizacaoIT.vendas = amb.loja.getBean(br.com.quack.pdv.venda.registro.app.VendaRegistroService.class);
+        String vendaId = SincronizacaoIT.vender("CT001", "1", "3", "3,00").vendaId();
+        loja.update("UPDATE Vendas SET EmitirNfce = 1 WHERE Id = ?", vendaId);
+        loja.update("UPDATE SyncEstado SET Ativada = 0 WHERE Id = 1");
+        try {
+            fila.processarLote();
+            fila.executarAgendado();
+            assertThat(notas(loja, vendaId)).as("sem ativacao a fila nao escreve").isEmpty();
+        } finally {
+            loja.update("UPDATE SyncEstado SET Ativada = 1 WHERE Id = 1");
+        }
+
+        fila.processarLote();
+
+        assertThat(notas(loja, vendaId)).as("ativada, a retomada volta a funcionar").hasSize(1);
+    }
 }

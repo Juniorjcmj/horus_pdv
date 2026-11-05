@@ -54,6 +54,14 @@ public class FilaFiscalMinima {
         this.recuperacao = recuperacao;
     }
 
+    private volatile org.springframework.jdbc.core.JdbcTemplate jdbc;
+
+    /** Opcional: no perfil loja a fila so roda depois da ativacao (a carga inicial nao pode inventar notas). */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    void definirJdbc(org.springframework.jdbc.core.JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
+    }
+
     public FilaFiscalMinima(FilaFiscalRepository repo, PendenciaFiscal pendencia, EmitenteConfigurado emitente,
                             Clock clock, @Value("${quack.fiscal.fila-minima.ativa:true}") boolean ativa,
                             @Value("${quack.modo:padrao}") String modo) {
@@ -67,7 +75,22 @@ public class FilaFiscalMinima {
 
     /** No modo nuvem a fila nunca roda, qualquer que seja a configuracao. */
     private boolean desligada() {
-        return !ativa || "nuvem".equals(modo) || (recuperacao != null && recuperacao.emAndamento());
+        return !ativa || "nuvem".equals(modo) || (recuperacao != null && recuperacao.emAndamento())
+                || lojaAindaNaoAtivada();
+    }
+
+    /**
+     * Durante a carga inicial as vendas chegam antes das notas (ordem do catalogo): retomar agora criaria notas com
+     * numero da sequencia local e colidiria com as que ainda vao chegar da nuvem. So depois de ativada.
+     */
+    private boolean lojaAindaNaoAtivada() {
+        if (!"loja".equals(modo) || jdbc == null) return false;
+        try {
+            Integer n = jdbc.queryForObject("SELECT COUNT(*) FROM dbo.SyncEstado WHERE Id = 1 AND Ativada = 1", Integer.class);
+            return n == null || n == 0;
+        } catch (org.springframework.dao.DataAccessException e) {
+            return true;
+        }
     }
 
     @Scheduled(initialDelayString = "${quack.fiscal.fila-minima.intervalo-ms:1000}",
@@ -84,7 +107,7 @@ public class FilaFiscalMinima {
 
     /** Um ciclo da fila (ProcessarLoteAsync sem transmissao). Usado pela rotina agendada e pelos testes. */
     public void processarLote() {
-        if (recuperacao != null && recuperacao.emAndamento()) return;
+        if ((recuperacao != null && recuperacao.emAndamento()) || lojaAindaNaoAtivada()) return;
         retomarVendasSemNota();
         if ("loja".equals(modo)) return; // na loja so a retomada; o resto fica com a .NET da nuvem (D8)
         for (Pendente doc : repo.pendentes(LOTE_MAXIMO, OffsetDateTime.now(clock))) {
