@@ -164,8 +164,11 @@ public class CaixaOperacoes {
         // ProcessedEvents nao e sincronizado) mas o movimento voltou da nuvem, o reenvio reconhece a linha.
         boolean comEvento = !HashPayload.emBranco(m.eventId());
         String movimentoId = comEvento ? idDeMovimento(m.companyId(), m.eventId()) : "cxm-" + clock.millis();
-        if (comEvento && repo.movimentoExiste(m.companyId(), movimentoId)) {
+        if (comEvento && repo.movimentoIgual(m.companyId(), movimentoId, m.sessao().id(), m.tipo(), m.valor())) {
             return new Efeito(null, true, inserirEvento(m.companyId(), m.eventId(), "CASH_MOVEMENT", m.hash(), agora));
+        }
+        if (comEvento && repo.movimentoExiste(m.companyId(), movimentoId)) {
+            movimentoId = "cxm-" + clock.millis(); // colisao rara de 13 digitos com outro movimento
         }
         repo.inserirMovimento(movimentoId, m.companyId(), m.sessao().id(), m.tipo(), m.valor(),
                 m.motivo(), agora, m.operatorId(), m.operatorName());
@@ -179,12 +182,13 @@ public class CaixaOperacoes {
         return Efeito.gravado(inserirEvento(m.companyId(), m.eventId(), "CASH_MOVEMENT", m.hash(), agora));
     }
 
-    /** "cxm-" + 32 hex do SHA-256 de empresa e evento (cabe nos 40 caracteres da coluna). */
+    /** "cxm-" + 13 digitos derivados do SHA-256 de empresa e evento: mesma forma do "cxm-"+millis (o contrato compara o tamanho). */
     static String idDeMovimento(String companyId, String eventId) {
         try {
             byte[] h = java.security.MessageDigest.getInstance("SHA-256")
                     .digest((companyId + "|" + eventId).getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            return "cxm-" + java.util.HexFormat.of().formatHex(h, 0, 16);
+            long v = java.nio.ByteBuffer.wrap(h).getLong() >>> 1;
+            return "cxm-" + (1_000_000_000_000L + v % 9_000_000_000_000L);
         } catch (java.security.NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }

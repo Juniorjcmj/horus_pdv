@@ -277,6 +277,12 @@ public class CaixaRepository {
                 differenceAmount, differenceReason, id, companyId);
     }
 
+    /** O movimento com este Id existe e e o mesmo (turno, tipo e valor): reenvio de um evento ja gravado. */
+    public boolean movimentoIgual(String companyId, String id, String sessaoId, int tipo, BigDecimal valor) {
+        return !jdbc.queryForList("SELECT Id FROM CaixaMovimentos WHERE CompanyId = ? AND Id = ? AND CaixaSessaoId = ? "
+                + "AND Tipo = ? AND Valor = ?;", String.class, companyId, id, sessaoId, tipo, valor).isEmpty();
+    }
+
     public boolean movimentoExiste(String companyId, String id) {
         return !jdbc.queryForList("SELECT Id FROM CaixaMovimentos WHERE CompanyId = ? AND Id = ?;", String.class,
                 companyId, id).isEmpty();
