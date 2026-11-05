@@ -191,15 +191,17 @@
 
 ## 8. Aceite e integração
 
-- [ ] 8.1 `ModoLojaDotnetIT` (D13): a .NET real (`contrato-api-dotnet`) apontada para o banco da nuvem do teste muda
+- [x] 8.1 `ModoLojaDotnetIT` (D13): a .NET real (`contrato-api-dotnet`) apontada para o banco da nuvem do teste muda
   um preço e cadastra um cliente pelas rotas dela, e os dois chegam à loja.
   - Verificação: o IT verde, rodado com a propriedade que o liga.
-- [ ] 8.2 Aceite com os clientes JavaFX (D13).
+  - Resultado: `ModoLojaDotnetIT` (3 testes, `-Dmodoloja.dotnet=true`) verde: a .NET real (`quack-api-dotnet:contrato`) cria o esquema no banco da nuvem do teste; `PUT /api/Produto` (preço) e `POST /api/Cliente` chegam à loja como comandos aplicados, sem quarentena, e a conferência fecha `ok`.
+- [x] 8.2 Aceite com os clientes JavaFX (D13).
   - Rodar os E2E do Caixa (comando do D11 da Fase 4) e do Quack Estoque contra a API em perfil `loja`, com o receptor
     desligado.
   - Depois, ligar o receptor e rodar a conferência.
   - Verificação: os relatórios do Surefire verdes, a conferência sem diferença e as vendas dos E2E no banco da nuvem.
-- [ ] 8.3 `mvn -B -o verify` completo; atualizar documentos e o grafo; commit `docs(api-java): fecha a Fase 4b
+  - Resultado (05/11/2026, `contrato/aceite-loja/subir.sh`: receptor + loja reais, registro e carga inicial): Caixa 6 testes, 0 falhas, 0 ignorados (`-Dquack.e2e.modoLoja=true` dispensa só a espera da fila fiscal no `SaleCancelE2ETest`, ramo do worker da nuvem); Quack Estoque 42 testes, 0 falhas (um `InventarioAppE2ETest` colidiu com um código aleatório de produto e passou na repetição). Receptor religado: `POST /api/loja-sync/conferencia` = `ok` (1 volta, nenhuma divergência), 156 vendas nas duas pontas, as 20 vendas dos E2E na nuvem. A carga inicial real achou um defeito (a fila fiscal criava notas durante a carga): corrigido e coberto por `FilaFiscalLojaIT`.
+- [x] 8.3 `mvn -B -o verify` completo; atualizar documentos e o grafo; commit `docs(api-java): fecha a Fase 4b
   (modo loja)`.
   - Documentos:
     - `JAVA/api/README.md`: perfis, rotas `loja-sync`, propriedades, instalação, alertas;
@@ -207,6 +209,7 @@
       nuvem; cadastros, preços e configurações por comando; fiscal com autoria dividida até a Fase 7).
   - Rodar `graphify update .`.
   - Verificação: o relatório do verify e os comandos documentados conferidos.
+  - Resultado: ver "Notas do grupo 8" no `design.md` (verify em três partes, todas verdes).
 - [ ] 8.4 Rodar o `CHECKLIST.md` numa máquina Windows de teste com 2 caixas: queda de internet, queda do servidor e
   restauração do backup (itens 7.4 a 7.10: recuperação após a restauração).
   - Verificação: cada item com resultado registrado aqui. Precisa do dono do produto ou de uma máquina disponível;

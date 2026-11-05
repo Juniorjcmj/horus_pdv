@@ -775,3 +775,34 @@ pulando. (c) Os contadores de numeração voltam atrás. Decisão do dono: puxar
   (venda) e `CaixaIT` (movimento); (4) o `UPDATE` de linhas idênticas gera entradas no Change
   Tracking da loja, que a reativação descarta (custo de espaço, não de correção); (5) a restauração fora do script só é
   percebida na próxima verificação de versão.
+
+### Notas do grupo 8 (aceite e integração)
+
+- **`ModoLojaDotnetIT`.** Opcional (`-Dmodoloja.dotnet=true`; exige Docker e a imagem `quack-api-dotnet:contrato`). A .NET cria o
+  próprio banco, que se chama `HorusPdv` (por isso `AmbienteSync.iniciarComDotNet` não pré-cria o banco da nuvem), e só depois
+  o contexto `nuvem` da Java aplica o `db/nuvem/V1`; o teste espera as 38 tabelas do catálogo. A .NET alcança o SQL do
+  Testcontainers por `host.docker.internal`. Provou que a gravação real da .NET (sem o contexto de tracking `sync-loja`) é
+  detectada e que preço e cliente descem como comando aplicado, sem quarentena.
+- **Aceite com os clientes JavaFX** (`contrato/aceite-loja/subir.sh`): dois SQL Server (nuvem = cópia do banco E2E; loja
+  vazia, também chamada `HorusPdv` porque os E2E consultam `-d HorusPdv`), receptor na 5262 e loja na 5261, com registro e
+  carga inicial pelo caminho do instalador. Achados:
+  - **Defeito real da carga inicial:** a `FilaFiscalMinima` do perfil `loja` roda enquanto a carga ainda não terminou e, como
+    as vendas chegam antes das notas (ordem do catálogo), criava notas com o número da sequência local; a nota verdadeira vinda
+    da nuvem batia em `UQ_DocFiscais_Numeracao`. Corrigido: no perfil `loja` a fila só roda com `SyncEstado.Ativada = 1`
+    (`FilaFiscalLojaIT`, teste 4). Os ITs de carga não pegavam porque a fila de teste fica desligada.
+  - `SaleCancelE2ETest` espera a nota virar "não emitida" na fila; na loja esse ramo é do worker .NET da nuvem (D8), então o
+    teste ganhou `-Dquack.e2e.modoLoja=true` para dispensar só essa espera.
+  - O turno de caixa aberto desde 31/10 na cópia E2E precisa ser fechado por SQL antes (igual à Fase 4), e os dois E2E de
+    cancelamento/correção precisam de um operador (criado pela própria API da loja).
+- **Id do movimento de caixa derivado do `EventId`** (correção da duplicidade pós-restauração): a primeira versão (hex de 32
+  caracteres) quebrou 6 cenários do contrato, que comparam o tamanho do `id` (`cxm-` + 13 dígitos). Hoje: `cxm-` + 13 dígitos
+  do SHA-256; o reenvio só é reconhecido se a linha achada tem o mesmo turno, tipo e valor; colisão rara cai no `cxm-`+millis.
+- **Pendência não feita:** o verificador de subida do receptor que religa o Change Tracking de tabela que o perdeu (Risks)
+  continua inexistente; o `DEPLOY.md` manda conferir `sys.change_tracking_tables` (38) à mão.
+- **Verify** (05/11/2026, `JAVA_TOOL_OPTIONS=-Xmx1g`, uma parte por vez, `docker info` antes de cada): (1) unitários 646, 0
+  falhas; (2) `ApiJavaContratoTest` 1 152, 0 falhas; (3) demais ITs (`-Dit.test='!ApiJavaContratoTest' -Dmodoloja.dotnet=true`)
+  891 testes, 1 falha: `ComandosIT.comandosGuardadosSemInternetSaoAplicadosEmOrdem` ("nada chegou enquanto sem internet"),
+  que falhou de novo isolada com `-Xmx1g` e passa isolada com o heap padrão (8 de 8) e nas duas rodadas completas anteriores
+  (corrida do teste com o long-poll em voo quando a "internet" é cortada, sensível ao tempo; não é da 4b). Rodadas completas
+  anteriores sem limite de heap: 646 unitários e 1 380 ITs verdes na segunda (a JVM caiu por memória do sistema ao final, duas
+  vezes no dia).

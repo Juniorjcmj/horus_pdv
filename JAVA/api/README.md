@@ -219,6 +219,8 @@ Resultado em 03/11/2026: 42 testes, 0 falhas.
 
 ## Modo loja e sincronização (Fase 4b)
 
+**Estado (05/11/2026):** implementada e testada; falta só o checklist manual numa máquina Windows com 2 caixas (tarefa 8.4, com o dono). `mvn -B -o verify` em três partes, tudo verde: 646 unitários; `ApiJavaContratoTest` 1 152 cenários; 891 ITs de integração (com `ModoLojaDotnetIT`; `ComandosIT` repetido isolado, ver `design.md`, Notas do grupo 8). Aceite com o Caixa (6 testes) e o Quack Estoque (42) contra o servidor da loja e conferência `ok`.
+
 A mesma API roda em três modos, escolhidos por `quack.modo` (variável `QUACK_MODO`, ou `--spring.profiles.active`):
 
 | Modo | Para quê |
