@@ -22,6 +22,7 @@ public final class AlertasSync {
     public static final String CONFERENCIA = "conferencia-divergente";
     public static final String NFCE_PENDENTE = "nfce-pendente";
     public static final String BACKUP = "backup-falhou";
+    public static final String RECUPERACAO = "recuperacao-pendente";
 
     private AlertasSync() {}
 

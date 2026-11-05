@@ -7,6 +7,7 @@ import br.com.quack.pdv.plataforma.sincronizacao.conferencia.SqlConferencia.Linh
 import br.com.quack.pdv.plataforma.sincronizacao.conferencia.SqlConferencia.Resumo;
 import br.com.quack.pdv.plataforma.sincronizacao.envio.ClienteJsonNuvem;
 import br.com.quack.pdv.plataforma.sincronizacao.envio.EnvioSincronizacao;
+import br.com.quack.pdv.plataforma.sincronizacao.recuperacao.EstadoRecuperacao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -59,6 +60,11 @@ public class ConferenciaSincronizacao {
     private final ClienteJsonNuvem nuvem;
     private final QuackProperties props;
     private final Clock clock;
+    private volatile EstadoRecuperacao recuperacao;
+
+    /** Opcional: a conferencia so roda depois da recuperacao pos-restauracao (senao apagaria dados da nuvem). */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    void definirRecuperacao(EstadoRecuperacao recuperacao) { this.recuperacao = recuperacao; }
 
     public ConferenciaSincronizacao(JdbcTemplate jdbc, EnvioSincronizacao envio, ClienteJsonNuvem nuvem, QuackProperties props,
                                     Clock clock) {
@@ -90,6 +96,10 @@ public class ConferenciaSincronizacao {
         List<Object[]> estado = jdbc.query("SELECT Ativada, CompanyId, PausadaMotivo FROM dbo.SyncEstado WHERE Id = 1",
                 (rs, i) -> new Object[] {rs.getBoolean(1), rs.getString(2), rs.getString(3)});
         ObjectNode detalhe = JSON.createObjectNode();
+        if (recuperacao != null && recuperacao.emAndamento()) {
+            return gravar(origem, "erro", 0, detalhe.put("erro", "Servidor em recuperacao depois de uma restauracao: "
+                    + "a conferencia fica parada ate a recuperacao terminar."), null, agora);
+        }
         if (estado.isEmpty() || !(Boolean) estado.getFirst()[0] || estado.getFirst()[1] == null) {
             return gravar(origem, "erro", 0, detalhe.put("erro", "A loja ainda nao foi ativada."), null, agora);
         }

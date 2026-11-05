@@ -51,12 +51,12 @@ public final class AmbienteSync implements AutoCloseable {
     public final String token = "tok-" + UUID.randomUUID();
     public final String bancoLoja;
     public final String bancoNuvem;
-    public final ConfigurableApplicationContext loja;
+    public volatile ConfigurableApplicationContext loja;
     public final ConfigurableApplicationContext nuvem;
-    public final JdbcTemplate jdbcLoja;
+    public volatile JdbcTemplate jdbcLoja;
     public final JdbcTemplate jdbcNuvem;
     public final int portaNuvem;
-    public final int portaLoja;
+    public volatile int portaLoja;
     public final HttpClient http = HttpClient.newHttpClient();
 
     /** Chaves proprias da loja no modo carga (D1): segredo de JWT e chave de cifra diferentes dos da nuvem. */
@@ -128,6 +128,47 @@ public final class AmbienteSync implements AutoCloseable {
                 + "VALUES (?, ?, 'IT', 'IT', '127.0.0.1', 'agora', 'desktop', SYSDATETIMEOFFSET())", sessao, userId);
         return loja.getBean(br.com.quack.pdv.security.JwtService.class).criarToken(userId, companyId, nome, email, role,
                 sessao, "127.0.0.1");
+    }
+
+    // ------------------------------------------------------------------ backup e restauracao da loja (tarefa 7.4)
+
+    /** Backup completo do banco da loja, dentro do container do SQL Server (como o backup.ps1 faz no servidor). */
+    public String backupLoja(String nome) {
+        String arquivo = "/var/opt/mssql/data/" + nome + ".bak";
+        executarNoMaster("BACKUP DATABASE [" + bancoLoja + "] TO DISK = N'" + arquivo + "' WITH INIT, CHECKSUM");
+        return arquivo;
+    }
+
+    /**
+     * Restaura o backup sobre o banco da loja como o restaurar.ps1: para a API da loja (fecha o contexto), restaura com
+     * REPLACE e sobe a API de novo, com os argumentos de linha de comando dados (ex.: o marcador da recuperacao).
+     */
+    public void restaurarLoja(String arquivo, String... extras) {
+        loja.close();
+        executarNoMaster("ALTER DATABASE [" + bancoLoja + "] SET SINGLE_USER WITH ROLLBACK IMMEDIATE");
+        try {
+            executarNoMaster("RESTORE DATABASE [" + bancoLoja + "] FROM DISK = N'" + arquivo + "' WITH REPLACE, CHECKSUM");
+        } finally {
+            executarNoMaster("ALTER DATABASE [" + bancoLoja + "] SET MULTI_USER");
+        }
+        subirLoja(extras);
+    }
+
+    /** Sobe a API da loja de novo sobre o mesmo banco (porta nova), sem restaurar nada. */
+    public void subirLoja(String... extras) {
+        loja = subir("loja", BancoIT.urlDoBanco(bancoLoja), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword(), 300, extras);
+        portaLoja = porta(loja);
+        jdbcLoja = loja.getBean(JdbcTemplate.class);
+    }
+
+    private static void executarNoMaster(String sql) {
+        try (Connection c = DriverManager.getConnection(BancoIT.SQL.getJdbcUrl(), BancoIT.SQL.getUsername(), BancoIT.SQL.getPassword());
+             Statement s = c.createStatement()) {
+            s.setQueryTimeout(300);
+            s.execute(sql);
+        } catch (java.sql.SQLException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public String urlNuvem() {

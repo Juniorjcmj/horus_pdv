@@ -2,6 +2,7 @@ package br.com.quack.pdv.plataforma.sincronizacao.envio;
 
 import br.com.quack.pdv.plataforma.sincronizacao.envio.ClassificadorErro.Falha;
 import br.com.quack.pdv.plataforma.sincronizacao.protocolo.ParteLote;
+import br.com.quack.pdv.plataforma.sincronizacao.recuperacao.EstadoRecuperacao;
 import br.com.quack.pdv.plataforma.sincronizacao.protocolo.SerializadorLote;
 import br.com.quack.pdv.security.SecretProtector;
 import br.com.quack.pdv.config.QuackProperties;
@@ -30,7 +31,7 @@ public class EnvioSincronizacao {
 
     private static final Logger LOG = LoggerFactory.getLogger(EnvioSincronizacao.class);
 
-    public enum Resultado { INATIVO, AGUARDANDO, PAUSADO, SEM_MUDANCAS, ENVIADO, REENVIAR_DA_NUVEM, FALHA_TEMPORARIA, FALHA_DEFINITIVA }
+    public enum Resultado { INATIVO, AGUARDANDO, PAUSADO, SEM_MUDANCAS, ENVIADO, RECUPERANDO, REENVIAR_DA_NUVEM, FALHA_TEMPORARIA, FALHA_DEFINITIVA }
 
     private record Estado(boolean ativada, String companyId, String url, String tokenCifrado, Long versaoDe,
                           OffsetDateTime proxima, String pausa, int tentativas) {}
@@ -53,6 +54,7 @@ public class EnvioSincronizacao {
     private final QuackProperties props;
     private final Clock clock;
     private final List<AntesDoEnvio> antes;
+    private volatile EstadoRecuperacao recuperacao;
 
     public EnvioSincronizacao(JdbcTemplate jdbc, LeitorMudancas leitor, ClienteNuvem cliente, SecretProtector protetor,
                               QuackProperties props, Clock clock, List<AntesDoEnvio> antes) {
@@ -64,6 +66,10 @@ public class EnvioSincronizacao {
         this.clock = clock;
         this.antes = antes;
     }
+
+    /** Opcional (nao existe fora do perfil loja): enquanto a loja se recupera de uma restauracao nada e enviado. */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    void definirRecuperacao(EstadoRecuperacao recuperacao) { this.recuperacao = recuperacao; }
 
     @Scheduled(initialDelayString = "${quack.sync.intervalo-ms:2000}", fixedDelayString = "${quack.sync.intervalo-ms:2000}")
     public void executarAgendado() {
@@ -77,6 +83,7 @@ public class EnvioSincronizacao {
 
     /** Um ciclo; sincronizado porque a rota de retomada e os testes tambem o chamam. */
     public synchronized Resultado ciclo() {
+        if (recuperacao != null && recuperacao.emAndamento()) return Resultado.RECUPERANDO;
         Estado e = ler();
         if (!e.ativada() || e.versaoDe() == null || e.tokenCifrado() == null || e.tokenCifrado().isBlank()
                 || e.url().isBlank()) return Resultado.INATIVO;

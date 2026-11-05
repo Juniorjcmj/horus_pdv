@@ -1,6 +1,8 @@
 # Perfil dos testes de integracao: banco real (Testcontainers) com Flyway; o resto igual a producao.
 quack:
   dev: false
+  sync:
+    recuperacao-ativa: false   # os ITs da recuperacao a ligam; nos demais a rotina e a verificacao de versao ficam quietas
   fiscal:
     fila-minima:
       ativa: false   # os ITs da fila chamam processarLote() direto; nos demais a rotina nao mexe nas notas

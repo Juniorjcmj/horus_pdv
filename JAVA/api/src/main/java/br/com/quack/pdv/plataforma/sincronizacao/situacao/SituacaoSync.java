@@ -27,7 +27,9 @@ public record SituacaoSync(
         JsonNode ultimaConferencia,
         JsonNode ultimoBackup,
         Boolean nuvemAcessivel,
-        String servidorStatus) {
+        String servidorStatus,
+        Boolean recuperando,
+        JsonNode recuperacao) {
 
     /** NFC-e com {@code Status IN (1,2,8)} criadas ha mais que isto entram na contagem. */
     public static final long MINUTOS_NFCE_PENDENTE = 10;

@@ -50,7 +50,13 @@ public class ClienteCarga {
     }
 
     public CargaPagina pagina(String urlBase, String token, String tabela, List<String> depois, int limite) {
+        return pagina(urlBase, token, tabela, depois, limite, false);
+    }
+
+    /** {@code renovar}: a recuperacao pede um retrato novo, em vez de reaproveitar uma carga aberta antiga. */
+    public CargaPagina pagina(String urlBase, String token, String tabela, List<String> depois, int limite, boolean renovar) {
         StringBuilder q = new StringBuilder("/api/loja-sync/carga?tabela=").append(enc(tabela)).append("&limite=").append(limite);
+        if (renovar) q.append("&renovar=true");
         if (depois != null) q.append("&depois=").append(enc(escrever(depois)));
         return ler(enviar(requisicao(urlBase, q.toString(), token).GET()), CargaPagina.class);
     }
@@ -60,9 +66,21 @@ public class ClienteCarga {
     }
 
     public Ativacao ativar(String urlBase, String token, long desde, long versaoLoja) {
-        String corpo = escrever(Map.of("desde", desde, "versaoLoja", versaoLoja));
+        return ativar(urlBase, token, desde, versaoLoja, false);
+    }
+
+    /** {@code recuperacao}: a nuvem tambem dispensa os comandos pendentes que o retrato ja cobre. */
+    public Ativacao ativar(String urlBase, String token, long desde, long versaoLoja, boolean recuperacao) {
+        String corpo = escrever(Map.of("desde", desde, "versaoLoja", versaoLoja, "recuperacao", recuperacao));
         return ler(enviar(requisicao(urlBase, "/api/loja-sync/ativar", token).header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(corpo))), Ativacao.class);
+    }
+
+    /** Ate que versao da loja a nuvem ja aplicou (situacao da nuvem); a recuperacao usa para saber o que a nuvem ja viu. */
+    public long versaoConfirmada(String urlBase, String token) {
+        com.fasterxml.jackson.databind.JsonNode d = ler(enviar(requisicao(urlBase, "/api/loja-sync/situacao", token).GET()),
+                com.fasterxml.jackson.databind.JsonNode.class);
+        return d.path("versaoConfirmada").asLong(0);
     }
 
     // ------------------------------------------------------------------ apoio
@@ -74,7 +92,13 @@ public class ClienteCarga {
         return b;
     }
 
+    private volatile boolean semInternet;
+
+    /** Interruptor de "sem internet" dos testes (como o do ClienteNuvemHttp). */
+    public void setSemInternet(boolean semInternet) { this.semInternet = semInternet; }
+
     private HttpResponse<String> enviar(HttpRequest.Builder b) {
+        if (semInternet) throw new CargaException(0, "Sem comunicacao com a nuvem (simulado).", null);
         try {
             return http.send(b.build(), HttpResponse.BodyHandlers.ofString());
         } catch (InterruptedException e) {

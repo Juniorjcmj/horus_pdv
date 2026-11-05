@@ -31,7 +31,7 @@ public class LojaSyncCargaController {
 
     public record RegistrarRequest(String email, String password, String serverName) {}
 
-    public record AtivarRequest(Long desde, Long versaoLoja) {}
+    public record AtivarRequest(Long desde, Long versaoLoja, Boolean recuperacao) {}
 
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final int LIMITE_PADRAO = 500;
@@ -70,6 +70,7 @@ public class LojaSyncCargaController {
     public ResponseEntity<ApiResponse<CargaPagina>> carga(@RequestParam String tabela,
                                                          @RequestParam(required = false) String depois,
                                                          @RequestParam(required = false) Integer limite,
+                                                         @RequestParam(required = false, defaultValue = "false") boolean renovar,
                                                          HttpServletRequest http) {
         ServidorLoja servidor = servidor(http);
         if (servidor == null) return semToken();
@@ -77,7 +78,7 @@ public class LojaSyncCargaController {
         try {
             cursor = depois == null || depois.isBlank() ? null
                     : JSON.readValue(depois, new TypeReference<List<String>>() {});
-            long versao = ativacao.abrirCarga(servidor);
+            long versao = ativacao.abrirCarga(servidor, renovar);
             CargaPagina p = leitor.pagina(servidor.companyId(), tabela, cursor, limite == null ? LIMITE_PADRAO : limite);
             ativacao.registrarPagina(servidor, p);
             return ResponseEntity.ok(ApiResponse.ok("Pagina da carga.", new CargaPagina(p.tabela(), versao, p.colunas(), p.linhas(),
@@ -106,7 +107,7 @@ public class LojaSyncCargaController {
             return ResponseEntity.badRequest().body(ApiResponse.erro("Informe desde e versaoLoja."));
         }
         try {
-            return ResponseEntity.ok(ApiResponse.ok("Servidor ativado.", ativacao.ativar(servidor, r.desde(), r.versaoLoja())));
+            return ResponseEntity.ok(ApiResponse.ok("Servidor ativado.", ativacao.ativar(servidor, r.desde(), r.versaoLoja(), Boolean.TRUE.equals(r.recuperacao()))));
         } catch (LeitorCargaNuvem.VersaoExpiradaException e) {
             return ResponseEntity.status(410).body(ApiResponse.erro(e.getMessage()));
         }

@@ -28,8 +28,8 @@ class PerfilPadraoSemTrackingIT extends BancoIT {
     }
 
     @Test
-    void migracaoV5CriouAsTabelasSyncDaLoja() {
+    void migracoesV5eV6CriaramAsTabelasSyncDaLoja() {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM sys.tables WHERE name LIKE 'Sync%'", Integer.class))
-                .isEqualTo(6);
+                .isEqualTo(8);
     }
 }

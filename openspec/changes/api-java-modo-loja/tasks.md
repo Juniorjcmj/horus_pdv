@@ -168,6 +168,26 @@
     tempo.
   - Verificação: os números ficam registrados no `DEPLOY.md`, e a suíte da .NET passa igual com o tracking ligado.
   - Resultado: +4,0% de tempo de escrita (10 000 vendas, 3 rodadas), +47 MB por 30 000 vendas, version store 23 MB de pico com leitor aberto; suíte da .NET (1 152 gravações) 1 896 s sem e 1 784 s com o tracking, mesmos status em todas. Números no `DEPLOY.md`, método em `design.md`.
+- [x] 7.4 Recuperação depois da restauração (decisão do dono, 04/11/2026; requisito "Recuperação após restauração" em
+  `instalacao-servidor-loja`; desenho em "Notas da recuperação" no `design.md`).
+  - Depois de restaurar, o servidor puxa da nuvem tudo o que falta (todas as classes do catálogo), realinha as versões
+    do Change Tracking (reativação, com o espelho refeito no mesmo retrato) e avança as sequências; só então liberam-se
+    vendas, envio e conferência, que se religam sozinhos. Nada é apagado.
+  - Migração `V6__sync_recuperacao.sql`; pacote `plataforma/sincronizacao/recuperacao` (`EstadoRecuperacao`,
+    `RecuperacaoLoja`, `RecuperacaoExecutor`, `RecuperacaoRunner`, `RecuperacaoFilter`); `POST /api/loja-sync/recuperar`;
+    `recuperando` na situação; `restaurar.ps1` deixa o marcador `config\recuperar.pendente`; `CHECKLIST.md` seção 7.
+  - Verificação: `RecuperacaoLojaIT` (BACKUP/RESTORE reais no SQL Server do container):
+    - loja restaurada de backup anterior a N vendas recupera todas e a numeração (venda e fiscal) continua sem repetir;
+    - a conferência fecha `ok` e não apaga nada da nuvem; repetir a recuperação não duplica;
+    - sem internet a recuperação fica pendente, a loja responde 503 e a conferência continua parada, e termina ao voltar;
+    - queda no meio da puxada retoma da última página;
+    - cadastro criado e cadastro editado na nuvem depois do backup também voltam;
+    - venda que só existe no backup (não enviada) sobe depois da recuperação;
+    - restauração sem o marcador é percebida pela versão da nuvem à frente e dispara a mesma recuperação.
+  - `testes/Testar-BackupDocker.ps1` atualizado (marcador deixado, linha antiga da conferência removida, `-SemRecuperacao`).
+  - O que fica para o checklist 8.4: itens 7.4 a 7.10 numa máquina Windows de teste (serviço real, caixas reais, internet
+    cortada de verdade).
+
 
 ## 8. Aceite e integração
 
@@ -188,7 +208,7 @@
   - Rodar `graphify update .`.
   - Verificação: o relatório do verify e os comandos documentados conferidos.
 - [ ] 8.4 Rodar o `CHECKLIST.md` numa máquina Windows de teste com 2 caixas: queda de internet, queda do servidor e
-  restauração do backup.
+  restauração do backup (itens 7.4 a 7.10: recuperação após a restauração).
   - Verificação: cada item com resultado registrado aqui. Precisa do dono do produto ou de uma máquina disponível;
     se não houver, deixe a tarefa aberta e diga isso no relatório.
 

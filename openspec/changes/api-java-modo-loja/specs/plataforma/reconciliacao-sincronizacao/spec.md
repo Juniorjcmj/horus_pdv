@@ -37,6 +37,10 @@ quarentena, NFC-e pendentes há mais de 10 minutos e o resultado da última conf
 - **WHEN** um usuário com perfil caixa consulta a situação
 - **THEN** a resposta é 403
 
+#### Scenario: Consulta durante a recuperação
+- **WHEN** um administrador consulta a situação no servidor da loja enquanto ele se recupera de uma restauração de backup
+- **THEN** a resposta traz `recuperando: true` e o detalhe da recuperação (estado, fase, linhas puxadas, último erro)
+
 ### Requirement: Alertas
 SHALL gerar alerta, registrado em log de erro e enviado por e-mail ao administrador da empresa (no máximo um por motivo
 a cada hora), quando houver:
@@ -46,7 +50,8 @@ a cada hora), quando houver:
 - nova entrada na quarentena;
 - conferência com diferença;
 - NFC-e pendente há mais de 30 minutos;
-- falha no backup.
+- falha no backup;
+- recuperação após restauração pendente há mais de 10 minutos.
 
 #### Scenario: Sincronização pausada
 - **WHEN** um lote é recusado definitivamente

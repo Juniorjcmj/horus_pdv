@@ -37,6 +37,15 @@ public class AtivacaoNuvem {
     }
 
     public Ativacao ativar(ServidorLoja servidor, long desde, long versaoLoja) {
+        return ativar(servidor, desde, versaoLoja, false);
+    }
+
+    /**
+     * Com {@code recuperacao} (loja restaurada de um backup) o retrato que a loja acabou de puxar cobre tudo o que os
+     * comandos {@code alterar}, {@code inserir} e {@code forcar} pendentes diziam; eles sao dados como aplicados para nao
+     * virarem conflito. {@code excluir} e {@code reenviar} continuam: a linha excluida na nuvem ainda pode existir na loja.
+     */
+    public Ativacao ativar(ServidorLoja servidor, long desde, long versaoLoja, boolean recuperacao) {
         if (versaoLoja < 0) {
             throw new NegocioException(HttpStatus.BAD_REQUEST, "Versao da loja invalida.");
         }
@@ -55,6 +64,11 @@ public class AtivacaoNuvem {
                         + "VALUES (?, ?, ?, ?)", servidor.companyId(), servidor.id(), versaoLoja, detectorDesde);
             }
             gravarEspelho(servidor.companyId(), retrato.espelho());
+            if (recuperacao) {
+                jdbc.update("UPDATE dbo.SyncComandos SET Status = N'aplicado', ResultadoJson = N'{\"recuperacao\":true}', "
+                        + "AtualizadoEm = SYSDATETIMEOFFSET() WHERE CompanyId = ? AND Status = N'pendente' "
+                        + "AND Tipo IN (N'alterar', N'inserir', N'forcar')", servidor.companyId());
+            }
             jdbc.update("UPDATE dbo.SyncServidores SET Status = N'ativo', AtivadoEm = SYSDATETIMEOFFSET() "
                     + "WHERE Id = ? AND Status = N'pendente'", servidor.id());
             jdbc.update("UPDATE dbo.SyncCargas SET Status = N'ativada', AtualizadoEm = SYSDATETIMEOFFSET() "
@@ -115,6 +129,15 @@ public class AtivacaoNuvem {
 
     /** Abre a carga do servidor (uma aberta por vez) guardando a versao do retrato; devolve a versao. */
     public long abrirCarga(ServidorLoja servidor) {
+        return abrirCarga(servidor, false);
+    }
+
+    /** {@code renovar}: fecha a carga aberta (de uma tentativa antiga) e abre outra com o retrato de agora. */
+    public long abrirCarga(ServidorLoja servidor, boolean renovar) {
+        if (renovar) {
+            jdbc.update("UPDATE dbo.SyncCargas SET Status = N'substituida', AtualizadoEm = SYSDATETIMEOFFSET() "
+                    + "WHERE ServidorId = ? AND Status = N'aberta'", servidor.id());
+        }
         java.util.List<Long> abertas = jdbc.queryForList(
                 "SELECT VersaoRetrato FROM dbo.SyncCargas WHERE ServidorId = ? AND Status = N'aberta'", Long.class,
                 servidor.id());

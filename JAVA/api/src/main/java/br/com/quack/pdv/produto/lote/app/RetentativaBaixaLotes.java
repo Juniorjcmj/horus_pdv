@@ -22,6 +22,13 @@ public class RetentativaBaixaLotes {
     private final LotePendencias pendencias;
     private final LoteOperacoes lotes;
     private final boolean ativa;
+    private volatile br.com.quack.pdv.plataforma.sincronizacao.recuperacao.EstadoRecuperacao recuperacao;
+
+    /** Opcional (so no perfil loja): durante a recuperacao pos-restauracao a rotina espera. */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    void definirRecuperacao(br.com.quack.pdv.plataforma.sincronizacao.recuperacao.EstadoRecuperacao recuperacao) {
+        this.recuperacao = recuperacao;
+    }
 
     public RetentativaBaixaLotes(
             LotePendencias pendencias,
@@ -36,7 +43,7 @@ public class RetentativaBaixaLotes {
             initialDelayString = "${quack.lote.retentativa.intervalo-ms:30000}",
             fixedDelayString = "${quack.lote.retentativa.intervalo-ms:30000}")
     public void executarAgendado() {
-        if (!ativa) return;
+        if (!ativa || (recuperacao != null && recuperacao.emAndamento())) return;
         try {
             processarPendentes();
         } catch (Exception ex) {

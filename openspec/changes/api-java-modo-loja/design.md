@@ -700,3 +700,72 @@ existe, ou tabela `EDITAVEL`/`LOJA` sem chave primária. A ordem de aplicação 
   provados à parte: sintaxe e lógica dos `.ps1` (parser e `testes/Testar-Logica.ps1`), `instalar.ps1 -SomenteValidar`
   (código 0) e `-WhatIf`, backup/retenção/estado/restauração contra SQL Server em container, e o jar com o JRE do `jlink` e um
   `loja.env` gerado pelo instalador subindo em `UP` no perfil `loja` (`testes/Testar-ApiPacote.ps1`).
+
+### Notas da recuperação (tarefa 7.4: servidor restaurado de backup)
+
+**Problema.** O banco restaurado é mais antigo que a nuvem. (a) As vendas, notas, movimentos e cadastros feitos depois do
+backup só existem na nuvem, e a conferência (D10), que trata a nuvem como reflexo da loja nas tabelas `LOJA`, os apagaria
+de lá. (b) O Change Tracking voltou atrás: `SyncEstado.VersaoDe` e as versões novas da loja reusam números que a nuvem já
+aplicou. Com `aplicadoAte` da nuvem à frente, um lote com `ate < aplicadoAte` é respondido "já aplicado" e a loja avança a
+versão **pulando as mudanças** (sem erro nenhum); com `ate >= aplicadoAte` vem 409 e a loja adota a versão da nuvem, também
+pulando. (c) Os contadores de numeração voltam atrás. Decisão do dono: puxar tudo da nuvem antes de voltar ao normal.
+
+**Desenho** (`plataforma/sincronizacao/recuperacao`, estado em `SyncRecuperacao`, migração `V6`):
+- **Disparo.** `restaurar.ps1` deixa `config\recuperar.pendente` (propriedade `quack.sync.recuperacao-marcador`, padrão
+  `config/recuperar.pendente` relativo à pasta da instalação, que é o diretório de trabalho do serviço). A API o transforma
+  em estado `pendente` no banco e apaga o arquivo (nessa ordem: se cair no meio, o marcador continua). O banco restaurado
+  não sabe que foi restaurado, por isso o marcador é o gatilho. Também por linha de comando
+  (`--quack.sync.recuperacao.executar=true`, como a carga inicial; saída 0 = concluída) e por `POST /api/loja-sync/recuperar`
+  (administrador). Rede de segurança para restauração feita sem o script: a cada `recuperacao-verificacao-ms` (5 min) a
+  loja lê a situação da nuvem e, se `versaoConfirmada` > versão local do tracking (impossível sem regressão), pede a
+  recuperação. `-SemRecuperacao` no script é a exceção (nuvem sem nada além do backup).
+- **Vendas durante a recuperação: bloqueadas.** `RecuperacaoFilter` responde 503 com `Retry-After` a tudo, menos
+  `/actuator/health`, `/api/auth/login|logout|me` e `/api/loja-sync/**` (o administrador acompanha). O Caixa trata como
+  servidor fora do ar e segue na fila offline (spec "Ligação dos caixas"). Opção descartada: aceitar vendas durante a
+  recuperação. Seria preciso numerar vendas e notas contra um banco em que ainda faltam as vendas da nuvem (repetiria
+  número), o estoque e o fiado seriam recalculados sobre saldos defasados e as vendas novas subiriam com versões que a
+  reativação (abaixo) redefine. O marcador conta como "em andamento" desde a primeira requisição, antes mesmo de virar
+  estado no banco. Envio, conferência (manual e agendada), executor de comandos da nuvem, fila fiscal e retentativa de lotes
+  também param (`EstadoRecuperacao.emAndamento()`).
+- **Fases** (cada uma gravada; qualquer queda ou falta de internet retoma de onde parou, sem duplicar):
+  1. `preparando`: guarda `VersaoAntiga` (= `SyncEstado.VersaoDe` restaurado) e enfileira em `SyncReenvios` as linhas
+     mudadas na loja desde essa versão (`CHANGETABLE(CHANGES, VersaoAntiga)`), isto é, o que o backup tinha e a nuvem talvez
+     não tenha. Se o tracking do banco restaurado for inutilizável (ex.: restaurado em outro servidor sem `KEEP_CT`), marca
+     `RetratoCompleto` e, no fim, `VersaoDe = -1` faz o envio mandar o retrato completo (D5).
+  2. `puxando`: usa as rotas da carga inicial (`GET /carga`, com `renovar=true` na primeira página para não reusar uma
+     carga aberta antiga). Tabela a tabela, na ordem do catálogo, upsert das linhas da empresa. **A nuvem vence** nas linhas
+     que existem nos dois lados: é o valor mais recente que a loja enviou. Diferenças do upsert da carga inicial
+     (`AplicadorCargaLoja`, modo `recuperacao`): colunas `LOCAL` não são tocadas no `UPDATE`; `FiscalSequencias.ProximoNumero`
+     e `RegrasEmissaoNfce.ContadorVendas` só crescem (`CASE WHEN`); `AuditLog` entra com Id novo da loja e só se não houver
+     linha igual (a nuvem numera a auditoria por conta própria). Nenhuma linha é excluída.
+  3. `alinhando`: delta da nuvem desde o retrato até vir vazio e `POST /ativar` com `recuperacao=true`, o mesmo da carga
+     inicial: religa o tracking, lê a versão `v` da loja e a nuvem passa a ter `aplicadoAte = v`, refaz o espelho e o
+     `detectorDesde` no mesmo retrato SNAPSHOT em que confere o delta vazio. A loja grava `VersaoDe = v`: as escritas da
+     própria puxada (que o tracking viu) não sobem de volta. Com `recuperacao=true` a nuvem também dá como aplicados os
+     comandos `alterar`, `inserir` e `forcar` pendentes (o retrato já os cobre; sem isso viram conflito). `excluir` e
+     `reenviar` ficam: a linha excluída na nuvem pode continuar viva no backup.
+  4. `sequencias`: `FiscalSequencias` (modelo 65) passa de `MAX(NumeroNf) + 1` das notas da loja e ganha linha se faltar
+     (o numerador cria com 1 se a linha não existir, o que repetiria número). Numeração de venda, pedido, ordem de
+     compra e inventário é `MAX + 1` das linhas, então já acompanha o que foi puxado. Roda depois da reativação: o que muda
+     aqui sobe no primeiro lote, junto com as linhas de `SyncReenvios` da fase 1.
+- **Change Tracking e `aplicadoAte`** (resumo): o realinhamento é a reativação, com o espelho refeito no mesmo retrato. A
+  nuvem nunca vê a loja "voltar no tempo": depois de `ativar`, o primeiro lote sai de `v` e a nuvem espera `v`.
+- **Sequências.** Contador guardado (fiscal, `ContadorVendas`): nunca diminui na puxada e é elevado ao maior número real. Contador
+  derivado (`MAX + 1`): vem das linhas.
+- **Conflitos.** Linha alterada no backup e depois dele: vale a da nuvem, que é o valor mais recente que a loja enviou. Exceção
+  exata: a loja sabe até que versão a nuvem aplicou (`versaoConfirmada`, lida no início). Linha mudada no banco restaurado com versão
+  de tracking acima disso a nuvem nunca viu (ex.: venda feita sem internet antes do backup): é "protegida", entra em
+  `SyncReenvios` (motivo `recuperacao`) e, na puxada, mantém as colunas `LOJA` do backup (o estoque do produto continua batendo com a
+  venda que só existe ali) e recebe da nuvem as colunas `EDITAVEL`/`NUVEM`. Linha só no backup e não enviada: fica e sobe. Linha que a
+  nuvem tem e o backup não: entra.
+- **Situação.** `GET /api/loja-sync/situacao` ganha `recuperando` e `recuperacao` (estado, fase, motivo, tentativas, linhas
+  puxadas, tabela atual, último erro). Alerta `recuperacao-pendente` se passar de 10 minutos (e-mail, no máximo um por hora).
+- **Sem internet.** `ClienteCarga` falha com status 0: estado volta a `pendente` com o erro; a rotina repete a cada 15 s
+  (`recuperacao-intervalo-ms`); vendas, envio e conferência seguem parados.
+- **Limites aceitos** (todos no `CHECKLIST.md`): (1) exclusão feita depois do backup (na loja ou na nuvem, de cadastro ou
+  não) não é refeita: a linha volta à loja e a conferência a devolve à nuvem; só a exclusão feita na nuvem e ainda não vista
+  pelo detector (comando `excluir` pendente) é preservada; (2) uma edição da loja não enviada à época do backup, em linha que a
+  nuvem também mudou depois, fica com o valor da nuvem; (3) `ProcessedEvents` não é sincronizado, então um caixa que reenvie
+  evento já processado depois do backup pode duplicar a venda; (4) o `UPDATE` de linhas idênticas gera entradas no Change
+  Tracking da loja, que a reativação descarta (custo de espaço, não de correção); (5) a restauração fora do script só é
+  percebida na próxima verificação de versão.

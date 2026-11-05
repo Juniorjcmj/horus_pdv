@@ -3,6 +3,7 @@ package br.com.quack.pdv.plataforma.sincronizacao.situacao;
 import br.com.quack.pdv.config.QuackProperties;
 import br.com.quack.pdv.plataforma.sincronizacao.alertas.EstadoBackup;
 import br.com.quack.pdv.plataforma.sincronizacao.envio.ClienteJsonNuvem;
+import br.com.quack.pdv.plataforma.sincronizacao.recuperacao.EstadoRecuperacao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,8 +33,10 @@ public class SituacaoLoja {
     private final JdbcTemplate jdbc;
     private final ClienteJsonNuvem nuvem;
     private final QuackProperties props;
+    private final EstadoRecuperacao recuperacao;
 
-    public SituacaoLoja(JdbcTemplate jdbc, ClienteJsonNuvem nuvem, QuackProperties props) {
+    public SituacaoLoja(JdbcTemplate jdbc, ClienteJsonNuvem nuvem, QuackProperties props, EstadoRecuperacao recuperacao) {
+        this.recuperacao = recuperacao;
         this.jdbc = jdbc;
         this.nuvem = nuvem;
         this.props = props;
@@ -46,6 +49,7 @@ public class SituacaoLoja {
                 """, (rs, i) -> new Object[] {rs.getString(1), rs.getBoolean(2), rs.getObject(3), rs.getObject(4),
                         rs.getObject(5, OffsetDateTime.class), rs.getObject(6, OffsetDateTime.class), rs.getString(7)});
         Object[] s = e.getFirst();
+        EstadoRecuperacao.Foto recuperando = recuperacao.foto();
         String empresa = (String) s[0];
         boolean ativada = (Boolean) s[1];
         Long versaoLocal = ativada ? jdbc.queryForObject("SELECT CHANGE_TRACKING_CURRENT_VERSION()", Long.class) : null;
@@ -82,7 +86,23 @@ public class SituacaoLoja {
         }
         return new SituacaoSync("loja", empresa, agora, versaoLocal, confirmada, ultima, atraso, s[6] != null,
                 (String) s[6], pendentes, parados, quarentena, notas == null ? 0 : notas, ultimaConferencia(), backup(),
-                acessivel, servidor);
+                acessivel, servidor, recuperando.emAndamento(), recuperacaoJson(recuperando));
+    }
+
+    /** Detalhe da recuperacao pos-restauracao; some quando nunca houve uma. */
+    private static JsonNode recuperacaoJson(EstadoRecuperacao.Foto f) {
+        if (EstadoRecuperacao.NENHUMA.equals(f.estado())) return null;
+        ObjectNode o = JSON.createObjectNode();
+        o.put("estado", f.estado());
+        o.put("fase", f.fase());
+        o.put("motivo", f.motivo());
+        o.put("tentativas", f.tentativas());
+        o.put("linhasPuxadas", f.linhas());
+        o.put("tabelaAtual", f.tabelaAtual());
+        o.put("ultimoErro", f.ultimoErro());
+        o.put("solicitadaEm", f.solicitadaEm() == null ? null : f.solicitadaEm().toString());
+        o.put("concluidaEm", f.concluidaEm() == null ? null : f.concluidaEm().toString());
+        return o;
     }
 
     private JsonNode ultimaConferencia() {

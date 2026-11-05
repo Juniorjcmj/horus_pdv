@@ -30,6 +30,47 @@ alerta. A restauração SHALL estar documentada e testada.
 - **WHEN** passa o horário do backup
 - **THEN** existe um arquivo de backup novo e os mais antigos que a retenção foram apagados
 
+#### Scenario: Restauração do backup
+- **WHEN** o backup é restaurado com `restaurar.ps1`
+- **THEN** o banco volta ao ponto do backup, a conferência NÃO é desligada na configuração e a recuperação (requisito abaixo) é pedida
+
+### Requirement: Recuperação após restauração
+Depois de restaurar um backup, o servidor da loja SHALL puxar da nuvem tudo o que o backup não tem antes de voltar ao
+normal: as linhas da empresa mais novas que o backup, em todas as classes do catálogo (loja, editável e acréscimo), e
+as sequências de numeração (vendas, fiscal, inventário e demais) SHALL avançar para não reusar número. Só depois
+disso o envio e a conferência SHALL voltar sozinhos. Nada MUST ser apagado da nuvem pela recuperação nem pela
+conferência seguinte, e nada MUST ser apagado da loja.
+
+O `restaurar.ps1` SHALL pedir a recuperação (marcador lido pela API ao subir) e ela SHALL poder ser disparada por linha
+de comando e por rota de administrador. Durante a recuperação o servidor MUST NOT aceitar vendas (responde 503, e os
+caixas seguem na fila offline), o envio e a conferência SHALL ficar parados, e a situação da sincronização SHALL mostrar
+que a loja está "recuperando". Sem internet, a recuperação SHALL ficar pendente e a conferência MUST continuar parada;
+ela SHALL ser retomada de onde parou quando a internet voltar. Uma linha alterada na loja e depois do backup tem o valor
+da nuvem, que é o mais recente que a loja enviou. Uma linha que só existe no backup (ainda não enviada) SHALL ser
+mantida e enviada.
+
+#### Scenario: Loja restaurada de backup anterior a N vendas
+- **WHEN** a loja é restaurada de um backup anterior a N vendas já enviadas à nuvem
+- **THEN** ao fim da recuperação as N vendas (com itens, pagamentos e movimentos de estoque) existem na loja, a numeração
+  da próxima venda e da próxima nota continua acima das existentes e a nuvem continua com todas
+
+#### Scenario: Conferência depois da recuperação
+- **WHEN** a recuperação termina e a conferência roda
+- **THEN** ela fecha `ok` e não apaga nada da nuvem
+
+#### Scenario: Sem internet depois de restaurar
+- **WHEN** o servidor é restaurado e a nuvem está inacessível
+- **THEN** a recuperação fica pendente, as vendas são recusadas com 503, a conferência não roda, e tudo se resolve
+  sozinho quando a internet volta
+
+#### Scenario: Cadastro editado na nuvem depois do backup
+- **WHEN** um cadastro foi alterado ou criado na nuvem depois do backup
+- **THEN** a loja recuperada tem o cadastro com o valor da nuvem
+
+#### Scenario: Restauração sem o script
+- **WHEN** o banco é restaurado fora do `restaurar.ps1` e a nuvem está à frente da versão da loja
+- **THEN** a loja percebe a diferença e executa a mesma recuperação
+
 ### Requirement: Acesso pela rede da loja
 O serviço SHALL aceitar conexões só da rede local da loja, por regra de firewall criada pelo instalador. O banco MUST
 NOT ser acessível fora da própria máquina.

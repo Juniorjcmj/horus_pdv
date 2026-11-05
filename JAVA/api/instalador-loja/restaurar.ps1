@@ -1,17 +1,28 @@
 <#
 .SYNOPSIS
-    Restaura um backup do banco da loja (D12). Para o servico, restaura, conferencia desligada, sobe o servico.
+    Restaura um backup do banco da loja (D12). Para o servico, restaura, pede a recuperacao e sobe o servico.
 .DESCRIPTION
     1. confere o arquivo (RESTORE VERIFYONLY WITH CHECKSUM);
     2. para o servico QuackLojaApi;
     3. poe o banco em SINGLE_USER, RESTORE DATABASE ... WITH REPLACE, volta a MULTI_USER;
-    4. DESLIGA a conferencia diaria (quack.sync.conferencia-ativa=false em config\loja.env) e sobe o servico.
+    4. deixa o marcador config\recuperar.pendente e sobe o servico. A API, ao subir, executa a RECUPERACAO sozinha:
+       puxa da nuvem tudo o que o backup nao tem (vendas, notas, movimentos e cadastros feitos depois dele), realinha as
+       versoes da sincronizacao, avanca a numeracao e SO ENTAO volta a aceitar vendas, a enviar e a conferir.
 
-    POR QUE DESLIGAR A CONFERENCIA: o backup e mais antigo que a nuvem. A nuvem ja recebeu vendas feitas depois dele;
-    como a conferencia trata a nuvem como reflexo da loja nas tabelas "LOJA", ela APAGARIA essas vendas da nuvem.
-    Depois de restaurar, siga a secao "Restauracao" do CHECKLIST.md antes de religar (-ReativarConferencia).
+    POR QUE: o backup e mais antigo que a nuvem. A conferencia trata a nuvem como reflexo da loja nas tabelas "LOJA" e
+    APAGARIA da nuvem as vendas posteriores ao backup. Com a recuperacao nao e preciso desligar a conferencia nem decidir
+    nada: ela e religada pela propria API. Sem internet, a recuperacao fica pendente (o servidor nao vende nem confere)
+    e repete ate conseguir. Acompanhe por GET /api/loja-sync/situacao ("recuperando").
+    Pela linha de comando (alternativa ao marcador): java -jar quack-pdv-api.jar --spring.profiles.active=loja
+    --quack.sync.recuperacao.executar=true (codigo 0 = concluida).
 .PARAMETER Forcar
     Nao pede confirmacao (o RESTORE substitui o banco atual).
+.PARAMETER SemRecuperacao
+    EXCECAO: nao deixa o marcador. Use so quando se sabe que a nuvem NAO tem nada alem do backup (ex.: ambiente de teste).
+    A conferencia diaria pode apagar da nuvem o que o backup nao tem.
+.PARAMETER ReativarConferencia
+    Legado: lojas restauradas pela versao antiga do script tem quack.sync.conferencia-ativa=false no loja.env. Este
+    parametro remove essa linha (a conferencia volta ao padrao, ligada) e nao restaura nada.
 .PARAMETER Arquivo
     Backup a restaurar. Sem o parametro, usa o mais recente da pasta de backups.
 #>
@@ -25,6 +36,7 @@ param(
     [string]$CaminhoBackupNoSql,
     [switch]$SemServico,
     [switch]$ReativarConferencia,
+    [switch]$SemRecuperacao,
     [switch]$Forcar
 )
 $ErrorActionPreference = 'Stop'
@@ -53,23 +65,26 @@ $bd = Format-IdentificadorSql $Banco
 $arq = Format-LiteralSql $arquivoNoSql
 $envArq = Join-Path $Destino 'config\loja.env'
 
-function Set-ConferenciaAtiva([bool]$ativa) {
-    if (-not (Test-Path -LiteralPath $envArq)) { Write-Warning "loja.env nao encontrado em $envArq; ajuste quack.sync.conferencia-ativa na mao."; return }
-    $linhas = @(Get-Content -LiteralPath $envArq -Encoding UTF8 | Where-Object { $_ -notmatch '^quack\.sync\.conferencia-ativa=' })
-    $linhas += "quack.sync.conferencia-ativa=$($ativa.ToString().ToLowerInvariant())"
-    Write-ArquivoTextoUtf8 -Caminho $envArq -Conteudo (($linhas -join "`r`n") + "`r`n")
+$marcador = Join-Path $Destino 'config\recuperar.pendente'
+
+# Legado: tira do loja.env a linha que a versao antiga do script gravava (a conferencia agora espera a recuperacao).
+function Remove-ConferenciaDesligada {
+    if (-not (Test-Path -LiteralPath $envArq)) { return }
+    $linhas = @(Get-Content -LiteralPath $envArq -Encoding UTF8)
+    $novas = @($linhas | Where-Object { $_ -notmatch "^quack[.]sync[.]conferencia-ativa=" })
+    if ($novas.Count -ne $linhas.Count) { Write-ArquivoTextoUtf8 -Caminho $envArq -Conteudo (($novas -join "`r`n") + "`r`n") }
 }
 
 if ($ReativarConferencia) {
-    if ($PSCmdlet.ShouldProcess($envArq, 'Religar a conferencia diaria')) {
-        Set-ConferenciaAtiva $true
-        Write-Host 'Conferencia religada. Reinicie o servico para valer: Restart-Service QuackLojaApi'
+    if ($PSCmdlet.ShouldProcess($envArq, 'Remover o desligamento antigo da conferencia diaria')) {
+        Remove-ConferenciaDesligada
+        Write-Host 'Conferencia no padrao (ligada). Reinicie o servico para valer: Restart-Service QuackLojaApi'
     }
     return
 }
 
 if (-not $PSCmdlet.ShouldProcess("$Banco <- $Arquivo", 'RESTORE DATABASE (substitui o banco atual)')) {
-    Write-Host "[WhatIf] Conferiria $Arquivo, pararia o servico $Servico, restauraria $Banco, desligaria a conferencia e subiria o servico."
+    Write-Host "[WhatIf] Conferiria $Arquivo, pararia o servico $Servico, restauraria $Banco, deixaria o marcador da recuperacao e subiria o servico."
     return
 }
 
@@ -92,8 +107,14 @@ try {
     } finally {
         Invoke-SqlComando -StringConexao $StringConexao -Sql "IF DB_ID($(Format-LiteralSql $Banco)) IS NOT NULL ALTER DATABASE $bd SET MULTI_USER"
     }
-    Set-ConferenciaAtiva $false
-    Write-Host 'Banco restaurado. Conferencia diaria DESLIGADA (veja o CHECKLIST.md antes de religar).'
+    Remove-ConferenciaDesligada
+    if ($SemRecuperacao) {
+        Write-Warning 'Banco restaurado SEM recuperacao (-SemRecuperacao): a conferencia diaria pode apagar da nuvem o que o backup nao tem.'
+    } else {
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $marcador) | Out-Null
+        Write-ArquivoTextoUtf8 -Caminho $marcador -Conteudo "restaurado em $((Get-Date).ToString('o')) de $nomeArq`r`n"
+        Write-Host 'Banco restaurado. RECUPERACAO pedida: ao subir, a API puxa da nuvem o que falta; so depois vende, envia e confere.'
+    }
 }
 finally {
     if ($servicoExiste) {

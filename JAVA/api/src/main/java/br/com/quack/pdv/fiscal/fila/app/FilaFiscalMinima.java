@@ -46,6 +46,13 @@ public class FilaFiscalMinima {
     private final Clock clock;
     private final boolean ativa;
     private final String modo;
+    private volatile br.com.quack.pdv.plataforma.sincronizacao.recuperacao.EstadoRecuperacao recuperacao;
+
+    /** Opcional (so no perfil loja): durante a recuperacao pos-restauracao a fila nao escreve. */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    void definirRecuperacao(br.com.quack.pdv.plataforma.sincronizacao.recuperacao.EstadoRecuperacao recuperacao) {
+        this.recuperacao = recuperacao;
+    }
 
     public FilaFiscalMinima(FilaFiscalRepository repo, PendenciaFiscal pendencia, EmitenteConfigurado emitente,
                             Clock clock, @Value("${quack.fiscal.fila-minima.ativa:true}") boolean ativa,
@@ -60,7 +67,7 @@ public class FilaFiscalMinima {
 
     /** No modo nuvem a fila nunca roda, qualquer que seja a configuracao. */
     private boolean desligada() {
-        return !ativa || "nuvem".equals(modo);
+        return !ativa || "nuvem".equals(modo) || (recuperacao != null && recuperacao.emAndamento());
     }
 
     @Scheduled(initialDelayString = "${quack.fiscal.fila-minima.intervalo-ms:1000}",
@@ -77,6 +84,7 @@ public class FilaFiscalMinima {
 
     /** Um ciclo da fila (ProcessarLoteAsync sem transmissao). Usado pela rotina agendada e pelos testes. */
     public void processarLote() {
+        if (recuperacao != null && recuperacao.emAndamento()) return;
         retomarVendasSemNota();
         if ("loja".equals(modo)) return; // na loja so a retomada; o resto fica com a .NET da nuvem (D8)
         for (Pendente doc : repo.pendentes(LOTE_MAXIMO, OffsetDateTime.now(clock))) {

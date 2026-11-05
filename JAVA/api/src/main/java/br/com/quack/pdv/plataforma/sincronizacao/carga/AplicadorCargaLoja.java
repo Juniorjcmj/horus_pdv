@@ -32,6 +32,15 @@ public class AplicadorCargaLoja {
     private final SecretProtector segredos;
     private volatile Map<String, List<String>> chavesPorTabela;
     private volatile Set<String> tabelasComIdentity;
+    private volatile Set<String> protegidas = Set.of();
+
+    /**
+     * Recuperacao: linhas ("Tabela|chave") que a loja alterou depois da ultima versao que a nuvem confirmou. A nuvem nao as viu,
+     * entao nelas as colunas LOJA (a loja e a autoridade) ficam como estao no banco restaurado; as demais vem da nuvem.
+     */
+    public void definirProtegidas(Set<String> protegidas) {
+        this.protegidas = protegidas == null ? Set.of() : Set.copyOf(protegidas);
+    }
 
     public AplicadorCargaLoja(JdbcTemplate jdbc, SecretProtector segredos) {
         this.jdbc = jdbc;
@@ -70,14 +79,22 @@ public class AplicadorCargaLoja {
 
     /** Upserts de uma pagina; devolve quantas linhas gravou. */
     public int aplicarLinhas(String nomeTabela, List<ColunaSync> colunas, List<List<String>> linhas) {
+        return aplicarLinhas(nomeTabela, colunas, linhas, false);
+    }
+
+    /**
+     * Com {@code recuperacao} o banco ja tem dados (backup restaurado): a nuvem vence nas colunas dela, mas as colunas
+     * LOCAL nao sao tocadas, os contadores so crescem e o AuditLog entra sem repetir (ver {@link #upsertRecuperacao}).
+     */
+    public int aplicarLinhas(String nomeTabela, List<ColunaSync> colunas, List<List<String>> linhas, boolean recuperacao) {
         carregarEsquema();
         TabelaSincronizada t = ReferenciasGlobais.daCarga(nomeTabela)
                 .orElseThrow(() -> new IllegalArgumentException("Tabela fora da sincronizacao: " + nomeTabela));
         if (linhas.isEmpty()) return 0;
-        boolean identity = tabelasComIdentity.contains(t.nome());
+        boolean identity = tabelasComIdentity.contains(t.nome()) && !recuperacao; // AuditLog na recuperacao: Id novo
         if (identity) jdbc.execute("SET IDENTITY_INSERT dbo.[" + t.nome() + "] ON");
         try {
-            for (List<String> linha : linhas) upsert(t, colunas, linha);
+            for (List<String> linha : linhas) upsert(t, colunas, linha, recuperacao);
         } finally {
             if (identity) jdbc.execute("SET IDENTITY_INSERT dbo.[" + t.nome() + "] OFF");
         }
@@ -86,12 +103,16 @@ public class AplicadorCargaLoja {
 
     /** Delta: upserts na ordem de aplicacao do catalogo e exclusoes na ordem inversa. */
     public void aplicarDelta(List<BlocoTabela> blocos) {
+        aplicarDelta(blocos, false);
+    }
+
+    public void aplicarDelta(List<BlocoTabela> blocos, boolean recuperacao) {
         carregarEsquema();
         Map<String, BlocoTabela> porTabela = new HashMap<>();
         for (BlocoTabela b : blocos) porTabela.put(b.tabela(), b);
         for (TabelaSincronizada t : CatalogoSincronizacao.ordemDeAplicacao()) {
             BlocoTabela b = porTabela.get(t.nome());
-            if (b != null) aplicarLinhas(t.nome(), b.colunas(), b.linhas());
+            if (b != null) aplicarLinhas(t.nome(), b.colunas(), b.linhas(), recuperacao);
         }
         for (TabelaSincronizada t : CatalogoSincronizacao.ordemDeExclusao()) {
             BlocoTabela b = porTabela.get(t.nome());
@@ -110,7 +131,7 @@ public class AplicadorCargaLoja {
 
     // ------------------------------------------------------------------ linha
 
-    private void upsert(TabelaSincronizada t, List<ColunaSync> colunas, List<String> linha) {
+    private void upsert(TabelaSincronizada t, List<ColunaSync> colunas, List<String> linha, boolean recuperacao) {
         List<String> pk = chavesPorTabela.get(t.nome());
         List<Object> valores = new ArrayList<>();
         for (int i = 0; i < colunas.size(); i++) {
@@ -120,9 +141,19 @@ public class AplicadorCargaLoja {
             }
             valores.add(v);
         }
+        if (recuperacao && "AuditLog".equals(t.nome())) {
+            inserirAuditoriaSeNova(colunas, valores);
+            return;
+        }
+        boolean protegida = recuperacao && !protegidas.isEmpty() && protegidas.contains(t.nome() + "|" + chaveTexto(pk, colunas, linha));
         List<Integer> indiceSets = new ArrayList<>();
         for (int i = 0; i < colunas.size(); i++) {
-            if (!pk.contains(colunas.get(i).nome())) indiceSets.add(i);
+            String c = colunas.get(i).nome();
+            if (pk.contains(c)) continue;
+            // recuperacao: a coluna LOCAL do banco restaurado e a que vale (ponta propria), so entra na insercao
+            if (recuperacao && t.classeDaColuna(c, null) == ClasseColuna.LOCAL) continue;
+            if (protegida && t.classeDaColuna(c, null) == ClasseColuna.LOJA) continue;
+            indiceSets.add(i);
         }
         List<Integer> indiceChave = new ArrayList<>();
         for (String c : pk) {
@@ -133,10 +164,20 @@ public class AplicadorCargaLoja {
         String where = String.join(" AND ", pk.stream().map(c -> "[" + c + "] = ?").toList());
         int alteradas = 0;
         if (!indiceSets.isEmpty()) {
-            String sql = "UPDATE dbo.[" + t.nome() + "] SET "
-                    + String.join(", ", indiceSets.stream().map(i -> "[" + colunas.get(i).nome() + "] = ?").toList())
-                    + " WHERE " + where;
-            List<Integer> ordem = new ArrayList<>(indiceSets);
+            List<String> sets = new ArrayList<>();
+            List<Integer> ordem = new ArrayList<>();
+            for (int i : indiceSets) {
+                String c = colunas.get(i).nome();
+                if (recuperacao && contadorMonotonico(t.nome(), c)) {
+                    // numeracao: nunca volta atras (um numero ja reservado na loja nao pode ser reusado)
+                    sets.add("[" + c + "] = CASE WHEN [" + c + "] >= ? THEN [" + c + "] ELSE ? END");
+                    ordem.add(i);
+                } else {
+                    sets.add("[" + c + "] = ?");
+                }
+                ordem.add(i);
+            }
+            String sql = "UPDATE dbo.[" + t.nome() + "] SET " + String.join(", ", sets) + " WHERE " + where;
             ordem.addAll(indiceChave);
             alteradas = jdbc.update(sql, ps -> bind(ps, ordem, colunas, valores));
         } else {
@@ -153,7 +194,43 @@ public class AplicadorCargaLoja {
         jdbc.update(sql, ps -> bind(ps, todas, colunas, valores));
     }
 
-    private static void bind(java.sql.PreparedStatement ps, List<Integer> ordem, List<ColunaSync> colunas, List<Object> valores)
+    private static String chaveTexto(List<String> pk, List<ColunaSync> colunas, List<String> linha) {
+        List<String> v = new ArrayList<>();
+        for (String c : pk) {
+            int i = indexOf(colunas, c);
+            v.add(i < 0 ? "" : String.valueOf(linha.get(i)));
+        }
+        return String.join("|", v);
+    }
+
+    /** Colunas que guardam o proximo numero a usar: na recuperacao vale o maior entre a loja e a nuvem. */
+static boolean contadorMonotonico(String tabela, String coluna) {
+    return ("FiscalSequencias".equals(tabela) && "ProximoNumero".equals(coluna))
+            || ("RegrasEmissaoNfce".equals(tabela) && "ContadorVendas".equals(coluna));
+}
+
+/**
+ * AuditLog na recuperacao: o Id da nuvem nao e o da loja (a nuvem numera por conta propria), entao a linha entra com
+ * Id novo, so se ainda nao houver uma igual (mesmo conteudo). Repetir a recuperacao nao duplica.
+ */
+private void inserirAuditoriaSeNova(List<ColunaSync> colunas, List<Object> valores) {
+    List<Integer> dados = new ArrayList<>();
+    for (int i = 0; i < colunas.size(); i++) if (!"Id".equals(colunas.get(i).nome())) dados.add(i);
+    List<String> iguais = new ArrayList<>();
+    List<Integer> ordem = new ArrayList<>(dados);
+    for (int i : dados) {
+        String c = "[" + colunas.get(i).nome() + "]";
+        iguais.add("(A." + c + " = ? OR (A." + c + " IS NULL AND ? IS NULL))");
+        ordem.add(i);
+        ordem.add(i);
+    }
+    String sql = "INSERT INTO dbo.AuditLog (" + String.join(", ", dados.stream().map(i -> "[" + colunas.get(i).nome() + "]").toList())
+            + ") SELECT " + String.join(", ", dados.stream().map(i -> "?").toList())
+            + " WHERE NOT EXISTS (SELECT 1 FROM dbo.AuditLog A WHERE " + String.join(" AND ", iguais) + ")";
+    jdbc.update(sql, ps -> bind(ps, ordem, colunas, valores));
+}
+
+private static void bind(java.sql.PreparedStatement ps, List<Integer> ordem, List<ColunaSync> colunas, List<Object> valores)
             throws java.sql.SQLException {
         for (int p = 0; p < ordem.size(); p++) {
             int i = ordem.get(p);

@@ -1,6 +1,7 @@
 package br.com.quack.pdv.plataforma.sincronizacao.comandos;
 
 import br.com.quack.pdv.config.QuackProperties;
+import br.com.quack.pdv.plataforma.sincronizacao.recuperacao.EstadoRecuperacao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,11 @@ public class ExecutorComandos implements SmartLifecycle {
     private final QuackProperties props;
     private final long pausaMs;
     private volatile boolean rodando;
+    private volatile EstadoRecuperacao recuperacao;
+
+    /** Opcional: durante a recuperacao pos-restauracao os comandos da nuvem esperam (o retrato ja os cobre). */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    void definirRecuperacao(EstadoRecuperacao recuperacao) { this.recuperacao = recuperacao; }
     private Thread thread;
 
     public ExecutorComandos(AplicadorComandos aplicador, QuackProperties props,
@@ -53,7 +59,7 @@ public class ExecutorComandos implements SmartLifecycle {
         while (rodando) {
             long pausa = 0;
             try {
-                if (!props.getSync().isEnvioAtivo()) {
+                if (!props.getSync().isEnvioAtivo() || (recuperacao != null && recuperacao.emAndamento())) {
                     pausa = pausaMs;
                 } else {
                     switch (aplicador.ciclo()) {

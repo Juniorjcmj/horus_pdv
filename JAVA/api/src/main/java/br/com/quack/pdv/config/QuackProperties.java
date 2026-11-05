@@ -116,6 +116,24 @@ public class QuackProperties {
         /** Arquivo {@code backup-estado.json} escrito pelo script de backup do instalador (D12); vazio = sem backup. */
         public String getBackupEstado() { return backupEstado; }
         public void setBackupEstado(String backupEstado) { this.backupEstado = backupEstado == null ? "" : backupEstado; }
+
+        private boolean recuperacaoAtiva = true;
+        private String recuperacaoMarcador = "config/recuperar.pendente";
+        private long recuperacaoIntervaloMs = 15_000L;
+        private long recuperacaoVerificacaoMs = 300_000L;
+
+        /** Liga a rotina que executa a recuperacao pos-restauracao e confere se a nuvem esta a frente (tarefa 7.4). */
+        public boolean isRecuperacaoAtiva() { return recuperacaoAtiva; }
+        public void setRecuperacaoAtiva(boolean recuperacaoAtiva) { this.recuperacaoAtiva = recuperacaoAtiva; }
+        /** Arquivo que o {@code restaurar.ps1} deixa para pedir a recuperacao; a API o consome ao subir. */
+        public String getRecuperacaoMarcador() { return recuperacaoMarcador; }
+        public void setRecuperacaoMarcador(String m) { this.recuperacaoMarcador = m == null ? "" : m; }
+        /** Intervalo entre tentativas da recuperacao (sem internet fica pendente e repete). */
+        public long getRecuperacaoIntervaloMs() { return clamp(recuperacaoIntervaloMs, 100L, 3_600_000L); }
+        public void setRecuperacaoIntervaloMs(long v) { this.recuperacaoIntervaloMs = v; }
+        /** De quanto em quanto tempo a loja pergunta a nuvem se ela esta a frente da versao local (restauracao sem marcador). */
+        public long getRecuperacaoVerificacaoMs() { return clamp(recuperacaoVerificacaoMs, 100L, 86_400_000L); }
+        public void setRecuperacaoVerificacaoMs(long v) { this.recuperacaoVerificacaoMs = v; }
     }
 
     public static class Recaptcha {

@@ -1,6 +1,8 @@
 package br.com.quack.pdv.plataforma.sincronizacao.envio;
 
 import br.com.quack.pdv.plataforma.sincronizacao.conferencia.ConferenciaSincronizacao;
+import br.com.quack.pdv.plataforma.sincronizacao.recuperacao.EstadoRecuperacao;
+import br.com.quack.pdv.plataforma.sincronizacao.recuperacao.RecuperacaoLoja;
 import br.com.quack.pdv.plataforma.sincronizacao.situacao.SituacaoLoja;
 import br.com.quack.pdv.plataforma.sincronizacao.situacao.SituacaoSync;
 import br.com.quack.pdv.security.PerfisPermitidos;
@@ -24,9 +26,13 @@ public class LojaSyncLojaController {
     private final SituacaoLoja situacao;
     private final ConferenciaSincronizacao conferencia;
     private final Clock clock;
+    private final EstadoRecuperacao recuperacao;
+    private final RecuperacaoLoja executorRecuperacao;
 
     public LojaSyncLojaController(EnvioSincronizacao envio, SituacaoLoja situacao, ConferenciaSincronizacao conferencia,
-                                  Clock clock) {
+                                  Clock clock, EstadoRecuperacao recuperacao, RecuperacaoLoja executorRecuperacao) {
+        this.recuperacao = recuperacao;
+        this.executorRecuperacao = executorRecuperacao;
         this.envio = envio;
         this.situacao = situacao;
         this.conferencia = conferencia;
@@ -39,6 +45,20 @@ public class LojaSyncLojaController {
     public ResponseEntity<ApiResponse<Object>> retomar() {
         envio.retomar();
         return ResponseEntity.ok(ApiResponse.ok("Sincronizacao retomada."));
+    }
+
+    /**
+     * Pede a recuperacao pos-restauracao (a mesma que o {@code restaurar.ps1} dispara) e a executa em segundo plano.
+     * Serve tambem para repetir uma recuperacao pendente depois que a internet voltou.
+     */
+    @PostMapping("recuperar")
+    @PerfisPermitidos({"administrador"})
+    public ResponseEntity<ApiResponse<Object>> recuperar() {
+        recuperacao.solicitar("pedido-do-administrador");
+        Thread t = new Thread(executorRecuperacao::executar, "recuperacao-loja");
+        t.setDaemon(true);
+        t.start();
+        return ResponseEntity.accepted().body(ApiResponse.ok("Recuperacao iniciada. Acompanhe pela situacao."));
     }
 
     @GetMapping("situacao")

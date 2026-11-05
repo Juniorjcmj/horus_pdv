@@ -1,6 +1,7 @@
 package br.com.quack.pdv.plataforma.sincronizacao.alertas;
 
 import br.com.quack.pdv.config.QuackProperties;
+import br.com.quack.pdv.plataforma.sincronizacao.recuperacao.EstadoRecuperacao;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -26,10 +27,16 @@ public class VerificadorAlertasLoja {
     private static final Logger LOG = LoggerFactory.getLogger(VerificadorAlertasLoja.class);
     public static final Duration LIMITE_ATRASO = Duration.ofMinutes(15);
     public static final Duration LIMITE_NFCE = Duration.ofMinutes(30);
+    public static final Duration LIMITE_RECUPERACAO = Duration.ofMinutes(10);
 
     private final ObjectProvider<JdbcTemplate> jdbc;
     private final QuackProperties props;
     private final Clock clock;
+    private volatile EstadoRecuperacao recuperacao;
+
+    /** Opcional (bean do perfil loja): recuperacao pendente ha muito tempo (sem internet?) tambem alerta. */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    void definirRecuperacao(EstadoRecuperacao recuperacao) { this.recuperacao = recuperacao; }
 
     public VerificadorAlertasLoja(ObjectProvider<JdbcTemplate> jdbc, QuackProperties props, Clock clock) {
         this.jdbc = jdbc;
@@ -85,6 +92,16 @@ public class VerificadorAlertasLoja {
             motivos.add(AlertasSync.NFCE_PENDENTE);
         }
 
+        if (recuperacao != null) {
+            EstadoRecuperacao.Foto f = recuperacao.foto();
+            if (f.emAndamento() && f.solicitadaEm() != null
+                    && Duration.between(f.solicitadaEm(), agora).compareTo(LIMITE_RECUPERACAO) > 0) {
+                AlertasSync.registrar(j, agora, AlertasSync.RECUPERACAO, empresa, "Recuperacao depois da restauracao pendente "
+                        + "desde " + f.solicitadaEm() + (f.ultimoErro() == null ? "" : ": " + f.ultimoErro())
+                        + ". O servidor nao vende ate terminar.");
+                motivos.add(AlertasSync.RECUPERACAO);
+            }
+        }
         EstadoBackup.ler(props.getSync().getBackupEstado()).filter(b -> !b.sucesso()).ifPresent(b -> {
             AlertasSync.registrar(j, agora, AlertasSync.BACKUP, empresa, "Falha no backup: " + (b.erro() == null ? "sem detalhe" : b.erro()));
             motivos.add(AlertasSync.BACKUP);

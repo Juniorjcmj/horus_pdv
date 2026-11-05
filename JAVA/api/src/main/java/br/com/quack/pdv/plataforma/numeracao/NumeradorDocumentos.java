@@ -102,4 +102,28 @@ public class NumeradorDocumentos {
         Integer numero = jdbc.queryForObject(SQL_PROXIMO_INVENTARIO, Integer.class, companyId);
         return numero == null ? 1 : numero;
     }
+
+    /**
+     * Recuperacao pos-restauracao: a sequencia fiscal (modelo 65) nunca fica abaixo do maior numero de NFC-e que a loja tem, e
+     * ganha linha se faltar (senao {@link #proximoNumeroFiscal} criaria com 1 e repetiria numero). Devolve as linhas mexidas.
+     */
+    public int alinharSequenciaFiscalComDocumentos() {
+        int criadas = jdbc.update("""
+                INSERT INTO FiscalSequencias (CompanyId, Modelo, Serie, Ambiente, ProximoNumero, AtualizadoEm)
+                SELECT d.CompanyId, d.Modelo, d.Serie, d.Ambiente, d.Maior + 1, SYSDATETIMEOFFSET()
+                  FROM (SELECT CompanyId, Modelo, Serie, Ambiente, MAX(NumeroNf) AS Maior FROM DocumentosFiscais
+                         WHERE Modelo = 65 GROUP BY CompanyId, Modelo, Serie, Ambiente) d
+                 WHERE NOT EXISTS (SELECT 1 FROM FiscalSequencias f WHERE f.CompanyId = d.CompanyId
+                       AND f.Modelo = d.Modelo AND f.Serie = d.Serie AND f.Ambiente = d.Ambiente)
+                """);
+        int avancadas = jdbc.update("""
+                UPDATE f SET ProximoNumero = d.Maior + 1, AtualizadoEm = SYSDATETIMEOFFSET()
+                  FROM FiscalSequencias f
+                  JOIN (SELECT CompanyId, Modelo, Serie, Ambiente, MAX(NumeroNf) AS Maior FROM DocumentosFiscais
+                         WHERE Modelo = 65 GROUP BY CompanyId, Modelo, Serie, Ambiente) d
+                    ON f.CompanyId = d.CompanyId AND f.Modelo = d.Modelo AND f.Serie = d.Serie AND f.Ambiente = d.Ambiente
+                 WHERE f.ProximoNumero <= d.Maior
+                """);
+        return criadas + avancadas;
+    }
 }

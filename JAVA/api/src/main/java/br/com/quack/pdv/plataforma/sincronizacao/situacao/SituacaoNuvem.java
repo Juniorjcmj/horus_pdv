@@ -43,7 +43,7 @@ public class SituacaoNuvem {
                 """, Integer.class, companyId, agora.minusMinutes(SituacaoSync.MINUTOS_NFCE_PENDENTE));
         return new SituacaoSync("nuvem", companyId, agora, null, confirmada, ultima, null, false, null, pendentes, parados,
                 quarentena, notas == null ? 0 : notas, ultimaConferencia(companyId), null, null,
-                servidor.isEmpty() ? null : servidor.getFirst());
+                servidor.isEmpty() ? null : servidor.getFirst(), null, null);
     }
 
     private Integer contar(String sql, String companyId) {

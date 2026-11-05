@@ -46,7 +46,7 @@ class ChangeTrackingLojaIT {
         assertThat(jdbc.queryForObject("SELECT DB_NAME()", String.class)).isEqualTo(BANCO);
         List<String> sync = jdbc.queryForList("SELECT name FROM sys.tables WHERE name LIKE 'Sync%'", String.class);
         assertThat(sync).containsExactlyInAnyOrder("SyncEstado", "SyncReenvios", "SyncAlertas", "SyncConferencias",
-                "SyncCarga", "SyncComandosAplicados");
+                "SyncCarga", "SyncComandosAplicados", "SyncRecuperacao", "SyncRecuperacaoTabelas");
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM SyncEstado", Integer.class)).isEqualTo(1);
         assertThat(admin.snapshotLigado()).isTrue();
         assertThat(admin.bancoComTracking()).isFalse();

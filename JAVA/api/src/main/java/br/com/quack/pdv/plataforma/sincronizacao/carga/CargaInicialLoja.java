@@ -93,8 +93,8 @@ public class CargaInicialLoja {
         for (TabelaSincronizada t : ordem) {
             linhas += carregarTabela(url, token, t);
         }
-        long desde = delta(url, token, jdbc.queryForObject("SELECT CargaVersao FROM SyncEstado WHERE Id = 1", Long.class));
-        long versaoLoja = ativar(url, token, desde);
+        long desde = delta(url, token, jdbc.queryForObject("SELECT CargaVersao FROM SyncEstado WHERE Id = 1", Long.class), false);
+        long versaoLoja = ativar(url, token, desde, false);
         aplicador.restaurarChavesAutorreferentes();
         LOG.info("Carga inicial concluida: {} linhas, servidor {} ativo, versao da loja {}.", linhas, registro.serverId(), versaoLoja);
         return new Resultado(registro.serverId(), registro.companyId(), linhas, versaoLoja);
@@ -157,12 +157,12 @@ public class CargaInicialLoja {
     // ------------------------------------------------------------------ delta e ativacao
 
     /** Aplica o delta ate vir vazio e devolve a versao da nuvem ate onde foi aplicado. */
-    private long delta(String url, String token, long desde) {
+    public long delta(String url, String token, long desde, boolean recuperacao) {
         long atual = desde;
         while (true) {
             CargaDelta d = nuvem.delta(url, token, atual);
             if (d.vazio()) return d.ate();
-            tx.executeWithoutResult(s -> aplicador.aplicarDelta(d.blocos()));
+            tx.executeWithoutResult(s -> aplicador.aplicarDelta(d.blocos(), recuperacao));
             LOG.info("Carga inicial: delta aplicado ({} tabelas).", d.blocos().size());
             atual = d.ate();
         }
@@ -173,14 +173,14 @@ public class CargaInicialLoja {
      * o que o delta grava ja com o tracking ligado nao sobe, pois {@code VersaoDe} e lida depois dele e a sincronizacao
      * so comeca com {@code Ativada = 1}.
      */
-    private long ativar(String url, String token, long desde) {
+    public long ativar(String url, String token, long desde, boolean recuperacao) {
         long ate = desde;
         for (int tentativa = 1; tentativa <= MAX_TENTATIVAS_ATIVACAO; tentativa++) {
             tracking.ligarTudo(ChangeTrackingAdmin.RETENCAO_LOJA_DIAS);
             Long versao = jdbc.queryForObject("SELECT CHANGE_TRACKING_CURRENT_VERSION()", Long.class);
             long v = versao == null ? 0 : versao;
             try {
-                nuvem.ativar(url, token, ate, v);
+                nuvem.ativar(url, token, ate, v, recuperacao);
                 jdbc.update("UPDATE SyncEstado SET Ativada = 1, AtivadaEm = SYSDATETIMEOFFSET(), VersaoDe = ?, "
                         + "AplicadoAteNuvem = ?, TentativasSeguidas = 0, ProximaTentativaEm = NULL, UltimoErro = NULL, "
                         + "PausadaEm = NULL, PausadaMotivo = NULL, AtualizadoEm = SYSDATETIMEOFFSET() WHERE Id = 1", v, v);
@@ -188,7 +188,7 @@ public class CargaInicialLoja {
             } catch (ClienteCarga.CargaException e) {
                 if (e.status() != 409) throw e;
                 LOG.info("Carga inicial: a nuvem mudou antes da ativacao (tentativa {}); repetindo o delta.", tentativa);
-                ate = delta(url, token, ate);
+                ate = delta(url, token, ate, recuperacao);
             }
         }
         throw new IllegalStateException("A nuvem nao parou de mudar: nao foi possivel ativar. Tente de novo em instantes.");

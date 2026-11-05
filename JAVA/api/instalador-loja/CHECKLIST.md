@@ -81,26 +81,46 @@ Faça um caixa por vez. **Só troque o endereço com a fila offline do caixa vaz
 
 ## 7. Restauração do backup
 
-> **Atenção ao que a restauração faz com a nuvem.** O backup é sempre mais antigo que a nuvem. A conferência diária
-> trata a nuvem como reflexo da loja nas tabelas da loja (vendas, caixa etc.) e **apagaria da nuvem** as vendas feitas
-> depois do backup. Por isso `restaurar.ps1` **desliga a conferência** (`quack.sync.conferencia-ativa=false`). Só religue
-> depois de decidir o caminho abaixo.
+> **O que a restauração faz com a nuvem, e por quê há uma recuperação.** O backup é sempre mais antigo que a nuvem: as
+> vendas, notas, movimentos e cadastros feitos depois dele só existem lá. Como a loja é a autoridade, a conferência
+> diária **apagaria da nuvem** esses dados. Por isso, depois de restaurar, o servidor **se recupera sozinho** antes de
+> voltar ao normal:
 >
-> - **Banco corrompido, backup de hoje ou de ontem**: restaure (passos abaixo). A loja volta a enviar a partir da versão
->   do backup; as vendas feitas depois dele e já confirmadas na nuvem não existem mais na loja. Decida com o dono se isso
->   é aceitável; se não, use o caminho seguinte.
-> - **Disco perdido ou perda que importa**: instale do zero (`desinstalar.ps1 -RemoverBanco`, depois `instalar.ps1`): a
->   carga inicial traz da nuvem tudo o que já foi confirmado. Só o que estava na loja e ainda não subiu se perde (o
->   backup recente ajuda a conferir o que faltou).
+> 1. `restaurar.ps1` restaura o banco e deixa o marcador `<destino>\config\recuperar.pendente`; a API o consome ao subir.
+> 2. **O servidor não aceita vendas** (resposta 503 com `Retry-After`; os caixas ficam na fila offline deles e reenviam
+>    depois, sem duplicar). Envio, conferência, comandos da nuvem e fila fiscal ficam parados.
+> 3. Ele puxa da nuvem tudo o que falta (vendas, notas, movimentos, cadastros, auditoria), realinha as versões da
+>    sincronização com a nuvem (nada de 409 nem de lote pulado), avança as sequências de numeração e só então libera
+>    as vendas, religa o envio e a conferência. **Não é preciso decidir nada nem religar a conferência na mão.**
+> 4. Sem internet, a recuperação **fica pendente** (a loja não vende e a conferência não roda) e repete a cada 15 s;
+>    termina sozinha quando a internet voltar. Acompanhe por `GET /api/loja-sync/situacao` (`recuperando: true`).
+>
+> Alternativas: `POST /api/loja-sync/recuperar` (administrador) repete/dispara a recuperação; pela linha de comando,
+> `--quack.sync.recuperacao.executar=true` (código de saída 0 = concluída). Exceção: `restaurar.ps1 -SemRecuperacao`
+> só quando se sabe que a nuvem não tem nada além do backup. Se alguém restaurar o banco **sem** o script, a loja
+> percebe em até 5 minutos que a nuvem está à frente da versão local e se recupera igual (mas, nesses minutos, vende:
+> use sempre o script).
+>
+> Limites conhecidos: linhas **excluídas** depois do backup voltam (a conferência as devolve à nuvem; exclua de novo);
+> uma linha da loja ainda não enviada quando o backup foi feito e alterada na nuvem depois fica com o valor da nuvem;
+> eventos que o caixa já tinha enviado e a loja processou depois do backup (`ProcessedEvents` não é sincronizado) podem
+> ser reprocessados se o caixa os reenviar: **confira os caixas com fila offline** ao final.
+> Disco perdido ou instalação nova: `desinstalar.ps1 -RemoverBanco` e `instalar.ps1` (carga inicial) também funciona.
+
 
 | # | Item | Verificação | Resultado |
 |---|------|-------------|-----------|
 | 7.1 | Existem backups novos todo dia e no máximo 7 | `dir <destino>\backups` mostra 7 arquivos com datas consecutivas; o mais velho é apagado a cada novo | |
 | 7.2 | Backup manual: `schtasks /run /tn QuackLoja-Backup` | `backup-estado.json` com `sucesso:true` e horário novo | |
 | 7.3 | **Falha de backup vira alerta**: encher/negar a pasta de backups de teste (ou `icacls` negando escrita) e rodar o backup | `backup-estado.json` com `sucesso:false`; em até 1 minuto a situação mostra a falha e chega e-mail ao administrador (se SMTP) | |
-| 7.4 | Restaurar: `<destino>\scripts\restaurar.ps1` (pede confirmação) | Termina com "Banco restaurado"; serviço volta a Running; os dados voltam ao ponto do backup | |
-| 7.5 | Conferência ficou **desligada** | `findstr conferencia <destino>\config\loja.env` mostra `false` | |
-| 7.6 | Depois de decidir o caminho: `restaurar.ps1 -ReativarConferencia` e `Restart-Service QuackLojaApi` | Conferência manual `ok` | |
+| 7.4 | Restaurar: `<destino>\scripts\restaurar.ps1` (pede confirmação) | Termina com "Banco restaurado. RECUPERACAO pedida"; serviço volta a Running; existe (ou já foi consumido) `<destino>\config\recuperar.pendente` | |
+| 7.5 | **Recuperando**: logo após subir, `GET /api/loja-sync/situacao` (admin) | `recuperando: true`, `recuperacao.estado` `executando` ou `pendente`, `fase` e `linhasPuxadas` andando; um caixa que tente vender recebe 503 | |
+| 7.6 | **Termina sozinha**: aguarde (depende do tamanho do banco) | `recuperando` some; `recuperacao.estado = concluida`; o marcador foi apagado; as vendas feitas depois do backup aparecem na loja (contagem de vendas do dia igual à da nuvem) | |
+| 7.7 | **Numeração**: faça uma venda de teste | O número da venda é o seguinte ao maior que já existia; a próxima NFC-e pendente usa número acima do último da nuvem (sem repetir) | |
+| 7.8 | **Conferência religada sozinha**: `POST /api/loja-sync/conferencia` (admin) | `ok`; a contagem de vendas da nuvem **não diminuiu**; `findstr conferencia <destino>\config\loja.env` não mostra `false` | |
+| 7.9 | **Sem internet**: restaure com o cabo da operadora desligado (ou rode o item 7.4 com a internet fora) | A situação mostra `recuperacao.estado = pendente` com o erro; a loja não vende; a conferência continua parada; ao religar a internet a recuperação termina sozinha | |
+| 7.10 | Caixas com fila offline: confira se alguma venda aparece duplicada depois que eles reenviam | Nenhuma duplicata (ou anotada para o dono) | |
+
 
 ## 8. Liberação
 

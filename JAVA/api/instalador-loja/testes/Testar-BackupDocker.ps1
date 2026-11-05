@@ -4,7 +4,7 @@
 .DESCRIPTION
     Sobe o container com a pasta de backups montada, cria um banco de teste, roda o backup 9 vezes com retencao 7,
     confere o arquivo, o RESTORE VERIFYONLY, o backup-estado.json e a retencao; depois altera os dados, restaura e
-    confere que os dados voltaram e que a conferencia ficou desligada no loja.env. Remove o container ao final.
+    confere que os dados voltaram e que o marcador da recuperacao foi deixado (e a linha antiga que desligava a conferencia saiu do loja.env). Remove o container ao final.
 #>
 param(
     [string]$Temp = (Join-Path ([IO.Path]::GetTempPath()) ('quack-bkp-' + [guid]::NewGuid().ToString('N').Substring(0, 8))),
@@ -40,7 +40,9 @@ try {
 
     $estado = Join-Path $Temp 'estado\backup-estado.json'
     $env = Join-Path $Temp 'config\loja.env'
-    Write-ArquivoTextoUtf8 -Caminho $env -Conteudo "A=1`r`nquack.sync.conferencia-ativa=true`r`n"
+    # loja.env como a versao antiga do restaurar.ps1 o deixava: a linha de legado tem de sair na restauracao
+    Write-ArquivoTextoUtf8 -Caminho $env -Conteudo "A=1`r`nquack.sync.conferencia-ativa=false`r`n"
+    $marcador = Join-Path $Temp 'config\recuperar.pendente'
 
     foreach ($i in 1..9) {
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $raiz 'backup.ps1') -Destino $Temp -StringConexao $con -Banco QuackLoja `
@@ -77,7 +79,15 @@ try {
     Confirmar "dados voltaram ao backup (3 linhas, soma 60.75; antes da restauracao a soma era $antes)" ($n -eq 3 -and [decimal]$depois -eq [decimal]60.75) "n=$n soma=$depois"
     $modo = Invoke-SqlComando -StringConexao $con -Escalar -Sql "SELECT user_access_desc FROM sys.databases WHERE name = 'QuackLoja'"
     Confirmar 'banco voltou a MULTI_USER' ($modo -eq 'MULTI_USER') $modo
-    Confirmar 'conferencia diaria desligada no loja.env' ((Get-Content $env -Raw) -match 'quack\.sync\.conferencia-ativa=false' -and (Get-Content $env -Raw) -notmatch 'conferencia-ativa=true')
+    $textoEnv = Get-Content $env -Raw
+    Confirmar 'loja.env sem desligamento da conferencia (a API a religa apos a recuperacao) e com A=1' ($textoEnv -notmatch 'conferencia-ativa' -and $textoEnv -match 'A=1') $textoEnv
+    Confirmar 'marcador da recuperacao deixado em config\recuperar.pendente' ((Test-Path $marcador) -and ((Get-Content $marcador -Raw) -match 'restaurado'))
+
+    # Excecao -SemRecuperacao: restaura e nao deixa o marcador
+    Remove-Item $marcador -Force
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $raiz 'restaurar.ps1') -Destino $Temp -StringConexao $con -Banco QuackLoja `
+        -CaminhoBackupNoSql '/var/opt/mssql/backups' -SemServico -Forcar -SemRecuperacao | Out-Null
+    Confirmar '-SemRecuperacao: restaurou e nao deixou o marcador' ($LASTEXITCODE -eq 0 -and -not (Test-Path $marcador))
 }
 finally {
     $a = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
