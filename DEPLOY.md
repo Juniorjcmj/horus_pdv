@@ -265,7 +265,7 @@ API .NET (ou um script manual) precisar disso: desligue o tracking da tabela
 `ALTER TABLE dbo.[Tabela] ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = OFF)` (ou reaplique o
 `db/nuvem/V1__sync_nuvem.sql` com `sqlcmd`: ele é idempotente e religa o que faltar). Religar zera o histórico da
 tabela: as lojas fazem a ressincronização completa. **Ainda não existe verificador automático** que religue tabela
-esquecida na subida do serviço (previsto no design, pendência do grupo 8): confira com
+esquecida na subida do serviço (previsto no design, não implementado na 4b: pendência de operação, fica para uma fase seguinte): confira com
 `SELECT COUNT(*) FROM sys.change_tracking_tables` (38). Avise quem mantém a .NET.
 
 ### Reverter (rollback da nuvem)
@@ -275,6 +275,27 @@ esquecida na subida do serviço (previsto no design, pendência do grupo 8): con
    desliga o tracking das tabelas e do banco e o snapshot, e **mantém** as tabelas `Sync*`. É idempotente.
 3. As lojas continuam vendendo. Para voltar: reaplique o `db/nuvem/V1__sync_nuvem.sql` com `sqlcmd` (idempotente: religa
    o snapshot, o banco e as tabelas) e suba o `pdv-api-sync`; cada loja faz a ressincronização completa.
+
+### Receptor: propriedades que importam
+
+O receptor lê as mesmas propriedades da API (variável de ambiente = nome em maiúsculas com `_`): `QUACK_SYNC_DETECTOR_ATIVO`
+(`true`, liga o detector das edições do painel e do MCP) e `QUACK_SYNC_COMANDOS_ESPERA_MS` (`25000`, long-poll dos
+comandos; atrás do Traefik mantenha o *timeout* de resposta acima de 30 s). A lista completa de `quack.sync.*`, as rotas
+`/api/loja-sync/**` (`conferencia`, `situacao`, `recuperar`, `carga`, `ativar`, `comandos`, `quarentena`) e os horários
+estão em `JAVA/api/README.md` (seção "Modo loja e sincronização").
+
+### Servidor da loja: instalação, alertas e horários
+
+A máquina da loja usa `JAVA/api/instalador-loja/` (ver `CHECKLIST.md`). Pontos que o operador precisa saber:
+
+- **SMTP da loja obrigatório para os alertas por e-mail.** Sem ele os alertas ficam só no log e na tabela `SyncAlertas`
+  (ninguém é avisado). Use o SMTP da empresa (Minha Empresa, no painel; desce para a loja) ou `QUACK_EMAIL_*` no
+  `config\loja.env`.
+- **Backup às 02:00** (tarefa `QuackLoja-Backup`, retenção de 7) e **conferência loja/nuvem às 03:00**
+  (`quack.sync.conferencia-cron`), horários confirmados pelo dono.
+- Depois de restaurar um backup o servidor se recupera sozinho da nuvem (`restaurar.ps1` deixa o marcador; vendas e envio
+  ficam parados até terminar). Acompanhe por `GET /api/loja-sync/situacao` (`recuperando`).
+- Nenhuma mudança na `pdv-api` (.NET) nem no frontend é necessária para a loja: os caixas só trocam o endereço da API.
 
 ### Custo medido (Change Tracking + snapshot)
 

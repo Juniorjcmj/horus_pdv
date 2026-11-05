@@ -201,6 +201,22 @@ Regras:
 7. **Infra da loja:** máquina dedicada (não é um dos caixas), nobreak, IP fixo na rede, backup automático do banco
    local. SQL Server Express (10 GB por banco) basta para uma loja; o histórico completo fica na nuvem.
 
+**Decisões de 04/11/2026 (Fase 4b, `openspec/changes/api-java-modo-loja`):**
+
+- **Receptor Java na nuvem.** A nuvem recebe a sincronização em um container novo, a própria API Java em perfil `nuvem`
+  (`pdv-api-sync`), no mesmo SQL Server e ao lado da API .NET. Ele expõe só `/api/loja-sync/**`; a .NET, o painel e o
+  frontend não mudam. Só o Change Tracking, o isolamento snapshot e as tabelas `Sync*` entram no banco da nuvem.
+- **Cadastros, preços e configurações descem por comando.** Produtos, clientes, fornecedores, categorias, promoções,
+  usuários e configurações da empresa editados pelo painel ou pelo MCP viram comandos que a loja aplica coluna a coluna,
+  conferindo o valor de base; se a loja mudou a mesma coluna, vale a loja e o comando volta como conflito. Edição da nuvem
+  em tabela que só a loja grava (vendas, caixa, estoque, fiado) é desfeita com o estado da loja, gera alerta e fica em
+  quarentena.
+- **Fiscal com autoria dividida até a Fase 7.** Na 4b a loja reserva o número e a venda sobe com a nota pendente; a
+  emissão continua com o worker da API .NET da nuvem e o resultado desce para a loja. A Fase 7 passa a emissão para o
+  servidor da loja.
+- **Conferência diária (03:00) e backup diário (02:00)**, confirmados pelo dono; depois de restaurar um backup a loja se
+  recupera da nuvem antes de voltar a vender.
+
 Enquanto o modo loja não estiver pronto, a loja pode começar com os caixas ligados direto à nuvem atual (cada caixa
 com sua fila offline) e migrar para o servidor da loja quando as fases 4, 4b e 7 estiverem prontas.
 

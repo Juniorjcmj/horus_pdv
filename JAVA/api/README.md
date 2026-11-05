@@ -217,6 +217,101 @@ Resultado em 03/11/2026: 42 testes, 0 falhas.
 
 `mvn -B -o verify` passa (03/11/2026): 592 testes de unidade/web (Surefire) e 1303 de integração/contrato (Failsafe, dos quais 1152 são os cenários do `ApiJavaContratoTest`, nos 24 grupos), sem falhas, erros ou skips.
 
+## Modo loja e sincronização (Fase 4b)
+
+A mesma API roda em três modos, escolhidos por `quack.modo` (variável `QUACK_MODO`, ou `--spring.profiles.active`):
+
+| Modo | Para quê |
+| --- | --- |
+| *(vazio)* | como antes: API completa, sem sincronização |
+| `loja` | servidor da loja: API completa, autoridade dos dados da empresa; envia as mudanças à nuvem e aplica os comandos que vêm de lá |
+| `nuvem` | **receptor**, um container ao lado da API .NET, no mesmo SQL Server (serviço `pdv-api-sync`, ver `DEPLOY.md`). Só expõe `/api/loja-sync/**` e `/actuator/health`; o resto responde 404 |
+
+Desenho completo em `openspec/changes/api-java-modo-loja/` (`design.md`, D1 a D13 e as notas de cada grupo).
+
+### Rotas `/api/loja-sync`
+
+Na **loja** (administrador local):
+
+| Rota | O que faz |
+| --- | --- |
+| `GET situacao` | atraso, pausa, comandos pendentes/parados, quarentena, notas paradas, conferência, recuperação |
+| `POST conferencia` | roda a conferência na hora e devolve o resultado (`ok`, `divergente`, `erro`) |
+| `POST retomar` | religa o envio pausado por erro definitivo, depois da correção |
+| `POST recuperar` | pede a recuperação depois de restaurar um backup (ou repete uma pendente) |
+
+Na **nuvem** (receptor):
+
+| Rota | Quem chama | O que faz |
+| --- | --- | --- |
+| `POST registrar` | instalador (e-mail e senha de administrador) | cria o servidor da loja e devolve o token dele |
+| `POST servidores/{id}/revogar` | administrador | revoga o token |
+| `GET carga`, `GET carga/delta`, `POST ativar` | loja (token) | carga inicial em páginas, mudanças até a ativação e ativação do modo loja |
+| `POST lotes` | loja (token) | recebe as mudanças (Change Tracking), idempotente e na ordem das chaves estrangeiras |
+| `GET comandos`, `POST comandos/resultados` | loja (token) | long-poll dos comandos nuvem → loja e o resultado de cada um |
+| `POST quarentena/{id}/resolver` | administrador | marca a entrada da quarentena como resolvida |
+| `POST conferencia/resumo`, `faixas`, `linhas`, `excluir`, `resultado` | loja (token) | passos da conferência diária |
+| `GET situacao` | administrador ou loja (token) | mesma situação, vista da nuvem |
+
+### Propriedades `quack.sync.*`
+
+| Propriedade (variável) | Padrão | Para quê |
+| --- | --- | --- |
+| `quack.sync.nuvem-url` | vazio | endereço do receptor (`https://sync-pdv...`); a carga inicial grava o endereço no banco |
+| `quack.sync.intervalo-ms` | 2000 | intervalo do envio e do executor de comandos |
+| `quack.sync.envio-ativo` | `true` | liga o envio loja → nuvem |
+| `quack.sync.max-lote-bytes` | 16 MB | tamanho máximo de um lote |
+| `quack.sync.conferencia-ativa` | `true` | liga a conferência agendada |
+| `quack.sync.conferencia-cron` | `0 0 3 * * *` | horário da conferência (**03:00**, confirmado pelo dono) |
+| `quack.sync.alertas-ativo` | `true` | liga a verificação de alertas e o envio de e-mail (a cada minuto) |
+| `quack.sync.backup-estado` | vazio | caminho do `backup-estado.json` escrito pelo `backup.ps1` (o instalador preenche); vazio = backup não monitorado |
+| `quack.sync.recuperacao-ativa` | `true` | liga a rotina de recuperação depois da restauração |
+| `quack.sync.recuperacao-marcador` | `config/recuperar.pendente` | arquivo que o `restaurar.ps1` deixa para pedir a recuperação |
+| `quack.sync.recuperacao-intervalo-ms` | 15000 | intervalo entre tentativas da recuperação (sem internet fica pendente) |
+| `quack.sync.recuperacao-verificacao-ms` | 300000 | de quanto em quanto tempo a loja pergunta se a nuvem está à frente (restauração sem o script) |
+| `quack.sync.detector-ativo` | `true` | **nuvem:** detector das edições feitas pelo painel e pelo MCP (D6) |
+| `quack.sync.comandos-espera-ms` | 25000 | **nuvem:** tempo do long-poll de `GET comandos` (0 a 60000) |
+| `quack.sync.carga.executar` / `.nuvem-url` / `.email` / `.nome-servidor` e `QUACK_SYNC_CARGA_SENHA` | | só da linha de comando do instalador: registro e carga inicial |
+| `quack.sync.recuperacao.executar` | `false` | só da linha de comando: executa a recuperação e sai (código 0 = concluída) |
+
+### E-mail dos alertas (obrigatório na loja)
+
+Os alertas (sincronização pausada, atraso acima de 15 min, NFC-e parada acima de 30 min, falha de backup, conferência
+divergente, quarentena, comando parado ou em conflito, recuperação pendente) sempre vão ao log e à tabela `SyncAlertas`.
+Para chegarem **por e-mail** aos administradores da empresa a loja precisa de um SMTP:
+o da empresa (cadastrado em "Minha Empresa" na nuvem, que desce com a carga inicial e com as edições seguintes) ou o
+global `QUACK_EMAIL_ENABLED`, `_HOST`, `_PORT`, `_USER`, `_PASSWORD`, `_FROM_EMAIL` no `config\loja.env`. Sem SMTP o alerta
+fica guardado e é tentado de novo a cada minuto; nada se perde, mas ninguém é avisado. **Confirme o SMTP antes da entrega.**
+Regra de envio: no máximo um e-mail por hora por situação.
+
+### Horários (confirmados pelo dono em 04/11/2026)
+
+- **Backup do banco da loja:** todos os dias às **02:00** (`-HoraBackup` do `instalar.ps1`), retenção de 7 backups.
+- **Conferência loja/nuvem:** todos os dias às **03:00** (`quack.sync.conferencia-cron`).
+
+### Instalação e operação
+
+`JAVA/api/instalador-loja/` (Windows): `instalar.ps1` (SQL Server Express, serviço, firewall, backup agendado, registro e
+carga inicial), `backup.ps1`, `restaurar.ps1`, `desinstalar.ps1` e o `CHECKLIST.md` de aceite na máquina da loja. O pacote
+sai de `build-instalador.sh` (zip de ~112 MB, não versionado). Depois de restaurar um backup a loja se recupera sozinha da
+nuvem (`POST recuperar` repete); vendas e envio ficam parados até terminar. Os caixas e o Quack Estoque só trocam o
+`apiBaseUrl` para o endereço do servidor.
+
+### Aceite da Fase 4b
+
+- `ModoLojaDotnetIT` (opcional): a API .NET real (`quack-api-dotnet:contrato`, construída por
+  `contrato/ambiente-dotnet/subir.sh`) sobre o banco da nuvem do teste; um preço mudado e um cliente cadastrado pelas
+  rotas dela chegam à loja. Rodar: `mvn -B -o verify -Dit.test=ModoLojaDotnetIT -Dmodoloja.dotnet=true -Dtest=NoSuch
+  -Dsurefire.failIfNoSpecifiedTests=false`.
+- Clientes JavaFX contra a loja: `bash JAVA/api/contrato/aceite-loja/subir.sh` (precisa do `HorusPdv.bak` do
+  `aceite-estoque`) sobe o receptor (`http://localhost:5262`) e o servidor da loja (`http://localhost:5261`, SQL
+  `pdv-loja-sql`), com registro e carga inicial reais. Pare o receptor (`docker stop pdv-loja-nuvem-api`), rode os comandos
+  dos aceites do Caixa e do Quack Estoque com `-Dquack.e2e.url=http://localhost:5261 -Dquack.e2e.docker=pdv-loja-sql
+  -Dquack.e2e.sqlContainer=pdv-loja-sql -Dquack.e2e.saPassword=Aceite#Loja2026 -Dquack.e2e.sqlSenha=Aceite#Loja2026` (e
+  `-Dquack.e2e.modoLoja=true` no Caixa), religue o receptor (`docker start pdv-loja-nuvem-api`) e chame
+  `POST /api/loja-sync/conferencia`. `descer.sh` remove tudo. Os E2E esperam o turno de caixa de 31/10 fechado (feche-o por
+  SQL na cópia) e, para cancelamento e correção, um operador (`-Dquack.e2e.operador`, `-Dquack.e2e.operadorSenha`).
+
 ## Estrutura
 
 ```
