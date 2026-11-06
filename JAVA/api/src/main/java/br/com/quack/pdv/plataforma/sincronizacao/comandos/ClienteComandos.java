@@ -68,6 +68,8 @@ public class ClienteComandos {
         if (internet.isSemInternet()) throw new ConnectException("Sem internet (interruptor).");
         try {
             HttpResponse<String> r = http.send(req, HttpResponse.BodyHandlers.ofString());
+            // O long-poll aberto antes de o interruptor ser ligado cairia junto com a internet de verdade.
+            if (internet.isSemInternet()) throw new ConnectException("Sem internet (interruptor).");
             if (r.statusCode() < 200 || r.statusCode() >= 300) {
                 throw new IOException("Nuvem respondeu " + r.statusCode() + " em " + req.uri().getPath());
             }
