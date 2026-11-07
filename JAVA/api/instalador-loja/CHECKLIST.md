@@ -40,6 +40,21 @@ O instalador faz as duas etapas; confira o resultado.
 | 2.3 | Conferência sem diferença | `POST /api/loja-sync/conferencia` (admin) e depois a situação: `ultimaConferencia.resultado = ok` | |
 | 2.4 | Primeiro backup | Existe `<destino>\backups\quack-quackloja-*.bak` e `<destino>\estado\backup-estado.json` com `"sucesso":true`; a situação mostra `ultimoBackup` | |
 
+## 2A. Importar produtos de planilha (loja nova que vem de outro sistema)
+
+Faça **depois** da instalação e da carga inicial (seção 2) e **antes** de ligar os caixas. A planilha é o CSV exportado pelo sistema anterior (separador `;`, ISO-8859-1). **O arquivo do cliente não vai para o repositório** (tem custos, preços e CNPJ de fornecedores): ele fica só no computador da loja.
+
+| # | Item | Verificação | Resultado |
+|---|------|-------------|-----------|
+| 2A.1 | Ordem: instalar o servidor, importar, conferir a amostra, esperar a nuvem e só então ligar os 3 caixas | Os caixas continuam desligados (ou sem vender) durante a importação | |
+| 2A.2 | No **servidor da loja**, abrir o Quack Estoque como administrador ou gerente > **Importar planilha** > escolher o CSV | A simulação mostra os totais sem gravar nada | |
+| 2A.3 | Conferir a simulação | Novos = linhas da planilha; Recusados (aba "Recusados", exportável em CSV) explicados; abas Avisos revisadas (código de barras inválido, CFOP assumido, preço zero, saldo negativo, unidade M2 com "MT") | |
+| 2A.4 | Levar o **Resumo fiscal** (CST / CSOSN / CFOP com a contagem) ao contador | O contador confirma que os dados fiscais servem ao regime da empresa; a correção em massa é feita depois pelo cadastro | |
+| 2A.5 | Clicar em **Importar** e confirmar | Mensagem "Importação concluída"; tudo grava numa transação (ou nada) | |
+| 2A.6 | Conferir uma amostra: 10 produtos, 2 categorias e o saldo de 5 produtos | Código = código do sistema anterior, preço = Tab.3, categoria Classe > Grupo > Sub-Grupo, saldo igual ao da planilha e uma entrada em "Ajustes e histórico" com origem `importacao` | |
+| 2A.7 | Esperar a nuvem (alguns minutos: ~10 mil linhas sobem em lotes) e conferir | `GET /api/loja-sync/situacao`: `atrasoSegundos` 0; a conferência (`POST /api/loja-sync/conferencia`) sem diferença; os mesmos produtos aparecem no painel da nuvem | |
+| 2A.8 | Reimportar a mesma planilha é seguro | Atualiza cadastro e preço; **não** lança o estoque inicial de novo | |
+
 ## 3. Rede
 
 | # | Item | Verificação | Resultado |

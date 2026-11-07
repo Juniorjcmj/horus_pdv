@@ -525,3 +525,14 @@ Fora do escopo desta migração, mas condiciona decisões dela:
 | `Recaptcha__Enabled`, `__SecretKey`, `__MinScore` | `QUACK_RECAPTCHA_ENABLED`, `QUACK_RECAPTCHA_SECRET_KEY`, `QUACK_RECAPTCHA_MIN_SCORE` |
 | `Email__*` (Host, Port, EnableSsl, User, Password, FromEmail, FromName, ReplyTo, FrontendBaseUrl) | `SPRING_MAIL_*` + `QUACK_EMAIL_FROM_*`, `QUACK_EMAIL_FRONTEND_BASE_URL` |
 | `TZ=America/Sao_Paulo` | `TZ=America/Sao_Paulo` |
+
+## 18. Importação de produtos por planilha (API Java)
+
+Somente na API Java (nada muda em `API/NETCORE/` nem no Gateway). Change `api-java-importacao-produtos`.
+
+- Rotas `POST /api/Produto/importacao/simular` e `/confirmar` (alias `/api/produtos/importacao/...`), `multipart/form-data` com o campo `arquivo`, perfis administrador e gerente. Simular lê e valida sem gravar; confirmar refaz o mesmo plano e grava numa transação (timeout de 300 s).
+- Layout: CSV do sistema anterior da loja (separador `;`, ISO-8859-1 ou UTF-8 com BOM), colunas reconhecidas **pelo nome** do cabeçalho. Preço de venda = `Preço Venda Tab.3`; código do produto = `Código` do sistema anterior; GTIN só quando válido (senão `SEM GTIN`); fiscal importado como veio; categorias `Classe > Grupo > Sub-Grupo` (3 níveis); saldo inicial como movimentação `entrada` com origem `importacao`.
+- Idempotência do estoque: tabela `ImportacoesProduto` (migração `V7`), classe `FORA` do catálogo de sincronização (não sobe para a nuvem). Reimportar atualiza cadastro e preço e não lança estoque de novo.
+- Limites: `spring.servlet.multipart.max-file-size=15MB` / `max-request-size=16MB`; o filtro de corpo aceita 16 MB só nas duas rotas (as demais seguem em 2 MB).
+- No modo loja, os produtos, categorias e movimentações sobem pela sincronização existente; importar no servidor da loja, antes de ligar os caixas (ver `JAVA/api/instalador-loja/CHECKLIST.md`, seção 2A).
+- **O arquivo do cliente (`docs/planilha material/`) não é versionado**: tem custos, preços e CNPJ de fornecedores; os testes usam uma amostra sintética (`src/test/resources/importacao/amostra-legado.csv`).
