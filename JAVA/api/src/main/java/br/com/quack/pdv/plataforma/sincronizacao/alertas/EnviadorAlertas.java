@@ -5,6 +5,7 @@ import br.com.quack.pdv.email.app.EmailService;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -32,6 +33,8 @@ public class EnviadorAlertas {
     private final ObjectProvider<EmailService> email;
     private final QuackProperties props;
     private final Clock clock;
+    /** ReentrantLock em vez de synchronized: com virtual threads (Java 21) o synchronized prende a thread do sistema durante o I/O. */
+    private final ReentrantLock trava = new ReentrantLock();
 
     public EnviadorAlertas(ObjectProvider<JdbcTemplate> jdbc, ObjectProvider<EmailService> email, QuackProperties props,
                            Clock clock) {
@@ -52,7 +55,16 @@ public class EnviadorAlertas {
     }
 
     /** Envia o que estiver pendente e liberado pelo limite de uma hora; devolve quantos alertas foram enviados. */
-    public synchronized int enviarPendentes(OffsetDateTime agora) {
+    public int enviarPendentes(OffsetDateTime agora) {
+        trava.lock();
+        try {
+            return enviarPendentesSemTrava(agora);
+        } finally {
+            trava.unlock();
+        }
+    }
+
+    private int enviarPendentesSemTrava(OffsetDateTime agora) {
         JdbcTemplate j = jdbc.getObject();
         List<Alerta> pendentes = j.query("""
                 SELECT Motivo, CompanyId, Detalhe, Contagem FROM dbo.SyncAlertas

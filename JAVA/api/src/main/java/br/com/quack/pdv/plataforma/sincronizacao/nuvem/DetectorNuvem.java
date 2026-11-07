@@ -7,6 +7,7 @@ import br.com.quack.pdv.plataforma.sincronizacao.catalogo.TabelaSincronizada;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,8 @@ public class DetectorNuvem {
     private final org.springframework.beans.factory.ObjectProvider<MotorDeteccao> motor;
     private final QuackProperties props;
     private volatile boolean pausado;
+    /** ReentrantLock em vez de synchronized: com virtual threads (Java 21) o synchronized prende a thread do sistema durante o I/O. */
+    private final ReentrantLock trava = new ReentrantLock();
 
     public DetectorNuvem(org.springframework.beans.factory.ObjectProvider<DataSource> dataSource,
                          org.springframework.beans.factory.ObjectProvider<JdbcTemplate> jdbc,
@@ -61,7 +64,16 @@ public class DetectorNuvem {
     }
 
     /** Um ciclo para todas as empresas em modo loja; devolve quantos comandos/avisos foram processados. */
-    public synchronized int detectarTodas() {
+    public int detectarTodas() {
+        trava.lock();
+        try {
+            return detectarTodasSemTrava();
+        } finally {
+            trava.unlock();
+        }
+    }
+
+    private int detectarTodasSemTrava() {
         List<String> empresas = jdbc.getObject().queryForList("""
                 SELECT e.CompanyId FROM dbo.SyncEstadoNuvem e JOIN dbo.SyncServidores s ON s.Id = e.ServidorId
                  WHERE e.DetectorDesde IS NOT NULL AND s.Status = N'ativo'
@@ -72,7 +84,16 @@ public class DetectorNuvem {
     }
 
     /** Um ciclo de uma empresa. */
-    public synchronized int detectar(String companyId) {
+    public int detectar(String companyId) {
+        trava.lock();
+        try {
+            return detectarSemTrava(companyId);
+        } finally {
+            trava.unlock();
+        }
+    }
+
+    private int detectarSemTrava(String companyId) {
         try (Connection con = dataSource.getObject().getConnection()) {
             JdbcTemplate j = new JdbcTemplate(new SingleConnectionDataSource(con, true));
             Integer codigo = j.queryForObject("""

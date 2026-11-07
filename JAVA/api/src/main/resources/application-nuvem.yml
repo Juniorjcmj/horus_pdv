@@ -10,6 +10,11 @@ quack:
       ativa: false      # nenhum agendamento de negocio no receptor
 
 spring:
+  threads:
+    virtual:
+      # Java 21: cada loja segura um long-poll de 25 s em /api/loja-sync/comandos; com virtual threads isso nao ocupa
+      # thread do Tomcat. Os agendamentos (@Scheduled) tambem passam a rodar em virtual threads.
+      enabled: true
   flyway:
     # A Java NUNCA migra tabela da .NET em producao: so db/nuvem, com historico proprio.
     locations: classpath:db/nuvem
