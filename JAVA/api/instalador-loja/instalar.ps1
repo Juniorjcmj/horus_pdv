@@ -291,21 +291,26 @@ function Invoke-CargaInicial([string]$Email, [string]$Senha) {
     } finally { Pop-Location; Remove-Item Env:\QUACK_SYNC_CARGA_SENHA -ErrorAction SilentlyContinue }
 }
 
-function Get-SituacaoLocal([string]$Email, [string]$Senha) {
-    $base = "http://localhost:$PortaApi"
+function Get-TokenLocal([string]$Email, [string]$Senha) {
     $corpo = @{ email = $Email; password = $Senha; rememberMe = $false; recaptchaToken = '' } | ConvertTo-Json
-    $login = Invoke-WebRequest -Uri "$base/api/Auth/login" -Method Post -Body $corpo -ContentType 'application/json' -UseBasicParsing
+    $login = Invoke-WebRequest -Uri "http://localhost:$PortaApi/api/Auth/login" -Method Post -Body $corpo -ContentType 'application/json' -UseBasicParsing
     $cookie = @($login.Headers['Set-Cookie']) | Where-Object { $_ -like 'horuspdv.auth=*' } | Select-Object -First 1
     if (-not $cookie) { throw 'Login local sem cookie de sessao.' }
-    $token = ($cookie -split ';')[0].Substring('horuspdv.auth='.Length)
-    return Invoke-RestMethod -Uri "$base/api/loja-sync/situacao" -Headers @{ Authorization = "Bearer $token" } -TimeoutSec 30
+    return ($cookie -split ';')[0].Substring('horuspdv.auth='.Length)
+}
+
+function Get-SituacaoLocal([string]$Token) {
+    return Invoke-RestMethod -Uri "http://localhost:$PortaApi/api/loja-sync/situacao" -Headers @{ Authorization = "Bearer $Token" } -TimeoutSec 30
 }
 
 function Wait-SincronizacaoEmDia([string]$Email, [string]$Senha, [int]$TimeoutMin = 15) {
+    # Login uma vez so: cada login grava uma mudanca (registro de acesso) e deixaria a loja sempre uma versao a frente.
     $limite = (Get-Date).AddMinutes($TimeoutMin)
+    $token = $null
     while ((Get-Date) -lt $limite) {
         try {
-            $s = Get-SituacaoLocal -Email $Email -Senha $Senha
+            if (-not $token) { $token = Get-TokenLocal -Email $Email -Senha $Senha }
+            $s = Get-SituacaoLocal -Token $token
             $d = $s.data; if (-not $d) { $d = $s }
             $atraso = if ($null -ne $d.atrasoSegundos) { [int]$d.atrasoSegundos } else { 0 }
             Write-Host ("    versao local {0} / confirmada {1}; atraso {2}s; pausada: {3}" -f $d.versaoLocal, $d.versaoConfirmada, $atraso, $d.pausada)

@@ -82,10 +82,8 @@ public class LeitorMudancas {
                     Set<List<String>> jaEnviadas = lerTabela(con, t, de, completo, companyId, pac);
                     lerReenvios(con, t, reenvios, jaEnviadas, pac);
                 }
-                if (pac.vazio() && !completo) {
-                    con.rollback();
-                    return new Leitura(ate, false);
-                }
+                // Mesmo sem linhas da empresa (so mudancas de outra empresa ou de tabela que nao sobe), o lote vazio
+                // vai: a nuvem confirma a versao nova e a loja nao fica para tras (atraso crescendo sem fim).
                 pac.concluir();
                 con.rollback(); // so leitura
                 return new Leitura(ate, true);
