@@ -192,3 +192,61 @@ Rollback: remover os dois serviços da stack (dados ficam nos volumes) e/ou volt
 
 - Subdomínio do painel: assumido `monitor-pdv.quacksistemas.com.br`; trocar só muda uma label e `GF_SERVER_ROOT_URL`.
 - Versões exatas de `prom/prometheus` (v3) e `grafana/grafana-oss`: fixar a última estável na implementação.
+
+## Notas da implementação
+
+### Resposta da tarefa 3.3 (significado de `ultimoBackupEm`)
+`ultimoBackupEm` guarda o **último backup bem-sucedido**, não a última tentativa. Em `JAVA/api/instalador-loja/backup.ps1`
+o sucesso chama `Write-EstadoBackup ... -Sucesso $true -Quando ([datetimeoffset]::Now)` (linha 70) e a falha chama
+`Write-EstadoBackup ... -Sucesso $false -Erro $msg` (linha 76). Em `lib/comum.ps1` (função `Write-EstadoBackup`, linhas
+79-94) o sucesso grava a hora atual em `ultimoBackupEm`; a falha **preserva** o `ultimoBackupEm` do arquivo anterior
+(`Read-EstadoBackup`, linhas 88-91) e grava `sucesso=false` e `erro`. Se nunca houve sucesso (caso do erro 1844), vem
+`null`. Por isso o painel mostra as duas coisas: `quack_loja_backup_sucesso` (última tentativa) e
+`quack_loja_backup_idade_segundos` (idade do último sucesso; ausente se nunca houve).
+
+### Desvios do design
+- **`quack_loja_info{versao}` virou `quack_loja_versao_programa{versao}`.** O cliente Prometheus remove o sufixo `_info`
+  do nome (a série saía como `quack_loja`). Mesmo conteúdo (valor 1, rótulo `versao`), nome novo.
+- **Métricas de idade calculadas na raspagem.** `quack_sync_ultimo_contato_segundos`, `..._ultima_sincronizacao_...`,
+  `quack_loja_relato_idade_segundos` e `quack_loja_backup_idade_segundos` guardam o instante lido do banco e calculam
+  "agora − instante" a cada raspagem (o design dizia valor fixo por ciclo). A raspagem continua sem tocar no banco.
+- **`quack_sync_alertas{motivo}`** vale 1 por (empresa, motivo) com `UltimaEm` nas últimas 24 h; alertas globais
+  (`CompanyId` vazio) não entram.
+- **Retrato da loja (M6):** `RetratoLoja` (cache de 25 s sobre `SituacaoLoja.consultar`) é compartilhado por `MetricasLoja`
+  (a cada 30 s) e `RelatorEstadoLoja` (a cada 60 s). `ClienteJsonNuvem` ganhou `RespostaHttpException` (com o status) para
+  distinguir o 404 do receptor antigo.
+- **Intervalos configuráveis** só para teste: `quack.metrics.intervalo-ms` (30000) e `quack.metrics.relato-intervalo-ms` (60000).
+- **Compose:** os serviços de monitoramento usam o mesmo `profiles: ["nuvem"]` do `pdv-api-sync`, e `METRICS_TOKEN` passou
+  a ser obrigatório (`:?`) no compose do repositório; a stack de produção (colada à mão) não é afetada até alguém colar o bloco.
+- **Versões:** `prom/prometheus:v3.5.1` (LTS) e `grafana/grafana-oss:12.1.1`, confirmadas com `docker manifest inspect`.
+- **Testes:** o cenário "token não configurado = 404" e os 401 estão em `MetricasTokenFilterTest` (unitário); o IT
+  `MetricasNuvemIT` cobre token correto, 401, health aberto, `/actuator/metrics|env` = 404 e as métricas. O cenário
+  "erro de consulta mantém o retrato" usa um `JdbcTemplate` que falha sob demanda dentro do `MetricasNuvemIT`. O 404 do
+  receptor antigo (um único log por hora) é testado em `RelatorEstadoLojaTest` com relógio manual.
+
+### Como cada verificação foi feita (e o que ficou pendente)
+- **1.x a 3.x e 4.1:** `MetricasTokenFilterTest`, `RelatorEstadoLojaTest` (unitários), `MetricasNuvemIT` (18 cenários) e
+  `RelatoEstadoIT` (10 cenários, inclui a V3 reexecutada duas vezes) passam com Testcontainers.
+- **4.2:** `instalar.ps1 -SomenteValidar` não é verificação útil nesta máquina (falha por espaço livre em `C:\`, nada a ver com
+  a mudança; sintaxe e pacote `[ OK ]`). Valeu `testes/Testar-Logica.ps1`: os 3 testes novos do token passam; a única falha
+  (`ASCII puro Testar-BackupDocker.ps1`) já existia antes. Os testes `Testar-ApiPacote.ps1`/`Testar-BackupDocker.ps1` exigem
+  Docker e não foram repetidos.
+- **5.1/5.2:** feitos à mão com `docker build`/`docker run`: `promtool check config` ok, credencial `-r--------` (0400), reinício
+  do mesmo container regrava o arquivo, sem `METRICS_TOKEN` o container falha com mensagem clara; Grafana sobe com volume
+  vazio, `/api/health` 200, `/` sem login 302, `/api/search` anônimo 401, autenticado lista os 2 painéis e a fonte de dados
+  `prometheus-quack` (somente leitura).
+- **5.3 (pendente):** o script `monitoramento/testes/Testar-MonitoramentoDocker.ps1` está escrito e uma execução parcial
+  confirmou: receptor sobe no perfil `nuvem`, metrica 401/200, credencial 0400, os dois painéis provisionados e **todas as
+  consultas dos painéis "API Java" devolvem dados** pelo Grafana. Naquela execução o relato da loja de teste recebeu 401
+  (o `sqlcmd` rodava sem `-I`, e o índice único filtrado de `SyncServidores` exige `QUOTED_IDENTIFIER`; corrigido no script) e
+  por isso os itens dependentes do relato falharam. A rodada seguinte não pôde ser feita porque o engine do Docker Desktop
+  travou (nenhum comando `docker` responde). A tarefa continua desmarcada até uma execução completa do script.
+- **5.4 (pendente):** `actionlint` (imagem `rhysd/actionlint`) não apontou erro; falta confirmar as imagens em ghcr.io após o push.
+- **5.5:** `docker compose --profile nuvem config` valida (com `METRICS_TOKEN` e `GRAFANA_ADMIN_PASSWORD` definidos); sem
+  o perfil, só os 4 serviços antigos sobem.
+- **6.1 (pendente):** a suíte completa de sincronização não foi repetida depois das mudanças (o Docker travou); só os novos ITs
+  e os unitários rodaram.
+- **6.2:** `target/quack-servidor-loja.zip` gerado (114 MB) com o jar novo (classes de monitoramento, `V3`, `build-info`),
+  `CHECKLIST.md` com a linha 1.6 e `instalar.ps1` com o token opcional. "Linha em `SyncEstadoLoja` em até 2 min" foi coberto
+  por `RelatoEstadoIT` (a loja de teste relata e a nuvem guarda backup, atraso e versão); o disparo pelo agendador (30 s
+  de atraso inicial, depois 60 s) não foi cronometrado.
