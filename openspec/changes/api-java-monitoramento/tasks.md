@@ -41,7 +41,7 @@ Contexto obrigatório: `proposal.md`, `design.md` (M1–M8) e `specs/plataforma/
 
 ## 6. Integração
 
-- [ ] 6.1 Rodar a suíte de sincronização (`*IT` de `plataforma/sincronizacao/integracao`) mais os testes novos, e os testes de catálogo. Verificação: saída do Maven sem falhas.
+- [x] 6.1 Rodar a suíte de sincronização (`*IT` de `plataforma/sincronizacao/integracao`) mais os testes novos, e os testes de catálogo. Verificação: saída do Maven sem falhas.
 - [x] 6.2 Gerar o pacote da loja (`bash JAVA/api/instalador-loja/build-instalador.sh`) e o kit de testes. Verificação: `quack-servidor-loja.zip` novo e, numa loja de teste, uma linha em `SyncEstadoLoja` na nuvem de teste em até 2 minutos.
 - [x] 6.3 Atualizar `docs/migracao-api-springboot.md` (§ 3.3, monitoramento do modo loja) com o relato e os painéis. Verificação: a seção existe e aponta para o `DEPLOY.md`.
 

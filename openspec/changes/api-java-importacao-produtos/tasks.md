@@ -19,11 +19,11 @@ manual da tarefa 6.2.
 
 ## 3. Gravação, idempotência e rotas
 
-- [ ] 3.1 Migração `db/migration/V7__importacao_produtos.sql` com `ImportacoesProduto` (I6) e classificação `FORA` no `CatalogoSincronizacao`. Verificação: `GuardaCatalogoTest`, `CatalogoSchemaIT` e a subida do perfil `loja` no `AmbienteSync` passam.
-- [ ] 3.2 Extrair de `ProdutoService` o INSERT/UPDATE reaproveitável e implementar `GravadorImportacao` (I1, I6, I7): uma transação (timeout 300 s), categorias → produtos → `RegistradorEstoque.aplicar(..., EstoqueTipos.ENTRADA, ...)` com origem `importacao` + linha em `ImportacoesProduto`. Verificação: IT `ImportacaoProdutosIT` (banco real de teste) cobre "Entrada inicial", "Saldo negativo", "Reimportação não duplica estoque", "Preço atualizado" e "Falha no meio" (forçar erro na linha N e conferir zero produtos do arquivo); testes atuais de `ProdutoService` continuam passando.
-- [ ] 3.3 Rotas `POST /api/produtos/importacao/simular` e `/confirmar` (I2), `multipart` com limites de 15/16 MB e liberação do limite de corpo só nessas rotas, perfis administrador/gerente. Verificação: `ImportacaoProdutosIT` cobre "Simulação não grava" (com a amostra), "Perfil sem permissão" (403), arquivo acima do limite (400) e outra rota qualquer continua limitada a 2 MB; simular e confirmar a mesma amostra devolvem os mesmos totais.
-- [ ] 3.4 Volume: com o arquivo sintético de 3.300 linhas, a confirmação termina em menos de 60 s no SQL Server do Testcontainers e o relatório bate com a contagem esperada. Verificação: teste em `ImportacaoProdutosIT` com a duração registrada no log.
-- [ ] 3.5 Modo loja: confirmar a amostra no servidor da loja do `AmbienteSync` e conferir que produtos, categorias e movimentações chegam na nuvem de teste e que `ImportacoesProduto` não é enviada. Verificação: IT novo em `plataforma/sincronizacao/integracao` (ex.: `ImportacaoLojaIT`) passa.
+- [x] 3.1 Migração `db/migration/V7__importacao_produtos.sql` com `ImportacoesProduto` (I6) e classificação `FORA` no `CatalogoSincronizacao`. Verificação: `GuardaCatalogoTest`, `CatalogoSchemaIT` e a subida do perfil `loja` no `AmbienteSync` passam.
+- [x] 3.2 Extrair de `ProdutoService` o INSERT/UPDATE reaproveitável e implementar `GravadorImportacao` (I1, I6, I7): uma transação (timeout 300 s), categorias → produtos → `RegistradorEstoque.aplicar(..., EstoqueTipos.ENTRADA, ...)` com origem `importacao` + linha em `ImportacoesProduto`. Verificação: IT `ImportacaoProdutosIT` (banco real de teste) cobre "Entrada inicial", "Saldo negativo", "Reimportação não duplica estoque", "Preço atualizado" e "Falha no meio" (forçar erro na linha N e conferir zero produtos do arquivo); testes atuais de `ProdutoService` continuam passando.
+- [x] 3.3 Rotas `POST /api/produtos/importacao/simular` e `/confirmar` (I2), `multipart` com limites de 15/16 MB e liberação do limite de corpo só nessas rotas, perfis administrador/gerente. Verificação: `ImportacaoProdutosIT` cobre "Simulação não grava" (com a amostra), "Perfil sem permissão" (403), arquivo acima do limite (400) e outra rota qualquer continua limitada a 2 MB; simular e confirmar a mesma amostra devolvem os mesmos totais.
+- [x] 3.4 Volume: com o arquivo sintético de 3.300 linhas, a confirmação termina em menos de 60 s no SQL Server do Testcontainers e o relatório bate com a contagem esperada. Verificação: teste em `ImportacaoProdutosIT` com a duração registrada no log.
+- [x] 3.5 Modo loja: confirmar a amostra no servidor da loja do `AmbienteSync` e conferir que produtos, categorias e movimentações chegam na nuvem de teste e que `ImportacoesProduto` não é enviada. Verificação: IT novo em `plataforma/sincronizacao/integracao` (ex.: `ImportacaoLojaIT`) passa.
 
 ## 4. Quack Estoque
 
@@ -37,7 +37,7 @@ manual da tarefa 6.2.
 
 ## 6. Integração
 
-- [ ] 6.1 Rodar os testes novos, os de produto/categoria/estoque e a suíte de sincronização. Verificação: saída do Maven sem falhas.
+- [x] 6.1 Rodar os testes novos, os de produto/categoria/estoque e a suíte de sincronização. Verificação: saída do Maven sem falhas.
 - [ ] 6.2 Teste manual com o arquivo real (fora do repositório) numa API local de teste (banco descartável): simular, registrar no `design.md` ("Notas da implementação") os totais (novos, recusados por motivo, avisos por tipo, categorias criadas, produtos com saldo, tempo) e confirmar; conferir 10 produtos por amostragem (código, GTIN, preço Tab.3, categoria, saldo). Verificação: notas registradas com os números.
 - [x] 6.3 Gerar o pacote da loja (`bash JAVA/api/instalador-loja/build-instalador.sh`). Verificação: `quack-servidor-loja.zip` novo.
 
