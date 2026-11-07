@@ -30,8 +30,7 @@ public final class MapeadorProdutoLegado {
     private static final Pattern QUATRO_DIGITOS = Pattern.compile("^\\d{4}$");
     private static final Pattern PALAVRA_MT = Pattern.compile("\\bMT\\b", Pattern.CASE_INSENSITIVE);
     private static final Pattern SEPARADOR_FORNECEDORES = Pattern.compile("[,;|]");
-    private static final BigDecimal MIL_MILHAO_PADRAO = BigDecimal.ONE;
-
+    
     private MapeadorProdutoLegado() {}
 
     /** Recusa de linha (interna: vira {@link Resultado}). */
@@ -79,7 +78,7 @@ public final class MapeadorProdutoLegado {
         }
         BigDecimal embalagem = decimal(l, "Qtd.Embalagem", LIM_PRECO, 4);
         if (embalagem.signum() <= 0) {
-            embalagem = MIL_MILHAO_PADRAO;
+            embalagem = BigDecimal.ONE;
         }
 
         String ncm = l.valor("Código NCM");
@@ -163,8 +162,8 @@ public final class MapeadorProdutoLegado {
                 localizacao(l),
                 decimal(l, "Comissão%", LIM_PERCENTUAL, 4),
                 decimal(l, "Desconto Máximo%", LIM_PERCENTUAL, 4),
-                decimal(l, "Markup Cadastrado %", LIM_PERCENTUAL, 4),
-                decimal(l, "Markup Praticado%", LIM_PERCENTUAL, 4),
+                decimalComSinal(l, "Markup Cadastrado %", LIM_PERCENTUAL, 4),
+                decimalComSinal(l, "Markup Praticado%", LIM_PERCENTUAL, 4),
                 decimal(l, "Peso Líquido KG", LIM_PRECO, 4),
                 decimal(l, "Peso Bruto KG", LIM_PRECO, 4),
                 decimal(l, "Dimensão - Largura CM", LIM_DIMENSAO, 2),
@@ -183,6 +182,15 @@ public final class MapeadorProdutoLegado {
             throw new Recusa("Valor negativo na coluna '" + coluna + "'");
         }
         if (v.compareTo(limite) >= 0) {
+            throw new Recusa("Valor fora do limite na coluna '" + coluna + "'");
+        }
+        return v.setScale(casas, RoundingMode.HALF_UP);
+    }
+
+    /** Como {@link #decimal}, mas aceita negativo (markup de produto vendido abaixo do custo). */
+    private static BigDecimal decimalComSinal(LinhaCsv l, String coluna, BigDecimal limite, int casas) {
+        BigDecimal v = lerNumero(l, coluna);
+        if (v.abs().compareTo(limite) >= 0) {
             throw new Recusa("Valor fora do limite na coluna '" + coluna + "'");
         }
         return v.setScale(casas, RoundingMode.HALF_UP);

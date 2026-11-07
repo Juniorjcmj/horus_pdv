@@ -149,6 +149,14 @@ class MapeadorProdutoLegadoTest {
     }
 
     @Test
+    void markupNegativoDeProdutoAbaixoDoCustoNaoRecusa() {
+        Resultado r = mapearCom(Map.of("Markup Praticado%", "-12,5"));
+
+        assertThat(r.recusada()).isFalse();
+        assertThat(r.produto().markupPraticado()).isEqualByComparingTo("-12.5");
+    }
+
+    @Test
     void pisCofinsVaziosViram99ComAviso() {
         Resultado r = mapearCom(Map.of());
 
