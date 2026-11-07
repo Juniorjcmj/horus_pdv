@@ -64,10 +64,11 @@ class ImportacaoLojaIT {
                         Integer.class, EMPRESA))
                 .isEqualTo(26);
         // a tabela de controle e FORA do catalogo: nada dela na nuvem
-        Integer naNuvem = nuvem.queryForObject(
-                "SELECT CASE WHEN OBJECT_ID(N'dbo.ImportacoesProduto', N'U') IS NULL THEN 0 "
-                        + "ELSE (SELECT COUNT(*) FROM dbo.ImportacoesProduto) END",
-                Integer.class);
+        // o SQL Server compila o lote inteiro: so conta as linhas se a tabela existir na nuvem
+        boolean existe = nuvem.queryForObject(
+                "SELECT COUNT(*) FROM sys.tables WHERE name = N'ImportacoesProduto'", Integer.class) > 0;
+        Integer naNuvem = existe
+                ? nuvem.queryForObject("SELECT COUNT(*) FROM dbo.ImportacoesProduto", Integer.class) : 0;
         assertThat(naNuvem).isZero();
         assertThat(amb.diferencas()).isEmpty();
     }

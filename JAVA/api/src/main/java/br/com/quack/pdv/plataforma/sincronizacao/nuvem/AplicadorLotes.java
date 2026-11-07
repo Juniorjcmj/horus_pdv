@@ -51,6 +51,8 @@ public class AplicadorLotes {
     private final List<DeteccaoInline> deteccao;
     private volatile Map<String, Set<String>> colunasPorTabela;
     private volatile Map<String, List<String>> chavesPorTabela;
+    /** Tabela -> {coluna filha, coluna referenciada} das FKs para a propria tabela (ex.: Categorias.CategoriaPaiId -> Id). */
+    private volatile Map<String, String[]> autorreferencias;
 
     public AplicadorLotes(JdbcTemplate jdbc, List<DeteccaoInline> deteccao) {
         this.jdbc = jdbc;
@@ -78,7 +80,7 @@ public class AplicadorLotes {
         int nUpserts = 0;
         int nExclusoes = 0;
         for (TabelaSincronizada t : CatalogoSincronizacao.ordemDeAplicacao()) {
-            for (Linha l : upserts.getOrDefault(t.nome(), List.of())) {
+            for (Linha l : paisPrimeiro(t, upserts.getOrDefault(t.nome(), List.of()))) {
                 if (upsert(companyId, t, l, completo)) nUpserts++;
             }
         }
@@ -334,6 +336,52 @@ public class AplicadorLotes {
         if (colunasPorTabela != null) return;
         EsquemaJdbc esquema = new EsquemaJdbc(jdbc);
         chavesPorTabela = esquema.chavesPrimarias();
+        autorreferencias = lerAutorreferencias();
         colunasPorTabela = esquema.colunas();
+    }
+
+    /** FKs de uma coluna que apontam para a propria tabela (sys.foreign_keys). */
+    private Map<String, String[]> lerAutorreferencias() {
+        Map<String, String[]> m = new LinkedHashMap<>();
+        jdbc.query("""
+                SELECT t.name, cf.name, cr.name
+                  FROM sys.foreign_keys fk
+                  JOIN sys.tables t ON t.object_id = fk.parent_object_id
+                  JOIN sys.foreign_key_columns fc ON fc.constraint_object_id = fk.object_id
+                  JOIN sys.columns cf ON cf.object_id = fc.parent_object_id AND cf.column_id = fc.parent_column_id
+                  JOIN sys.columns cr ON cr.object_id = fc.referenced_object_id AND cr.column_id = fc.referenced_column_id
+                 WHERE fk.parent_object_id = fk.referenced_object_id
+                   AND (SELECT COUNT(*) FROM sys.foreign_key_columns x WHERE x.constraint_object_id = fk.object_id) = 1
+                """, rs -> { m.put(rs.getString(1), new String[] {rs.getString(2), rs.getString(3)}); });
+        return Map.copyOf(m);
+    }
+
+    /**
+     * Em tabela com FK para ela mesma, uma linha cujo pai vem no mesmo lote e gravada depois do pai (o lote vem ordenado
+     * pela chave, e uma categoria filha pode vir antes da mae). Pai fora do lote ou ciclo: mantem a ordem recebida.
+     */
+    private List<Linha> paisPrimeiro(TabelaSincronizada t, List<Linha> linhas) {
+        String[] ref = autorreferencias.get(t.nome());
+        if (ref == null || linhas.size() < 2) return linhas;
+        Map<String, Linha> porReferencia = new LinkedHashMap<>();
+        for (Linha l : linhas) {
+            String v = l.textos().get(ref[1]);
+            if (v != null) porReferencia.put(v, l);
+        }
+        List<Linha> ordem = new ArrayList<>(linhas.size());
+        Set<Linha> feitas = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        Set<Linha> visitando = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        for (Linha l : linhas) emitirComPais(l, ref, porReferencia, feitas, visitando, ordem);
+        return ordem;
+    }
+
+    private static void emitirComPais(Linha l, String[] ref, Map<String, Linha> porReferencia, Set<Linha> feitas,
+                                      Set<Linha> visitando, List<Linha> ordem) {
+        if (feitas.contains(l) || !visitando.add(l)) return; // ja emitida ou ciclo
+        String pai = l.textos().get(ref[0]);
+        Linha linhaPai = pai == null ? null : porReferencia.get(pai);
+        if (linhaPai != null && linhaPai != l) emitirComPais(linhaPai, ref, porReferencia, feitas, visitando, ordem);
+        visitando.remove(l);
+        if (feitas.add(l)) ordem.add(l);
     }
 }
