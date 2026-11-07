@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Prova backup.ps1 e restaurar.ps1 contra um SQL Server 2022 em container Docker (nada e instalado na maquina).
 .DESCRIPTION
@@ -9,7 +9,9 @@
 param(
     [string]$Temp = (Join-Path ([IO.Path]::GetTempPath()) ('quack-bkp-' + [guid]::NewGuid().ToString('N').Substring(0, 8))),
     [int]$Porta = 14331,
-    [string]$Imagem = 'mcr.microsoft.com/mssql/server:2022-latest'
+    [string]$Imagem = 'mcr.microsoft.com/mssql/server:2022-latest',
+    # Edicao do SQL no container: Express e a da loja (nao aceita backup com compressao); Developer aceita.
+    [string]$Edicao = 'Express'
 )
 $ErrorActionPreference = 'Stop'
 $raiz = Split-Path -Parent $PSScriptRoot
@@ -25,8 +27,8 @@ function Confirmar([string]$Nome, [bool]$Condicao, [string]$Detalhe = '') {
 function Invoke-Docker { $a = $ErrorActionPreference; $ErrorActionPreference = 'Continue'; & docker @args 2>&1 | Out-Null; $ErrorActionPreference = $a; if ($LASTEXITCODE -ne 0) { throw "docker $($args -join ' ') falhou ($LASTEXITCODE)" } }
 
 try {
-    Write-Host "Subindo $Imagem como $nome na porta $Porta ..."
-    Invoke-Docker run -d --name $nome -e ACCEPT_EULA=Y -e "MSSQL_SA_PASSWORD=$senha" -p "${Porta}:1433" -v "${pastaBackups}:/var/opt/mssql/backups" $Imagem
+    Write-Host "Subindo $Imagem ($Edicao) como $nome na porta $Porta ..."
+    Invoke-Docker run -d --name $nome -e ACCEPT_EULA=Y -e "MSSQL_PID=$Edicao" -e "MSSQL_SA_PASSWORD=$senha" -p "${Porta}:1433" -v "${pastaBackups}:/var/opt/mssql/backups" $Imagem
     $con = "Server=127.0.0.1,$Porta;Database=master;User Id=sa;Password=$senha;TrustServerCertificate=True;Encrypt=True;Connect Timeout=5"
     $pronto = $false
     foreach ($i in 1..40) { try { Invoke-SqlComando -StringConexao $con -Sql 'SELECT 1' -TempoLimite 5; $pronto = $true; break } catch { Start-Sleep -Seconds 3 } }

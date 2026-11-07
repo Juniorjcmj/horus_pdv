@@ -2,7 +2,7 @@
 .SYNOPSIS
     Backup completo diario do banco da loja (D12). Roda como tarefa agendada (SYSTEM) as 02:00.
 .DESCRIPTION
-    BACKUP DATABASE ... WITH COMPRESSION, CHECKSUM; confere com RESTORE VERIFYONLY; apaga os mais antigos que a
+    BACKUP DATABASE ... WITH COMPRESSION, CHECKSUM (sem COMPRESSION no SQL Express, que nao aceita); confere com RESTORE VERIFYONLY; apaga os mais antigos que a
     retencao (padrao 7) SO depois de um backup bom; grava estado\backup-estado.json, que a API le (propriedade
     quack.sync.backup-estado) para a rota de situacao e para o alerta de falha.
     Em falha: nada e apagado, o estado fica com sucesso=false e o script sai com codigo 1.
@@ -51,9 +51,12 @@ if (-not $PSCmdlet.ShouldProcess($arquivoNoSql, "BACKUP DATABASE $Banco (retenca
 
 try {
     if (-not (Test-Path -LiteralPath $PastaBackup)) { New-Item -ItemType Directory -Path $PastaBackup -Force | Out-Null }
+    # O SQL Server Express (EngineEdition 4) nao aceita BACKUP ... WITH COMPRESSION (erro 1844): sem compressao nele.
+    $edicao = [int](Invoke-SqlComando -StringConexao $StringConexao -Escalar -Sql "SELECT CAST(SERVERPROPERTY('EngineEdition') AS int)")
+    $compressao = if ($edicao -eq 4) { '' } else { 'COMPRESSION, ' }
     Write-Host "Backup de $Banco em $arquivoNoSql ..."
     Invoke-SqlComando -StringConexao $StringConexao -TempoLimite 0 -Sql `
-        "BACKUP DATABASE $bd TO DISK = $arq WITH COMPRESSION, CHECKSUM, INIT, STATS = 10"
+        "BACKUP DATABASE $bd TO DISK = $arq WITH ${compressao}CHECKSUM, INIT, STATS = 10"
     Invoke-SqlComando -StringConexao $StringConexao -TempoLimite 0 -Sql "RESTORE VERIFYONLY FROM DISK = $arq WITH CHECKSUM"
     if (-not (Test-Path -LiteralPath $arquivoLocal)) { throw "O SQL Server disse que gravou, mas o arquivo nao existe em $arquivoLocal." }
     $tamanho = (Get-Item -LiteralPath $arquivoLocal).Length

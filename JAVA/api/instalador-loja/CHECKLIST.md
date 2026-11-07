@@ -145,6 +145,7 @@ neste pacote; ficam aqui para reconhecer o sintoma se aparecer numa versão anti
 | Comando SQL manual: "O tempo limite de espera foi atingido" em `localhost,1433` | `localhost` tenta IPv6 primeiro; o SQL só escuta em `127.0.0.1` | Usar `lpc:localhost\QUACK`. *Corrigido* nos scripts (o backup diário usava o endereço errado) |
 | "Acompanhar a sincronização" nunca chega a atraso 0 (versão local sempre 1 à frente) | O acompanhamento fazia login a cada 10 s e cada login grava uma mudança | *Corrigido* (um login só). Numa versão antiga: interromper e rodar `instalar.ps1 -EmailAdmin … -PularCarga` |
 | Atraso crescendo sem erro, versão confirmada parada | Só havia mudança que não sobe (outra empresa); a loja não avisava a nuvem | *Corrigido* (a loja envia lote vazio e a nuvem confirma a versão) |
+| Backup falha: "BACKUP DATABASE WITH COMPRESSION is not supported on Express Edition" (`backup-estado.json` com `sucesso:false`; na instalação, só o aviso "O primeiro backup falhou") | O SQL Server Express não aceita backup com compressão | *Corrigido* (sem compressão no Express). Numa instalação antiga: copiar o `backup.ps1` novo para `<destino>\scripts\` e rodar `schtasks /run /tn QuackLoja-Backup` |
 | Aviso "IP fixo — dinâmico (DHCP)" | — | Fixar o IP (Windows ou reserva no roteador) **antes** de apontar os caixas |
 
 Para rodar comandos SQL na loja sem SQL Management Studio (PowerShell como Administrador, na pasta do pacote):
