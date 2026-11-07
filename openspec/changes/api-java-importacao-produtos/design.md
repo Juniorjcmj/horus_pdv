@@ -170,3 +170,29 @@ instalação (banco novo) e importar de novo após a correção.
 ## Open Questions
 
 - Nenhuma que mude o plano. A semântica de `Preço Venda Tab.3` como preço de balcão foi confirmada pelo usuário.
+
+## Notas da implementação
+
+Implementado em 07/11/2026 (commits `feat(api-java)`, `feat(estoque)`, `docs(api-java)`, `fix(api-java)` na branch `spring-api`).
+
+**Desvios do design (com justificativa)**
+- Rotas: além de `/api/produtos/importacao/...` (design I2) a API responde em `/api/Produto/importacao/...`, que é o prefixo usado por todo o resto de produtos e pelo Quack Estoque (o roteamento ignora maiúsculas, mas `Produto` e `produtos` são caminhos diferentes). O filtro de corpo de 16 MB cobre os dois nomes.
+- Reaproveitamento do INSERT/UPDATE (I3): em vez de extrair um método novo, o `GravadorImportacao` chama `ProdutoService.salvarDados(...)` como está (ele já recebe a entidade `ProdutoDados`, faz upsert e participa da transação aberta). Preço: não houve auditoria por linha que impedisse o uso em lote. Custo: 3 consultas por produto (bloqueio da linha, fornecedor, INSERT) e não `batchUpdate`; categorias e o controle `ImportacoesProduto` usam `batchUpdate`. Para produto existente o cadastro atual é lido uma vez (`listarDados`) e os campos que a planilha não traz (imagem, validade, margem desejada, IBS/CBS, saldo) são preservados.
+- Fornecedor: `ProductSupplier` recebe o nome da planilha; `SupplierId` só é preenchido se já existir fornecedor com esse nome (comportamento do `salvarDados`), senão fica nulo, como no design.
+- Quantidade do saldo inicial com 3 casas (e não 4): a coluna `EstoqueMovimentacoes.Quantidade` é `DECIMAL(18,3)`.
+- Descrição acima de 180 caracteres é cortada com aviso (o design só dizia "máx. 180"); unidade de compra inválida cai na unidade de venda.
+- Markup (cadastrado e praticado) aceita valor negativo (produto vendido abaixo do custo). A primeira simulação com o arquivo real recusava uma linha por isso; corrigido. O `MarkupPraticado` gravado é recalculado de preço e custo médio, como o cadastro normal faz.
+- Categorias: `CategoriaService` limita a hierarquia a 2 níveis na tela de cadastro; a importação grava os 3 níveis direto na tabela (como o design pede). A tela de categorias do Quack Estoque mostra o caminho só com o pai imediato, então um Sub-Grupo aparece como `Grupo › Sub-Grupo`.
+- Tela do estoque: item de menu próprio "Importar planilha" (visível quando `Perfil.cadastrarProdutos()`), em vez de uma aba em Cadastros.
+- Testes web: a rota é coberta por `ImportacaoProdutosWebTest` (mock do serviço: 403 por perfil, 400 sem o campo, limite de 16 MB só nas rotas de importação e 2 MB nas demais) e por testes unitários; o teste de UI do estoque usa um servidor HTTP falso (`ImportarPlanilhaUiTest`), não o E2E com a API real.
+
+**Resultados medidos**
+- Unitários da API: `LeitorCsvProdutosTest` 9, `MapeadorProdutoLegadoTest` 29, `PlanoImportacaoTest` 14, `ImportacaoProdutosWebTest` 7 (todos verdes). Suíte completa da API (`mvn test`): 717 testes, 4 erros, todos em `NuvemWebTest` e **já existentes no HEAD** (o contexto do perfil `nuvem` não sobe: falta `JdbcTemplate` para `MetricasSyncNuvem`; reproduzido num worktree limpo, não vem desta change).
+- Quack Estoque: 138 testes executados, 0 falhas (66 E2E pulados por dependerem da API real).
+- Simulação do arquivo real (leitor + mapeador + plano, em memória, contra um banco vazio; planilha não versionada): 114 colunas, 3.252 linhas lidas, 3.244 novos, 8 recusadas (todas "GTIN já usado pelo código X"), 575 avisos (302 CFOP vazio, 225+9 código de barras inválido, 33 sem preço de venda, 2 saldo negativo, 3 unidade M2 com MT, 1 PIS/COFINS vazio), 639 categorias novas, 2.333 produtos com saldo inicial (quantidade total 59.805,560). Leitura e planejamento em ~1,3 s. Resumo fiscal com 15 combinações (maior: CST 060 / CSOSN 500 / CFOP 5405, 1.949 produtos).
+- `mvn test` do estoque e `build-exe.ps1` (versão 1.0.4, `dist\QuackEstoque-1.0.4-windows.zip`) e `build-instalador.sh` (`JAVA/api/target/quack-servidor-loja.zip`, 114 MB) rodaram.
+
+**Não executado por falta de Docker/SQL Server nesta máquina (o engine do Docker Desktop não responde; o disco C: está com 0 MB livres)**
+- `ImportacaoProdutosIT` (3.2 a 3.4: entrada inicial, saldo negativo, reimportação, preço atualizado, falha no meio via trigger, simulação não grava, 403, arquivo acima do limite, volume de 3.300 linhas em < 60 s) e `ImportacaoLojaIT` (3.5), além de `CatalogoSchemaIT` e da suíte de sincronização, estão escritos e compilam (`mvn test-compile`), mas **nunca rodaram**.
+- 6.2 (confirmar o arquivo real num banco descartável) só foi feito até a simulação em memória acima.
+- Roteiro para a 6.2 quando houver Docker: subir um SQL Server 2022 vazio; `mvn spring-boot:run` (perfil padrão) com `SPRING_DATASOURCE_*` do banco descartável; criar a empresa/administrador (`/api/Auth/register`, aprovar); `POST /api/Produto/importacao/simular` com `-F arquivo=@"docs/planilha material/planilha de produtos.csv"` e comparar com os números acima; `.../confirmar` e medir o tempo (meta < 60 s); conferir por SQL 10 produtos (código, GTIN, preço Tab.3, categoria, saldo), `SELECT COUNT(*) FROM EstoqueMovimentacoes WHERE OrigemTipo='importacao'` (= 2.333) e `Categorias` (639 novas); repetir o `confirmar` (0 novos, 0 movimentações).
