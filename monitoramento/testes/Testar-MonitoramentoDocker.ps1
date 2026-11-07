@@ -93,7 +93,8 @@ function Http([string]$Metodo, [string]$Url, $Cabecalhos = @{}, $Corpo = $null, 
 function Prom([string]$Consulta) {
     $r = Http 'GET' ("http://localhost:$PortaPrometheus/api/v1/query?query=" + [uri]::EscapeDataString($Consulta))
     if ($r.Status -ne 200) { return @() }
-    return @(($r.Corpo | ConvertFrom-Json).data.result)
+    # virgula: sem ela o PowerShell 5.1 desembrulha a lista de 1 item e .Count deixa de funcionar
+    return ,@(($r.Corpo | ConvertFrom-Json).data.result)
 }
 
 # --- pre-requisitos -------------------------------------------------------------------------------------------------
@@ -194,7 +195,9 @@ try {
     # --- Grafana ------------------------------------------------------------------------------------------------------
     $gOk = Esperar 'Grafana /api/health' 120 { (Http 'GET' "http://localhost:$PortaGrafana/api/health").Status -eq 200 }
     Confirmar 'Grafana /api/health = 200 (volume vazio)' $gOk
-    $raizG = Http 'GET' "http://localhost:$PortaGrafana/" @{} $null -SemRedirecionar
+    # curl.exe: o Invoke-WebRequest do PowerShell 5.1 trata o 302 com MaximumRedirection 0 como erro e perde o status
+    $saidaCurl = (& curl.exe -s -o NUL -w '%{http_code} %{redirect_url}' "http://localhost:$PortaGrafana/") -split ' ', 2
+    $raizG = @{ Status = [int]$saidaCurl[0]; Local = $(if ($saidaCurl.Count -gt 1) { $saidaCurl[1] } else { '' }) }
     Confirmar 'Grafana sem login redireciona para /login' (($raizG.Status -eq 302) -and ("$($raizG.Local)" -match '/login')) "(status $($raizG.Status), Location '$($raizG.Local)')"
     Confirmar 'Grafana /api/search anonimo = 401' ((Http 'GET' "http://localhost:$PortaGrafana/api/search").Status -eq 401)
     $auth = @{ Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("admin:$senhaGrafana")) }
