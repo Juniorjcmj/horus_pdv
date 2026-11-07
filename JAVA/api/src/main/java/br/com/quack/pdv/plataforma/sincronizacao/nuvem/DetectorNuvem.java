@@ -4,6 +4,8 @@ import br.com.quack.pdv.config.QuackProperties;
 import br.com.quack.pdv.plataforma.sincronizacao.catalogo.CatalogoSincronizacao;
 import br.com.quack.pdv.plataforma.sincronizacao.catalogo.ClasseTabela;
 import br.com.quack.pdv.plataforma.sincronizacao.catalogo.TabelaSincronizada;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -34,13 +36,17 @@ public class DetectorNuvem {
     private final org.springframework.beans.factory.ObjectProvider<JdbcTemplate> jdbc;
     private final org.springframework.beans.factory.ObjectProvider<MotorDeteccao> motor;
     private final QuackProperties props;
+    private final Timer cicloTimer;
     private volatile boolean pausado;
     /** ReentrantLock em vez de synchronized: com virtual threads (Java 21) o synchronized prende a thread do sistema durante o I/O. */
     private final ReentrantLock trava = new ReentrantLock();
 
     public DetectorNuvem(org.springframework.beans.factory.ObjectProvider<DataSource> dataSource,
                          org.springframework.beans.factory.ObjectProvider<JdbcTemplate> jdbc,
-                         org.springframework.beans.factory.ObjectProvider<MotorDeteccao> motor, QuackProperties props) {
+                         org.springframework.beans.factory.ObjectProvider<MotorDeteccao> motor, QuackProperties props,
+                         MeterRegistry metricas) {
+        this.cicloTimer = Timer.builder("quack_sync_detector_ciclo")
+                .description("Duracao de um ciclo do detector de edicoes da nuvem").register(metricas);
         this.dataSource = dataSource;
         this.jdbc = jdbc;
         this.motor = motor;
@@ -66,9 +72,11 @@ public class DetectorNuvem {
     /** Um ciclo para todas as empresas em modo loja; devolve quantos comandos/avisos foram processados. */
     public int detectarTodas() {
         trava.lock();
+        long inicio = System.nanoTime();
         try {
             return detectarTodasSemTrava();
         } finally {
+            cicloTimer.record(System.nanoTime() - inicio, java.util.concurrent.TimeUnit.NANOSECONDS);
             trava.unlock();
         }
     }

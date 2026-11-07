@@ -10,7 +10,7 @@ import java.util.Locale;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Perfil {@code nuvem} (D1): o receptor so atende {@code /api/loja-sync/**} e {@code /actuator/health}. Todo o resto
+ * Perfil {@code nuvem} (D1): o receptor so atende {@code /api/loja-sync/**} e {@code /actuator/health} (e {@code /actuator/prometheus}, com token). Todo o resto
  * responde 404, como se a rota nao existisse (Caixa, painel e Quack Estoque continuam na API .NET).
  */
 public class ModoNuvemFilter extends OncePerRequestFilter {
@@ -43,6 +43,7 @@ public class ModoNuvemFilter extends OncePerRequestFilter {
     static boolean permitida(String c) {
         if (c.contains("..") || c.contains(";") || c.contains("//") || c.contains("%")) return false;
         return c.equals("/api/loja-sync") || c.startsWith("/api/loja-sync/")
-                || c.equals("/actuator/health") || c.startsWith("/actuator/health/");
+                || c.equals("/actuator/health") || c.startsWith("/actuator/health/")
+                || c.equals("/actuator/prometheus"); // o MetricasTokenFilter confere o token antes
     }
 }

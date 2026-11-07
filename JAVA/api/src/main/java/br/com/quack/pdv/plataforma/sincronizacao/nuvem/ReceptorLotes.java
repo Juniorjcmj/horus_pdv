@@ -3,6 +3,7 @@ package br.com.quack.pdv.plataforma.sincronizacao.nuvem;
 import br.com.quack.pdv.plataforma.sincronizacao.protocolo.BlocoTabela;
 import br.com.quack.pdv.plataforma.sincronizacao.protocolo.ParteLote;
 import br.com.quack.pdv.plataforma.sincronizacao.protocolo.SerializadorLote;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -36,8 +37,11 @@ public class ReceptorLotes {
     private final AplicadorLotes aplicador;
     private final TransactionTemplate tx;
     private final Clock clock;
+    private final MeterRegistry metricas;
 
-    public ReceptorLotes(JdbcTemplate jdbc, AplicadorLotes aplicador, PlatformTransactionManager tm, Clock clock) {
+    public ReceptorLotes(JdbcTemplate jdbc, AplicadorLotes aplicador, PlatformTransactionManager tm, Clock clock,
+                         MeterRegistry metricas) {
+        this.metricas = metricas;
         this.jdbc = jdbc;
         this.aplicador = aplicador;
         this.tx = new TransactionTemplate(tm);
@@ -45,6 +49,14 @@ public class ReceptorLotes {
     }
 
     public Resposta receber(ServidorLoja servidor, byte[] gzip) {
+        Resposta r = receberLote(servidor, gzip);
+        // aplicado = lote completo aplicado agora; recusado = qualquer status de erro; parte = parte guardada ou lote ja aplicado
+        String resultado = r.status() != 200 ? "recusado" : r.aplicado() ? "aplicado" : "parte";
+        metricas.counter("quack_sync_lotes", "empresa", servidor.companyId(), "resultado", resultado).increment();
+        return r;
+    }
+
+    private Resposta receberLote(ServidorLoja servidor, byte[] gzip) {
         ParteLote parte;
         try {
             parte = SerializadorLote.deGzip(gzip);

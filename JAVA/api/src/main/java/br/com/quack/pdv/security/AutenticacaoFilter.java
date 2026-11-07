@@ -102,6 +102,8 @@ public class AutenticacaoFilter extends OncePerRequestFilter {
         }
         // Saude do servico (healthcheck do Docker) nao carrega token.
         if (c.equals("/actuator/health") || c.startsWith("/actuator/health/")) return true;
+        // Metricas: o MetricasTokenFilter (antes deste) ja exigiu o token proprio de metricas.
+        if (c.equals("/actuator/prometheus")) return true;
         return props.isDev() && (c.startsWith("/swagger") || c.startsWith("/v3/api-docs"));
     }
 

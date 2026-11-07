@@ -264,7 +264,10 @@ function Write-LojaEnv {
         'quack.sync.nuvem-url'         = $NuvemUrl.TrimEnd('/')
         'quack.sync.backup-estado'     = ($arquivoEstadoBackup -replace '\\', '/')
     }
-    $cab = "Configuracao e SEGREDOS desta loja - gerado por instalar.ps1.`nNAO copie, NAO envie e NAO versione este arquivo. Trocar QUACK_SECURITY_ENCRYPTION_KEY invalida os dados cifrados do banco."
+    # Opcional: preserva o token de metricas se o operador ja o acrescentou (a rota /actuator/prometheus so existe com ele).
+    $metricas = Get-ValorEnvExistente 'QUACK_METRICS_TOKEN'
+    if ($metricas) { $valores['QUACK_METRICS_TOKEN'] = $metricas }
+    $cab = "Configuracao e SEGREDOS desta loja - gerado por instalar.ps1.`nNAO copie, NAO envie e NAO versione este arquivo. Trocar QUACK_SECURITY_ENCRYPTION_KEY invalida os dados cifrados do banco.`nOPCIONAL: para ler as metricas desta loja em /actuator/prometheus, acrescente a linha QUACK_METRICS_TOKEN=<token longo> (cabecalho Bearer). Sem ela a rota nao existe (404)."
     Write-ArquivoTextoUtf8 -Caminho $arquivoEnv -Conteudo (ConvertTo-ConteudoLojaEnv -Valores $valores -Cabecalho $cab)
     & icacls.exe $caminhos.Config /inheritance:r /grant:r '*S-1-5-32-544:(OI)(CI)(F)' '*S-1-5-18:(OI)(CI)(F)' | Out-Null
     return $senhaApp

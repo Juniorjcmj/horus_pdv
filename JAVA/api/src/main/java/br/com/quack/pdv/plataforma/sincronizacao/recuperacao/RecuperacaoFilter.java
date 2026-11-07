@@ -54,6 +54,7 @@ public class RecuperacaoFilter extends OncePerRequestFilter {
         if (c.contains("..") || c.contains(";") || c.contains("//") || c.contains("%")) return false;
         return c.equals("/api/loja-sync") || c.startsWith("/api/loja-sync/")
                 || c.equals("/api/auth/login") || c.equals("/api/auth/logout") || c.equals("/api/auth/me")
-                || c.equals("/actuator/health") || c.startsWith("/actuator/health/");
+                || c.equals("/actuator/health") || c.startsWith("/actuator/health/")
+                || c.equals("/actuator/prometheus"); // o MetricasTokenFilter confere o token antes
     }
 }

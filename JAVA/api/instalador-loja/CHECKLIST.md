@@ -27,6 +27,7 @@ Copie `quack-servidor-loja.zip` para a máquina, extraia e abra o PowerShell **c
 | 1.3 | Serviço criado com início automático | `Get-Service QuackLojaApi` = Running; `(Get-CimInstance Win32_Service -Filter "Name='QuackLojaApi'").StartMode` = Auto | |
 | 1.4 | Tarefa de backup criada | `Get-ScheduledTask QuackLoja-Backup` = Ready, gatilho diário 02:00 | |
 | 1.5 | Segredos próprios gerados e protegidos | `icacls <destino>\config\loja.env` lista só Administradores e SYSTEM. **Guarde cópia do `loja.env` fora da máquina, em cofre**: sem a chave de cifra o backup não decifra credenciais | |
+| 1.6 | Métricas locais (opcional) | O `loja.env` traz, no cabeçalho, a linha comentada sobre `QUACK_METRICS_TOKEN`. **Sem essa variável a rota `/actuator/prometheus` fica desligada (404)**; só acrescente `QUACK_METRICS_TOKEN=<token longo>` se quiser ler as métricas da loja na rede local. O relato à nuvem (painel "Sincronização das lojas") **não depende dele** | |
 
 ## 2. Registro e carga inicial
 

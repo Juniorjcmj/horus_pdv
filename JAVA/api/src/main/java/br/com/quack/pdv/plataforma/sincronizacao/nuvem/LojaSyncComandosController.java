@@ -5,6 +5,7 @@ import br.com.quack.pdv.security.AutenticacaoFilter;
 import br.com.quack.pdv.security.PerfisPermitidos;
 import br.com.quack.pdv.security.UsuarioAutenticado;
 import br.com.quack.pdv.shared.ApiResponse;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.springframework.context.annotation.Lazy;
@@ -37,8 +38,11 @@ public class LojaSyncComandosController {
     private final ServicoComandos servico;
     private final QuackProperties props;
     private final JdbcTemplate jdbc;
+    private final MeterRegistry metricas;
 
-    public LojaSyncComandosController(@Lazy ServicoComandos servico, QuackProperties props, @Lazy JdbcTemplate jdbc) {
+    public LojaSyncComandosController(@Lazy ServicoComandos servico, QuackProperties props, @Lazy JdbcTemplate jdbc,
+                                      MeterRegistry metricas) {
+        this.metricas = metricas;
         this.servico = servico;
         this.props = props;
         this.jdbc = jdbc;
@@ -56,6 +60,9 @@ public class LojaSyncComandosController {
         while (lista.isEmpty() && System.currentTimeMillis() < fim) {
             Thread.sleep(PASSO_MS);
             lista = servico.pendentes(servidor.companyId(), apos);
+        }
+        if (!lista.isEmpty()) {
+            metricas.counter("quack_sync_comandos_entregues", "empresa", servidor.companyId()).increment(lista.size());
         }
         return ResponseEntity.ok(ApiResponse.ok("Comandos.", new ListaComandos(lista)));
     }

@@ -28,6 +28,18 @@ public class ClienteJsonNuvem {
 
     private record Destino(String url, String token) {}
 
+    /** A nuvem respondeu, mas com status fora de 2xx; {@link #status()} deixa o chamador distinguir, por exemplo, o 404 de um receptor antigo. */
+    public static class RespostaHttpException extends IOException {
+        private final int status;
+
+        public RespostaHttpException(int status, String mensagem) {
+            super(mensagem);
+            this.status = status;
+        }
+
+        public int status() { return status; }
+    }
+
     private final JdbcTemplate jdbc;
     private final SecretProtector protetor;
     private final QuackProperties props;
@@ -61,7 +73,7 @@ public class ClienteJsonNuvem {
         try {
             HttpResponse<String> r = http.send(req, HttpResponse.BodyHandlers.ofString());
             if (r.statusCode() < 200 || r.statusCode() >= 300) {
-                throw new IOException("Nuvem respondeu " + r.statusCode() + " em " + caminho);
+                throw new RespostaHttpException(r.statusCode(), "Nuvem respondeu " + r.statusCode() + " em " + caminho);
             }
             return JSON.readTree(r.body()).path("data");
         } catch (InterruptedException e) {

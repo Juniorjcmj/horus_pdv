@@ -52,11 +52,19 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,prometheus   # prometheus so responde com token (MetricasTokenFilter)
   endpoint:
     health:
       probes:
         enabled: true
+  metrics:
+    tags:
+      application: ${quack.modo:api}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 100ms,300ms,1s,3s
 
 springdoc:
   api-docs:
@@ -66,6 +74,8 @@ springdoc:
 
 quack:
   dev: false
+  metrics:
+    token: ${QUACK_METRICS_TOKEN:}
   auth:
     jwt-secret: ${QUACK_AUTH_JWT_SECRET:}
     issuer: horus-pdv-api

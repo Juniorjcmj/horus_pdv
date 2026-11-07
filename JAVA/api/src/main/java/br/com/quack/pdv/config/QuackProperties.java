@@ -18,8 +18,10 @@ public class QuackProperties {
     private final Recaptcha recaptcha = new Recaptcha();
     private final Email email = new Email();
     private final Sync sync = new Sync();
+    private final Metrics metrics = new Metrics();
 
     public Sync getSync() { return sync; }
+    public Metrics getMetrics() { return metrics; }
 
     public String getModo() { return modo; }
     public void setModo(String modo) { this.modo = modo == null || modo.isBlank() ? "padrao" : modo; }
@@ -33,6 +35,14 @@ public class QuackProperties {
     static int clamp(int value, int min, int max) { return Math.max(min, Math.min(max, value)); }
     static long clamp(long value, long min, long max) { return Math.max(min, Math.min(max, value)); }
     static double clamp(double value, double min, double max) { return Math.max(min, Math.min(max, value)); }
+
+    /** Metricas Prometheus ({@code /actuator/prometheus}): sem token configurado a rota nao existe (404). */
+    public static class Metrics {
+        private String token = "";
+
+        public String getToken() { return token; }
+        public void setToken(String token) { this.token = token == null ? "" : token.trim(); }
+    }
 
     public static class Auth {
         private String jwtSecret = "";

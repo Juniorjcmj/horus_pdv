@@ -47,6 +47,12 @@ Confirmar 'loja.env sem BOM' (-not ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF 
 Confirmar 'loja.env escapa barra invertida' ($conteudo -match [regex]::Escape('B=C:\\pasta com\\barra'))
 Confirmar 'loja.env escapa espaco inicial' ($conteudo -match 'C=\\ espaco')
 Confirmar 'sem arquivo .tmp sobrando' (-not (Test-Path "$arqEnv.tmp"))
+# token de metricas: opcional; o loja.env gerado so o traz se o operador ja o tinha acrescentado, e o cabecalho avisa da rota
+$envMetricas = [ordered]@{ A = 'x'; QUACK_METRICS_TOKEN = 'tok-123' }
+Confirmar 'loja.env com QUACK_METRICS_TOKEN preservado' ((ConvertTo-ConteudoLojaEnv -Valores $envMetricas) -match 'QUACK_METRICS_TOKEN=tok-123')
+Confirmar 'loja.env sem QUACK_METRICS_TOKEN por padrao' ((ConvertTo-ConteudoLojaEnv -Valores $env1) -notmatch 'QUACK_METRICS_TOKEN=')
+$fonteInstalar = Get-Content -LiteralPath (Join-Path $raiz 'instalar.ps1') -Raw
+Confirmar 'instalar.ps1 documenta e preserva QUACK_METRICS_TOKEN' (($fonteInstalar -match "Get-ValorEnvExistente 'QUACK_METRICS_TOKEN'") -and ($fonteInstalar -match 'OPCIONAL: para ler as metricas'))
 
 # --- backup-estado.json (formato lido por EstadoBackup.java) ---
 $est = Join-Path $Temp 'estado\backup-estado.json'

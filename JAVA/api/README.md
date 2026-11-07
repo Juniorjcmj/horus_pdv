@@ -272,6 +272,7 @@ Na **nuvem** (receptor):
 | `quack.sync.recuperacao-intervalo-ms` | 15000 | intervalo entre tentativas da recuperação (sem internet fica pendente) |
 | `quack.sync.recuperacao-verificacao-ms` | 300000 | de quanto em quanto tempo a loja pergunta se a nuvem está à frente (restauração sem o script) |
 | `quack.sync.detector-ativo` | `true` | **nuvem:** detector das edições feitas pelo painel e pelo MCP (D6) |
+| `quack.metrics.token` (`QUACK_METRICS_TOKEN`) | vazio | token `Authorization: Bearer` de `/actuator/prometheus`; vazio = a rota responde 404 (monitoramento, ver `DEPLOY.md`) |
 | `quack.sync.comandos-espera-ms` | 25000 | **nuvem:** tempo do long-poll de `GET comandos` (0 a 60000) |
 | `quack.sync.carga.executar` / `.nuvem-url` / `.email` / `.nome-servidor` e `QUACK_SYNC_CARGA_SENHA` | | só da linha de comando do instalador: registro e carga inicial |
 | `quack.sync.recuperacao.executar` | `false` | só da linha de comando: executa a recuperação e sai (código 0 = concluída) |
