@@ -215,8 +215,21 @@ public final class AmbienteSync implements AutoCloseable {
         }
     }
 
+    private static void apagarBancoNuvem(String nome) {
+        try (Connection c = DriverManager.getConnection(SQL_NUVEM.getJdbcUrl(), SQL_NUVEM.getUsername(), SQL_NUVEM.getPassword());
+             Statement s = c.createStatement()) {
+            s.execute("IF DB_ID('" + nome + "') IS NOT NULL BEGIN ALTER DATABASE [" + nome
+                    + "] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [" + nome + "]; END");
+        } catch (java.sql.SQLException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     /** Sobe a .NET real sobre o banco da nuvem vazio: ela cria o esquema e o seu historico de migracoes. */
     private void subirDotNet() {
+        // A .NET so trabalha no banco HorusPdv: os ITs da .NET rodam na mesma JVM e no mesmo SQL, entao cada um comeca
+        // de um banco novo (senao o servidor e o estado de sincronizacao do IT anterior ficam la).
+        apagarBancoNuvem(bancoNuvem);
         String sql = "Server=host.docker.internal," + SQL_NUVEM.getMappedPort(1433) + ";Database=" + bancoNuvem
                 + ";User Id=" + SQL_NUVEM.getUsername() + ";Password=" + SQL_NUVEM.getPassword()
                 + ";TrustServerCertificate=True;Encrypt=True;MultipleActiveResultSets=True";
