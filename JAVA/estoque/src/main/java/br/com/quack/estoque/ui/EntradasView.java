@@ -131,41 +131,7 @@ public class EntradasView extends Tela {
     }
 
     private void verItens(JsonNode resumo) {
-        TableView<JsonNode> t = Ui.tabela();
-        t.setPrefHeight(320);
-        Ui.col(t, "Código", i -> i.path("productCode").asText(""), 90);
-        Ui.col(t, "Produto", i -> i.path("productName").asText(""), 260);
-        Ui.colNum(t, "Quantidade", i -> i.path("quantidade").asText("") + " " + i.path("unidadeComercial").asText(""), 100);
-        if (perfil.verCustos()) {
-            Ui.colNum(t, "Custo unit.", i -> "R$ " + i.path("precoCusto").asText(""), 90);
-        }
-        Ui.col(t, "Lote / validade", i -> i.path("numeroLote").asText("—")
-                + (i.path("dataValidade").asText("").isBlank() ? "" : " · " + Fmt.dateOnly(i.path("dataValidade").asText())), 150);
-        Label topo = Ui.muted("Carregando…");
-        VBox corpo = new VBox(8, topo, t);
-        Carregando.async(() -> ctx.entradas.obterNota(resumo.path("id").asText()), d -> {
-            JsonNode nota = d.path("nota");
-            JsonNode entrada = d.path("entrada");
-            List<JsonNode> itens = new ArrayList<>();
-            entrada.path("itens").forEach(itens::add);
-            t.setItems(FXCollections.observableArrayList(itens));
-            topo.setText(documento(nota) + " · " + nota.path("fornecedorNome").asText("") + (nota.path("estornada").asBoolean(false)
-                    ? " · ESTORNADA em " + Fmt.dateTime(nota.path("estornadaEm").asText("")) + " (" + nota.path("estornoJustificativa").asText("") + ")" : "")
-                    + (entrada.path("observacao").asText("").isBlank() ? "" : " · " + entrada.path("observacao").asText()));
-        }, e -> topo.setText(Fx.message(e)));
-        Button etiquetas = Ui.botao("Etiquetas dos itens", () -> {
-            int n = 0;
-            for (JsonNode i : t.getItems()) {
-                var p = ctx.catalogo.todos().stream().filter(x -> x.codigo().equals(i.path("productCode").asText())).findFirst();
-                if (p.isPresent()) {
-                    ctx.etiquetas.adicionar(p.get().id(), 1);
-                    n++;
-                }
-            }
-            sucesso(n + " produtos na fila de etiquetas.");
-        });
-        corpo.getChildren().add(Ui.barra(etiquetas));
-        Modal.informativo(janela(), "Itens da entrada", documento(resumo), corpo, 760, 0).mostrar();
+        ItensEntradaDialog.abrir(ctx, janela(), resumo);
     }
 
     private void baixarXml(JsonNode n) {

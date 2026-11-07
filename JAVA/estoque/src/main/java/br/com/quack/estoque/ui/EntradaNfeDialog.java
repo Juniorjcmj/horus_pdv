@@ -5,6 +5,7 @@ import br.com.quack.estoque.domain.ConversaoUnidade;
 import br.com.quack.estoque.domain.DomainException;
 import br.com.quack.estoque.domain.Fmt;
 import br.com.quack.estoque.domain.Perfil;
+import br.com.quack.estoque.domain.Precificacao;
 import br.com.quack.estoque.domain.Produto;
 import br.com.quack.estoque.persistence.JsonFiles;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,6 +37,9 @@ import javafx.stage.Window;
  */
 public final class EntradaNfeDialog {
     private static final String RASCUNHO = "entrada-nfe";
+    private static final double FRACAO_TELA = 0.9;
+    private static final double LARGURA_MINIMA = 940;
+    private static final double ALTURA_MINIMA = 560;
 
     private final AppContext ctx;
     private final Window dono;
@@ -64,13 +68,24 @@ public final class EntradaNfeDialog {
         new EntradaNfeDialog(ctx, dono, aoConcluir, irParaEtiquetas).iniciar();
     }
 
+    private javafx.geometry.Rectangle2D telaDoDono() {
+        javafx.stage.Screen s = dono == null ? javafx.stage.Screen.getPrimary()
+                : javafx.stage.Screen.getScreensForRectangle(dono.getX(), dono.getY(), Math.max(1, dono.getWidth()),
+                        Math.max(1, dono.getHeight())).stream().findFirst().orElse(javafx.stage.Screen.getPrimary());
+        return s.getVisualBounds();
+    }
+
     // ------------------------------------------------------------------ etapa 1: origem da nota
 
     private void iniciar() {
         corpo = new VBox(12);
-        corpo.setMinWidth(900);
+        corpo.setMinWidth(LARGURA_MINIMA - 40);
+        // 90% da tela do dono (era fixa em 940x560 e ficava apertada); a altura desconta cabeçalho e botões do cartão.
+        javafx.geometry.Rectangle2D tela = telaDoDono();
+        double largura = Math.max(LARGURA_MINIMA, tela.getWidth() * FRACAO_TELA - 32);
+        double altura = Math.max(ALTURA_MINIMA, tela.getHeight() * FRACAO_TELA - 170);
         modal = Modal.formularioRolavel(dono, "Nova entrada por NF-e", "Abra o XML da nota ou digite a chave de acesso.", corpo,
-                null, 940, 560, () -> true);
+                null, largura, altura, () -> true);
         modal.mostrar();
         etapaOrigem();
         if (ctx.rascunhos.existe(RASCUNHO)) {
@@ -258,6 +273,18 @@ public final class EntradaNfeDialog {
             }
         }
 
+        /** Markup que o preço atual daria sobre o custo unitário desta nota (só para quem vê custos). */
+        String markupNaNota() {
+            if (!perfil.verCustos()) {
+                return "";
+            }
+            try {
+                return " · markup sobre o custo desta nota " + ProdutosView.pct(Precificacao.markup(custoUnit(), existente.preco()));
+            } catch (RuntimeException e) {
+                return "";
+            }
+        }
+
         boolean pendente() {
             return existente == null && !novo;
         }
@@ -284,7 +311,8 @@ public final class EntradaNfeDialog {
             vinculo.getStyleClass().removeAll("rg-text-danger", "rg-text-success");
             if (ex) {
                 vinculo.setText("Vinculado a: " + existente.codigo() + " · " + existente.nome() + "  (estoque " + Fmt.qty(existente.estoque())
-                        + " " + existente.unidade() + ")");
+                        + " " + existente.unidade() + ")" + (perfil.verCustos() ? "  · markup "
+                        + ProdutosView.pct(Precificacao.markup(existente.custo(), existente.preco())) : ""));
                 vinculo.getStyleClass().add("rg-text-success");
             } else if (novo) {
                 vinculo.setText("Será cadastrado como produto novo.");
@@ -302,7 +330,8 @@ public final class EntradaNfeDialog {
             prazoPadrao.setVisible(controla);
             prazoPadrao.setManaged(controla);
             if (ex) {
-                precoInfo.setText("Preço atual R$ " + Fmt.dec2(existente.preco()) + (atualizarPreco.isSelected() ? "" : "  (o preço atual é mantido)"));
+                precoInfo.setText("Preço atual R$ " + Fmt.dec2(existente.preco()) + markupNaNota()
+                        + (atualizarPreco.isSelected() ? "" : "  (o preço atual é mantido)"));
                 precoNovo.setDisable(!atualizarPreco.isSelected());
                 if (atualizarPreco.isSelected() && !blocoPreco.getChildren().contains(precoNovo)) {
                     blocoPreco.getChildren().add(precoNovo);
