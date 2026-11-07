@@ -229,12 +229,9 @@ public final class LabelRenderer {
                 TextAlignment.RIGHT);
         pane.getChildren().addAll(tUn, tCod);
 
-        // Código de barras + número legível.
-        Font fDig = mono(0.085 * h);
-        double digitosH = altura(fDig);
-        double yDigitos = h - pad - digitosH;
+        // Código de barras sem o número legível embaixo: as barras ocupam até a margem de baixo.
         double barrasTop = Math.max(precoBottom + 0.01 * h, 0);
-        double alturaBarras = Math.max(6, yDigitos - barrasTop - 1);
+        double alturaBarras = Math.max(6, h - pad - barrasTop);
         int modulos = barras.matriz().getWidth();
         int total = modulos + 2 * ZONA_SILENCIO_MODULOS;
         double dotsPorPt = DPI_TERMICA / 72.0;
@@ -252,11 +249,6 @@ public final class LabelRenderer {
         canvas.setLayoutX((w - larguraBarras) / 2);
         canvas.setLayoutY(barrasTop);
         pane.getChildren().add(canvas);
-        String numero = barras.formato() == BarcodeFormat.EAN_13
-                ? barras.conteudo().charAt(0) + " " + barras.conteudo().substring(1, 7) + " " + barras.conteudo().substring(7)
-                : barras.conteudo();
-        Text tDig = texto(numero, fDig, w / 2, yDigitos, TextAlignment.CENTER);
-        pane.getChildren().add(tDig);
 
         return new Resultado(pane, barras, nomeBottom, yPreco, precoBottom, barrasTop, moduloPt, aviso.toString());
     }
