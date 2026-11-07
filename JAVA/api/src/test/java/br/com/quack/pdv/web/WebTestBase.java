@@ -50,6 +50,8 @@ public abstract class WebTestBase {
     @MockitoBean protected br.com.quack.pdv.produto.lote.app.LoteService loteService;
     @MockitoBean protected br.com.quack.pdv.produto.produto.app.ProdutoService produtos;
     @MockitoBean protected br.com.quack.pdv.estoque.movimentacao.app.EstoqueMovimentacaoService movimentacoes;
+    @MockitoBean protected br.com.quack.pdv.produto.importacao.ImportacaoProdutosService importacaoProdutos;
+    @MockitoBean protected br.com.quack.pdv.produto.importacao.GravadorImportacao gravadorImportacao;
     @MockitoBean protected br.com.quack.pdv.produto.entrada.app.EntradaManualService entradaManual;
     @MockitoBean protected br.com.quack.pdv.produto.entrada.app.NfeImportService nfeImport;
     @MockitoBean protected br.com.quack.pdv.produto.entrada.app.NotaEntradaArquivoService notasEntrada;

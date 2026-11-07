@@ -15,6 +15,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -68,6 +70,18 @@ public class GlobalExceptionHandler {
         String msg = causa.getMessage() == null ? "" : causa.getMessage();
         int quebra = msg.indexOf('\n');
         return quebra > 0 ? msg.substring(0, quebra) : msg;
+    }
+
+    /** Upload acima do limite do multipart (importacao de produtos): 400 com mensagem clara. */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Object>> uploadGrande() {
+        return ResponseEntity.badRequest().body(ApiResponse.erro("Arquivo maior que o permitido (15 MB)."));
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ApiResponse<Object>> parteAusente(MissingServletRequestPartException ex) {
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.erro("Envie o arquivo no campo '" + ex.getRequestPartName() + "'."));
     }
 
     @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})

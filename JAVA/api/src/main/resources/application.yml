@@ -24,6 +24,11 @@ spring:
     baseline-on-migrate: true
     baseline-version: "1"
     validate-on-migrate: true
+  servlet:
+    multipart:
+      # importacao de produtos por planilha (change api-java-importacao-produtos, I2): arquivo ate 15 MB
+      max-file-size: 15MB
+      max-request-size: 16MB
   mvc:
     throw-exception-if-no-handler-found: true
   web:

@@ -147,6 +147,8 @@ public final class CatalogoSincronizacao {
         fora("FiscalIaAnalises", "FiscalIaConfig", "FiscalIaSolicitacoes");
         fora("TreinamentoSecoes", "TreinamentoVideos", "ModulosMercado");
         fora("LoteBaixaPendencias");
+        // Controle local da importacao de produtos por planilha (idempotencia do saldo inicial): cada ponta tem o seu.
+        fora("ImportacoesProduto");
         // Derivadas e recalculadas por cada ponta (desvio do D2, que as tinha como EDITAVEL e LOJA): o worker .NET da
         // nuvem (EstoqueSnapshotWorker) grava ProdutoClassificacao (DELETE+INSERT completo) e EstoqueSnapshotDiario
         // (MERGE) todo dia para todas as empresas. Sincronizadas, cada gravacao da nuvem viraria quarentena e alerta
