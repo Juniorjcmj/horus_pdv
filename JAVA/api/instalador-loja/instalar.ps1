@@ -284,9 +284,9 @@ function Invoke-CargaInicial([string]$Email, [string]$Senha) {
     $env:QUACK_SYNC_CARGA_SENHA = $Senha
     Push-Location $Destino
     try {
-        & $java -Dfile.encoding=UTF-8 -jar $jar --spring.profiles.active=loja '--spring.config.import=file:./config/loja.env[.properties]' `
-            --quack.sync.carga.executar=true "--quack.sync.carga.nuvem-url=$($NuvemUrl.TrimEnd('/'))" "--quack.sync.carga.email=$Email" `
-            "--quack.sync.carga.nome-servidor=$NomeServidor" --quack.sync.alertas-ativo=false --quack.sync.conferencia-ativa=false --server.port=0
+        & $java '-Dfile.encoding=UTF-8' -jar $jar '--spring.profiles.active=loja' '--spring.config.import=file:./config/loja.env[.properties]' `
+            '--quack.sync.carga.executar=true' "--quack.sync.carga.nuvem-url=$($NuvemUrl.TrimEnd('/'))" "--quack.sync.carga.email=$Email" `
+            "--quack.sync.carga.nome-servidor=$NomeServidor" '--quack.sync.alertas-ativo=false' '--quack.sync.conferencia-ativa=false' '--server.port=0'
         if ($LASTEXITCODE -ne 0) { throw "A carga inicial falhou (codigo $LASTEXITCODE). Corrija a causa e rode instalar.ps1 de novo: a carga retoma de onde parou." }
     } finally { Pop-Location; Remove-Item Env:\QUACK_SYNC_CARGA_SENHA -ErrorAction SilentlyContinue }
 }
