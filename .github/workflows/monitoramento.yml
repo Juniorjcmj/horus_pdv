@@ -41,9 +41,13 @@ jobs:
 
       - name: Validar o prometheus.yml (promtool)
         if: matrix.componente == 'prometheus'
+        # O promtool exige que o arquivo do token exista; no container real ele e gravado pelo entrypoint a partir
+        # de METRICS_TOKEN. Aqui vai um token falso so para a validacao.
         run: |
+          echo "token-de-validacao" > "$RUNNER_TEMP/metrics-token"
           docker run --rm --entrypoint /bin/promtool \
             -v "$PWD/monitoramento/prometheus/prometheus.yml:/tmp/prometheus.yml:ro" \
+            -v "$RUNNER_TEMP/metrics-token:/etc/prometheus/metrics-token:ro" \
             prom/prometheus:v3.5.1 check config /tmp/prometheus.yml
 
       - name: Validar os JSON dos paineis
