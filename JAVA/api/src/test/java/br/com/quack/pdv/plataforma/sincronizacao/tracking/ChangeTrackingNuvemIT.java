@@ -73,7 +73,7 @@ class ChangeTrackingNuvemIT {
         novas.removeAll(ANTES);
         assertThat(novas).containsExactlyInAnyOrder("flyway_quack_sync", "SyncServidores", "SyncEstadoNuvem",
                 "SyncLotePartes", "SyncEspelho", "SyncComandos", "SyncQuarentena", "SyncAuditoriaMapa",
-                "SyncAlertas", "SyncConferencias", "SyncCargas");
+                "SyncAlertas", "SyncConferencias", "SyncCargas", "SyncComandoChaves");
         assertThat(depois).containsAll(ANTES);
 
         List<Map<String, Object>> historico = jdbc.query(

@@ -69,6 +69,24 @@ public class RegistradorEstoque {
             BigDecimal custoUnitario,
             MovimentoOrigem origem,
             String depositoId) {
+        return aplicarComId(companyId, produtoId, delta, tipo, custoUnitario, origem, depositoId,
+                "mov-" + UUID.randomUUID().toString().replace("-", ""));
+    }
+
+    /**
+     * Como {@link #aplicar}, gravando a movimentacao com o {@code idMovimento} dado (operacoes de estoque vindas da nuvem
+     * mantem o Id da nuvem, para a linha da loja sobrescrever a da nuvem na proxima sincronizacao).
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public Optional<Saldos> aplicarComId(
+            String companyId,
+            String produtoId,
+            BigDecimal delta,
+            String tipo,
+            BigDecimal custoUnitario,
+            MovimentoOrigem origem,
+            String depositoId,
+            String idMovimento) {
         List<ResultadoUpdate> lidos = jdbc.query(
                 SQL_ATUALIZAR_SALDO,
                 (rs, rowNum) -> new ResultadoUpdate(
@@ -87,7 +105,7 @@ public class RegistradorEstoque {
             return Optional.of(saldos);
         }
 
-        String id = "mov-" + UUID.randomUUID().toString().replace("-", "");
+        String id = idMovimento;
         String motivo = truncar(origem.motivo() == null ? "" : origem.motivo(), 500);
         String usuarioId = truncar(
                 origem.usuarioId() == null || origem.usuarioId().isBlank() ? "sistema" : origem.usuarioId(), 36);

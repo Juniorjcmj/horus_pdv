@@ -49,6 +49,18 @@ class RegistradorEstoqueIT {
     }
 
     @Test
+    void aplicarComIdGravaOIdDadoEOAnteriorENovoDaLoja() {
+        new TransactionTemplate(txManager).executeWithoutResult(s -> registrador.aplicarComId(
+                "empresa-principal", "pr-ct-inv", new BigDecimal("4"), EstoqueTipos.ENTRADA, null,
+                MovimentoOrigem.sistema("nfe", "n1", "Entrada da nuvem"), "loja", "mov-id-da-nuvem"));
+
+        var m = jdbc.queryForMap("SELECT EstoqueAnterior, EstoqueNovo, Quantidade FROM EstoqueMovimentacoes WHERE Id = 'mov-id-da-nuvem'");
+        assertThat((BigDecimal) m.get("EstoqueAnterior")).isEqualByComparingTo("10");
+        assertThat((BigDecimal) m.get("EstoqueNovo")).isEqualByComparingTo("14");
+        assertThat((BigDecimal) m.get("Quantidade")).isEqualByComparingTo("4");
+    }
+
+    @Test
     void exigeTransacaoAbertaMandatory() {
         assertThatThrownBy(() -> registrador.aplicar(
                         "empresa-principal",

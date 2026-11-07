@@ -43,6 +43,26 @@ class EdicoesDaNuvemCatalogoTest {
     }
 
     @Test
+    void tabelasDeOperacaoDeEstoqueAceitamInsercaoETransicoesDaNuvem() {
+        assertThat(t("EstoqueMovimentacoes").insercaoDaNuvem()).isTrue();
+        assertThat(t("ProdutoLotes").insercaoDaNuvem()).isTrue();
+        var notas = t("NotasEntradaArquivo");
+        assertThat(notas.insercaoDaNuvem()).isTrue();
+        assertThat(notas.transicao("estorno")).isPresent();
+        assertThat(notas.transicao("estorno").orElseThrow().destinoAtingido(Map.of("Estornada", "1"))).isTrue();
+        assertThat(notas.transicao("estorno").orElseThrow().destinoAtingido(Map.of("Estornada", "0"))).isFalse();
+        assertThat(notas.transicao("xml").orElseThrow().colunas()).contains("Identidade", "XmlOriginal", "Origem");
+        assertThat(notas.usaEspelho()).isFalse();
+        assertThat(t("Vendas").participaDeOperacaoDaNuvem()).isFalse();
+    }
+
+    @Test
+    void deParaDoFornecedorEEditavel() {
+        assertThat(t("MapeamentoProdutoFornecedor").classe()).isEqualTo(ClasseTabela.EDITAVEL);
+        assertThat(t("MapeamentoProdutoFornecedor").usaEspelho()).isTrue();
+    }
+
+    @Test
     void chaveSerializadaEContextoDoAplicador() {
         assertThat(MotorDeteccao.partesDaChave("emp|65|1|2")).containsExactly("emp", "65", "1", "2");
         assertThat(MotorDeteccao.partesDaChave("a||b")).containsExactly("a", "", "b");

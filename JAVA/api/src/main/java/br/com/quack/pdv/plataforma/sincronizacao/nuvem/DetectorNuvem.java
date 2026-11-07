@@ -116,13 +116,29 @@ public class DetectorNuvem {
             LOG.warn("Detector parado alem da retencao do tracking: deteccao completa para {}.", companyId);
             n = motor.getObject().detectarCompleto(j, companyId);
         } else {
+            MotorDeteccao mt = motor.getObject();
+            ColetorOperacoes coletor = RecursosLoja.suporta(j, companyId, RecursosLoja.OPERACAO_ESTOQUE)
+                    ? new ColetorOperacoes() : null;
+            // O3: Produtos vem antes de EstoqueMovimentacoes na ordem, entao as movimentacoes do ciclo sao lidas antes.
+            TabelaSincronizada movs = CatalogoSincronizacao.tabela("EstoqueMovimentacoes").orElseThrow();
+            List<MotorDeteccao.Mudanca> movimentos = null;
+            if (coletor != null) {
+                movimentos = mt.lerMudancas(j, movs, companyId, desde);
+                for (MotorDeteccao.Mudanca m : movimentos) {
+                    if (m.linha() != null && "I".equals(m.operacao())) coletor.marcarProduto(m.linha().get("ProdutoId"));
+                }
+            }
             for (TabelaSincronizada t : CatalogoSincronizacao.ordemDeAplicacao()) {
                 if (t.classe() == ClasseTabela.ACRESCIMO) continue;
-                for (MotorDeteccao.Mudanca m : motor.getObject().lerMudancas(j, t, companyId, desde)) {
-                    motor.getObject().processarLinha(j, companyId, t, m.operacao(), m.pk(), m.linha(), false);
+                List<MotorDeteccao.Mudanca> lidas = t == movs && movimentos != null ? movimentos
+                        : mt.lerMudancas(j, t, companyId, desde);
+                for (MotorDeteccao.Mudanca m : lidas) {
+                    mt.processarLinha(j, companyId, t, m.operacao(), m.pk(), m.linha(), false,
+                            MotorDeteccao.ORIGEM_EDICAO, coletor, m.versao());
                     n++;
                 }
             }
+            if (coletor != null) n += mt.criarOperacoes(j, companyId, coletor);
         }
         j.update("UPDATE dbo.SyncEstadoNuvem SET DetectorDesde = ? WHERE CompanyId = ?", atual, companyId);
         return n;

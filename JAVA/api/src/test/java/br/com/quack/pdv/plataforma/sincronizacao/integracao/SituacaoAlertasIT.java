@@ -62,11 +62,12 @@ class SituacaoAlertasIT {
         smtp.start();
         arquivoBackup = Files.createTempFile("backup-estado", ".json");
         Files.writeString(arquivoBackup, "{\"ultimoBackupEm\":\"2026-11-04T02:00:00Z\",\"sucesso\":true,\"erro\":null}");
+        // loja sem o recurso operacao-estoque: a movimentacao gravada na nuvem vai para a quarentena (o que o teste de e-mail exerce)
         String[] comuns = {"--quack.sync.alertas-ativo=false", "--quack.sync.conferencia-ativa=false", "--quack.email.enabled=true",
                 "--quack.email.host=localhost", "--quack.email.port=" + smtp.getSmtp().getPort(), "--quack.email.enable-ssl=false",
                 "--quack.email.user=robo", "--quack.email.password=segredo123", "--quack.email.from-email=naoresponder@quack.com"};
         String[] extrasLoja = java.util.stream.Stream.concat(java.util.Arrays.stream(comuns),
-                java.util.stream.Stream.of("--quack.sync.backup-estado=" + arquivoBackup)).toArray(String[]::new);
+                java.util.stream.Stream.of("--quack.sync.backup-estado=" + arquivoBackup, "--quack.sync.recursos=")).toArray(String[]::new);
         amb = AmbienteSync.iniciarComExtras("sit", comuns, extrasLoja);
         loja = amb.jdbcLoja;
         nuvem = amb.jdbcNuvem;

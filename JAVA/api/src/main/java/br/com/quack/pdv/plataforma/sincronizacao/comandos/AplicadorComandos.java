@@ -42,6 +42,7 @@ public class AplicadorComandos {
     /** Contexto do Change Tracking das escritas deste aplicador ("SQ" 0002). */
     public static final String CONTEXTO_COMANDO_NUVEM = "0x53510002";
     private static final String COM_CONTEXTO = "WITH CHANGE_TRACKING_CONTEXT (" + CONTEXTO_COMANDO_NUVEM + ") ";
+    static final String COM_CONTEXTO_NUVEM = COM_CONTEXTO;
 
     public enum Ciclo { INATIVO, OCIOSO, APLICOU, APLICOU_COM_FALHA, SEM_COMUNICACAO }
 
@@ -55,11 +56,13 @@ public class AplicadorComandos {
     private final ClienteComandos cliente;
     private final SecretProtector segredos;
     private final QuackProperties props;
+    private final AplicadorOperacoes operacoes;
     private volatile Map<String, Set<String>> colunasPorTabela;
     private volatile Map<String, List<String>> chavesPorTabela;
 
     public AplicadorComandos(JdbcTemplate jdbc, TransactionOperations tx, ClienteComandos cliente, SecretProtector segredos,
-                             QuackProperties props) {
+                             QuackProperties props, AplicadorOperacoes operacoes) {
+        this.operacoes = operacoes;
         this.jdbc = jdbc;
         this.tx = tx;
         this.cliente = cliente;
@@ -143,12 +146,18 @@ public class AplicadorComandos {
                 d.detalhe().toString());
         String empresa = jdbc.queryForObject("SELECT CompanyId FROM SyncEstado WHERE Id = 1", String.class);
         jdbc.update("INSERT INTO AuditLog (CompanyId, UserId, UserName, EventType, EntityType, EntityId, Description, Ip) "
-                + "VALUES (?, N'sistema', N'Sincronizacao', N'SincronizacaoComando', ?, ?, ?, N'comando-nuvem')", empresa,
+                + "VALUES (?, N'sistema', N'Sincronizacao', ?, ?, ?, ?, N'comando-nuvem')", empresa,
+                "operacao".equals(c.tipo()) ? "SincronizacaoOperacao" : "SincronizacaoComando",
                 truncar(c.tabela(), 60), truncar(c.chave(), 80),
                 truncar("Comando " + c.seq() + " " + c.tipo() + ": " + d.resultado() + " " + d.detalhe(), 500));
     }
 
     private Desfecho executar(ClienteComandos.Comando c) {
+        if ("operacao".equals(c.tipo())) { // operacao de estoque da nuvem (nao e uma linha so)
+            String empresa = jdbc.queryForObject("SELECT CompanyId FROM SyncEstado WHERE Id = 1", String.class);
+            AplicadorOperacoes.Resultado r = operacoes.aplicar(empresa, c.payload());
+            return new Desfecho(r.resultado(), r.detalhe());
+        }
         carregarEsquema();
         TabelaSincronizada t = CatalogoSincronizacao.tabela(c.tabela()).filter(TabelaSincronizada::sincroniza)
                 .orElseThrow(() -> new IllegalArgumentException("Tabela fora da sincronizacao: " + c.tabela()));

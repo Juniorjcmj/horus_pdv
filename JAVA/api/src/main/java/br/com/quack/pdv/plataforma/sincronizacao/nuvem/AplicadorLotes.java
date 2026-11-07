@@ -132,9 +132,21 @@ public class AplicadorLotes {
             bloqueadas.addAll(completo ? d.antesDaRessincronizacao(companyId, t, chave.texto(), existe)
                     : d.antes(companyId, t, chave.texto(), existe));
         }
+        if (t.nome().equals("NotasEntradaArquivo")) liberarIdentidade(companyId, l, chave);
         if (existe) atualizar(t, l, pk, chave, bloqueadas); else inserir(t, l);
         for (DeteccaoInline d : deteccao) d.depois(companyId, t, chave.texto(), l.textos(), bloqueadas);
         return true;
+    }
+
+    /**
+     * Nota em dobro (O6): a loja e a autora. Se a nuvem tem outra entrada com a mesma identidade (lancada la antes de a
+     * nota da loja chegar), ela sai do caminho para nao violar a unicidade; a operacao da nuvem termina em conflito.
+     */
+    private void liberarIdentidade(String companyId, Linha l, Chave chave) {
+        String identidade = l.textos().get("Identidade");
+        if (identidade == null) return;
+        jdbc.update(COM_CONTEXTO + "DELETE FROM dbo.NotasEntradaArquivo WHERE CompanyId = ? AND Identidade = ? AND Id <> ?",
+                companyId, identidade, chave.texto());
     }
 
     private void inserir(TabelaSincronizada t, Linha l) {

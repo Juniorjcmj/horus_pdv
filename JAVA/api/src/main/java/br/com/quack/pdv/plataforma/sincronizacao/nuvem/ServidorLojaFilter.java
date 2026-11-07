@@ -66,8 +66,17 @@ public class ServidorLojaFilter extends OncePerRequestFilter {
         }
         ServidorLoja servidor = achados.getFirst();
         jdbc.update("UPDATE dbo.SyncServidores SET UltimoContato = SYSDATETIMEOFFSET() WHERE Id = ?", servidor.id());
+        if (caminho.equals("/api/loja-sync/comandos")) registrarRecursos(servidor, request.getHeader(RecursosLoja.CABECALHO));
         request.setAttribute(ServidorLoja.ATRIBUTO, servidor);
         chain.doFilter(request, response);
+    }
+
+    /** O long-poll de comandos e quem anuncia os recursos; sem o cabecalho (jar antigo) a coluna volta a nula. */
+    private void registrarRecursos(ServidorLoja servidor, String cabecalho) {
+        String recursos = cabecalho == null || cabecalho.isBlank() ? null
+                : cabecalho.trim().substring(0, Math.min(cabecalho.trim().length(), 200));
+        jdbc.update("UPDATE dbo.SyncServidores SET Recursos = ? WHERE Id = ? AND ISNULL(Recursos, N'') <> ISNULL(?, N'')",
+                recursos, servidor.id(), recursos);
     }
 
     public static String hash(String token) {

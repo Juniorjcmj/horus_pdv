@@ -45,7 +45,8 @@ class ConferenciaIT {
 
     @BeforeAll
     static void subir() {
-        amb = AmbienteSync.iniciar("conf");
+        // jar antigo na loja (sem operacao-estoque): a gravacao de movimentacao na nuvem segue para a quarentena, que e o que este teste exerce
+        amb = AmbienteSync.iniciarComExtrasNaLoja("conf", "--quack.sync.recursos=");
         loja = amb.jdbcLoja;
         nuvem = amb.jdbcNuvem;
         conferencia = amb.loja.getBean(ConferenciaSincronizacao.class);

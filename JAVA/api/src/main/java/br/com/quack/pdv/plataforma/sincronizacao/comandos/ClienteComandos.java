@@ -33,12 +33,18 @@ public class ClienteComandos {
     private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     private final ClienteNuvemHttp internet;
 
-    public ClienteComandos(ClienteNuvemHttp internet) {
+    private final br.com.quack.pdv.config.QuackProperties props;
+
+    public ClienteComandos(ClienteNuvemHttp internet, br.com.quack.pdv.config.QuackProperties props) {
         this.internet = internet;
+        this.props = props;
     }
 
     public List<Comando> buscar(String urlBase, String token, long apos) throws IOException {
-        HttpResponse<String> r = enviar(requisicao(urlBase, "/api/loja-sync/comandos?apos=" + apos, token, 45).GET().build());
+        HttpRequest.Builder req = requisicao(urlBase, "/api/loja-sync/comandos?apos=" + apos, token, 45);
+        String recursos = props.getSync().getRecursos();
+        if (!recursos.isBlank()) req.header("X-Quack-Recursos", recursos); // O9: a nuvem so cria "operacao" se anunciado
+        HttpResponse<String> r = enviar(req.GET().build());
         List<Comando> lista = new ArrayList<>();
         for (JsonNode c : JSON.readTree(r.body()).path("data").path("comandos")) {
             lista.add(new Comando(c.path("seq").asLong(), c.path("tipo").asText(), c.path("tabela").asText(),

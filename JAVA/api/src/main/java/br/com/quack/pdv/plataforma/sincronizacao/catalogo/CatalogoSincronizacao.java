@@ -6,6 +6,7 @@ import static br.com.quack.pdv.plataforma.sincronizacao.catalogo.ClasseColuna.LO
 import static br.com.quack.pdv.plataforma.sincronizacao.catalogo.ClasseColuna.NUVEM;
 
 import br.com.quack.pdv.plataforma.sincronizacao.catalogo.TabelaSincronizada.RegraLinha;
+import br.com.quack.pdv.plataforma.sincronizacao.catalogo.TabelaSincronizada.TransicaoDaNuvem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -55,6 +56,9 @@ public final class CatalogoSincronizacao {
                 // SaldoDevedor: gravado so pelo fiado (FiadoDebitos, FiadoEstornos, FiadoRepository; FiadoAB na .NET).
                 Map.of("SaldoDevedor", LOJA));
         editavel("Fornecedores", Map.of());
+        // De-para de codigo do fornecedor: cadastro. A .NET faz MERGE a cada nota (O5 da change
+        // api-java-operacoes-estoque-nuvem), entao as duas pontas editam; a conferencia de base resolve a colisao.
+        editavel("MapeamentoProdutoFornecedor", Map.of());
         editavel("Categorias", Map.of());
         editavel("Promocoes", Map.of());
         filha("PromocaoProdutos", ClasseTabela.EDITAVEL, "Promocoes", "PromocaoId");
@@ -80,7 +84,10 @@ public final class CatalogoSincronizacao {
         loja("AutorizacoesPreco");
         loja("CaixaMovimentos");
         loja("CaixaSessoes");
-        loja("EstoqueMovimentacoes");
+        // Operacoes de estoque da nuvem (change api-java-operacoes-estoque-nuvem, O4): a nuvem pode INSERIR movimentacoes e
+        // lotes (descem como passos de uma operacao; a loja recalcula o saldo) e fazer as transicoes da nota de entrada.
+        // Qualquer outra alteracao da nuvem nessas tabelas continua indo para a quarentena.
+        put(comOperacoes("EstoqueMovimentacoes", List.of()));
         loja("FiadoMovimentos");
         // Modelo 65 e da loja; Modelo 55 (NF-e de devolucao do painel) e autoria da nuvem.
         put(new TabelaSincronizada("FiscalSequencias", ClasseTabela.LOJA, "CompanyId", null, null, Map.of(),
@@ -104,9 +111,14 @@ public final class CatalogoSincronizacao {
         loja("InventarioItens");
         loja("Inventarios");
         loja("LoteConsumos");
-        loja("ProdutoLotes");
-        loja("MapeamentoProdutoFornecedor");
-        loja("NotasEntradaArquivo");
+        put(comOperacoes("ProdutoLotes", List.of()));
+        put(comOperacoes("NotasEntradaArquivo", List.of(
+                new TransicaoDaNuvem("estorno", "Estornada", "1", "Estornada", "0",
+                        List.of("Estornada", "EstornadaEm", "EstornadaPorUsuarioId", "EstornadaPorUsuarioNome",
+                                "EstornoJustificativa")),
+                new TransicaoDaNuvem("xml", "Origem", "xml", "Origem", "sem-documento",
+                        List.of("Identidade", "ChaveAcesso", "Modelo", "NumeroNota", "Serie", "DataEmissao", "ValorNota",
+                                "Origem", "XmlOriginal")))));
         loja("OrdemCompra");
         filha("OrdemCompraItens", ClasseTabela.LOJA, "OrdemCompra", "OrdemCompraId");
         loja("Pedidos");
@@ -154,6 +166,11 @@ public final class CatalogoSincronizacao {
 
     private static void loja(String nome) {
         put(new TabelaSincronizada(nome, ClasseTabela.LOJA, "CompanyId", null, null, Map.of(), List.of()));
+    }
+
+    private static TabelaSincronizada comOperacoes(String nome, List<TransicaoDaNuvem> transicoes) {
+        return new TabelaSincronizada(nome, ClasseTabela.LOJA, "CompanyId", null, null, Map.of(), List.of())
+                .comOperacoesDaNuvem(transicoes);
     }
 
     private static void filha(String nome, ClasseTabela classe, String mae, String ligacao) {

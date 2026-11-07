@@ -95,6 +95,7 @@ public class ServicoComandos {
             }
             case "conflito" -> {
                 finalizar(r.seq(), "conflito", detalhe);
+                if ("operacao".equals(c.get("Tipo"))) descartarOperacao(company, (String) c.get("PayloadJson"));
                 MotorDeteccao.alertar(jdbc, "comando-conflito", company,
                         c.get("Tabela") + " " + c.get("Chave") + ": " + MotorDeteccao.truncar(detalhe, 700));
             }
@@ -112,6 +113,27 @@ public class ServicoComandos {
                 }
             }
             default -> { }
+        }
+    }
+
+    /**
+     * Operacao recusada pela loja (conflito): nada dela entrou la, entao as linhas que a nuvem inseriu saem da nuvem agora
+     * (a loja e a autora; a conferencia acerta o saldo do produto). Transicoes nao apagam nada: a linha e da loja.
+     */
+    private void descartarOperacao(String company, String payload) {
+        try {
+            List<JsonNode> passos = new ArrayList<>();
+            JSON.readTree(payload).path("passos").forEach(passos::add);
+            java.util.Collections.reverse(passos);
+            for (JsonNode p : passos) {
+                String tipo = p.path("tipo").asText();
+                if (!tipo.equals("inserir") && !tipo.equals("movimento")) continue;
+                CatalogoSincronizacao.tabela(p.path("tabela").asText()).filter(TabelaSincronizada::participaDeOperacaoDaNuvem)
+                        .ifPresent(t -> jdbc.update("WITH CHANGE_TRACKING_CONTEXT (0x53510001) DELETE FROM dbo.[" + t.nome()
+                                + "] WHERE Id = ? AND CompanyId = ?", p.path("chave").asText(), company));
+            }
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Payload de comando ilegivel.", e);
         }
     }
 

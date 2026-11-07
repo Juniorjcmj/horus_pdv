@@ -93,6 +93,11 @@ public class QuackProperties {
         public void setEnvioAtivo(boolean envioAtivo) { this.envioAtivo = envioAtivo; }
         private boolean detectorAtivo = true;
         private long comandosEsperaMs = 25_000L;
+        private String recursos = "operacao-estoque";
+
+        /** Loja: recursos anunciados a nuvem no long-poll de comandos (X-Quack-Recursos); vazio = nenhum (testes de jar antigo). */
+        public String getRecursos() { return recursos == null ? "" : recursos; }
+        public void setRecursos(String recursos) { this.recursos = recursos; }
 
         /** Nuvem: liga o detector periodico de edicoes (D6). */
         public boolean isDetectorAtivo() { return detectorAtivo; }

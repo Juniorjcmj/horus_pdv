@@ -53,9 +53,16 @@ public class MotorDeteccao {
     private static final TypeReference<LinkedHashMap<String, String>> MAPA = new TypeReference<>() {};
 
     /** Uma linha mudada: chave (texto de cada coluna), operacao do tracking e a linha viva (nulo = excluida). */
-    public record Mudanca(List<String> pk, String operacao, Map<String, String> linha) {}
+    public record Mudanca(List<String> pk, String operacao, Map<String, String> linha, long versao) {}
 
     private record UltimaMudanca(Long versao, byte[] contexto) {}
+
+    /** Colunas de saldo de Produtos: a nuvem nao as copia para a loja quando ha movimentacao (O3). */
+    private static final Set<String> COLUNAS_DE_SALDO = Set.of("ProductQnt", "TotalPriceOnProduct");
+    static final String TABELA_OPERACAO = "*operacao*";
+
+    /** Contexto de uma deteccao com operacoes de estoque ativas (a loja anunciou o recurso). */
+    private record Operacao(ColetorOperacoes coletor, Long versao) {}
 
     private final JdbcTemplate base;
     private volatile Map<String, Set<String>> colunasPorTabela;
@@ -155,7 +162,7 @@ public class MotorDeteccao {
         List<String> cols = colunas(t);
         StringBuilder sql = new StringBuilder("SELECT ");
         for (int i = 0; i < pk.size(); i++) sql.append("CT.[").append(pk.get(i)).append("] AS __k").append(i).append(", ");
-        sql.append("CT.SYS_CHANGE_OPERATION AS __op, ").append(listaColunas(cols, "T."));
+        sql.append("CT.SYS_CHANGE_OPERATION AS __op, CT.SYS_CHANGE_VERSION AS __ver, ").append(listaColunas(cols, "T."));
         sql.append(" FROM CHANGETABLE(CHANGES dbo.[").append(t.nome()).append("], ?) AS CT LEFT JOIN dbo.[")
                 .append(t.nome()).append("] AS T ON ")
                 .append(String.join(" AND ", pk.stream().map(c -> "T.[" + c + "] = CT.[" + c + "]").toList()))
@@ -171,14 +178,15 @@ public class MotorDeteccao {
             if (!rs.isBeforeFirst()) return r;
             ResultSetMetaData md = rs.getMetaData();
             List<ColunaSync> tiposPk = LeitorLinhas.tipos(md, pk, 0);
-            List<ColunaSync> tipos = LeitorLinhas.tipos(md, cols, pk.size() + 1);
+            List<ColunaSync> tipos = LeitorLinhas.tipos(md, cols, pk.size() + 2);
             int posPk = cols.indexOf(pk.getFirst());
             while (rs.next()) {
                 List<String> chave = LeitorLinhas.valores(rs, tiposPk, 1);
                 String op = rs.getString(pk.size() + 1);
-                Map<String, String> linha = rs.getObject(pk.size() + 1 + 1 + posPk) == null ? null
-                        : linhaTexto(rs, cols, tipos, pk.size() + 2);
-                r.add(new Mudanca(chave, op, linha));
+                long versao = rs.getLong(pk.size() + 2);
+                Map<String, String> linha = rs.getObject(pk.size() + 3 + posPk) == null ? null
+                        : linhaTexto(rs, cols, tipos, pk.size() + 3);
+                r.add(new Mudanca(chave, op, linha, versao));
             }
             return r;
         });
@@ -195,7 +203,7 @@ public class MotorDeteccao {
             List<ColunaSync> tipos = LeitorLinhas.tipos(rs.getMetaData(), cols, 0);
             while (rs.next()) {
                 Map<String, String> linha = linhaTexto(rs, cols, tipos, 1);
-                r.add(new Mudanca(pk.stream().map(linha::get).toList(), "U", linha));
+                r.add(new Mudanca(pk.stream().map(linha::get).toList(), "U", linha, 0L));
             }
             return r;
         });
@@ -312,6 +320,15 @@ public class MotorDeteccao {
 
     void processarLinha(JdbcTemplate j, String company, TabelaSincronizada t, String operacao, List<String> pk,
                         Map<String, String> live, boolean inline, String origem) {
+        processarLinha(j, company, t, operacao, pk, live, inline, origem, null, null);
+    }
+
+    /**
+     * Como acima, num ciclo do detector com operacoes de estoque ativas ({@code coletor} nao nulo, O1/O4): gravacao da
+     * nuvem em tabela que aceita insercao/transicao vira passo da operacao da {@code versao} em vez de quarentena.
+     */
+    void processarLinha(JdbcTemplate j, String company, TabelaSincronizada t, String operacao, List<String> pk,
+                        Map<String, String> live, boolean inline, String origem, ColetorOperacoes coletor, Long versao) {
         String chave = String.join("|", pk);
         Optional<Map<String, String>> esp = t.usaEspelho() ? lerEspelho(j, t, chave, company) : Optional.empty();
         if (live == null) {
@@ -320,10 +337,113 @@ public class MotorDeteccao {
         }
         Map<String, Object> obj = new LinkedHashMap<>(live);
         if (t.classe() == ClasseTabela.EDITAVEL || t.autoriaDaNuvem(obj)) {
-            editavel(j, company, t, chave, live, obj, esp.orElse(null), inline, origem);
+            Operacao op = operacaoDe(j, company, t, coletor, versao);
+            editavel(j, company, t, chave, live, obj, esp.orElse(null), inline, origem, op);
+        } else if (coletor != null && versao != null && t.participaDeOperacaoDaNuvem()
+                && passoDeOperacao(t, operacao, pk, live, versao, coletor)) {
+            LOG.debug("Nuvem gravou {} {} (operacao de estoque, versao {}).", t.nome(), chave, versao);
         } else {
             tabelaDaLoja(j, company, t, chave, operacao, live, obj, esp.isPresent(), inline, origem);
         }
+    }
+
+    /** Operacoes de estoque valem no ciclo do detector (coletor) ou, para o saldo, na deteccao inline (O3). */
+    private Operacao operacaoDe(JdbcTemplate j, String company, TabelaSincronizada t, ColetorOperacoes coletor,
+                                Long versao) {
+        if (coletor != null) return new Operacao(coletor, versao);
+        if (t.nome().equals("Produtos") && RecursosLoja.suporta(j, company, RecursosLoja.OPERACAO_ESTOQUE)) {
+            return new Operacao(null, null);
+        }
+        return null;
+    }
+
+    /**
+     * Insercao da nuvem ({@code inserir}, ou {@code movimento} em EstoqueMovimentacoes) ou transicao aceita (O4) como
+     * passo da operacao. Falso se a gravacao nao e prevista (segue para a quarentena).
+     */
+    private boolean passoDeOperacao(TabelaSincronizada t, String operacao, List<String> pk, Map<String, String> live,
+                                    long versao, ColetorOperacoes coletor) {
+        String chave = String.join("|", pk);
+        if ("I".equals(operacao) && t.insercaoDaNuvem()) {
+            ObjectNode corpo = JSON.createObjectNode();
+            ArrayNode cols = corpo.putArray("colunas");
+            for (Map.Entry<String, String> e : live.entrySet()) {
+                cols.addObject().put("nome", e.getKey()).put("valor", e.getValue());
+            }
+            boolean movimento = t.nome().equals("EstoqueMovimentacoes");
+            if (movimento) coletor.marcarProduto(live.get("ProdutoId"));
+            coletor.adicionar(versao,
+                    new ColetorOperacoes.Passo(movimento ? "movimento" : "inserir", t.nome(), chave, corpo));
+            return true;
+        }
+        if ("U".equals(operacao)) {
+            for (TabelaSincronizada.TransicaoDaNuvem tr : t.transicoes()) {
+                if (!tr.destinoAtingido(live)) continue;
+                ObjectNode corpo = JSON.createObjectNode().put("regra", tr.nome());
+                ArrayNode cols = corpo.putArray("colunas");
+                for (String c : tr.colunas()) cols.addObject().put("nome", c).put("novo", live.get(c));
+                coletor.adicionar(versao, new ColetorOperacoes.Passo("transicao", t.nome(), chave, corpo));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * O3: mudanca de saldo na nuvem de um produto com movimentacao no ciclo, ou com operacao pendente, nao e
+     * quarentena: a loja recalcula o saldo pela movimentacao.
+     */
+    private boolean saldoCoberto(JdbcTemplate j, String company, TabelaSincronizada t, String chave, String coluna,
+                                 Operacao op) {
+        if (op == null || !t.nome().equals("Produtos") || !COLUNAS_DE_SALDO.contains(coluna)) return false;
+        if (op.coletor() != null && op.coletor().produtoTemMovimento(chave)) return true;
+        return operacaoPendenteDo(j, company, "Produtos", chave);
+    }
+
+    /** Ha comando {@code operacao} da empresa, sem resultado da loja, que toca a linha? */
+    public boolean operacaoPendenteDo(JdbcTemplate j, String company, String tabela, String chave) {
+        Integer n = j.queryForObject("""
+                SELECT COUNT(*) FROM dbo.SyncComandoChaves k JOIN dbo.SyncComandos c ON c.Seq = k.Seq
+                 WHERE k.Tabela = ? AND k.Chave = ? AND c.CompanyId = ? AND c.Status = N'pendente'
+                """, Integer.class, tabela, chave, company);
+        return n != null && n > 0;
+    }
+
+    // ------------------------------------------------------------------ operacoes de estoque
+
+    /**
+     * No fim do ciclo: um comando {@code operacao} por versao da nuvem (O1), com os passos na ordem de aplicacao, criado
+     * depois dos comandos das tabelas EDITAVEL do ciclo. As chaves tocadas vao para {@code SyncComandoChaves} (O7).
+     */
+    int criarOperacoes(JdbcTemplate j, String company, ColetorOperacoes coletor) {
+        int n = 0;
+        for (Map.Entry<Long, List<ColetorOperacoes.Passo>> g : coletor.grupos().entrySet()) {
+            ObjectNode payload = JSON.createObjectNode().put("versaoNuvem", g.getKey());
+            ArrayNode passos = payload.putArray("passos");
+            Set<List<String>> chaves = new java.util.LinkedHashSet<>();
+            for (ColetorOperacoes.Passo p : g.getValue()) {
+                ObjectNode o = passos.addObject().put("tipo", p.tipo()).put("tabela", p.tabela()).put("chave", p.chave());
+                p.corpo().fields().forEachRemaining(e -> o.set(e.getKey(), e.getValue()));
+                chaves.add(List.of(p.tabela(), p.chave()));
+                if (p.tipo().equals("movimento")) chaves.add(List.of("Produtos", produtoDoMovimento(p)));
+            }
+            Long seq = j.queryForObject("""
+                    INSERT INTO dbo.SyncComandos (CompanyId, Tipo, Tabela, Chave, PayloadJson) OUTPUT inserted.Seq
+                    VALUES (?, N'operacao', ?, ?, ?)
+                    """, Long.class, company, TABELA_OPERACAO, "v" + g.getKey(), payload.toString());
+            for (List<String> k : chaves) {
+                j.update("INSERT INTO dbo.SyncComandoChaves (Seq, Tabela, Chave) VALUES (?, ?, ?)", seq, k.get(0), k.get(1));
+            }
+            n++;
+        }
+        return n;
+    }
+
+    private static String produtoDoMovimento(ColetorOperacoes.Passo p) {
+        for (JsonNode c : p.corpo().path("colunas")) {
+            if (c.path("nome").asText().equals("ProdutoId")) return c.path("valor").asText();
+        }
+        return "";
     }
 
     private void excluida(JdbcTemplate j, String company, TabelaSincronizada t, String chave, Map<String, String> esp) {
@@ -342,13 +462,15 @@ public class MotorDeteccao {
     }
 
     private void editavel(JdbcTemplate j, String company, TabelaSincronizada t, String chave, Map<String, String> live,
-                          Map<String, Object> obj, Map<String, String> esp, boolean inline, String origem) {
+                          Map<String, Object> obj, Map<String, String> esp, boolean inline, String origem, Operacao op) {
         if (esp == null) { // linha criada na nuvem
             ObjectNode p = JSON.createObjectNode();
             ArrayNode cols = p.putArray("colunas");
+            // O3: com operacoes de estoque, o produto novo chega com saldo zero e o recebe pela movimentacao.
+            boolean saldoZero = op != null && op.coletor() != null && t.nome().equals("Produtos");
             for (Map.Entry<String, String> e : live.entrySet()) {
                 ObjectNode c = cols.addObject().put("nome", e.getKey());
-                c.put("valor", e.getValue());
+                c.put("valor", saldoZero && COLUNAS_DE_SALDO.contains(e.getKey()) ? "0" : e.getValue());
                 if (t.classeDaColuna(e.getKey(), obj) == ClasseColuna.CIFRADA) c.put("cifrada", true);
             }
             criarComando(j, company, "inserir", t, chave, p);
@@ -372,7 +494,9 @@ public class MotorDeteccao {
                     if (t.classeDaColuna(col, obj) == ClasseColuna.CIFRADA) c.put("cifrada", true);
                     novoEsp.put(col, atual); // a loja vai adotar: o espelho acompanha
                 }
-                case LOJA -> lojaMudadas.add(col + "=" + atual);
+                case LOJA -> {
+                    if (!saldoCoberto(j, company, t, chave, col, op)) lojaMudadas.add(col + "=" + atual);
+                }
                 default -> { }
             }
         }

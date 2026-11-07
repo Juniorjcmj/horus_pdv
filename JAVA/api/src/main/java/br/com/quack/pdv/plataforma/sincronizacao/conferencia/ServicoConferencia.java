@@ -90,6 +90,10 @@ public class ServicoConferencia {
         TabelaSincronizada t = tabela(nomeTabela);
         Set<String> comando = chaves("SELECT Chave FROM dbo.SyncComandos WHERE CompanyId = ? AND Tabela = ? AND Status = N'pendente'",
                 companyId, nomeTabela);
+        comando.addAll(chaves("""
+                SELECT k.Chave FROM dbo.SyncComandoChaves k JOIN dbo.SyncComandos c ON c.Seq = k.Seq
+                 WHERE c.CompanyId = ? AND k.Tabela = ? AND c.Status = N'pendente'
+                """, companyId, nomeTabela));
         Set<String> quarentena = chaves("SELECT Chave FROM dbo.SyncQuarentena WHERE CompanyId = ? AND Tabela = ? AND ResolvidoEm IS NULL",
                 companyId, nomeTabela);
         Set<String> espelho = t.classe() == ClasseTabela.EDITAVEL
@@ -131,6 +135,11 @@ public class ServicoConferencia {
                 companyId, t.nome()));
         protegidas.addAll(chaves("SELECT Chave FROM dbo.SyncQuarentena WHERE CompanyId = ? AND Tabela = ? AND ResolvidoEm IS NULL",
                 companyId, t.nome()));
+        // O7: linha de operacao de estoque da nuvem que a loja ainda nao respondeu
+        protegidas.addAll(chaves("""
+                SELECT k.Chave FROM dbo.SyncComandoChaves k JOIN dbo.SyncComandos c ON c.Seq = k.Seq
+                 WHERE c.CompanyId = ? AND k.Tabela = ? AND c.Status = N'pendente'
+                """, companyId, t.nome()));
         Set<String> espelho = t.classe() == ClasseTabela.EDITAVEL
                 ? chaves("SELECT Chave FROM dbo.SyncEspelho WHERE CompanyId = ? AND Tabela = ?", companyId, t.nome()) : null;
         List<String> pk = sql().chave(t);

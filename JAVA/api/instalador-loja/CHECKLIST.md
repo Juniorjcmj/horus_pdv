@@ -131,6 +131,25 @@ Faça um caixa por vez. **Só troque o endereço com a fila offline do caixa vaz
 | 8.2 | Anotados em local seguro: IP fixo, endereço dos caixas, e-mail do administrador, onde está a cópia do `loja.env` | | |
 | 8.3 | Telefone de suporte e instrução "se o servidor cair: os caixas vendem offline; ligue para..." fixados no balcão | | |
 
+## 8A. Notas lançadas na nuvem
+
+Vale depois que o servidor da loja e a nuvem estão nas versões da change `api-java-operacoes-estoque-nuvem`.
+**Ordem de implantação: a loja antes da nuvem** (o jar novo anuncia o recurso `operacao-estoque`; a nuvem antiga ignora o
+cabeçalho). Com a nuvem nova e a loja antiga, a nota lançada na nuvem vai para a quarentena, como antes.
+
+| # | Item | Verificação | Resultado |
+|---|------|-------------|-----------|
+| 8A.1 | Na nuvem: `SELECT Recursos FROM SyncServidores WHERE Status = 'ativo'` | Mostra `operacao-estoque` (aparece no primeiro long-poll depois de atualizar a loja) | |
+| 8A.2 | Lance pela nuvem (painel) uma nota de 1 item de teste de um produto existente | Em até 1 minuto, a nota aparece em Entradas no Quack Estoque da loja e o saldo do produto na loja sobe a quantidade | |
+| 8A.3 | Venda 1 unidade do mesmo produto na loja e lance outra nota de 1 item pela nuvem com a internet da loja desligada; religue | O saldo final = saldo antes − venda + nota (a loja soma a diferença; a nuvem passa a mostrar o saldo da loja) | |
+| 8A.4 | Estorne a nota de teste pela nuvem | A nota aparece estornada na loja e o saldo volta | |
+| 8A.5 | **Nota em dobro**: lance a mesma NF-e na loja e na nuvem antes de sincronizar | O estoque sobe uma vez; a nuvem recebe o alerta `comando-conflito` ("nota-ja-lancada" com o número) e a entrada da nuvem some; a conferência deixa as duas pontas iguais | |
+| 8A.6 | Inventário, ordem de compra ou venda feitos na nuvem | Continuam indo para a quarentena (não alteram a loja) | |
+
+Observações: o de-para de código do fornecedor (`MapeamentoProdutoFornecedor`) passou a ser cadastro editável nas duas
+pontas; linhas antigas só ganham a base de comparação na próxima ressincronização, então um conflito "A linha já existe
+na loja" no primeiro ajuste de um de-para antigo é esperado e inofensivo.
+
 ## Problemas já vistos e como resolver
 
 Da primeira instalação real (loja de material de construção, 06-07/11/2026). Os itens marcados *corrigido* já estão

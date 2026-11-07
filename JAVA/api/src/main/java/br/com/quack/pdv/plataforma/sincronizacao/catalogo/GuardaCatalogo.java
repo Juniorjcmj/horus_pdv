@@ -33,6 +33,14 @@ public final class GuardaCatalogo {
                 exigirColuna(problemas, t, cols, a.colunaGatilho());
                 for (String c : a.colunas()) exigirColuna(problemas, t, cols, c);
             }
+            for (var tr : t.transicoes()) {
+                exigirColuna(problemas, t, cols, tr.colunaDestino());
+                exigirColuna(problemas, t, cols, tr.colunaLoja());
+                for (String c : tr.colunas()) exigirColuna(problemas, t, cols, c);
+            }
+            if ((t.insercaoDaNuvem() || !t.transicoes().isEmpty()) && t.classe() != ClasseTabela.LOJA) {
+                problemas.add("Insercao/transicao da nuvem so cabe em tabela LOJA: " + t.nome());
+            }
             if (!t.sincroniza()) continue;
             if (pks.getOrDefault(t.nome(), List.of()).isEmpty()) {
                 problemas.add("Tabela sincronizada sem chave primaria: " + t.nome());
