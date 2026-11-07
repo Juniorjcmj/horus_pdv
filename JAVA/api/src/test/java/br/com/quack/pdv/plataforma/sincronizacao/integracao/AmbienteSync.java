@@ -364,8 +364,9 @@ public final class AmbienteSync implements AutoCloseable {
             }).toList();
             String sql = "SELECT " + String.join(", ", cols.stream().map(c -> "[" + c + "]").toList()) + " FROM dbo.[" + t.nome()
                     + "] ORDER BY " + String.join(", ", pks.get(t.nome()).stream().map(c -> "[" + c + "]").toList());
-            List<String> l = linhas(jdbcLoja, sql, cols);
-            List<String> n = soDaEmpresa ? linhasDaEmpresa(t, cols, pks) : linhas(jdbcNuvem, sql, cols);
+            // a loja pode guardar linhas de outra empresa so como referencia (categorias usadas pelos produtos)
+            List<String> l = soDaEmpresa ? linhasDaEmpresa(jdbcLoja, t, cols, pks) : linhas(jdbcLoja, sql, cols);
+            List<String> n = soDaEmpresa ? linhasDaEmpresa(jdbcNuvem, t, cols, pks) : linhas(jdbcNuvem, sql, cols);
             if (!l.equals(n)) {
                 dif.add(t.nome() + ": loja=" + l.size() + " nuvem=" + n.size() + " " + primeiraDiferenca(l, n));
             }
@@ -373,7 +374,8 @@ public final class AmbienteSync implements AutoCloseable {
         return dif;
     }
 
-    private List<String> linhasDaEmpresa(TabelaSincronizada t, List<String> cols, Map<String, List<String>> pks) {
+    private List<String> linhasDaEmpresa(JdbcTemplate banco, TabelaSincronizada t, List<String> cols,
+                                         Map<String, List<String>> pks) {
         String lista = String.join(", ", cols.stream().map(c -> "T.[" + c + "]").toList());
         String ordem = String.join(", ", pks.get(t.nome()).stream().map(c -> "T.[" + c + "]").toList());
         String sql;
@@ -385,7 +387,7 @@ public final class AmbienteSync implements AutoCloseable {
         } else {
             sql = "SELECT " + lista + " FROM dbo.[" + t.nome() + "] T WHERE T.[" + t.colunaEmpresa() + "] = ? ORDER BY " + ordem;
         }
-        return jdbcNuvem.query(sql, (rs, i) -> {
+        return banco.query(sql, (rs, i) -> {
             StringBuilder sb = new StringBuilder();
             for (int c = 1; c <= cols.size(); c++) {
                 Object v = rs.getObject(c);

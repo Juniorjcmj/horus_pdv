@@ -34,6 +34,21 @@ import org.springframework.stereotype.Component;
 public class LeitorCargaNuvem {
 
     private static final int SNAPSHOT = 4096;
+
+    private static final String CATEGORIAS = "Categorias";
+
+    /**
+     * Na nuvem ha produtos e promocoes ligados a categoria de outra empresa (as categorias padrao do seed sao da
+     * empresa-principal). A chave estrangeira da loja exige a categoria: a carga leva tambem as usadas pela empresa e
+     * as maes delas. Na loja elas ficam so como referencia: envio e conferencia filtram pela empresa.
+     */
+    private static final String USADAS_PELA_EMPRESA = "SELECT P.[CategoriaId] FROM dbo.[Produtos] AS P WHERE P.[CompanyId] = ?"
+            + " UNION SELECT R.[CategoriaId] FROM dbo.[Promocoes] AS R WHERE R.[CompanyId] = ?";
+    private static final String CATEGORIAS_DA_CARGA = "WHERE (T.[CompanyId] = ?"
+            + " OR T.[Id] IN (" + USADAS_PELA_EMPRESA + ")"
+            + " OR T.[Id] IN (SELECT C.[CategoriaPaiId] FROM dbo.[Categorias] AS C WHERE C.[CompanyId] = ?"
+            + " OR C.[Id] IN (" + USADAS_PELA_EMPRESA + ")))";
+    private static final int PARAMETROS_CATEGORIAS = (int) CATEGORIAS_DA_CARGA.chars().filter(c -> c == '?').count();
     public static final int LIMITE_MAXIMO = 5_000;
 
     /** A versao pedida ficou abaixo da retencao da nuvem: a carga precisa recomecar. */
@@ -88,7 +103,7 @@ public class LeitorCargaNuvem {
                 List<ColunaSync> colunas;
                 try (PreparedStatement ps = con.prepareStatement(sql)) {
                     int i = 1;
-                    if (!ReferenciasGlobais.global(t)) ps.setString(i++, companyId);
+                    for (int e = 0; e < parametrosDeEmpresa(t); e++) ps.setString(i++, companyId);
                     if (depois != null) {
                         for (int a = 0; a < pk.size(); a++) {
                             for (int b = 0; b <= a; b++) {
@@ -287,7 +302,14 @@ public class LeitorCargaNuvem {
                     + t.colunaLigacao() + "] WHERE M.[" + mae.colunaEmpresa() + "] = ?";
         }
         if (ReferenciasGlobais.global(t)) return "WHERE 1 = 1";
+        if (t.nome().equals(CATEGORIAS)) return CATEGORIAS_DA_CARGA;
         return "WHERE T.[" + t.colunaEmpresa() + "] = ?";
+    }
+
+    /** Quantos {@code ?} da empresa o {@link #juncaoEWhere} tem. */
+    private static int parametrosDeEmpresa(TabelaSincronizada t) {
+        if (ReferenciasGlobais.global(t)) return 0;
+        return t.nome().equals(CATEGORIAS) ? PARAMETROS_CATEGORIAS : 1;
     }
 
     private static String listaT(List<String> nomes) {

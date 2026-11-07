@@ -38,6 +38,7 @@ class CargaInicialIT {
 
     static final String SENHA_CERTIFICADO = "senha-do-certificado-123";
     static final String SENHA_ADMIN = "Senha#Quack2026";
+    static final String OUTRA_EMPRESA = "empresa-ct-fora";
     static final ObjectMapper JSON = new ObjectMapper();
 
     static AmbienteSync amb;
@@ -62,6 +63,12 @@ class CargaInicialIT {
         nuvem.update("UPDATE Empresas SET CertificadoSenhaCifrada = ?, CscCifrado = ?, EmailSmtpPassword = ? WHERE Id = ?",
                 cifraNuvem.protect(SENHA_CERTIFICADO), cifraNuvem.protect("csc-secreto"), cifraNuvem.protect("smtp-secreta"), EMPRESA);
         parametros = new CargaInicialLoja.Parametros(amb.urlBaseNuvem(), "admin@contrato.quack", SENHA_ADMIN, "Loja IT");
+        // produto da empresa ligado a categoria de OUTRA empresa (como as categorias padrao na nuvem real), com mae
+        // tambem de fora; e uma categoria de fora que ninguem da empresa usa
+        nuvem.update("INSERT INTO Categorias (Id, CompanyId, Nome, CategoriaPaiId, Ordem, Ativa) VALUES "
+                + "('cat-ct-fora-pai', ?, N'Fora pai', NULL, 1, 1), ('cat-ct-fora-filha', ?, N'Fora filha', 'cat-ct-fora-pai', 1, 1), "
+                + "('cat-ct-fora-solta', ?, N'Fora solta', NULL, 2, 1)", OUTRA_EMPRESA, OUTRA_EMPRESA, OUTRA_EMPRESA);
+        nuvem.update("UPDATE Produtos SET CategoriaId = 'cat-ct-fora-filha' WHERE CompanyId = ? AND ProductCode = 'CT001'", EMPRESA);
     }
 
     @AfterAll
@@ -125,6 +132,10 @@ class CargaInicialIT {
         assertThat(contar(loja, "SELECT COUNT(*) FROM Produtos WHERE Id = 'pr-ct-excluir'")).as("exclusao via delta").isZero();
 
         assertThat(r.companyId()).isEqualTo(EMPRESA);
+        assertThat(loja.queryForList("SELECT Id FROM Categorias WHERE CompanyId = ? ORDER BY Id", String.class, OUTRA_EMPRESA))
+                .as("categorias de fora: so as usadas pela empresa e a mae delas").containsExactly("cat-ct-fora-filha", "cat-ct-fora-pai");
+        assertThat(loja.queryForObject("SELECT CategoriaId FROM Produtos WHERE ProductCode = 'CT001'", String.class))
+                .isEqualTo("cat-ct-fora-filha");
         assertThat(amb.diferencas(true)).as("contagens e linhas iguais, sem duplicar").isEmpty();
         assertThat(contar(loja, "SELECT COUNT(*) FROM Vendas")).isEqualTo(contar(nuvem, "SELECT COUNT(*) FROM Vendas WHERE CompanyId = ?", EMPRESA));
         assertThat(contar(loja, "SELECT COUNT(*) FROM VendaItens")).isPositive();
