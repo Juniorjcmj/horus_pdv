@@ -111,9 +111,14 @@ public class ApiClient {
         } catch (IOException e) {
             throw new ApiException(0, "Falha ao montar a requisição: " + e.getMessage());
         }
+        return tratar(path, executar(b.build()));
+    }
+
+    /** Envia a requisição e traduz as falhas de rede em ApiException. */
+    private HttpResponse<String> executar(HttpRequest request) {
         HttpResponse<String> resp;
         try {
-            resp = http.send(b.build(), HttpResponse.BodyHandlers.ofString());
+            resp = http.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (HttpTimeoutException e) {
             setReachable(false);
             throw new ApiException(0, "A API não respondeu a tempo.");
@@ -126,6 +131,11 @@ public class ApiClient {
         } catch (IllegalArgumentException e) {
             throw new ApiException(0, "Endereço da API inválido: " + baseUrl);
         }
+        return resp;
+    }
+
+    /** Lê o envelope da resposta: devolve "data" ou lança ApiException com a mensagem da API. */
+    private JsonNode tratar(String path, HttpResponse<String> resp) {
         int status = resp.statusCode();
         captureAuthToken(resp);
         if (status < 500) {
@@ -161,6 +171,30 @@ public class ApiClient {
             throw new ApiException(status < 200 || status >= 300 ? status : 400, msg, data);
         }
         return data;
+    }
+
+    /**
+     * Envia um arquivo em multipart/form-data (campo {@code campo}) e devolve o "data" do envelope. Usado pela importação
+     * de produtos por planilha.
+     */
+    public JsonNode sendMultipart(String path, String campo, String nomeArquivo, byte[] conteudo, Duration timeout) {
+        String limite = "----quack" + java.util.UUID.randomUUID().toString().replace("-", "");
+        java.io.ByteArrayOutputStream corpo = new java.io.ByteArrayOutputStream(conteudo.length + 512);
+        String crlf = "" + (char) 13 + (char) 10;
+        String cabecalho = "--" + limite + crlf + "Content-Disposition: form-data; name=" + aspas(campo) + "; filename="
+                + aspas(nomeArquivo) + crlf + "Content-Type: text/csv" + crlf + crlf;
+        corpo.writeBytes(cabecalho.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        corpo.writeBytes(conteudo);
+        corpo.writeBytes((crlf + "--" + limite + "--" + crlf).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(baseUrl + path)).timeout(timeout)
+                .header("Accept", "application/json")
+                .header("Content-Type", "multipart/form-data; boundary=" + limite);
+        String token = authToken;
+        if (token != null && !token.isBlank()) {
+            b.header("Authorization", "Bearer " + token);
+        }
+        b.POST(HttpRequest.BodyPublishers.ofByteArray(corpo.toByteArray()));
+        return tratar(path, executar(b.build()));
     }
 
     public <T> T send(String method, String path, Object body, Duration timeout, JavaType type) {
@@ -214,6 +248,11 @@ public class ApiClient {
             Thread.currentThread().interrupt();
             throw new ApiException(0, "Operação interrompida.");
         }
+    }
+
+    private static String aspas(String v) {
+        String sem = v.replace(String.valueOf((char) 34), "");
+        return (char) 34 + sem + (char) 34;
     }
 
     /** Codifica um valor de query string. */
