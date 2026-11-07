@@ -173,7 +173,7 @@ public final class LabelRenderer {
 
         // Nome (até 2 linhas).
         // Mais grossa que o preço: a Nunito embutida só vai até Bold, então o contorno preto engrossa o traço.
-        Font fNome = nunito(FontWeight.BOLD, 0.095 * h);
+        Font fNome = nunito(FontWeight.BOLD, 0.1425 * h);
         double contornoNome = fNome.getSize() * CONTORNO_NOME;
         String nome = quebraNome(d.nome(), fNome, inner - 2 * contornoNome);
         Text tNome = texto(nome, fNome, pad + contornoNome, pad + contornoNome, TextAlignment.LEFT);
