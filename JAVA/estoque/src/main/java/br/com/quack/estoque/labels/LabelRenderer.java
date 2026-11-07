@@ -18,6 +18,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.StrokeType;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -33,6 +34,8 @@ public final class LabelRenderer {
     public static final int DPI_TERMICA = 203;
     public static final int ZONA_SILENCIO_MODULOS = 10;
     private static final double MODULO_MINIMO_DOTS = 2;
+    /** Espessura do contorno da descrição, em fração do tamanho da fonte. */
+    private static final double CONTORNO_NOME = 0.045;
 
     private LabelRenderer() {
     }
@@ -169,12 +172,17 @@ public final class LabelRenderer {
         StringBuilder aviso = new StringBuilder(barras.aviso() == null ? "" : barras.aviso());
 
         // Nome (até 2 linhas).
+        // Mais grossa que o preço: a Nunito embutida só vai até Bold, então o contorno preto engrossa o traço.
         Font fNome = nunito(FontWeight.BOLD, 0.095 * h);
-        String nome = quebraNome(d.nome(), fNome, inner);
-        Text tNome = texto(nome, fNome, pad, pad, TextAlignment.LEFT);
+        double contornoNome = fNome.getSize() * CONTORNO_NOME;
+        String nome = quebraNome(d.nome(), fNome, inner - 2 * contornoNome);
+        Text tNome = texto(nome, fNome, pad + contornoNome, pad + contornoNome, TextAlignment.LEFT);
+        tNome.setStroke(Color.BLACK);
+        tNome.setStrokeWidth(contornoNome);
+        tNome.setStrokeType(StrokeType.OUTSIDE);
         tNome.setLineSpacing(0);
         double linhaNome = altura(fNome);
-        double nomeBottom = pad + 2 * linhaNome;
+        double nomeBottom = pad + 2 * linhaNome + 2 * contornoNome;
         pane.getChildren().add(tNome);
 
         // Preço em destaque (+ promoção) à esquerda; unidade e código interno à direita.
