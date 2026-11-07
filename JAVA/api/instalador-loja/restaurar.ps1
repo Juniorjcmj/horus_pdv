@@ -47,7 +47,7 @@ $inst = Read-InstalacaoLoja -Destino $Destino
 if (-not $Banco)         { $Banco = if ($inst) { $inst.banco } else { 'QuackLoja' } }
 $pasta = if ($inst) { $inst.pastaBackup } else { Join-Path $Destino 'backups' }
 if (-not $StringConexao) {
-    $servidor = if ($inst) { $inst.servidorSql } else { 'localhost,1433' }
+    $servidor = if ($inst) { $inst.servidorSql } else { 'lpc:localhost\QUACK' }
     $StringConexao = Get-StringConexaoSql -Servidor $servidor -Banco 'master'
 }
 if (-not $CaminhoBackupNoSql) { $CaminhoBackupNoSql = $pasta }

@@ -379,7 +379,7 @@ Invoke-Passo "Criar o banco $Banco e o login quack_app" { Initialize-Banco -Senh
 Invoke-Passo 'Gravar config\instalacao.json' {
     $json = [ordered]@{
         destino = $Destino; banco = $Banco; instancia = $Instancia; servicoSql = $servicoSql; servicoApi = $SERVICO_API
-        servidorSql = "localhost,$PortaSql"; pastaBackup = $caminhos.Backups; arquivoEstadoBackup = $arquivoEstadoBackup
+        servidorSql = $servidorSqlInstalacao; pastaBackup = $caminhos.Backups; arquivoEstadoBackup = $arquivoEstadoBackup
         retencaoBackups = $RetencaoBackups; portaApi = $PortaApi; subrede = $cidr; horaBackup = $HoraBackup
     } | ConvertTo-Json
     Write-ArquivoTextoUtf8 -Caminho (Join-Path $caminhos.Config 'instalacao.json') -Conteudo $json

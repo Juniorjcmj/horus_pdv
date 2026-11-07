@@ -29,7 +29,7 @@ if (-not $PastaBackup)    { $PastaBackup = if ($inst) { $inst.pastaBackup } else
 if (-not $ArquivoEstado)  { $ArquivoEstado = if ($inst) { $inst.arquivoEstadoBackup } else { Join-Path $Destino 'estado\backup-estado.json' } }
 if ($Retencao -lt 1)      { $Retencao = if ($inst -and $inst.retencaoBackups) { [int]$inst.retencaoBackups } else { 7 } }
 if (-not $StringConexao)  {
-    $servidor = if ($inst) { $inst.servidorSql } else { 'localhost,1433' }
+    $servidor = if ($inst) { $inst.servidorSql } else { 'lpc:localhost\QUACK' }
     $StringConexao = Get-StringConexaoSql -Servidor $servidor -Banco 'master'
 }
 if (-not $CaminhoBackupNoSql) { $CaminhoBackupNoSql = $PastaBackup }

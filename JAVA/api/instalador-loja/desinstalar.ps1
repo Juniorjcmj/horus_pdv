@@ -20,7 +20,7 @@ $ErrorActionPreference = 'Stop'
 
 $inst = Read-InstalacaoLoja -Destino $Destino
 $banco = if ($inst) { $inst.banco } else { 'QuackLoja' }
-$servidor = if ($inst) { $inst.servidorSql } else { 'localhost,1433' }
+$servidor = if ($inst) { $inst.servidorSql } else { 'lpc:localhost\QUACK' }
 $regras = 'Quack Loja - API (somente sub-rede local)', 'Quack Loja - SQL Server (bloqueado fora da maquina)'
 
 if ($PSCmdlet.ShouldProcess($Servico, 'Parar e remover o servico')) {
