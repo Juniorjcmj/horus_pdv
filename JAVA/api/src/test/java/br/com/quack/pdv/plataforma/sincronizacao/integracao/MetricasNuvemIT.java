@@ -327,7 +327,9 @@ class MetricasNuvemIT {
             }
         };
         SimpleMeterRegistry registro = new SimpleMeterRegistry();
-        MetricasSyncNuvem isolada = new MetricasSyncNuvem(instavel, registro, Clock.systemUTC());
+        var fabrica = new org.springframework.beans.factory.support.StaticListableBeanFactory();
+        fabrica.addBean("jdbc", instavel);
+        MetricasSyncNuvem isolada = new MetricasSyncNuvem(fabrica.getBeanProvider(JdbcTemplate.class), registro, Clock.systemUTC());
 
         isolada.atualizar();
         double antes = registro.get("quack_sync_quarentena_aberta").tag("empresa", OUTRA).gauge().value();

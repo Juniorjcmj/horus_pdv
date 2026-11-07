@@ -18,6 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -46,7 +47,8 @@ public class MetricasSyncNuvem {
     private record Relato(OffsetDateTime recebidoEm, Long atrasoSegundos, Boolean pausada, OffsetDateTime ultimoBackupEm,
                           Boolean backupSucesso, Integer nfcePendentes, String versao) {}
 
-    private final JdbcTemplate jdbc;
+    /** ObjectProvider como no DetectorNuvem: o contexto do perfil nuvem sobe sem banco nos testes web. */
+    private final ObjectProvider<JdbcTemplate> jdbc;
     private final Clock clock;
     private final Timer cicloTimer;
     private final ReentrantLock trava = new ReentrantLock();
@@ -65,7 +67,7 @@ public class MetricasSyncNuvem {
     private final MultiGauge pausada;
     private final MultiGauge info;
 
-    public MetricasSyncNuvem(JdbcTemplate jdbc, MeterRegistry registro, Clock clock) {
+    public MetricasSyncNuvem(ObjectProvider<JdbcTemplate> jdbc, MeterRegistry registro, Clock clock) {
         this.jdbc = jdbc;
         this.clock = clock;
         this.cicloTimer = Timer.builder("quack_sync_metricas_ciclo")
@@ -91,6 +93,7 @@ public class MetricasSyncNuvem {
 
     @Scheduled(initialDelay = 10_000, fixedDelayString = "${quack.metrics.intervalo-ms:30000}")
     public void agendado() {
+        if (jdbc.getIfAvailable() == null) return;
         atualizar();
     }
 
@@ -176,7 +179,7 @@ public class MetricasSyncNuvem {
     }
 
     private List<Loja> lerLojas() {
-        return jdbc.query("""
+        return jdbc.getObject().query("""
                 SELECT s.CompanyId, s.Nome, s.Status, s.UltimoContato, e.UltimaSincronizacaoEm,
                        r.CompanyId, r.RecebidoEm, r.AtrasoSegundos, r.Pausada, r.UltimoBackupEm, r.BackupSucesso,
                        r.NfcePendentes, r.VersaoPrograma
@@ -195,7 +198,7 @@ public class MetricasSyncNuvem {
 
     private Map<String, Map<String, Integer>> lerComandos(OffsetDateTime corte) {
         Map<String, Map<String, Integer>> m = new HashMap<>();
-        jdbc.query("""
+        jdbc.getObject().query("""
                 SELECT CompanyId, Status, COUNT(*) FROM dbo.SyncComandos
                  WHERE Status IN (N'pendente', N'parado')
                     OR (Status IN (N'conflito', N'falhou') AND AtualizadoEm >= ?)
@@ -210,7 +213,7 @@ public class MetricasSyncNuvem {
 
     private Map<String, Integer> lerQuarentena() {
         Map<String, Integer> m = new HashMap<>();
-        jdbc.query("SELECT CompanyId, COUNT(*) FROM dbo.SyncQuarentena WHERE ResolvidoEm IS NULL GROUP BY CompanyId",
+        jdbc.getObject().query("SELECT CompanyId, COUNT(*) FROM dbo.SyncQuarentena WHERE ResolvidoEm IS NULL GROUP BY CompanyId",
                 rs -> {
                     m.put(rs.getString(1), rs.getInt(2));
                 });
@@ -218,7 +221,7 @@ public class MetricasSyncNuvem {
     }
 
     private List<String[]> lerAlertas(OffsetDateTime corte) {
-        return jdbc.query("SELECT CompanyId, Motivo FROM dbo.SyncAlertas WHERE UltimaEm >= ? AND CompanyId <> N''",
+        return jdbc.getObject().query("SELECT CompanyId, Motivo FROM dbo.SyncAlertas WHERE UltimaEm >= ? AND CompanyId <> N''",
                 (rs, i) -> new String[] {rs.getString(1), rs.getString(2)}, corte);
     }
 }
