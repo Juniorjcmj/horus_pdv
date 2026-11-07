@@ -19,6 +19,8 @@ networks:
 volumes:
   horus-pdv-mssql-data:
   horus-pdv-backups:
+  horus-pdv-prometheus-data:
+  horus-pdv-grafana-data:
 
 services:
   # Prepara só o volume de backups; SQL Server e API continuam com seus usuários não-root.
@@ -142,6 +144,9 @@ services:
       QUACK_EMAIL_USER: "${EMAIL_USER:-}"
       QUACK_EMAIL_PASSWORD: "${EMAIL_PASSWORD:-}"
       QUACK_EMAIL_FROM_EMAIL: "${EMAIL_FROM:-}"
+      # Token das metricas (/actuator/prometheus): o Prometheus (pdv-monitor-prometheus) usa o MESMO valor em METRICS_TOKEN.
+      # Gere com: openssl rand -hex 32. Vazio = a rota de metricas nao existe (404).
+      QUACK_METRICS_TOKEN: "${METRICS_TOKEN:?defina METRICS_TOKEN no ambiente do stack (openssl rand -hex 32)}"
       TZ: "America/Sao_Paulo"
     networks:
       - OrionNet
@@ -153,3 +158,52 @@ services:
       - "traefik.http.services.sync-pdv.loadbalancer.server.port=8080"
       - "traefik.http.middlewares.sync-pdv-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.sync-pdv.middlewares=sync-pdv-headers"
+
+  # Monitoramento (change api-java-monitoramento): Prometheus coleta o receptor pela rede interna e o Grafana mostra os
+  # paineis "Sincronizacao das lojas" e "API Java". Mesmo perfil do pdv-api-sync. Ver DEPLOY.md, secao "Monitoramento".
+  # O Prometheus NAO tem labels do Traefik: sem rota publica. A imagem traz a configuracao (monitoramento/prometheus).
+  pdv-monitor-prometheus:
+    profiles: ["nuvem"]
+    image: "ghcr.io/${GHCR_NAMESPACE:?defina GHCR_NAMESPACE no ambiente do stack, ex. seu-usuario-do-github}/quack-monitor-prometheus:${IMAGE_TAG_MONITOR:-spring-api}"
+    restart: unless-stopped
+    depends_on:
+      - pdv-api-sync
+    environment:
+      METRICS_TOKEN: "${METRICS_TOKEN:?defina METRICS_TOKEN no ambiente do stack (o mesmo do pdv-api-sync)}"
+      TZ: "America/Sao_Paulo"
+    volumes:
+      - "horus-pdv-prometheus-data:/prometheus"
+    networks:
+      - OrionNet
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # Grafana com login obrigatorio (sem acesso anonimo nem cadastro) atras do Traefik. A fonte de dados e os paineis vao
+  # na imagem (monitoramento/grafana). Crie o DNS monitor-pdv.quacksistemas.com.br antes de subir.
+  pdv-monitor-grafana:
+    profiles: ["nuvem"]
+    image: "ghcr.io/${GHCR_NAMESPACE:?defina GHCR_NAMESPACE no ambiente do stack, ex. seu-usuario-do-github}/quack-monitor-grafana:${IMAGE_TAG_MONITOR:-spring-api}"
+    restart: unless-stopped
+    depends_on:
+      - pdv-monitor-prometheus
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:?defina GRAFANA_ADMIN_PASSWORD no ambiente do stack (senha forte)}"
+      GF_SERVER_ROOT_URL: "https://monitor-pdv.quacksistemas.com.br"
+      GF_SERVER_DOMAIN: "monitor-pdv.quacksistemas.com.br"
+      TZ: "America/Sao_Paulo"
+    volumes:
+      - "horus-pdv-grafana-data:/var/lib/grafana"
+    networks:
+      - OrionNet
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.monitor-pdv.rule=Host(`monitor-pdv.quacksistemas.com.br`)"
+      - "traefik.http.routers.monitor-pdv.entrypoints=websecure"
+      - "traefik.http.routers.monitor-pdv.tls.certresolver=letsencrypt"
+      - "traefik.http.services.monitor-pdv.loadbalancer.server.port=3000"

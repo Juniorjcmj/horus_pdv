@@ -225,6 +225,24 @@ Regras:
 - **Conferência diária (03:00) e backup diário (02:00)**, confirmados pelo dono; depois de restaurar um backup a loja se
   recupera da nuvem antes de voltar a vender.
 
+**Monitoramento do modo loja (change `api-java-monitoramento`):**
+
+- **Métricas Prometheus** da API Java (perfis `nuvem` e `loja`) em `/actuator/prometheus`, **protegidas por token**
+  (`QUACK_METRICS_TOKEN`; sem token a rota é 404). `/actuator/health` continua aberto. Tempo das requisições com histograma
+  (P95/P99 por rota), JVM, threads, Hikari e, no receptor, a sincronização por loja: último contato, última sincronização,
+  comandos por situação, quarentena e alertas.
+- **Relato de estado da loja:** a cada minuto o servidor da loja envia à nuvem (`POST /api/loja-sync/estado`, token do
+  servidor) o atraso do envio, o último backup (data do último **sucesso** e resultado da última tentativa), NFC-e
+  pendentes, pausa e versão do programa. É observação, não sincronização: nunca entra na fila de envio, nunca gera alerta e
+  é descartado se a nuvem não responde. A nuvem guarda só o último relato (`SyncEstadoLoja`, `db/nuvem/V3`) e o publica como
+  `quack_loja_*`. Loja com jar antigo simplesmente não relata. Isso fecha o buraco do backup que falhou desde a instalação
+  sem ninguém ver (erro 1844).
+- **Painéis:** Prometheus (30 dias, sem rota pública) e Grafana (login obrigatório, `monitor-pdv.quacksistemas.com.br`) na
+  stack `pdv`, em imagens próprias com configuração e painéis versionados em `monitoramento/` (**Sincronização das lojas** e
+  **API Java**). Implantação, variáveis, DNS e conferência: seção "Monitoramento" do [`DEPLOY.md`](../DEPLOY.md). As
+  métricas locais da loja (`MetricasLoja`) funcionam mesmo sem internet e só ficam ligadas com `QUACK_METRICS_TOKEN` no
+  `loja.env`.
+
 Enquanto o modo loja não estiver pronto, a loja pode começar com os caixas ligados direto à nuvem atual (cada caixa
 com sua fila offline) e migrar para o servidor da loja quando as fases 4, 4b e 7 estiverem prontas.
 

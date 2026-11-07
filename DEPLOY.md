@@ -326,3 +326,106 @@ Leitura: o custo de escrita é pequeno (~4%) e o `tempdb` quase não cresce, por
 receptor são curtas (uma página). O histórico do tracking é limitado pela retenção de 3 dias: uma loja com 1 000 vendas
 por dia guarda ~2 MB. Vigie `sys.dm_db_file_space_usage.version_store_reserved_page_count` se algum dia houver leitor
 longo. Suíte de contrato da .NET (`contrato/medicao-tracking/suite-dotnet.sh`, 1 152 gravações contra a API .NET real): 1 896 s sem o `db/nuvem/V1` e 1 784 s com ele aplicado; mesmos status em todas as respostas (a .NET sobe e grava normalmente com o tracking ligado). Método e detalhes no `design.md` (Notas do grupo 7).
+
+## Monitoramento (Prometheus + Grafana)
+
+Change `api-java-monitoramento`. A API Java expõe métricas em `/actuator/prometheus` (protegidas por token), as lojas
+relatam seu estado à nuvem a cada minuto (`POST /api/loja-sync/estado`) e dois serviços novos da stack `pdv` coletam e
+mostram tudo: `pdv-monitor-prometheus` (30 dias de histórico, **sem rota pública**) e `pdv-monitor-grafana` (login
+obrigatório, atrás do Traefik). Painéis: **Sincronização das lojas** (contato, última sincronização, atraso do envio,
+idade e sucesso do backup, comandos pendentes/parados, conflitos 24 h, quarentena, versão do programa) e **API Java**
+(requisições/s, P95/P99 por rota sem o long-poll de comandos, Hikari, threads, heap, GC, detector, lotes).
+
+Configuração e painéis moram em `monitoramento/` e vão **dentro de imagens** publicadas pelo workflow
+`.github/workflows/monitoramento.yml` (`ghcr.io/<dono>/quack-monitor-prometheus` e `quack-monitor-grafana`, tags
+`spring-api`/`latest` e o SHA do commit). Imagem, e não bind mount, porque a stack do Portainer é colada à mão e o nó não
+tem o repositório. Versões fixadas: `prom/prometheus:v3.5.1` e `grafana/grafana-oss:12.1.1`.
+
+### Ordem de implantação
+
+1. **Receptor com token.** Gere o token (`openssl rand -hex 32`) e acrescente ao `pdv-api-sync`
+   `QUACK_METRICS_TOKEN: "<token>"` (no repositório: `"${METRICS_TOKEN}"`). Atualize a imagem do serviço
+   (*Update the service* com **Pull latest image version**; imagem privada: `docker login ghcr.io` no nó e
+   `docker service update --with-registry-auth --force pdv_pdv-api-sync`). Sem o token a rota de métricas não existe (404),
+   mas o receptor novo já aceita o relato das lojas. A migração `db/nuvem/V3__estado_loja.sql` roda sozinha na subida.
+2. **DNS:** `monitor-pdv.quacksistemas.com.br` → IP do nó (igual ao `sync-pdv`). Trocar o domínio muda só a label do Traefik
+   e `GF_SERVER_ROOT_URL`/`GF_SERVER_DOMAIN`.
+3. **Variáveis da stack no Portainer:** `METRICS_TOKEN` (o mesmo token do passo 1) e `GRAFANA_ADMIN_PASSWORD` (senha forte;
+   o Grafana só a lê na primeira subida com o volume vazio, depois troque pela tela de perfil).
+4. **Imagens:** depois do push em `spring-api` (ou *Run workflow*), confira em ghcr.io que `quack-monitor-prometheus` e
+   `quack-monitor-grafana` existem. Se forem privadas, o mesmo `docker login ghcr.io` do nó vale.
+5. **Serviços e volumes:** cole o bloco abaixo na stack `pdv` (Swarm; sem `profiles`) e declare os volumes
+   `horus-pdv-prometheus-data` e `horus-pdv-grafana-data` na seção `volumes:`.
+6. **Servidor da loja:** na próxima atualização (`instalar.ps1 -EmailAdmin … -PularCarga`) o jar novo começa a relatar
+   sozinho. `QUACK_METRICS_TOKEN` na loja é opcional (só para ler as métricas locais na rede da loja).
+7. **Conferir:** alvo `UP` no Prometheus (sem rota pública, via `docker exec`, abaixo), painéis carregados e a linha da
+   loja com backup e atraso.
+
+### Bloco para colar na stack (Swarm)
+
+```yaml
+  pdv-monitor-prometheus:
+    image: "ghcr.io/juniorjcmj/quack-monitor-prometheus:spring-api"
+    environment:
+      METRICS_TOKEN: "${METRICS_TOKEN}"
+      TZ: "America/Sao_Paulo"
+    volumes:
+      - "horus-pdv-prometheus-data:/prometheus"
+    networks:
+      - OrionNet
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    # SEM labels do Traefik: o Prometheus nao tem rota publica.
+
+  pdv-monitor-grafana:
+    image: "ghcr.io/juniorjcmj/quack-monitor-grafana:spring-api"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
+      GF_SERVER_ROOT_URL: "https://monitor-pdv.quacksistemas.com.br"
+      GF_SERVER_DOMAIN: "monitor-pdv.quacksistemas.com.br"
+      TZ: "America/Sao_Paulo"
+    volumes:
+      - "horus-pdv-grafana-data:/var/lib/grafana"
+    networks:
+      - OrionNet
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.monitor-pdv.rule=Host(`monitor-pdv.quacksistemas.com.br`)"
+        - "traefik.http.routers.monitor-pdv.entrypoints=websecure"
+        - "traefik.http.routers.monitor-pdv.tls.certresolver=letsencrypt"
+        - "traefik.http.services.monitor-pdv.loadbalancer.server.port=3000"
+```
+
+> As labels do Traefik acima estão em `deploy.labels` (provider Swarm do Traefik). Se na sua stack as labels dos outros
+> serviços (ex.: `pdv-api-sync`) ficam no nível do serviço, como no `docker-compose.yml`, repita esse padrão. O Prometheus acessa o
+> receptor por `pdv-api-sync:8080` (alias de rede do serviço na `OrionNet`); se o seu serviço tiver outro nome, ajuste
+> `monitoramento/prometheus/prometheus.yml` e publique a imagem de novo.
+
+### Conferir sem rota pública
+
+```bash
+# alvo do receptor (deve mostrar "health":"up")
+docker exec $(docker ps -qf name=pdv-monitor-prometheus) wget -qO- 'http://localhost:9090/api/v1/targets?state=active'
+# a loja relatou? (uma serie por loja)
+docker exec $(docker ps -qf name=pdv-monitor-prometheus) wget -qO- 'http://localhost:9090/api/v1/query?query=quack_loja_backup_sucesso'
+```
+
+O Grafana abre em `https://monitor-pdv.quacksistemas.com.br` (usuário `admin`); sem login ele redireciona para
+`/login` e não mostra painel algum. Teste automatizado de ponta a ponta (SQL Server + .NET + receptor + Prometheus + Grafana
+em Docker): `monitoramento/testes/Testar-MonitoramentoDocker.ps1`.
+
+### Operação
+
+- **Trocar o token:** mude `METRICS_TOKEN` na stack e reimplante `pdv-api-sync` e `pdv-monitor-prometheus`. O token só dá
+  leitura de contagens e nomes de lojas.
+- **Loja sem série `quack_loja_*`:** o servidor da loja ainda está com o jar antigo (não relata); as séries
+  `quack_sync_*` continuam.
+- **Reverter:** remova os dois serviços da stack (os dados ficam nos volumes) e/ou volte a tag do `pdv-api-sync`. A tabela
+  `SyncEstadoLoja` fica sem uso e não interfere em nada.
+- Alertas continuam sendo os e-mails de `EnviadorAlertas`; regras de alerta no Grafana ficam para uma change futura.

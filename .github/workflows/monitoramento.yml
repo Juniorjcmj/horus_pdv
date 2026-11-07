@@ -1,0 +1,74 @@
+name: Monitoramento (Prometheus e Grafana) - imagens
+
+# Publica as imagens do coletor (Prometheus) e dos paineis (Grafana) do Quack PDV no GitHub Container Registry.
+# A configuracao e os paineis ficam em monitoramento/ e vao embutidos nas imagens (a stack do Portainer e colada a
+# mao e o no nao tem o repositorio). Na spring-api publica a tag "spring-api"; na main, "latest". Sempre tambem
+# a tag do commit. Nao mexe nos outros workflows.
+
+on:
+  push:
+    branches: [spring-api, main]
+    paths:
+      - "monitoramento/**"
+      - ".github/workflows/monitoramento.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: monitoramento-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  imagem:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        componente: [prometheus, grafana]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Normalizar nome do dono da imagem (ghcr.io exige minusculo) e tag da branch
+        run: |
+          echo "IMAGE_NAMESPACE=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+          if [ "${{ github.ref_name }}" = "main" ]; then echo "TAG_BRANCH=latest" >> "$GITHUB_ENV"; else echo "TAG_BRANCH=${{ github.ref_name }}" >> "$GITHUB_ENV"; fi
+
+      - name: Validar o prometheus.yml (promtool)
+        if: matrix.componente == 'prometheus'
+        run: |
+          docker run --rm --entrypoint /bin/promtool \
+            -v "$PWD/monitoramento/prometheus/prometheus.yml:/tmp/prometheus.yml:ro" \
+            prom/prometheus:v3.5.1 check config /tmp/prometheus.yml
+
+      - name: Validar os JSON dos paineis
+        if: matrix.componente == 'grafana'
+        run: |
+          for f in monitoramento/grafana/dashboards/*.json; do python3 -m json.tool "$f" > /dev/null && echo "ok $f"; done
+
+      - name: Login no ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build e push da imagem ${{ matrix.componente }}
+        uses: docker/build-push-action@v6
+        with:
+          context: monitoramento/${{ matrix.componente }}
+          file: monitoramento/${{ matrix.componente }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/quack-monitor-${{ matrix.componente }}:${{ env.TAG_BRANCH }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/quack-monitor-${{ matrix.componente }}:${{ github.sha }}
+          cache-from: type=gha,scope=monitor-${{ matrix.componente }}
+          cache-to: type=gha,mode=max,scope=monitor-${{ matrix.componente }}
