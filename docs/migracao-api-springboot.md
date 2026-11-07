@@ -198,6 +198,14 @@ Regras:
    depois.
 6. **Gateway .NET aposentado** nas lojas com servidor: a API local absorve fiado compartilhado, assinatura fiscal
    local e fila. O Gateway continua para lojas pequenas sem servidor.
+6A. **Operações de estoque lançadas na nuvem descem para a loja** (change `api-java-operacoes-estoque-nuvem`). Entrada
+   de nota (NF-e, cupom, manual), estorno, ajuste e saldo pela edição do produto, gravados pela .NET na nuvem, chegam
+   à loja como um comando `operacao`, aplicado numa transação só. A loja **nunca copia o saldo da nuvem**: soma a
+   diferença de cada movimentação ao saldo dela (que tem as vendas que a nuvem ainda não viu) e devolve o resultado
+   pela sincronização normal. A mesma NF-e já lançada na loja termina em conflito (estoque sobe uma vez e o dono é
+   alertado). Inventário, ordens de compra, vendas e caixa continuam só na loja. O de-para de fornecedor é cadastro
+   editável nas duas pontas. Implantação: **loja antes da nuvem** (a loja anuncia `operacao-estoque`; sem o anúncio a
+   nuvem mantém a quarentena).
 7. **Infra da loja:** máquina dedicada (não é um dos caixas), nobreak, IP fixo na rede, backup automático do banco
    local. SQL Server Express (10 GB por banco) basta para uma loja; o histórico completo fica na nuvem.
 

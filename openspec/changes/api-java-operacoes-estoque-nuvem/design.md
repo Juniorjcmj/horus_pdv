@@ -199,3 +199,39 @@ Rollback: imagem anterior da nuvem; o jar da loja novo continua compatível com 
 ## Open Questions
 
 - Nenhuma que mude specs ou tarefas. Os pontos a confirmar no código estão nas tarefas 1.1 e 1.2.
+
+## Notas da implementação
+
+**1.1 Quem grava na Java da loja** (`JAVA/api/src/main/java/br/com/quack/pdv/produto/`):
+`MapeamentoProdutoFornecedor`: `entrada/app/NfeImportService.confirmar` (MERGE na linha ~405) e
+`MapeamentoProdutoFornecedorRepository`. `ProdutoLotes`: `lote/app/LoteOperacoes` (INSERT na linha ~155 e UPDATE de
+`QtdAtual` em estorno/consumo, ~415 e ~491). `NotasEntradaArquivo`: `entrada/app/NotaEntradaArquivoService` (INSERT ~203,
+UPDATEs de XML e estorno ~402 e ~420). O saldo de lote da loja é mantido por `LoteOperacoes` (consumo FEFO), não
+estimado pelas movimentações; por isso o lote da nuvem desce como inserção e não é recalculado.
+
+**1.2 Na .NET** (só leitura): `NfeImportService.ConfirmarAsync` e `EntradaManualService` abrem **uma** transação
+(`UseImportTransaction`); `LoteAB.RegistrarEntradaAsync`, `SincronizarValidadeProdutoAsync` e
+`MapeamentoProdutoFornecedorAB.SalvarMapeamentoAsync` usam `OpenLeaseAsync`, que reaproveita essa transação. Logo tudo o
+que uma confirmação grava tem a mesma `SYS_CHANGE_VERSION` e vira **uma** `operacao` (O1). `Tipo`/`OrigemTipo` em
+`EstoqueMovimentacoes`: `OrigemTipo` = `nfe` (NF-e/cupom, `OrigemId` = chave ou número), `nota_entrada` (entrada manual,
+`OrigemId` = id da operação manual; **estorno**, `OrigemId` = id da nota) e `cadastro` (edição do produto). Consequência
+para O8: a verificação "nota recusada" aceita `OrigemId` igual ao `Id` **ou** ao `OperacaoManualId` da nota (loja ou
+passos da própria operação). O estorno da .NET é uma transação por item mais uma da nota, como previsto.
+`ReservarAsync` da .NET apaga da nuvem a entrada estornada de mesma identidade antes de relançar; a loja faz o
+equivalente ao inserir (a unicidade `(CompanyId, Identidade)` inclui estornadas).
+
+**Decisões de implementação além do design**
+- `MapeamentoProdutoFornecedor` saiu da lista `LOJA` (D2 do `api-java-modo-loja`) e é `EDITAVEL` (O5).
+- Transição do estorno/XML é detectada pelo **estado de destino** da linha da nuvem (`Estornada=1`, `Origem='xml'`),
+  porque o Change Tracking roda com `TRACK_COLUMNS_UPDATED = OFF` e não diz quais colunas mudaram.
+- Os conflitos (`nota-ja-lancada`, `linha-ausente`, `nota-recusada`) são verificados **antes** de qualquer escrita; o
+  resto desfaz pela transação.
+- Quando a loja devolve `conflito` de uma `operacao`, a nuvem apaga na hora as linhas que a operação inseriu
+  (`ServicoComandos.descartarOperacao`), e o `AplicadorLotes` remove da nuvem a entrada de mesma identidade quando a nota
+  da loja chega (senão a unicidade recusaria o lote e a sincronização pararia). A conferência acerta o saldo do produto.
+- A loja manda `X-Quack-Recursos` configurável por `quack.sync.recursos` (vazio = jar antigo, usado nos testes). A nuvem
+  zera `SyncServidores.Recursos` se o long-poll vier sem o cabeçalho.
+- Medida (3.4): uma nota de 300 itens (300 movimentos, 300 lotes, 1 nota) gera um `operacao` de ~370 KB, aplicado inteiro
+  na loja; sem divisão por tabela.
+- Limite conhecido: detecção completa (detector parado além da retenção do tracking) não cria `operacao`; vale o
+  comportamento anterior. De-para antigo sem base no espelho pode dar um conflito "linha já existe" no primeiro ajuste.
