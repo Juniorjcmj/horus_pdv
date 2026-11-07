@@ -256,6 +256,17 @@ muda no stack**.
    `SELECT COUNT(*) FROM sys.change_tracking_tables` (38) e `SELECT snapshot_isolation_state_desc FROM sys.databases
    WHERE name = 'HorusPdv'` (`ON`).
 
+### Primeira implantação real (06-07/11/2026): o que aconteceu
+
+Produção roda Portainer em **Swarm** com o compose antigo; o `pdv-api-sync` entrou como bloco à parte (sem `profiles`).
+
+| Sintoma | Causa | O que fazer |
+|---|---|---|
+| Portainer: "Request failed with status code 500" ao salvar o stack | Compose novo do repositório (com `profiles` e `pdv-backup-init` em `network_mode: none`) não vale no Swarm | Manter o compose de produção e acrescentar só o serviço `pdv-api-sync` |
+| "task … not found"; `docker service ps` mostra `failed to resolve reference … not found` | `horus-pdv-api-java:latest` **nunca foi publicada**: `api-java-publish.yml` só existe na `spring-api` e o GitHub só oferece *Run workflow* para workflow que está na `main` | Até a Java ir para a `main`, usar `ghcr.io/juniorjcmj/quack-pdv-api-java:spring-api` (gerada pelo `api-java.yml` a cada push na `spring-api`) |
+| Mesmo com o registry cadastrado no Portainer, o Swarm não baixa a imagem privada | O login do Portainer não chegou ao serviço | `docker login ghcr.io` no servidor e `docker service update --with-registry-auth --force pdv_pdv-api-sync`; ou deixar o pacote **Public** |
+| Imagem nova publicada, serviço continua na antiga | Swarm guarda o digest da tag | Portainer → Services → `pdv_pdv-api-sync` → *Update the service* com **Pull latest image version** |
+
 ### Cuidado: chave primária e recriação de tabela
 
 Com o Change Tracking ligado, o SQL Server **não permite** alterar a chave primária de uma tabela rastreada, nem
