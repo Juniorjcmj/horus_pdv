@@ -1,0 +1,3 @@
+# Amostras de CSV do sistema anterior: bytes exatos (CRLF, ISO-8859-1), sem conversao de fim de linha em nenhum SO.
+# O LeitorCsvProdutosTest divide por CRLF; com a conversao automatica, o CI em Linux recebia LF e o teste falhava.
+src/test/resources/importacao/*.csv -text
