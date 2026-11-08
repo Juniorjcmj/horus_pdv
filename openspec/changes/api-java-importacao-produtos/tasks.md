@@ -38,7 +38,7 @@ manual da tarefa 6.2.
 ## 6. Integração
 
 - [x] 6.1 Rodar os testes novos, os de produto/categoria/estoque e a suíte de sincronização. Verificação: saída do Maven sem falhas.
-- [ ] 6.2 Teste manual com o arquivo real (fora do repositório) numa API local de teste (banco descartável): simular, registrar no `design.md` ("Notas da implementação") os totais (novos, recusados por motivo, avisos por tipo, categorias criadas, produtos com saldo, tempo) e confirmar; conferir 10 produtos por amostragem (código, GTIN, preço Tab.3, categoria, saldo). Verificação: notas registradas com os números.
+- [x] 6.2 Teste manual com o arquivo real (fora do repositório) numa API local de teste (banco descartável): simular, registrar no `design.md` ("Notas da implementação") os totais (novos, recusados por motivo, avisos por tipo, categorias criadas, produtos com saldo, tempo) e confirmar; conferir 10 produtos por amostragem (código, GTIN, preço Tab.3, categoria, saldo). Verificação: notas registradas com os números.
 - [x] 6.3 Gerar o pacote da loja (`bash JAVA/api/instalador-loja/build-instalador.sh`). Verificação: `quack-servidor-loja.zip` novo.
 
 ## Workflow follow-up

@@ -196,3 +196,17 @@ Implementado em 07/11/2026 (commits `feat(api-java)`, `feat(estoque)`, `docs(api
 - `ImportacaoProdutosIT` (3.2 a 3.4: entrada inicial, saldo negativo, reimportação, preço atualizado, falha no meio via trigger, simulação não grava, 403, arquivo acima do limite, volume de 3.300 linhas em < 60 s) e `ImportacaoLojaIT` (3.5), além de `CatalogoSchemaIT` e da suíte de sincronização, estão escritos e compilam (`mvn test-compile`), mas **nunca rodaram**.
 - 6.2 (confirmar o arquivo real num banco descartável) só foi feito até a simulação em memória acima.
 - Roteiro para a 6.2 quando houver Docker: subir um SQL Server 2022 vazio; `mvn spring-boot:run` (perfil padrão) com `SPRING_DATASOURCE_*` do banco descartável; criar a empresa/administrador (`/api/Auth/register`, aprovar); `POST /api/Produto/importacao/simular` com `-F arquivo=@"docs/planilha material/planilha de produtos.csv"` e comparar com os números acima; `.../confirmar` e medir o tempo (meta < 60 s); conferir por SQL 10 produtos (código, GTIN, preço Tab.3, categoria, saldo), `SELECT COUNT(*) FROM EstoqueMovimentacoes WHERE OrigemTipo='importacao'` (= 2.333) e `Categorias` (639 novas); repetir o `confirmar` (0 novos, 0 movimentações).
+
+### Ensaio 6.2 com o arquivo real (07/11, banco descartável, removido ao fim)
+SQL Server 2022 Express em container + API Java (perfil `dev`, empresa-principal) — nenhum banco real envolvido.
+- Simulação pela rota (2 s): 3.252 lidas, 3.244 novos, 8 recusados (todos "GTIN já usado pelo código X"), 575 avisos
+  (302 CFOP vazio, 234 código de barras inválido, 33 sem preço, 3 M2 com "MT", 2 saldo negativo, 1 PIS/COFINS vazio),
+  639 categorias novas, 2.333 com saldo, 59.805,560 unidades, valor de estoque R$ 576.722,79; 15 combinações fiscais.
+- Confirmação: **37 s** (meta < 60 s). Banco: 3.244 produtos, 2.333 movimentações `importacao`, soma dos saldos
+  59.805,560, 2.333 linhas em `ImportacoesProduto`.
+- Amostra de 10 produtos (7 escolhidos cobrindo etiqueta curta, EAN válido, EAN14 de reserva, saldo zero, GTIN
+  disputado + 3 sorteados): código, GTIN, preço Tab.3, saldo e categoria (Sub-Grupo < Grupo < Classe) iguais à planilha.
+- Reimportação: 0 novos, 3.244 atualizados, 0 movimentações novas; contagens e saldo inalterados (19 s).
+- Achado: os 8 recusados são produtos **diferentes** com o mesmo código de barras no sistema anterior (erro de cadastro
+  lá; ex.: medidas/cores de uma mesma linha). Pela regra atual (I4) ficam fora da importação — decisão pendente com o
+  usuário: manter a recusa ou importar com `SEM GTIN` + aviso.
